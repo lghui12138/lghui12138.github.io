@@ -1,77 +1,61 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "/(404|fluid_dynamic|fluid_dynamic_2|fluid_dynamic3)\\.html$",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "public/(.*)\\.(js|css)$",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "public/api/data\\.json$",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "public/assets/fluid\\.dynamic\\.html$",
-      "use": "@vercel/static"
-    }
-  ],
   "routes": [
-    // 根目录 -> public/index.html
+    // 主页面路由
     {
       "src": "^/$",
       "dest": "/public/index.html",
       "status": 200
     },
     
-    // API路由精确指向
+    // public目录下的核心资源路由
     {
-      "src": "^/api/([^.]+)$",
-      "dest": "/public/api/$1.json",
+      "src": "^/styles\\.css$",
+      "dest": "/public/styles.css"
+    },
+    {
+      "src": "^/dynamic-content\\.js$",
+      "dest": "/public/dynamic-content.js"
+    },
+    {
+      "src": "^/assets/fluid\\.dynamic\\.html$",
+      "dest": "/public/assets/fluid.dynamic.html"
+    },
+    
+    // API路由配置
+    {
+      "src": "^/api/data$",
+      "dest": "/public/api/data.json",
       "headers": {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*"
+        "Content-Type": "application/json"
       }
     },
     
-    // public目录文件精确路由
+    // 根目录HTML文件路由
     {
-      "src": "^/((styles\\.css|dynamic-content\\.js))$",
-      "dest": "/public/$1"
+      "src": "^/fluid_dynamic\\.html$",
+      "dest": "/fluid_dynamic.html"
+    },
+    {
+      "src": "^/fluid_dynamic_2\\.html$",
+      "dest": "/fluid_dynamic_2.html"
+    },
+    {
+      "src": "^/fluid_dynamic3\\.html$",
+      "dest": "/fluid_dynamic3.html"
     },
     
-    // assets目录文件路由
+    // 404错误处理
     {
-      "src": "^/assets/([^.]+)$",
-      "dest": "/public/assets/$1.html",
-      "status": 302
+      "src": "^/404\\.html$",
+      "dest": "/404.html"
     },
     
-    // 根目录HTML直接访问
+    // 最终兜底规则
     {
-      "src": "^(404|fluid_dynamic|fluid_dynamic_2|fluid_dynamic3)\\.html$",
-      "dest": "/$1.html"
-    },
-    
-    // 主入口备用路由
-    {
-      "src": "^(home|index|main)$",
-      "dest": "/public/index.html",
-      "status": 302
-    },
-    
-    // 自定义404处理
-    {
-      "src": "/.*",
+      "src": "/(.*)",
       "dest": "/404.html",
       "status": 404
     }
-  ],
-  "cache": {
-    "default": {
-      "maxAge": 0
-    }
-  }
+  ]
 }
