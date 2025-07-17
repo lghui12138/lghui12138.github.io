@@ -2,66 +2,76 @@
   "version": 2,
   "builds": [
     {
-      "src": "public/*.html",
+      "src": "/(404|fluid_dynamic|fluid_dynamic_2|fluid_dynamic3)\\.html$",
       "use": "@vercel/static"
     },
     {
-      "src": "public/api/**/*.json",
+      "src": "public/(.*)\\.(js|css)$",
       "use": "@vercel/static"
     },
     {
-      "src": "public/dynamic-content.js",
+      "src": "public/api/data\\.json$",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/assets/fluid\\.dynamic\\.html$",
       "use": "@vercel/static"
     }
   ],
   "routes": [
+    // 根目录 -> public/index.html
     {
-      "src": "/$",
-      "dest": "/public/fluid_dynamic.html"
+      "src": "^/$",
+      "dest": "/public/index.html",
+      "status": 200
     },
+    
+    // API路由精确指向
     {
-      "src": "/(.*?)\\.html",
-      "dest": "/public/$1.html"
-    },
-    {
-      "src": "/([^.]+)$",
-      "dest": "/public/$1.html",
-      "status": 302
-    },
-    {
-      "src": "/api/(?<path>.*)",
-      "dest": "/public/api/$path.json",
+      "src": "^/api/([^.]+)$",
+      "dest": "/public/api/$1.json",
       "headers": {
+        "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*"
       }
     },
+    
+    // public目录文件精确路由
     {
-      "src": "/assets/(.*)",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
-      }
+      "src": "^/((styles\\.css|dynamic-content\\.js))$",
+      "dest": "/public/$1"
     },
+    
+    // assets目录文件路由
     {
-      "src": "/styles.css",
-      "headers": {
-        "Cache-Control": "public, max-age=86400"
-      }
+      "src": "^/assets/([^.]+)$",
+      "dest": "/public/assets/$1.html",
+      "status": 302
     },
+    
+    // 根目录HTML直接访问
     {
-      "src": "/dynamic-content.js",
-      "headers": {
-        "Cache-Control": "public, max-age=604800"
-      }
+      "src": "^(404|fluid_dynamic|fluid_dynamic_2|fluid_dynamic3)\\.html$",
+      "dest": "/$1.html"
     },
+    
+    // 主入口备用路由
     {
-      "src": "/(.*)",
-      "status": 404,
-      "dest": "/public/404.html"
+      "src": "^(home|index|main)$",
+      "dest": "/public/index.html",
+      "status": 302
+    },
+    
+    // 自定义404处理
+    {
+      "src": "/.*",
+      "dest": "/404.html",
+      "status": 404
     }
   ],
   "cache": {
-    "main": {
-      "maxAge": 300
+    "default": {
+      "maxAge": 0
     }
   }
 }
