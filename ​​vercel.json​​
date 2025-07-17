@@ -1,61 +1,47 @@
 {
   "version": 2,
   "routes": [
-    // 主页面路由
     {
       "src": "^/$",
       "dest": "/public/index.html",
-      "status": 200
-    },
-    
-    // public目录下的核心资源路由
-    {
-      "src": "^/styles\\.css$",
-      "dest": "/public/styles.css"
-    },
-    {
-      "src": "^/dynamic-content\\.js$",
-      "dest": "/public/dynamic-content.js"
-    },
-    {
-      "src": "^/assets/fluid\\.dynamic\\.html$",
-      "dest": "/public/assets/fluid.dynamic.html"
-    },
-    
-    // API路由配置
-    {
-      "src": "^/api/data$",
-      "dest": "/public/api/data.json",
+      "status": 200,
       "headers": {
-        "Content-Type": "application/json"
+        "Cache-Control": "no-store, max-age=0"
       }
     },
-    
-    // 根目录HTML文件路由
     {
-      "src": "^/fluid_dynamic\\.html$",
-      "dest": "/fluid_dynamic.html"
+      "src": "^/api/(.*)$",
+      "dest": "/public/api/$1.json",
+      "headers": {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*"
+      }
     },
     {
-      "src": "^/fluid_dynamic_2\\.html$",
-      "dest": "/fluid_dynamic_2.html"
+      "src": "^/(styles\\.css|dynamic-content\\.js)$",
+      "dest": "/public/$1"
     },
     {
-      "src": "^/fluid_dynamic3\\.html$",
-      "dest": "/fluid_dynamic3.html"
+      "src": "^/assets/(.*)$",
+      "dest": "/public/assets/$1.html"
     },
-    
-    // 404错误处理
     {
-      "src": "^/404\\.html$",
-      "dest": "/404.html"
+      "src": "^/(fluid_dynamic|fluid_dynamic_2|fluid_dynamic3)\\.html$",
+      "dest": "/$1.html"
     },
-    
-    // 最终兜底规则
     {
-      "src": "/(.*)",
+      "src": "/.*",
       "dest": "/404.html",
       "status": 404
+    }
+  ],
+  "regions": ["sfo1", "sin1"],
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/home",
+      "destination": "/"
     }
   ]
 }
