@@ -1,12 +1,13 @@
 {
   "version": 2,
+  "regions": ["icn1", "hkg1", "sin1"],
   "routes": [
     {
       "src": "^/$",
       "dest": "/public/index.html",
-      "status": 200,
       "headers": {
-        "Cache-Control": "no-store, max-age=0"
+        "Cache-Control": "no-cache",
+        "X-China-Access": "optimized"
       }
     },
     {
@@ -18,30 +19,51 @@
       }
     },
     {
-      "src": "^/(styles\\.css|dynamic-content\\.js)$",
-      "dest": "/public/$1"
+      "src": "^/styles\\.css$",
+      "dest": "/public/styles.css",
+      "headers": {
+        "Cache-Control": "max-age=86400"
+      }
     },
     {
-      "src": "^/assets/(.*)$",
-      "dest": "/public/assets/$1.html"
+      "src": "^/dynamic-content\\.js$",
+      "dest": "/public/dynamic-content.js",
+      "headers": {
+        "Cache-Control": "max-age=604800"
+      }
     },
     {
-      "src": "^/(fluid_dynamic|fluid_dynamic_2|fluid_dynamic3)\\.html$",
-      "dest": "/$1.html"
+      "src": "^/assets/fluid\\.dynamic$",
+      "dest": "/public/assets/fluid.dynamic.html",
+      "status": 302
     },
     {
-      "src": "/.*",
-      "dest": "/404.html",
+      "src": "^/fluid_dynamic\\.html$",
+      "dest": "/fluid_dynamic.html"
+    },
+    {
+      "src": "^/fluid_dynamic_2\\.html$",
+      "dest": "/fluid_dynamic_2.html"
+    },
+    {
+      "src": "^/fluid_dynamic3\\.html$",
+      "dest": "/fluid_dynamic3.html"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/public/404-cn.html",
       "status": 404
     }
   ],
-  "regions": ["sfo1", "sin1"],
-  "cleanUrls": true,
-  "trailingSlash": false,
   "redirects": [
     {
       "source": "/home",
-      "destination": "/"
+      "destination": "/",
+      "permanent": true
     }
-  ]
+  ],
+  "experimental": {
+    "chinaOptimized": true,
+    "forceCaching": false
+  }
 }
