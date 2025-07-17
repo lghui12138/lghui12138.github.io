@@ -2,18 +2,66 @@
   "version": 2,
   "builds": [
     {
-      "src": "/*.html",
+      "src": "public/*.html",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/api/**/*.json",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "public/dynamic-content.js",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
-      "src": "/",
-      "dest": "/fluid_dynamic.html"
+      "src": "/$",
+      "dest": "/public/fluid_dynamic.html"
+    },
+    {
+      "src": "/(.*?)\\.html",
+      "dest": "/public/$1.html"
+    },
+    {
+      "src": "/([^.]+)$",
+      "dest": "/public/$1.html",
+      "status": 302
+    },
+    {
+      "src": "/api/(?<path>.*)",
+      "dest": "/public/api/$path.json",
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      }
+    },
+    {
+      "src": "/assets/(.*)",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/styles.css",
+      "headers": {
+        "Cache-Control": "public, max-age=86400"
+      }
+    },
+    {
+      "src": "/dynamic-content.js",
+      "headers": {
+        "Cache-Control": "public, max-age=604800"
+      }
     },
     {
       "src": "/(.*)",
-      "dest": "/$1.html"
+      "status": 404,
+      "dest": "/public/404.html"
     }
-  ]
+  ],
+  "cache": {
+    "main": {
+      "maxAge": 300
+    }
+  }
 }
