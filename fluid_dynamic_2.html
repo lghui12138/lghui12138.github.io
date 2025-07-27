@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>流体力学学习平台 - 中国海洋大学</title>
+    
+    <!-- 反爬虫和安全防护 -->
+    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="referrer" content="no-referrer">
+    
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -40,12 +50,164 @@
             overflow-x: hidden;
             background: linear-gradient(135deg, #f5f9ff 0%, #e6f0ff 100%);
             min-height: 100vh;
+            
+            /* 防截屏和防选择 */
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+            
+            /* 防止拖拽 */
+            -webkit-user-drag: none;
+            -moz-user-drag: none;
+            user-drag: none;
+            
+            /* 防打印 */
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 0 20px;
+        }
+        
+        /* 防截屏和反爬虫保护 */
+        * {
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+            -webkit-user-drag: none !important;
+            -moz-user-drag: none !important;
+            user-drag: none !important;
+        }
+        
+        /* 防止右键菜单 */
+        body, html {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        
+        /* 防止图片和视频被保存 */
+        img, video, iframe {
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+            -webkit-user-drag: none !important;
+            -moz-user-drag: none !important;
+            user-drag: none !important;
+            pointer-events: none;
+            -webkit-touch-callout: none;
+        }
+        
+        /* 防止开发者工具检测 */
+        .anti-debug {
+            display: none !important;
+        }
+        
+        /* 水印保护层 */
+        .watermark-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            background-image: 
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 100px,
+                    rgba(26, 58, 87, 0.05) 100px,
+                    rgba(26, 58, 87, 0.05) 200px
+                );
+        }
+        
+        /* 学生端特殊保护 */
+        .student-content {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .student-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(26, 58, 87, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(26, 58, 87, 0.02) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(26, 58, 87, 0.02) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        /* 防打印样式 */
+        @media print {
+            * {
+                display: none !important;
+            }
+            
+            body::before {
+                content: "此内容受版权保护，禁止打印";
+                display: block !important;
+                text-align: center;
+                font-size: 24px;
+                color: red;
+                margin: 50px;
+            }
+        }
+        
+        /* 安全警告动画 */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        /* 学生端额外保护样式 */
+        .student-protection {
+            position: relative;
+        }
+        
+        .student-protection::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                45deg,
+                transparent 40%,
+                rgba(26, 58, 87, 0.02) 50%,
+                transparent 60%
+            );
+            pointer-events: none;
+            z-index: 1;
         }
         
         /* 登录界面 */
@@ -1732,6 +1894,12 @@
     </style>
 </head>
 <body id="appBody">
+    <!-- 水印保护层 -->
+    <div class="watermark-overlay" id="watermarkOverlay"></div>
+    
+    <!-- 反调试保护 -->
+    <div class="anti-debug" id="antiDebug"></div>
+    
     <!-- 登录界面（默认显示） -->
     <div class="login-container" id="loginContainer">
         <div class="wave"></div>
@@ -2759,6 +2927,283 @@
     </div>
 
     <script>
+        // ==================== 反爬虫和防截屏保护系统 ====================
+        
+        // 防止控制台调试
+        (function() {
+            'use strict';
+            
+            // 检测开发者工具
+            let devtools = {
+                open: false,
+                orientation: null
+            };
+            
+            setInterval(function() {
+                if (window.outerHeight - window.innerHeight > 200 || window.outerWidth - window.innerWidth > 200) {
+                    if (!devtools.open) {
+                        devtools.open = true;
+                        console.clear();
+                        document.body.innerHTML = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;z-index:99999;">⚠️ 检测到开发者工具，页面已被保护</div>';
+                    }
+                }
+            }, 500);
+            
+            // 禁用常用快捷键
+            document.addEventListener('keydown', function(e) {
+                // 禁用F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+S, Ctrl+A, Ctrl+P
+                if (e.keyCode === 123 || 
+                    (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+                    (e.ctrlKey && (e.keyCode === 85 || e.keyCode === 83 || e.keyCode === 65 || e.keyCode === 80)) ||
+                    e.keyCode === 44) { // Print Screen
+                    e.preventDefault();
+                    e.stopPropagation();
+                    showSecurityAlert('检测到不当操作，页面受到保护！');
+                    return false;
+                }
+            });
+            
+            // 禁用右键菜单
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                showSecurityAlert('右键功能已被禁用！');
+                return false;
+            });
+            
+            // 禁用文本选择
+            document.addEventListener('selectstart', function(e) {
+                if (currentUser && currentUser.role === 'student') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+            
+            // 禁用拖拽
+            document.addEventListener('dragstart', function(e) {
+                if (currentUser && currentUser.role === 'student') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+            
+            // 检测页面可见性变化（可能的录屏检测）
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) {
+                    console.log('页面被隐藏，可能存在录屏行为');
+                }
+            });
+            
+            // 防止通过iframe嵌入
+            if (window.top !== window.self) {
+                window.top.location = window.self.location;
+            }
+            
+        })();
+        
+        // 安全警告函数
+        function showSecurityAlert(message) {
+            const alertDiv = document.createElement('div');
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #e74c3c;
+                color: white;
+                padding: 15px 20px;
+                border-radius: 5px;
+                z-index: 99999;
+                font-size: 14px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                animation: slideIn 0.3s ease;
+            `;
+            alertDiv.textContent = message;
+            document.body.appendChild(alertDiv);
+            
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.parentNode.removeChild(alertDiv);
+                }
+            }, 3000);
+        }
+        
+        // 动态水印生成
+        function createDynamicWatermark() {
+            if (!currentUser || currentUser.role !== 'student') return;
+            
+            const watermark = document.getElementById('watermarkOverlay');
+            const userName = currentUser.name || '学生用户';
+            const timestamp = new Date().toLocaleString();
+            
+            // 创建多层水印
+            let watermarkHTML = '';
+            for (let i = 0; i < 20; i++) {
+                const top = Math.random() * 100;
+                const left = Math.random() * 100;
+                const rotation = Math.random() * 60 - 30;
+                
+                watermarkHTML += `
+                    <div style="
+                        position: absolute;
+                        top: ${top}%;
+                        left: ${left}%;
+                        transform: rotate(${rotation}deg);
+                        color: rgba(26, 58, 87, 0.08);
+                        font-size: 14px;
+                        font-weight: bold;
+                        pointer-events: none;
+                        user-select: none;
+                        white-space: nowrap;
+                    ">
+                        ${userName} - ${timestamp}
+                    </div>
+                `;
+            }
+            
+            watermark.innerHTML = watermarkHTML;
+            
+            // 定期更新水印
+            setTimeout(createDynamicWatermark, 30000);
+        }
+        
+        // 检测截屏API（实验性）
+        function detectScreenCapture() {
+            if ('mediaDevices' in navigator && 'getDisplayMedia' in navigator.mediaDevices) {
+                // 监听屏幕共享API的使用
+                const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+                navigator.mediaDevices.getDisplayMedia = function() {
+                    showSecurityAlert('检测到屏幕录制尝试！');
+                    console.log('Screen capture detected!');
+                    return Promise.reject(new Error('Screen capture blocked'));
+                };
+            }
+            
+            // 检测用户媒体设备访问
+            if ('mediaDevices' in navigator && 'getUserMedia' in navigator.mediaDevices) {
+                const originalGetUserMedia = navigator.mediaDevices.getUserMedia;
+                navigator.mediaDevices.getUserMedia = function(constraints) {
+                    if (constraints && constraints.video && currentUser && currentUser.role === 'student') {
+                        showSecurityAlert('检测到摄像头访问请求！');
+                        return Promise.reject(new Error('Camera access blocked for students'));
+                    }
+                    return originalGetUserMedia.call(this, constraints);
+                };
+            }
+        }
+        
+        // 高级反调试功能
+        function advancedAntiDebug() {
+            // 检测调试器断点
+            let startTime = performance.now();
+            debugger;
+            let endTime = performance.now();
+            
+            if (endTime - startTime > 100) {
+                document.body.innerHTML = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;z-index:99999;">🚫 检测到调试器，访问被拒绝</div>';
+                return;
+            }
+            
+            // 定期重复检测
+            setTimeout(advancedAntiDebug, 1000);
+        }
+        
+        // 检测自动化工具
+        function detectAutomation() {
+            // 检测常见的自动化工具
+            if (window.navigator.webdriver || 
+                window.callPhantom || 
+                window._phantom || 
+                window.phantom ||
+                window.Buffer ||
+                window.emit ||
+                window.spawn) {
+                showSecurityAlert('检测到自动化工具！');
+                document.body.innerHTML = '<div style="position:fixed;top:0;left:0;width:100%;height:100%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:24px;z-index:99999;">🤖 检测到机器人访问</div>';
+                return;
+            }
+            
+            // 检测Selenium
+            if (typeof window.document.$cdc_asdjflasutopfhvcZLmcfl_ !== 'undefined' ||
+                typeof window.document.$chrome_asyncScriptInfo !== 'undefined') {
+                showSecurityAlert('检测到Selenium！');
+                return;
+            }
+        }
+        
+        // 防止页面被嵌入iframe
+        function preventFraming() {
+            if (window.top !== window.self) {
+                window.top.location.replace(window.self.location.href);
+            }
+        }
+        
+        // 混淆控制台输出
+        function obfuscateConsole() {
+            const methods = ['log', 'debug', 'info', 'warn', 'error'];
+            methods.forEach(method => {
+                const original = console[method];
+                console[method] = function() {
+                    if (currentUser && currentUser.role === 'student') {
+                        return; // 学生端不显示控制台信息
+                    }
+                    original.apply(console, arguments);
+                };
+            });
+        }
+        
+        // 初始化安全保护功能
+        function initSecurityProtection() {
+            if (!currentUser) return;
+            
+            if (currentUser.role === 'student') {
+                // 学生端特殊保护
+                setTimeout(() => {
+                    createDynamicWatermark();
+                    
+                    // 添加学生内容保护类
+                    const mainContent = document.querySelector('.main-content');
+                    if (mainContent) {
+                        mainContent.classList.add('student-content');
+                    }
+                    
+                    // 禁用视频和图片的右键保存
+                    const mediaElements = document.querySelectorAll('img, video, iframe');
+                    mediaElements.forEach(element => {
+                        element.style.pointerEvents = 'none';
+                        element.addEventListener('contextmenu', function(e) {
+                            e.preventDefault();
+                            showSecurityAlert('媒体内容受版权保护！');
+                            return false;
+                        });
+                    });
+                    
+                    // 添加页面失焦检测（可能的录屏行为）
+                    let blurCount = 0;
+                    window.addEventListener('blur', function() {
+                        blurCount++;
+                        if (blurCount > 3) {
+                            showSecurityAlert('检测到异常操作，请专心学习！');
+                        }
+                    });
+                    
+                }, 500);
+            }
+        }
+        
+        // 页面加载完成后初始化基础保护
+        document.addEventListener('DOMContentLoaded', function() {
+            preventFraming();
+            detectScreenCapture();
+            obfuscateConsole();
+            detectAutomation();
+            
+            // 启动高级反调试（仅在生产环境）
+            if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+                setTimeout(advancedAntiDebug, 2000);
+            }
+        });
+        
+        // ==================== 用户系统 ====================
+        
         // 用户账号信息
         const accounts = {
             'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306', color: 'teacher' },
@@ -2839,6 +3284,9 @@
             
             // 显示默认内容区域（复习规划）
             switchSection('review-section');
+            
+            // 初始化安全保护功能
+            initSecurityProtection();
             
             // 创建分数线图表
             createScoreChart();
