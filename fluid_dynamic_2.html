@@ -3424,6 +3424,22 @@
                 </button>
             </form>
                 
+                <!-- 快速登录测试按钮 -->
+                <div style="margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
+                    <button type="button" onclick="quickLogin('liuguanghui6330156', 'Ll700306')" 
+                            style="padding: 6px 10px; background: #27ae60; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                        快速登录(教师)
+                    </button>
+                    <button type="button" onclick="quickLogin('student1', '123456')" 
+                            style="padding: 6px 10px; background: #3498db; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                        快速登录(学生)
+                    </button>
+                    <button type="button" onclick="debugLogin()" 
+                            style="padding: 6px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">
+                        调试登录
+                    </button>
+                </div>
+                
                 <div style="text-align: center; margin-top: 15px;">
                     <a href="#" onclick="showChangePasswordModal()" style="color: var(--secondary); text-decoration: none; font-size: 14px;">
                         <i class="fas fa-key"></i> 修改密码
@@ -6013,11 +6029,21 @@
         // 强制同步登录处理函数
         function handleLogin() {
             try {
-                const username = document.getElementById('username').value.trim();
-                const password = document.getElementById('password').value;
+                console.log('🔐 开始登录流程');
+                
+                const usernameElement = document.getElementById('username');
+                const passwordElement = document.getElementById('password');
                 const loginError = document.getElementById('loginError');
                 
-                console.log('🔐 开始登录流程');
+                if (!usernameElement || !passwordElement) {
+                    console.error('❌ 登录表单元素未找到');
+                    alert('登录表单加载错误，请刷新页面重试');
+                    return false;
+                }
+                
+                const username = usernameElement.value.trim();
+                const password = passwordElement.value;
+                
                 console.log('📝 输入信息:', { username: username, hasPassword: !!password, passwordLength: password.length });
                 console.log('📊 当前accounts对象:', accounts);
                 console.log('📋 可用账号列表:', Object.keys(accounts));
@@ -6034,13 +6060,30 @@
                     return false;
                 }
                 
+                // 确保accounts对象存在
+                if (!accounts || typeof accounts !== 'object') {
+                    console.error('❌ accounts对象不存在或损坏');
+                    // 重新初始化默认账号
+                    accounts = {
+                        'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306', color: 'teacher' },
+                        'student1': { name: '学生账号', role: 'student', password: '123456', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
+                        'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
+                        'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] }
+                    };
+                    console.log('🔄 已重新初始化账号数据');
+                }
+                
                 // 查找账号
                 const account = accounts[username];
                 console.log('🔍 账号查找结果:', account);
                 
                 if (!account) {
                     console.log('❌ 账号不存在');
-                    showLoginError('用户名不存在');
+                    console.log('💡 提示：可用的账号有:');
+                    Object.keys(accounts).forEach(key => {
+                        console.log(`   - ${key} (${accounts[key].name})`);
+                    });
+                    showLoginError('用户名不存在。请检查输入是否正确。');
                     return false;
                 }
                 
@@ -6053,17 +6096,26 @@
                 
                 if (account.password !== password) {
                     console.log('❌ 密码错误');
-                    showLoginError('密码错误');
+                    showLoginError('密码错误。请检查密码是否正确。');
                     return false;
                 }
                 
                 console.log('✅ 登录验证成功，执行登录');
-                login(username);
+                
+                // 确保login函数存在
+                if (typeof login === 'function') {
+                    login(username);
+                } else {
+                    console.error('❌ login函数未定义');
+                    alert('登录系统错误，请刷新页面重试');
+                }
+                
                 return true;
                 
             } catch (error) {
                 console.error('💥 登录过程出错:', error);
-                showLoginError('登录过程出现错误');
+                console.error('💥 错误堆栈:', error.stack);
+                showLoginError('登录过程出现错误: ' + error.message);
                 return false;
             }
         }
@@ -6389,15 +6441,70 @@
         }
         
         // 添加快速登录测试功能（仅开发环境）
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            console.log('🧪 开发环境检测到，添加快速登录测试');
-            window.quickLogin = function(username, password) {
-                document.getElementById('username').value = username || 'liuguanghui6330156';
-                document.getElementById('password').value = password || 'Ll700306';
-                handleLogin();
-            };
-            console.log('💡 使用 quickLogin() 进行快速登录测试');
-        }
+        // 快速登录函数（用于测试和调试）
+        window.quickLogin = function(username, password) {
+            console.log('🚀 快速登录:', username);
+            try {
+                const usernameInput = document.getElementById('username');
+                const passwordInput = document.getElementById('password');
+                
+                if (usernameInput && passwordInput) {
+                    usernameInput.value = username || 'liuguanghui6330156';
+                    passwordInput.value = password || 'Ll700306';
+                    console.log('✅ 填充登录信息完成');
+                    setTimeout(() => handleLogin(), 100); // 稍微延迟确保输入框更新
+                } else {
+                    console.error('❌ 无法找到登录输入框');
+                    alert('登录输入框未找到，请刷新页面');
+                }
+            } catch (error) {
+                console.error('❌ 快速登录出错:', error);
+                alert('快速登录失败: ' + error.message);
+            }
+        };
+
+        // 调试登录函数
+        window.debugLogin = function() {
+            console.log('🔍 开始登录调试');
+            console.log('📊 当前页面状态:');
+            console.log('  - accounts对象:', accounts);
+            console.log('  - 可用账号:', Object.keys(accounts || {}));
+            console.log('  - 用户名输入框:', document.getElementById('username'));
+            console.log('  - 密码输入框:', document.getElementById('password'));
+            console.log('  - 登录按钮:', document.getElementById('loginBtn'));
+            console.log('  - 登录表单:', document.getElementById('loginForm'));
+            console.log('  - currentUser:', currentUser);
+            
+            // 检查函数是否存在
+            console.log('📝 函数检查:');
+            console.log('  - handleLogin:', typeof handleLogin);
+            console.log('  - login:', typeof login);
+            console.log('  - showLoginError:', typeof showLoginError);
+            
+            // 测试账号验证
+            if (accounts && typeof accounts === 'object') {
+                console.log('🧪 测试账号验证:');
+                const testAccounts = [
+                    { user: 'liuguanghui6330156', pass: 'Ll700306' },
+                    { user: 'student1', pass: '123456' }
+                ];
+                
+                testAccounts.forEach(test => {
+                    const account = accounts[test.user];
+                    console.log(`  - ${test.user}:`, {
+                        exists: !!account,
+                        passwordMatch: account ? account.password === test.pass : false,
+                        accountData: account
+                    });
+                });
+            } else {
+                console.error('❌ accounts对象不存在或无效');
+            }
+            
+            alert('调试信息已输出到控制台，请按F12查看Console标签');
+        };
+
+        console.log('💡 快速登录和调试功能已加载');
         
         // 登录函数
         function login(username) {
