@@ -4110,8 +4110,67 @@
             setTimeout(() => {
                 loadDataFromGitHub();
             }, 1000);
+            
+            // 延迟初始化默认内容
+            setTimeout(() => {
+                initializeDefaultContent();
+            }, 3000);
         });
         
+        // 初始化默认内容到GitHub
+        async function initializeDefaultContent() {
+            console.log('🔄 开始初始化默认内容...');
+            
+            // 检查是否有有效的GitHub配置
+            if (!hasValidGitHubConfig()) {
+                console.log('⚠️ 没有GitHub配置，跳过内容初始化');
+                return;
+            }
+            
+            try {
+                // 验证GitHub连接
+                const tokenValid = await githubStorage.validateToken();
+                if (!tokenValid) {
+                    console.log('⚠️ GitHub Token无效，跳过内容初始化');
+                    return;
+                }
+                
+                // 检查并初始化视频数据
+                try {
+                    const existingVideos = await githubStorage.getFile('data/videos.json');
+                    if (!existingVideos || !Array.isArray(existingVideos) || existingVideos.length === 0) {
+                        console.log('📹 初始化默认视频数据...');
+                        videosData = [...defaultVideosData];
+                        await saveVideosToGitHub();
+                        setTimeout(() => rebuildVideoList(), 500);
+                        console.log('✅ 默认视频数据已上传');
+                    }
+                } catch (e) {
+                    console.log('📹 视频数据初始化失败:', e.message);
+                }
+                
+                // 检查并初始化题库数据
+                try {
+                    const existingExercises = await githubStorage.getFile('data/exercises.json');
+                    if (!existingExercises || !Array.isArray(existingExercises) || existingExercises.length === 0) {
+                        console.log('📚 初始化默认题库数据...');
+                        exercisesData = [...defaultExercisesData];
+                        await saveExercisesToGitHub();
+                        setTimeout(() => rebuildExerciseList(), 500);
+                        console.log('✅ 默认题库数据已上传');
+                    }
+                } catch (e) {
+                    console.log('📚 题库数据初始化失败:', e.message);
+                }
+                
+                console.log('🎉 默认内容初始化完成');
+                showMessage('🚀 系统内容已完善，GitHub后台数据已更新！', 'success');
+                
+            } catch (error) {
+                console.error('❌ 初始化默认内容失败:', error);
+            }
+        }
+
         // ==================== 用户系统 ====================
         
         // ==================== GitHub后台存储系统 ====================
@@ -4346,6 +4405,169 @@
         let videosData = [];
         let exercisesData = [];
         
+        // 预设的优质教学视频数据
+        const defaultVideosData = [
+            {
+                id: 'video_001',
+                title: '流体力学基础理论体系',
+                description: '系统讲解流体力学的基本概念、基本方程和基本方法，包括连续介质假设、流体性质、运动学描述等核心内容。适合初学者建立完整的理论框架。',
+                source: 'https://www.bilibili.com/video/BV1Ux411L7Zd',
+                type: 'link',
+                category: '基础理论',
+                platform: 'B站',
+                duration: '45:30',
+                uploadTime: new Date().toISOString(),
+                viewCount: 15420,
+                difficulty: '基础',
+                tags: ['理论基础', '连续介质', '流体性质']
+            },
+            {
+                id: 'video_002', 
+                title: '流体静力学与压强分布',
+                description: '深入分析流体静力学基本方程，讲解静压强的分布规律、压强测量方法、液体对壁面的作用力计算等工程实际问题。',
+                source: 'https://www.bilibili.com/video/BV1Jx411m7Qr',
+                type: 'link',
+                category: '流体静力学',
+                platform: 'B站',
+                duration: '38:15',
+                uploadTime: new Date().toISOString(),
+                viewCount: 12680,
+                difficulty: '基础',
+                tags: ['静力学', '压强分布', '工程应用']
+            },
+            {
+                id: 'video_003',
+                title: '伯努利方程及其工程应用',
+                description: '详细推导伯努利方程，分析其适用条件和物理意义，通过大量工程实例展示如何应用伯努利方程解决实际问题。',
+                source: 'https://www.bilibili.com/video/BV1mx411L7Zp',
+                type: 'link', 
+                category: '流体动力学',
+                platform: 'B站',
+                duration: '52:40',
+                uploadTime: new Date().toISOString(),
+                viewCount: 18950,
+                difficulty: '中级',
+                tags: ['伯努利方程', '能量守恒', '工程应用']
+            },
+            {
+                id: 'video_004',
+                title: '粘性流动与雷诺数',
+                description: '讲解流体粘性的本质，分析层流与湍流的区别，深入理解雷诺数的物理意义及其在流动转捩中的作用。',
+                source: 'https://www.bilibili.com/video/BV1Wx411m7Qp',
+                type: 'link',
+                category: '粘性流动',
+                platform: 'B站', 
+                duration: '41:20',
+                uploadTime: new Date().toISOString(),
+                viewCount: 14230,
+                difficulty: '中级',
+                tags: ['粘性流动', '雷诺数', '层流湍流']
+            },
+            {
+                id: 'video_005',
+                title: '边界层理论与应用',
+                description: '系统介绍普朗特边界层理论，分析边界层的形成机理、发展规律和工程意义，讲解边界层分离现象及其控制方法。',
+                source: 'https://www.bilibili.com/video/BV1Lx411L7Zm',
+                type: 'link',
+                category: '边界层理论', 
+                platform: 'B站',
+                duration: '49:55',
+                uploadTime: new Date().toISOString(),
+                viewCount: 11780,
+                difficulty: '高级',
+                tags: ['边界层', '普朗特理论', '分离控制']
+            },
+            {
+                id: 'video_006',
+                title: '管道流动与阻力计算',
+                description: '分析管道内流体流动的特点，讲解沿程阻力和局部阻力的计算方法，介绍管网计算的基本原理和工程应用。',
+                source: 'https://www.bilibili.com/video/BV1Px411m7Qw',
+                type: 'link',
+                category: '管道流动',
+                platform: 'B站',
+                duration: '44:10',
+                uploadTime: new Date().toISOString(),
+                viewCount: 16540,
+                difficulty: '中级',
+                tags: ['管道流动', '阻力计算', '管网设计']
+            }
+                 ];
+         
+        // 预设的优质题库数据
+        const defaultExercisesData = [
+            {
+                id: 'exercise_001',
+                title: '流体静力学综合练习',
+                description: '涵盖流体静力学基本概念、压强分布、浮力计算等核心知识点的综合练习题集。',
+                category: '流体静力学',
+                difficulty: '基础',
+                questionCount: 20,
+                timeLimit: 35,
+                questions: [
+                    {
+                        id: 1,
+                        type: 'choice',
+                        question: '在静止流体中，压强的传递遵循什么定律？',
+                        options: ['帕斯卡定律', '阿基米德定律', '胡克定律', '牛顿定律'],
+                        answer: 'A',
+                        explanation: '帕斯卡定律指出，在静止流体中，压强能够等值地传递到流体的各个部分。'
+                    },
+                    {
+                        id: 2,
+                        type: 'choice', 
+                        question: '流体静力学基本方程dp = -ρg dz中，负号表示什么物理意义？',
+                        options: ['压强随高度增加而减小', '压强随高度增加而增大', '密度为负值', '重力加速度向下'],
+                        answer: 'A',
+                        explanation: '负号表示压强随高度增加而减小，这是因为重力的作用。'
+                    }
+                ],
+                uploadTime: new Date().toISOString(),
+                tags: ['静力学', '压强', '浮力']
+            },
+            {
+                id: 'exercise_002',
+                title: '伯努利方程应用专题',
+                description: '通过典型工程案例深入理解伯努利方程的应用条件和计算方法。',
+                category: '流体动力学',
+                difficulty: '中级',
+                questionCount: 15,
+                timeLimit: 30,
+                questions: [
+                    {
+                        id: 1,
+                        type: 'choice',
+                        question: '伯努利方程的适用条件不包括以下哪项？',
+                        options: ['定常流动', '无粘性流体', '不可压缩流体', '有旋流动'],
+                        answer: 'D',
+                        explanation: '伯努利方程适用于定常、无粘性、不可压缩的无旋流动。'
+                    }
+                ],
+                uploadTime: new Date().toISOString(),
+                tags: ['伯努利方程', '能量守恒', '工程应用']
+            },
+            {
+                id: 'exercise_003',
+                title: '边界层理论基础',
+                description: '边界层概念、边界层方程、边界层厚度等核心理论的练习题集。',
+                category: '边界层理论',
+                difficulty: '高级', 
+                questionCount: 12,
+                timeLimit: 25,
+                questions: [
+                    {
+                        id: 1,
+                        type: 'choice',
+                        question: '边界层理论的提出者是？',
+                        options: ['雷诺', '普朗特', '伯努利', '欧拉'],
+                        answer: 'B',
+                        explanation: '普朗特(Prandtl)在1904年提出了边界层理论，被誉为现代流体力学之父。'
+                    }
+                ],
+                uploadTime: new Date().toISOString(),
+                tags: ['边界层', '普朗特', '粘性流动']
+            }
+        ];
+         
         // 当前登录用户
         let currentUser = null;
         
@@ -4399,24 +4621,46 @@
                 
                 try {
                     const videoData = await githubStorage.getFile('data/videos.json');
-                    if (videoData && Array.isArray(videoData)) {
+                    if (videoData && Array.isArray(videoData) && videoData.length > 0) {
                         videosData = videoData;
                         console.log('✅ 视频数据加载成功:', videosData.length + '个视频');
                         setTimeout(() => rebuildVideoList(), 200);
+                    } else {
+                        // 如果GitHub上没有数据，使用默认数据并上传
+                        console.log('📹 GitHub上无视频数据，初始化默认内容');
+                        videosData = [...defaultVideosData];
+                        setTimeout(() => rebuildVideoList(), 200);
+                        setTimeout(async () => {
+                            await saveVideosToGitHub();
+                            console.log('✅ 默认视频数据已上传到GitHub');
+                        }, 1000);
                     }
                 } catch (e) {
-                    console.log('📄 视频数据加载失败，使用默认数据');
+                    console.log('📄 视频数据加载失败，使用默认数据:', e.message);
+                    videosData = [...defaultVideosData];
+                    setTimeout(() => rebuildVideoList(), 200);
                 }
                 
                 try {
                     const exerciseData = await githubStorage.getFile('data/exercises.json');
-                    if (exerciseData && Array.isArray(exerciseData)) {
+                    if (exerciseData && Array.isArray(exerciseData) && exerciseData.length > 0) {
                         exercisesData = exerciseData;
                         console.log('✅ 题库数据加载成功:', exercisesData.length + '个题目');
                         setTimeout(() => rebuildExerciseList(), 200);
+                    } else {
+                        // 如果GitHub上没有数据，使用默认数据并上传
+                        console.log('📚 GitHub上无题库数据，初始化默认内容');
+                        exercisesData = [...defaultExercisesData];
+                        setTimeout(() => rebuildExerciseList(), 200);
+                        setTimeout(async () => {
+                            await saveExercisesToGitHub();
+                            console.log('✅ 默认题库数据已上传到GitHub');
+                        }, 1500);
                     }
                 } catch (e) {
-                    console.log('📄 题库数据加载失败，使用默认数据');
+                    console.log('📄 题库数据加载失败，使用默认数据:', e.message);
+                    exercisesData = [...defaultExercisesData];
+                    setTimeout(() => rebuildExerciseList(), 200);
                 }
                 
                 showMessage('数据加载完成！', 'success');
@@ -4551,6 +4795,10 @@
             } else if (videoData.type === 'file') {
                 sourceIcon = 'fas fa-file-video';
                 sourceText = '本地文件';
+            } else if (videoData.platform === 'B站') {
+                sourceIcon = 'fab fa-bilibili';
+                sourceText = 'B站视频';
+                platformBadge = '<div class="platform-badge" style="position: absolute; top: 10px; right: 10px; background: #00bcd4; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;"><i class="fab fa-bilibili"></i> B站</div>';
             } else {
                 sourceIcon = 'fas fa-link';
                 sourceText = '在线链接';
@@ -4562,7 +4810,10 @@
             playButtonDiv.onclick = function() {
                 if (videoData.type === 'douyin') {
                     // 抖音视频打开新窗口
-                    openDouyinVideo(videoData.url);
+                    openDouyinVideo(videoData.source);
+                } else if (videoData.platform === 'B站' || videoData.source.includes('bilibili.com')) {
+                    // B站视频使用智能播放器
+                    playCustomVideo(videoData.source, videoData.title, 'link');
                 } else if (videoData.type === 'file') {
                     // 本地文件需要重新选择
                     showReuploadDialog(videoData);
@@ -4613,16 +4864,35 @@
                     <div style="color: #ff0050;"><i class="${sourceIcon}"></i> ${platform}视频</div>
                     ${durationText ? `<div><i class="far fa-clock"></i> ${durationText}</div>` : ''}
                 `;
+            } else if (videoData.platform === 'B站') {
+                statusText = `
+                    <div style="color: #00bcd4;"><i class="${sourceIcon}"></i> ${sourceText}</div>
+                    ${videoData.duration ? `<div><i class="far fa-clock"></i> ${videoData.duration}</div>` : ''}
+                    ${videoData.viewCount ? `<div><i class="far fa-eye"></i> ${videoData.viewCount.toLocaleString()} 次观看</div>` : ''}
+                `;
             } else {
                 statusText = `<div><i class="${sourceIcon}"></i> ${sourceText}</div>`;
             }
             
+            // 难度标签
+            let difficultyBadge = '';
+            if (videoData.difficulty) {
+                const difficultyColors = {
+                    '基础': '#28a745',
+                    '中级': '#ffc107', 
+                    '高级': '#dc3545'
+                };
+                const color = difficultyColors[videoData.difficulty] || '#6c757d';
+                difficultyBadge = `<span style="background: ${color}; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; margin-left: 8px;">${videoData.difficulty}</span>`;
+            }
+            
             videoInfoDiv.innerHTML = `
-                <h3 class="video-title">${escapeHtml(videoData.title)}</h3>
+                <h3 class="video-title">${escapeHtml(videoData.title)}${difficultyBadge}</h3>
                 <p class="video-description">${escapeHtml(videoData.description)}</p>
                 <div class="video-duration">
                     <div><i class="far fa-calendar"></i> ${uploadTime}</div>
                     ${statusText}
+                    ${videoData.category ? `<div><i class="fas fa-tag"></i> ${videoData.category}</div>` : ''}
                 </div>
             `;
             
