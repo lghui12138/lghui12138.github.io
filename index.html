@@ -1,30 +1,187 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <title>成功部署!</title>
-  <meta http-equiv="refresh" content="3;url=fluid_dynamic_2.html">
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    h1 { color: green; }
-    ul { line-height: 1.8; }
-  </style>
-  <script>
-    // 双重保险：JavaScript跳转
-    setTimeout(function() {
-      window.location.href = 'fluid_dynamic_2.html';
-    }, 3000);
-  </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流体力学学习平台 - 中国海洋大学</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+        
+        .login-btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: 600;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+        
+        .features {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .feature {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .feature h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .feature p {
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .status.logged-in {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.not-logged-in {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
 </head>
 <body>
-  <h1>正在加载流体动画...</h1>
-  <p>3 秒后自动跳转到 <strong>fluid_dynamic_2.html</strong>。如果未跳转，请选择以下页面：</p>
-  <ul>
-    <li><a href="/fluid_dynamic.html">fluid_dynamic.html</a></li>
-    <li><a href="/fluid_dynamic_2.html">fluid_dynamic_2.html</a></li>
-    <li><a href="/fluid_dynamic3.html">fluid_dynamic3.html</a></li>
-    <li><a href="/public/index.html">public/index.html（开发测试页）</a></li>
-    <li><a href="/public/404-cn.html">404-cn.html</a></li>
-  </ul>
+    <div class="container">
+        <div class="logo">🌊</div>
+        <h1>流体力学学习平台</h1>
+        <p class="subtitle">中国海洋大学 | 803流体力学</p>
+        
+        <div id="status" class="status">
+            检查登录状态...
+        </div>
+        
+        <div style="margin: 30px 0;">
+            <a href="/simple-login.html" class="login-btn">🔐 登录系统</a>
+            <a href="/fluid_dynamic_2.html" class="login-btn">📚 直接进入</a>
+        </div>
+        
+        <div class="features">
+            <div class="feature">
+                <h3>📹 视频学习</h3>
+                <p>观看流体力学相关视频，掌握核心概念</p>
+            </div>
+            <div class="feature">
+                <h3>📝 题库练习</h3>
+                <p>通过练习题巩固知识点，提高理解能力</p>
+            </div>
+            <div class="feature">
+                <h3>📊 学习进度</h3>
+                <p>跟踪学习进度，查看成绩统计</p>
+            </div>
+            <div class="feature">
+                <h3>👨‍🏫 教师功能</h3>
+                <p>教师可上传视频、录入成绩、管理内容</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 检查登录状态
+        function checkLoginStatus() {
+            const currentUser = localStorage.getItem('currentUser');
+            const userRole = localStorage.getItem('userRole');
+            const userName = localStorage.getItem('userName');
+            
+            const statusDiv = document.getElementById('status');
+            
+            if (currentUser && userRole && userName) {
+                statusDiv.className = 'status logged-in';
+                statusDiv.innerHTML = `✅ 已登录: ${userName} (${userRole === 'teacher' ? '教师' : '学生'})`;
+                
+                // 更新登录按钮
+                const loginBtn = document.querySelector('a[href="/simple-login.html"]');
+                if (loginBtn) {
+                    loginBtn.textContent = '🔄 重新登录';
+                }
+            } else {
+                statusDiv.className = 'status not-logged-in';
+                statusDiv.innerHTML = '❌ 未登录，请先登录系统';
+            }
+        }
+        
+        // 页面加载时检查登录状态
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+            
+            // 每5秒检查一次登录状态
+            setInterval(checkLoginStatus, 5000);
+        });
+        
+        // 监听localStorage变化
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'currentUser' || e.key === 'userRole' || e.key === 'userName') {
+                checkLoginStatus();
+            }
+        });
+    </script>
 </body>
 </html>

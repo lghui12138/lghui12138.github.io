@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录测试</title>
+    <title>登录测试页面</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,7 +19,7 @@
             padding: 40px;
             border-radius: 10px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            width: 300px;
+            width: 350px;
         }
         h1 {
             text-align: center;
@@ -80,11 +80,22 @@
             margin-bottom: 15px;
             display: none;
         }
+        .debug {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
     <div class="login-box">
-        <h1>登录测试</h1>
+        <h1>🔐 登录测试</h1>
         
         <div class="error" id="errorMsg"></div>
         <div class="success" id="successMsg"></div>
@@ -97,6 +108,12 @@
         <button class="quick-btn" onclick="quickTeacher()">教师快速登录</button>
         <button class="quick-btn" onclick="quickStudent()">学生快速登录</button>
         <button class="quick-btn" onclick="showDebug()">显示调试信息</button>
+        <button class="quick-btn" onclick="clearStorage()">清除登录状态</button>
+        
+        <div class="debug" id="debug">
+            <strong>调试信息：</strong><br>
+            <div id="debugContent">初始化中...</div>
+        </div>
     </div>
 
     <script>
@@ -107,6 +124,14 @@
             'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025' },
             'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025' }
         };
+
+        function log(message) {
+            const debugContent = document.getElementById('debugContent');
+            const timestamp = new Date().toLocaleTimeString();
+            debugContent.innerHTML += `[${timestamp}] ${message}<br>`;
+            debugContent.scrollTop = debugContent.scrollHeight;
+            console.log(message);
+        }
 
         function showError(msg) {
             const errorDiv = document.getElementById('errorMsg');
@@ -126,7 +151,7 @@
             const username = document.getElementById('username').value.trim();
             const password = document.getElementById('password').value;
             
-            console.log('尝试登录:', username);
+            log(`🔐 尝试登录: ${username}`);
             
             if (!username || !password) {
                 showError('请输入用户名和密码');
@@ -136,17 +161,31 @@
             const account = accounts[username];
             if (!account) {
                 showError('用户名不存在');
-                console.log('可用账号:', Object.keys(accounts));
+                log('❌ 账号不存在');
                 return;
             }
             
             if (account.password !== password) {
                 showError('密码错误');
+                log('❌ 密码错误');
                 return;
             }
             
             showSuccess(`登录成功！欢迎 ${account.name} (${account.role})`);
-            console.log('登录成功:', account);
+            log(`✅ 登录成功: ${account.name}`);
+            
+            // 存储登录状态
+            localStorage.setItem('currentUser', username);
+            localStorage.setItem('loginTime', new Date().toISOString());
+            localStorage.setItem('userRole', account.role);
+            localStorage.setItem('userName', account.name);
+            
+            log('💾 登录状态已保存到localStorage');
+            
+            // 3秒后跳转到主页面
+            setTimeout(() => {
+                window.location.href = '/fluid_dynamic_2.html';
+            }, 3000);
         }
 
         function quickTeacher() {
@@ -162,14 +201,23 @@
         }
 
         function showDebug() {
-            console.log('=== 调试信息 ===');
-            console.log('账号数据:', accounts);
-            console.log('可用账号:', Object.keys(accounts));
-            console.log('页面元素:', {
-                username: document.getElementById('username'),
-                password: document.getElementById('password')
-            });
-            alert('调试信息已输出到控制台，请按F12查看');
+            log('=== 调试信息 ===');
+            log(`账号数据: ${Object.keys(accounts).length} 个账号`);
+            log(`可用账号: ${Object.keys(accounts).join(', ')}`);
+            log(`localStorage状态:`);
+            log(`  currentUser: ${localStorage.getItem('currentUser') || '未设置'}`);
+            log(`  userRole: ${localStorage.getItem('userRole') || '未设置'}`);
+            log(`  userName: ${localStorage.getItem('userName') || '未设置'}`);
+            log(`  loginTime: ${localStorage.getItem('loginTime') || '未设置'}`);
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('loginTime');
+            log('🗑️ 已清除所有登录状态');
+            showSuccess('登录状态已清除');
         }
 
         // 回车键登录
@@ -179,8 +227,23 @@
             }
         });
 
-        console.log('登录测试页面加载完成');
-        console.log('可用账号:', Object.keys(accounts));
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 登录测试页面加载完成');
+            log(`📊 可用账号: ${Object.keys(accounts).length} 个`);
+            
+            // 检查是否已经登录
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                log(`🔍 检测到已登录用户: ${currentUser}`);
+                showSuccess(`检测到已登录用户: ${currentUser}，3秒后跳转...`);
+                setTimeout(() => {
+                    window.location.href = '/fluid_dynamic_2.html';
+                }, 3000);
+            }
+        });
+
+        log('📜 脚本加载完成');
     </script>
 </body>
 </html>
