@@ -3649,44 +3649,58 @@
         let isDataLoading = false;
         let isDataSaving = false;
         
-        // 改进的GitHub API存储类
+        // 简化的GitHub API存储类
         class GitHubStorage {
             constructor(config) {
                 this.config = config;
                 this.baseUrl = `${config.apiBase}/repos/${config.owner}/${config.repo}`;
-                this.cache = new Map(); // 添加缓存机制
             }
             
             // 检查token有效性
             async validateToken() {
+                const token = this.config.token;
+                if (!token || token === 'demo_token_please_configure') {
+                    return false;
+                }
+                
                 try {
                     const response = await fetch(`${this.config.apiBase}/user`, {
+                        method: 'GET',
                         headers: {
-                            'Authorization': `Bearer ${this.config.token}`,
+                            'Authorization': `token ${token}`,
                             'Accept': 'application/vnd.github.v3+json',
                             'User-Agent': 'FluidDynamics-Platform/1.0'
                         }
                     });
-                    return response.ok;
+                    
+                    if (response.ok) {
+                        const userData = await response.json();
+                        console.log('✅ GitHub连接成功:', userData.login);
+                        return true;
+                    } else {
+                        console.error('❌ GitHub认证失败:', response.status, response.statusText);
+                        return false;
+                    }
                 } catch (error) {
-                    console.error('Token验证失败:', error);
+                    console.error('❌ GitHub连接错误:', error);
                     return false;
                 }
             }
             
             // 获取文件内容
             async getFile(path) {
+                const token = this.config.token;
+                if (!token) {
+                    console.log('⚠️ 没有GitHub Token，跳过文件获取');
+                    return null;
+                }
+                
                 try {
-                    // 检查缓存
-                    if (this.cache.has(path)) {
-                        console.log(`从缓存获取: ${path}`);
-                        return this.cache.get(path);
-                    }
-                    
-                    console.log(`从GitHub获取: ${path}`);
-                    const response = await fetch(`${this.baseUrl}/contents/${path}?ref=${this.config.branch}`, {
+                    console.log(`📥 从GitHub获取文件: ${path}`);
+                    const response = await fetch(`${this.baseUrl}/contents/${path}`, {
+                        method: 'GET',
                         headers: {
-                            'Authorization': `Bearer ${this.config.token}`,
+                            'Authorization': `token ${token}`,
                             'Accept': 'application/vnd.github.v3+json',
                             'User-Agent': 'FluidDynamics-Platform/1.0'
                         }
@@ -3694,26 +3708,30 @@
                     
                     if (response.ok) {
                         const data = await response.json();
-                        const content = JSON.parse(decodeURIComponent(escape(atob(data.content))));
-                        
-                        // 缓存结果
-                        this.cache.set(path, content);
+                        const content = JSON.parse(atob(data.content));
                         console.log(`✅ 成功获取文件: ${path}`);
                         return content;
                     } else if (response.status === 404) {
-                        console.log(`📄 文件不存在，返回空数据: ${path}`);
+                        console.log(`📄 文件不存在: ${path}`);
                         return null;
                     } else {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        console.error(`❌ 获取文件失败: ${path} - ${response.status}`);
+                        return null;
                     }
                 } catch (error) {
-                    console.error(`❌ 获取文件失败 ${path}:`, error);
+                    console.error(`❌ 获取文件异常 ${path}:`, error.message);
                     return null;
                 }
             }
             
             // 保存文件内容
             async saveFile(path, content, message = '更新数据') {
+                const token = this.config.token;
+                if (!token) {
+                    console.log('⚠️ 没有GitHub Token，无法保存文件');
+                    return false;
+                }
+                
                 if (isDataSaving) {
                     console.log('⏳ 数据保存中，跳过重复请求');
                     return false;
@@ -3726,14 +3744,15 @@
                     
                     // 编码内容
                     const jsonString = JSON.stringify(content, null, 2);
-                    const encodedContent = btoa(unescape(encodeURIComponent(jsonString)));
+                    const encodedContent = btoa(jsonString);
                     
                     // 获取现有文件的SHA
                     let sha = null;
                     try {
-                        const existingResponse = await fetch(`${this.baseUrl}/contents/${path}?ref=${this.config.branch}`, {
+                        const existingResponse = await fetch(`${this.baseUrl}/contents/${path}`, {
+                            method: 'GET',
                             headers: {
-                                'Authorization': `Bearer ${this.config.token}`,
+                                'Authorization': `token ${token}`,
                                 'Accept': 'application/vnd.github.v3+json',
                                 'User-Agent': 'FluidDynamics-Platform/1.0'
                             }
@@ -3751,8 +3770,7 @@
                     // 构建请求体
                     const requestBody = {
                         message: `${message} - ${new Date().toLocaleString('zh-CN')}`,
-                        content: encodedContent,
-                        branch: this.config.branch
+                        content: encodedContent
                     };
                     
                     if (sha) {
@@ -3763,7 +3781,7 @@
                     const response = await fetch(`${this.baseUrl}/contents/${path}`, {
                         method: 'PUT',
                         headers: {
-                            'Authorization': `Bearer ${this.config.token}`,
+                            'Authorization': `token ${token}`,
                             'Accept': 'application/vnd.github.v3+json',
                             'Content-Type': 'application/json',
                             'User-Agent': 'FluidDynamics-Platform/1.0'
@@ -3772,27 +3790,20 @@
                     });
                     
                     if (response.ok) {
-                        // 更新缓存
-                        this.cache.set(path, content);
                         console.log(`✅ 文件保存成功: ${path}`);
                         return true;
                     } else {
-                        const errorData = await response.text();
-                        throw new Error(`HTTP ${response.status}: ${errorData}`);
+                        const errorText = await response.text();
+                        console.error(`❌ 保存失败: ${path} - ${response.status}`, errorText);
+                        return false;
                     }
                     
                 } catch (error) {
-                    console.error(`❌ 保存文件失败 ${path}:`, error);
+                    console.error(`❌ 保存文件异常 ${path}:`, error.message);
                     return false;
                 } finally {
                     isDataSaving = false;
                 }
-            }
-            
-            // 清除缓存
-            clearCache() {
-                this.cache.clear();
-                console.log('🗑️ 缓存已清除');
             }
         }
         
@@ -3828,63 +3839,66 @@
             try {
                 console.log('🔄 开始从GitHub加载数据...');
                 
+                // 检查是否有有效的GitHub配置
+                if (!hasValidGitHubConfig()) {
+                    console.log('⚠️ 没有有效的GitHub配置，使用本地数据');
+                    updateGitHubStatus(false);
+                    showMessage('请配置GitHub Token以启用云端同步', 'info');
+                    return;
+                }
+                
                 // 验证token
                 const tokenValid = await githubStorage.validateToken();
                 if (!tokenValid) {
-                    console.warn('⚠️ GitHub Token无效，使用本地数据');
-                    showMessage('GitHub连接失败，使用本地数据', 'warning');
+                    console.warn('⚠️ GitHub Token验证失败');
                     updateGitHubStatus(false);
+                    showMessage('GitHub Token无效，请重新配置', 'warning');
                     return;
                 } else {
                     updateGitHubStatus(true);
+                    showMessage('GitHub连接成功，正在加载数据...', 'info');
                 }
                 
-                // 显示加载状态
-                showMessage('正在从云端加载数据...', 'info');
-                
-                // 并行加载所有数据
-                const [userData, videoData, exerciseData] = await Promise.all([
-                    githubStorage.getFile('data/users.json'),
-                    githubStorage.getFile('data/videos.json'),
-                    githubStorage.getFile('data/exercises.json')
-                ]);
-                
-                // 处理用户数据
-                if (userData && Object.keys(userData).length > 0) {
-                    accounts = { ...accounts, ...userData };
-                    console.log('✅ 用户数据加载成功:', Object.keys(userData).length + '个用户');
-                } else {
-                    console.log('📄 用户数据文件为空，使用默认数据');
+                // 尝试加载数据（失败也不影响系统运行）
+                try {
+                    const userData = await githubStorage.getFile('data/users.json');
+                    if (userData && typeof userData === 'object') {
+                        accounts = { ...accounts, ...userData };
+                        console.log('✅ 用户数据加载成功');
+                    }
+                } catch (e) {
+                    console.log('📄 用户数据加载失败，使用默认数据');
                 }
                 
-                // 处理视频数据
-                if (videoData && Array.isArray(videoData) && videoData.length > 0) {
-                    videosData = videoData;
-                    console.log('✅ 视频数据加载成功:', videosData.length + '个视频');
-                    // 延迟重建视频列表，确保DOM已加载
-                    setTimeout(() => rebuildVideoList(), 100);
-                } else {
-                    console.log('📄 视频数据文件为空，使用默认数据');
-                    videosData = [];
+                try {
+                    const videoData = await githubStorage.getFile('data/videos.json');
+                    if (videoData && Array.isArray(videoData)) {
+                        videosData = videoData;
+                        console.log('✅ 视频数据加载成功:', videosData.length + '个视频');
+                        setTimeout(() => rebuildVideoList(), 200);
+                    }
+                } catch (e) {
+                    console.log('📄 视频数据加载失败，使用默认数据');
                 }
                 
-                // 处理题库数据
-                if (exerciseData && Array.isArray(exerciseData) && exerciseData.length > 0) {
-                    exercisesData = exerciseData;
-                    console.log('✅ 题库数据加载成功:', exercisesData.length + '个题目');
-                    // 延迟重建题库列表
-                    setTimeout(() => rebuildExerciseList(), 100);
-                } else {
-                    console.log('📄 题库数据文件为空，使用默认数据');
-                    exercisesData = [];
+                try {
+                    const exerciseData = await githubStorage.getFile('data/exercises.json');
+                    if (exerciseData && Array.isArray(exerciseData)) {
+                        exercisesData = exerciseData;
+                        console.log('✅ 题库数据加载成功:', exercisesData.length + '个题目');
+                        setTimeout(() => rebuildExerciseList(), 200);
+                    }
+                } catch (e) {
+                    console.log('📄 题库数据加载失败，使用默认数据');
                 }
                 
-                showMessage('云端数据加载完成！', 'success');
-                console.log('🎉 所有数据加载完成');
+                showMessage('数据加载完成！', 'success');
+                console.log('🎉 GitHub数据加载流程完成');
                 
             } catch (error) {
-                console.error('❌ 从GitHub加载数据失败:', error);
-                showMessage('数据加载失败，使用本地数据', 'error');
+                console.error('❌ GitHub数据加载异常:', error.message);
+                updateGitHubStatus(false);
+                showMessage('连接GitHub失败，使用离线模式', 'warning');
             } finally {
                 isDataLoading = false;
             }
@@ -5797,7 +5811,7 @@
             
             if (!video) return;
             
-            // 学生端特殊保护
+            // 学生端特殊保护 - 允许全屏但禁用下载
             if (currentUser && currentUser.role === 'student') {
                 // 禁用右键菜单但保留播放控件
                 video.addEventListener('contextmenu', function(e) {
@@ -5806,8 +5820,8 @@
                     return false;
                 });
                 
-                // 禁用视频下载
-                video.controlsList = "nodownload nofullscreen noremoteplayback";
+                // 只禁用下载和画中画，允许全屏
+                video.controlsList = "nodownload noremoteplayback";
                 
                 // 监控录屏尝试
                 video.addEventListener('enterpictureinpicture', function(e) {
@@ -5820,11 +5834,21 @@
                 video.controlsList = "";
             }
             
-            // 倍速控制
-            playbackRateSelect.addEventListener('change', function() {
-                video.playbackRate = parseFloat(this.value);
-                console.log('播放速度设置为:', this.value + 'x');
-            });
+            // 倍速控制 - 增强版
+            if (playbackRateSelect) {
+                playbackRateSelect.addEventListener('change', function() {
+                    const rate = parseFloat(this.value);
+                    video.playbackRate = rate;
+                    console.log('播放速度设置为:', rate + 'x');
+                    
+                    // 显示倍速变化提示
+                    showSpeedChangeNotification(rate);
+                });
+                
+                // 确保初始倍速为1x
+                video.playbackRate = 1.0;
+                playbackRateSelect.value = '1';
+            }
             
             // 清晰度控制（模拟）
             qualitySelect.addEventListener('change', function() {
@@ -5881,6 +5905,167 @@
             
             // 初始显示控制栏
             showControls();
+            
+            // 添加全屏功能增强
+            addFullscreenEnhancements(video);
+            
+            // 添加键盘快捷键支持
+            addKeyboardShortcuts(video, playbackRateSelect);
+        }
+        
+        // 显示倍速变化提示
+        function showSpeedChangeNotification(rate) {
+            // 移除现有提示
+            const existingNotification = document.querySelector('.speed-notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            // 创建新提示
+            const notification = document.createElement('div');
+            notification.className = 'speed-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0,0,0,0.8);
+                color: white;
+                padding: 15px 25px;
+                border-radius: 25px;
+                font-size: 18px;
+                font-weight: bold;
+                z-index: 10000;
+                pointer-events: none;
+                animation: speedNotificationFade 1.5s ease-out forwards;
+            `;
+            notification.textContent = `${rate}x`;
+            
+            // 添加CSS动画
+            if (!document.querySelector('#speedNotificationStyle')) {
+                const style = document.createElement('style');
+                style.id = 'speedNotificationStyle';
+                style.textContent = `
+                    @keyframes speedNotificationFade {
+                        0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                        20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+                        80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                        100% { opacity: 0; transform: translate(-50%, -50%) scale(0.9); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(notification);
+            
+            // 自动移除
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 1500);
+        }
+        
+        // 添加全屏功能增强
+        function addFullscreenEnhancements(video) {
+            // 双击全屏
+            video.addEventListener('dblclick', function() {
+                if (!document.fullscreenElement) {
+                    video.requestFullscreen().catch(err => {
+                        console.log('全屏失败:', err);
+                        showMessage('全屏功能不可用', 'warning');
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            });
+            
+            // 全屏状态变化监听
+            document.addEventListener('fullscreenchange', function() {
+                const customControls = document.getElementById('customControls');
+                if (customControls) {
+                    if (document.fullscreenElement) {
+                        // 全屏模式下调整控制栏样式
+                        customControls.style.bottom = '20px';
+                        customControls.style.right = '20px';
+                        customControls.style.background = 'rgba(0,0,0,0.9)';
+                    } else {
+                        // 退出全屏恢复样式
+                        customControls.style.bottom = '10px';
+                        customControls.style.right = '10px';
+                        customControls.style.background = 'rgba(0,0,0,0.8)';
+                    }
+                }
+            });
+        }
+        
+        // 添加键盘快捷键支持
+        function addKeyboardShortcuts(video, playbackRateSelect) {
+            video.addEventListener('keydown', function(e) {
+                // 防止在学生端使用某些快捷键
+                if (currentUser && currentUser.role === 'student') {
+                    // 学生端只允许基本的播放控制
+                    switch(e.key) {
+                        case ' ': // 空格键暂停/播放
+                            e.preventDefault();
+                            if (video.paused) {
+                                video.play();
+                            } else {
+                                video.pause();
+                            }
+                            break;
+                        case 'f':
+                        case 'F': // F键全屏
+                            e.preventDefault();
+                            if (!document.fullscreenElement) {
+                                video.requestFullscreen();
+                            } else {
+                                document.exitFullscreen();
+                            }
+                            break;
+                    }
+                } else {
+                    // 教师端完整快捷键支持
+                    switch(e.key) {
+                        case ' ': // 空格键暂停/播放
+                            e.preventDefault();
+                            if (video.paused) {
+                                video.play();
+                            } else {
+                                video.pause();
+                            }
+                            break;
+                        case 'f':
+                        case 'F': // F键全屏
+                            e.preventDefault();
+                            if (!document.fullscreenElement) {
+                                video.requestFullscreen();
+                            } else {
+                                document.exitFullscreen();
+                            }
+                            break;
+                        case 'ArrowLeft': // 左箭头后退10秒
+                            e.preventDefault();
+                            video.currentTime = Math.max(0, video.currentTime - 10);
+                            break;
+                        case 'ArrowRight': // 右箭头前进10秒
+                            e.preventDefault();
+                            video.currentTime = Math.min(video.duration, video.currentTime + 10);
+                            break;
+                        case 'ArrowUp': // 上箭头提高音量
+                            e.preventDefault();
+                            video.volume = Math.min(1, video.volume + 0.1);
+                            break;
+                        case 'ArrowDown': // 下箭头降低音量
+                            e.preventDefault();
+                            video.volume = Math.max(0, video.volume - 0.1);
+                            break;
+                    }
+                }
+            });
+            
+            // 确保视频元素可以接收键盘事件
+            video.setAttribute('tabindex', '0');
         }
         
         // 记录学习进度
