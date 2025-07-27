@@ -4529,10 +4529,53 @@
         document.addEventListener('DOMContentLoaded', initializeLogin);
         window.addEventListener('load', initializeLogin);
         
-                 // 备用初始化
-         setTimeout(initializeLogin, 500);
-         setTimeout(initializeLogin, 1500);
-         setTimeout(initializeLogin, 3000);
+                         // 备用初始化
+        setTimeout(initializeLogin, 500);
+        setTimeout(initializeLogin, 1500);
+        setTimeout(initializeLogin, 3000);
+        
+        // 注册Service Worker来解决GitHub Pages HTTP头部限制
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                        console.log('✅ Service Worker registered successfully:', registration.scope);
+                        
+                        // 检查是否有更新
+                        registration.addEventListener('updatefound', () => {
+                            const newWorker = registration.installing;
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    console.log('🔄 New Service Worker available, updating...');
+                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                }
+                            });
+                        });
+                        
+                        // 监听Service Worker更新
+                        navigator.serviceWorker.addEventListener('controllerchange', () => {
+                            console.log('🔄 Service Worker updated, reloading page...');
+                            window.location.reload();
+                        });
+                    })
+                    .catch(function(error) {
+                        console.log('❌ Service Worker registration failed:', error);
+                    });
+            });
+        } else {
+            console.log('❌ Service Worker not supported');
+        }
+        
+        // 添加快速登录测试功能（仅开发环境）
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+            console.log('🧪 开发环境检测到，添加快速登录测试');
+            window.quickLogin = function(username, password) {
+                document.getElementById('username').value = username || 'liuguanghui6330156';
+                document.getElementById('password').value = password || 'Ll700306';
+                handleLogin();
+            };
+            console.log('💡 使用 quickLogin() 进行快速登录测试');
+        }
         
         // 登录函数
         function login(username) {
