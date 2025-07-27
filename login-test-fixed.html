@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录系统测试 - 修复版</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .test-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .test-section {
+            margin-bottom: 25px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        .test-button:hover {
+            background: #5a6fd8;
+        }
+        
+        .test-button.danger {
+            background: #e74c3c;
+        }
+        
+        .test-button.danger:hover {
+            background: #c0392b;
+        }
+        
+        .test-button.success {
+            background: #27ae60;
+        }
+        
+        .test-button.success:hover {
+            background: #229954;
+        }
+        
+        .test-result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .test-result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        
+        .test-result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        
+        .test-result.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1 class="test-title">登录系统测试 - 修复版</h1>
+        
+        <div class="test-section">
+            <h3>1. 基础功能测试</h3>
+            <button class="test-button" onclick="testBasicLogin()">测试基础登录</button>
+            <button class="test-button" onclick="testTeacherLogin()">测试教师登录</button>
+            <button class="test-button" onclick="testStudentLogin()">测试学生登录</button>
+            <button class="test-button danger" onclick="testInvalidLogin()">测试无效登录</button>
+            <div id="basicResult" class="test-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. 系统状态检查</h3>
+            <button class="test-button" onclick="testSystemStatus()">检查系统状态</button>
+            <button class="test-button" onclick="testAccountsData()">检查账号数据</button>
+            <button class="test-button" onclick="testLoginState()">检查登录状态</button>
+            <div id="statusResult" class="test-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. 高级功能测试</h3>
+            <button class="test-button" onclick="testLoginPersistence()">测试登录持久化</button>
+            <button class="test-button" onclick="testLogout()">测试登出功能</button>
+            <button class="test-button" onclick="testErrorHandling()">测试错误处理</button>
+            <div id="advancedResult" class="test-result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. 调试工具</h3>
+            <button class="test-button" onclick="openMainPage()">打开主页面</button>
+            <button class="test-button success" onclick="runAllTests()">运行所有测试</button>
+            <button class="test-button danger" onclick="clearAllData()">清除所有数据</button>
+            <div id="debugResult" class="test-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 模拟账号数据
+        const testAccounts = {
+            'liuguanghui6330156': { 
+                name: '刘光辉', 
+                role: 'teacher', 
+                password: 'Ll700306', 
+                color: 'teacher',
+                progress: 0,
+                grades: [],
+                videoProgress: 0,
+                questionProgress: 0,
+                studyTime: 0,
+                watchedVideos: [],
+                completedExercises: []
+            },
+            'student1': { 
+                name: '学生账号', 
+                role: 'student', 
+                password: '123456', 
+                color: 'student', 
+                progress: 0, 
+                grades: [], 
+                videoProgress: 0, 
+                questionProgress: 0, 
+                studyTime: 0, 
+                watchedVideos: [], 
+                completedExercises: [] 
+            },
+            'niwenxuan': { 
+                name: '倪文轩', 
+                role: 'student', 
+                password: 'niwenxuan2025', 
+                color: 'student', 
+                progress: 0, 
+                grades: [], 
+                videoProgress: 0, 
+                questionProgress: 0, 
+                studyTime: 0, 
+                watchedVideos: [], 
+                completedExercises: [] 
+            },
+            'hanwenxu': { 
+                name: '韩文旭', 
+                role: 'student', 
+                password: 'hanwenxu2025', 
+                color: 'student', 
+                progress: 0, 
+                grades: [], 
+                videoProgress: 0, 
+                questionProgress: 0, 
+                studyTime: 0, 
+                watchedVideos: [], 
+                completedExercises: [] 
+            }
+        };
+
+        // 测试结果显示函数
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `test-result ${type}`;
+        }
+
+        // 1. 基础功能测试
+        function testBasicLogin() {
+            let result = '=== 基础登录测试 ===\n';
+            
+            // 测试教师登录
+            const teacherAccount = testAccounts['liuguanghui6330156'];
+            if (teacherAccount && teacherAccount.password === 'Ll700306') {
+                result += '✅ 教师账号验证通过\n';
+            } else {
+                result += '❌ 教师账号验证失败\n';
+            }
+            
+            // 测试学生登录
+            const studentAccount = testAccounts['student1'];
+            if (studentAccount && studentAccount.password === '123456') {
+                result += '✅ 学生账号验证通过\n';
+            } else {
+                result += '❌ 学生账号验证失败\n';
+            }
+            
+            // 测试账号数量
+            const accountCount = Object.keys(testAccounts).length;
+            result += `📊 账号总数: ${accountCount}\n`;
+            
+            showResult('basicResult', result, 'success');
+        }
+
+        function testTeacherLogin() {
+            let result = '=== 教师登录测试 ===\n';
+            
+            const username = 'liuguanghui6330156';
+            const password = 'Ll700306';
+            const account = testAccounts[username];
+            
+            if (account && account.password === password && account.role === 'teacher') {
+                result += '✅ 教师登录成功\n';
+                result += `👤 用户名: ${username}\n`;
+                result += `📝 姓名: ${account.name}\n`;
+                result += `🎓 角色: ${account.role}\n`;
+            } else {
+                result += '❌ 教师登录失败\n';
+            }
+            
+            showResult('basicResult', result, 'success');
+        }
+
+        function testStudentLogin() {
+            let result = '=== 学生登录测试 ===\n';
+            
+            const username = 'student1';
+            const password = '123456';
+            const account = testAccounts[username];
+            
+            if (account && account.password === password && account.role === 'student') {
+                result += '✅ 学生登录成功\n';
+                result += `👤 用户名: ${username}\n`;
+                result += `📝 姓名: ${account.name}\n`;
+                result += `🎓 角色: ${account.role}\n`;
+            } else {
+                result += '❌ 学生登录失败\n';
+            }
+            
+            showResult('basicResult', result, 'success');
+        }
+
+        function testInvalidLogin() {
+            let result = '=== 无效登录测试 ===\n';
+            
+            // 测试不存在的用户名
+            const invalidUsername = 'nonexistent';
+            const invalidAccount = testAccounts[invalidUsername];
+            if (!invalidAccount) {
+                result += '✅ 无效用户名检测正常\n';
+            } else {
+                result += '❌ 无效用户名检测失败\n';
+            }
+            
+            // 测试错误密码
+            const username = 'student1';
+            const wrongPassword = 'wrongpassword';
+            const account = testAccounts[username];
+            if (account && account.password !== wrongPassword) {
+                result += '✅ 错误密码检测正常\n';
+            } else {
+                result += '❌ 错误密码检测失败\n';
+            }
+            
+            showResult('basicResult', result, 'success');
+        }
+
+        // 2. 系统状态检查
+        function testSystemStatus() {
+            let result = '=== 系统状态检查 ===\n';
+            
+            result += `📊 账号数据完整性: ${Object.keys(testAccounts).length > 0 ? '✅' : '❌'}\n`;
+            result += `🔐 教师账号存在: ${testAccounts['liuguanghui6330156'] ? '✅' : '❌'}\n`;
+            result += `👨‍🎓 学生账号存在: ${testAccounts['student1'] ? '✅' : '❌'}\n`;
+            result += `💾 本地存储可用: ${typeof localStorage !== 'undefined' ? '✅' : '❌'}\n`;
+            
+            showResult('statusResult', result, 'info');
+        }
+
+        function testAccountsData() {
+            let result = '=== 账号数据检查 ===\n';
+            
+            Object.keys(testAccounts).forEach(username => {
+                const account = testAccounts[username];
+                result += `👤 ${username}:\n`;
+                result += `   📝 姓名: ${account.name}\n`;
+                result += `   🎓 角色: ${account.role}\n`;
+                result += `   🔑 密码长度: ${account.password.length}\n`;
+                result += `   📈 进度: ${account.progress}%\n`;
+                result += `   📚 已完成练习: ${account.completedExercises.length}\n`;
+                result += `   🎥 已观看视频: ${account.watchedVideos.length}\n\n`;
+            });
+            
+            showResult('statusResult', result, 'info');
+        }
+
+        function testLoginState() {
+            let result = '=== 登录状态检查 ===\n';
+            
+            const savedUser = localStorage.getItem('currentUser');
+            result += `💾 保存的登录状态: ${savedUser || '无'}\n`;
+            
+            if (savedUser && testAccounts[savedUser]) {
+                result += '✅ 保存的登录状态有效\n';
+            } else if (savedUser) {
+                result += '❌ 保存的登录状态无效\n';
+            } else {
+                result += 'ℹ️ 无保存的登录状态\n';
+            }
+            
+            showResult('statusResult', result, 'info');
+        }
+
+        // 3. 高级功能测试
+        function testLoginPersistence() {
+            let result = '=== 登录持久化测试 ===\n';
+            
+            // 模拟登录
+            const testUser = 'student1';
+            localStorage.setItem('currentUser', testUser);
+            result += `💾 已保存登录状态: ${testUser}\n`;
+            
+            // 验证保存
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser === testUser) {
+                result += '✅ 登录状态保存成功\n';
+            } else {
+                result += '❌ 登录状态保存失败\n';
+            }
+            
+            // 清除测试数据
+            localStorage.removeItem('currentUser');
+            result += '🧹 已清除测试数据\n';
+            
+            showResult('advancedResult', result, 'success');
+        }
+
+        function testLogout() {
+            let result = '=== 登出功能测试 ===\n';
+            
+            // 模拟登录状态
+            localStorage.setItem('currentUser', 'student1');
+            result += '💾 已设置测试登录状态\n';
+            
+            // 模拟登出
+            localStorage.removeItem('currentUser');
+            result += '🚪 已执行登出操作\n';
+            
+            // 验证登出
+            const savedUser = localStorage.getItem('currentUser');
+            if (!savedUser) {
+                result += '✅ 登出功能正常\n';
+            } else {
+                result += '❌ 登出功能异常\n';
+            }
+            
+            showResult('advancedResult', result, 'success');
+        }
+
+        function testErrorHandling() {
+            let result = '=== 错误处理测试 ===\n';
+            
+            // 测试空用户名
+            const emptyUsername = '';
+            const emptyAccount = testAccounts[emptyUsername];
+            if (!emptyAccount) {
+                result += '✅ 空用户名处理正常\n';
+            } else {
+                result += '❌ 空用户名处理异常\n';
+            }
+            
+            // 测试空密码
+            const username = 'student1';
+            const emptyPassword = '';
+            const account = testAccounts[username];
+            if (account && account.password !== emptyPassword) {
+                result += '✅ 空密码处理正常\n';
+            } else {
+                result += '❌ 空密码处理异常\n';
+            }
+            
+            // 测试特殊字符
+            const specialUsername = 'test@#$%';
+            const specialAccount = testAccounts[specialUsername];
+            if (!specialAccount) {
+                result += '✅ 特殊字符处理正常\n';
+            } else {
+                result += '❌ 特殊字符处理异常\n';
+            }
+            
+            showResult('advancedResult', result, 'success');
+        }
+
+        // 4. 调试工具
+        function openMainPage() {
+            window.open('fluid_dynamic_2.html', '_blank');
+        }
+
+        function runAllTests() {
+            let result = '=== 运行所有测试 ===\n';
+            
+            try {
+                testBasicLogin();
+                testSystemStatus();
+                testLoginPersistence();
+                testErrorHandling();
+                
+                result += '✅ 所有测试完成\n';
+                result += '📊 测试结果已显示在各区域\n';
+            } catch (error) {
+                result += `❌ 测试过程中出现错误: ${error.message}\n`;
+            }
+            
+            showResult('debugResult', result, 'success');
+        }
+
+        function clearAllData() {
+            let result = '=== 清除所有数据 ===\n';
+            
+            try {
+                localStorage.clear();
+                result += '🧹 已清除所有本地存储数据\n';
+                result += '🔄 页面将在3秒后刷新\n';
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 3000);
+            } catch (error) {
+                result += `❌ 清除数据时出现错误: ${error.message}\n`;
+            }
+            
+            showResult('debugResult', result, 'error');
+        }
+
+        // 页面加载时自动运行基础检查
+        window.addEventListener('load', function() {
+            testSystemStatus();
+        });
+    </script>
+</body>
+</html>

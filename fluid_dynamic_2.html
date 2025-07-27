@@ -647,7 +647,6 @@
             margin-bottom: 10px;
             font-size: 24px;
         }
-
         .basic-login-box input {
             width: 100%;
             padding: 15px;
@@ -1296,12 +1295,6 @@
             border-color: var(--upload-progress-fill);
             background: rgba(0, 123, 255, 0.05);
         }
-
-        .advanced-upload-area.success {
-            border-color: var(--upload-success);
-            background: rgba(40, 167, 69, 0.05);
-        }
-
         .advanced-upload-area.error {
             border-color: var(--upload-error);
             background: rgba(220, 53, 69, 0.05);
@@ -1941,7 +1934,6 @@
             overflow-y: auto;
             margin-top: 20px;
         }
-        
         .grade-item {
             display: flex;
             justify-content: space-between;
@@ -2591,7 +2583,6 @@
             margin-bottom: 10px;
             color: var(--primary);
         }
-        
         .upload-preview-item {
             display: flex;
             justify-content: space-between;
@@ -3242,7 +3233,6 @@
             border-radius: 12px;
             margin-bottom: 15px;
         }
-        
         .feedback.correct {
             background: #d4edda;
             border: 1px solid #c3e6cb;
@@ -3594,7 +3584,6 @@
                 </div>
             </div>
         </header>
-
         <div class="main-content container">
             <!-- 复习规划板块 -->
             <section id="review-section" class="content-section active">
@@ -4132,7 +4121,6 @@
                     </div>
                 </div>
             </section>
-            
             <!-- 题库练习板块 -->
             <section id="question-section" class="content-section">
                 <div class="section-title">
@@ -4659,7 +4647,6 @@
                               placeholder='请输入文本格式的题库，每题一行，格式如下：
 问题1|选项A|选项B|选项C|选项D|正确答案|解释
 问题2|选项A|选项B|选项C|选项D|正确答案|解释
-
 例如：
 流体力学中，连续性方程的基本假设是什么？|流体不可压缩|流体无粘性|质量守恒|动量守恒|C|连续性方程基于质量守恒定律...'
                               style="width: 100%; height: 200px; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;"
@@ -5130,7 +5117,6 @@
         // 数据存储状态
         let isDataLoading = false;
         let isDataSaving = false;
-        
         // 简化的GitHub API存储类
         class GitHubStorage {
             constructor(config) {
@@ -5413,13 +5399,64 @@
             githubStorage = new SimpleGitHubAccess(GITHUB_CONFIG);
         }
         
-        // 用户账号信息 - 将迁移到GitHub存储
+        // 用户账号信息 - 统一管理
         let accounts = {
-            'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306', color: 'teacher' },
-            'student1': { name: '学生账号', role: 'student', password: '123456', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
-            'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
-            'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] }
+            'liuguanghui6330156': { 
+                name: '刘光辉', 
+                role: 'teacher', 
+                password: 'Ll700306', 
+                color: 'teacher',
+                progress: 0,
+                grades: [],
+                videoProgress: 0,
+                questionProgress: 0,
+                studyTime: 0,
+                watchedVideos: [],
+                completedExercises: []
+            },
+            'student1': { 
+                name: '学生账号', 
+                role: 'student', 
+                password: '123456', 
+                color: 'student', 
+                progress: 0, 
+                grades: [], 
+                videoProgress: 0, 
+                questionProgress: 0, 
+                studyTime: 0, 
+                watchedVideos: [], 
+                completedExercises: [] 
+            },
+            'niwenxuan': { 
+                name: '倪文轩', 
+                role: 'student', 
+                password: 'niwenxuan2025', 
+                color: 'student', 
+                progress: 0, 
+                grades: [], 
+                videoProgress: 0, 
+                questionProgress: 0, 
+                studyTime: 0, 
+                watchedVideos: [], 
+                completedExercises: [] 
+            },
+            'hanwenxu': { 
+                name: '韩文旭', 
+                role: 'student', 
+                password: 'hanwenxu2025', 
+                color: 'student', 
+                progress: 0, 
+                grades: [], 
+                videoProgress: 0, 
+                questionProgress: 0, 
+                studyTime: 0, 
+                watchedVideos: [], 
+                completedExercises: [] 
+            }
         };
+
+        // 确保全局访问
+        window.accounts = accounts;
         
         // 视频和题库数据
         let videosData = [];
@@ -5760,7 +5797,6 @@
                 return false;
             }
         }
-        
         // 保存题库数据到GitHub
         async function saveExercisesToGitHub() {
             try {
@@ -6044,7 +6080,7 @@
             reexamRatio: [null, 1.33, 1.3, 1.2, 1, 1]       // 复试比例
         };
         
-        // 强制同步登录处理函数
+        // 统一的登录处理函数
         function handleLogin() {
             try {
                 console.log('🔐 开始登录流程');
@@ -6055,7 +6091,7 @@
                 
                 if (!usernameElement || !passwordElement) {
                     console.error('❌ 登录表单元素未找到');
-                    alert('登录表单加载错误，请刷新页面重试');
+                    showMessage('登录表单加载错误，请刷新页面重试', 'error');
                     return false;
                 }
                 
@@ -6081,14 +6117,8 @@
                 // 确保accounts对象存在
                 if (!accounts || typeof accounts !== 'object') {
                     console.error('❌ accounts对象不存在或损坏');
-                    // 重新初始化默认账号
-                    accounts = {
-                        'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306', color: 'teacher' },
-                        'student1': { name: '学生账号', role: 'student', password: '123456', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
-                        'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
-                        'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] }
-                    };
-                    console.log('🔄 已重新初始化账号数据');
+                    showLoginError('账号系统错误，请刷新页面重试');
+                    return false;
                 }
                 
                 // 查找账号
@@ -6125,7 +6155,7 @@
                     login(username);
                 } else {
                     console.error('❌ login函数未定义');
-                    alert('登录系统错误，请刷新页面重试');
+                    showMessage('登录系统错误，请刷新页面重试', 'error');
                 }
                 
                 return true;
@@ -6185,7 +6215,7 @@
             console.log(`✅ 修复了 ${fixedCount} 个表单元素的辅助功能`);
         }
 
-        // 强制初始化登录系统
+        // 强制初始化登录系统（兼容旧版本）
         function initializeLogin() {
             console.log('🚀 强制初始化登录系统');
             
@@ -6408,7 +6438,6 @@
         } else {
             console.log('❌ Service Worker not supported');
         }
-        
         // 强制验证HTTP头部和缓存策略
         function validateHeaders() {
             console.log('🔍 验证HTTP头部配置...');
@@ -6474,16 +6503,6 @@
         // 添加快速登录测试功能（仅开发环境）
         // ==================== 最基础登录系统脚本 ====================
         
-        // 确保账号数据存在
-        if (typeof window.accounts === 'undefined') {
-            window.accounts = {
-                'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306' },
-                'student1': { name: '学生账号', role: 'student', password: '123456' },
-                'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025' },
-                'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025' }
-            };
-        }
-
         function basicShowError(msg) {
             const errorDiv = document.getElementById('basicErrorMsg');
             if (errorDiv) {
@@ -6514,10 +6533,11 @@
                 return;
             }
             
-            const account = window.accounts[username];
+            // 使用统一的accounts对象
+            const account = accounts[username];
             if (!account) {
                 basicShowError('用户名不存在');
-                console.log('💡 可用账号:', Object.keys(window.accounts));
+                console.log('💡 可用账号:', Object.keys(accounts));
                 return;
             }
             
@@ -6530,6 +6550,7 @@
             console.log('✅ 登录成功:', account);
             
             // 设置当前用户
+            currentUser = username;
             window.currentUser = username;
             
             // 延迟跳转
@@ -6539,7 +6560,7 @@
                 } else {
                     // 手动隐藏登录界面
                     document.getElementById('loginContainer').style.display = 'none';
-                    alert(`登录完成！欢迎使用流体力学学习平台`);
+                    showMessage('登录完成！欢迎使用流体力学学习平台', 'success');
                 }
             }, 1500);
         }
@@ -6558,9 +6579,9 @@
 
         function basicShowDebug() {
             console.log('=== 基础登录系统调试信息 ===');
-            console.log('账号数据:', window.accounts);
-            console.log('可用账号:', Object.keys(window.accounts));
-            console.log('当前用户:', window.currentUser);
+            console.log('账号数据:', accounts);
+            console.log('可用账号:', Object.keys(accounts));
+            console.log('当前用户:', currentUser);
             console.log('页面元素:', {
                 username: document.getElementById('basicUsername'),
                 password: document.getElementById('basicPassword'),
@@ -6568,9 +6589,15 @@
             });
             console.log('函数检查:', {
                 basicLogin: typeof basicLogin,
-                login: typeof login
+                login: typeof login,
+                handleLogin: typeof handleLogin
             });
-            alert('调试信息已输出到控制台，请按F12查看');
+            console.log('全局变量检查:', {
+                accounts: typeof accounts,
+                currentUser: typeof currentUser,
+                windowAccounts: typeof window.accounts
+            });
+            showMessage('调试信息已输出到控制台，请按F12查看', 'info');
         }
 
         // 兼容旧函数名
@@ -6595,14 +6622,186 @@
                 basicLogin();
             }
         });
+        
+        // 登录测试函数（开发调试用）
+        function testLogin(username, password) {
+            console.log('🧪 测试登录:', username);
+            
+            // 设置测试账号
+            document.getElementById('basicUsername').value = username;
+            document.getElementById('basicPassword').value = password;
+            
+            // 执行登录
+            setTimeout(() => {
+                basicLogin();
+            }, 100);
+        }
+        
+        // 全局测试函数
+        window.testLogin = testLogin;
 
+        // 登录系统初始化
+        function initializeLoginSystem() {
+            console.log('🎯 登录系统初始化开始');
+            
+            // 确保accounts对象正确设置
+            if (!accounts || typeof accounts !== 'object') {
+                console.error('❌ accounts对象未正确初始化');
+                return false;
+            }
+            
+            // 确保全局访问
+            window.accounts = accounts;
+            
+            // 检查登录界面元素
+            const loginElements = {
+                basicUsername: document.getElementById('basicUsername'),
+                basicPassword: document.getElementById('basicPassword'),
+                basicLoginBtn: document.getElementById('basicLoginBtn'),
+                loginContainer: document.getElementById('loginContainer')
+            };
+            
+            console.log('🔍 登录界面元素检查:', loginElements);
+            
+            // 验证必要元素存在
+            const missingElements = Object.entries(loginElements)
+                .filter(([key, element]) => !element)
+                .map(([key]) => key);
+            
+            if (missingElements.length > 0) {
+                console.error('❌ 缺少登录界面元素:', missingElements);
+                return false;
+            }
+            
+            console.log('✅ 登录系统初始化完成');
+            console.log('💡 可用账号:', Object.keys(accounts));
+            return true;
+        }
+        
+        // 页面加载完成后初始化登录系统
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeLoginSystem();
+                // 尝试恢复登录状态
+                setTimeout(restoreLoginState, 1000);
+            });
+        } else {
+            initializeLoginSystem();
+            // 尝试恢复登录状态
+            setTimeout(restoreLoginState, 1000);
+        }
+        
+        // 登录状态恢复
+        function restoreLoginState() {
+            console.log('🔄 尝试恢复登录状态...');
+            
+            // 检查是否有保存的登录状态
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser && accounts[savedUser]) {
+                console.log('✅ 发现保存的登录状态:', savedUser);
+                currentUser = savedUser;
+                window.currentUser = savedUser;
+                
+                // 自动登录
+                setTimeout(() => {
+                    if (typeof login === 'function') {
+                        login(savedUser);
+                    }
+                }, 500);
+                return true;
+            }
+            
+            console.log('❌ 未发现有效的登录状态');
+            return false;
+        }
+        
+        // 保存登录状态
+        function saveLoginState(username) {
+            if (username && accounts[username]) {
+                localStorage.setItem('currentUser', username);
+                console.log('💾 登录状态已保存:', username);
+            }
+        }
+        
+        // 登出函数
+        function logout() {
+            console.log('🚪 用户登出:', currentUser);
+            
+            // 清除登录状态
+            currentUser = null;
+            window.currentUser = null;
+            localStorage.removeItem('currentUser');
+            
+            // 隐藏平台界面，显示登录界面
+            const platformContainer = document.getElementById('platformContainer');
+            const loginContainer = document.getElementById('loginContainer');
+            
+            if (platformContainer) platformContainer.style.display = 'none';
+            if (loginContainer) loginContainer.style.display = 'flex';
+            
+            // 清除用户信息显示
+            const usernameText = document.getElementById('usernameText');
+            const userIcon = document.getElementById('userIcon');
+            const roleBadge = document.getElementById('roleBadge');
+            
+            if (usernameText) usernameText.textContent = '';
+            if (userIcon) userIcon.textContent = '';
+            if (roleBadge) {
+                roleBadge.textContent = '';
+                roleBadge.className = 'role-badge';
+            }
+            
+            showMessage('已成功登出', 'info');
+            console.log('✅ 登出完成');
+        }
+        
+        // 全局登出函数
+        window.logout = logout;
+        
+        // 登录系统状态检查
+        function checkLoginSystemStatus() {
+            console.log('🔍 登录系统状态检查:');
+            console.log('- 当前用户:', currentUser);
+            console.log('- 账号数据:', Object.keys(accounts));
+            console.log('- 登录界面:', document.getElementById('loginContainer')?.style.display);
+            console.log('- 平台界面:', document.getElementById('platformContainer')?.style.display);
+            console.log('- 保存的登录状态:', localStorage.getItem('currentUser'));
+            
+            return {
+                currentUser: currentUser,
+                accountCount: Object.keys(accounts).length,
+                loginVisible: document.getElementById('loginContainer')?.style.display !== 'none',
+                platformVisible: document.getElementById('platformContainer')?.style.display === 'block',
+                savedUser: localStorage.getItem('currentUser')
+            };
+        }
+        
+        // 全局状态检查函数
+        window.checkLoginStatus = checkLoginSystemStatus;
+        
         console.log('🎯 最基础登录系统加载完成');
-        console.log('💡 可用账号:', Object.keys(window.accounts));
+        console.log('💡 可用账号:', Object.keys(accounts));
         
         // 登录函数
         function login(username) {
-            currentUser = username;
-            const accountInfo = accounts[username];
+            try {
+                console.log('🔐 执行登录函数:', username);
+                
+                // 验证账号信息
+                if (!accounts[username]) {
+                    console.error('❌ 账号信息不存在:', username);
+                    showMessage('登录失败：账号信息错误', 'error');
+                    return false;
+                }
+                
+                currentUser = username;
+                window.currentUser = username;
+                const accountInfo = accounts[username];
+                
+                // 保存登录状态
+                saveLoginState(username);
+                
+                console.log('✅ 用户信息设置完成:', accountInfo);
             
             // 设置用户信息
             document.getElementById('usernameText').textContent = accountInfo.name;
@@ -6651,6 +6850,39 @@
             
             // 初始化成绩图表
             initGradeChart();
+            
+            // 验证登录状态
+            validateLoginState();
+            
+            console.log('✅ 登录流程完成');
+            return true;
+            
+        } catch (error) {
+            console.error('❌ 登录函数执行出错:', error);
+            showMessage('登录过程出现错误: ' + error.message, 'error');
+            return false;
+        }
+        }
+        
+        // 验证登录状态
+        function validateLoginState() {
+            console.log('🔍 验证登录状态...');
+            
+            if (!currentUser) {
+                console.error('❌ 当前用户未设置');
+                return false;
+            }
+            
+            if (!accounts[currentUser]) {
+                console.error('❌ 当前用户账号信息不存在');
+                return false;
+            }
+            
+            console.log('✅ 登录状态验证通过:', {
+                currentUser: currentUser,
+                userInfo: accounts[currentUser]
+            });
+            return true;
         }
         
         // 显示教师功能
@@ -7044,7 +7276,6 @@
                 explanation: "贸易风是由地球自转的科氏效应和太阳辐射加热不均匀造成的大尺度风系"
             }
         ];
-
         // 开始流体力学概念练习
         function startFluidMechanicsConcepts() {
             if (!currentUser) {
@@ -7628,7 +7859,6 @@
                 }
             }
         });
-        
         // 创建分数线图表
         function createScoreChart(year = 'all') {
             const canvas = document.getElementById('scoreChart');
@@ -8271,7 +8501,6 @@
                 }
             }, 500);
         }
-
         // 应用学生视频保护
         function applyStudentVideoProtection(player) {
             if (!player) return;
@@ -8671,7 +8900,6 @@
         }
 
         // ==================== 智能题库处理系统 ====================
-        
         // 高级题库管理器
         class AdvancedExerciseManager {
             constructor() {
@@ -9267,7 +9495,6 @@
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
         }
-        
         // 提交上传
         async function submitUpload() {
             const title = document.getElementById('uploadTitle').value;
@@ -9918,7 +10145,6 @@
             
             console.log('重新创建视频卡片:', videoData.title);
         }
-        
         // 通过ID播放自定义视频
         function playCustomVideoById(videoId) {
             const videoData = uploadedVideos.find(v => v.id === videoId);
@@ -10525,7 +10751,6 @@
                 qualityControl.classList.remove('active');
             });
         }
-        
         // 设置视频播放器事件
         function setupVideoPlayerEvents(player, title) {
             player.ready(() => {
@@ -11148,7 +11373,6 @@
                 }
             }, 1500);
         }
-        
         // 添加全屏功能增强
         function addFullscreenEnhancements(video) {
             // 双击全屏
@@ -11483,13 +11707,26 @@
             closeExerciseModal();
         }
         
-        // 显示登录错误
+        // 统一的登录错误处理
         function showLoginError(message) {
             const loginError = document.getElementById('loginError');
+            const basicError = document.getElementById('basicErrorMsg');
+            
+            // 显示在基础登录界面
+            if (basicError) {
+                basicError.textContent = message;
+                basicError.style.display = 'block';
+                const successDiv = document.getElementById('basicSuccessMsg');
+                if (successDiv) successDiv.style.display = 'none';
+            }
+            
+            // 显示在高级登录界面
             if (loginError) {
                 loginError.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
                 loginError.style.display = 'block';
             }
+            
+            // 显示全局消息
             showMessage(message, 'error');
         }
         
