@@ -510,6 +510,14 @@
             background: rgba(255, 255, 255, 0.25);
         }
         
+        /* GitHub设置按钮安全隐藏 */
+        .settings-btn.student-hidden {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+        
         .user-icon {
             width: 36px;
             height: 36px;
@@ -2816,7 +2824,8 @@
                             <i class="fas fa-cloud-slash"></i>
                             <span>在线模式</span>
                         </div>
-                        <button onclick="window.open('github-setup.html', '_blank')" 
+                        <button id="githubSettingsBtn"
+                                onclick="window.open('github-setup.html', '_blank')" 
                                 class="settings-btn"
                                 title="配置GitHub后台"
                                 aria-label="配置GitHub后台设置">
@@ -4219,12 +4228,22 @@
             const statusElement = document.getElementById('githubStatus');
             if (!statusElement) return;
             
-            if (isOnline) {
-                statusElement.className = 'status-indicator online';
-                statusElement.innerHTML = '<i class="fas fa-cloud"></i><span>云端同步</span>';
+            // 检查当前用户角色
+            const isTeacher = currentUser && accounts[currentUser] && accounts[currentUser].role === 'teacher';
+            
+            if (isTeacher) {
+                // 教师显示真实的连接状态
+                if (isOnline) {
+                    statusElement.className = 'status-indicator online';
+                    statusElement.innerHTML = '<i class="fas fa-cloud"></i><span>云端同步</span>';
+                } else {
+                    statusElement.className = 'status-indicator offline';
+                    statusElement.innerHTML = '<i class="fas fa-cloud-slash"></i><span>离线模式</span>';
+                }
             } else {
-                statusElement.className = 'status-indicator offline';
-                statusElement.innerHTML = '<i class="fas fa-cloud-check"></i><span>在线模式</span>';
+                // 学生只显示通用的在线状态
+                statusElement.className = 'status-indicator online';
+                statusElement.innerHTML = '<i class="fas fa-globe"></i><span>在线学习</span>';
             }
         }
         
@@ -4844,7 +4863,10 @@
                 if (!hasValidGitHubConfig()) {
                     console.log('⚠️ 没有有效的GitHub配置，使用本地数据');
                     updateGitHubStatus(false);
-                    showMessage('请配置GitHub Token以启用云端同步', 'info');
+                    // 只对教师显示GitHub配置提示
+                    if (currentUser && accounts[currentUser] && accounts[currentUser].role === 'teacher') {
+                        showMessage('请配置GitHub Token以启用云端同步', 'info');
+                    }
                     return;
                 }
                 
@@ -4853,7 +4875,10 @@
                 if (!tokenValid) {
                     console.warn('⚠️ GitHub Token验证失败');
                     updateGitHubStatus(false);
-                    showMessage('GitHub Token无效，请重新配置', 'warning');
+                    // 只对教师显示GitHub配置提示
+                    if (currentUser && accounts[currentUser] && accounts[currentUser].role === 'teacher') {
+                        showMessage('GitHub Token无效，请重新配置', 'warning');
+                    }
                     return;
                 } else {
                     updateGitHubStatus(true);
@@ -5740,6 +5765,13 @@
             if (gradeSectionTitle) {
                 gradeSectionTitle.textContent = '成绩录入系统';
             }
+            
+            // 显示GitHub设置按钮（仅教师可见）
+            const githubSettingsBtn = document.getElementById('githubSettingsBtn');
+            if (githubSettingsBtn) {
+                githubSettingsBtn.style.display = 'block';
+                githubSettingsBtn.classList.remove('student-hidden');
+            }
         }
         
         // 显示学生功能
@@ -5766,6 +5798,13 @@
             const gradeSectionTitle = document.getElementById('gradeSectionTitle');
             if (gradeSectionTitle) {
                 gradeSectionTitle.textContent = '我的成绩';
+            }
+            
+            // 隐藏GitHub设置按钮（学生不可见）
+            const githubSettingsBtn = document.getElementById('githubSettingsBtn');
+            if (githubSettingsBtn) {
+                githubSettingsBtn.style.display = 'none';
+                githubSettingsBtn.classList.add('student-hidden');
             }
             
             // 更新学生进度显示
@@ -7161,7 +7200,11 @@
                     
                     // 检查GitHub连接
                     if (!hasValidGitHubConfig()) {
-                        showAlert('请先配置GitHub Token以上传文件');
+                        if (currentUser && accounts[currentUser] && accounts[currentUser].role === 'teacher') {
+                            showAlert('请先配置GitHub Token以上传文件');
+                        } else {
+                            showAlert('文件上传功能暂时不可用，请联系教师');
+                        }
                         return;
                     }
                     
