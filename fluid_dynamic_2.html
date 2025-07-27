@@ -13,6 +13,18 @@
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, notranslate">
     <title>流体力学学习平台 - 中国海洋大学</title>
     
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1976d2">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="流体力学">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/sw.js" as="script">
+    <link rel="dns-prefetch" href="//fonts.googleapis.com">
+    <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    
     <!-- 反爬虫和安全防护 -->
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
     <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
@@ -4534,36 +4546,95 @@
         setTimeout(initializeLogin, 1500);
         setTimeout(initializeLogin, 3000);
         
-        // 注册Service Worker来解决GitHub Pages HTTP头部限制
+        // 立即注册Service Worker来解决GitHub Pages HTTP头部限制
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(function(registration) {
-                        console.log('✅ Service Worker registered successfully:', registration.scope);
-                        
-                        // 检查是否有更新
-                        registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('🔄 New Service Worker available, updating...');
-                                    newWorker.postMessage({ type: 'SKIP_WAITING' });
-                                }
-                            });
+            // 立即注册，不等待load事件
+            navigator.serviceWorker.register('/sw.js', { scope: '/' })
+                .then(function(registration) {
+                    console.log('✅ Service Worker registered successfully:', registration.scope);
+                    
+                    // 强制激活新的Service Worker
+                    if (registration.installing) {
+                        registration.installing.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                    
+                    // 如果已经有激活的Service Worker，立即使用
+                    if (registration.active && !navigator.serviceWorker.controller) {
+                        console.log('🔄 Claiming clients immediately');
+                        registration.active.postMessage({ type: 'CLAIM_CLIENTS' });
+                    }
+                    
+                    // 检查是否有更新
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', () => {
+                            if (newWorker.state === 'installed') {
+                                console.log('🔄 New Service Worker available, activating...');
+                                newWorker.postMessage({ type: 'SKIP_WAITING' });
+                                // 强制刷新页面以使用新的Service Worker
+                                setTimeout(() => window.location.reload(), 100);
+                            }
                         });
-                        
-                        // 监听Service Worker更新
-                        navigator.serviceWorker.addEventListener('controllerchange', () => {
-                            console.log('🔄 Service Worker updated, reloading page...');
-                            window.location.reload();
-                        });
-                    })
-                    .catch(function(error) {
-                        console.log('❌ Service Worker registration failed:', error);
                     });
-            });
+                    
+                    // 监听Service Worker更新
+                    navigator.serviceWorker.addEventListener('controllerchange', () => {
+                        console.log('🔄 Service Worker controller changed');
+                        // 不自动刷新，让用户决定
+                    });
+                    
+                    // 定期检查更新
+                    setInterval(() => {
+                        registration.update();
+                    }, 60000); // 每分钟检查一次
+                })
+                .catch(function(error) {
+                    console.log('❌ Service Worker registration failed:', error);
+                });
         } else {
             console.log('❌ Service Worker not supported');
+        }
+        
+        // 强制验证HTTP头部和缓存策略
+        function validateHeaders() {
+            console.log('🔍 验证HTTP头部配置...');
+            
+            // 测试一个小资源来检查头部
+            fetch('/manifest.json', { 
+                method: 'HEAD',
+                cache: 'no-cache'
+            }).then(response => {
+                console.log('📊 HTTP头部检查结果:');
+                console.log('- X-Content-Type-Options:', response.headers.get('X-Content-Type-Options'));
+                console.log('- Cache-Control:', response.headers.get('Cache-Control'));
+                console.log('- X-Frame-Options:', response.headers.get('X-Frame-Options'));
+                console.log('- Content-Type:', response.headers.get('Content-Type'));
+                
+                if (!response.headers.get('X-Content-Type-Options')) {
+                    console.log('⚠️ Service Worker可能还未生效，等待中...');
+                    // 5秒后再次检查
+                    setTimeout(validateHeaders, 5000);
+                } else {
+                    console.log('✅ 所有HTTP头部已正确设置！');
+                }
+            }).catch(error => {
+                console.log('❌ 头部验证失败:', error);
+            });
+        }
+        
+        // 页面加载后验证头部
+        setTimeout(validateHeaders, 2000);
+        
+        // 清理旧缓存
+        if ('caches' in window) {
+            caches.keys().then(cacheNames => {
+                cacheNames.forEach(cacheName => {
+                    if (cacheName.includes('fluid') || cacheName.includes('old')) {
+                        console.log('🗑️ 清理旧缓存:', cacheName);
+                        caches.delete(cacheName);
+                    }
+                });
+            });
         }
         
         // 添加快速登录测试功能（仅开发环境）

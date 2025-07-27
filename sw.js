@@ -28,23 +28,35 @@ const HTML_FILES = /\.html$/i;
 
 self.addEventListener('install', event => {
   console.log('🔧 Service Worker installing...');
+  // 立即激活新版本
   self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
   console.log('✅ Service Worker activated');
   event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheName !== CACHE_NAME) {
-            console.log('🗑️ Deleting old cache:', cacheName);
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    }).then(() => {
-      return self.clients.claim();
+    Promise.all([
+      // 清理旧缓存
+      caches.keys().then(cacheNames => {
+        return Promise.all(
+          cacheNames.map(cacheName => {
+            if (cacheName !== CACHE_NAME) {
+              console.log('🗑️ Deleting old cache:', cacheName);
+              return caches.delete(cacheName);
+            }
+          })
+        );
+      }),
+      // 立即控制所有客户端
+      self.clients.claim()
+    ]).then(() => {
+      console.log('🚀 Service Worker now controlling all clients');
+      // 通知所有客户端Service Worker已激活
+      return self.clients.matchAll().then(clients => {
+        clients.forEach(client => {
+          client.postMessage({ type: 'SW_ACTIVATED' });
+        });
+      });
     })
   );
 });
@@ -162,7 +174,13 @@ function getFontContentType(pathname) {
 // Handle messages from main thread
 self.addEventListener('message', event => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
+    console.log('📨 Received SKIP_WAITING message');
     self.skipWaiting();
+  }
+  
+  if (event.data && event.data.type === 'CLAIM_CLIENTS') {
+    console.log('📨 Received CLAIM_CLIENTS message');
+    self.clients.claim();
   }
 });
 
