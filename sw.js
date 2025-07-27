@@ -1,7 +1,7 @@
 // Service Worker for GitHub Pages HTTP Headers
 // This adds security headers that GitHub Pages doesn't support natively
 
-const CACHE_NAME = 'fluid-dynamics-v2';
+const CACHE_NAME = 'fluid-dynamics-v3';
 const STATIC_CACHE_TIME = 31536000; // 1 year in seconds
 
 // Security headers to add
@@ -140,12 +140,21 @@ function addSecurityHeaders(response, pathname) {
   if (HTML_FILES.test(pathname) || pathname.endsWith('/') || !pathname.includes('.')) {
     headers.set('Cache-Control', CACHE_RULES.html);
     headers.set('Pragma', 'no-cache');
-    headers.set('Expires', '0');
+    // Don't use Expires header, only Cache-Control
+    headers.delete('Expires');
   } else if (FONT_FILES.test(pathname)) {
     headers.set('Cache-Control', CACHE_RULES.font);
     headers.set('Content-Type', getFontContentType(pathname));
+    // Remove charset from font files
+    headers.delete('charset');
   } else if (STATIC_FILES.test(pathname)) {
     headers.set('Cache-Control', CACHE_RULES.static);
+  }
+  
+  // JSON files
+  if (/\.json$/i.test(pathname)) {
+    headers.set('Cache-Control', CACHE_RULES.static);
+    headers.set('Content-Type', 'application/json');
   }
   
   // Remove charset from font files

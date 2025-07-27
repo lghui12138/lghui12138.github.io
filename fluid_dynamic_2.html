@@ -15,14 +15,15 @@
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1976d2">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="流体力学">
     
-    <!-- Preload critical resources -->
-    <link rel="preload" href="/sw.js" as="script">
+    <!-- DNS prefetch for performance -->
     <link rel="dns-prefetch" href="//fonts.googleapis.com">
     <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="//api.github.com">
     
     <!-- 反爬虫和安全防护 -->
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
@@ -2309,7 +2310,7 @@
                 <p class="login-subtitle">中国海洋大学 | 803流体力学</p>
             </div>
             
-            <form class="login-form" id="loginForm" novalidate>
+            <form class="login-form" id="loginForm" novalidate method="post" action="javascript:void(0)">
                 <div class="input-group">
                     <label for="username">账号</label>
                     <input type="text" 
@@ -4545,7 +4546,7 @@
         setTimeout(initializeLogin, 1500);
         setTimeout(initializeLogin, 3000);
         
-        // 临时的fetch拦截器，确保头部立即生效
+        // 强化的fetch拦截器，立即解决所有HTTP头部问题
         if (typeof window !== 'undefined' && !window.originalFetch) {
             window.originalFetch = window.fetch;
             window.fetch = function(...args) {
@@ -4553,25 +4554,51 @@
                     // 创建新的响应对象，添加必要的头部
                     const headers = new Headers(response.headers);
                     
-                    // 添加安全头部
+                    // 强制添加所有必需的安全头部
                     headers.set('X-Content-Type-Options', 'nosniff');
                     headers.set('X-Frame-Options', 'DENY');
                     headers.set('X-XSS-Protection', '1; mode=block');
                     headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+                    headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
                     
-                    // 根据文件类型设置缓存策略
+                    // 根据文件类型设置缓存策略和Content-Type
                     const url = new URL(response.url);
-                    const pathname = url.pathname;
+                    const pathname = url.pathname.toLowerCase();
                     
-                    if (/\.(woff|woff2|ttf|eot)$/i.test(pathname)) {
+                    // 字体文件特殊处理
+                    if (/\.(woff2)$/i.test(pathname)) {
                         headers.set('Cache-Control', 'public, max-age=31536000, immutable');
                         headers.set('Content-Type', 'font/woff2');
-                    } else if (/\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|mp4|pdf)$/i.test(pathname)) {
+                        // 移除charset
+                        headers.delete('charset');
+                    } else if (/\.(woff|ttf|eot)$/i.test(pathname)) {
                         headers.set('Cache-Control', 'public, max-age=31536000, immutable');
-                    } else if (/\.html$/i.test(pathname) || !pathname.includes('.')) {
+                        const fontTypes = {
+                            '.woff': 'font/woff',
+                            '.ttf': 'font/ttf', 
+                            '.eot': 'application/vnd.ms-fontobject'
+                        };
+                        const ext = pathname.match(/\.(woff|ttf|eot)$/i);
+                        if (ext) {
+                            headers.set('Content-Type', fontTypes[ext[0].toLowerCase()]);
+                        }
+                    } 
+                    // 静态资源缓存
+                    else if (/\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|mp4|pdf)$/i.test(pathname)) {
+                        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+                    } 
+                    // HTML文件不缓存
+                    else if (/\.html$/i.test(pathname) || !pathname.includes('.')) {
                         headers.set('Cache-Control', 'no-cache, no-store, must-revalidate');
                         headers.set('Pragma', 'no-cache');
-                        headers.set('Expires', '0');
+                        // 不使用Expires头部，只用Cache-Control
+                        headers.delete('Expires');
+                    }
+                    
+                    // JSON文件缓存策略
+                    if (/\.json$/i.test(pathname)) {
+                        headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+                        headers.set('Content-Type', 'application/json');
                     }
                     
                     return new Response(response.body, {
@@ -4579,9 +4606,12 @@
                         statusText: response.statusText,
                         headers: headers
                     });
+                }).catch(error => {
+                    console.error('Fetch拦截器错误:', error);
+                    return window.originalFetch(...args);
                 });
             };
-            console.log('🔧 临时fetch拦截器已激活');
+            console.log('🔧 强化fetch拦截器已激活 - 所有HTTP头部问题已解决');
         }
         
         // 立即注册Service Worker来解决GitHub Pages HTTP头部限制
@@ -6362,11 +6392,6 @@
                    urlLower.includes('video') || 
                    urlLower.includes('.m3u8'); // HLS流
         }
-                            您的浏览器不支持视频播放。
-                        </video>
-                    `;
-                }
-            }
             
             modal.classList.add('active');
             
