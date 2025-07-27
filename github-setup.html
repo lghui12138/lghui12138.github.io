@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub后台配置 - 流体力学学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .setup-container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .setup-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .setup-header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .setup-header p {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .step {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .step h3 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .step-number {
+            background: #667eea;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            margin: 10px 0;
+            position: relative;
+            overflow-x: auto;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .copy-btn:hover {
+            background: #2d3748;
+        }
+        
+        .token-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+        }
+        
+        .token-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .alert-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-header">
+            <h1><i class="fab fa-github"></i> GitHub后台配置</h1>
+            <p>配置GitHub Personal Access Token以启用云端数据同步</p>
+        </div>
+        
+        <div class="step">
+            <h3>
+                <span class="step-number">1</span>
+                创建GitHub Personal Access Token
+            </h3>
+            <p>访问GitHub设置页面创建一个新的Personal Access Token：</p>
+            <div class="code-block">
+                https://github.com/settings/tokens/new
+                <button class="copy-btn" onclick="copyToClipboard('https://github.com/settings/tokens/new')">复制</button>
+            </div>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <strong>Token名称：</strong> 流体力学学习平台<br>
+                    <strong>权限选择：</strong> 勾选 <span class="highlight">repo</span> (完整仓库访问权限)
+                </div>
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>
+                <span class="step-number">2</span>
+                输入您的Token
+            </h3>
+            <p>将生成的Token粘贴到下面的输入框中：</p>
+            <input type="password" id="tokenInput" class="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>请妥善保管您的Token，不要泄露给他人！</span>
+            </div>
+        </div>
+        
+        <div class="step">
+            <h3>
+                <span class="step-number">3</span>
+                测试连接
+            </h3>
+            <p>点击下面的按钮测试GitHub连接：</p>
+            <button class="btn" onclick="testConnection()">
+                <i class="fas fa-plug"></i>
+                测试连接
+            </button>
+            <div id="testResult" style="margin-top: 15px;"></div>
+        </div>
+        
+        <div class="buttons">
+            <button class="btn" onclick="saveAndContinue()">
+                <i class="fas fa-save"></i>
+                保存并继续
+            </button>
+            <a href="fluid_dynamic_2.html" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i>
+                返回平台
+            </a>
+        </div>
+    </div>
+    
+    <script>
+        // 复制到剪贴板
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showAlert('链接已复制到剪贴板！', 'success');
+            });
+        }
+        
+        // 显示提示
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.querySelector('.setup-container').appendChild(alertDiv);
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+        
+        // 测试GitHub连接
+        async function testConnection() {
+            const token = document.getElementById('tokenInput').value.trim();
+            const resultDiv = document.getElementById('testResult');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i><span>请先输入Token</span></div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<div class="alert alert-info"><i class="fas fa-spinner fa-spin"></i><span>正在测试连接...</span></div>';
+            
+            try {
+                const response = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'User-Agent': 'FluidDynamics-Platform/1.0'
+                    }
+                });
+                
+                if (response.ok) {
+                    const userData = await response.json();
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i>
+                            <div>
+                                <strong>连接成功！</strong><br>
+                                用户：${userData.login} (${userData.name || '未设置名称'})
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span>连接失败：${error.message}</span>
+                    </div>
+                `;
+            }
+        }
+        
+        // 保存Token并继续
+        function saveAndContinue() {
+            const token = document.getElementById('tokenInput').value.trim();
+            
+            if (!token) {
+                showAlert('请先输入Token', 'warning');
+                return;
+            }
+            
+            // 保存到localStorage
+            localStorage.setItem('github_token', token);
+            
+            // 设置全局变量
+            window.GITHUB_TOKEN = token;
+            
+            showAlert('Token已保存！正在跳转...', 'success');
+            
+            setTimeout(() => {
+                window.location.href = 'fluid_dynamic_2.html';
+            }, 1500);
+        }
+        
+        // 页面加载时检查是否已有保存的Token
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedToken = localStorage.getItem('github_token');
+            if (savedToken) {
+                document.getElementById('tokenInput').value = savedToken;
+                showAlert('检测到已保存的Token', 'info');
+            }
+        });
+    </script>
+</body>
+</html>
