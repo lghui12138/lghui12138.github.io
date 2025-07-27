@@ -8,6 +8,7 @@
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, notranslate">
     <title>流体力学学习平台 - 中国海洋大学</title>
+    <meta name="version" content="2.0.1">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
@@ -71,8 +72,28 @@
             }
         });
         
+        // 强制刷新缓存
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+                for(let registration of registrations) {
+                    registration.unregister();
+                }
+            });
+        }
+        
+        // 清除缓存
+        if ('caches' in window) {
+            caches.keys().then(function(names) {
+                for (let name of names) {
+                    caches.delete(name);
+                }
+            });
+        }
+        
         // 确保基本登录功能可用
         window.addEventListener('DOMContentLoaded', function() {
+            console.log('🔄 强制刷新缓存完成');
+            
             // 确保账号数据存在
             if (typeof window.accounts === 'undefined') {
                 window.accounts = {
@@ -115,6 +136,8 @@
                     }
                 };
             }
+            
+            console.log('✅ 基本登录功能已初始化');
         });
     </script>
     <style>
