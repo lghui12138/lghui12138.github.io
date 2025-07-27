@@ -3165,16 +3165,8 @@
                         mainContent.classList.add('student-content');
                     }
                     
-                    // 禁用视频和图片的右键保存
-                    const mediaElements = document.querySelectorAll('img, video, iframe');
-                    mediaElements.forEach(element => {
-                        element.style.pointerEvents = 'none';
-                        element.addEventListener('contextmenu', function(e) {
-                            e.preventDefault();
-                            showSecurityAlert('媒体内容受版权保护！');
-                            return false;
-                        });
-                    });
+                    // 初始化媒体保护
+                    initMediaProtection();
                     
                     // 添加页面失焦检测（可能的录屏行为）
                     let blurCount = 0;
@@ -4055,31 +4047,65 @@
             showMessage('上传成功！');
         }
         
+        // 存储上传的视频数据
+        let uploadedVideos = [];
+        
         // 添加视频到列表
         function addVideoToList(title, description, linkOrFile, category, type = 'link') {
             const videoGrid = document.querySelector('.video-grid');
+            if (!videoGrid) {
+                console.error('Video grid not found');
+                return;
+            }
+            
             const videoCard = document.createElement('div');
             videoCard.className = 'video-card';
             
             const sourceIcon = type === 'file' ? 'fas fa-file-video' : 'fas fa-link';
             const sourceText = type === 'file' ? '本地文件' : '在线链接';
             
-            videoCard.innerHTML = `
-                <div class="video-preview">
-                    <i class="fas fa-video"></i>
-                    <div class="play-button" onclick="playCustomVideo('${linkOrFile}', '${title}', '${type}')">
-                        <i class="fas fa-play"></i>
-                    </div>
-                </div>
-                <div class="video-info">
-                    <h3 class="video-title">${title}</h3>
-                    <p class="video-description">${description}</p>
-                    <div class="video-duration">
-                        <div><i class="far fa-clock"></i> 新上传</div>
-                        <div><i class="${sourceIcon}"></i> ${sourceText}</div>
-                    </div>
+            // 生成唯一ID
+            const videoId = 'video_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            
+            // 存储视频数据
+            uploadedVideos.push({
+                id: videoId,
+                title: title,
+                description: description,
+                source: linkOrFile,
+                type: type,
+                category: category
+            });
+            
+            // 创建播放按钮容器
+            const playButtonDiv = document.createElement('div');
+            playButtonDiv.className = 'play-button';
+            playButtonDiv.onclick = function() {
+                playCustomVideoById(videoId);
+            };
+            playButtonDiv.innerHTML = '<i class="fas fa-play"></i>';
+            
+            // 创建视频预览容器
+            const videoPreviewDiv = document.createElement('div');
+            videoPreviewDiv.className = 'video-preview';
+            videoPreviewDiv.innerHTML = '<i class="fas fa-video"></i>';
+            videoPreviewDiv.appendChild(playButtonDiv);
+            
+            // 创建视频信息容器
+            const videoInfoDiv = document.createElement('div');
+            videoInfoDiv.className = 'video-info';
+            videoInfoDiv.innerHTML = `
+                <h3 class="video-title">${escapeHtml(title)}</h3>
+                <p class="video-description">${escapeHtml(description)}</p>
+                <div class="video-duration">
+                    <div><i class="far fa-clock"></i> 新上传</div>
+                    <div><i class="${sourceIcon}"></i> ${sourceText}</div>
                 </div>
             `;
+            
+            // 组装视频卡片
+            videoCard.appendChild(videoPreviewDiv);
+            videoCard.appendChild(videoInfoDiv);
             
             // 插入到特色视频后面
             const featuredVideo = videoGrid.querySelector('.video-card.featured');
@@ -4087,6 +4113,70 @@
                 featuredVideo.parentNode.insertBefore(videoCard, featuredVideo.nextSibling);
             } else {
                 videoGrid.appendChild(videoCard);
+            }
+            
+            console.log('Video added to list:', { id: videoId, title, type, source: linkOrFile });
+            
+            // 重新初始化媒体保护
+            if (currentUser && currentUser.role === 'student') {
+                setTimeout(() => {
+                    initMediaProtection();
+                }, 100);
+            }
+        }
+        
+        // 初始化媒体保护
+        function initMediaProtection() {
+            if (!currentUser || currentUser.role !== 'student') return;
+            
+            // 对于视频元素，只禁用右键菜单，保留播放控件
+            const videoElements = document.querySelectorAll('video');
+            videoElements.forEach(element => {
+                // 移除旧的事件监听器（如果有）
+                element.removeEventListener('contextmenu', handleVideoContextMenu);
+                // 添加新的事件监听器
+                element.addEventListener('contextmenu', handleVideoContextMenu);
+            });
+            
+            // 禁用图片和iframe的交互
+            const mediaElements = document.querySelectorAll('img, iframe');
+            mediaElements.forEach(element => {
+                element.style.pointerEvents = 'none';
+                element.removeEventListener('contextmenu', handleMediaContextMenu);
+                element.addEventListener('contextmenu', handleMediaContextMenu);
+            });
+        }
+        
+        // 视频右键菜单处理
+        function handleVideoContextMenu(e) {
+            e.preventDefault();
+            showSecurityAlert('视频内容受版权保护！');
+            return false;
+        }
+        
+        // 媒体右键菜单处理
+        function handleMediaContextMenu(e) {
+            e.preventDefault();
+            showSecurityAlert('媒体内容受版权保护！');
+            return false;
+        }
+        
+        // HTML转义函数
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // 通过ID播放自定义视频
+        function playCustomVideoById(videoId) {
+            const videoData = uploadedVideos.find(v => v.id === videoId);
+            if (videoData) {
+                console.log('Playing video:', videoData);
+                playCustomVideo(videoData.source, videoData.title, videoData.type);
+            } else {
+                console.error('Video not found:', videoId);
+                showSecurityAlert('视频数据未找到');
             }
         }
         
@@ -4290,13 +4380,20 @@
                 
                 // 创建本地视频URL
                 const videoURL = URL.createObjectURL(file);
+                console.log('Created video URL:', videoURL);
+                console.log('File info:', { name: file.name, size: file.size, type: file.type });
                 
                 // 添加到视频列表
                 addVideoToList(title, description, videoURL, category, 'file');
                 
                 setTimeout(() => {
                     closeUploadModal();
-                    showMessage('视频上传成功！');
+                    showMessage('视频上传成功！请查看视频课程页面');
+                    
+                    // 自动切换到视频课程页面
+                    setTimeout(() => {
+                        switchSection('video-section');
+                    }, 1000);
                 }, 500);
             }, 2000 + Math.random() * 2000); // 2-4秒模拟上传时间
         }
@@ -4315,19 +4412,47 @@
         // 播放自定义视频
         function playCustomVideo(source, title, type) {
             const modal = document.getElementById('videoModal');
-            const modalTitle = modal.querySelector('.modal-title');
+            const modalTitle = document.getElementById('modalTitle');
             const videoContainer = modal.querySelector('.video-container');
+            
+            if (!modal || !modalTitle || !videoContainer) {
+                console.error('Video modal elements not found');
+                showSecurityAlert('视频播放器初始化失败');
+                return;
+            }
             
             modalTitle.textContent = title;
             
+            console.log('Playing video:', { source, title, type });
+            
             if (type === 'file') {
                 // 本地视频文件
+                console.log('Playing local video file:', source);
                 videoContainer.innerHTML = `
-                    <video controls style="width: 100%; height: 100%; border-radius: 8px;">
+                    <video controls style="width: 100%; height: 100%; border-radius: 8px;" preload="metadata">
                         <source src="${source}" type="video/mp4">
+                        <source src="${source}" type="video/webm">
+                        <source src="${source}" type="video/ogg">
                         您的浏览器不支持视频播放。
                     </video>
                 `;
+                
+                // 添加视频加载事件监听
+                const video = videoContainer.querySelector('video');
+                if (video) {
+                    video.addEventListener('loadstart', function() {
+                        console.log('Video loading started');
+                    });
+                    
+                    video.addEventListener('loadeddata', function() {
+                        console.log('Video data loaded');
+                    });
+                    
+                    video.addEventListener('error', function(e) {
+                        console.error('Video error:', e);
+                        showSecurityAlert('视频加载失败，请检查文件格式');
+                    });
+                }
             } else {
                 // 在线视频链接
                 if (source.includes('bilibili.com') || source.includes('b23.tv')) {
