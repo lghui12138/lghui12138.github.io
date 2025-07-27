@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
     <title>流体力学学习平台 - 中国海洋大学</title>
     
     <!-- 反爬虫和安全防护 -->
@@ -2115,6 +2118,7 @@
         
         /* 改进的模态框 */
         .modal-backdrop {
+            -webkit-backdrop-filter: blur(8px);
             backdrop-filter: blur(8px);
             background: rgba(0,0,0,0.6);
         }
@@ -2221,6 +2225,29 @@
             background: rgba(255, 152, 0, 0.1);
             color: #ff9800;
         }
+        
+        /* 设置按钮样式 */
+        .settings-btn {
+            background: none;
+            border: none;
+            color: #666;
+            margin-right: 15px;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+        
+        .settings-btn:hover {
+            background: rgba(0,0,0,0.1);
+            color: var(--primary);
+        }
+        
+        .settings-btn:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
+        }
     </style>
 </head>
 <body id="appBody">
@@ -2293,34 +2320,66 @@
         <div class="modal-content" style="max-width: 400px;">
             <div class="modal-header">
                 <h3><i class="fas fa-key"></i> 修改密码</h3>
-                <button class="close-modal" onclick="closeChangePasswordModal()">&times;</button>
+                <button class="close-modal" 
+                        onclick="closeChangePasswordModal()"
+                        aria-label="关闭修改密码对话框"
+                        title="关闭">&times;</button>
             </div>
-            <div style="padding: 20px;">
+            <form id="changePasswordForm" style="padding: 20px;" novalidate>
                 <div class="upload-form-group">
                     <label for="changeUsername">用户名</label>
-                    <input type="text" id="changeUsername" placeholder="请输入用户名">
+                    <input type="text" 
+                           id="changeUsername" 
+                           name="changeUsername"
+                           placeholder="请输入用户名"
+                           autocomplete="username"
+                           required
+                           aria-label="用户名">
                 </div>
                 
                 <div class="upload-form-group">
                     <label for="currentPassword">当前密码</label>
-                    <input type="password" id="currentPassword" placeholder="请输入当前密码">
+                    <input type="password" 
+                           id="currentPassword" 
+                           name="currentPassword"
+                           placeholder="请输入当前密码"
+                           autocomplete="current-password"
+                           required
+                           aria-label="当前密码">
                 </div>
                 
                 <div class="upload-form-group">
                     <label for="newPassword">新密码</label>
-                    <input type="password" id="newPassword" placeholder="请输入新密码">
+                    <input type="password" 
+                           id="newPassword" 
+                           name="newPassword"
+                           placeholder="请输入新密码"
+                           autocomplete="new-password"
+                           required
+                           aria-label="新密码">
                 </div>
                 
                 <div class="upload-form-group">
                     <label for="confirmPassword">确认新密码</label>
-                    <input type="password" id="confirmPassword" placeholder="请再次输入新密码">
+                    <input type="password" 
+                           id="confirmPassword" 
+                           name="confirmPassword"
+                           placeholder="请再次输入新密码"
+                           autocomplete="new-password"
+                           required
+                           aria-label="确认新密码">
                 </div>
                 
                 <div class="upload-buttons">
-                    <button class="upload-btn-secondary" onclick="closeChangePasswordModal()">取消</button>
-                    <button class="upload-btn-primary" onclick="changePassword()">确认修改</button>
+                    <button type="button" 
+                            class="upload-btn-secondary" 
+                            onclick="closeChangePasswordModal()"
+                            aria-label="取消修改密码">取消</button>
+                    <button type="submit" 
+                            class="upload-btn-primary"
+                            aria-label="确认修改密码">确认修改</button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
     
@@ -2357,9 +2416,10 @@
                             <span>离线模式</span>
                         </div>
                         <button onclick="window.open('github-setup.html', '_blank')" 
-                                style="background: none; border: none; color: #666; margin-right: 15px; cursor: pointer; font-size: 16px;" 
-                                title="配置GitHub后台">
-                            <i class="fas fa-cog"></i>
+                                class="settings-btn"
+                                title="配置GitHub后台"
+                                aria-label="配置GitHub后台设置">
+                            <i class="fas fa-cog" aria-hidden="true"></i>
                         </button>
                         <div class="user-info" id="userInfo">
                             <div class="user-icon" id="userIcon">刘</div>
@@ -2367,8 +2427,11 @@
                                 <span id="usernameText">刘光辉</span>
                                 <span id="roleBadge" class="role-badge teacher-badge">教师</span>
                             </div>
-                            <button class="logout-btn" title="退出登录" onclick="logout()">
-                                <i class="fas fa-sign-out-alt"></i>
+                            <button class="logout-btn" 
+                                    title="退出登录" 
+                                    aria-label="退出登录"
+                                    onclick="logout()">
+                                <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
                             </button>
                         </div>
                     </div>
@@ -4183,39 +4246,45 @@
             console.log('🔍 测试账号 - 教师账号:', accounts['liuguanghui6330156'] ? '存在' : '不存在');
             console.log('🔍 测试账号 - 学生账号:', accounts['student1'] ? '存在' : '不存在');
             
-            // 登录按钮事件
-            document.getElementById('loginBtn').addEventListener('click', function() {
-                const username = document.getElementById('username').value.trim();
-                const password = document.getElementById('password').value;
-                
-                console.log('🔐 尝试登录:', { username: username, hasPassword: !!password });
-                
-                if (!username || !password) {
-                    showAlert('请输入账号和密码');
-                    return;
-                }
-                
-                const account = accounts[username];
-                console.log('🔍 找到账号:', account ? '是' : '否');
-                
-                if (account && account.password === password) {
-                    console.log('✅ 登录成功');
-                    login(username);
-                } else {
-                    console.log('❌ 登录失败 - 用户名或密码错误');
-                    showAlert('用户名或密码错误');
+            // 登录表单事件
+            const loginForm = document.getElementById('loginForm');
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault(); // 阻止表单默认提交
                     
-                    // 显示可用账号（调试用）
-                    console.log('📝 可用账号列表:', Object.keys(accounts));
-                }
-            });
+                    const username = document.getElementById('username').value.trim();
+                    const password = document.getElementById('password').value;
+                    const loginError = document.getElementById('loginError');
+                    
+                    console.log('🔐 尝试登录:', { username: username, hasPassword: !!password });
+                    
+                    // 隐藏之前的错误信息
+                    if (loginError) {
+                        loginError.style.display = 'none';
+                    }
+                    
+                    if (!username || !password) {
+                        showLoginError('请输入账号和密码');
+                        return;
+                    }
+                    
+                    const account = accounts[username];
+                    console.log('🔍 找到账号:', account ? '是' : '否');
+                    
+                    if (account && account.password === password) {
+                        console.log('✅ 登录成功');
+                        login(username);
+                    } else {
+                        console.log('❌ 登录失败 - 用户名或密码错误');
+                        showLoginError('用户名或密码错误');
+                        
+                        // 显示可用账号（调试用）
+                        console.log('📝 可用账号列表:', Object.keys(accounts));
+                    }
+                });
+            }
             
-            // 添加回车登录功能
-            document.getElementById('password').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    document.getElementById('loginBtn').click();
-                }
-            });
+            // 回车键登录功能已通过表单submit事件处理，无需额外处理
         });
         
         // 登录函数
@@ -6372,6 +6441,16 @@
         function showChangePasswordModal() {
             const modal = document.getElementById('changePasswordModal');
             modal.classList.add('active');
+            
+            // 绑定表单提交事件
+            const form = document.getElementById('changePasswordForm');
+            if (form && !form.hasAttribute('data-bound')) {
+                form.setAttribute('data-bound', 'true');
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    changePassword();
+                });
+            }
         }
         
         function closeChangePasswordModal() {
@@ -6508,6 +6587,16 @@
                 }
             }
             closeExerciseModal();
+        }
+        
+        // 显示登录错误
+        function showLoginError(message) {
+            const loginError = document.getElementById('loginError');
+            if (loginError) {
+                loginError.innerHTML = `<i class="fas fa-exclamation-circle"></i> ${message}`;
+                loginError.style.display = 'block';
+            }
+            showMessage(message, 'error');
         }
         
         // 替换alert为更好的提示
