@@ -5306,26 +5306,26 @@
         const fluidMechanicsConcepts = [
             {
                 id: 1,
-                question: "亥姆霍兹速度分析定理：v→(M) = v→(M₀) + S·(δr)→ + _____ × (br)→，即M点速度是与Mo点相同的平动速度、绕Mo点转动在M点引起的速度及因流体变形在M点引起的速度三者之和。",
-                answer: "1/2 rot v→",
-                explanation: "亥姆霍兹速度分析定理将流体微团的运动分解为平动、转动和变形三部分，其中转动部分为1/2 rot v→×(br)→"
+                question: "亥姆霍兹速度分析定理：v(M) = v(M₀) + S·δr + _____ × δr，即M点速度是与Mo点相同的平动速度、绕Mo点转动在M点引起的速度及因流体变形在M点引起的速度三者之和。",
+                answer: "1/2 rot v",
+                explanation: "亥姆霍兹速度分析定理将流体微团的运动分解为平动、转动和变形三部分，其中转动部分为1/2 rot v × δr"
             },
             {
                 id: 2,
-                question: "本构方程：P = -PI + 2μ(S - _____∇·V→I) + (λ + 1/3μ)(∇·V→)I，应力张量等于静压张量加上纯剪切流动引起粘性应力张量及体积变化引起的应力张量。",
+                question: "本构方程：P = -PI + 2μ(S - _____∇·V I) + (λ + 1/3μ)(∇·V)I，应力张量等于静压张量加上纯剪切流动引起粘性应力张量及体积变化引起的应力张量。",
                 answer: "1/3",
                 explanation: "本构方程中，纯剪切流动项需要减去1/3的体积变化贡献，以确保应力张量的正确分解"
             },
             {
                 id: 3,
-                question: "运动方程（动量方程）：dv→/dt = F→ - _____∇P + ν∇²V→ + 1/3ν∇(∇·V→)，其中ν是运动粘性系数。",
+                question: "运动方程（动量方程）：dv/dt = F - _____∇P + ν∇²V + 1/3ν∇(∇·V)，其中ν是运动粘性系数。",
                 answer: "1/ρ",
                 explanation: "动量方程中压强梯度力项为-1/ρ∇P，ρ是流体密度"
             },
             {
                 id: 4,
-                question: "涡度方程：dω/dt = (ω·∇)V→ - ω(∇·V→) + ∇×(F_B)→ - ∇×∇P/ρ + ∇×∇²V→ + _____∇×(∇·v→))",
-                answer: "1/3η",
+                question: "涡度方程：dω/dt = (ω·∇)V - ω(∇·V) + ∇×F_B - ∇×(∇P/ρ) + ν∇²ω + _____∇(∇·V)",
+                answer: "1/3ν",
                 explanation: "涡度方程描述涡度随时间的变化，包含涡度拉伸、压缩、体积力、压力梯度和粘性扩散等项"
             },
             {
@@ -5420,7 +5420,7 @@
             },
             {
                 id: 20,
-                question: "位移厚度δ* = ∫₀^δ(1-u/U_e)dy，动量损失厚度θ = ∫₀^δ (u/U_e)(1-u/U_e)dy，其中θ又称为_____厚度。",
+                question: "位移厚度δ* = ∫₀^δ(1-u/U_e)dy，动量损失厚度θ = ∫₀^δ(u/U_e)(1-u/U_e)dy，其中θ又称为_____厚度。",
                 answer: "动量",
                 explanation: "动量损失厚度θ表征边界层对动量输运的影响"
             },
@@ -5492,7 +5492,7 @@
             },
             {
                 id: 32,
-                question: "球形液滴下落的均匀定常速度V_定 = (2/9)((ρ-ρ_空)ga²)/μ，其中a是_____。",
+                question: "球形液滴下落的均匀定常速度V = (2/9)(ρ-ρ₀)ga²/μ，其中a是_____。",
                 answer: "半径",
                 explanation: "斯托克斯公式给出了小球在粘性流体中的终端速度"
             },
@@ -5654,7 +5654,6 @@
             
             // 保存用户答案
             exercise.userAnswers[exercise.currentIndex] = userAnswer;
-            exercise.isAnswered[exercise.currentIndex] = true;
             
             showAnswerResult();
         }
@@ -5672,6 +5671,14 @@
             const isCorrect = normalizeAnswer(userAnswer).includes(normalizeAnswer(correctAnswer)) || 
                              normalizeAnswer(correctAnswer).includes(normalizeAnswer(userAnswer));
             
+            // 如果是第一次回答这道题
+            if (!exercise.isAnswered[exercise.currentIndex]) {
+                if (isCorrect) {
+                    exercise.correctAnswers++;
+                }
+                exercise.isAnswered[exercise.currentIndex] = true;
+            }
+            
             if (isCorrect) {
                 feedback.innerHTML = `
                     <div class="feedback correct">
@@ -5680,9 +5687,6 @@
                         <div class="explanation">${currentQ.explanation}</div>
                     </div>
                 `;
-                if (!exercise.isAnswered[exercise.currentIndex] || exercise.userAnswers[exercise.currentIndex] !== userAnswer) {
-                    exercise.correctAnswers++;
-                }
             } else {
                 feedback.innerHTML = `
                     <div class="feedback incorrect">
