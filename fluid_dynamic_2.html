@@ -2003,6 +2003,48 @@
                 <button class="login-btn" id="loginBtn">
                     <i class="fas fa-sign-in-alt"></i> 登录
                 </button>
+                
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="#" onclick="showChangePasswordModal()" style="color: var(--secondary); text-decoration: none; font-size: 14px;">
+                        <i class="fas fa-key"></i> 修改密码
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 修改密码模态框 -->
+    <div class="modal-backdrop" id="changePasswordModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-key"></i> 修改密码</h3>
+                <button class="close-modal" onclick="closeChangePasswordModal()">&times;</button>
+            </div>
+            <div style="padding: 20px;">
+                <div class="upload-form-group">
+                    <label for="changeUsername">用户名</label>
+                    <input type="text" id="changeUsername" placeholder="请输入用户名">
+                </div>
+                
+                <div class="upload-form-group">
+                    <label for="currentPassword">当前密码</label>
+                    <input type="password" id="currentPassword" placeholder="请输入当前密码">
+                </div>
+                
+                <div class="upload-form-group">
+                    <label for="newPassword">新密码</label>
+                    <input type="password" id="newPassword" placeholder="请输入新密码">
+                </div>
+                
+                <div class="upload-form-group">
+                    <label for="confirmPassword">确认新密码</label>
+                    <input type="password" id="confirmPassword" placeholder="请再次输入新密码">
+                </div>
+                
+                <div class="upload-buttons">
+                    <button class="upload-btn-secondary" onclick="closeChangePasswordModal()">取消</button>
+                    <button class="upload-btn-primary" onclick="changePassword()">确认修改</button>
+                </div>
             </div>
         </div>
     </div>
@@ -3289,20 +3331,335 @@
             if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
                 setTimeout(advancedAntiDebug, 2000);
             }
+            
+            // 从GitHub加载数据
+            loadDataFromGitHub();
         });
         
         // ==================== 用户系统 ====================
         
-        // 用户账号信息
-        const accounts = {
+        // ==================== GitHub后台存储系统 ====================
+        
+        // GitHub配置
+        const GITHUB_CONFIG = {
+            owner: 'lghui12138',
+            repo: 'lghui12138.github.io',
+            branch: 'main',
+            token: 'ghp_your_token_here', // 需要设置个人访问令牌
+            dataPath: 'data/' // 数据存储路径
+        };
+        
+        // GitHub API基础类
+        class GitHubStorage {
+            constructor(config) {
+                this.config = config;
+                this.baseUrl = `https://api.github.com/repos/${config.owner}/${config.repo}`;
+            }
+            
+            // 获取文件内容
+            async getFile(path) {
+                try {
+                    const response = await fetch(`${this.baseUrl}/contents/${path}`, {
+                        headers: {
+                            'Authorization': `token ${this.config.token}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        return JSON.parse(atob(data.content));
+                    }
+                    return null;
+                } catch (error) {
+                    console.error('获取文件失败:', error);
+                    return null;
+                }
+            }
+            
+            // 保存文件内容
+            async saveFile(path, content, message = '更新数据') {
+                try {
+                    const encodedContent = btoa(JSON.stringify(content, null, 2));
+                    
+                    // 先获取文件的SHA（如果存在）
+                    let sha = null;
+                    try {
+                        const existingFile = await fetch(`${this.baseUrl}/contents/${path}`, {
+                            headers: {
+                                'Authorization': `token ${this.config.token}`,
+                                'Accept': 'application/vnd.github.v3+json'
+                            }
+                        });
+                        if (existingFile.ok) {
+                            const data = await existingFile.json();
+                            sha = data.sha;
+                        }
+                    } catch (e) {
+                        // 文件不存在，sha保持null
+                    }
+                    
+                    const body = {
+                        message: message,
+                        content: encodedContent,
+                        branch: this.config.branch
+                    };
+                    
+                    if (sha) {
+                        body.sha = sha;
+                    }
+                    
+                    const response = await fetch(`${this.baseUrl}/contents/${path}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${this.config.token}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(body)
+                    });
+                    
+                    return response.ok;
+                } catch (error) {
+                    console.error('保存文件失败:', error);
+                    return false;
+                }
+            }
+        }
+        
+        // 初始化GitHub存储
+        const githubStorage = new GitHubStorage(GITHUB_CONFIG);
+        
+        // 用户账号信息 - 将迁移到GitHub存储
+        let accounts = {
             'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306', color: 'teacher' },
             'student1': { name: '学生账号', role: 'student', password: '123456', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
             'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
             'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] }
         };
         
+        // 视频和题库数据
+        let videosData = [];
+        let exercisesData = [];
+        
         // 当前登录用户
         let currentUser = null;
+        
+        // ==================== 数据管理系统 ====================
+        
+        // 从GitHub加载所有数据
+        async function loadDataFromGitHub() {
+            try {
+                console.log('正在从GitHub加载数据...');
+                
+                // 加载用户数据
+                const userData = await githubStorage.getFile('data/users.json');
+                if (userData) {
+                    accounts = userData;
+                    console.log('用户数据加载成功');
+                }
+                
+                // 加载视频数据
+                const videoData = await githubStorage.getFile('data/videos.json');
+                if (videoData) {
+                    videosData = videoData;
+                    console.log('视频数据加载成功:', videosData.length + '个视频');
+                    // 重建视频列表
+                    rebuildVideoList();
+                }
+                
+                // 加载题库数据
+                const exerciseData = await githubStorage.getFile('data/exercises.json');
+                if (exerciseData) {
+                    exercisesData = exerciseData;
+                    console.log('题库数据加载成功:', exercisesData.length + '个题目');
+                    // 重建题库列表
+                    rebuildExerciseList();
+                }
+                
+            } catch (error) {
+                console.error('从GitHub加载数据失败:', error);
+                showMessage('数据加载失败，使用本地数据', 'warning');
+            }
+        }
+        
+        // 保存用户数据到GitHub
+        async function saveUsersToGitHub() {
+            try {
+                const success = await githubStorage.saveFile('data/users.json', accounts, '更新用户数据');
+                if (success) {
+                    console.log('用户数据保存成功');
+                } else {
+                    console.error('用户数据保存失败');
+                }
+                return success;
+            } catch (error) {
+                console.error('保存用户数据到GitHub失败:', error);
+                return false;
+            }
+        }
+        
+        // 保存视频数据到GitHub
+        async function saveVideosToGitHub() {
+            try {
+                const success = await githubStorage.saveFile('data/videos.json', videosData, '更新视频数据');
+                if (success) {
+                    console.log('视频数据保存成功');
+                    showMessage('视频已保存到云端', 'success');
+                } else {
+                    console.error('视频数据保存失败');
+                    showMessage('视频保存失败', 'error');
+                }
+                return success;
+            } catch (error) {
+                console.error('保存视频数据到GitHub失败:', error);
+                showMessage('视频保存失败', 'error');
+                return false;
+            }
+        }
+        
+        // 保存题库数据到GitHub
+        async function saveExercisesToGitHub() {
+            try {
+                const success = await githubStorage.saveFile('data/exercises.json', exercisesData, '更新题库数据');
+                if (success) {
+                    console.log('题库数据保存成功');
+                    showMessage('题库已保存到云端', 'success');
+                } else {
+                    console.error('题库数据保存失败');
+                    showMessage('题库保存失败', 'error');
+                }
+                return success;
+            } catch (error) {
+                console.error('保存题库数据到GitHub失败:', error);
+                showMessage('题库保存失败', 'error');
+                return false;
+            }
+        }
+        
+        // 重建视频列表
+        function rebuildVideoList() {
+            const videoGrid = document.querySelector('.video-grid');
+            if (!videoGrid) return;
+            
+            // 清除已有的上传视频（保留原始的特色视频）
+            const uploadedCards = videoGrid.querySelectorAll('[data-video-id]');
+            uploadedCards.forEach(card => card.remove());
+            
+            // 重新创建视频卡片
+            videosData.forEach(video => {
+                recreateVideoCardFromData(video);
+            });
+        }
+        
+        // 从数据重建视频卡片
+        function recreateVideoCardFromData(videoData) {
+            const videoGrid = document.querySelector('.video-grid');
+            if (!videoGrid) return;
+            
+            const videoCard = document.createElement('div');
+            videoCard.className = 'video-card';
+            videoCard.setAttribute('data-video-id', videoData.id);
+            
+            const sourceIcon = videoData.type === 'file' ? 'fas fa-file-video' : 'fas fa-link';
+            const sourceText = videoData.type === 'file' ? '本地文件' : '在线链接';
+            
+            // 创建播放按钮
+            const playButtonDiv = document.createElement('div');
+            playButtonDiv.className = 'play-button';
+            playButtonDiv.onclick = function() {
+                if (videoData.type === 'file') {
+                    // 本地文件需要重新选择
+                    showReuploadDialog(videoData);
+                } else {
+                    // 在线视频直接播放
+                    playCustomVideo(videoData.source, videoData.title, videoData.type);
+                }
+            };
+            playButtonDiv.innerHTML = '<i class="fas fa-play"></i>';
+            
+            // 创建视频预览
+            const videoPreviewDiv = document.createElement('div');
+            videoPreviewDiv.className = 'video-preview';
+            videoPreviewDiv.innerHTML = '<i class="fas fa-video"></i>';
+            videoPreviewDiv.appendChild(playButtonDiv);
+            
+            // 创建视频信息
+            const videoInfoDiv = document.createElement('div');
+            videoInfoDiv.className = 'video-info';
+            
+            const uploadTime = videoData.uploadTime ? 
+                new Date(videoData.uploadTime).toLocaleDateString() : '新上传';
+            
+            const statusText = videoData.type === 'file' ? 
+                '<div style="color: #f39c12;"><i class="fas fa-exclamation-triangle"></i> 需要重新选择文件</div>' : 
+                `<div><i class="${sourceIcon}"></i> ${sourceText}</div>`;
+            
+            videoInfoDiv.innerHTML = `
+                <h3 class="video-title">${escapeHtml(videoData.title)}</h3>
+                <p class="video-description">${escapeHtml(videoData.description)}</p>
+                <div class="video-duration">
+                    <div><i class="far fa-clock"></i> ${uploadTime}</div>
+                    ${statusText}
+                </div>
+            `;
+            
+            // 组装视频卡片
+            videoCard.appendChild(videoPreviewDiv);
+            videoCard.appendChild(videoInfoDiv);
+            
+            // 插入到特色视频后面
+            const featuredVideo = videoGrid.querySelector('.video-card.featured');
+            if (featuredVideo) {
+                featuredVideo.parentNode.insertBefore(videoCard, featuredVideo.nextSibling);
+            } else {
+                videoGrid.appendChild(videoCard);
+            }
+        }
+        
+        // 重建题库列表
+        function rebuildExerciseList() {
+            const exerciseGrid = document.querySelector('.exercise-grid');
+            if (!exerciseGrid) return;
+            
+            // 清除已有的上传题目
+            const uploadedCards = exerciseGrid.querySelectorAll('[data-exercise-id]');
+            uploadedCards.forEach(card => card.remove());
+            
+            // 重新创建题目卡片
+            exercisesData.forEach(exercise => {
+                recreateExerciseCardFromData(exercise);
+            });
+        }
+        
+        // 从数据重建题目卡片
+        function recreateExerciseCardFromData(exerciseData) {
+            const exerciseGrid = document.querySelector('.exercise-grid');
+            if (!exerciseGrid) return;
+            
+            const exerciseCard = document.createElement('div');
+            exerciseCard.className = 'exercise-card';
+            exerciseCard.setAttribute('data-exercise-id', exerciseData.id);
+            
+            const uploadTime = exerciseData.uploadTime ? 
+                new Date(exerciseData.uploadTime).toLocaleDateString() : '新上传';
+            
+            exerciseCard.innerHTML = `
+                <div class="exercise-title">${escapeHtml(exerciseData.title)}</div>
+                <div class="exercise-meta">
+                    <span><i class="fas fa-tag"></i> ${exerciseData.category || '未分类'}</span>
+                    <span><i class="far fa-clock"></i> ${uploadTime}</span>
+                </div>
+                <div class="exercise-description">${escapeHtml(exerciseData.description)}</div>
+                <div class="exercise-actions">
+                    <button class="exercise-btn" onclick="startExercise('${exerciseData.id}')">
+                        <i class="fas fa-play"></i> 开始练习
+                    </button>
+                </div>
+            `;
+            
+            exerciseGrid.appendChild(exerciseCard);
+        }
         
         // 分数线数据
         const scoreData = {
@@ -4167,8 +4524,25 @@
                         showAlert('请输入视频链接');
                         return;
                     }
-                    // 添加在线视频到视频列表
-                    addVideoToList(title, description, videoLink, category, 'link');
+                    // 创建在线视频数据对象
+                    const videoData = {
+                        id: 'video_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                        title: title,
+                        description: description,
+                        source: videoLink,
+                        type: 'link',
+                        category: category,
+                        uploadTime: new Date().toISOString()
+                    };
+                    
+                    // 添加到视频数据
+                    videosData.push(videoData);
+                    
+                    // 保存到GitHub
+                    saveVideosToGitHub();
+                    
+                    // 添加到页面显示
+                    recreateVideoCardFromData(videoData);
                 } else if (videoSource === 'file') {
                     if (!selectedVideoFile) {
                         showAlert('请选择要上传的视频文件');
@@ -4183,8 +4557,28 @@
                     showAlert('请选择要上传的文件');
                     return;
                 }
-                // 这里可以添加题目到题库
-                addQuestionToList(title, description, selectedFiles, category);
+                // 创建题目数据对象
+                const exerciseData = {
+                    id: 'exercise_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    title: title,
+                    description: description,
+                    category: category,
+                    files: selectedFiles.map(file => ({
+                        name: file.name,
+                        size: file.size,
+                        type: file.type
+                    })),
+                    uploadTime: new Date().toISOString()
+                };
+                
+                // 添加到题库数据
+                exercisesData.push(exerciseData);
+                
+                // 保存到GitHub
+                saveExercisesToGitHub();
+                
+                // 添加到页面显示
+                recreateExerciseCardFromData(exerciseData);
             }
             
             closeUploadModal();
@@ -4659,13 +5053,27 @@
                 progressFill.style.width = '100%';
                 progressText.textContent = '100%';
                 
-                // 创建本地视频URL
-                const videoURL = URL.createObjectURL(file);
-                console.log('Created video URL:', videoURL);
-                console.log('File info:', { name: file.name, size: file.size, type: file.type });
+                // 创建视频数据对象
+                const videoData = {
+                    id: 'video_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    title: title,
+                    description: description,
+                    type: 'file',
+                    category: category,
+                    fileName: file.name,
+                    fileSize: file.size,
+                    fileType: file.type,
+                    uploadTime: new Date().toISOString()
+                };
                 
-                // 添加到视频列表
-                addVideoToList(title, description, videoURL, category, 'file');
+                // 添加到视频数据
+                videosData.push(videoData);
+                
+                // 保存到GitHub
+                saveVideosToGitHub();
+                
+                // 添加到页面显示
+                recreateVideoCardFromData(videoData);
                 
                 setTimeout(() => {
                     closeUploadModal();
@@ -4707,33 +5115,60 @@
             console.log('Playing video:', { source, title, type });
             
             if (type === 'file') {
-                // 本地视频文件
+                // 本地视频文件 - 高级播放器
                 console.log('Playing local video file:', source);
                 videoContainer.innerHTML = `
-                    <video controls style="width: 100%; height: 100%; border-radius: 8px;" preload="metadata">
-                        <source src="${source}" type="video/mp4">
-                        <source src="${source}" type="video/webm">
-                        <source src="${source}" type="video/ogg">
-                        您的浏览器不支持视频播放。
-                    </video>
+                    <div style="position: relative; width: 100%; height: 100%;">
+                        <video id="customVideoPlayer" controls style="width: 100%; height: 100%; border-radius: 8px;" preload="metadata">
+                            <source src="${source}" type="video/mp4">
+                            <source src="${source}" type="video/webm">
+                            <source src="${source}" type="video/ogg">
+                            您的浏览器不支持视频播放。
+                        </video>
+                        
+                        <!-- 自定义控制栏 -->
+                        <div id="customControls" style="
+                            position: absolute;
+                            bottom: 10px;
+                            right: 10px;
+                            background: rgba(0,0,0,0.8);
+                            padding: 8px 12px;
+                            border-radius: 6px;
+                            display: flex;
+                            gap: 10px;
+                            align-items: center;
+                            color: white;
+                            font-size: 12px;
+                        ">
+                            <div>
+                                <label>倍速:</label>
+                                <select id="playbackRate" style="background: #333; color: white; border: none; padding: 2px 4px; border-radius: 3px;">
+                                    <option value="0.5">0.5x</option>
+                                    <option value="0.75">0.75x</option>
+                                    <option value="1" selected>1x</option>
+                                    <option value="1.25">1.25x</option>
+                                    <option value="1.5">1.5x</option>
+                                    <option value="2">2x</option>
+                                    <option value="3">3x</option>
+                                    <option value="4">4x</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>清晰度:</label>
+                                <select id="videoQuality" style="background: #333; color: white; border: none; padding: 2px 4px; border-radius: 3px;">
+                                    <option value="auto" selected>自动</option>
+                                    <option value="1080p">1080P</option>
+                                    <option value="720p">720P</option>
+                                    <option value="480p">480P</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 `;
                 
-                // 添加视频加载事件监听
-                const video = videoContainer.querySelector('video');
-                if (video) {
-                    video.addEventListener('loadstart', function() {
-                        console.log('Video loading started');
-                    });
-                    
-                    video.addEventListener('loadeddata', function() {
-                        console.log('Video data loaded');
-                    });
-                    
-                    video.addEventListener('error', function(e) {
-                        console.error('Video error:', e);
-                        showSecurityAlert('视频加载失败，请检查文件格式');
-                    });
-                }
+                // 初始化自定义视频播放器
+                initCustomVideoPlayer();
+                
             } else {
                 // 在线视频链接
                 if (source.includes('bilibili.com') || source.includes('b23.tv')) {
@@ -4888,6 +5323,276 @@
             };
             
             input.click();
+        }
+        
+        // 初始化自定义视频播放器
+        function initCustomVideoPlayer() {
+            const video = document.getElementById('customVideoPlayer');
+            const playbackRateSelect = document.getElementById('playbackRate');
+            const qualitySelect = document.getElementById('videoQuality');
+            const customControls = document.getElementById('customControls');
+            
+            if (!video) return;
+            
+            // 学生端特殊保护
+            if (currentUser && currentUser.role === 'student') {
+                // 禁用右键菜单但保留播放控件
+                video.addEventListener('contextmenu', function(e) {
+                    e.preventDefault();
+                    showSecurityAlert('视频内容受版权保护！');
+                    return false;
+                });
+                
+                // 禁用视频下载
+                video.controlsList = "nodownload nofullscreen noremoteplayback";
+                
+                // 监控录屏尝试
+                video.addEventListener('enterpictureinpicture', function(e) {
+                    e.preventDefault();
+                    showSecurityAlert('禁止画中画模式！');
+                    return false;
+                });
+            } else {
+                // 教师端可以使用所有功能
+                video.controlsList = "";
+            }
+            
+            // 倍速控制
+            playbackRateSelect.addEventListener('change', function() {
+                video.playbackRate = parseFloat(this.value);
+                console.log('播放速度设置为:', this.value + 'x');
+            });
+            
+            // 清晰度控制（模拟）
+            qualitySelect.addEventListener('change', function() {
+                console.log('清晰度设置为:', this.value);
+                // 这里可以根据需要切换不同清晰度的视频源
+            });
+            
+            // 视频加载事件
+            video.addEventListener('loadstart', function() {
+                console.log('视频开始加载');
+            });
+            
+            video.addEventListener('loadeddata', function() {
+                console.log('视频数据加载完成');
+                // 显示自定义控制栏
+                if (customControls) {
+                    customControls.style.display = 'flex';
+                }
+            });
+            
+            video.addEventListener('error', function(e) {
+                console.error('视频加载错误:', e);
+                showSecurityAlert('视频加载失败，请检查文件格式');
+            });
+            
+            // 播放状态监控
+            video.addEventListener('play', function() {
+                console.log('视频开始播放');
+                // 学生端播放时的特殊处理
+                if (currentUser && currentUser.role === 'student') {
+                    // 记录学习进度
+                    recordStudyProgress('video', video.src);
+                }
+            });
+            
+            video.addEventListener('pause', function() {
+                console.log('视频暂停');
+            });
+            
+            // 控制栏自动隐藏
+            let controlsTimeout;
+            const showControls = () => {
+                customControls.style.opacity = '1';
+                clearTimeout(controlsTimeout);
+                controlsTimeout = setTimeout(() => {
+                    if (!video.paused) {
+                        customControls.style.opacity = '0.7';
+                    }
+                }, 3000);
+            };
+            
+            video.addEventListener('mousemove', showControls);
+            video.addEventListener('click', showControls);
+            
+            // 初始显示控制栏
+            showControls();
+        }
+        
+        // 记录学习进度
+        function recordStudyProgress(type, content) {
+            if (!currentUser || currentUser.role !== 'student') return;
+            
+            const username = Object.keys(accounts).find(key => accounts[key] === currentUser);
+            if (username && accounts[username]) {
+                if (type === 'video') {
+                    if (!accounts[username].watchedVideos) {
+                        accounts[username].watchedVideos = [];
+                    }
+                    if (!accounts[username].watchedVideos.includes(content)) {
+                        accounts[username].watchedVideos.push(content);
+                        accounts[username].videoProgress = accounts[username].watchedVideos.length;
+                        
+                        // 保存到GitHub
+                        saveUsersToGitHub();
+                        console.log('视频学习进度已记录');
+                    }
+                } else if (type === 'exercise') {
+                    if (!accounts[username].startedExercises) {
+                        accounts[username].startedExercises = [];
+                    }
+                    if (!accounts[username].startedExercises.includes(content)) {
+                        accounts[username].startedExercises.push(content);
+                        
+                        // 保存到GitHub
+                        saveUsersToGitHub();
+                        console.log('题目学习进度已记录');
+                    }
+                }
+            }
+        }
+        
+        // 修改密码相关函数
+        function showChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            modal.classList.add('active');
+        }
+        
+        function closeChangePasswordModal() {
+            const modal = document.getElementById('changePasswordModal');
+            modal.classList.remove('active');
+            
+            // 清空表单
+            document.getElementById('changeUsername').value = '';
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        }
+        
+        async function changePassword() {
+            const username = document.getElementById('changeUsername').value.trim();
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            // 验证输入
+            if (!username || !currentPassword || !newPassword || !confirmPassword) {
+                showAlert('请填写所有字段');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showAlert('两次输入的新密码不一致');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showAlert('新密码长度至少6位');
+                return;
+            }
+            
+            // 验证用户名和当前密码
+            if (!accounts[username] || accounts[username].password !== currentPassword) {
+                showAlert('用户名或当前密码错误');
+                return;
+            }
+            
+            // 修改密码
+            accounts[username].password = newPassword;
+            
+            // 保存到GitHub
+            const success = await saveUsersToGitHub();
+            if (success) {
+                showMessage('密码修改成功！', 'success');
+                closeChangePasswordModal();
+            } else {
+                showAlert('密码修改失败，请重试');
+            }
+        }
+        
+        // 开始练习题目
+        function startExercise(exerciseId) {
+            const exercise = exercisesData.find(e => e.id === exerciseId);
+            if (!exercise) {
+                showAlert('题目不存在');
+                return;
+            }
+            
+            // 记录学习进度
+            if (currentUser && currentUser.role === 'student') {
+                recordStudyProgress('exercise', exerciseId);
+            }
+            
+            // 显示题目详情模态框
+            showExerciseModal(exercise);
+        }
+        
+        // 显示题目详情模态框
+        function showExerciseModal(exercise) {
+            const modal = document.createElement('div');
+            modal.className = 'modal-backdrop active';
+            modal.id = 'exerciseModal';
+            
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 800px;">
+                    <div class="modal-header">
+                        <h3><i class="fas fa-question-circle"></i> ${escapeHtml(exercise.title)}</h3>
+                        <button class="close-modal" onclick="closeExerciseModal()">&times;</button>
+                    </div>
+                    <div style="padding: 20px;">
+                        <div class="exercise-description" style="margin-bottom: 20px; font-size: 16px; line-height: 1.6;">
+                            ${escapeHtml(exercise.description)}
+                        </div>
+                        
+                        <div class="exercise-files" style="margin-bottom: 20px;">
+                            <h4>相关文件：</h4>
+                            ${exercise.files.map(file => `
+                                <div style="padding: 10px; background: #f8f9fa; margin: 5px 0; border-radius: 6px;">
+                                    <i class="fas fa-file"></i> ${file.name} (${(file.size / 1024).toFixed(1)}KB)
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="exercise-actions" style="text-align: center;">
+                            <button class="upload-btn-primary" onclick="completeExercise('${exercise.id}')">
+                                <i class="fas fa-check"></i> 标记为已完成
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        }
+        
+        // 关闭题目模态框
+        function closeExerciseModal() {
+            const modal = document.getElementById('exerciseModal');
+            if (modal) {
+                document.body.removeChild(modal);
+            }
+        }
+        
+        // 完成练习
+        function completeExercise(exerciseId) {
+            if (currentUser && currentUser.role === 'student') {
+                const username = Object.keys(accounts).find(key => accounts[key] === currentUser);
+                if (username && accounts[username]) {
+                    if (!accounts[username].completedExercises) {
+                        accounts[username].completedExercises = [];
+                    }
+                    if (!accounts[username].completedExercises.includes(exerciseId)) {
+                        accounts[username].completedExercises.push(exerciseId);
+                        accounts[username].questionProgress = accounts[username].completedExercises.length;
+                        
+                        // 保存到GitHub
+                        saveUsersToGitHub();
+                        showMessage('练习已完成！', 'success');
+                    }
+                }
+            }
+            closeExerciseModal();
         }
         
         // 替换alert为更好的提示
