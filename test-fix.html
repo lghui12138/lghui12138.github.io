@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修复测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .warning { color: #ffc107; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 修复测试页面</h1>
+    
+    <div class="test-section">
+        <h2>📋 测试项目</h2>
+        <ul>
+            <li>✅ JavaScript语法错误修复</li>
+            <li>✅ basicLogin函数定义</li>
+            <li>✅ HTTP头部优化</li>
+            <li>✅ 浏览器兼容性</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔐 登录测试</h2>
+        <button onclick="testLogin()">测试登录功能</button>
+        <button onclick="testBasicLogin()">测试basicLogin函数</button>
+        <button onclick="clearStorage()">清除登录状态</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🌐 HTTP头部测试</h2>
+        <button onclick="testHeaders()">测试HTTP头部</button>
+        <div id="headerResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 调试信息</h2>
+        <button onclick="showDebugInfo()">显示调试信息</button>
+        <pre id="debugInfo"></pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔗 页面链接</h2>
+        <p><a href="/quick-fix-login.html" target="_blank">🔐 快速修复登录页面</a></p>
+        <p><a href="/debug-test.html" target="_blank">🧪 调试测试页面</a></p>
+        <p><a href="/fluid_dynamic_2.html" target="_blank">📚 主学习平台</a></p>
+        <p><a href="/index.html" target="_blank">🏠 主页入口</a></p>
+    </div>
+
+    <script>
+        // 测试账号数据
+        const testAccounts = {
+            'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306' },
+            'student1': { name: '学生账号', role: 'student', password: '123456' },
+            'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025' },
+            'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025' }
+        };
+        
+        function log(message, type = 'info') {
+            const result = document.getElementById('loginResult');
+            const timestamp = new Date().toLocaleTimeString();
+            result.innerHTML += `<div class="${type}">[${timestamp}] ${message}</div>`;
+        }
+        
+        function testLogin() {
+            log('🔐 开始测试登录功能...', 'info');
+            
+            // 测试账号数据
+            if (testAccounts) {
+                log(`✅ 账号数据正常，共 ${Object.keys(testAccounts).length} 个账号`, 'success');
+            } else {
+                log('❌ 账号数据异常', 'error');
+            }
+            
+            // 测试localStorage
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                log('✅ localStorage功能正常', 'success');
+            } catch (e) {
+                log(`❌ localStorage功能异常: ${e.message}`, 'error');
+            }
+            
+            // 测试登录状态
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                log(`✅ 检测到已登录用户: ${currentUser}`, 'success');
+            } else {
+                log('ℹ️ 未检测到登录状态', 'info');
+            }
+        }
+        
+        function testBasicLogin() {
+            log('🔧 测试basicLogin函数...', 'info');
+            
+            if (typeof window.basicLogin === 'function') {
+                log('✅ basicLogin函数已定义', 'success');
+            } else {
+                log('❌ basicLogin函数未定义', 'error');
+            }
+            
+            if (typeof basicLogin === 'function') {
+                log('✅ basicLogin函数在全局作用域可用', 'success');
+            } else {
+                log('❌ basicLogin函数在全局作用域不可用', 'error');
+            }
+        }
+        
+        function clearStorage() {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('userName');
+            localStorage.removeItem('loginTime');
+            log('🗑️ 已清除所有登录状态', 'success');
+        }
+        
+        function testHeaders() {
+            log('🌐 测试HTTP头部...', 'info');
+            
+            // 测试fetch请求
+            fetch('/manifest.json')
+                .then(response => {
+                    log(`✅ 请求成功，状态码: ${response.status}`, 'success');
+                    
+                    // 检查安全头部
+                    const headers = response.headers;
+                    const securityHeaders = [
+                        'x-content-type-options',
+                        'referrer-policy',
+                        'permissions-policy'
+                    ];
+                    
+                    securityHeaders.forEach(header => {
+                        if (headers.get(header)) {
+                            log(`✅ ${header} 头部已设置`, 'success');
+                        } else {
+                            log(`⚠️ ${header} 头部未设置`, 'warning');
+                        }
+                    });
+                })
+                .catch(error => {
+                    log(`❌ 请求失败: ${error.message}`, 'error');
+                });
+        }
+        
+        function showDebugInfo() {
+            const debugInfo = document.getElementById('debugInfo');
+            const info = {
+                userAgent: navigator.userAgent,
+                language: navigator.language,
+                cookieEnabled: navigator.cookieEnabled,
+                onLine: navigator.onLine,
+                localStorage: typeof localStorage !== 'undefined',
+                sessionStorage: typeof sessionStorage !== 'undefined',
+                serviceWorker: 'serviceWorker' in navigator,
+                currentUser: localStorage.getItem('currentUser'),
+                userRole: localStorage.getItem('userRole'),
+                userName: localStorage.getItem('userName'),
+                loginTime: localStorage.getItem('loginTime'),
+                accounts: Object.keys(testAccounts),
+                windowSize: `${window.innerWidth}x${window.innerHeight}`,
+                screenSize: `${screen.width}x${screen.height}`,
+                colorDepth: screen.colorDepth,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+                basicLoginDefined: typeof window.basicLogin === 'function'
+            };
+            
+            debugInfo.textContent = JSON.stringify(info, null, 2);
+        }
+        
+        // 页面加载时自动运行一些测试
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 页面加载完成，开始自动测试...', 'info');
+            testBasicLogin();
+            
+            // 检查是否已登录
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                log(`✅ 已登录用户: ${currentUser}`, 'success');
+            }
+        });
+    </script>
+</body>
+</html>

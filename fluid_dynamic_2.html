@@ -6293,12 +6293,15 @@
             console.log('💡 可用账号:', Object.keys(window.accounts));
             
             // 确保basicLogin函数在全局作用域可用
-            if (typeof basicLogin === 'function') {
-                window.basicLogin = basicLogin;
-                console.log('✅ basicLogin函数已注册到全局作用域');
-            } else {
-                console.error('❌ basicLogin函数未定义');
-            }
+            // 延迟检查，因为basicLogin函数可能还没有定义
+            setTimeout(() => {
+                if (typeof basicLogin === 'function') {
+                    window.basicLogin = basicLogin;
+                    console.log('✅ basicLogin函数已注册到全局作用域');
+                } else {
+                    console.error('❌ basicLogin函数未定义');
+                }
+            }, 100);
             
             // 检查登录状态
             if (checkLoginStatus()) {
@@ -6643,7 +6646,6 @@
         
         // 确保basicLogin函数在全局作用域可用
         window.basicLogin = basicLogin;
-        window.quickLoginStudent = basicQuickStudent;
         window.debugLoginSystem = basicShowDebug;
         window.performQuickLogin = function(type) {
             if (type === 'teacher') basicQuickTeacher();
@@ -10733,112 +10735,7 @@
             }
         }
         
-        // 创建高级视频播放器
-        function createAdvancedVideoPlayer(container, source, title) {
-            container.innerHTML = `
-                <div style="position: relative; width: 100%; height: 100%;">
-                    <video id="customVideoPlayer" controls 
-                           style="width: 100%; height: 100%; border-radius: 8px;" 
-                           preload="metadata"
-                           crossorigin="anonymous">
-                        <source src="${source}" type="video/mp4">
-                        <source src="${source}" type="video/webm">
-                        <source src="${source}" type="video/ogg">
-                        您的浏览器不支持视频播放。
-                    </video>
-                    
-                    <!-- 增强控制栏 -->
-                    <div id="customControls" style="
-                        position: absolute;
-                        bottom: 15px;
-                        right: 15px;
-                        background: rgba(0,0,0,0.9);
-                        padding: 12px 16px;
-                        border-radius: 8px;
-                        display: flex;
-                        gap: 15px;
-                        align-items: center;
-                        color: white;
-                        font-size: 13px;
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                        -webkit-backdrop-filter: blur(5px);
-                        backdrop-filter: blur(5px);
-                    ">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <label>倍速:</label>
-                            <select id="playbackRate" style="
-                                background: #333; 
-                                color: white; 
-                                border: 1px solid #555; 
-                                padding: 4px 8px; 
-                                border-radius: 4px;
-                                font-size: 12px;
-                            ">
-                                <option value="0.5">0.5x</option>
-                                <option value="0.75">0.75x</option>
-                                <option value="1" selected>1.0x</option>
-                                <option value="1.25">1.25x</option>
-                                <option value="1.5">1.5x</option>
-                                <option value="2">2.0x</option>
-                                <option value="3">3.0x</option>
-                                <option value="4">4.0x</option>
-                            </select>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-expand"></i>
-                            <button id="fullscreenBtn" style="
-                                background: #007bff; 
-                                color: white; 
-                                border: none; 
-                                padding: 6px 12px; 
-                                border-radius: 4px;
-                                cursor: pointer;
-                                font-size: 12px;
-                            ">全屏</button>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-cog"></i>
-                            <label>清晰度:</label>
-                            <select id="videoQuality" style="
-                                background: #333; 
-                                color: white; 
-                                border: 1px solid #555; 
-                                padding: 4px 8px; 
-                                border-radius: 4px;
-                                font-size: 12px;
-                            ">
-                                <option value="auto" selected>自动</option>
-                                <option value="1080p">1080P</option>
-                                <option value="720p">720P</option>
-                                <option value="480p">480P</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- 播放提示 -->
-                    <div id="playbackHint" style="
-                        position: absolute;
-                        top: 20px;
-                        left: 20px;
-                        background: rgba(0,0,0,0.7);
-                        color: white;
-                        padding: 8px 12px;
-                        border-radius: 6px;
-                        font-size: 12px;
-                        display: none;
-                    ">
-                        <i class="fas fa-info-circle"></i> 
-                        双击全屏 | 空格暂停 | F键切换全屏
-                    </div>
-                </div>
-            `;
-            
-            // 初始化高级播放器
-            initAdvancedVideoPlayer();
-        }
+
         
         // 创建B站播放器
         function createBilibiliPlayer(container, source, title) {
