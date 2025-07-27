@@ -4551,6 +4551,11 @@
             window.originalFetch = window.fetch;
             window.fetch = function(...args) {
                 return window.originalFetch(...args).then(response => {
+                    // 跳过跨域资源，避免CORS问题
+                    const url = new URL(response.url);
+                    if (url.origin !== window.location.origin) {
+                        return response;
+                    }
                     // 创建新的响应对象，添加必要的头部
                     const headers = new Headers(response.headers);
                     
@@ -4693,16 +4698,36 @@
         // 页面加载后验证头部
         setTimeout(validateHeaders, 2000);
         
-        // 清理旧缓存
+        // 强制清理所有缓存
         if ('caches' in window) {
             caches.keys().then(cacheNames => {
-                cacheNames.forEach(cacheName => {
-                    if (cacheName.includes('fluid') || cacheName.includes('old')) {
-                        console.log('🗑️ 清理旧缓存:', cacheName);
-                        caches.delete(cacheName);
-                    }
-                });
+                console.log('🗑️ 清理所有缓存:', cacheNames);
+                return Promise.all(
+                    cacheNames.map(cacheName => {
+                        console.log('删除缓存:', cacheName);
+                        return caches.delete(cacheName);
+                    })
+                );
+            }).then(() => {
+                console.log('✅ 所有缓存已清理');
             });
+        }
+        
+        // 强制检查语法错误
+        try {
+            if (typeof showChangePasswordModal === 'undefined') {
+                console.error('❌ showChangePasswordModal函数未定义，可能有语法错误');
+                // 尝试重新加载页面清理缓存
+                setTimeout(() => {
+                    if (confirm('检测到脚本错误，是否重新加载页面？')) {
+                        window.location.reload(true);
+                    }
+                }, 2000);
+            } else {
+                console.log('✅ showChangePasswordModal函数已正确定义');
+            }
+        } catch (e) {
+            console.error('❌ 脚本检查错误:', e);
         }
         
         // 添加快速登录测试功能（仅开发环境）
@@ -6391,17 +6416,6 @@
             return videoExtensions.some(ext => urlLower.includes(ext)) || 
                    urlLower.includes('video') || 
                    urlLower.includes('.m3u8'); // HLS流
-        }
-            
-            modal.classList.add('active');
-            
-            // 播放视频时临时隐藏水印，提供最佳观看体验
-            if (currentUser && currentUser.role === 'student') {
-                const watermark = document.getElementById('watermarkOverlay');
-                if (watermark) {
-                    watermark.style.opacity = '0';
-                }
-            }
         }
         
         // 提取B站视频ID
