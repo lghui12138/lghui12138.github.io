@@ -8112,6 +8112,783 @@
             const extension = url.split('.').pop().toLowerCase().split('?')[0];
             return videoExtensions.includes(extension);
         }
+
+        // ==================== 多平台视频播放器系统 ====================
+        
+        // 创建Bilibili播放器
+        async function createBilibiliPlayer(container, source, title, metadata = {}) {
+            try {
+                // 移除加载指示器
+                const loadingDiv = container.querySelector('.video-loading');
+                if (loadingDiv) loadingDiv.remove();
+
+                // 提取BV号或AV号
+                let videoId = '';
+                if (source.includes('bilibili.com')) {
+                    const bvMatch = source.match(/BV[a-zA-Z0-9]+/);
+                    const avMatch = source.match(/av(\d+)/);
+                    if (bvMatch) {
+                        videoId = bvMatch[0];
+                    } else if (avMatch) {
+                        videoId = `av${avMatch[1]}`;
+                    }
+                } else if (source.includes('b23.tv')) {
+                    // 处理短链接，需要解析
+                    videoId = await resolveBilibiliShortLink(source);
+                }
+
+                if (!videoId) {
+                    throw new Error('无法解析Bilibili视频ID');
+                }
+
+                // 创建增强的Bilibili播放器
+                const playerContainer = document.createElement('div');
+                playerContainer.style.cssText = `
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
+                    background: #000;
+                    border-radius: 16px;
+                    overflow: hidden;
+                `;
+
+                // 创建iframe播放器
+                const iframe = document.createElement('iframe');
+                iframe.src = `https://player.bilibili.com/player.html?bvid=${videoId}&page=1&autoplay=0&high_quality=1&danmaku=0&t=0&as_wide=1&hasMuteButton=1&allowfullscreen=true&quality=120&vd_source=&p2p=0&no_share=1&no_recommend=1`;
+                iframe.style.cssText = `
+                    width: 100%;
+                    height: 100%;
+                    border: none;
+                    border-radius: 16px;
+                `;
+                iframe.setAttribute('allow', 'fullscreen; autoplay; encrypted-media');
+                iframe.setAttribute('allowfullscreen', 'true');
+                iframe.setAttribute('scrolling', 'no');
+
+                playerContainer.appendChild(iframe);
+
+                // 添加Bilibili特有的控制覆盖层
+                const controlsOverlay = document.createElement('div');
+                controlsOverlay.className = 'video-controls-overlay';
+                controlsOverlay.innerHTML = `
+                    <button class="video-control-btn" id="bilibiliRefreshBtn" title="刷新播放器">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                    <button class="video-control-btn" id="bilibiliOpenBtn" title="在新窗口打开">
+                        <i class="fas fa-external-link-alt"></i>
+                    </button>
+                `;
+
+                playerContainer.appendChild(controlsOverlay);
+
+                // 添加播放提示
+                const playHint = document.createElement('div');
+                playHint.style.cssText = `
+                    position: absolute;
+                    bottom: 100px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    z-index: 1000;
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                `;
+                playHint.textContent = '支持全屏和倍速播放，请在播放器内操作';
+                playerContainer.appendChild(playHint);
+
+                // 3秒后隐藏提示
+                setTimeout(() => {
+                    playHint.style.opacity = '0';
+                    playHint.style.transform = 'translateX(-50%) translateY(20px)';
+                    setTimeout(() => playHint.remove(), 300);
+                }, 3000);
+
+                container.appendChild(playerContainer);
+
+                // 绑定控制按钮事件
+                setupBilibiliControls(controlsOverlay, iframe, source, videoId);
+
+                console.log('✅ Bilibili player created successfully:', videoId);
+
+            } catch (error) {
+                console.error('Error creating Bilibili player:', error);
+                showVideoError(container, '无法加载Bilibili视频');
+            }
+        }
+
+        // 设置Bilibili控制按钮
+        function setupBilibiliControls(overlay, iframe, source, videoId) {
+            const refreshBtn = overlay.querySelector('#bilibiliRefreshBtn');
+            const openBtn = overlay.querySelector('#bilibiliOpenBtn');
+
+            refreshBtn.addEventListener('click', () => {
+                iframe.src = iframe.src; // 重新加载iframe
+                showAdvancedToast('播放器已刷新', 'info');
+            });
+
+            openBtn.addEventListener('click', () => {
+                window.open(source, '_blank');
+                showAdvancedToast('已在新窗口打开', 'info');
+            });
+        }
+
+        // 解析Bilibili短链接
+        async function resolveBilibiliShortLink(shortUrl) {
+            try {
+                // 这里可以通过代理服务解析短链接
+                // 暂时返回空，需要后端支持
+                return '';
+            } catch (error) {
+                console.error('Error resolving Bilibili short link:', error);
+                return '';
+            }
+        }
+
+        // 创建YouTube播放器
+        async function createYouTubePlayer(container, source, title, metadata = {}) {
+            try {
+                // 移除加载指示器
+                const loadingDiv = container.querySelector('.video-loading');
+                if (loadingDiv) loadingDiv.remove();
+
+                // 提取YouTube视频ID
+                let videoId = '';
+                const patterns = [
+                    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+                    /youtube\.com\/v\/([^&\n?#]+)/,
+                    /youtube\.com\/watch\?.*v=([^&\n?#]+)/
+                ];
+
+                for (const pattern of patterns) {
+                    const match = source.match(pattern);
+                    if (match) {
+                        videoId = match[1];
+                        break;
+                    }
+                }
+
+                if (!videoId) {
+                    throw new Error('无法解析YouTube视频ID');
+                }
+
+                // 创建YouTube播放器容器
+                const playerContainer = document.createElement('div');
+                playerContainer.style.cssText = `
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
+                    background: #000;
+                    border-radius: 16px;
+                    overflow: hidden;
+                `;
+
+                // 创建YouTube iframe
+                const iframe = document.createElement('iframe');
+                iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=0&controls=1&modestbranding=1&rel=0&showinfo=0&fs=1&cc_load_policy=1&iv_load_policy=3&autohide=1&playsinline=1`;
+                iframe.style.cssText = `
+                    width: 100%;
+                    height: 100%;
+                    border: none;
+                    border-radius: 16px;
+                `;
+                iframe.setAttribute('allow', 'fullscreen; autoplay; encrypted-media; accelerometer; gyroscope; picture-in-picture');
+                iframe.setAttribute('allowfullscreen', 'true');
+
+                playerContainer.appendChild(iframe);
+
+                // 添加YouTube控制覆盖层
+                const controlsOverlay = document.createElement('div');
+                controlsOverlay.className = 'video-controls-overlay';
+                controlsOverlay.innerHTML = `
+                    <button class="video-control-btn" id="youtubeRefreshBtn" title="刷新播放器">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                    <button class="video-control-btn" id="youtubeOpenBtn" title="在YouTube打开">
+                        <i class="fab fa-youtube"></i>
+                    </button>
+                `;
+
+                playerContainer.appendChild(controlsOverlay);
+
+                container.appendChild(playerContainer);
+
+                // 绑定YouTube控制事件
+                setupYouTubeControls(controlsOverlay, iframe, source, videoId);
+
+                console.log('✅ YouTube player created successfully:', videoId);
+
+            } catch (error) {
+                console.error('Error creating YouTube player:', error);
+                showVideoError(container, '无法加载YouTube视频');
+            }
+        }
+
+        // 设置YouTube控制按钮
+        function setupYouTubeControls(overlay, iframe, source, videoId) {
+            const refreshBtn = overlay.querySelector('#youtubeRefreshBtn');
+            const openBtn = overlay.querySelector('#youtubeOpenBtn');
+
+            refreshBtn.addEventListener('click', () => {
+                iframe.src = iframe.src;
+                showAdvancedToast('播放器已刷新', 'info');
+            });
+
+            openBtn.addEventListener('click', () => {
+                window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+                showAdvancedToast('已在YouTube打开', 'info');
+            });
+        }
+
+        // 创建抖音播放器
+        async function createDouyinPlayer(container, source, title, metadata = {}) {
+            try {
+                // 移除加载指示器
+                const loadingDiv = container.querySelector('.video-loading');
+                if (loadingDiv) loadingDiv.remove();
+
+                // 抖音视频需要特殊处理
+                const playerContainer = document.createElement('div');
+                playerContainer.style.cssText = `
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
+                    background: #000;
+                    border-radius: 16px;
+                    overflow: hidden;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                `;
+
+                // 抖音播放提示
+                const douyinNotice = document.createElement('div');
+                douyinNotice.style.cssText = `
+                    text-align: center;
+                    color: white;
+                    padding: 40px;
+                `;
+                douyinNotice.innerHTML = `
+                    <div style="font-size: 48px; margin-bottom: 20px;">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3 style="margin-bottom: 16px;">抖音视频</h3>
+                    <p style="margin-bottom: 20px; opacity: 0.8;">
+                        由于平台限制，抖音视频需要在移动端观看<br>
+                        或点击下方按钮在新窗口打开
+                    </p>
+                    <button class="btn btn-primary" onclick="window.open('${source}', '_blank')">
+                        <i class="fas fa-external-link-alt"></i>
+                        在抖音打开
+                    </button>
+                `;
+
+                playerContainer.appendChild(douyinNotice);
+                container.appendChild(playerContainer);
+
+                console.log('✅ Douyin player notice created');
+
+            } catch (error) {
+                console.error('Error creating Douyin player:', error);
+                showVideoError(container, '无法加载抖音视频');
+            }
+        }
+
+        // 创建通用播放器
+        async function createGenericPlayer(container, source, title, metadata = {}) {
+            try {
+                // 移除加载指示器
+                const loadingDiv = container.querySelector('.video-loading');
+                if (loadingDiv) loadingDiv.remove();
+
+                // 创建通用iframe播放器
+                const playerContainer = document.createElement('div');
+                playerContainer.style.cssText = `
+                    position: relative;
+                    width: 100%;
+                    height: 100%;
+                    background: #000;
+                    border-radius: 16px;
+                    overflow: hidden;
+                `;
+
+                const iframe = document.createElement('iframe');
+                iframe.src = source;
+                iframe.style.cssText = `
+                    width: 100%;
+                    height: 100%;
+                    border: none;
+                    border-radius: 16px;
+                `;
+                iframe.setAttribute('allow', 'fullscreen; autoplay; encrypted-media');
+                iframe.setAttribute('allowfullscreen', 'true');
+
+                playerContainer.appendChild(iframe);
+
+                // 添加通用控制按钮
+                const controlsOverlay = document.createElement('div');
+                controlsOverlay.className = 'video-controls-overlay';
+                controlsOverlay.innerHTML = `
+                    <button class="video-control-btn" id="genericRefreshBtn" title="刷新播放器">
+                        <i class="fas fa-redo"></i>
+                    </button>
+                    <button class="video-control-btn" id="genericOpenBtn" title="在新窗口打开">
+                        <i class="fas fa-external-link-alt"></i>
+                    </button>
+                `;
+
+                playerContainer.appendChild(controlsOverlay);
+                container.appendChild(playerContainer);
+
+                // 绑定通用控制事件
+                setupGenericControls(controlsOverlay, iframe, source);
+
+                console.log('✅ Generic player created successfully');
+
+            } catch (error) {
+                console.error('Error creating generic player:', error);
+                showVideoError(container, '无法加载视频内容');
+            }
+        }
+
+        // 设置通用控制按钮
+        function setupGenericControls(overlay, iframe, source) {
+            const refreshBtn = overlay.querySelector('#genericRefreshBtn');
+            const openBtn = overlay.querySelector('#genericOpenBtn');
+
+            refreshBtn.addEventListener('click', () => {
+                iframe.src = iframe.src;
+                showAdvancedToast('播放器已刷新', 'info');
+            });
+
+            openBtn.addEventListener('click', () => {
+                window.open(source, '_blank');
+                showAdvancedToast('已在新窗口打开', 'info');
+            });
+        }
+
+        // ==================== 智能题库处理系统 ====================
+        
+        // 高级题库管理器
+        class AdvancedExerciseManager {
+            constructor() {
+                this.exerciseTypes = {
+                    'multiple-choice': '单选题',
+                    'multiple-select': '多选题',
+                    'fill-in-blank': '填空题',
+                    'true-false': '判断题',
+                    'short-answer': '简答题',
+                    'essay': '论述题'
+                };
+                this.difficultyLevels = ['简单', '中等', '困难', '专家'];
+                this.categories = ['基础概念', '公式推导', '实际应用', '综合分析'];
+            }
+
+            // 智能解析题库内容
+            async parseExerciseContent(content, format) {
+                try {
+                    let questions = [];
+                    
+                    switch (format.toLowerCase()) {
+                        case 'json':
+                            questions = await this.parseJsonFormat(content);
+                            break;
+                        case 'txt':
+                            questions = await this.parseTextFormat(content);
+                            break;
+                        case 'csv':
+                            questions = await this.parseCsvFormat(content);
+                            break;
+                        case 'xlsx':
+                        case 'xls':
+                            questions = await this.parseExcelFormat(content);
+                            break;
+                        default:
+                            throw new Error(`不支持的格式: ${format}`);
+                    }
+
+                    // 验证和增强题目数据
+                    return this.enhanceQuestions(questions);
+
+                } catch (error) {
+                    console.error('Error parsing exercise content:', error);
+                    throw error;
+                }
+            }
+
+            // 解析JSON格式
+            async parseJsonFormat(content) {
+                const data = JSON.parse(content);
+                if (Array.isArray(data)) {
+                    return data;
+                } else if (data.questions && Array.isArray(data.questions)) {
+                    return data.questions;
+                } else {
+                    throw new Error('JSON格式不正确');
+                }
+            }
+
+            // 解析文本格式
+            async parseTextFormat(content) {
+                const lines = content.split('\n').filter(line => line.trim());
+                const questions = [];
+                
+                let currentQuestion = null;
+                let questionNumber = 1;
+
+                for (const line of lines) {
+                    const trimmedLine = line.trim();
+                    
+                    if (trimmedLine.match(/^\d+[.、]/)) {
+                        // 新题目开始
+                        if (currentQuestion) {
+                            questions.push(currentQuestion);
+                        }
+                        
+                        currentQuestion = {
+                            id: questionNumber++,
+                            question: trimmedLine.replace(/^\d+[.、]\s*/, ''),
+                            type: 'fill-in-blank',
+                            answer: '',
+                            options: [],
+                            explanation: '',
+                            difficulty: '中等',
+                            category: '基础概念'
+                        };
+                    } else if (trimmedLine.match(/^[A-D][.、]/)) {
+                        // 选项
+                        if (currentQuestion) {
+                            currentQuestion.options.push(trimmedLine);
+                            if (currentQuestion.type === 'fill-in-blank') {
+                                currentQuestion.type = 'multiple-choice';
+                            }
+                        }
+                    } else if (trimmedLine.startsWith('答案:') || trimmedLine.startsWith('Answer:')) {
+                        // 答案
+                        if (currentQuestion) {
+                            currentQuestion.answer = trimmedLine.replace(/^(答案:|Answer:)\s*/, '');
+                        }
+                    } else if (trimmedLine.startsWith('解析:') || trimmedLine.startsWith('Explanation:')) {
+                        // 解析
+                        if (currentQuestion) {
+                            currentQuestion.explanation = trimmedLine.replace(/^(解析:|Explanation:)\s*/, '');
+                        }
+                    }
+                }
+
+                // 添加最后一题
+                if (currentQuestion) {
+                    questions.push(currentQuestion);
+                }
+
+                return questions;
+            }
+
+            // 解析CSV格式
+            async parseCsvFormat(content) {
+                const lines = content.split('\n');
+                const questions = [];
+                
+                // 假设第一行是标题
+                const headers = lines[0].split(',').map(h => h.trim());
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const values = this.parseCsvLine(lines[i]);
+                    if (values.length >= 2) {
+                        const question = {
+                            id: i,
+                            question: values[0] || '',
+                            answer: values[1] || '',
+                            type: values[2] || 'fill-in-blank',
+                            difficulty: values[3] || '中等',
+                            category: values[4] || '基础概念',
+                            explanation: values[5] || '',
+                            options: []
+                        };
+
+                        // 如果有选项列
+                        for (let j = 6; j < values.length && j < 10; j++) {
+                            if (values[j] && values[j].trim()) {
+                                question.options.push(values[j].trim());
+                            }
+                        }
+
+                        if (question.options.length > 0 && question.type === 'fill-in-blank') {
+                            question.type = 'multiple-choice';
+                        }
+
+                        questions.push(question);
+                    }
+                }
+
+                return questions;
+            }
+
+            // 解析CSV行（处理引号包围的字段）
+            parseCsvLine(line) {
+                const result = [];
+                let current = '';
+                let inQuotes = false;
+                
+                for (let i = 0; i < line.length; i++) {
+                    const char = line[i];
+                    
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        result.push(current.trim());
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                
+                result.push(current.trim());
+                return result;
+            }
+
+            // 解析Excel格式（需要XLSX库支持）
+            async parseExcelFormat(file) {
+                // 这里需要使用XLSX库来解析Excel文件
+                // 暂时返回空数组，需要实际的Excel解析实现
+                console.warn('Excel format parsing not yet implemented');
+                return [];
+            }
+
+            // 增强题目数据
+            enhanceQuestions(questions) {
+                return questions.map((question, index) => {
+                    // 确保必要字段存在
+                    const enhanced = {
+                        id: question.id || (index + 1),
+                        question: question.question || '',
+                        answer: question.answer || '',
+                        type: question.type || 'fill-in-blank',
+                        difficulty: question.difficulty || '中等',
+                        category: question.category || '基础概念',
+                        explanation: question.explanation || '',
+                        options: question.options || [],
+                        tags: question.tags || [],
+                        points: question.points || 1,
+                        timeLimit: question.timeLimit || 60, // 秒
+                        created: question.created || new Date().toISOString(),
+                        updated: new Date().toISOString()
+                    };
+
+                    // 智能推断题目类型
+                    if (!question.type || question.type === 'auto') {
+                        enhanced.type = this.inferQuestionType(enhanced);
+                    }
+
+                    // 智能推断难度
+                    if (enhanced.difficulty === 'auto') {
+                        enhanced.difficulty = this.inferDifficulty(enhanced);
+                    }
+
+                    // 智能推断分类
+                    if (enhanced.category === 'auto') {
+                        enhanced.category = this.inferCategory(enhanced);
+                    }
+
+                    return enhanced;
+                });
+            }
+
+            // 推断题目类型
+            inferQuestionType(question) {
+                const questionText = question.question.toLowerCase();
+                
+                if (question.options && question.options.length > 0) {
+                    if (question.options.length === 2 && 
+                        (question.options.some(opt => opt.includes('对') || opt.includes('错') || 
+                         opt.includes('True') || opt.includes('False')))) {
+                        return 'true-false';
+                    } else if (question.answer && question.answer.split(',').length > 1) {
+                        return 'multiple-select';
+                    } else {
+                        return 'multiple-choice';
+                    }
+                }
+
+                if (questionText.includes('填空') || questionText.includes('___') || 
+                    questionText.includes('____') || questionText.includes('（）')) {
+                    return 'fill-in-blank';
+                }
+
+                if (questionText.includes('判断') || questionText.includes('对错') ||
+                    questionText.includes('正确') || questionText.includes('错误')) {
+                    return 'true-false';
+                }
+
+                if (questionText.includes('简述') || questionText.includes('简答') ||
+                    questionText.includes('说明') || questionText.includes('解释')) {
+                    return 'short-answer';
+                }
+
+                if (questionText.includes('论述') || questionText.includes('分析') ||
+                    questionText.includes('讨论') || questionText.length > 200) {
+                    return 'essay';
+                }
+
+                return 'fill-in-blank'; // 默认类型
+            }
+
+            // 推断难度等级
+            inferDifficulty(question) {
+                const questionText = question.question.toLowerCase();
+                let score = 0;
+
+                // 基于关键词推断
+                const easyKeywords = ['定义', '概念', '基本', '简单', '什么是'];
+                const mediumKeywords = ['计算', '应用', '分析', '比较', '解释'];
+                const hardKeywords = ['推导', '证明', '综合', '设计', '评价'];
+                const expertKeywords = ['创新', '优化', '批判', '研究', '发展'];
+
+                easyKeywords.forEach(keyword => {
+                    if (questionText.includes(keyword)) score -= 1;
+                });
+
+                mediumKeywords.forEach(keyword => {
+                    if (questionText.includes(keyword)) score += 0;
+                });
+
+                hardKeywords.forEach(keyword => {
+                    if (questionText.includes(keyword)) score += 1;
+                });
+
+                expertKeywords.forEach(keyword => {
+                    if (questionText.includes(keyword)) score += 2;
+                });
+
+                // 基于题目长度
+                if (question.question.length > 300) score += 1;
+                if (question.question.length < 50) score -= 1;
+
+                // 基于选项数量（如果有）
+                if (question.options.length > 4) score += 1;
+
+                if (score <= -1) return '简单';
+                if (score <= 0) return '中等';
+                if (score <= 1) return '困难';
+                return '专家';
+            }
+
+            // 推断题目分类
+            inferCategory(question) {
+                const questionText = question.question.toLowerCase();
+
+                if (questionText.includes('定义') || questionText.includes('概念') ||
+                    questionText.includes('基本') || questionText.includes('原理')) {
+                    return '基础概念';
+                }
+
+                if (questionText.includes('公式') || questionText.includes('推导') ||
+                    questionText.includes('计算') || questionText.includes('方程')) {
+                    return '公式推导';
+                }
+
+                if (questionText.includes('应用') || questionText.includes('实际') ||
+                    questionText.includes('工程') || questionText.includes('实例')) {
+                    return '实际应用';
+                }
+
+                if (questionText.includes('分析') || questionText.includes('综合') ||
+                    questionText.includes('比较') || questionText.includes('评价')) {
+                    return '综合分析';
+                }
+
+                return '基础概念'; // 默认分类
+            }
+
+            // 验证题库数据完整性
+            validateExerciseData(exerciseData) {
+                const errors = [];
+                const warnings = [];
+
+                if (!exerciseData.title || exerciseData.title.trim() === '') {
+                    errors.push('题库标题不能为空');
+                }
+
+                if (!exerciseData.questions || !Array.isArray(exerciseData.questions)) {
+                    errors.push('题库必须包含题目数组');
+                } else if (exerciseData.questions.length === 0) {
+                    errors.push('题库不能为空');
+                } else {
+                    exerciseData.questions.forEach((question, index) => {
+                        if (!question.question || question.question.trim() === '') {
+                            errors.push(`第${index + 1}题的题目内容不能为空`);
+                        }
+
+                        if (!question.answer || question.answer.trim() === '') {
+                            warnings.push(`第${index + 1}题缺少答案`);
+                        }
+
+                        if (question.type === 'multiple-choice' || question.type === 'multiple-select') {
+                            if (!question.options || question.options.length < 2) {
+                                errors.push(`第${index + 1}题的选择题必须有至少2个选项`);
+                            }
+                        }
+                    });
+                }
+
+                return { errors, warnings };
+            }
+
+            // 生成题库统计信息
+            generateStatistics(exerciseData) {
+                if (!exerciseData.questions || exerciseData.questions.length === 0) {
+                    return null;
+                }
+
+                const stats = {
+                    totalQuestions: exerciseData.questions.length,
+                    types: {},
+                    difficulties: {},
+                    categories: {},
+                    averageLength: 0,
+                    hasAnswers: 0,
+                    hasExplanations: 0
+                };
+
+                let totalLength = 0;
+
+                exerciseData.questions.forEach(question => {
+                    // 统计题型
+                    const type = this.exerciseTypes[question.type] || question.type;
+                    stats.types[type] = (stats.types[type] || 0) + 1;
+
+                    // 统计难度
+                    stats.difficulties[question.difficulty] = (stats.difficulties[question.difficulty] || 0) + 1;
+
+                    // 统计分类
+                    stats.categories[question.category] = (stats.categories[question.category] || 0) + 1;
+
+                    // 统计长度
+                    totalLength += question.question.length;
+
+                    // 统计完整性
+                    if (question.answer && question.answer.trim() !== '') {
+                        stats.hasAnswers++;
+                    }
+
+                    if (question.explanation && question.explanation.trim() !== '') {
+                        stats.hasExplanations++;
+                    }
+                });
+
+                stats.averageLength = Math.round(totalLength / exerciseData.questions.length);
+                stats.answerCompleteness = Math.round((stats.hasAnswers / stats.totalQuestions) * 100);
+                stats.explanationCompleteness = Math.round((stats.hasExplanations / stats.totalQuestions) * 100);
+
+                return stats;
+            }
+        }
+
+        // 创建全局题库管理器实例
+        const exerciseManager = new AdvancedExerciseManager();
         
         // 打开上传模态框
         function openUploadModal(type) {
