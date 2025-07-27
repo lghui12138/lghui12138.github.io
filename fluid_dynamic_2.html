@@ -114,7 +114,7 @@
             display: none !important;
         }
         
-        /* 水印保护层 */
+        /* 水印保护层 - 优化学习体验 */
         .watermark-overlay {
             position: fixed;
             top: 0;
@@ -122,24 +122,36 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: 9999;
+            z-index: 1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* 学习模式下隐藏背景水印 */
+        .watermark-overlay.learning-mode {
+            opacity: 0;
+        }
+        
+        /* 非学习模式显示轻微水印 */
+        .watermark-overlay.protection-mode {
+            opacity: 1;
             background-image: 
                 repeating-linear-gradient(
                     45deg,
                     transparent,
-                    transparent 100px,
-                    rgba(26, 58, 87, 0.05) 100px,
-                    rgba(26, 58, 87, 0.05) 200px
+                    transparent 150px,
+                    rgba(26, 58, 87, 0.02) 150px,
+                    rgba(26, 58, 87, 0.02) 300px
                 );
         }
         
-        /* 学生端特殊保护 */
+        /* 学生端特殊保护 - 优化学习体验 */
         .student-content {
             position: relative;
-            overflow: hidden;
         }
         
-        .student-content::before {
+        /* 只在非学习页面显示保护层 */
+        .student-content.non-learning::before {
             content: '';
             position: absolute;
             top: 0;
@@ -147,11 +159,62 @@
             width: 100%;
             height: 100%;
             background: 
-                radial-gradient(circle at 20% 20%, rgba(26, 58, 87, 0.02) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(26, 58, 87, 0.02) 0%, transparent 50%),
-                radial-gradient(circle at 40% 60%, rgba(26, 58, 87, 0.02) 0%, transparent 50%);
+                radial-gradient(circle at 20% 20%, rgba(26, 58, 87, 0.01) 0%, transparent 70%),
+                radial-gradient(circle at 80% 80%, rgba(26, 58, 87, 0.01) 0%, transparent 70%);
             pointer-events: none;
             z-index: 1;
+        }
+        
+        /* 学习页面清除所有干扰 */
+        .learning-content {
+            position: relative;
+            background: #f8fbff;
+        }
+        
+        .learning-content::before {
+            display: none;
+        }
+        
+        /* 学习模式下优化视频卡片 */
+        .learning-content .video-card {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(26, 58, 87, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .learning-content .video-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+        
+        /* 学习模式下优化题库卡片 */
+        .learning-content .exercise-card {
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(26, 58, 87, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .learning-content .exercise-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+            transform: translateY(-2px);
+        }
+        
+        /* 学习模式下的内容区域 */
+        .learning-content .content-section {
+            background: transparent;
+            padding: 20px 0;
+        }
+        
+        /* 学习模式下的标题优化 */
+        .learning-content .section-title {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            font-weight: bold;
         }
         
         /* 防打印样式 */
@@ -1091,21 +1154,26 @@
             cursor: pointer;
         }
         
-        /* 模态框样式 */
+        /* 模态框样式 - 优化学习体验 */
         .modal-backdrop {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.9);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 10000;
             visibility: hidden;
             opacity: 0;
             transition: all 0.3s ease;
+        }
+        
+        /* 学习模式下的模态框 */
+        .learning-content .modal-backdrop {
+            background: rgba(0, 0, 0, 0.95);
         }
         
         .modal-backdrop.active {
@@ -3026,7 +3094,7 @@
             }, 3000);
         }
         
-        // 动态水印生成
+        // 动态水印生成 - 智能学习模式
         function createDynamicWatermark() {
             if (!currentUser || currentUser.role !== 'student') return;
             
@@ -3034,32 +3102,61 @@
             const userName = currentUser.name || '学生用户';
             const timestamp = new Date().toLocaleString();
             
-            // 创建多层水印
-            let watermarkHTML = '';
-            for (let i = 0; i < 20; i++) {
-                const top = Math.random() * 100;
-                const left = Math.random() * 100;
-                const rotation = Math.random() * 60 - 30;
-                
-                watermarkHTML += `
+            // 检查当前是否在学习页面（视频或题库）
+            const currentSection = document.querySelector('.content-section.active');
+            const isLearningPage = currentSection && 
+                (currentSection.id === 'video-section' || 
+                 currentSection.id === 'exercise-section');
+            
+            if (isLearningPage) {
+                // 学习模式：只显示角落水印，不干扰学习
+                watermark.className = 'watermark-overlay learning-mode';
+                watermark.innerHTML = `
                     <div style="
                         position: absolute;
-                        top: ${top}%;
-                        left: ${left}%;
-                        transform: rotate(${rotation}deg);
-                        color: rgba(26, 58, 87, 0.08);
-                        font-size: 14px;
-                        font-weight: bold;
+                        top: 10px;
+                        right: 10px;
+                        color: rgba(26, 58, 87, 0.15);
+                        font-size: 12px;
+                        font-weight: normal;
                         pointer-events: none;
                         user-select: none;
                         white-space: nowrap;
+                        background: rgba(255, 255, 255, 0.8);
+                        padding: 2px 6px;
+                        border-radius: 3px;
                     ">
-                        ${userName} - ${timestamp}
+                        ${userName}
                     </div>
                 `;
+            } else {
+                // 非学习模式：显示完整保护水印
+                watermark.className = 'watermark-overlay protection-mode';
+                let watermarkHTML = '';
+                for (let i = 0; i < 12; i++) {
+                    const top = Math.random() * 100;
+                    const left = Math.random() * 100;
+                    const rotation = Math.random() * 40 - 20;
+                    
+                    watermarkHTML += `
+                        <div style="
+                            position: absolute;
+                            top: ${top}%;
+                            left: ${left}%;
+                            transform: rotate(${rotation}deg);
+                            color: rgba(26, 58, 87, 0.04);
+                            font-size: 12px;
+                            font-weight: normal;
+                            pointer-events: none;
+                            user-select: none;
+                            white-space: nowrap;
+                        ">
+                            ${userName}
+                        </div>
+                    `;
+                }
+                watermark.innerHTML = watermarkHTML;
             }
-            
-            watermark.innerHTML = watermarkHTML;
             
             // 定期更新水印
             setTimeout(createDynamicWatermark, 30000);
@@ -3548,6 +3645,41 @@
             
             // 显示选中的内容区域
             document.getElementById(sectionId).classList.add('active');
+            
+            // 根据页面类型调整保护级别
+            adjustProtectionLevel(sectionId);
+        }
+        
+        // 根据页面类型调整保护级别
+        function adjustProtectionLevel(sectionId) {
+            if (!currentUser || currentUser.role !== 'student') return;
+            
+            const mainContent = document.querySelector('.main-content');
+            const isLearningPage = (sectionId === 'video-section' || sectionId === 'exercise-section');
+            
+            if (isLearningPage) {
+                // 学习页面：减少干扰，优化体验
+                if (mainContent) {
+                    mainContent.classList.remove('student-content');
+                    mainContent.classList.add('learning-content');
+                }
+                
+                // 立即更新水印为学习模式
+                createDynamicWatermark();
+                
+                console.log('切换到学习模式，减少视觉干扰');
+            } else {
+                // 非学习页面：恢复完整保护
+                if (mainContent) {
+                    mainContent.classList.remove('learning-content');
+                    mainContent.classList.add('student-content', 'non-learning');
+                }
+                
+                // 立即更新水印为保护模式
+                createDynamicWatermark();
+                
+                console.log('切换到保护模式');
+            }
         }
         
         // 打开视频模态框
@@ -3622,6 +3754,13 @@
             videoFrame.src = '';
             
             modal.classList.remove('active');
+            
+            // 恢复水印显示
+            if (currentUser && currentUser.role === 'student') {
+                setTimeout(() => {
+                    createDynamicWatermark();
+                }, 300);
+            }
         }
         
         // 切换全屏模式
@@ -4484,7 +4623,15 @@
                 }
             }
             
-            modal.classList.add('show');
+            modal.classList.add('active');
+            
+            // 播放视频时临时隐藏水印，提供最佳观看体验
+            if (currentUser && currentUser.role === 'student') {
+                const watermark = document.getElementById('watermarkOverlay');
+                if (watermark) {
+                    watermark.style.opacity = '0';
+                }
+            }
         }
         
         // 提取B站视频ID
