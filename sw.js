@@ -1,196 +1,217 @@
-// Service Worker for GitHub Pages HTTP Headers
-// This adds security headers that GitHub Pages doesn't support natively
+// Service Worker for Fluid Dynamics Learning Platform
+const CACHE_NAME = 'fluid-dynamics-v2.1.0';
+const STATIC_CACHE = 'static-v2.1.0';
+const DYNAMIC_CACHE = 'dynamic-v2.1.0';
 
-const CACHE_NAME = 'fluid-dynamics-v5';
-const STATIC_CACHE_TIME = 31536000; // 1 year in seconds
+// 需要缓存的静态资源
+const STATIC_ASSETS = [
+    '/',
+    '/index.html',
+    '/simple-login.html',
+    '/test-login.html',
+    '/fluid_dynamic_2.html',
+    '/manifest.json',
+    '/_headers'
+];
 
-// Security headers to add
-const SECURITY_HEADERS = {
-  'X-Content-Type-Options': 'nosniff',
-  'X-Frame-Options': 'DENY', 
-  'X-XSS-Protection': '1; mode=block',
-  'Referrer-Policy': 'strict-origin-when-cross-origin',
-  'Permissions-Policy': 'camera=(), microphone=(), geolocation=(), payment=()',
-  'Cross-Origin-Opener-Policy': 'same-origin'
-};
+// 需要缓存的第三方资源
+const EXTERNAL_ASSETS = [
+    'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
+    'https://cdn.jsdelivr.net/npm/chart.js',
+    'https://vjs.zencdn.net/8.7.0/video.min.js',
+    'https://vjs.zencdn.net/8.7.0/video-js.css',
+    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/sortable/1.15.0/Sortable.min.js'
+];
 
-// Cache control rules
-const CACHE_RULES = {
-  html: 'no-cache, no-store, must-revalidate',
-  static: `public, max-age=${STATIC_CACHE_TIME}, immutable`,
-  font: `public, max-age=${STATIC_CACHE_TIME}, immutable`
-};
-
-// File type patterns
-const STATIC_FILES = /\.(js|css|png|jpg|jpeg|gif|svg|ico|webp|mp4|pdf)$/i;
-const FONT_FILES = /\.(woff|woff2|ttf|eot)$/i;
-const HTML_FILES = /\.html$/i;
-
+// 安装事件
 self.addEventListener('install', event => {
-  console.log('🔧 Service Worker installing...');
-  // 立即激活新版本
-  self.skipWaiting();
+    console.log('🚀 Service Worker installing...');
+    
+    event.waitUntil(
+        Promise.all([
+            // 缓存静态资源
+            caches.open(STATIC_CACHE).then(cache => {
+                console.log('📦 Caching static assets...');
+                return cache.addAll(STATIC_ASSETS);
+            }),
+            
+            // 缓存外部资源
+            caches.open(DYNAMIC_CACHE).then(cache => {
+                console.log('🌐 Caching external assets...');
+                return Promise.all(
+                    EXTERNAL_ASSETS.map(url => 
+                        fetch(url).then(response => {
+                            if (response.ok) {
+                                return cache.put(url, response);
+                            }
+                        }).catch(err => {
+                            console.warn('⚠️ Failed to cache external asset:', url, err);
+                        })
+                    )
+                );
+            })
+        ]).then(() => {
+            console.log('✅ Service Worker installed successfully');
+            return self.skipWaiting();
+        })
+    );
 });
 
+// 激活事件
 self.addEventListener('activate', event => {
-  console.log('✅ Service Worker activated');
-  event.waitUntil(
-    Promise.all([
-      // 清理旧缓存
-      caches.keys().then(cacheNames => {
-        return Promise.all(
-          cacheNames.map(cacheName => {
-            if (cacheName !== CACHE_NAME) {
-              console.log('🗑️ Deleting old cache:', cacheName);
-              return caches.delete(cacheName);
-            }
-          })
-        );
-      }),
-      // 立即控制所有客户端
-      self.clients.claim()
-    ]).then(() => {
-      console.log('🚀 Service Worker now controlling all clients');
-      // 通知所有客户端Service Worker已激活
-      return self.clients.matchAll().then(clients => {
-        clients.forEach(client => {
-          client.postMessage({ type: 'SW_ACTIVATED' });
-        });
-      });
-    })
-  );
+    console.log('🔄 Service Worker activating...');
+    
+    event.waitUntil(
+        Promise.all([
+            // 清理旧缓存
+            caches.keys().then(cacheNames => {
+                return Promise.all(
+                    cacheNames.map(cacheName => {
+                        if (cacheName !== STATIC_CACHE && cacheName !== DYNAMIC_CACHE) {
+                            console.log('🗑️ Deleting old cache:', cacheName);
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            }),
+            
+            // 立即控制客户端
+            self.clients.claim()
+        ]).then(() => {
+            console.log('✅ Service Worker activated successfully');
+        })
+    );
 });
 
+// 获取事件
 self.addEventListener('fetch', event => {
-  const url = new URL(event.request.url);
-  
-  // Only handle same-origin requests
-  if (url.origin !== location.origin) {
-    return;
-  }
-
-  event.respondWith(
-    handleRequest(event.request)
-  );
+    const url = new URL(event.request.url);
+    
+    // 跳过非GET请求
+    if (event.request.method !== 'GET') {
+        return;
+    }
+    
+    // 跳过非HTTP(S)请求
+    if (!url.protocol.startsWith('http')) {
+        return;
+    }
+    
+    // 处理静态资源
+    if (STATIC_ASSETS.includes(url.pathname) || url.pathname === '/') {
+        event.respondWith(handleStaticRequest(event.request));
+        return;
+    }
+    
+    // 处理外部资源
+    if (EXTERNAL_ASSETS.includes(event.request.url)) {
+        event.respondWith(handleExternalRequest(event.request));
+        return;
+    }
+    
+    // 处理其他请求
+    event.respondWith(handleDynamicRequest(event.request));
 });
 
-async function handleRequest(request) {
-  const url = new URL(request.url);
-  const pathname = url.pathname;
-  
-  try {
-    // Try to get from cache first for static files
-    if (STATIC_FILES.test(pathname) || FONT_FILES.test(pathname)) {
-      const cachedResponse = await caches.match(request);
-      if (cachedResponse) {
-        return addSecurityHeaders(cachedResponse, pathname);
-      }
-    }
-
-    // Fetch from network
-    const response = await fetch(request);
-    
-    if (!response.ok) {
-      throw new Error(`Network response was not ok: ${response.status}`);
-    }
-
-    // Clone response to modify headers
-    const modifiedResponse = addSecurityHeaders(response.clone(), pathname);
-    
-    // Cache static files
-    if (STATIC_FILES.test(pathname) || FONT_FILES.test(pathname)) {
-      const cache = await caches.open(CACHE_NAME);
-      cache.put(request, response.clone());
-    }
-    
-    return modifiedResponse;
-    
-  } catch (error) {
-    console.error('🚨 Service Worker fetch error:', error);
-    
-    // Try to serve from cache as fallback
-    const cachedResponse = await caches.match(request);
-    if (cachedResponse) {
-      return addSecurityHeaders(cachedResponse, pathname);
-    }
-    
-    // Return original response if available
+// 处理静态资源请求
+async function handleStaticRequest(request) {
     try {
-      const fallbackResponse = await fetch(request);
-      return addSecurityHeaders(fallbackResponse, pathname);
-    } catch (fallbackError) {
-      console.error('🚨 Fallback fetch also failed:', fallbackError);
-      return new Response('Service temporarily unavailable', { 
-        status: 503,
-        headers: SECURITY_HEADERS 
-      });
+        // 首先尝试从缓存获取
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+        
+        // 如果缓存中没有，从网络获取
+        const networkResponse = await fetch(request);
+        
+        // 如果网络请求成功，缓存响应
+        if (networkResponse.ok) {
+            const cache = await caches.open(STATIC_CACHE);
+            cache.put(request, networkResponse.clone());
+        }
+        
+        return networkResponse;
+    } catch (error) {
+        console.error('❌ Static request failed:', error);
+        return new Response('Network error', { status: 503 });
     }
-  }
 }
 
-function addSecurityHeaders(response, pathname) {
-  const headers = new Headers(response.headers);
-  
-  // Add security headers
-  Object.entries(SECURITY_HEADERS).forEach(([key, value]) => {
-    headers.set(key, value);
-  });
-  
-  // Add appropriate cache control
-  if (HTML_FILES.test(pathname) || pathname.endsWith('/') || !pathname.includes('.')) {
-    headers.set('Cache-Control', CACHE_RULES.html);
-    headers.set('Pragma', 'no-cache');
-    // Don't use Expires header, only Cache-Control
-    headers.delete('Expires');
-  } else if (FONT_FILES.test(pathname)) {
-    headers.set('Cache-Control', CACHE_RULES.font);
-    headers.set('Content-Type', getFontContentType(pathname));
-    // Remove charset from font files
-    headers.delete('charset');
-  } else if (STATIC_FILES.test(pathname)) {
-    headers.set('Cache-Control', CACHE_RULES.static);
-  }
-  
-  // JSON files
-  if (/\.json$/i.test(pathname)) {
-    headers.set('Cache-Control', CACHE_RULES.static);
-    headers.set('Content-Type', 'application/json');
-  }
-  
-  // Remove charset from font files
-  if (FONT_FILES.test(pathname)) {
-    const contentType = headers.get('Content-Type');
-    if (contentType && contentType.includes('charset')) {
-      headers.set('Content-Type', contentType.split(';')[0]);
+// 处理外部资源请求
+async function handleExternalRequest(request) {
+    try {
+        // 首先尝试从缓存获取
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+        
+        // 如果缓存中没有，从网络获取
+        const networkResponse = await fetch(request);
+        
+        // 如果网络请求成功，缓存响应
+        if (networkResponse.ok) {
+            const cache = await caches.open(DYNAMIC_CACHE);
+            cache.put(request, networkResponse.clone());
+        }
+        
+        return networkResponse;
+    } catch (error) {
+        console.error('❌ External request failed:', error);
+        return new Response('Network error', { status: 503 });
     }
-  }
-  
-  return new Response(response.body, {
-    status: response.status,
-    statusText: response.statusText,
-    headers: headers
-  });
 }
 
-function getFontContentType(pathname) {
-  if (pathname.endsWith('.woff2')) return 'font/woff2';
-  if (pathname.endsWith('.woff')) return 'font/woff';
-  if (pathname.endsWith('.ttf')) return 'font/ttf';
-  if (pathname.endsWith('.eot')) return 'application/vnd.ms-fontobject';
-  return 'font/woff2'; // default
+// 处理动态请求
+async function handleDynamicRequest(request) {
+    try {
+        // 优先从网络获取
+        const networkResponse = await fetch(request);
+        
+        // 如果网络请求成功，缓存响应
+        if (networkResponse.ok) {
+            const cache = await caches.open(DYNAMIC_CACHE);
+            cache.put(request, networkResponse.clone());
+        }
+        
+        return networkResponse;
+    } catch (error) {
+        console.error('❌ Dynamic request failed:', error);
+        
+        // 如果网络失败，尝试从缓存获取
+        const cachedResponse = await caches.match(request);
+        if (cachedResponse) {
+            return cachedResponse;
+        }
+        
+        return new Response('Network error', { status: 503 });
+    }
 }
 
-// Handle messages from main thread
+// 消息处理
 self.addEventListener('message', event => {
-  if (event.data && event.data.type === 'SKIP_WAITING') {
-    console.log('📨 Received SKIP_WAITING message');
-    self.skipWaiting();
-  }
-  
-  if (event.data && event.data.type === 'CLAIM_CLIENTS') {
-    console.log('📨 Received CLAIM_CLIENTS message');
-    self.clients.claim();
-  }
+    console.log('📨 Service Worker received message:', event.data);
+    
+    if (event.data && event.data.type === 'SKIP_WAITING') {
+        self.skipWaiting();
+    }
+    
+    if (event.data && event.data.type === 'CLAIM_CLIENTS') {
+        self.clients.claim();
+    }
 });
 
-console.log('🚀 Service Worker script loaded');
+// 错误处理
+self.addEventListener('error', event => {
+    console.error('💥 Service Worker error:', event.error);
+});
+
+// 未处理的Promise拒绝
+self.addEventListener('unhandledrejection', event => {
+    console.error('💥 Service Worker unhandled rejection:', event.reason);
+});
+
+console.log('📜 Service Worker script loaded');
