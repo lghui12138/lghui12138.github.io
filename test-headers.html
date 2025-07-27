@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTTP头部测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-result {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .pass { border-left: 4px solid #4caf50; }
+        .fail { border-left: 4px solid #f44336; }
+        .pending { border-left: 4px solid #ff9800; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        button { background: #1976d2; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #1565c0; }
+    </style>
+</head>
+<body>
+    <h1>🔍 HTTP头部和性能测试</h1>
+    
+    <div class="test-result pending" id="swStatus">
+        <h3>Service Worker状态</h3>
+        <p id="swInfo">检查中...</p>
+    </div>
+    
+    <div class="test-result pending" id="headerTest">
+        <h3>HTTP安全头部测试</h3>
+        <p id="headerInfo">检查中...</p>
+        <pre id="headerDetails"></pre>
+    </div>
+    
+    <div class="test-result pending" id="cacheTest">
+        <h3>缓存策略测试</h3>
+        <p id="cacheInfo">检查中...</p>
+        <pre id="cacheDetails"></pre>
+    </div>
+    
+    <div class="test-result pending" id="fontTest">
+        <h3>字体文件Content-Type测试</h3>
+        <p id="fontInfo">检查中...</p>
+        <pre id="fontDetails"></pre>
+    </div>
+    
+    <div style="text-align: center; margin-top: 30px;">
+        <button onclick="runAllTests()">🔄 重新测试</button>
+        <button onclick="clearCache()">🗑️ 清理缓存</button>
+        <button onclick="window.location.href='/fluid_dynamic_2.html'">🏠 返回主页</button>
+    </div>
+
+    <script>
+        function updateStatus(elementId, status, message, details = '') {
+            const element = document.getElementById(elementId);
+            element.className = `test-result ${status}`;
+            document.getElementById(elementId.replace('Test', 'Info')).textContent = message;
+            
+            const detailsElement = document.getElementById(elementId.replace('Test', 'Details'));
+            if (detailsElement && details) {
+                detailsElement.textContent = details;
+            }
+        }
+
+        async function checkServiceWorker() {
+            try {
+                if ('serviceWorker' in navigator) {
+                    const registration = await navigator.serviceWorker.getRegistration();
+                    if (registration && registration.active) {
+                        updateStatus('swStatus', 'pass', '✅ Service Worker已激活');
+                        return true;
+                    } else {
+                        updateStatus('swStatus', 'fail', '❌ Service Worker未激活');
+                        return false;
+                    }
+                } else {
+                    updateStatus('swStatus', 'fail', '❌ 浏览器不支持Service Worker');
+                    return false;
+                }
+            } catch (error) {
+                updateStatus('swStatus', 'fail', `❌ Service Worker检查失败: ${error.message}`);
+                return false;
+            }
+        }
+
+        async function checkHeaders() {
+            try {
+                const response = await fetch('/manifest.json', { 
+                    method: 'HEAD',
+                    cache: 'no-cache'
+                });
+
+                const headers = {};
+                response.headers.forEach((value, key) => {
+                    headers[key] = value;
+                });
+
+                const requiredHeaders = [
+                    'x-content-type-options',
+                    'x-frame-options', 
+                    'x-xss-protection',
+                    'referrer-policy'
+                ];
+
+                const missing = requiredHeaders.filter(header => !headers[header]);
+                
+                if (missing.length === 0) {
+                    updateStatus('headerTest', 'pass', '✅ 所有安全头部已设置', JSON.stringify(headers, null, 2));
+                } else {
+                    updateStatus('headerTest', 'fail', `❌ 缺少头部: ${missing.join(', ')}`, JSON.stringify(headers, null, 2));
+                }
+            } catch (error) {
+                updateStatus('headerTest', 'fail', `❌ 头部检查失败: ${error.message}`);
+            }
+        }
+
+        async function checkCache() {
+            try {
+                // 测试HTML文件缓存
+                const htmlResponse = await fetch('/test-headers.html', { cache: 'no-cache' });
+                const htmlCache = htmlResponse.headers.get('cache-control');
+                
+                // 测试静态资源缓存
+                const manifestResponse = await fetch('/manifest.json', { cache: 'no-cache' });
+                const manifestCache = manifestResponse.headers.get('cache-control');
+
+                const cacheInfo = {
+                    'HTML缓存策略': htmlCache || '未设置',
+                    '静态资源缓存': manifestCache || '未设置'
+                };
+
+                const hasCorrectCache = htmlCache && htmlCache.includes('no-cache') && 
+                                      manifestCache && manifestCache.includes('max-age=31536000');
+
+                if (hasCorrectCache) {
+                    updateStatus('cacheTest', 'pass', '✅ 缓存策略正确', JSON.stringify(cacheInfo, null, 2));
+                } else {
+                    updateStatus('cacheTest', 'fail', '❌ 缓存策略需要优化', JSON.stringify(cacheInfo, null, 2));
+                }
+            } catch (error) {
+                updateStatus('cacheTest', 'fail', `❌ 缓存检查失败: ${error.message}`);
+            }
+        }
+
+        async function checkFontTypes() {
+            try {
+                // 创建一个测试字体URL（如果存在）
+                const testUrls = [
+                    '/fonts/test.woff2',
+                    '/static/fonts/test.woff2', 
+                    '/assets/fonts/test.woff2'
+                ];
+
+                let fontResult = '没有找到字体文件进行测试';
+                
+                for (const url of testUrls) {
+                    try {
+                        const response = await fetch(url, { method: 'HEAD' });
+                        if (response.ok) {
+                            const contentType = response.headers.get('content-type');
+                            fontResult = `字体文件Content-Type: ${contentType}`;
+                            
+                            if (contentType === 'font/woff2') {
+                                updateStatus('fontTest', 'pass', '✅ 字体Content-Type正确', fontResult);
+                            } else {
+                                updateStatus('fontTest', 'fail', '❌ 字体Content-Type需要修复', fontResult);
+                            }
+                            return;
+                        }
+                    } catch (e) {
+                        // 继续尝试下一个URL
+                    }
+                }
+                
+                updateStatus('fontTest', 'pending', '⏳ 未找到字体文件', fontResult);
+            } catch (error) {
+                updateStatus('fontTest', 'fail', `❌ 字体检查失败: ${error.message}`);
+            }
+        }
+
+        async function runAllTests() {
+            console.log('🔍 开始运行所有测试...');
+            
+            await checkServiceWorker();
+            await checkHeaders();
+            await checkCache();
+            await checkFontTypes();
+            
+            console.log('✅ 所有测试完成');
+        }
+
+        async function clearCache() {
+            if ('caches' in window) {
+                const cacheNames = await caches.keys();
+                await Promise.all(cacheNames.map(name => caches.delete(name)));
+                console.log('🗑️ 缓存已清理');
+                alert('缓存已清理，建议刷新页面');
+            }
+        }
+
+        // 页面加载时自动运行测试
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>
