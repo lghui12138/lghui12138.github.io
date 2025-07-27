@@ -3617,8 +3617,10 @@
                 setTimeout(advancedAntiDebug, 2000);
             }
             
-            // 从GitHub加载数据
-            loadDataFromGitHub();
+            // 延迟加载GitHub数据，确保不影响登录
+            setTimeout(() => {
+                loadDataFromGitHub();
+            }, 1000);
         });
         
         // ==================== 用户系统 ====================
@@ -3834,8 +3836,14 @@
             }
         }
         
-        // 初始化GitHub存储
-        const githubStorage = new GitHubStorage(GITHUB_CONFIG);
+        // 初始化GitHub存储（如果GitHubStorage不存在，使用简化版本）
+        let githubStorage;
+        try {
+            githubStorage = new GitHubStorage(GITHUB_CONFIG);
+        } catch (error) {
+            console.log('使用简化GitHub访问');
+            githubStorage = new SimpleGitHubAccess(GITHUB_CONFIG);
+        }
         
         // 用户账号信息 - 将迁移到GitHub存储
         let accounts = {
@@ -3888,13 +3896,16 @@
                 
                 // 尝试加载数据（失败也不影响系统运行）
                 try {
-                    const userData = await githubStorage.getFile('data/users.json');
-                    if (userData && typeof userData === 'object') {
-                        accounts = { ...accounts, ...userData };
-                        console.log('✅ 用户数据加载成功');
+                    if (githubStorage && typeof githubStorage.getFile === 'function') {
+                        const userData = await githubStorage.getFile('data/users.json');
+                        if (userData && typeof userData === 'object' && Object.keys(userData).length > 0) {
+                            // 合并用户数据，保留原有默认账号
+                            accounts = { ...accounts, ...userData };
+                            console.log('✅ 用户数据加载成功');
+                        }
                     }
                 } catch (e) {
-                    console.log('📄 用户数据加载失败，使用默认数据');
+                    console.log('📄 用户数据加载失败，使用默认数据:', e.message);
                 }
                 
                 try {
@@ -4154,10 +4165,17 @@
         
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 调试：检查accounts数据
+            console.log('🔍 调试信息 - 可用账号:', Object.keys(accounts));
+            console.log('🔍 测试账号 - 教师账号:', accounts['liuguanghui6330156'] ? '存在' : '不存在');
+            console.log('🔍 测试账号 - 学生账号:', accounts['student1'] ? '存在' : '不存在');
+            
             // 登录按钮事件
             document.getElementById('loginBtn').addEventListener('click', function() {
-                const username = document.getElementById('username').value;
+                const username = document.getElementById('username').value.trim();
                 const password = document.getElementById('password').value;
+                
+                console.log('🔐 尝试登录:', { username: username, hasPassword: !!password });
                 
                 if (!username || !password) {
                     showAlert('请输入账号和密码');
@@ -4165,11 +4183,17 @@
                 }
                 
                 const account = accounts[username];
+                console.log('🔍 找到账号:', account ? '是' : '否');
                 
                 if (account && account.password === password) {
+                    console.log('✅ 登录成功');
                     login(username);
                 } else {
+                    console.log('❌ 登录失败 - 用户名或密码错误');
                     showAlert('用户名或密码错误');
+                    
+                    // 显示可用账号（调试用）
+                    console.log('📝 可用账号列表:', Object.keys(accounts));
                 }
             });
             
