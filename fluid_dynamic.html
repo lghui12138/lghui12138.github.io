@@ -1,1 +1,1509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流体力学学习平台 - 中国海洋大学</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0056b3;
+            --secondary: #003d82;
+            --accent: #007bff;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --gray: #6c757d;
+            --light-gray: #e9ecef;
+            --ocean-blue: #1a6fb0;
+            --deep-blue: #0a4a7a;
+            
+            --bg-color: #ffffff;
+            --card-bg: #ffffff;
+            --header-bg: #f1f8ff;
+            --border-color: #dee2e6;
+            --shadow: rgba(0, 0, 0, 0.1);
+            
+            --transition: all 0.3s ease;
+        }
 
+        .dark-mode {
+            --primary: #4da6ff;
+            --secondary: #1a75ff;
+            --accent: #3399ff;
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --header-bg: #0a1929;
+            --border-color: #333333;
+            --shadow: rgba(0, 0, 0, 0.3);
+            --light: #2d2d2d;
+            --dark: #f5f5f5;
+            --ocean-blue: #2a8cda;
+            --deep-blue: #1a5a8a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: var(--transition);
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--dark);
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* 头部样式 */
+        header {
+            background: linear-gradient(135deg, var(--ocean-blue), var(--deep-blue));
+            color: white;
+            padding: 15px 0;
+            box-shadow: 0 4px 12px rgba(0, 极好的0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .logo i {
+            margin-right: 10px;
+            font-size: 1.8rem;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+        }
+
+        nav li {
+            margin-left: 15px;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        nav a i {
+            margin-right: 8极好的;
+        }
+
+        nav a:hover, nav a.active {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .user-actions {
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            margin-right: 15px;
+        }
+
+        .login-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+
+        .login-btn i {
+            margin-right: 8px;
+        }
+
+        .login-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 登录模态框 */
+        .login-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-modal.active {
+            display: flex;
+        }
+
+        .login-form {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 30px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--gray);
+            cursor: pointer;
+        }
+
+        .login-form h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .login-submit {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .login-submit:hover {
+            background: var(--secondary);
+        }
+
+        /* 主内容区 */
+        main {
+            padding: 30px 0;
+            min-height: calc(100vh - 150px);
+        }
+
+        .content-section {
+            display: none;
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .content-section.active-section {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 2rem;
+            margin-bottom: 25px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        .section-title i {
+            margin-right: 10px;
+        }
+
+        /* 卡片样式 */
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px var(--shadow);
+        }
+
+        .card-header {
+            padding: 15px 20px;
+            background-color: var(--header-bg);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* 视频卡片 */
+        .video-card .thumbnail {
+            height: 160px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .video-card .thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s;
+        }
+
+        .video-card .thumbnail:hover img {
+            transform: scale(1.05);
+        }
+
+        .video-card .play-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.8);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary);
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .video-card .thumbnail:hover .play-btn {
+            opacity: 1;
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, rgba(0, 86, 179, 0.1), rgba(0, 86, 179, 0.05));
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .stat-card .value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* 分数对比图表 */
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 25px;
+            margin: 30px 0;
+            box-shadow: 0 5px 15px var(--shadow);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .chart-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .chart-legend {
+            display: flex;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-left: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+        
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 60px 1fr;
+            grid-template-rows: repeat(6, 1fr);
+            height: 350px;
+            gap: 10px;
+        }
+        
+        .y-axis-labels {
+            grid-column: 1;
+            grid-row: 1 / span 6;
+            display: grid;
+            grid-template-rows: repeat(6, 1fr);
+            text-align: right;
+            padding-right: 10px;
+            color: var(--gray);
+        }
+        
+        .chart-content {
+            grid-column: 2;
+            grid-row: 1 / span 6;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: 1fr;
+            align-items: end;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--border-color);
+            position: relative;
+        }
+        
+        .x-axis-labels {
+            grid-column: 2;
+            grid-row: 7;
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            text-align: center;
+            padding-top: 10px;
+            color: var(--gray);
+        }
+        
+        .score-bar {
+            position: relative;
+            width: 25px;
+            margin: 0 auto;
+        }
+        
+        .national-line {
+            background-color: #3498db;
+            height: var(--height-nation);
+            border-radius: 5px 5px 0 0;
+            width: 25px;
+            margin: 0 auto;
+        }
+        
+        .exam-line {
+            background-color: #f1c40f;
+            height: var(--height-exam);
+            border-radius: 5px 5px 0 0;
+            width: 25px;
+            margin: 0 auto;
+        }
+        
+        .value-label {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 2px 5px;
+            border-radius: 3px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .score-bar:hover .value-label {
+            opacity: 1;
+        }
+        
+        /* 表格样式 */
+        .plan-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px var(--shadow);
+        }
+
+        .plan-table th {
+            background-color: var(--header-bg);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .plan-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .plan-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .plan-table tr:nth-child(even) {
+            background-color: var(--light);
+        }
+
+        .plan-table tr:hover {
+            background-color: rgba(0, 86, 179, 0.05);
+        }
+
+        /* 登录控制 */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 1500;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        
+        .login-overlay h2 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .login-overlay p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--dark);
+        }
+        
+        .login-overlay-btn {
+            background: var(--primary);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .login-overlay-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 页脚 */
+        footer {
+            background-color: var(--header-bg);
+            padding: 25px 0;
+            border-top: 1px solid var(--border-color);
+            margin-top: 50px;
+        }
+
+        .footer-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copyright {
+            color: var(--gray);
+        }
+
+        .social-links a {
+            color: var(--gray);
+            font-size: 1.2rem;
+            margin-left: 15px;
+            text-decoration: none;
+        }
+
+        .social-links a:hover {
+            color: var(--primary);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            nav ul {
+                margin: 15px 0;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            nav li {
+                margin: 5px 10px;
+            }
+            
+            .user-actions {
+                width: 100%;
+                justify-content: center;
+                margin-top: 10px;
+            }
+            
+            .section-title {
+                font-size: 1.5rem;
+            }
+            
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .social-links {
+                margin-top: 15px;
+            }
+            
+            .plan-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .chart-grid {
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            nav ul {
+                flex-direction: column;
+            }
+            
+            nav li {
+                margin: 5px 0;
+            }
+            
+            .card-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .legend-item {
+                margin-left: 10px;
+            }
+        }
+        
+        /* 网盘资源卡片 */
+        .resource-card {
+            position: relative;
+            border: 2px solid var(--primary);
+            border-radius: 10px;
+            overflow: hidden;
+            background: linear-gradient(135deg, rgba(0, 86, 179, 0.05), rgba(0, 86, 179, 0.1));
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .resource-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .resource-icon {
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+        
+        .resource-icon i {
+            color: white;
+            font-size: 1.5rem;
+        }
+        
+        .resource-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+        
+        .resource-image {
+            border-radius: 8px;
+            overflow: hidden;
+            height: 150px;
+        }
+        
+        .resource-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .resource-info {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .resource-link {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            margin-top: 15px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .resource-link:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+        }
+        
+        .resource-code {
+            background: rgba(0, 86, 179, 0.1);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            display: inline-block;
+            margin-top: 5px;
+        }
+        
+        /* 用户信息样式 */
+        .user-profile {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--ocean-blue), var(--deep-blue));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-right: 20px;
+        }
+        
+        .user-info h2 {
+            margin-bottom: 5px;
+        }
+        
+        .user-info p {
+            color: var(--gray);
+        }
+        
+        .user-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-box {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .stat-box .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .stat-box .label {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录覆盖层 -->
+    <div class="login-overlay" id="loginOverlay">
+        <h2>流体力学学习平台</h2>
+        <p>请登录后访问所有内容，两个可用账号：hanwenxu 或 niwenxuan（无需密码）</p>
+        <button class="login-overlay-btn" id="overlayLoginBtn">立即登录</button>
+    </div>
+
+    <!-- 头部导航 -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-water"></i>
+                    <span>流体力学学习平台</span>
+                </div>
+                
+                <nav>
+                    <ul>
+                        <li><a href="#" class="active" data-section="plan"><i class="fas fa-book"></i> 复习规划</a></li>
+                        <li><a href="#" data-section="videos"><i class="fas fa-play-circle"></i> 视频课程</a></li>
+                        <li><a href="#" data-section="quizzes"><i class="fas fa-tasks"></i> 题库练习</a></li>
+                        <li><a href="#" data-section="scores"><i class="fas fa-chart-line"></i> 学习成绩</a></li>
+                        <li><a href="#" data-section="profile"><i class="fas fa-user"></i> 个人信息</a></li>
+                    </ul>
+                </nav>
+                
+                <div class="user-actions">
+                    <button class="theme-toggle" id="themeToggle">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                    <button class="login-btn" id="loginBtn">
+                        <i class="fas fa-sign-in-alt"></i> <span id="loginText">登录</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 登录模态框 -->
+    <div class="login-modal" id="loginModal">
+        <div class="login-form">
+            <button class="close-btn" id="closeLogin">&times;</button>
+            <h2>用户登录</h2>
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" placeholder="请输入用户名">
+            </div>
+            <button class="login-submit" id="loginSubmit">登录</button>
+            <p style="text-align: center; margin-top: 15px; color: var(--gray);">
+                可用账号: hanwenxu 或 niwenxuan (无需密码)
+            </p>
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <main class="container">
+        <!-- 复习规划板块 -->
+        <section id="plan" class="content-section active-section">
+            <h2 class="section-title"><i class="fas fa-book"></i> 803流体力学复习规划</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>复试人数</h3>
+                    <div class="value">35</div>
+                </div>
+                <div class="stat-card">
+                    <h3>录取人数</h3>
+                    <div class="value">35</div>
+                </div>
+                <div class="stat-card">
+                    <h3>分数线</h3>
+                    <div class="value">274</div>
+                    <p>2025国家线</p>
+                </div>
+            </div>
+            
+            <!-- 分数线对比图 -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">流体力学803国家线与复试线对比 (2020-2025)</div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #3498db;"></div>
+                            <span>国家线</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #f1c40f;"></div>
+                            <span>复试线</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chart-grid">
+                    <div class="y-axis-labels">
+                        <div>320</div>
+                        <div>310</div>
+                        <div>300</div>
+                        <div>290</div>
+                        <div>280</div>
+                        <div>270</div>
+                    </div>
+                    
+                    <div class="chart-content">
+                        <!-- 2020年 -->
+                        <div class="score-bar">
+                            <div class="national-line" style="--height-nation: 160px"></div>
+                            <div class="value-label">国家线: 288</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="exam-line" style="--height-exam: 160px"></div>
+                            <div class="value-label">复试线: 288</div>
+                        </div>
+                        
+                        <!-- 2021年 -->
+                        <div class="score-bar">
+                            <div class="national-line" style="--height-nation: 169px"></div>
+                            <div class="value-label">国家线: 292</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="exam-line" style="--height-exam: 216px"></div>
+                            <div class="value-label">复试线: 313</div>
+                        </div>
+                        
+                        <!-- 2022年 -->
+                        <div class="score-bar">
+                            <div class="national-line" style="--height-nation: 174px"></div>
+                            <div class="value-label">国家线: 294</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="exam-line" style="--height-exam: 164px"></div>
+                            <div class="value-label">复试线: 292</div>
+                        </div>
+                        
+                        <!-- 2023年 -->
+                        <div class="score-bar">
+                            <div class="national-line" style="--height-nation: 160px"></div>
+                            <div class="value-label">国家线: 288</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="exam-line" style="--height-exam: 166px"></div>
+                            <div class="value-label">复试线: 294</div>
+                        </div>
+                        
+                        <!-- 2024年 -->
+                        <div class="score-bar">
+                            <div class="national-line" style="--height-nation: 160px"></div>
+                            <div class="value-label">国家线: 288</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="exam-line" style="--height-exam: 160px"></div>
+                            <div class="value-label">复试线: 288</div>
+                        </div>
+                        
+                        <!-- 2025年 -->
+                        <div class="score-bar">
+                            <div class="national-line" style="--height-nation: 151px"></div>
+                            <div class="value-label">国家线: 274</div>
+                        </div>
+                        <div class="score-bar">
+                            <div class="exam-line" style="--height-exam: 151px"></div>
+                            <div class="value-label">复试线: 274</div>
+                        </div>
+                    </div>
+                    
+                    <div class="x-axis-labels">
+                        <div>2020</div>
+                        <div>2021</div>
+                        <div>2022</div>
+                        <div>2023</div>
+                        <div>2024</div>
+                        <div>2025</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-university"></i> 中国海洋大学 - 物理海洋学专业
+                </div>
+                <div class="card-body">
+                    <h3 style="margin-bottom: 15px; color: var(--primary);">考试要求</h3>
+                    <p>要求考生能系统理解流体力学的基本概念和基本原理，掌握流体力学的基本思想与方法，具有较好的流体力学知识以及运用所学知识分析问题和解决问题的能力。</p>
+                    
+                    <h3 style="margin: 30px 0 15px; color: var(--primary);">复习计划</h3>
+                    <ul style="padding-left: 20px; margin-bottom: 25px;">
+                        <li style="margin-bottom: 10px;"><strong>基础阶段：</strong>系统学习基础知识，精读《流体力学（第二版）》（吴望一），观看郑桂珍教授的网课</li>
+                        <li style="margin-bottom: 10px;"><strong>强化阶段：</极好的>基础知识串讲，重点难点解析，典型例题带练</li>
+                        <li style="margin-bottom: 10px;"><strong>真题阶段：</strong>历年真题精做两遍，重点真题深度解析，模拟考试训练</li>
+                    </ul>
+                    
+                    <h3 style="margin: 30px 0 15px; color: var(--primary);">上课规划</h3>
+                    <table class="plan-table">
+                        <thead>
+                            <tr>
+                                <th>计划教学月份</th>
+                                <th>教学内容</th>
+                                <th>教学目标</th>
+                                <th>消耗小时数</th>
+                                <th>课后作业</th>
+                                <th>备注</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>7月</td>
+                                <td>流体的物理性质，本构方程和亥姆霍兹定理，学习理想流体动量方程</td>
+                                <td>基本掌握重难点知识，能够独立完成习题</td>
+                                <td>4</td>
+                                <td>基础回顾，完成老师交代任务</td>
+                                <td>任务需保证质量完成</td>
+                            </tr>
+                            <tr>
+                                <td>8月</td>
+                                <td>学习流体力学方程组，学习涡旋运动，学习势流理论基础知识</td>
+                                <td>基本掌握重难点知识，能够独立完成习题</td>
+                                <td>4</td>
+                                <td>基础回顾，完成老师交代任务</td>
+                                <td>任务需保证质量完成</td>
+                            </tr>
+                            <tr>
+                                <td>9月</td>
+                                <td>进一步学习势流理论（包括布拉修斯定理）</td>
+                                <td>基本掌握重难点知识，能够独立完成习题</td>
+                                <td>2</td>
+                                <td>基础回顾，完成老师交代任务</td>
+                                <td>任务需保证质量完成</td>
+                            </tr>
+                            <tr>
+                                <td>10月</td>
+                                <td>学习相似原理，学习Π定理，学习粘性流体理论，讲解真题</td>
+                                <td>基本掌握重难点知识，能够独立完成习题</td>
+                                <td>4</td>
+                                <td>做真题，完成老师交代任务</td>
+                                <td>任务需保证质量完成</td>
+                            </tr>
+                            <tr>
+                                <td>11月</td>
+                                <td>讲解真题</td>
+                                <td>吃透真题</td>
+                                <td>4</td>
+                                <td>做完真题，完成老师交代任务</td>
+                                <td>任务需保证质量完成</td>
+                            </tr>
+                            <tr>
+                                <td>12月</td>
+                                <td>串讲真题错题</td>
+                                <td>吃透真题</td>
+                                <td>2</td>
+                                <td>真题回顾，完成老师交代任务</td>
+                                <td>任务需保证质量完成</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div style="background: rgba(255, 193, 7, 0.1); border-left: 4px solid var(--warning); padding: 15px; border-radius: 0 8px 8px 0; margin-top: 25px;">
+                        <h4><i class="fas fa-exclamation-circle"></i> 注意事项：</h4>
+                        <p>1. 需保证质量完成课后任务</p>
+                        <p>2. 9月可以开始尝试做真题</p>
+                        <p>3. 不会的真题可以告诉我，微信群讲或课上讲</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 视频板块 -->
+        <section id="videos" class="content-section">
+            <h2 class="section-title"><i class="fas fa-play-circle"></i> 视频课程</h2>
+            
+            <div class="card-grid">
+                <div class="card video-card">
+                    <div class="card-body">
+                        <div class="thumbnail">
+                            <img src="https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80" alt="流体力学基础">
+                            <div class="play-btn">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <h3>流体力学基础概念精讲</h3>
+                        <p>时长: 45分钟 | 观看次数: 1.2K</p>
+                        <div style="margin-top: 10px;">
+                            <span class="tag" style="background: rgba(0, 86, 179, 0.1); color: var(--primary); padding: 3px 10px; border-radius: 20px; font-size: 0.9rem;">基础理论</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 只保留第一个和第三个视频卡片 -->
+                <div class="card video-card">
+                    <div class="card-body">
+                        <div class="thumbnail">
+                            <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80" alt="粘性流体">
+                            <div class="play-btn">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <h3>粘性流体运动方程解析</h3>
+                        <p>时长: 32分钟 | 观看次数: 896</p>
+                        <div style="margin-top: 10px;">
+                            <span class="tag" style="background: rgba(0, 86, 179, 0.1); color: var(--primary); padding: 3px 10px; border-radius: 20px; font-size: 0.9rem;">粘性流体</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 郑桂珍流体力学视频资源 -->
+            <div class="resource-card">
+                <div class="resource-header">
+                    <div class="resource-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h3>郑桂珍流体力学视频资源</h3>
+                </div>
+                
+                <div class="resource-content">
+                    <div class="resource-image">
+                        <img src="https://images.unsplash.com/photo-1571260899304-425eee4c7ef0?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80" alt="流体力学视频资源">
+                    </div>
+                    
+                    <div class="resource-info">
+                        <p>包含郑桂珍教授全套流体力学教学视频，涵盖基础理论、公式推导和实际应用。</p>
+                        <p><strong>提取码：</strong><span class="resource-code">p3he</span></p>
+                        <a href="https://pan.baidu.com/s/1zE0VlaK_PpR6Mha9JMIRqA?pwd=p3he" class="resource-link" target="_blank">
+                            <i class="fas fa-download"></i> 下载视频资源
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 题库板块 -->
+        <section id="quizzes" class="content-section">
+            <h2 class="section-title"><i class="fas fa-tasks"></i> 题库练习</h2>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-body">
+                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                            <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(40, 167, 69, 0.1); display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                <i class="fas fa-calculator" style="font-size: 1.5rem; color: var(--success);"></i>
+                            </div>
+                            <div>
+                                <h3>基础理论题库</h3>
+                                <p>包含流体物理性质、运动描述等基础题目</p>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 8px; background: var(--light-gray); border-radius: 4px; margin: 15px 0;">
+                            <div class="progress-bar" style="height: 100%; width: 45%; background: var(--success); border-radius: 4px;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; color: var(--gray);">
+                            <span>45% 完成度</span>
+                            <span>18/40题</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body">
+                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                            <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(40, 167, 69, 0.1); display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                <i class="fas fa-wind" style="font-size: 1.5rem; color: var(--success);"></i>
+                            </div>
+                            <div>
+                                <h3>理想流体题库</h3>
+                                <p>理想流体流动、涡旋运动等题目</p>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 8px; background: var(--light-gray); border-radius: 4px; margin: 15px 0;">
+                            <div class="progress-bar" style="height: 100%; width: 30%; background: var(--success); border-radius: 4px;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; color: var(--gray);">
+                            <span>30% 完成度</span>
+                            <span>9/30题</span>
+                        </div>
+                    </极好的>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body">
+                        <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                            <div style="width: 极好的px; height: 60px; border-radius: 50%; background: rgba(40, 167, 69, 0.1); display: flex; align-items: center; justify-content: center; margin-right: 15px;">
+                                <i class="fas fa-vial" style="font-size: 1.5rem; color: var(--success);"></i>
+                            </div>
+                            <div>
+                                <h3>粘性流体题库</h3>
+                                <p>粘性不可压缩流体、边界层等题目</p>
+                            </div>
+                        </div>
+                        <div class="progress" style="height: 8px; background: var(--light-gray); border-radius: 4px; margin: 15px 0;">
+                            <div class="progress-bar" style="height: 100%; width: 20%; background: var(--success); border-radius: 4px;"></div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; color: var(--gray);">
+                            <span>20% 完成度</span>
+                            <span>6/30题</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 流体力学题目资源 -->
+            <div class="resource-card">
+                <div class="resource-header">
+                    <div class="resource-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3>流体力学题目资源</h3>
+                </div>
+                
+                <div class="resource-content">
+                    <div class="resource-image">
+                        <img src="https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=400&q=80" alt="流体力学题目资源">
+                    </div>
+                    
+                    <div class="resource-info">
+                        <p>包含流体力学各章节练习题、模拟试题及历年真题，涵盖基础理论到高级应用。</p>
+                        <p><strong>提取码：</strong><span class="resource-code">esgf</span></p>
+                        <a href="https://pan.baidu.com/s/1_FKYl4dFm2mE6TVpHoswEw?pwd=esgf" class="resource-link" target="_blank">
+                            <i class="fas fa-download"></i> 下载题目资源
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 成绩板块 -->
+        <section id="scores" class="content-section">
+            <h2 class="section-title"><i class="fas fa-chart-line"></i> 学习成绩</h2>
+            
+            <div class="card-grid">
+                <div class="card">
+                    <div class="card-body" style="text-align: center;">
+                        <div style="width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(var(--success) 0% 85%, var(--light-gray) 85% 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--dark);">85</div>
+                        </div>
+                        <h3>基础理论成绩</h3>
+                        <p>最近更新：2023年10月15日</p>
+                        <p>班级排名：前 15%</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body" style="text-align: center;">
+                        <div style="width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(var(--success) 0% 78%, var(--light-gray) 78% 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--dark);">78</div>
+                        </div>
+                        <h3>理想流体成绩</h3>
+                        <p>最近更新：2023年10月12日</p>
+                        <p>班级排名：前 25%</p>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-body" style="text-align: center;">
+                        <div style="width: 120px; height: 120px; border-radius: 50%; background: conic-gradient(var(--success) 0% 92%, var(--light-gray) 92% 100%); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+                            <div style="font-size: 2rem; font-weight: bold; color: var(--dark);">92</div>
+                        </div>
+                        <h3>粘性流体成绩</h3>
+                        <p>最近更新：2023年10月10日</p>
+                        <p>班级排名：前 10%</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 个人信息板块 -->
+        <section id="profile" class="content-section">
+            <h2 class="section-title"><i class="fas fa-user"></i> 个人信息</h2>
+            
+            <div class="card">
+                <div class="card-body">
+                    <div id="profileContent">
+                        <div style="text-align: center; padding: 30px;">
+                            <i class="fas fa-user-lock" style="font-size: 4rem; color: var(--gray); margin-bottom: 20px;"></i>
+                            <h3>请登录查看个人信息</h3>
+                            <p>登录后可以查看您的学习进度、成绩和个人资料</p>
+                            <button class="login-submit" id="profileLoginBtn" style="margin-top: 20px; width: auto; padding: 10px 25px;">
+                                <i class="fas fa-sign-in-alt"></i> 立即登录
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="copyright">
+                    &copy; 2023 流体力学学习平台. 中国海洋大学专业课复习系统
+                </div>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-weixin"></i></a>
+                    <a href="#"><i class="fab fa-qq"></i></a>
+                    <a href="#"><i class="fab fa-weibo"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 全局登录状态
+        let isLoggedIn = false;
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始登录状态
+            updateLoginState();
+            
+            // 登录覆盖层按钮
+            document.getElementById('overlayLoginBtn').addEventListener('click', function() {
+                document.getElementById('loginModal').classList.add('active');
+            });
+            
+            // 导航切换功能
+            const navLinks = document.querySelectorAll('nav a');
+            const sections = document.querySelectorAll('.content-section');
+            
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    if (!isLoggedIn) {
+                        document.getElementById('loginModal').classList.add('active');
+                        return;
+                    }
+                    
+                    // 移除所有活动状态
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    sections.forEach(s => s.classList.remove('active-section'));
+                    
+                    // 添加当前活动状态
+                    this.classList.add('active');
+                    const sectionId = this.getAttribute('data-section');
+                    document.getElementById(sectionId).classList.add('active-section');
+                    
+                    // 滚动到顶部
+                    window.scrollTo(0, 0);
+                });
+            });
+            
+            // 主题切换功能
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = themeToggle.querySelector('i');
+            
+            themeToggle.addEventListener('click', function() {
+                document.body.classList.toggle('dark-mode');
+                
+                if (document.body.classList.contains('dark-mode')) {
+                    themeIcon.classList.remove('fa-moon');
+                    themeIcon.classList.add('fa-sun');
+                } else {
+                    themeIcon.classList.remove('fa-sun');
+                    themeIcon.classList.add('fa-moon');
+                }
+                
+                // 保存主题偏好
+                localStorage.setItem('theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+            });
+            
+            // 应用保存的主题
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeIcon.classList.remove('fa-moon');
+                themeIcon.classList.add('fa-sun');
+            }
+            
+            // 视频播放功能
+            document.querySelectorAll('.play-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const videoCard = this.closest('.video-card');
+                    const title = videoCard.querySelector('h3').textContent;
+                    alert(`即将播放: ${title}\n\n在实际应用中，这里会嵌入视频播放器`);
+                });
+            });
+            
+            // 登录功能
+            const loginBtn = document.getElementById('loginBtn');
+            const loginModal = document.getElementById('loginModal');
+            const closeLogin = document.getElementById('closeLogin');
+            const loginSubmit = document.getElementById('loginSubmit');
+            const profileLoginBtn = document.getElementById('profileLoginBtn');
+            const usernameInput = document.getElementById('username');
+            
+            // 打开登录模态框
+            loginBtn.addEventListener('click', function() {
+                loginModal.classList.add('active');
+            });
+            
+            profileLoginBtn.addEventListener('click', function() {
+                loginModal.classList.add('active');
+            });
+            
+            // 关闭登录模态框
+            closeLogin.addEventListener('click', function() {
+                loginModal.classList.remove('active');
+            });
+            
+            // 登录提交
+            loginSubmit.addEventListener('click', function() {
+                const username = usernameInput.value.trim();
+                
+                if (username === 'hanwenxu' || username === 'niwenxuan') {
+                    // 登录成功
+                    isLoggedIn = true;
+                    updateLoginState();
+                    loginModal.classList.remove('active');
+                    
+                    // 更新个人信息区域
+                    const profileContent = document.getElementById('profileContent');
+                    profileContent.innerHTML = `
+                        <div class="user-profile">
+                            <div class="user-avatar">
+                                ${username.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="user-info">
+                                <h2>${username}</h2>
+                                <p>流体力学专业 | 中国海洋大学</p>
+                                <p>注册日期: 2023年1月15日</p>
+                            </div>
+                        </div>
+                        
+                        <div class="user-stats">
+                            <div class="stat-box">
+                                <div class="value">128</div>
+                                <div class="label">学习时长 (小时)</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="value">85%</div>
+                                <div class="label">完成进度</div>
+                            </div>
+                            <div class="stat-box">
+                                <div class="value">78</div>
+                                <div class="label">平均成绩</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: var(--light); border-radius: 10px; padding: 20px;">
+                            <h3 style="margin-bottom: 15px; color: var(--primary);">账户信息</h3>
+                            
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                                <div>
+                                    <h4>电子邮箱</h4>
+                                    <p>${username}@example.com</p>
+                                </div>
+                                
+                                <div>
+                                    <h4>联系电话</h4>
+                                    <p>138****8000</p>
+                                </div>
+                                
+                                <div>
+                                    <h4>学习方向</h4>
+                                    <p>流体力学、物理海洋学</p>
+                                </div>
+                                
+                                <div>
+                                    <h4>学习状态</h4>
+                                    <p>活跃</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // 更新登录按钮
+                    document.getElementById('loginText').textContent = username;
+                } else {
+                    alert('请输入有效的用户名 (hanwenxu 或 niwenxuan)');
+                }
+            });
+        });
+        
+        // 更新登录状态
+        function updateLoginState() {
+            const loginOverlay = document.getElementById('loginOverlay');
+            const main = document.querySelector('main');
+            const header = document.querySelector('header');
+            const footer = document.querySelector('footer');
+            
+            if (isLoggedIn) {
+                loginOverlay.style.display = 'none';
+                main.style.display = 'block';
+                header.style.display = 'block';
+                footer.style.display = 'block';
+            } else {
+                loginOverlay.style.display = 'flex';
+                main.style.display = 'none';
+                header.style.display = 'none';
+                footer.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
