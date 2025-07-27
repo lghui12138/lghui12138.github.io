@@ -3816,6 +3816,101 @@
                     </div>
                 </div>
                 
+                <div class="upload-form-group" id="exerciseSourceGroup" style="display: none;">
+                    <label>题库来源</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" 
+                                   id="exerciseSourceFile"
+                                   name="exerciseSource" 
+                                   value="file" 
+                                   checked 
+                                   onchange="toggleExerciseSource('file')"
+                                   aria-label="选择本地题库文件方式">
+                            <span>本地题库文件</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" 
+                                   id="exerciseSourceJson"
+                                   name="exerciseSource" 
+                                   value="json" 
+                                   onchange="toggleExerciseSource('json')"
+                                   aria-label="选择JSON格式题库">
+                            <span>JSON格式题库</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" 
+                                   id="exerciseSourceText"
+                                   name="exerciseSource" 
+                                   value="text" 
+                                   onchange="toggleExerciseSource('text')"
+                                   aria-label="选择文本格式题库">
+                            <span>文本格式题库</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="upload-form-group" id="exerciseFileGroup" style="display: none;">
+                    <label for="exerciseFileInput">选择题库文件</label>
+                    <input type="file" 
+                           id="exerciseFileInput" 
+                           name="exerciseFileInput"
+                           accept=".json,.txt,.csv,.xlsx,.xls"
+                           onchange="handleExerciseFileSelect(this)"
+                           style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;"
+                           aria-label="选择题库文件">
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #28a745;">
+                        <p style="margin: 0; color: #666; font-size: 14px;">
+                            <i class="fas fa-file-alt" style="color: #28a745; margin-right: 8px;"></i>
+                            <strong>支持格式：</strong>JSON、TXT、CSV、Excel等格式
+                        </p>
+                        <p style="margin: 8px 0 0 0; color: #666; font-size: 13px;">
+                            <i class="fas fa-info-circle" style="color: #17a2b8; margin-right: 5px;"></i>
+                            建议使用JSON格式，支持完整的题目结构和元数据
+                        </p>
+                    </div>
+                    <div id="exerciseFilePreview" style="display: none; margin-top: 15px; padding: 12px; background: #e8f5e8; border-radius: 8px; border-left: 4px solid #28a745;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-file-alt" style="color: #28a745; font-size: 20px;"></i>
+                            <div>
+                                <div id="exerciseFileName" style="font-weight: bold; color: #155724;"></div>
+                                <div id="exerciseFileInfo" style="font-size: 12px; color: #666;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="upload-form-group" id="exerciseJsonGroup" style="display: none;">
+                    <label for="exerciseJsonInput">JSON格式题库</label>
+                    <textarea id="exerciseJsonInput" 
+                              name="exerciseJsonInput"
+                              placeholder='请输入JSON格式的题库数据，例如：
+[
+  {
+    "question": "流体力学中，连续性方程的基本假设是什么？",
+    "options": ["A. 流体不可压缩", "B. 流体无粘性", "C. 质量守恒", "D. 动量守恒"],
+    "answer": "C",
+    "explanation": "连续性方程基于质量守恒定律..."
+  }
+]'
+                              style="width: 100%; height: 200px; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; font-family: monospace;"
+                              aria-label="JSON格式题库数据"></textarea>
+                </div>
+                
+                <div class="upload-form-group" id="exerciseTextGroup" style="display: none;">
+                    <label for="exerciseTextInput">文本格式题库</label>
+                    <textarea id="exerciseTextInput" 
+                              name="exerciseTextInput"
+                              placeholder='请输入文本格式的题库，每题一行，格式如下：
+问题1|选项A|选项B|选项C|选项D|正确答案|解释
+问题2|选项A|选项B|选项C|选项D|正确答案|解释
+
+例如：
+流体力学中，连续性方程的基本假设是什么？|流体不可压缩|流体无粘性|质量守恒|动量守恒|C|连续性方程基于质量守恒定律...'
+                              style="width: 100%; height: 200px; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;"
+                              aria-label="文本格式题库数据"></textarea>
+                </div>
+                
                 <div class="upload-preview" id="uploadPreview">
                     <h4>已选择的文件</h4>
                     <div id="fileList"></div>
@@ -4538,6 +4633,12 @@
             }
         }
         
+        // 检查是否有有效的GitHub配置
+        function hasValidGitHubConfig() {
+            const token = localStorage.getItem('github_token');
+            return token && token !== 'demo_token_please_configure' && token.length > 10;
+        }
+
         // 初始化GitHub存储（如果GitHubStorage不存在，使用简化版本）
         let githubStorage;
         try {
@@ -6803,11 +6904,18 @@
                 // 默认显示链接选项
                 toggleVideoSource('link');
             } else {
-                title.textContent = '上传题目';
-                fileGroup.style.display = 'block';
+                title.textContent = '上传题库';
+                fileGroup.style.display = 'block';  
                 videoLinkGroup.style.display = 'none';
                 videoFileGroup.style.display = 'none';
                 videoSourceGroup.style.display = 'none';
+                
+                // 显示题库上传选项
+                const exerciseSourceGroup = document.getElementById('exerciseSourceGroup');
+                if (exerciseSourceGroup) {
+                    exerciseSourceGroup.style.display = 'block';
+                    toggleExerciseSource('file'); // 默认选择本地文件
+                }
             }
             
             modal.classList.add('active');
@@ -6828,9 +6936,13 @@
             document.getElementById('videoLink').value = '';
             document.getElementById('videoFileInput').value = '';
             document.getElementById('douyinLinkInput').value = '';
+            document.getElementById('exerciseFileInput').value = '';
+            document.getElementById('exerciseJsonInput').value = '';
+            document.getElementById('exerciseTextInput').value = '';
             selectedFiles = [];
             selectedVideoFile = null;
             window.selectedVideoFile = null;
+            window.selectedExerciseFile = null;
             updateFilePreview();
             hideVideoUploadProgress();
             
@@ -6840,11 +6952,23 @@
                 videoFilePreview.style.display = 'none';
             }
             
+            const exerciseFilePreview = document.getElementById('exerciseFilePreview');
+            if (exerciseFilePreview) {
+                exerciseFilePreview.style.display = 'none';
+            }
+            
             // 重置视频来源选择
             const linkRadio = document.querySelector('input[name="videoSource"][value="link"]');
             if (linkRadio) {
                 linkRadio.checked = true;
                 toggleVideoSource('link');
+            }
+            
+            // 重置题库来源选择
+            const fileRadio = document.querySelector('input[name="exerciseSource"][value="file"]');
+            if (fileRadio) {
+                fileRadio.checked = true;
+                toggleExerciseSource('file');
             }
         }
         
@@ -7106,43 +7230,187 @@
                     }
                 }
             } else {
-                if (selectedFiles.length === 0) {
-                    showAlert('请选择要上传的文件');
-                    return;
+                // 题库上传处理
+                const exerciseSource = document.querySelector('input[name="exerciseSource"]:checked')?.value || 'file';
+                
+                try {
+                    let exerciseData = null;
+                    
+                    if (exerciseSource === 'file') {
+                        // 本地文件上传
+                        if (!window.selectedExerciseFile) {
+                            showAlert('请选择题库文件');
+                            return;
+                        }
+                        
+                        const file = window.selectedExerciseFile;
+                        exerciseData = await processExerciseFile(file, title, description, category);
+                        
+                    } else if (exerciseSource === 'json') {
+                        // JSON格式题库
+                        const jsonInput = document.getElementById('exerciseJsonInput').value.trim();
+                        if (!jsonInput) {
+                            showAlert('请输入JSON格式的题库数据');
+                            return;
+                        }
+                        
+                        exerciseData = await processExerciseJson(jsonInput, title, description, category);
+                        
+                    } else if (exerciseSource === 'text') {
+                        // 文本格式题库
+                        const textInput = document.getElementById('exerciseTextInput').value.trim();
+                        if (!textInput) {
+                            showAlert('请输入文本格式的题库数据');
+                            return;
+                        }
+                        
+                        exerciseData = await processExerciseText(textInput, title, description, category);
+                    }
+                    
+                    if (exerciseData) {
+                        // 添加到题库数据
+                        exercisesData.push(exerciseData);
+                        
+                        // 保存到本地存储
+                        const uploadedExercises = JSON.parse(localStorage.getItem('uploadedExercises') || '[]');
+                        uploadedExercises.push(exerciseData);
+                        localStorage.setItem('uploadedExercises', JSON.stringify(uploadedExercises));
+                        
+                        // 保存到GitHub
+                        await saveExercisesToGitHub();
+                        
+                        // 添加到页面显示
+                        recreateExerciseCardFromData(exerciseData);
+                        
+                        // 关闭上传模态框
+                        closeUploadModal();
+                        
+                        showMessage(`题库上传成功！包含 ${exerciseData.questionCount || 0} 道题目`, 'success');
+                    }
+                    
+                } catch (error) {
+                    console.error('上传题库时出错:', error);
+                    showAlert('上传题库时出现错误: ' + error.message);
                 }
-                // 创建题目数据对象
+            }
+            
+        }
+        
+        // 处理题库文件
+        async function processExerciseFile(file, title, description, category) {
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        let questions = [];
+                        const content = e.target.result;
+                        
+                        if (fileExtension === '.json') {
+                            // JSON格式
+                            const jsonData = JSON.parse(content);
+                            questions = Array.isArray(jsonData) ? jsonData : [jsonData];
+                        } else if (fileExtension === '.txt' || fileExtension === '.csv') {
+                            // 文本格式，每行一题
+                            const lines = content.split('\n').filter(line => line.trim());
+                            questions = lines.map((line, index) => {
+                                const parts = line.split('|');
+                                if (parts.length >= 6) {
+                                    return {
+                                        id: index + 1,
+                                        question: parts[0].trim(),
+                                        options: parts.slice(1, -2).map(opt => opt.trim()),
+                                        answer: parts[parts.length - 2].trim(),
+                                        explanation: parts[parts.length - 1].trim()
+                                    };
+                                }
+                                return null;
+                            }).filter(q => q !== null);
+                        }
+                        
+                        const exerciseData = {
+                            id: 'exercise_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                            title: title,
+                            description: description,
+                            category: category,
+                            questionCount: questions.length,
+                            questions: questions,
+                            sourceFile: file.name,
+                            sourceType: 'file',
+                            uploadTime: new Date().toISOString()
+                        };
+                        
+                        resolve(exerciseData);
+                    } catch (error) {
+                        reject(new Error('文件解析失败: ' + error.message));
+                    }
+                };
+                reader.onerror = () => reject(new Error('文件读取失败'));
+                reader.readAsText(file, 'UTF-8');
+            });
+        }
+        
+        // 处理JSON格式题库
+        async function processExerciseJson(jsonInput, title, description, category) {
+            try {
+                const jsonData = JSON.parse(jsonInput);
+                const questions = Array.isArray(jsonData) ? jsonData : [jsonData];
+                
                 const exerciseData = {
                     id: 'exercise_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
                     title: title,
                     description: description,
                     category: category,
-                    files: selectedFiles.map(file => ({
-                        name: file.name,
-                        size: file.size,
-                        type: file.type
-                    })),
+                    questionCount: questions.length,
+                    questions: questions,
+                    sourceType: 'json',
                     uploadTime: new Date().toISOString()
                 };
                 
-                // 添加到题库数据
-                exercisesData.push(exerciseData);
-                
-                // 保存到本地存储
-                const uploadedExercises = JSON.parse(localStorage.getItem('uploadedExercises') || '[]');
-                uploadedExercises.push(exerciseData);
-                localStorage.setItem('uploadedExercises', JSON.stringify(uploadedExercises));
-                
-                // 保存到GitHub
-                saveExercisesToGitHub();
-                
-                // 添加到页面显示
-                recreateExerciseCardFromData(exerciseData);
-                
-                showMessage('题库上传成功！', 'success');
+                return exerciseData;
+            } catch (error) {
+                throw new Error('JSON格式解析失败: ' + error.message);
             }
-            
-            closeUploadModal();
-            showMessage('上传成功！');
+        }
+        
+        // 处理文本格式题库
+        async function processExerciseText(textInput, title, description, category) {
+            try {
+                const lines = textInput.split('\n').filter(line => line.trim());
+                const questions = lines.map((line, index) => {
+                    const parts = line.split('|');
+                    if (parts.length >= 6) {
+                        return {
+                            id: index + 1,
+                            question: parts[0].trim(),
+                            options: parts.slice(1, -2).map(opt => opt.trim()),
+                            answer: parts[parts.length - 2].trim(),
+                            explanation: parts[parts.length - 1].trim()
+                        };
+                    }
+                    return null;
+                }).filter(q => q !== null);
+                
+                if (questions.length === 0) {
+                    throw new Error('没有找到有效的题目，请检查格式');
+                }
+                
+                const exerciseData = {
+                    id: 'exercise_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    title: title,
+                    description: description,
+                    category: category,
+                    questionCount: questions.length,
+                    questions: questions,
+                    sourceType: 'text',
+                    uploadTime: new Date().toISOString()
+                };
+                
+                return exerciseData;
+            } catch (error) {
+                throw new Error('文本格式解析失败: ' + error.message);
+            }
         }
         
         // 存储上传的视频数据 - 持久化存储
@@ -7635,6 +7903,67 @@
             const sizes = ['Bytes', 'KB', 'MB', 'GB'];
             const i = Math.floor(Math.log(bytes) / Math.log(k));
             return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+        
+        // 切换题库来源
+        function toggleExerciseSource(source) {
+            const exerciseFileGroup = document.getElementById('exerciseFileGroup');
+            const exerciseJsonGroup = document.getElementById('exerciseJsonGroup');
+            const exerciseTextGroup = document.getElementById('exerciseTextGroup');
+            
+            // 隐藏所有组
+            exerciseFileGroup.style.display = 'none';
+            exerciseJsonGroup.style.display = 'none';
+            exerciseTextGroup.style.display = 'none';
+            
+            // 显示选中的组
+            if (source === 'file') {
+                exerciseFileGroup.style.display = 'block';
+            } else if (source === 'json') {
+                exerciseJsonGroup.style.display = 'block';
+            } else if (source === 'text') {
+                exerciseTextGroup.style.display = 'block';
+            }
+        }
+        
+        // 处理题库文件选择
+        function handleExerciseFileSelect(input) {
+            const file = input.files[0];
+            if (!file) {
+                document.getElementById('exerciseFilePreview').style.display = 'none';
+                return;
+            }
+            
+            // 验证文件类型
+            const allowedTypes = ['.json', '.txt', '.csv', '.xlsx', '.xls'];
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            if (!allowedTypes.includes(fileExtension)) {
+                showMessage('请选择支持的题库文件格式！', 'error');
+                input.value = '';
+                return;
+            }
+            
+            // 验证文件大小（10MB限制）
+            const maxSize = 10 * 1024 * 1024; // 10MB
+            if (file.size > maxSize) {
+                showMessage('题库文件过大，请选择小于10MB的文件！', 'error');
+                input.value = '';
+                return;
+            }
+            
+            // 显示文件预览信息
+            const preview = document.getElementById('exerciseFilePreview');
+            const fileName = document.getElementById('exerciseFileName');
+            const fileInfo = document.getElementById('exerciseFileInfo');
+            
+            fileName.textContent = file.name;
+            fileInfo.textContent = `文件大小: ${formatFileSize(file.size)} | 类型: ${file.type || fileExtension}`;
+            preview.style.display = 'block';
+            
+            // 存储选中的文件
+            window.selectedExerciseFile = file;
+            
+            showMessage('题库文件选择成功！', 'success');
         }
 
         // 简化的视频配置
