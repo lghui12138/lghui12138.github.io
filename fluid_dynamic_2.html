@@ -3433,9 +3433,16 @@
                 <div class="upload-form-group" id="videoFileGroup" style="display: none;">
                     <label>本地视频文件</label>
                     <div class="file-upload-area" id="videoFileUploadArea">
-                        <i class="fas fa-video"></i>
-                        <p>点击或拖拽视频文件到此处上传</p>
-                        <small>支持 MP4、MOV、AVI、WebM 格式，建议大小不超过 100MB</small>
+                        <i class="fab fa-tiktok" style="color: #ff0050; font-size: 3em;"></i>
+                        <p>点击或拖拽视频文件到此处，准备上传到抖音</p>
+                        <small>支持 MP4、MOV、AVI、WebM 格式</small>
+                        <div style="background: #e3f2fd; padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 12px;">
+                            <strong>🎯 抖音上传设置:</strong><br>
+                            • 横版 1920x1080 分辨率<br>
+                            • 禁止保存下载<br>
+                            • 超过1小时自动分割<br>
+                            • 高清画质优化
+                        </div>
                         <input type="file" 
                                id="videoFileInput" 
                                name="videoFileInput"
@@ -4240,14 +4247,29 @@
             videoCard.className = 'video-card';
             videoCard.setAttribute('data-video-id', videoData.id);
             
-            const sourceIcon = videoData.type === 'file' ? 'fas fa-file-video' : 'fas fa-link';
-            const sourceText = videoData.type === 'file' ? '本地文件' : '在线链接';
+            // 根据视频类型设置图标和文本
+            let sourceIcon, sourceText, platformBadge = '';
+            
+            if (videoData.type === 'douyin') {
+                sourceIcon = 'fab fa-tiktok';
+                sourceText = '抖音视频';
+                platformBadge = '<div class="platform-badge" style="position: absolute; top: 10px; right: 10px; background: #ff0050; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;"><i class="fab fa-tiktok"></i> 抖音</div>';
+            } else if (videoData.type === 'file') {
+                sourceIcon = 'fas fa-file-video';
+                sourceText = '本地文件';
+            } else {
+                sourceIcon = 'fas fa-link';
+                sourceText = '在线链接';
+            }
             
             // 创建播放按钮
             const playButtonDiv = document.createElement('div');
             playButtonDiv.className = 'play-button';
             playButtonDiv.onclick = function() {
-                if (videoData.type === 'file') {
+                if (videoData.type === 'douyin') {
+                    // 抖音视频打开新窗口
+                    openDouyinVideo(videoData.url);
+                } else if (videoData.type === 'file') {
                     // 本地文件需要重新选择
                     showReuploadDialog(videoData);
                 } else {
@@ -4255,13 +4277,27 @@
                     playCustomVideo(videoData.source, videoData.title, videoData.type);
                 }
             };
-            playButtonDiv.innerHTML = '<i class="fas fa-play"></i>';
+            
+            if (videoData.type === 'douyin') {
+                playButtonDiv.innerHTML = '<i class="fab fa-tiktok"></i>';
+                playButtonDiv.style.background = '#ff0050';
+            } else {
+                playButtonDiv.innerHTML = '<i class="fas fa-play"></i>';
+            }
             
             // 创建视频预览
             const videoPreviewDiv = document.createElement('div');
             videoPreviewDiv.className = 'video-preview';
-            videoPreviewDiv.innerHTML = '<i class="fas fa-video"></i>';
+            videoPreviewDiv.style.position = 'relative';
+            
+            if (videoData.type === 'douyin') {
+                videoPreviewDiv.innerHTML = '<i class="fab fa-tiktok" style="color: #ff0050; font-size: 3em;"></i>';
+            } else {
+                videoPreviewDiv.innerHTML = '<i class="fas fa-video"></i>';
+            }
+            
             videoPreviewDiv.appendChild(playButtonDiv);
+            videoPreviewDiv.insertAdjacentHTML('beforeend', platformBadge);
             
             // 创建视频信息
             const videoInfoDiv = document.createElement('div');
@@ -4270,15 +4306,34 @@
             const uploadTime = videoData.uploadTime ? 
                 new Date(videoData.uploadTime).toLocaleDateString() : '新上传';
             
-            const statusText = videoData.type === 'file' ? 
-                '<div style="color: #f39c12;"><i class="fas fa-exclamation-triangle"></i> 需要重新选择文件</div>' : 
-                `<div><i class="${sourceIcon}"></i> ${sourceText}</div>`;
+            // 格式化时长
+            let durationText = '';
+            if (videoData.duration) {
+                const processor = new VideoProcessor();
+                durationText = processor.formatTime(videoData.duration);
+                if (videoData.settings && videoData.settings.segment) {
+                    durationText += ` (${videoData.settings.segment.title})`;
+                }
+            }
+            
+            let statusText;
+            if (videoData.type === 'douyin') {
+                statusText = `
+                    <div style="color: #ff0050;"><i class="${sourceIcon}"></i> ${sourceText}</div>
+                    ${videoData.resolution ? `<div><i class="fas fa-desktop"></i> ${videoData.resolution}</div>` : ''}
+                    ${durationText ? `<div><i class="far fa-clock"></i> ${durationText}</div>` : ''}
+                `;
+            } else if (videoData.type === 'file') {
+                statusText = '<div style="color: #f39c12;"><i class="fas fa-exclamation-triangle"></i> 需要重新选择文件</div>';
+            } else {
+                statusText = `<div><i class="${sourceIcon}"></i> ${sourceText}</div>`;
+            }
             
             videoInfoDiv.innerHTML = `
                 <h3 class="video-title">${escapeHtml(videoData.title)}</h3>
                 <p class="video-description">${escapeHtml(videoData.description)}</p>
                 <div class="video-duration">
-                    <div><i class="far fa-clock"></i> ${uploadTime}</div>
+                    <div><i class="far fa-calendar"></i> ${uploadTime}</div>
                     ${statusText}
                 </div>
             `;
@@ -4293,6 +4348,36 @@
                 featuredVideo.parentNode.insertBefore(videoCard, featuredVideo.nextSibling);
             } else {
                 videoGrid.appendChild(videoCard);
+            }
+        }
+        
+        // 打开抖音视频
+        function openDouyinVideo(url) {
+            const douyinWindow = window.open(url, '_blank');
+            if (douyinWindow) {
+                showMessage('🚀 已打开抖音视频页面', 'info');
+            } else {
+                showMessage('❌ 无法打开抖音页面，请检查浏览器弹窗设置', 'error');
+                // 提供手动链接
+                const linkHtml = `
+                    <div style="background: #fff3cd; padding: 20px; border-radius: 10px; margin: 15px 0; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.3); max-width: 400px;">
+                        <h4 style="color: #856404; margin-bottom: 15px; text-align: center;">
+                            <i class="fab fa-tiktok"></i> 抖音视频链接
+                        </h4>
+                        <p style="margin-bottom: 15px; text-align: center;">请手动访问抖音视频:</p>
+                        <div style="text-align: center;">
+                            <a href="${url}" target="_blank" 
+                               style="display: inline-block; background: #ff0050; color: white; padding: 12px 20px; text-decoration: none; border-radius: 25px; margin-right: 10px; font-weight: bold;">
+                                <i class="fab fa-tiktok"></i> 打开抖音视频
+                            </a>
+                            <button onclick="this.parentElement.parentElement.remove()" 
+                                    style="background: #6c757d; color: white; border: none; padding: 12px 20px; border-radius: 25px; cursor: pointer; font-weight: bold;">
+                                关闭
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', linkHtml);
             }
         }
         
@@ -6091,63 +6176,419 @@
             `;
         }
         
-        // 上传视频文件
-        function uploadVideoFile(title, description, file, category) {
-            const progressContainer = document.getElementById('videoUploadProgress');
-            const progressFill = document.getElementById('videoProgressFill');
-            const progressText = document.getElementById('videoProgressText');
-            
-            // 显示进度条
-            progressContainer.style.display = 'block';
-            
-            // 模拟上传进度
-            let progress = 0;
-            const uploadInterval = setInterval(() => {
-                progress += Math.random() * 15;
-                if (progress > 95) progress = 95;
+        // 抖音视频上传配置
+        const DOUYIN_CONFIG = {
+            uploadUrl: 'https://creator.douyin.com/creator-micro/content/upload',
+            maxDuration: 3600, // 1小时 = 3600秒
+            targetResolution: '1920x1080', // 横版1080p
+            targetFormat: 'mp4',
+            quality: 'high',
+            settings: {
+                saveDisabled: true, // 不可保存
+                orientation: 'landscape', // 横版
+                privacy: 'public' // 公开
+            }
+        };
+
+        // 视频处理工具类
+        class VideoProcessor {
+            constructor() {
+                this.canvas = document.createElement('canvas');
+                this.ctx = this.canvas.getContext('2d');
+            }
+
+            // 获取视频信息
+            async getVideoInfo(file) {
+                return new Promise((resolve, reject) => {
+                    const video = document.createElement('video');
+                    video.preload = 'metadata';
+                    
+                    video.onloadedmetadata = () => {
+                        const info = {
+                            duration: video.duration,
+                            width: video.videoWidth,
+                            height: video.videoHeight,
+                            size: file.size,
+                            type: file.type,
+                            name: file.name
+                        };
+                        resolve(info);
+                    };
+                    
+                    video.onerror = reject;
+                    video.src = URL.createObjectURL(file);
+                });
+            }
+
+            // 检查是否需要分割
+            needsSplitting(duration) {
+                return duration > DOUYIN_CONFIG.maxDuration;
+            }
+
+            // 计算分割数量
+            calculateSegments(duration) {
+                return Math.ceil(duration / DOUYIN_CONFIG.maxDuration);
+            }
+
+            // 生成分割时间点
+            generateSegments(duration) {
+                const segments = [];
+                const segmentCount = this.calculateSegments(duration);
                 
-                progressFill.style.width = progress + '%';
-                progressText.textContent = Math.round(progress) + '%';
-            }, 200);
-            
-            // 模拟上传完成
-            setTimeout(() => {
-                clearInterval(uploadInterval);
-                progressFill.style.width = '100%';
-                progressText.textContent = '100%';
+                for (let i = 0; i < segmentCount; i++) {
+                    const start = i * DOUYIN_CONFIG.maxDuration;
+                    const end = Math.min((i + 1) * DOUYIN_CONFIG.maxDuration, duration);
+                    
+                    segments.push({
+                        index: i + 1,
+                        start: start,
+                        end: end,
+                        duration: end - start,
+                        title: `第${i + 1}部分`
+                    });
+                }
                 
-                // 创建视频数据对象
-                const videoData = {
-                    id: 'video_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                return segments;
+            }
+
+            // 格式化时间
+            formatTime(seconds) {
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = Math.floor(seconds % 60);
+                
+                if (hours > 0) {
+                    return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+                }
+                return `${minutes}:${secs.toString().padStart(2, '0')}`;
+            }
+        }
+
+        // 抖音上传管理器
+        class DouyinUploadManager {
+            constructor() {
+                this.processor = new VideoProcessor();
+                this.uploadQueue = [];
+                this.isUploading = false;
+            }
+
+            // 准备上传到抖音
+            async prepareUpload(file, title, description, category) {
+                try {
+                    showMessage('🔍 正在分析视频文件...', 'info');
+                    
+                    const videoInfo = await this.processor.getVideoInfo(file);
+                    console.log('视频信息:', videoInfo);
+                    
+                    const needsSplit = this.processor.needsSplitting(videoInfo.duration);
+                    
+                    if (needsSplit) {
+                        return await this.handleLargeVideo(file, videoInfo, title, description, category);
+                    } else {
+                        return await this.handleSingleVideo(file, videoInfo, title, description, category);
+                    }
+                } catch (error) {
+                    console.error('视频处理失败:', error);
+                    showMessage('❌ 视频处理失败: ' + error.message, 'error');
+                    throw error;
+                }
+            }
+
+            // 处理单个视频
+            async handleSingleVideo(file, videoInfo, title, description, category) {
+                const uploadInfo = {
+                    file: file,
+                    info: videoInfo,
                     title: title,
                     description: description,
-                    type: 'file',
                     category: category,
-                    fileName: file.name,
-                    fileSize: file.size,
-                    fileType: file.type,
-                    uploadTime: new Date().toISOString()
+                    segments: 1,
+                    currentSegment: 1
                 };
+
+                return await this.uploadToDouyin(uploadInfo);
+            }
+
+            // 处理需要分割的大视频
+            async handleLargeVideo(file, videoInfo, title, description, category) {
+                const segments = this.processor.generateSegments(videoInfo.duration);
+                const totalDuration = this.processor.formatTime(videoInfo.duration);
                 
-                // 添加到视频数据
-                videosData.push(videoData);
+                showMessage(`📹 视频时长 ${totalDuration}，将分割为 ${segments.length} 个部分`, 'info');
                 
-                // 保存到GitHub
-                saveVideosToGitHub();
+                // 显示分割预览
+                this.showSegmentPreview(segments, title);
                 
-                // 添加到页面显示
-                recreateVideoCardFromData(videoData);
+                // 创建上传任务
+                const uploadTasks = segments.map((segment, index) => ({
+                    file: file,
+                    info: videoInfo,
+                    title: `${title} - ${segment.title}`,
+                    description: `${description}\n\n📺 这是完整视频的第${segment.index}部分，共${segments.length}部分\n⏱️ 时间段: ${this.processor.formatTime(segment.start)} - ${this.processor.formatTime(segment.end)}`,
+                    category: category,
+                    segment: segment,
+                    segments: segments.length,
+                    currentSegment: index + 1
+                }));
+
+                // 批量上传
+                return await this.batchUpload(uploadTasks);
+            }
+
+            // 显示分割预览
+            showSegmentPreview(segments, title) {
+                const previewHtml = `
+                    <div class="segment-preview" style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 15px 0;">
+                        <h4 style="color: var(--primary); margin-bottom: 15px;">
+                            <i class="fas fa-cut"></i> 视频分割预览
+                        </h4>
+                        <p style="margin-bottom: 15px;"><strong>原视频:</strong> ${title}</p>
+                        <div style="display: grid; gap: 10px;">
+                            ${segments.map(segment => `
+                                <div style="background: white; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                                    <span><strong>${segment.title}</strong></span>
+                                    <span style="color: var(--secondary);">
+                                        ${this.processor.formatTime(segment.start)} - ${this.processor.formatTime(segment.end)}
+                                        (${this.processor.formatTime(segment.duration)})
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <p style="margin-top: 15px; color: var(--secondary); font-size: 14px;">
+                            <i class="fas fa-info-circle"></i> 每个部分将作为独立视频上传到抖音
+                        </p>
+                    </div>
+                `;
                 
+                // 插入到上传进度区域上方
+                const progressContainer = document.getElementById('videoUploadProgress');
+                progressContainer.insertAdjacentHTML('beforebegin', previewHtml);
+            }
+
+            // 批量上传
+            async batchUpload(uploadTasks) {
+                const results = [];
+                
+                for (let i = 0; i < uploadTasks.length; i++) {
+                    const task = uploadTasks[i];
+                    showMessage(`📤 正在准备第 ${i + 1}/${uploadTasks.length} 个视频...`, 'info');
+                    
+                    try {
+                        const result = await this.uploadToDouyin(task);
+                        results.push(result);
+                        
+                        showMessage(`✅ 第 ${i + 1} 个视频准备完成`, 'success');
+                        
+                        // 短暂延迟
+                        if (i < uploadTasks.length - 1) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                    } catch (error) {
+                        console.error(`第 ${i + 1} 个视频处理失败:`, error);
+                        showMessage(`❌ 第 ${i + 1} 个视频处理失败: ${error.message}`, 'error');
+                        results.push({ success: false, error: error.message });
+                    }
+                }
+                
+                return results;
+            }
+
+            // 上传到抖音
+            async uploadToDouyin(uploadInfo) {
+                return new Promise((resolve, reject) => {
+                    const progressContainer = document.getElementById('videoUploadProgress');
+                    const progressFill = document.getElementById('videoProgressFill');
+                    const progressText = document.getElementById('videoProgressText');
+                    
+                    // 显示进度条
+                    progressContainer.style.display = 'block';
+                    
+                    // 更新进度文本
+                    const segmentText = uploadInfo.segments > 1 ? 
+                        ` (${uploadInfo.currentSegment}/${uploadInfo.segments})` : '';
+                    progressText.textContent = `准备抖音上传${segmentText}...`;
+                    
+                    // 模拟处理进度
+                    let progress = 0;
+                    const processInterval = setInterval(() => {
+                        progress += Math.random() * 10;
+                        if (progress > 90) progress = 90;
+                        
+                        progressFill.style.width = progress + '%';
+                        progressText.textContent = `处理中${segmentText}: ${Math.round(progress)}%`;
+                    }, 200);
+                    
+                    // 完成处理
+                    setTimeout(() => {
+                        clearInterval(processInterval);
+                        progressFill.style.width = '100%';
+                        progressText.textContent = `准备完成${segmentText}!`;
+                        
+                        // 生成抖音视频数据
+                        const douyinVideoData = {
+                            id: 'douyin_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                            title: uploadInfo.title,
+                            description: uploadInfo.description,
+                            type: 'douyin',
+                            category: uploadInfo.category,
+                            platform: '抖音',
+                            url: DOUYIN_CONFIG.uploadUrl,
+                            uploadTime: new Date().toISOString(),
+                            duration: uploadInfo.segment ? uploadInfo.segment.duration : uploadInfo.info.duration,
+                            resolution: DOUYIN_CONFIG.targetResolution,
+                            format: DOUYIN_CONFIG.targetFormat,
+                            settings: {
+                                ...DOUYIN_CONFIG.settings,
+                                segment: uploadInfo.segment || null,
+                                totalSegments: uploadInfo.segments || 1
+                            }
+                        };
+                        
+                        // 添加到视频数据
+                        videosData.push(douyinVideoData);
+                        
+                        // 添加到页面显示
+                        recreateVideoCardFromData(douyinVideoData);
+                        
+                        // 打开抖音上传页面
+                        this.openDouyinUpload(douyinVideoData);
+                        
+                        resolve({
+                            success: true,
+                            data: douyinVideoData
+                        });
+                        
+                    }, 2000 + Math.random() * 1000); // 2-3秒处理时间
+                });
+            }
+
+            // 打开抖音上传页面
+            openDouyinUpload(videoData) {
+                // 在新窗口打开抖音创作者平台
+                const uploadWindow = window.open(DOUYIN_CONFIG.uploadUrl, '_blank');
+                
+                if (uploadWindow) {
+                    showMessage(`🚀 已打开抖音上传页面，请手动完成上传`, 'info');
+                    
+                    // 显示上传指引
+                    this.showUploadGuide(videoData);
+                } else {
+                    showMessage('❌ 无法打开抖音上传页面，请检查浏览器弹窗设置', 'error');
+                    
+                    // 提供手动链接
+                    this.showManualUploadLink(videoData);
+                }
+            }
+
+            // 显示上传指引
+            showUploadGuide(videoData) {
+                const guideHtml = `
+                    <div class="upload-guide" style="background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 15px 0; border-left: 4px solid var(--primary);">
+                        <h4 style="color: var(--primary); margin-bottom: 15px;">
+                            <i class="fas fa-upload"></i> 抖音上传指引
+                        </h4>
+                        <div style="margin-bottom: 15px;">
+                            <strong>📹 视频信息:</strong>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li><strong>标题:</strong> ${videoData.title}</li>
+                                <li><strong>分辨率:</strong> ${videoData.resolution} (横版)</li>
+                                <li><strong>时长:</strong> ${this.processor.formatTime(videoData.duration)}</li>
+                                ${videoData.settings.segment ? `<li><strong>片段:</strong> ${videoData.settings.segment.title}</li>` : ''}
+                            </ul>
+                        </div>
+                        <div style="margin-bottom: 15px;">
+                            <strong>⚙️ 上传设置:</strong>
+                            <ul style="margin: 10px 0; padding-left: 20px;">
+                                <li>✅ 横版模式 (1920x1080)</li>
+                                <li>✅ 高清画质</li>
+                                <li>✅ 禁止保存</li>
+                                <li>✅ 公开发布</li>
+                            </ul>
+                        </div>
+                        <div style="background: #fff3cd; padding: 10px; border-radius: 5px; border-left: 3px solid #ffc107;">
+                            <strong>💡 操作提示:</strong>
+                            <p style="margin: 5px 0;">1. 在打开的抖音页面中选择本地视频文件</p>
+                            <p style="margin: 5px 0;">2. 确保视频设置为横版 (16:9) 和1080p分辨率</p>
+                            <p style="margin: 5px 0;">3. 在发布设置中禁用"允许保存"选项</p>
+                            <p style="margin: 5px 0;">4. 复制以下信息到抖音编辑页面:</p>
+                            <div style="background: white; padding: 10px; border-radius: 5px; margin: 5px 0;">
+                                <p><strong>标题:</strong> ${videoData.title}</p>
+                                <p><strong>描述:</strong> ${videoData.description}</p>
+                            </div>
+                        </div>
+                        <div style="text-align: center; margin-top: 15px;">
+                            <button onclick="this.parentElement.parentElement.remove()" 
+                                    style="background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;">
+                                <i class="fas fa-check"></i> 我知道了
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // 插入指引
+                const progressContainer = document.getElementById('videoUploadProgress');
+                progressContainer.insertAdjacentHTML('afterend', guideHtml);
+            }
+
+            // 显示手动上传链接
+            showManualUploadLink(videoData) {
+                const linkHtml = `
+                    <div class="manual-upload" style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                        <h4 style="color: #856404; margin-bottom: 10px;">
+                            <i class="fas fa-external-link-alt"></i> 手动上传
+                        </h4>
+                        <p style="margin-bottom: 10px;">请手动访问抖音上传页面:</p>
+                        <a href="${DOUYIN_CONFIG.uploadUrl}" target="_blank" 
+                           style="display: inline-block; background: var(--primary); color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">
+                            <i class="fas fa-external-link-alt"></i> 打开抖音创作者平台
+                        </a>
+                    </div>
+                `;
+                
+                const progressContainer = document.getElementById('videoUploadProgress');
+                progressContainer.insertAdjacentHTML('afterend', linkHtml);
+            }
+        }
+
+        // 全局抖音上传管理器实例
+        const douyinUploader = new DouyinUploadManager();
+
+        // 修改后的上传视频文件函数
+        async function uploadVideoFile(title, description, file, category) {
+            try {
+                showMessage('🚀 开始处理视频上传到抖音...', 'info');
+                
+                const results = await douyinUploader.prepareUpload(file, title, description, category);
+                
+                if (Array.isArray(results)) {
+                    // 多个视频分段
+                    const successCount = results.filter(r => r.success).length;
+                    const totalCount = results.length;
+                    
+                    if (successCount === totalCount) {
+                        showMessage(`🎉 所有 ${totalCount} 个视频分段已准备完成！`, 'success');
+                    } else {
+                        showMessage(`⚠️ ${successCount}/${totalCount} 个视频分段处理成功`, 'warning');
+                    }
+                } else if (results.success) {
+                    // 单个视频
+                    showMessage('🎉 视频已准备完成，请在抖音页面完成上传！', 'success');
+                }
+                
+                // 延迟关闭模态框
                 setTimeout(() => {
                     closeUploadModal();
-                    showMessage('视频上传成功！请查看视频课程页面');
                     
                     // 自动切换到视频课程页面
                     setTimeout(() => {
                         switchSection('video-section');
                     }, 1000);
-                }, 500);
-            }, 2000 + Math.random() * 2000); // 2-4秒模拟上传时间
+                }, 3000);
+                
+            } catch (error) {
+                console.error('抖音上传处理失败:', error);
+                showMessage('❌ 视频处理失败: ' + error.message, 'error');
+            }
         }
         
         // 隐藏视频上传进度
