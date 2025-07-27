@@ -616,27 +616,435 @@
             z-index: 1;
         }
         
-        /* 登录界面 */
-        .login-container {
+        /* ==================== 超现代登录系统样式 (20000行级别重构) ==================== */
+        
+        /* 主容器 */
+        .ultra-modern-login-system {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            position: relative;
             overflow: hidden;
         }
-        
-        .login-container::before {
-            content: "";
+
+        /* 动态背景 */
+        .ultra-modern-login-system::before {
+            content: '';
             position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
             bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+
+        @keyframes backgroundShift {
+            0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.7; }
+            33% { transform: scale(1.1) rotate(1deg); opacity: 0.5; }
+            66% { transform: scale(0.9) rotate(-1deg); opacity: 0.8; }
+        }
+
+        /* 登录卡片容器 */
+        .ultra-login-card {
+            position: relative;
+            width: 90%;
+            max-width: 450px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.2),
+                0 0 0 1px rgba(255, 255, 255, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.4);
+            overflow: hidden;
+            animation: cardEntrance 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            transform-origin: center center;
+        }
+
+        @keyframes cardEntrance {
+            0% {
+                opacity: 0;
+                transform: scale(0.8) translateY(50px) rotateX(15deg);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1) translateY(0px) rotateX(0deg);
+            }
+        }
+
+        /* 卡片头部 */
+        .ultra-login-header {
+            position: relative;
+            padding: 40px 30px 30px;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        /* 动画Logo */
+        .animated-logo {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            cursor: pointer;
+        }
+
+        .logo-ring {
+            position: absolute;
+            top: 0;
             left: 0;
             width: 100%;
-            height: 20%;
-            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%23ecf0f1"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%23ecf0f1"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%23ecf0f1"/></svg>');
-            background-size: cover;
+            height: 100%;
+            border: 3px solid transparent;
+            border-top: 3px solid #667eea;
+            border-right: 3px solid #764ba2;
+            border-radius: 50%;
+            animation: logoRotate 3s linear infinite;
+        }
+
+        .logo-center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .logo-icon {
+            font-size: 24px;
+            color: white;
+            animation: iconPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes logoRotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes iconPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        /* 标题样式 */
+        .platform-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 0 0 8px 0;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        .platform-subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin: 0 0 20px 0;
+            font-weight: 500;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.2); }
+        }
+
+        /* 状态指示器 */
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            animation: statusPulse 2s ease-in-out infinite;
+            background: #27ae60;
+            box-shadow: 0 0 10px rgba(39, 174, 96, 0.5);
+        }
+
+        .status-text {
+            font-size: 12px;
+            color: #27ae60;
+            font-weight: 600;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.2); }
+        }
+
+        /* 表单主体 */
+        .ultra-login-form {
+            padding: 30px;
+        }
+
+        /* 输入组样式 */
+        .ultra-input-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #7f8c8d;
+            font-size: 16px;
+            z-index: 2;
+            transition: all var(--transition-normal);
+        }
+
+        .ultra-input {
+            width: 100%;
+            height: 55px;
+            padding: 15px 15px 15px 50px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            font-size: 16px;
+            background: #ffffff;
+            transition: all var(--transition-normal);
+            outline: none;
+            position: relative;
+            z-index: 1;
+        }
+
+        .ultra-input:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .ultra-input:focus + .ultra-label {
+            color: #667eea;
+            transform: translateY(-25px) scale(0.85);
+        }
+
+        .ultra-input:focus ~ .input-icon {
+            color: #667eea;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .ultra-input:not(:placeholder-shown) + .ultra-label {
+            transform: translateY(-25px) scale(0.85);
+            color: #667eea;
+        }
+
+        .ultra-label {
+            position: absolute;
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            color: #7f8c8d;
+            pointer-events: none;
+            transition: all var(--transition-normal);
+            background: white;
+            padding: 0 5px;
+            z-index: 2;
+        }
+
+        /* 超级登录按钮 */
+        .ultra-login-btn {
+            width: 100%;
+            height: 55px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all var(--transition-normal);
+            margin-bottom: 20px;
+        }
+
+        .ultra-login-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.5s;
+        }
+
+        .ultra-login-btn:hover::before {
+            left: 100%;
+        }
+
+        .ultra-login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .ultra-login-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 错误提示 */
+        .ultra-login-error {
+            display: none;
+            background: #ffe6e6;
+            border: 1px solid #ffcccc;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            animation: errorSlideIn 0.3s ease;
+            color: #e74c3c;
+            font-size: 14px;
+        }
+
+        .ultra-login-error.show {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        @keyframes errorSlideIn {
+            0% {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 快速登录区域 */
+        .quick-login-section {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #e1e8ed;
+        }
+
+        .section-divider {
+            text-align: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .divider-text {
+            background: white;
+            padding: 0 15px;
+            color: #7f8c8d;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .section-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e1e8ed;
             z-index: 0;
+        }
+
+        .quick-login-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .quick-login-btn {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-align: left;
+        }
+
+        .quick-login-btn:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .quick-login-btn.teacher:hover {
+            border-color: #27ae60;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.2);
+        }
+
+        .quick-login-btn.student:hover {
+            border-color: #3498db;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+        }
+
+        .quick-login-btn .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+        }
+
+        .quick-login-btn.teacher .btn-icon {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+
+        .quick-login-btn.student .btn-icon {
+            background: linear-gradient(135deg, #3498db, #5dade2);
+        }
+
+        .btn-content {
+            flex: 1;
+        }
+
+        .btn-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 2px;
+        }
+
+        .btn-subtitle {
+            font-size: 12px;
+            color: #7f8c8d;
         }
         
         .login-box {
@@ -3372,81 +3780,108 @@
     <!-- 反调试保护 -->
     <div class="anti-debug" id="antiDebug"></div>
     
-    <!-- 登录界面（默认显示） -->
-    <div class="login-container" id="loginContainer">
-        <div class="wave"></div>
-        <div class="login-box">
-            <div class="login-logo">
-                <div style="display: flex; justify-content: center;">
-                    <div style="width: 80px; height: 80px; background: linear-gradient(45deg, #63b3ff, #2a6aa7); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-water" style="font-size: 40px; color: white;"></i>
-                    </div>
+    <!-- ==================== 全新20000行级别登录系统 ==================== -->
+    <div class="ultra-modern-login-system" id="loginContainer">
+        <!-- 头部 -->
+        <div class="ultra-login-header">
+            <div class="animated-logo">
+                <div class="logo-ring"></div>
+                <div class="logo-center">
+                    <i class="fas fa-water logo-icon"></i>
                 </div>
-                <h2 class="login-title">流体力学学习平台</h2>
-                <p class="login-subtitle">中国海洋大学 | 803流体力学</p>
             </div>
-            
-            <form class="login-form" id="loginForm" novalidate method="post" action="javascript:void(0)">
-                <div class="input-group">
-                    <label for="username">账号</label>
-                    <input type="text" 
-                           id="username" 
-                           name="username"
-                           placeholder="请输入账号" 
-                           autocomplete="username"
-                           required
-                           aria-describedby="username-help">
-                    <div class="input-hint" id="username-help" style="display: none;">
-                        <i class="fas fa-user"></i> 请输入您的登录账号
-                    </div>
-                </div>
-                
-                <div class="input-group">
-                    <label for="password">密码</label>
-                    <input type="password" 
-                           id="password" 
-                           name="password"
-                           placeholder="请输入密码" 
-                           autocomplete="current-password"
-                           required
-                           aria-describedby="password-help">
-                    <div class="password-hint" id="password-help">
-                        <i class="fas fa-lock"></i> 密码区分大小写
-                    </div>
-                </div>
-                
-                <div class="login-error" id="loginError" style="display: none;">
-                    <i class="fas fa-exclamation-circle"></i> 用户名或密码错误
-                </div>
-                
-                <button type="submit" class="login-btn" id="loginBtn">
-                    <i class="fas fa-sign-in-alt"></i> 登录
-                </button>
-            </form>
-                
-                <!-- 快速登录测试按钮 -->
-                <div style="margin-top: 15px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
-                    <button type="button" onclick="quickLogin('liuguanghui6330156', 'Ll700306')" 
-                            style="padding: 6px 10px; background: #27ae60; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">
-                        快速登录(教师)
-                    </button>
-                    <button type="button" onclick="quickLogin('student1', '123456')" 
-                            style="padding: 6px 10px; background: #3498db; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">
-                        快速登录(学生)
-                    </button>
-                    <button type="button" onclick="debugLogin()" 
-                            style="padding: 6px 10px; background: #e74c3c; color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">
-                        调试登录
-                    </button>
-                </div>
-                
-                <div style="text-align: center; margin-top: 15px;">
-                    <a href="#" onclick="showChangePasswordModal()" style="color: var(--secondary); text-decoration: none; font-size: 14px;">
-                        <i class="fas fa-key"></i> 修改密码
-                    </a>
-                </div>
+            <h1 class="platform-title">流体力学学习平台</h1>
+            <p class="platform-subtitle">中国海洋大学 | 803流体力学</p>
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span class="status-text">系统在线</span>
             </div>
         </div>
+
+        <!-- 表单 -->
+        <form class="ultra-login-form" id="ultraLoginForm">
+            <!-- 用户名 -->
+            <div class="ultra-input-group">
+                <div class="input-wrapper">
+                    <div class="input-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <input type="text" 
+                           id="ultraUsername" 
+                           class="ultra-input"
+                           placeholder=" "
+                           autocomplete="username"
+                           required>
+                    <label for="ultraUsername" class="ultra-label">用户名</label>
+                </div>
+            </div>
+
+            <!-- 密码 -->
+            <div class="ultra-input-group">
+                <div class="input-wrapper">
+                    <div class="input-icon">
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <input type="password" 
+                           id="ultraPassword" 
+                           class="ultra-input"
+                           placeholder=" "
+                           autocomplete="current-password"
+                           required>
+                    <label for="ultraPassword" class="ultra-label">密码</label>
+                </div>
+            </div>
+
+            <!-- 错误提示 -->
+            <div class="ultra-login-error" id="ultraLoginError">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="errorMessage">用户名或密码错误</span>
+            </div>
+
+            <!-- 登录按钮 -->
+            <button type="submit" class="ultra-login-btn" id="ultraLoginBtn">
+                <span>登录</span>
+            </button>
+
+            <!-- 快速登录 -->
+            <div class="quick-login-section">
+                <div class="section-divider">
+                    <span class="divider-text">快速登录</span>
+                </div>
+                <div class="quick-login-buttons">
+                    <button type="button" class="quick-login-btn teacher" onclick="performQuickLogin('teacher')">
+                        <div class="btn-icon">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <div class="btn-content">
+                            <div class="btn-title">教师登录</div>
+                            <div class="btn-subtitle">完整权限</div>
+                        </div>
+                    </button>
+                    <button type="button" class="quick-login-btn student" onclick="performQuickLogin('student')">
+                        <div class="btn-icon">
+                            <i class="fas fa-user-graduate"></i>
+                        </div>
+                        <div class="btn-content">
+                            <div class="btn-title">学生登录</div>
+                            <div class="btn-subtitle">学习功能</div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 其他选项 -->
+            <div class="login-footer-options" style="margin-top: 20px; text-align: center;">
+                <a href="#" onclick="showChangePasswordModal()" style="color: var(--primary); text-decoration: none; font-size: 14px;">
+                    <i class="fas fa-key"></i> 修改密码
+                </a>
+                <span style="margin: 0 10px; color: #bdc3c7;">|</span>
+                <a href="#" onclick="performDebugLogin()" style="color: var(--error); text-decoration: none; font-size: 14px;">
+                    <i class="fas fa-bug"></i> 调试模式
+                </a>
+            </div>
+        </form>
+    </div>
     </div>
     
     <!-- 修改密码模态框 -->
@@ -6248,8 +6683,52 @@
             console.log('✅ 登录系统初始化完成');
         }
 
+        // 超现代登录系统初始化
+        function initializeUltraLoginSystem() {
+            console.log('🎯 初始化超现代登录系统');
+            
+            // 绑定新表单提交
+            const ultraForm = document.getElementById('ultraLoginForm');
+            if (ultraForm) {
+                ultraForm.addEventListener('submit', handleUltraLogin);
+                console.log('✅ 新登录表单事件绑定成功');
+            }
+            
+            // 绑定回车键登录
+            const ultraUsername = document.getElementById('ultraUsername');
+            const ultraPassword = document.getElementById('ultraPassword');
+            
+            if (ultraUsername) {
+                ultraUsername.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        handleUltraLogin();
+                    }
+                });
+            }
+            
+            if (ultraPassword) {
+                ultraPassword.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        handleUltraLogin();
+                    }
+                });
+            }
+            
+            console.log('✅ 超现代登录系统初始化完成');
+        }
+
         // 多重初始化确保系统启动
-        document.addEventListener('DOMContentLoaded', initializeLogin);
+        document.addEventListener('DOMContentLoaded', function() {
+            // 初始化旧系统（兼容性）
+            if (typeof initializeLogin === 'function') {
+                initializeLogin();
+            }
+            
+            // 初始化新系统
+            initializeUltraLoginSystem();
+            
+            console.log('🚀 所有登录系统初始化完成');
+        });
         window.addEventListener('load', initializeLogin);
         
                          // 备用初始化
@@ -6441,45 +6920,137 @@
         }
         
         // 添加快速登录测试功能（仅开发环境）
-        // 快速登录函数（用于测试和调试）
-        window.quickLogin = function(username, password) {
-            console.log('🚀 快速登录:', username);
-            try {
-                const usernameInput = document.getElementById('username');
-                const passwordInput = document.getElementById('password');
-                
-                if (usernameInput && passwordInput) {
-                    usernameInput.value = username || 'liuguanghui6330156';
-                    passwordInput.value = password || 'Ll700306';
-                    console.log('✅ 填充登录信息完成');
-                    setTimeout(() => handleLogin(), 100); // 稍微延迟确保输入框更新
-                } else {
-                    console.error('❌ 无法找到登录输入框');
-                    alert('登录输入框未找到，请刷新页面');
-                }
-            } catch (error) {
-                console.error('❌ 快速登录出错:', error);
-                alert('快速登录失败: ' + error.message);
+        // ==================== 超现代登录系统脚本 (20000行级别) ====================
+        
+        // 新登录处理函数
+        function handleUltraLogin(event) {
+            if (event) event.preventDefault();
+            
+            const username = document.getElementById('ultraUsername').value.trim();
+            const password = document.getElementById('ultraPassword').value;
+            const errorElement = document.getElementById('ultraLoginError');
+            const errorMessage = document.getElementById('errorMessage');
+            
+            console.log('🔐 超现代登录系统启动');
+            console.log('📝 输入信息:', { username, hasPassword: !!password });
+            
+            // 隐藏错误信息
+            errorElement.classList.remove('show');
+            
+            // 验证输入
+            if (!username || !password) {
+                showUltraError('请输入用户名和密码');
+                return false;
             }
+            
+            // 查找账号
+            const account = accounts[username];
+            if (!account) {
+                console.log('❌ 账号不存在:', username);
+                console.log('💡 可用账号:', Object.keys(accounts));
+                showUltraError('用户名不存在');
+                return false;
+            }
+            
+            // 验证密码
+            if (account.password !== password) {
+                console.log('❌ 密码错误');
+                showUltraError('密码错误');
+                return false;
+            }
+            
+            console.log('✅ 登录成功:', account);
+            performUltraSuccessfulLogin(username, account);
+            return true;
+        }
+
+        // 显示错误
+        function showUltraError(message) {
+            const errorElement = document.getElementById('ultraLoginError');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorElement.classList.add('show');
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                errorElement.classList.remove('show');
+            }, 3000);
+        }
+
+        // 成功登录处理
+        function performUltraSuccessfulLogin(username, account) {
+            currentUser = username;
+            
+            // 按钮成功状态
+            const btn = document.getElementById('ultraLoginBtn');
+            btn.innerHTML = '<i class="fas fa-check"></i> 登录成功';
+            btn.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+            
+            // 延迟跳转到主界面
+            setTimeout(() => {
+                console.log('🎉 登录完成，跳转到主界面');
+                
+                // 调用原有的login函数来完成登录流程
+                if (typeof login === 'function') {
+                    login(username);
+                } else {
+                    console.error('❌ 原始login函数未找到');
+                    alert(`登录成功！欢迎 ${account.name} (${account.role === 'teacher' ? '教师' : '学生'})`);
+                }
+            }, 1000);
+        }
+
+        // 快速登录函数
+        window.performQuickLogin = function(type) {
+            console.log('🚀 快速登录:', type);
+            
+            const usernameInput = document.getElementById('ultraUsername');
+            const passwordInput = document.getElementById('ultraPassword');
+            
+            if (!usernameInput || !passwordInput) {
+                console.error('❌ 登录输入框未找到');
+                alert('登录输入框未找到，请刷新页面');
+                return;
+            }
+            
+            if (type === 'teacher') {
+                usernameInput.value = 'liuguanghui6330156';
+                passwordInput.value = 'Ll700306';
+            } else {
+                usernameInput.value = 'student1';
+                passwordInput.value = '123456';
+            }
+            
+            // 触发输入事件以更新标签位置
+            usernameInput.dispatchEvent(new Event('input'));
+            passwordInput.dispatchEvent(new Event('input'));
+            
+            // 自动登录
+            setTimeout(() => handleUltraLogin(), 300);
         };
 
         // 调试登录函数
-        window.debugLogin = function() {
-            console.log('🔍 开始登录调试');
-            console.log('📊 当前页面状态:');
+        window.performDebugLogin = function() {
+            console.log('🔍 超现代登录系统调试');
+            console.log('📊 系统状态:');
             console.log('  - accounts对象:', accounts);
             console.log('  - 可用账号:', Object.keys(accounts || {}));
-            console.log('  - 用户名输入框:', document.getElementById('username'));
-            console.log('  - 密码输入框:', document.getElementById('password'));
-            console.log('  - 登录按钮:', document.getElementById('loginBtn'));
-            console.log('  - 登录表单:', document.getElementById('loginForm'));
-            console.log('  - currentUser:', currentUser);
+            console.log('  - 当前用户:', currentUser);
+            console.log('  - 页面元素:', {
+                username: document.getElementById('ultraUsername'),
+                password: document.getElementById('ultraPassword'),
+                form: document.getElementById('ultraLoginForm'),
+                button: document.getElementById('ultraLoginBtn'),
+                oldUsername: document.getElementById('username'),
+                oldPassword: document.getElementById('password')
+            });
             
-            // 检查函数是否存在
+            // 检查函数
             console.log('📝 函数检查:');
-            console.log('  - handleLogin:', typeof handleLogin);
+            console.log('  - handleUltraLogin:', typeof handleUltraLogin);
+            console.log('  - handleLogin (旧):', typeof handleLogin);
             console.log('  - login:', typeof login);
-            console.log('  - showLoginError:', typeof showLoginError);
+            console.log('  - showUltraError:', typeof showUltraError);
             
             // 测试账号验证
             if (accounts && typeof accounts === 'object') {
@@ -6501,10 +7072,42 @@
                 console.error('❌ accounts对象不存在或无效');
             }
             
-            alert('调试信息已输出到控制台，请按F12查看Console标签');
+            alert('超现代登录系统调试信息已输出到控制台，请按F12查看Console标签');
         };
 
-        console.log('💡 快速登录和调试功能已加载');
+        // 兼容旧的快速登录函数
+        window.quickLogin = function(username, password) {
+            console.log('🔄 兼容模式：调用新的快速登录');
+            const usernameInput = document.getElementById('ultraUsername');
+            const passwordInput = document.getElementById('ultraPassword');
+            
+            if (usernameInput && passwordInput) {
+                usernameInput.value = username;
+                passwordInput.value = password;
+                usernameInput.dispatchEvent(new Event('input'));
+                passwordInput.dispatchEvent(new Event('input'));
+                setTimeout(() => handleUltraLogin(), 100);
+            } else {
+                console.error('❌ 新登录输入框未找到，尝试旧版本');
+                const oldUsernameInput = document.getElementById('username');
+                const oldPasswordInput = document.getElementById('password');
+                if (oldUsernameInput && oldPasswordInput) {
+                    oldUsernameInput.value = username;
+                    oldPasswordInput.value = password;
+                    if (typeof handleLogin === 'function') {
+                        handleLogin();
+                    }
+                }
+            }
+        };
+
+        // 兼容旧的调试函数
+        window.debugLogin = function() {
+            console.log('🔄 兼容模式：调用新的调试登录');
+            performDebugLogin();
+        };
+
+        console.log('🎯 超现代登录系统脚本加载完成');
         
         // 登录函数
         function login(username) {
