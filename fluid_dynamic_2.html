@@ -61,6 +61,61 @@
                 }
             });
         });
+        
+        // 全局错误处理
+        window.addEventListener('error', function(e) {
+            console.error('全局错误:', e.error);
+            // 如果是外部资源加载失败，不影响基本功能
+            if (e.filename && e.filename.includes('cdn')) {
+                console.warn('外部资源加载失败，但基本功能不受影响');
+            }
+        });
+        
+        // 确保基本登录功能可用
+        window.addEventListener('DOMContentLoaded', function() {
+            // 确保账号数据存在
+            if (typeof window.accounts === 'undefined') {
+                window.accounts = {
+                    'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306' },
+                    'student1': { name: '学生账号', role: 'student', password: '123456' },
+                    'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025' },
+                    'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025' }
+                };
+            }
+            
+            // 确保基本登录函数存在
+            if (typeof window.basicLogin === 'undefined') {
+                window.basicLogin = function() {
+                    const username = document.getElementById('basicUsername')?.value?.trim();
+                    const password = document.getElementById('basicPassword')?.value;
+                    
+                    if (!username || !password) {
+                        alert('请输入用户名和密码');
+                        return;
+                    }
+                    
+                    const account = window.accounts[username];
+                    if (!account) {
+                        alert('用户名不存在');
+                        return;
+                    }
+                    
+                    if (account.password !== password) {
+                        alert('密码错误');
+                        return;
+                    }
+                    
+                    alert(`登录成功！欢迎 ${account.name} (${account.role})`);
+                    window.currentUser = username;
+                    
+                    // 隐藏登录界面
+                    const loginContainer = document.getElementById('loginContainer');
+                    if (loginContainer) {
+                        loginContainer.style.display = 'none';
+                    }
+                };
+            }
+        });
     </script>
     <style>
         * {
