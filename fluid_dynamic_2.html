@@ -3625,24 +3625,51 @@
         
         // ==================== GitHub后台存储系统 ====================
         
-        // GitHub配置 - 简化版本，使用localStorage存储
+        // GitHub仓库配置 - 直接访问模式
         const GITHUB_CONFIG = {
             owner: 'lghui12138',
             repo: 'lghui12138.github.io',
             branch: 'main',
-            // 从localStorage获取token
-            get token() {
-                const token = localStorage.getItem('github_token');
-                return token || null;
-            },
-            dataPath: 'data/', // 数据存储路径
-            apiBase: 'https://api.github.com'
+            baseUrl: 'https://raw.githubusercontent.com/lghui12138/lghui12138.github.io/main',
+            dataPath: 'data/',
+            videosPath: 'videos/',
+            exercisesPath: 'exercises/'
         };
         
-        // 检查是否有有效的GitHub配置
-        function hasValidGitHubConfig() {
-            const token = GITHUB_CONFIG.token;
-            return token && token !== 'demo_token_please_configure' && token.startsWith('ghp_');
+        // 简化的数据访问类 - 直接读取GitHub文件
+        class SimpleGitHubAccess {
+            constructor(config) {
+                this.config = config;
+            }
+            
+            // 直接从GitHub获取JSON文件
+            async getJSONFile(path) {
+                try {
+                    console.log(`📥 获取文件: ${path}`);
+                    const url = `${this.config.baseUrl}/${path}`;
+                    const response = await fetch(url);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        console.log(`✅ 文件获取成功: ${path}`);
+                        return data;
+                    } else if (response.status === 404) {
+                        console.log(`📄 文件不存在: ${path}`);
+                        return null;
+                    } else {
+                        console.error(`❌ 获取失败: ${path} - ${response.status}`);
+                        return null;
+                    }
+                } catch (error) {
+                    console.error(`❌ 获取异常 ${path}:`, error.message);
+                    return null;
+                }
+            }
+            
+            // 获取文件URL
+            getFileUrl(path) {
+                return `${this.config.baseUrl}/${path}`;
+            }
         }
         
         // 数据存储状态
