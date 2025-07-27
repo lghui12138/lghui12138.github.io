@@ -2391,13 +2391,15 @@
         
         .question-text {
             font-size: 16px;
-            line-height: 1.6;
+            line-height: 1.8;
             margin-bottom: 30px;
             color: #333;
             background: #f8f9fa;
-            padding: 20px;
+            padding: 25px;
             border-radius: 12px;
             border-left: 4px solid #ff6b6b;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            text-align: left;
         }
         
         .answer-input {
@@ -2482,15 +2484,21 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: #f8f9fa;
+            position: sticky;
+            bottom: 0;
+            z-index: 100;
         }
         
         .nav-btn, .hint-btn {
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 14px;
             transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .nav-btn {
@@ -5524,7 +5532,7 @@
                 <div class="exercise-content">
                     <div class="exercise-header">
                         <h2><i class="fas fa-brain"></i> 流体力学易错名词及概念汇总</h2>
-                        <button class="close-btn" onclick="closeExerciseModal()">&times;</button>
+                        <button type="button" class="close-btn" onclick="closeExerciseModal()">&times;</button>
                     </div>
                     <div class="exercise-progress">
                         <div class="progress-bar">
@@ -5539,7 +5547,7 @@
                             <div class="answer-input">
                                 <input type="text" id="answerInput" placeholder="请输入答案..." 
                                        onkeypress="if(event.key==='Enter') checkAnswer()">
-                                <button onclick="checkAnswer()" class="check-btn">
+                                <button type="button" onclick="checkAnswer()" class="check-btn">
                                     <i class="fas fa-check"></i> 检查答案
                                 </button>
                             </div>
@@ -5547,13 +5555,13 @@
                         </div>
                     </div>
                     <div class="exercise-controls">
-                        <button onclick="previousQuestion()" id="prevBtn" class="nav-btn" disabled>
+                        <button type="button" onclick="previousQuestion()" id="prevBtn" class="nav-btn" disabled>
                             <i class="fas fa-chevron-left"></i> 上一题
                         </button>
-                        <button onclick="showHint()" class="hint-btn">
+                        <button type="button" onclick="showHint()" class="hint-btn">
                             <i class="fas fa-lightbulb"></i> 提示
                         </button>
-                        <button onclick="nextQuestion()" id="nextBtn" class="nav-btn">
+                        <button type="button" onclick="nextQuestion()" id="nextBtn" class="nav-btn">
                             下一题 <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
@@ -5573,6 +5581,37 @@
             
             showQuestion();
             modal.style.display = 'flex';
+            
+            // 确保按钮事件正常工作
+            setTimeout(() => {
+                const nextBtn = document.getElementById('nextBtn');
+                const prevBtn = document.getElementById('prevBtn');
+                const closeBtn = modal.querySelector('.close-btn');
+                
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        nextQuestion();
+                    });
+                }
+                
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        previousQuestion();
+                    });
+                }
+                
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        closeExerciseModal();
+                    });
+                }
+            }, 100);
         }
 
         // 开始题目练习
@@ -5729,14 +5768,20 @@
         
         // 下一题
         function nextQuestion() {
-            const exercise = window.currentExercise;
-            
-            if (exercise.currentIndex < 33) {
-                exercise.currentIndex++;
-                showQuestion();
-            } else {
-                // 完成练习
-                finishExercise();
+            try {
+                const exercise = window.currentExercise;
+                console.log('Next question clicked, current index:', exercise.currentIndex);
+                
+                if (exercise.currentIndex < 33) {
+                    exercise.currentIndex++;
+                    showQuestion();
+                } else {
+                    // 完成练习
+                    finishExercise();
+                }
+            } catch (error) {
+                console.error('Error in nextQuestion:', error);
+                showMessage('导航出现错误，请刷新页面重试', 'error');
             }
         }
         
@@ -5807,9 +5852,19 @@
         
         // 关闭练习模态框
         function closeExerciseModal() {
-            const modal = document.querySelector('.exercise-modal');
-            if (modal) {
-                modal.remove();
+            try {
+                console.log('Closing exercise modal');
+                const modal = document.querySelector('.exercise-modal');
+                if (modal) {
+                    modal.style.display = 'none';
+                    setTimeout(() => {
+                        modal.remove();
+                    }, 100);
+                } else {
+                    console.log('No exercise modal found');
+                }
+            } catch (error) {
+                console.error('Error closing modal:', error);
             }
         }
         
@@ -5955,7 +6010,7 @@
                     // 提取B站视频ID
                     const bvidMatch = videoLink.match(/BV\w+/);
                     if (bvidMatch) {
-                        videoFrame.src = `https://player.bilibili.com/player.html?bvid=${bvidMatch[0]}&autoplay=1&page=1&high_quality=1&danmaku=0&t=0&as_wide=1&hasMuteButton=1&allowfullscreen=true&quality=120&volume=0.8`;
+                        videoFrame.src = `https://player.bilibili.com/player.html?bvid=${bvidMatch[0]}&autoplay=1&page=1&high_quality=1&danmaku=0&t=0&as_wide=1&hasMuteButton=1&allowfullscreen=true&quality=120&vd_source=&volume=0.8&p2p=0`;
                     } else {
                         videoFrame.src = videoLink;
                     }
@@ -5965,7 +6020,7 @@
                 document.getElementById('modalTitle').textContent = '流体力学教学视频';
             } else if (videoTitles[videoId]) {
                 // B站视频
-                videoFrame.src = `https://player.bilibili.com/player.html?bvid=${videoId}&autoplay=1&page=1&high_quality=1&danmaku=0&t=0&as_wide=1&hasMuteButton=1&allowfullscreen=true&quality=120&volume=0.8`;
+                videoFrame.src = `https://player.bilibili.com/player.html?bvid=${videoId}&autoplay=1&page=1&high_quality=1&danmaku=0&t=0&as_wide=1&hasMuteButton=1&allowfullscreen=true&quality=120&vd_source=&volume=0.8&p2p=0`;
                 document.getElementById('modalTitle').textContent = videoTitles[videoId];
                 
                 // 如果是学生，记录视频学习进度
@@ -7084,12 +7139,12 @@
             container.innerHTML = `
                 <div style="position: relative; width: 100%; height: 100%;">
                     <iframe id="bilibiliPlayer" 
-                            src="https://player.bilibili.com/player.html?bvid=${bvid}&page=1&autoplay=0&high_quality=1&danmaku=0&t=0&as_wide=1&hasMuteButton=1&allowfullscreen=true&quality=120" 
+                            src="https://player.bilibili.com/player.html?bvid=${bvid}&page=1&autoplay=0&high_quality=1&danmaku=0&t=0&as_wide=1&hasMuteButton=1&allowfullscreen=true&quality=120&vd_source=&p2p=0" 
                             scrolling="no" border="0" frameborder="no" framespacing="0" 
                             allowfullscreen="allowfullscreen" 
                             webkitallowfullscreen="webkitallowfullscreen" 
                             mozallowfullscreen="mozallowfullscreen"
-                            allow="fullscreen"
+                            allow="fullscreen; autoplay"
                             style="width: 100%; height: 100%; border-radius: 8px;">
                     </iframe>
                     
