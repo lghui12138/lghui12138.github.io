@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <title>登录测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 400px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .login-form {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+            display: none;
+        }
+        .success {
+            color: green;
+            margin-top: 10px;
+            display: none;
+        }
+        .debug {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-form">
+        <h2>登录测试</h2>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" 
+                       id="username" 
+                       name="username" 
+                       placeholder="请输入用户名"
+                       autocomplete="username"
+                       required
+                       aria-label="用户名">
+            </div>
+            
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" 
+                       id="password" 
+                       name="password" 
+                       placeholder="请输入密码"
+                       autocomplete="current-password"
+                       required
+                       aria-label="密码">
+            </div>
+            
+            <button type="submit" aria-label="登录按钮">登录</button>
+        </form>
+        
+        <div class="error" id="errorMsg"></div>
+        <div class="success" id="successMsg"></div>
+        
+        <div class="debug" id="debugInfo">
+            <strong>调试信息：</strong><br>
+            <div id="debugContent">等待初始化...</div>
+        </div>
+    </div>
+
+    <script>
+        // 测试账号数据
+        const accounts = {
+            'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306' },
+            'student1': { name: '学生账号', role: 'student', password: '123456' },
+            'test': { name: '测试账号', role: 'student', password: '123' }
+        };
+        
+        function showMessage(msg, type) {
+            const errorDiv = document.getElementById('errorMsg');
+            const successDiv = document.getElementById('successMsg');
+            
+            if (type === 'error') {
+                errorDiv.textContent = msg;
+                errorDiv.style.display = 'block';
+                successDiv.style.display = 'none';
+            } else {
+                successDiv.textContent = msg;
+                successDiv.style.display = 'block';
+                errorDiv.style.display = 'none';
+            }
+        }
+        
+        function updateDebug(msg) {
+            const debugContent = document.getElementById('debugContent');
+            debugContent.innerHTML += msg + '<br>';
+        }
+        
+        function handleLogin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            
+            updateDebug(`🔐 尝试登录: ${username}, 密码长度: ${password.length}`);
+            
+            if (!username || !password) {
+                showMessage('请输入用户名和密码', 'error');
+                updateDebug('❌ 输入为空');
+                return;
+            }
+            
+            const account = accounts[username];
+            updateDebug(`🔍 查找账号: ${username} -> ${account ? '找到' : '未找到'}`);
+            
+            if (account && account.password === password) {
+                showMessage(`登录成功！欢迎 ${account.name} (${account.role})`, 'success');
+                updateDebug(`✅ 登录成功: ${account.name}`);
+            } else {
+                showMessage('用户名或密码错误', 'error');
+                updateDebug(`❌ 登录失败`);
+                updateDebug(`📝 可用账号: ${Object.keys(accounts).join(', ')}`);
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDebug('🚀 页面加载完成');
+            updateDebug(`📊 账号数量: ${Object.keys(accounts).length}`);
+            updateDebug(`📝 可用账号: ${Object.keys(accounts).join(', ')}`);
+            
+            const form = document.getElementById('loginForm');
+            if (form) {
+                updateDebug('📝 绑定表单提交事件');
+                form.addEventListener('submit', handleLogin);
+            } else {
+                updateDebug('❌ 未找到登录表单');
+            }
+        });
+    </script>
+</body>
+</html>

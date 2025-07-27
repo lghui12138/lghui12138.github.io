@@ -2281,6 +2281,9 @@
                            autocomplete="username"
                            required
                            aria-describedby="username-help">
+                    <div class="input-hint" id="username-help" style="display: none;">
+                        <i class="fas fa-user"></i> 请输入您的登录账号
+                    </div>
                 </div>
                 
                 <div class="input-group">
@@ -4309,6 +4312,40 @@
             reexamRatio: [null, 1.33, 1.3, 1.2, 1, 1]       // 复试比例
         };
         
+        // 简化的登录处理函数
+        function handleLogin() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const loginError = document.getElementById('loginError');
+            
+            console.log('🔐 尝试登录:', { username: username, hasPassword: !!password });
+            console.log('🔍 当前accounts:', accounts);
+            
+            // 隐藏之前的错误信息
+            if (loginError) {
+                loginError.style.display = 'none';
+            }
+            
+            if (!username || !password) {
+                showLoginError('请输入账号和密码');
+                return false;
+            }
+            
+            const account = accounts[username];
+            console.log('🔍 找到账号:', account ? '是' : '否');
+            
+            if (account && account.password === password) {
+                console.log('✅ 登录成功');
+                login(username);
+                return true;
+            } else {
+                console.log('❌ 登录失败 - 用户名或密码错误');
+                showLoginError('用户名或密码错误');
+                console.log('📝 可用账号列表:', Object.keys(accounts));
+                return false;
+            }
+        }
+
         // 初始化
         document.addEventListener('DOMContentLoaded', function() {
             // 调试：检查accounts数据
@@ -4316,48 +4353,49 @@
             console.log('🔍 测试账号 - 教师账号:', accounts['liuguanghui6330156'] ? '存在' : '不存在');
             console.log('🔍 测试账号 - 学生账号:', accounts['student1'] ? '存在' : '不存在');
             
-            // 登录表单事件
+            // 登录表单事件 - 多种方式绑定确保工作
             const loginForm = document.getElementById('loginForm');
-            console.log('🔍 查找登录表单:', loginForm ? '找到' : '未找到');
+            const loginBtn = document.getElementById('loginBtn');
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            
+            console.log('🔍 查找表单元素:', {
+                form: !!loginForm,
+                button: !!loginBtn,
+                username: !!usernameInput,
+                password: !!passwordInput
+            });
+            
+            // 方式1: 表单提交事件
             if (loginForm) {
-                console.log('📝 绑定登录表单提交事件');
+                console.log('📝 绑定表单提交事件');
                 loginForm.addEventListener('submit', function(e) {
                     console.log('🚀 表单提交事件触发');
-                    e.preventDefault(); // 阻止表单默认提交
-                    
-                    const username = document.getElementById('username').value.trim();
-                    const password = document.getElementById('password').value;
-                    const loginError = document.getElementById('loginError');
-                    
-                    console.log('🔐 尝试登录:', { username: username, hasPassword: !!password });
-                    
-                    // 隐藏之前的错误信息
-                    if (loginError) {
-                        loginError.style.display = 'none';
-                    }
-                    
-                    if (!username || !password) {
-                        showLoginError('请输入账号和密码');
-                        return;
-                    }
-                    
-                    const account = accounts[username];
-                    console.log('🔍 找到账号:', account ? '是' : '否');
-                    
-                    if (account && account.password === password) {
-                        console.log('✅ 登录成功');
-                        login(username);
-                    } else {
-                        console.log('❌ 登录失败 - 用户名或密码错误');
-                        showLoginError('用户名或密码错误');
-                        
-                        // 显示可用账号（调试用）
-                        console.log('📝 可用账号列表:', Object.keys(accounts));
-                    }
+                    e.preventDefault();
+                    handleLogin();
                 });
             }
             
-            // 回车键登录功能已通过表单submit事件处理，无需额外处理
+            // 方式2: 按钮点击事件（备用）
+            if (loginBtn) {
+                console.log('📝 绑定按钮点击事件');
+                loginBtn.addEventListener('click', function(e) {
+                    console.log('🚀 按钮点击事件触发');
+                    e.preventDefault();
+                    handleLogin();
+                });
+            }
+            
+            // 方式3: 回车键事件（备用）
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        console.log('🚀 回车键登录');
+                        e.preventDefault();
+                        handleLogin();
+                    }
+                });
+            }
         });
         
         // 登录函数
