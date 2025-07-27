@@ -4115,6 +4115,12 @@
             setTimeout(() => {
                 initializeDefaultContent();
             }, 3000);
+            
+            // 加载本地上传的视频和题库
+            setTimeout(() => {
+                loadUploadedVideos();
+                loadUploadedExercises();
+            }, 500);
         });
         
         // 初始化默认内容到GitHub
@@ -5835,7 +5841,7 @@
                         <div class="progress-bar">
                             <div class="progress-fill" id="exerciseProgress"></div>
                         </div>
-                        <span id="progressText">1/34</span>
+                        <span id="progressText">1/38</span>
                     </div>
                     <div class="exercise-body">
                         <div class="question-container">
@@ -6776,11 +6782,21 @@
                     // 添加到视频数据
                     videosData.push(videoData);
                     
+                    // 保存到本地存储
+                    const uploadedVideos = JSON.parse(localStorage.getItem('uploadedVideos') || '[]');
+                    uploadedVideos.push(videoData);
+                    localStorage.setItem('uploadedVideos', JSON.stringify(uploadedVideos));
+                    
                     // 保存到GitHub
                     saveVideosToGitHub();
                     
                     // 添加到页面显示
                     recreateVideoCardFromData(videoData);
+                    
+                    // 关闭上传模态框
+                    closeUploadModal();
+                    
+                    showMessage('视频上传成功！', 'success');
                 } else if (videoSource === 'douyin') {
                     const douyinLink = document.getElementById('douyinLinkInput').value;
                     if (!douyinLink.trim()) {
@@ -6802,8 +6818,21 @@
                     // 添加到视频数据
                     videosData.push(videoData);
                     
+                    // 保存到本地存储
+                    const uploadedVideos = JSON.parse(localStorage.getItem('uploadedVideos') || '[]');
+                    uploadedVideos.push(videoData);
+                    localStorage.setItem('uploadedVideos', JSON.stringify(uploadedVideos));
+                    
+                    // 保存到GitHub
+                    saveVideosToGitHub();
+                    
                     // 添加到页面显示
                     recreateVideoCardFromData(videoData);
+                    
+                    // 关闭上传模态框
+                    closeUploadModal();
+                    
+                    showMessage('抖音视频上传成功！', 'success');
                 }
             } else {
                 if (selectedFiles.length === 0) {
@@ -6827,11 +6856,18 @@
                 // 添加到题库数据
                 exercisesData.push(exerciseData);
                 
+                // 保存到本地存储
+                const uploadedExercises = JSON.parse(localStorage.getItem('uploadedExercises') || '[]');
+                uploadedExercises.push(exerciseData);
+                localStorage.setItem('uploadedExercises', JSON.stringify(uploadedExercises));
+                
                 // 保存到GitHub
                 saveExercisesToGitHub();
                 
                 // 添加到页面显示
                 recreateExerciseCardFromData(exerciseData);
+                
+                showMessage('题库上传成功！', 'success');
             }
             
             closeUploadModal();
@@ -6840,6 +6876,29 @@
         
         // 存储上传的视频数据 - 持久化存储
         let uploadedVideos = [];
+        
+        // 从localStorage加载已上传的题库
+        function loadUploadedExercises() {
+            try {
+                const saved = localStorage.getItem('uploadedExercises');
+                if (saved) {
+                    const exercises = JSON.parse(saved);
+                    console.log('加载已保存的题库:', exercises.length + '个');
+                    
+                    // 将本地题库添加到exercisesData中以便显示
+                    exercises.forEach(exercise => {
+                        if (!exercisesData.find(e => e.id === exercise.id)) {
+                            exercisesData.push(exercise);
+                        }
+                    });
+                    
+                    // 重建题库列表显示
+                    setTimeout(() => rebuildExerciseList(), 300);
+                }
+            } catch (error) {
+                console.error('加载题库失败:', error);
+            }
+        }
         
         // 从localStorage加载已上传的视频
         function loadUploadedVideos() {
@@ -6855,6 +6914,16 @@
                         video.title.length > 1
                     );
                     console.log('加载已保存的视频:', uploadedVideos.length + '个');
+                    
+                    // 将本地视频添加到videosData中以便显示
+                    uploadedVideos.forEach(video => {
+                        if (!videosData.find(v => v.id === video.id)) {
+                            videosData.push(video);
+                        }
+                    });
+                    
+                    // 重建视频列表显示
+                    setTimeout(() => rebuildVideoList(), 300);
                     
                     // 重新创建视频卡片
                     uploadedVideos.forEach(video => {
@@ -8134,11 +8203,46 @@
             document.body.appendChild(modal);
         }
         
-        // 关闭题目模态框
+        // 关闭题目模态框（统一版本）
         function closeExerciseModal() {
-            const modal = document.getElementById('exerciseModal');
-            if (modal) {
-                document.body.removeChild(modal);
+            try {
+                console.log('正在关闭练习模态框...');
+                
+                // 查找所有可能的模态框
+                const modals = [
+                    document.getElementById('exerciseModal'),
+                    document.querySelector('.exercise-modal'),
+                    document.querySelector('.exercise-result-modal')
+                ];
+                
+                let closed = false;
+                modals.forEach(modal => {
+                    if (modal) {
+                        console.log('找到模态框，正在关闭...');
+                        modal.style.display = 'none';
+                        setTimeout(() => {
+                            if (modal.parentNode) {
+                                modal.parentNode.removeChild(modal);
+                            }
+                        }, 100);
+                        closed = true;
+                    }
+                });
+                
+                if (closed) {
+                    console.log('✅ 练习模态框已关闭');
+                    showMessage('已退出练习', 'info');
+                } else {
+                    console.log('⚠️ 未找到要关闭的模态框');
+                }
+                
+                // 清理全局状态
+                if (window.currentExercise) {
+                    window.currentExercise = null;
+                }
+                
+            } catch (error) {
+                console.error('❌ 关闭模态框时出错:', error);
             }
         }
         
