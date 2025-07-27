@@ -3752,6 +3752,36 @@
                     </div>
                 </div>
                 
+                <div class="upload-form-group" id="videoFileGroup" style="display: none;">
+                    <label for="videoFileInput">选择本地视频文件</label>
+                    <input type="file" 
+                           id="videoFileInput" 
+                           name="videoFileInput"
+                           accept="video/*"
+                           onchange="handleVideoFileSelect(this)"
+                           style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;"
+                           aria-label="选择本地视频文件">
+                    <div style="background: #f8f9fa; padding: 12px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #007bff;">
+                        <p style="margin: 0; color: #666; font-size: 14px;">
+                            <i class="fas fa-video" style="color: #007bff; margin-right: 8px;"></i>
+                            <strong>支持格式：</strong>MP4, AVI, MOV, WMV, FLV等常见视频格式
+                        </p>
+                        <p style="margin: 8px 0 0 0; color: #666; font-size: 13px;">
+                            <i class="fas fa-info-circle" style="color: #17a2b8; margin-right: 5px;"></i>
+                            建议文件大小不超过500MB，支持倍速播放和全屏功能
+                        </p>
+                    </div>
+                    <div id="videoFilePreview" style="display: none; margin-top: 15px; padding: 12px; background: #e8f5e8; border-radius: 8px; border-left: 4px solid #28a745;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-file-video" style="color: #28a745; font-size: 20px;"></i>
+                            <div>
+                                <div id="videoFileName" style="font-weight: bold; color: #155724;"></div>
+                                <div id="videoFileInfo" style="font-size: 12px; color: #666;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="upload-form-group" id="videoSourceGroup" style="display: none;">
                     <label>视频来源</label>
                     <div class="radio-group">
@@ -3764,6 +3794,15 @@
                                    onchange="toggleVideoSource('link')"
                                    aria-label="选择在线视频链接方式">
                             <span>在线视频链接</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" 
+                                   id="videoSourceFile"
+                                   name="videoSource" 
+                                   value="file" 
+                                   onchange="toggleVideoSource('file')"
+                                   aria-label="选择本地视频文件方式">
+                            <span>本地视频文件</span>
                         </label>
                         <label class="radio-label">
                             <input type="radio" 
@@ -5835,7 +5874,7 @@
                 <div class="exercise-content">
                     <div class="exercise-header">
                         <h2><i class="fas fa-brain"></i> 流体力学易错名词及概念汇总</h2>
-                        <button type="button" class="close-btn" onclick="closeExerciseModal()">&times;</button>
+                        <button type="button" class="close-btn" id="exerciseCloseBtn">&times;</button>
                     </div>
                     <div class="exercise-progress">
                         <div class="progress-bar">
@@ -5889,7 +5928,7 @@
             setTimeout(() => {
                 const nextBtn = document.getElementById('nextBtn');
                 const prevBtn = document.getElementById('prevBtn');
-                const closeBtn = modal.querySelector('.close-btn');
+                const closeBtn = document.getElementById('exerciseCloseBtn');
                 
                 if (nextBtn) {
                     nextBtn.addEventListener('click', function(e) {
@@ -5911,9 +5950,19 @@
                     closeBtn.addEventListener('click', function(e) {
                         e.preventDefault();
                         e.stopPropagation();
+                        console.log('关闭按钮被点击');
                         closeExerciseModal();
                     });
                 }
+                
+                // 点击模态框外部也可以关闭
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        console.log('点击模态框外部，关闭练习');
+                        closeExerciseModal();
+                    }
+                });
+                
             }, 100);
         }
 
@@ -6645,14 +6694,25 @@
             document.getElementById('uploadDescription').value = '';
             document.getElementById('videoLink').value = '';
             document.getElementById('videoFileInput').value = '';
+            document.getElementById('douyinLinkInput').value = '';
             selectedFiles = [];
             selectedVideoFile = null;
+            window.selectedVideoFile = null;
             updateFilePreview();
             hideVideoUploadProgress();
             
+            // 隐藏文件预览
+            const videoFilePreview = document.getElementById('videoFilePreview');
+            if (videoFilePreview) {
+                videoFilePreview.style.display = 'none';
+            }
+            
             // 重置视频来源选择
             const linkRadio = document.querySelector('input[name="videoSource"][value="link"]');
-            if (linkRadio) linkRadio.checked = true;
+            if (linkRadio) {
+                linkRadio.checked = true;
+                toggleVideoSource('link');
+            }
         }
         
         // 初始化文件上传
@@ -6833,6 +6893,52 @@
                     closeUploadModal();
                     
                     showMessage('抖音视频上传成功！', 'success');
+                } else if (videoSource === 'file') {
+                    // 本地文件上传
+                    if (!window.selectedVideoFile) {
+                        showAlert('请选择视频文件');
+                        return;
+                    }
+                    
+                    const file = window.selectedVideoFile;
+                    
+                    // 创建本地视频数据对象
+                    const videoData = {
+                        id: 'file_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                        title: title,
+                        description: description,
+                        source: URL.createObjectURL(file), // 创建Blob URL
+                        type: 'file',
+                        category: category,
+                        platform: '本地文件',
+                        fileName: file.name,
+                        fileSize: file.size,
+                        fileType: file.type,
+                        uploadTime: new Date().toISOString()
+                    };
+                    
+                    // 添加到视频数据
+                    videosData.push(videoData);
+                    
+                    // 保存到本地存储
+                    const uploadedVideos = JSON.parse(localStorage.getItem('uploadedVideos') || '[]');
+                    uploadedVideos.push(videoData);
+                    localStorage.setItem('uploadedVideos', JSON.stringify(uploadedVideos));
+                    
+                    // 保存到GitHub (不包含Blob URL)
+                    const githubVideoData = {
+                        ...videoData,
+                        source: '', // GitHub不保存Blob URL
+                        needsReupload: true // 标记需要重新上传
+                    };
+                    
+                    // 添加到页面显示
+                    recreateVideoCardFromData(videoData);
+                    
+                    // 关闭上传模态框
+                    closeUploadModal();
+                    
+                    showMessage('本地视频上传成功！可以立即播放', 'success');
                 }
             } else {
                 if (selectedFiles.length === 0) {
@@ -7301,19 +7407,71 @@
         // 切换视频来源
         function toggleVideoSource(source) {
             const videoLinkGroup = document.getElementById('videoLinkGroup');
+            const videoFileGroup = document.getElementById('videoFileGroup');
             const douyinLinkGroup = document.getElementById('douyinLinkGroup');
             
+            // 隐藏所有组
+            videoLinkGroup.style.display = 'none';
+            videoFileGroup.style.display = 'none';
+            douyinLinkGroup.style.display = 'none';
+            
+            // 显示选中的组
             if (source === 'link') {
                 videoLinkGroup.style.display = 'block';
-                douyinLinkGroup.style.display = 'none';
+            } else if (source === 'file') {
+                videoFileGroup.style.display = 'block';
             } else if (source === 'douyin') {
-                videoLinkGroup.style.display = 'none';
                 douyinLinkGroup.style.display = 'block';
             }
         }
         
-
+        // 处理本地视频文件选择
+        function handleVideoFileSelect(input) {
+            const file = input.files[0];
+            if (!file) {
+                document.getElementById('videoFilePreview').style.display = 'none';
+                return;
+            }
+            
+            // 验证文件类型
+            if (!file.type.startsWith('video/')) {
+                showMessage('请选择视频文件！', 'error');
+                input.value = '';
+                return;
+            }
+            
+            // 验证文件大小（500MB限制）
+            const maxSize = 500 * 1024 * 1024; // 500MB
+            if (file.size > maxSize) {
+                showMessage('视频文件过大，请选择小于500MB的文件！', 'error');
+                input.value = '';
+                return;
+            }
+            
+            // 显示文件预览信息
+            const preview = document.getElementById('videoFilePreview');
+            const fileName = document.getElementById('videoFileName');
+            const fileInfo = document.getElementById('videoFileInfo');
+            
+            fileName.textContent = file.name;
+            fileInfo.textContent = `文件大小: ${formatFileSize(file.size)} | 类型: ${file.type}`;
+            preview.style.display = 'block';
+            
+            // 存储选中的文件
+            window.selectedVideoFile = file;
+            
+            showMessage('视频文件选择成功！', 'success');
+        }
         
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
         // 简化的视频配置
         const VIDEO_CONFIG = {
             supportedPlatforms: ['抖音', 'B站', 'YouTube', '其他']
