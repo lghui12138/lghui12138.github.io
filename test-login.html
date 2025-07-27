@@ -4,115 +4,311 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录测试页面</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        * {
             margin: 0;
-        }
-        .login-box {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            width: 350px;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-            margin-bottom: 30px;
-        }
-        input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+            padding: 0;
             box-sizing: border-box;
         }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* 背景动画效果 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.2) 0%, transparent 50%);
+            animation: backgroundShift 20s ease-in-out infinite;
+        }
+        
+        @keyframes backgroundShift {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(1deg); }
+        }
+        
+        .login-box {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 50px;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            font-size: 60px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+            font-weight: 700;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            position: relative;
+        }
+        
+        .form-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #667eea;
+            font-size: 18px;
+        }
+        
+        input {
+            width: 100%;
+            padding: 15px 15px 15px 50px;
+            margin-bottom: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
         input:focus {
             border-color: #667eea;
             outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
         }
-        button {
+        
+        .main-btn {
             width: 100%;
             padding: 15px;
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: 600;
             cursor: pointer;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-        button:hover {
-            opacity: 0.9;
+        
+        .main-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
         }
+        
+        .main-btn:hover::before {
+            left: 100%;
+        }
+        
+        .main-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
         .quick-btn {
-            background: #f8f9fa;
+            background: rgba(248, 249, 250, 0.9);
             color: #333;
-            border: 2px solid #ddd;
-            margin-bottom: 5px;
+            border: 2px solid #e1e5e9;
+            margin: 8px;
+            padding: 12px 20px;
+            border-radius: 10px;
             font-size: 14px;
-            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
+        
         .quick-btn:hover {
-            background: #e9ecef;
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
         }
+        
         .error {
-            background: #ffe6e6;
+            background: linear-gradient(135deg, #ffe6e6, #f5c6cb);
             color: #d63384;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            display: none;
-        }
-        .success {
-            background: #d1e7dd;
-            color: #0f5132;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            display: none;
-        }
-        .debug {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
             padding: 15px;
-            margin-top: 20px;
-            border-radius: 5px;
-            font-family: monospace;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+            font-weight: 500;
+        }
+        
+        .success {
+            background: linear-gradient(135deg, #d1e7dd, #bee5eb);
+            color: #0f5132;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            display: none;
+            font-weight: 500;
+        }
+        
+        .debug {
+            background: rgba(248, 249, 250, 0.9);
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
             font-size: 12px;
-            max-height: 150px;
+            max-height: 200px;
             overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+        
+        .debug-content {
+            line-height: 1.6;
+        }
+        
+        .debug-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .debug-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .debug-content::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 3px;
+        }
+        
+        .debug-content::-webkit-scrollbar-thumb:hover {
+            background: #5a6fd8;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .login-box {
+                margin: 20px;
+                padding: 30px;
+            }
+            
+            .logo {
+                font-size: 50px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+            
+            .quick-btn {
+                margin: 5px;
+                padding: 10px 15px;
+                font-size: 13px;
+            }
+        }
+        
+        /* 加载动画 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <div class="login-box">
-        <h1>🔐 登录测试</h1>
+        <div class="login-header">
+            <div class="logo">🔐</div>
+            <h1>登录测试页面</h1>
+            <p class="subtitle">流体力学学习平台 - 功能测试</p>
+        </div>
         
         <div class="error" id="errorMsg"></div>
         <div class="success" id="successMsg"></div>
         
-        <input type="text" id="username" placeholder="用户名">
-        <input type="password" id="password" placeholder="密码">
+        <div class="form-group">
+            <i class="fas fa-user"></i>
+            <input type="text" id="username" placeholder="用户名">
+        </div>
         
-        <button onclick="doLogin()">登录</button>
+        <div class="form-group">
+            <i class="fas fa-lock"></i>
+            <input type="password" id="password" placeholder="密码">
+        </div>
         
-        <button class="quick-btn" onclick="quickTeacher()">教师快速登录</button>
-        <button class="quick-btn" onclick="quickStudent()">学生快速登录</button>
-        <button class="quick-btn" onclick="showDebug()">显示调试信息</button>
-        <button class="quick-btn" onclick="clearStorage()">清除登录状态</button>
+        <button class="main-btn" onclick="doLogin()" id="loginBtn">
+            <span id="loginText">🔐 登录</span>
+            <span id="loadingSpinner" class="loading" style="display: none;"></span>
+        </button>
+        
+        <div style="text-align: center; margin: 20px 0;">
+            <button class="quick-btn" onclick="quickTeacher()">
+                <i class="fas fa-chalkboard-teacher"></i> 教师快速登录
+            </button>
+            <button class="quick-btn" onclick="quickStudent()">
+                <i class="fas fa-user-graduate"></i> 学生快速登录
+            </button>
+            <button class="quick-btn" onclick="showDebug()">
+                <i class="fas fa-bug"></i> 显示调试信息
+            </button>
+            <button class="quick-btn" onclick="clearStorage()">
+                <i class="fas fa-trash"></i> 清除登录状态
+            </button>
+        </div>
         
         <div class="debug" id="debug">
-            <strong>调试信息：</strong><br>
-            <div id="debugContent">初始化中...</div>
+            <strong>🔧 调试信息：</strong><br>
+            <div id="debugContent" class="debug-content">初始化中...</div>
         </div>
     </div>
 
@@ -131,6 +327,19 @@
             debugContent.innerHTML += `[${timestamp}] ${message}<br>`;
             debugContent.scrollTop = debugContent.scrollHeight;
             console.log(message);
+        }
+
+        function showLoading(show) {
+            const loginText = document.getElementById('loginText');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            
+            if (show) {
+                loginText.style.display = 'none';
+                loadingSpinner.style.display = 'inline-block';
+            } else {
+                loginText.style.display = 'inline';
+                loadingSpinner.style.display = 'none';
+            }
         }
 
         function showError(msg) {
@@ -171,6 +380,7 @@
                 return;
             }
             
+            showLoading(true);
             showSuccess(`登录成功！欢迎 ${account.name} (${account.role})`);
             log(`✅ 登录成功: ${account.name}`);
             
@@ -209,6 +419,10 @@
             log(`  userRole: ${localStorage.getItem('userRole') || '未设置'}`);
             log(`  userName: ${localStorage.getItem('userName') || '未设置'}`);
             log(`  loginTime: ${localStorage.getItem('loginTime') || '未设置'}`);
+            log(`页面元素:`);
+            log(`  username: ${document.getElementById('username') ? '找到' : '未找到'}`);
+            log(`  password: ${document.getElementById('password') ? '找到' : '未找到'}`);
+            log(`  loginBtn: ${document.getElementById('loginBtn') ? '找到' : '未找到'}`);
         }
 
         function clearStorage() {

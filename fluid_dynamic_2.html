@@ -6533,45 +6533,71 @@
         }
 
         function basicLogin() {
-            const username = document.getElementById('basicUsername').value.trim();
-            const password = document.getElementById('basicPassword').value;
-            
-            console.log('🔐 基础登录系统启动');
-            console.log('📝 尝试登录:', username);
-            
-            if (!username || !password) {
-                basicShowError('请输入用户名和密码');
-                return;
-            }
-            
-            const account = window.accounts[username];
-            if (!account) {
-                basicShowError('用户名不存在');
-                console.log('💡 可用账号:', Object.keys(window.accounts));
-                return;
-            }
-            
-            if (account.password !== password) {
-                basicShowError('密码错误');
-                return;
-            }
-            
-            basicShowSuccess(`登录成功！欢迎 ${account.name} (${account.role})`);
-            console.log('✅ 登录成功:', account);
-            
-            // 设置当前用户
-            window.currentUser = username;
-            
-            // 延迟跳转
-            setTimeout(() => {
-                if (typeof login === 'function') {
-                    login(username);
-                } else {
-                    // 手动隐藏登录界面
-                    document.getElementById('loginContainer').style.display = 'none';
-                    alert(`登录完成！欢迎使用流体力学学习平台`);
+            try {
+                const username = document.getElementById('basicUsername').value.trim();
+                const password = document.getElementById('basicPassword').value;
+                
+                console.log('🔐 基础登录系统启动');
+                console.log('📝 尝试登录:', username);
+                
+                if (!username || !password) {
+                    basicShowError('请输入用户名和密码');
+                    return;
                 }
-            }, 1500);
+                
+                // 确保accounts对象存在
+                if (!window.accounts) {
+                    window.accounts = {
+                        'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306', color: 'teacher' },
+                        'student1': { name: '学生账号', role: 'student', password: '123456', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
+                        'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
+                        'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] }
+                    };
+                }
+                
+                const account = window.accounts[username];
+                if (!account) {
+                    basicShowError('用户名不存在');
+                    console.log('💡 可用账号:', Object.keys(window.accounts));
+                    return;
+                }
+                
+                if (account.password !== password) {
+                    basicShowError('密码错误');
+                    return;
+                }
+                
+                basicShowSuccess(`登录成功！欢迎 ${account.name} (${account.role})`);
+                console.log('✅ 登录成功:', account);
+                
+                // 存储登录状态
+                localStorage.setItem('currentUser', username);
+                localStorage.setItem('loginTime', new Date().toISOString());
+                localStorage.setItem('userRole', account.role);
+                localStorage.setItem('userName', account.name);
+                
+                // 设置当前用户
+                window.currentUser = username;
+                
+                // 延迟跳转
+                setTimeout(() => {
+                    if (typeof login === 'function') {
+                        login(username);
+                    } else {
+                        // 手动隐藏登录界面
+                        document.getElementById('loginContainer').style.display = 'none';
+                        const platformContainer = document.getElementById('platformContainer');
+                        if (platformContainer) {
+                            platformContainer.style.display = 'block';
+                        }
+                        alert(`登录完成！欢迎使用流体力学学习平台`);
+                    }
+                }, 1500);
+                
+            } catch (error) {
+                console.error('❌ 基础登录出错:', error);
+                basicShowError('登录过程出现错误: ' + error.message);
+            }
         }
 
         function basicQuickTeacher() {
