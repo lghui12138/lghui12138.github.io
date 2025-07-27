@@ -6120,6 +6120,12 @@
                 
                 console.log('✅ 登录验证成功，执行登录');
                 
+                // 存储登录状态到localStorage
+                localStorage.setItem('currentUser', username);
+                localStorage.setItem('loginTime', new Date().toISOString());
+                localStorage.setItem('userRole', account.role);
+                localStorage.setItem('userName', account.name);
+                
                 // 确保login函数存在
                 if (typeof login === 'function') {
                     login(username);
@@ -6269,6 +6275,30 @@
         // 基础登录系统初始化
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🎯 基础登录系统初始化');
+            
+            // 初始化账号数据
+            if (!window.accounts) {
+                window.accounts = {
+                    'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306', color: 'teacher' },
+                    'student1': { name: '学生账号', role: 'student', password: '123456', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
+                    'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
+                    'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] }
+                };
+            }
+            
+            // 确保全局变量可用
+            accounts = window.accounts;
+            currentUser = null;
+            
+            console.log('💡 可用账号:', Object.keys(window.accounts));
+            
+            // 检查登录状态
+            if (checkLoginStatus()) {
+                console.log('✅ 已自动登录');
+                return;
+            }
+            
+            console.log('🔐 未检测到登录状态，显示登录界面');
             
             // 初始化旧系统（兼容性）
             if (typeof initializeLogin === 'function') {
@@ -6651,6 +6681,42 @@
             
             // 初始化成绩图表
             initGradeChart();
+        }
+        
+        // 检查登录状态并自动登录
+        function checkLoginStatus() {
+            const currentUser = localStorage.getItem('currentUser');
+            const userRole = localStorage.getItem('userRole');
+            const userName = localStorage.getItem('userName');
+            
+            if (currentUser && userRole && userName) {
+                console.log('🔍 检测到已登录用户:', currentUser);
+                
+                // 确保accounts对象存在
+                if (!accounts || typeof accounts !== 'object') {
+                    accounts = {
+                        'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306', color: 'teacher' },
+                        'student1': { name: '学生账号', role: 'student', password: '123456', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
+                        'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
+                        'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] }
+                    };
+                }
+                
+                // 验证账号是否仍然存在
+                if (accounts[currentUser]) {
+                    console.log('✅ 自动登录成功:', userName);
+                    login(currentUser);
+                    return true;
+                } else {
+                    console.log('❌ 存储的用户账号不存在，清除登录状态');
+                    localStorage.removeItem('currentUser');
+                    localStorage.removeItem('userRole');
+                    localStorage.removeItem('userName');
+                    localStorage.removeItem('loginTime');
+                }
+            }
+            
+            return false;
         }
         
         // 显示教师功能

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <title>简单登录测试</title>
+    <title>流体力学学习平台 - 登录</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -81,11 +81,28 @@
             max-height: 200px;
             overflow-y: auto;
         }
+        .quick-login {
+            margin-top: 15px;
+            text-align: center;
+        }
+        .quick-btn {
+            background: #f8f9fa;
+            color: #333;
+            border: 1px solid #ddd;
+            margin: 5px;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .quick-btn:hover {
+            background: #e9ecef;
+        }
     </style>
 </head>
 <body>
     <div class="login-container">
-        <h1>🔐 登录测试</h1>
+        <h1>🔐 流体力学学习平台</h1>
         
         <form id="loginForm" method="post" action="javascript:void(0)">
             <div class="form-group">
@@ -111,25 +128,26 @@
             <button type="submit">登录</button>
         </form>
         
+        <div class="quick-login">
+            <button class="quick-btn" onclick="quickLogin('teacher')">教师快速登录</button>
+            <button class="quick-btn" onclick="quickLogin('student')">学生快速登录</button>
+        </div>
+        
         <div id="result" class="result"></div>
         
         <div class="debug" id="debug">
             <strong>调试信息：</strong><br>
             <div id="debugContent">初始化中...</div>
         </div>
-        
-        <div style="text-align: center; margin-top: 20px;">
-            <button onclick="window.location.href='/fluid_dynamic_2.html'" style="background: #28a745;">
-                返回主页面
-            </button>
-        </div>
     </div>
 
     <script>
-        // 简单的账号数据
+        // 账号数据
         const accounts = {
             'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306' },
             'student1': { name: '学生账号', role: 'student', password: '123456' },
+            'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025' },
+            'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025' },
             'test': { name: '测试账号', role: 'student', password: '123' }
         };
         
@@ -146,6 +164,19 @@
             result.textContent = message;
             result.className = `result ${type}`;
             result.style.display = 'block';
+        }
+        
+        function quickLogin(type) {
+            if (type === 'teacher') {
+                document.getElementById('username').value = 'liuguanghui6330156';
+                document.getElementById('password').value = 'Ll700306';
+            } else {
+                document.getElementById('username').value = 'student1';
+                document.getElementById('password').value = '123456';
+            }
+            setTimeout(() => {
+                handleLogin({ preventDefault: () => {} });
+            }, 100);
         }
         
         function handleLogin(event) {
@@ -181,6 +212,8 @@
                 // 存储登录状态
                 localStorage.setItem('currentUser', username);
                 localStorage.setItem('loginTime', new Date().toISOString());
+                localStorage.setItem('userRole', account.role);
+                localStorage.setItem('userName', account.name);
                 
                 // 3秒后跳转到主页面
                 setTimeout(() => {
