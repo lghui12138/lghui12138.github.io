@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <!-- X-Frame-Options和X-XSS-Protection只能通过HTTP头部设置，由Service Worker处理 -->
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, notranslate">
     <title>流体力学学习平台 - 中国海洋大学</title>
@@ -26,30 +23,45 @@
     <link rel="dns-prefetch" href="//api.github.com">
     
     <!-- 反爬虫和安全防护 -->
-    <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
     <meta name="googlebot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
     <meta name="bingbot" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-    <meta name="referrer" content="no-referrer">
     
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- 高级视频播放器库 -->
-    <script src="https://vjs.zencdn.net/8.7.0/video.min.js"></script>
-    <link href="https://vjs.zencdn.net/8.7.0/video-js.css" rel="stylesheet">
+    <script src="https://vjs.zencdn.net/8.7.0/video.min.js" crossorigin="anonymous"></script>
+    <link href="https://vjs.zencdn.net/8.7.0/video-js.css" rel="stylesheet" crossorigin="anonymous">
     
     <!-- 文件处理库 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous"></script>
     
     <!-- 高级UI组件库 -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/sortable/1.15.0/Sortable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sortable/1.15.0/Sortable.min.js" crossorigin="anonymous"></script>
     
     <!-- 视频压缩和处理库 -->
-    <script src="https://cdn.jsdelivr.net/npm/ffmpeg@0.12.7/dist/ffmpeg.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/ffmpeg@0.12.7/dist/ffmpeg.min.js" crossorigin="anonymous"></script>
+    
+    <!-- 资源加载错误处理 -->
+    <script>
+        // 检查外部资源加载状态
+        window.addEventListener('load', function() {
+            const resources = [
+                { name: 'Font Awesome', url: 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css' },
+                { name: 'Chart.js', url: 'https://cdn.jsdelivr.net/npm/chart.js' },
+                { name: 'Video.js', url: 'https://vjs.zencdn.net/8.7.0/video.min.js' },
+                { name: 'XLSX', url: 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js' },
+                { name: 'Sortable', url: 'https://cdnjs.cloudflare.com/ajax/libs/sortable/1.15.0/Sortable.min.js' }
+            ];
+            
+            resources.forEach(resource => {
+                if (typeof window[resource.name.replace(/\s+/g, '')] === 'undefined') {
+                    console.warn(`⚠️ ${resource.name} 可能未正确加载`);
+                }
+            });
+        });
+    </script>
     <style>
         * {
             margin: 0;
@@ -10627,110 +10639,6 @@
                     player.muted(!player.muted());
                     break;
             }
-        }
-            container.innerHTML = `
-                <div style="position: relative; width: 100%; height: 100%;">
-                    <video id="customVideoPlayer" controls 
-                           style="width: 100%; height: 100%; border-radius: 8px;" 
-                           preload="metadata"
-                           crossorigin="anonymous">
-                        <source src="${source}" type="video/mp4">
-                        <source src="${source}" type="video/webm">
-                        <source src="${source}" type="video/ogg">
-                        您的浏览器不支持视频播放。
-                    </video>
-                    
-                    <!-- 增强控制栏 -->
-                    <div id="customControls" style="
-                        position: absolute;
-                        bottom: 15px;
-                        right: 15px;
-                        background: rgba(0,0,0,0.9);
-                        padding: 12px 16px;
-                        border-radius: 8px;
-                        display: flex;
-                        gap: 15px;
-                        align-items: center;
-                        color: white;
-                        font-size: 13px;
-                        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                        -webkit-backdrop-filter: blur(5px);
-                        backdrop-filter: blur(5px);
-                    ">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-tachometer-alt"></i>
-                            <label>倍速:</label>
-                            <select id="playbackRate" style="
-                                background: #333; 
-                                color: white; 
-                                border: 1px solid #555; 
-                                padding: 4px 8px; 
-                                border-radius: 4px;
-                                font-size: 12px;
-                            ">
-                                <option value="0.5">0.5x</option>
-                                <option value="0.75">0.75x</option>
-                                <option value="1" selected>1.0x</option>
-                                <option value="1.25">1.25x</option>
-                                <option value="1.5">1.5x</option>
-                                <option value="2">2.0x</option>
-                                <option value="3">3.0x</option>
-                                <option value="4">4.0x</option>
-                            </select>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-expand"></i>
-                            <button id="fullscreenBtn" style="
-                                background: #007bff; 
-                                color: white; 
-                                border: none; 
-                                padding: 6px 12px; 
-                                border-radius: 4px;
-                                cursor: pointer;
-                                font-size: 12px;
-                            ">全屏</button>
-                        </div>
-                        
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-cog"></i>
-                            <label>清晰度:</label>
-                            <select id="videoQuality" style="
-                                background: #333; 
-                                color: white; 
-                                border: 1px solid #555; 
-                                padding: 4px 8px; 
-                                border-radius: 4px;
-                                font-size: 12px;
-                            ">
-                                <option value="auto" selected>自动</option>
-                                <option value="1080p">1080P</option>
-                                <option value="720p">720P</option>
-                                <option value="480p">480P</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- 播放提示 -->
-                    <div id="playbackHint" style="
-                        position: absolute;
-                        top: 20px;
-                        left: 20px;
-                        background: rgba(0,0,0,0.7);
-                        color: white;
-                        padding: 8px 12px;
-                        border-radius: 6px;
-                        font-size: 12px;
-                        display: none;
-                    ">
-                        <i class="fas fa-info-circle"></i> 
-                        双击全屏 | 空格暂停 | F键切换全屏
-                    </div>
-                </div>
-            `;
-            
-            // 初始化高级播放器
-            initAdvancedVideoPlayer();
         }
         
         // 创建B站播放器
