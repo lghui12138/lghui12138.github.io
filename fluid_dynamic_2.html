@@ -7633,10 +7633,485 @@
             nav.classList.toggle('active');
         }
         
+        // ==================== 高级文件上传管理系统 ====================
+        
         // 上传功能相关变量
         let currentUploadType = '';
         let selectedFiles = [];
         let selectedVideoFile = null;
+        let uploadQueue = [];
+        let activeUploads = new Map();
+        let uploadStatistics = {
+            totalFiles: 0,
+            successfulUploads: 0,
+            failedUploads: 0,
+            totalSize: 0,
+            uploadedSize: 0
+        };
+
+        // 高级文件上传管理器
+        class AdvancedUploadManager {
+            constructor() {
+                this.maxConcurrentUploads = 3;
+                this.maxFileSize = 500 * 1024 * 1024; // 500MB
+                this.supportedVideoFormats = ['mp4', 'webm', 'ogg', 'avi', 'mov', 'wmv', 'flv', 'm4v'];
+                this.supportedExerciseFormats = ['json', 'txt', 'csv', 'xlsx', 'xls'];
+                this.compressionEnabled = true;
+                this.autoRetry = true;
+                this.maxRetries = 3;
+            }
+
+            // 初始化拖拽上传
+            initDragAndDrop(element) {
+                if (!element) return;
+
+                element.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    element.classList.add('dragover');
+                    this.showDragOverlay(element, true);
+                });
+
+                element.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    if (!element.contains(e.relatedTarget)) {
+                        element.classList.remove('dragover');
+                        this.showDragOverlay(element, false);
+                    }
+                });
+
+                element.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    element.classList.remove('dragover');
+                    this.showDragOverlay(element, false);
+                    
+                    const files = Array.from(e.dataTransfer.files);
+                    this.handleFileSelection(files);
+                });
+            }
+
+            // 显示拖拽覆盖层
+            showDragOverlay(element, show) {
+                let overlay = element.querySelector('.drag-overlay');
+                if (!overlay && show) {
+                    overlay = document.createElement('div');
+                    overlay.className = 'drag-overlay';
+                    overlay.innerHTML = `
+                        <div class="drag-overlay-content">
+                            <div class="drag-overlay-icon">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                            </div>
+                            <div class="drag-overlay-text">释放文件开始上传</div>
+                            <div class="drag-overlay-hint">支持多文件同时上传</div>
+                        </div>
+                    `;
+                    element.appendChild(overlay);
+                }
+                
+                if (overlay) {
+                    overlay.classList.toggle('active', show);
+                }
+            }
+
+            // 处理文件选择
+            async handleFileSelection(files) {
+                if (!files || files.length === 0) return;
+
+                showAdvancedLoading('正在分析文件...');
+
+                const validFiles = [];
+                const invalidFiles = [];
+
+                for (const file of files) {
+                    const validation = await this.validateFile(file);
+                    if (validation.valid) {
+                        validFiles.push({
+                            file: file,
+                            id: this.generateFileId(),
+                            metadata: validation.metadata
+                        });
+                    } else {
+                        invalidFiles.push({
+                            file: file,
+                            error: validation.error
+                        });
+                    }
+                }
+
+                hideAdvancedLoading();
+
+                if (invalidFiles.length > 0) {
+                    this.showFileValidationErrors(invalidFiles);
+                }
+
+                if (validFiles.length > 0) {
+                    this.addFilesToQueue(validFiles);
+                    this.showFilePreview(validFiles);
+                }
+            }
+
+            // 验证文件
+            async validateFile(file) {
+                const result = {
+                    valid: false,
+                    error: null,
+                    metadata: {}
+                };
+
+                // 检查文件大小
+                if (file.size > this.maxFileSize) {
+                    result.error = `文件大小超过限制 (${this.formatFileSize(this.maxFileSize)})`;
+                    return result;
+                }
+
+                // 检查文件类型
+                const extension = file.name.split('.').pop().toLowerCase();
+                const isVideo = this.supportedVideoFormats.includes(extension);
+                const isExercise = this.supportedExerciseFormats.includes(extension);
+
+                if (!isVideo && !isExercise) {
+                    result.error = '不支持的文件格式';
+                    return result;
+                }
+
+                // 获取文件元数据
+                if (isVideo) {
+                    result.metadata = await this.getVideoMetadata(file);
+                    result.metadata.type = 'video';
+                } else {
+                    result.metadata = await this.getExerciseMetadata(file);
+                    result.metadata.type = 'exercise';
+                }
+
+                result.valid = true;
+                return result;
+            }
+
+            // 获取视频元数据
+            async getVideoMetadata(file) {
+                return new Promise((resolve) => {
+                    const video = document.createElement('video');
+                    const url = URL.createObjectURL(file);
+                    
+                    video.preload = 'metadata';
+                    video.onloadedmetadata = () => {
+                        resolve({
+                            duration: video.duration,
+                            width: video.videoWidth,
+                            height: video.videoHeight,
+                            aspectRatio: video.videoWidth / video.videoHeight
+                        });
+                        URL.revokeObjectURL(url);
+                    };
+                    
+                    video.onerror = () => {
+                        resolve({
+                            duration: 0,
+                            width: 0,
+                            height: 0,
+                            aspectRatio: 16/9
+                        });
+                        URL.revokeObjectURL(url);
+                    };
+                    
+                    video.src = url;
+                });
+            }
+
+            // 获取题库元数据
+            async getExerciseMetadata(file) {
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const content = e.target.result;
+                            let questionCount = 0;
+                            
+                            if (file.name.endsWith('.json')) {
+                                const data = JSON.parse(content);
+                                questionCount = Array.isArray(data) ? data.length : (data.questions ? data.questions.length : 0);
+                            } else if (file.name.endsWith('.txt')) {
+                                questionCount = content.split('\n').filter(line => line.trim()).length;
+                            } else if (file.name.endsWith('.csv')) {
+                                questionCount = content.split('\n').length - 1; // 减去标题行
+                            }
+                            
+                            resolve({
+                                questionCount: questionCount,
+                                format: file.name.split('.').pop().toLowerCase()
+                            });
+                        } catch (error) {
+                            resolve({
+                                questionCount: 0,
+                                format: file.name.split('.').pop().toLowerCase()
+                            });
+                        }
+                    };
+                    reader.readAsText(file);
+                });
+            }
+
+            // 生成文件ID
+            generateFileId() {
+                return Date.now().toString(36) + Math.random().toString(36).substr(2);
+            }
+
+            // 格式化文件大小
+            formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            // 显示文件验证错误
+            showFileValidationErrors(invalidFiles) {
+                const errorMessages = invalidFiles.map(item => 
+                    `${item.file.name}: ${item.error}`
+                ).join('\n');
+                
+                showAdvancedToast(`以下文件验证失败:\n${errorMessages}`, 'error');
+            }
+        }
+
+        // 创建全局上传管理器实例
+        const uploadManager = new AdvancedUploadManager();
+
+        // ==================== 高级UI辅助函数 ====================
+        
+        // 显示高级加载指示器
+        function showAdvancedLoading(message = '加载中...') {
+            let loadingOverlay = document.getElementById('advancedLoadingOverlay');
+            if (!loadingOverlay) {
+                loadingOverlay = document.createElement('div');
+                loadingOverlay.id = 'advancedLoadingOverlay';
+                loadingOverlay.className = 'loading-overlay';
+                loadingOverlay.innerHTML = `
+                    <div class="loading-content">
+                        <div class="loading-spinner"></div>
+                        <div class="loading-text">${message}</div>
+                    </div>
+                `;
+                document.body.appendChild(loadingOverlay);
+            } else {
+                loadingOverlay.querySelector('.loading-text').textContent = message;
+            }
+            loadingOverlay.style.display = 'flex';
+        }
+
+        // 隐藏高级加载指示器
+        function hideAdvancedLoading() {
+            const loadingOverlay = document.getElementById('advancedLoadingOverlay');
+            if (loadingOverlay) {
+                loadingOverlay.style.display = 'none';
+            }
+        }
+
+        // 显示高级通知
+        function showAdvancedToast(message, type = 'info', duration = 5000) {
+            const toastContainer = getOrCreateToastContainer();
+            
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const iconMap = {
+                'success': 'fas fa-check-circle',
+                'error': 'fas fa-exclamation-circle',
+                'warning': 'fas fa-exclamation-triangle',
+                'info': 'fas fa-info-circle'
+            };
+            
+            toast.innerHTML = `
+                <div class="toast-header">
+                    <i class="${iconMap[type]}"></i>
+                    <span>${type.charAt(0).toUpperCase() + type.slice(1)}</span>
+                </div>
+                <div class="toast-body">${message}</div>
+                <div class="toast-progress">
+                    <div class="toast-progress-bar ${type}"></div>
+                </div>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // 显示动画
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // 自动隐藏
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        // 获取或创建通知容器
+        function getOrCreateToastContainer() {
+            let container = document.getElementById('toastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toastContainer';
+                container.className = 'toast-container';
+                document.body.appendChild(container);
+            }
+            return container;
+        }
+
+        // 显示视频错误
+        function showVideoError(container, message) {
+            container.innerHTML = `
+                <div class="video-error">
+                    <div class="video-error-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="video-error-message">${message}</div>
+                    <button class="btn btn-primary" onclick="closeVideoModal()">关闭</button>
+                </div>
+            `;
+        }
+
+        // 关闭视频模态框
+        function closeVideoModal() {
+            const modal = document.getElementById('videoModal');
+            if (modal) {
+                modal.classList.remove('active');
+                
+                // 清理播放器
+                if (currentVideoPlayer) {
+                    try {
+                        currentVideoPlayer.dispose();
+                    } catch (e) {
+                        console.warn('Error disposing video player:', e);
+                    }
+                    currentVideoPlayer = null;
+                }
+                
+                // 重置播放器状态
+                videoPlayerState = {
+                    isPlaying: false,
+                    currentTime: 0,
+                    duration: 0,
+                    volume: 1,
+                    playbackRate: 1,
+                    isFullscreen: false,
+                    quality: 'auto'
+                };
+            }
+        }
+
+        // 记录视频播放统计
+        function recordVideoPlay(source, title, type) {
+            const playRecord = {
+                source: source,
+                title: title,
+                type: type,
+                timestamp: new Date().toISOString(),
+                user: currentUser,
+                userAgent: navigator.userAgent
+            };
+            
+            // 保存到本地存储
+            const playHistory = JSON.parse(localStorage.getItem('videoPlayHistory') || '[]');
+            playHistory.push(playRecord);
+            
+            // 只保留最近100条记录
+            if (playHistory.length > 100) {
+                playHistory.splice(0, playHistory.length - 100);
+            }
+            
+            localStorage.setItem('videoPlayHistory', JSON.stringify(playHistory));
+            
+            console.log('📊 Video play recorded:', playRecord);
+        }
+
+        // 初始化高级媒体保护
+        function initAdvancedMediaProtection() {
+            if (!currentUser || !accounts[currentUser] || accounts[currentUser].role !== 'student') {
+                return; // 只对学生应用保护
+            }
+
+            // 禁用右键菜单
+            document.addEventListener('contextmenu', (e) => {
+                if (e.target.closest('.advanced-video-player')) {
+                    e.preventDefault();
+                    showAdvancedToast('此操作不被允许', 'warning');
+                }
+            });
+
+            // 禁用拖拽
+            document.addEventListener('dragstart', (e) => {
+                if (e.target.closest('.advanced-video-player')) {
+                    e.preventDefault();
+                }
+            });
+
+            // 禁用选择
+            document.addEventListener('selectstart', (e) => {
+                if (e.target.closest('.advanced-video-player')) {
+                    e.preventDefault();
+                }
+            });
+
+            // 监控开发者工具
+            let devtools = {
+                open: false,
+                orientation: null
+            };
+
+            const threshold = 160;
+            setInterval(() => {
+                if (window.outerHeight - window.innerHeight > threshold || 
+                    window.outerWidth - window.innerWidth > threshold) {
+                    if (!devtools.open) {
+                        devtools.open = true;
+                        console.clear();
+                        showAdvancedToast('检测到开发者工具，请关闭后继续学习', 'warning');
+                    }
+                } else {
+                    devtools.open = false;
+                }
+            }, 500);
+        }
+
+        // 应用学生视频保护
+        function applyStudentVideoProtection(player) {
+            if (!player) return;
+
+            // 禁用画中画
+            const video = player.el().querySelector('video');
+            if (video) {
+                video.disablePictureInPicture = true;
+                video.controlsList = 'nodownload nofullscreen noremoteplayback';
+            }
+
+            // 添加水印
+            const watermark = document.createElement('div');
+            watermark.style.cssText = `
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                color: rgba(255, 255, 255, 0.7);
+                font-size: 14px;
+                font-weight: 600;
+                pointer-events: none;
+                z-index: 1000;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            `;
+            watermark.textContent = `${accounts[currentUser].name} - ${new Date().toLocaleString()}`;
+            
+            const playerContainer = player.el().parentElement;
+            if (playerContainer) {
+                playerContainer.appendChild(watermark);
+            }
+
+            console.log('🛡️ Student video protection applied');
+        }
+
+        // 判断是否为直接视频URL
+        function isDirectVideoUrl(url) {
+            const videoExtensions = ['mp4', 'webm', 'ogg', 'avi', 'mov', 'wmv', 'flv', 'm4v'];
+            const extension = url.split('.').pop().toLowerCase().split('?')[0];
+            return videoExtensions.includes(extension);
+        }
         
         // 打开上传模态框
         function openUploadModal(type) {
