@@ -3625,20 +3625,25 @@
         
         // ==================== GitHub后台存储系统 ====================
         
-        // GitHub配置 - 动态获取token
+        // GitHub配置 - 简化版本，使用localStorage存储
         const GITHUB_CONFIG = {
             owner: 'lghui12138',
             repo: 'lghui12138.github.io',
             branch: 'main',
-            // 从localStorage或全局变量获取token
+            // 从localStorage获取token
             get token() {
-                return localStorage.getItem('github_token') || 
-                       window.GITHUB_TOKEN || 
-                       'demo_token_please_configure';
+                const token = localStorage.getItem('github_token');
+                return token || null;
             },
             dataPath: 'data/', // 数据存储路径
             apiBase: 'https://api.github.com'
         };
+        
+        // 检查是否有有效的GitHub配置
+        function hasValidGitHubConfig() {
+            const token = GITHUB_CONFIG.token;
+            return token && token !== 'demo_token_please_configure' && token.startsWith('ghp_');
+        }
         
         // 数据存储状态
         let isDataLoading = false;
