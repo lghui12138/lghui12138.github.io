@@ -3377,6 +3377,11 @@
             // 初始化安全保护功能
             initSecurityProtection();
             
+            // 加载已上传的视频
+            setTimeout(() => {
+                loadUploadedVideos();
+            }, 500);
+            
             // 创建分数线图表
             createScoreChart();
             
@@ -4186,8 +4191,50 @@
             showMessage('上传成功！');
         }
         
-        // 存储上传的视频数据
+        // 存储上传的视频数据 - 持久化存储
         let uploadedVideos = [];
+        
+        // 从localStorage加载已上传的视频
+        function loadUploadedVideos() {
+            try {
+                const saved = localStorage.getItem('uploadedVideos');
+                if (saved) {
+                    uploadedVideos = JSON.parse(saved);
+                    console.log('加载已保存的视频:', uploadedVideos.length + '个');
+                    
+                    // 重新创建视频卡片
+                    uploadedVideos.forEach(video => {
+                        recreateVideoCard(video);
+                    });
+                }
+            } catch (error) {
+                console.error('加载视频数据失败:', error);
+                uploadedVideos = [];
+            }
+        }
+        
+        // 保存视频数据到localStorage
+        function saveUploadedVideos() {
+            try {
+                // 创建一个简化版本，不包含blob URL（因为blob URL无法序列化）
+                const videosToSave = uploadedVideos.map(video => ({
+                    id: video.id,
+                    title: video.title,
+                    description: video.description,
+                    type: video.type,
+                    category: video.category,
+                    fileName: video.fileName,
+                    fileSize: video.fileSize,
+                    fileType: video.fileType,
+                    uploadTime: video.uploadTime
+                }));
+                
+                localStorage.setItem('uploadedVideos', JSON.stringify(videosToSave));
+                console.log('视频数据已保存');
+            } catch (error) {
+                console.error('保存视频数据失败:', error);
+            }
+        }
         
         // 添加视频到列表
         function addVideoToList(title, description, linkOrFile, category, type = 'link') {
@@ -4206,15 +4253,33 @@
             // 生成唯一ID
             const videoId = 'video_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
             
+            // 设置视频卡片ID
+            videoCard.setAttribute('data-video-id', videoId);
+            
             // 存储视频数据
-            uploadedVideos.push({
+            const videoData = {
                 id: videoId,
                 title: title,
                 description: description,
                 source: linkOrFile,
                 type: type,
-                category: category
-            });
+                category: category,
+                uploadTime: new Date().toISOString()
+            };
+            
+            // 如果是本地文件，存储文件信息
+            if (type === 'file' && selectedVideoFile) {
+                videoData.fileName = selectedVideoFile.name;
+                videoData.fileSize = selectedVideoFile.size;
+                videoData.fileType = selectedVideoFile.type;
+                // 重新创建blob URL（因为原来的可能已失效）
+                videoData.source = URL.createObjectURL(selectedVideoFile);
+            }
+            
+            uploadedVideos.push(videoData);
+            
+            // 保存到localStorage
+            saveUploadedVideos();
             
             // 创建播放按钮容器
             const playButtonDiv = document.createElement('div');
@@ -4307,11 +4372,88 @@
             return div.innerHTML;
         }
         
+        // 重新创建视频卡片（用于页面刷新后恢复）
+        function recreateVideoCard(videoData) {
+            const videoGrid = document.querySelector('.video-grid');
+            if (!videoGrid) return;
+            
+            // 检查是否已经存在这个视频卡片
+            const existingCard = document.querySelector(`[data-video-id="${videoData.id}"]`);
+            if (existingCard) return;
+            
+            const videoCard = document.createElement('div');
+            videoCard.className = 'video-card';
+            videoCard.setAttribute('data-video-id', videoData.id);
+            
+            const sourceIcon = videoData.type === 'file' ? 'fas fa-file-video' : 'fas fa-link';
+            const sourceText = videoData.type === 'file' ? '本地文件' : '在线链接';
+            
+            // 创建播放按钮容器
+            const playButtonDiv = document.createElement('div');
+            playButtonDiv.className = 'play-button';
+            playButtonDiv.onclick = function() {
+                playCustomVideoById(videoData.id);
+            };
+            playButtonDiv.innerHTML = '<i class="fas fa-play"></i>';
+            
+            // 创建视频预览容器
+            const videoPreviewDiv = document.createElement('div');
+            videoPreviewDiv.className = 'video-preview';
+            videoPreviewDiv.innerHTML = '<i class="fas fa-video"></i>';
+            videoPreviewDiv.appendChild(playButtonDiv);
+            
+            // 创建视频信息容器
+            const videoInfoDiv = document.createElement('div');
+            videoInfoDiv.className = 'video-info';
+            
+            // 格式化上传时间
+            const uploadTime = videoData.uploadTime ? 
+                new Date(videoData.uploadTime).toLocaleDateString() : '新上传';
+            
+            // 检查本地文件是否需要重新选择
+            const needsReupload = videoData.type === 'file' && 
+                (!videoData.source || !videoData.source.startsWith('blob:'));
+            
+            const statusText = needsReupload ? 
+                '<div style="color: #f39c12;"><i class="fas fa-exclamation-triangle"></i> 需要重新选择文件</div>' : 
+                `<div><i class="${sourceIcon}"></i> ${sourceText}</div>`;
+            
+            videoInfoDiv.innerHTML = `
+                <h3 class="video-title">${escapeHtml(videoData.title)}</h3>
+                <p class="video-description">${escapeHtml(videoData.description)}</p>
+                <div class="video-duration">
+                    <div><i class="far fa-clock"></i> ${uploadTime}</div>
+                    ${statusText}
+                </div>
+            `;
+            
+            // 组装视频卡片
+            videoCard.appendChild(videoPreviewDiv);
+            videoCard.appendChild(videoInfoDiv);
+            
+            // 插入到特色视频后面
+            const featuredVideo = videoGrid.querySelector('.video-card.featured');
+            if (featuredVideo) {
+                featuredVideo.parentNode.insertBefore(videoCard, featuredVideo.nextSibling);
+            } else {
+                videoGrid.appendChild(videoCard);
+            }
+            
+            console.log('重新创建视频卡片:', videoData.title);
+        }
+        
         // 通过ID播放自定义视频
         function playCustomVideoById(videoId) {
             const videoData = uploadedVideos.find(v => v.id === videoId);
             if (videoData) {
                 console.log('Playing video:', videoData);
+                
+                // 如果是本地文件且没有有效的source，提示重新上传
+                if (videoData.type === 'file' && (!videoData.source || !videoData.source.startsWith('blob:'))) {
+                    showReuploadDialog(videoData);
+                    return;
+                }
+                
                 playCustomVideo(videoData.source, videoData.title, videoData.type);
             } else {
                 console.error('Video not found:', videoId);
@@ -4644,6 +4786,108 @@
         function extractYouTubeId(url) {
             const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([A-Za-z0-9_-]+)/);
             return match ? match[1] : '';
+        }
+        
+        // 显示重新上传对话框
+        function showReuploadDialog(videoData) {
+            const dialog = document.createElement('div');
+            dialog.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.8);
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 10001;
+            `;
+            
+            dialog.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 30px;
+                    border-radius: 12px;
+                    max-width: 500px;
+                    text-align: center;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                ">
+                    <h3 style="color: var(--primary); margin-bottom: 15px;">
+                        <i class="fas fa-video"></i> 视频文件需要重新选择
+                    </h3>
+                    <p style="margin-bottom: 20px; color: var(--text);">
+                        视频"${escapeHtml(videoData.title)}"需要重新选择文件才能播放
+                        <br><small>原文件：${videoData.fileName || '未知'}</small>
+                    </p>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button onclick="selectVideoFile('${videoData.id}')" style="
+                            background: var(--primary);
+                            color: white;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                        ">
+                            <i class="fas fa-upload"></i> 重新选择文件
+                        </button>
+                        <button onclick="closeReuploadDialog()" style="
+                            background: #ccc;
+                            color: #666;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 6px;
+                            cursor: pointer;
+                        ">
+                            取消
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(dialog);
+            window.currentReuploadDialog = dialog;
+        }
+        
+        // 关闭重新上传对话框
+        function closeReuploadDialog() {
+            if (window.currentReuploadDialog) {
+                document.body.removeChild(window.currentReuploadDialog);
+                window.currentReuploadDialog = null;
+            }
+        }
+        
+        // 选择视频文件重新上传
+        function selectVideoFile(videoId) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'video/mp4,video/mov,video/avi,video/webm';
+            
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    // 更新视频数据
+                    const videoIndex = uploadedVideos.findIndex(v => v.id === videoId);
+                    if (videoIndex !== -1) {
+                        const newBlobUrl = URL.createObjectURL(file);
+                        uploadedVideos[videoIndex].source = newBlobUrl;
+                        uploadedVideos[videoIndex].fileName = file.name;
+                        uploadedVideos[videoIndex].fileSize = file.size;
+                        uploadedVideos[videoIndex].fileType = file.type;
+                        
+                        // 保存更新
+                        saveUploadedVideos();
+                        
+                        // 播放视频
+                        playCustomVideo(newBlobUrl, uploadedVideos[videoIndex].title, 'file');
+                        
+                        showMessage('文件已更新，正在播放...');
+                    }
+                }
+                closeReuploadDialog();
+            };
+            
+            input.click();
         }
         
         // 替换alert为更好的提示
