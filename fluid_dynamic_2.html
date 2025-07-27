@@ -5602,7 +5602,7 @@
             progressText.textContent = '0%';
         }
         
-        // 播放自定义视频
+        // 智能视频播放器 - 根据视频类型自动选择最佳播放方式
         function playCustomVideo(source, title, type) {
             const modal = document.getElementById('videoModal');
             const modalTitle = document.getElementById('modalTitle');
@@ -5615,89 +5615,248 @@
             }
             
             modalTitle.textContent = title;
-            
             console.log('Playing video:', { source, title, type });
             
+            // 清除之前的内容
+            videoContainer.innerHTML = '';
+            
             if (type === 'file') {
-                // 本地视频文件 - 高级播放器
-                console.log('Playing local video file:', source);
-                videoContainer.innerHTML = `
-                    <div style="position: relative; width: 100%; height: 100%;">
-                        <video id="customVideoPlayer" controls style="width: 100%; height: 100%; border-radius: 8px;" preload="metadata">
-                            <source src="${source}" type="video/mp4">
-                            <source src="${source}" type="video/webm">
-                            <source src="${source}" type="video/ogg">
-                            您的浏览器不支持视频播放。
-                        </video>
+                // 本地视频文件 - 完整功能播放器
+                createAdvancedVideoPlayer(videoContainer, source, title);
+            } else {
+                // 在线视频链接 - 智能识别
+                if (source.includes('bilibili.com') || source.includes('b23.tv')) {
+                    createBilibiliPlayer(videoContainer, source, title);
+                } else if (source.includes('youtube.com') || source.includes('youtu.be')) {
+                    createYouTubePlayer(videoContainer, source, title);
+                } else if (isDirectVideoUrl(source)) {
+                    // 直接的视频文件链接
+                    createAdvancedVideoPlayer(videoContainer, source, title);
+                } else {
+                    // 通用iframe处理
+                    createGenericPlayer(videoContainer, source, title);
+                }
+            }
+            
+            modal.classList.add('active');
+            
+            // 应用媒体保护
+            setTimeout(() => {
+                initMediaProtection();
+            }, 100);
+        }
+        
+        // 创建高级视频播放器（支持倍速和全屏）
+        function createAdvancedVideoPlayer(container, source, title) {
+            container.innerHTML = `
+                <div style="position: relative; width: 100%; height: 100%;">
+                    <video id="customVideoPlayer" controls 
+                           style="width: 100%; height: 100%; border-radius: 8px;" 
+                           preload="metadata"
+                           crossorigin="anonymous">
+                        <source src="${source}" type="video/mp4">
+                        <source src="${source}" type="video/webm">
+                        <source src="${source}" type="video/ogg">
+                        您的浏览器不支持视频播放。
+                    </video>
+                    
+                    <!-- 增强控制栏 -->
+                    <div id="customControls" style="
+                        position: absolute;
+                        bottom: 15px;
+                        right: 15px;
+                        background: rgba(0,0,0,0.9);
+                        padding: 12px 16px;
+                        border-radius: 8px;
+                        display: flex;
+                        gap: 15px;
+                        align-items: center;
+                        color: white;
+                        font-size: 13px;
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                        backdrop-filter: blur(5px);
+                    ">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <label>倍速:</label>
+                            <select id="playbackRate" style="
+                                background: #333; 
+                                color: white; 
+                                border: 1px solid #555; 
+                                padding: 4px 8px; 
+                                border-radius: 4px;
+                                font-size: 12px;
+                            ">
+                                <option value="0.5">0.5x</option>
+                                <option value="0.75">0.75x</option>
+                                <option value="1" selected>1.0x</option>
+                                <option value="1.25">1.25x</option>
+                                <option value="1.5">1.5x</option>
+                                <option value="2">2.0x</option>
+                                <option value="3">3.0x</option>
+                                <option value="4">4.0x</option>
+                            </select>
+                        </div>
                         
-                        <!-- 自定义控制栏 -->
-                        <div id="customControls" style="
-                            position: absolute;
-                            bottom: 10px;
-                            right: 10px;
-                            background: rgba(0,0,0,0.8);
-                            padding: 8px 12px;
-                            border-radius: 6px;
-                            display: flex;
-                            gap: 10px;
-                            align-items: center;
-                            color: white;
-                            font-size: 12px;
-                        ">
-                            <div>
-                                <label>倍速:</label>
-                                <select id="playbackRate" style="background: #333; color: white; border: none; padding: 2px 4px; border-radius: 3px;">
-                                    <option value="0.5">0.5x</option>
-                                    <option value="0.75">0.75x</option>
-                                    <option value="1" selected>1x</option>
-                                    <option value="1.25">1.25x</option>
-                                    <option value="1.5">1.5x</option>
-                                    <option value="2">2x</option>
-                                    <option value="3">3x</option>
-                                    <option value="4">4x</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label>清晰度:</label>
-                                <select id="videoQuality" style="background: #333; color: white; border: none; padding: 2px 4px; border-radius: 3px;">
-                                    <option value="auto" selected>自动</option>
-                                    <option value="1080p">1080P</option>
-                                    <option value="720p">720P</option>
-                                    <option value="480p">480P</option>
-                                </select>
-                            </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-expand"></i>
+                            <button id="fullscreenBtn" style="
+                                background: #007bff; 
+                                color: white; 
+                                border: none; 
+                                padding: 6px 12px; 
+                                border-radius: 4px;
+                                cursor: pointer;
+                                font-size: 12px;
+                            ">全屏</button>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-cog"></i>
+                            <label>清晰度:</label>
+                            <select id="videoQuality" style="
+                                background: #333; 
+                                color: white; 
+                                border: 1px solid #555; 
+                                padding: 4px 8px; 
+                                border-radius: 4px;
+                                font-size: 12px;
+                            ">
+                                <option value="auto" selected>自动</option>
+                                <option value="1080p">1080P</option>
+                                <option value="720p">720P</option>
+                                <option value="480p">480P</option>
+                            </select>
                         </div>
                     </div>
-                `;
-                
-                // 初始化自定义视频播放器
-                initCustomVideoPlayer();
-                
-            } else {
-                // 在线视频链接
-                if (source.includes('bilibili.com') || source.includes('b23.tv')) {
-                    // B站视频处理
-                    const bvid = extractBilibiliId(source);
-                    videoContainer.innerHTML = `
-                        <iframe src="//player.bilibili.com/player.html?bvid=${bvid}&page=1&autoplay=0" 
-                                scrolling="no" border="0" frameborder="no" framespacing="0" 
-                                allowfullscreen="true" style="width: 100%; height: 100%; border-radius: 8px;">
-                        </iframe>
-                    `;
-                } else if (source.includes('youtube.com') || source.includes('youtu.be')) {
-                    // YouTube视频处理
-                    const videoId = extractYouTubeId(source);
-                    videoContainer.innerHTML = `
-                        <iframe src="https://www.youtube.com/embed/${videoId}" 
-                                frameborder="0" allowfullscreen 
-                                style="width: 100%; height: 100%; border-radius: 8px;">
-                        </iframe>
-                    `;
-                } else {
-                    // 其他视频链接，尝试直接播放
-                    videoContainer.innerHTML = `
-                        <video controls style="width: 100%; height: 100%; border-radius: 8px;">
-                            <source src="${source}">
+                    
+                    <!-- 播放提示 -->
+                    <div id="playbackHint" style="
+                        position: absolute;
+                        top: 20px;
+                        left: 20px;
+                        background: rgba(0,0,0,0.7);
+                        color: white;
+                        padding: 8px 12px;
+                        border-radius: 6px;
+                        font-size: 12px;
+                        display: none;
+                    ">
+                        <i class="fas fa-info-circle"></i> 
+                        双击全屏 | 空格暂停 | F键切换全屏
+                    </div>
+                </div>
+            `;
+            
+            // 初始化高级播放器
+            initAdvancedVideoPlayer();
+        }
+        
+        // 创建B站播放器
+        function createBilibiliPlayer(container, source, title) {
+            const bvid = extractBilibiliId(source);
+            container.innerHTML = `
+                <div style="position: relative; width: 100%; height: 100%;">
+                    <iframe id="bilibiliPlayer" 
+                            src="//player.bilibili.com/player.html?bvid=${bvid}&page=1&autoplay=0&high_quality=1" 
+                            scrolling="no" border="0" frameborder="no" framespacing="0" 
+                            allowfullscreen="true" 
+                            style="width: 100%; height: 100%; border-radius: 8px;">
+                    </iframe>
+                    
+                    <!-- B站播放器提示 -->
+                    <div style="
+                        position: absolute;
+                        top: 15px;
+                        right: 15px;
+                        background: rgba(0,188,212,0.9);
+                        color: white;
+                        padding: 8px 12px;
+                        border-radius: 6px;
+                        font-size: 12px;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                    ">
+                        <i class="fab fa-bilibili"></i>
+                        <span>B站视频 - 倍速和全屏请在播放器内操作</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 创建YouTube播放器
+        function createYouTubePlayer(container, source, title) {
+            const videoId = extractYouTubeId(source);
+            container.innerHTML = `
+                <div style="position: relative; width: 100%; height: 100%;">
+                    <iframe id="youtubePlayer"
+                            src="https://www.youtube.com/embed/${videoId}?enablejsapi=1&controls=1&modestbranding=1" 
+                            frameborder="0" 
+                            allowfullscreen 
+                            style="width: 100%; height: 100%; border-radius: 8px;">
+                    </iframe>
+                    
+                    <!-- YouTube播放器提示 -->
+                    <div style="
+                        position: absolute;
+                        top: 15px;
+                        right: 15px;
+                        background: rgba(255,0,0,0.9);
+                        color: white;
+                        padding: 8px 12px;
+                        border-radius: 6px;
+                        font-size: 12px;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                    ">
+                        <i class="fab fa-youtube"></i>
+                        <span>YouTube视频 - 倍速和全屏请在播放器内操作</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 创建通用播放器
+        function createGenericPlayer(container, source, title) {
+            container.innerHTML = `
+                <div style="position: relative; width: 100%; height: 100%;">
+                    <iframe src="${source}" 
+                            frameborder="0" 
+                            allowfullscreen 
+                            style="width: 100%; height: 100%; border-radius: 8px;">
+                    </iframe>
+                    
+                    <!-- 通用播放器提示 -->
+                    <div style="
+                        position: absolute;
+                        top: 15px;
+                        right: 15px;
+                        background: rgba(108,117,125,0.9);
+                        color: white;
+                        padding: 8px 12px;
+                        border-radius: 6px;
+                        font-size: 12px;
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                    ">
+                        <i class="fas fa-play-circle"></i>
+                        <span>外部视频 - 功能由源站提供</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 判断是否为直接视频文件URL
+        function isDirectVideoUrl(url) {
+            const videoExtensions = ['.mp4', '.webm', '.ogg', '.avi', '.mov', '.wmv', '.flv', '.m4v'];
+            const urlLower = url.toLowerCase();
+            return videoExtensions.some(ext => urlLower.includes(ext)) || 
+                   urlLower.includes('video') || 
+                   urlLower.includes('.m3u8'); // HLS流
+        }
                             您的浏览器不支持视频播放。
                         </video>
                     `;
@@ -5829,14 +5988,19 @@
             input.click();
         }
         
-        // 初始化自定义视频播放器
-        function initCustomVideoPlayer() {
+        // 初始化高级视频播放器
+        function initAdvancedVideoPlayer() {
             const video = document.getElementById('customVideoPlayer');
             const playbackRateSelect = document.getElementById('playbackRate');
             const qualitySelect = document.getElementById('videoQuality');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
             const customControls = document.getElementById('customControls');
+            const playbackHint = document.getElementById('playbackHint');
             
-            if (!video) return;
+            if (!video) {
+                console.error('Video element not found');
+                return;
+            }
             
             // 学生端特殊保护 - 允许全屏但禁用下载
             if (currentUser && currentUser.role === 'student') {
@@ -5877,6 +6041,26 @@
                 playbackRateSelect.value = '1';
             }
             
+            // 全屏按钮控制
+            if (fullscreenBtn) {
+                fullscreenBtn.addEventListener('click', function() {
+                    if (!document.fullscreenElement) {
+                        video.requestFullscreen().then(() => {
+                            fullscreenBtn.textContent = '退出';
+                            fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i> 退出';
+                        }).catch(err => {
+                            console.log('全屏失败:', err);
+                            showMessage('全屏功能不可用', 'warning');
+                        });
+                    } else {
+                        document.exitFullscreen().then(() => {
+                            fullscreenBtn.textContent = '全屏';
+                            fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i> 全屏';
+                        });
+                    }
+                });
+            }
+            
             // 清晰度控制（模拟）
             qualitySelect.addEventListener('change', function() {
                 console.log('清晰度设置为:', this.value);
@@ -5886,6 +6070,13 @@
             // 视频加载事件
             video.addEventListener('loadstart', function() {
                 console.log('视频开始加载');
+                // 显示播放提示
+                if (playbackHint) {
+                    playbackHint.style.display = 'block';
+                    setTimeout(() => {
+                        playbackHint.style.display = 'none';
+                    }, 3000);
+                }
             });
             
             video.addEventListener('loadeddata', function() {
@@ -6010,17 +6201,29 @@
             // 全屏状态变化监听
             document.addEventListener('fullscreenchange', function() {
                 const customControls = document.getElementById('customControls');
-                if (customControls) {
-                    if (document.fullscreenElement) {
-                        // 全屏模式下调整控制栏样式
-                        customControls.style.bottom = '20px';
-                        customControls.style.right = '20px';
+                const fullscreenBtn = document.getElementById('fullscreenBtn');
+                
+                if (document.fullscreenElement) {
+                    // 全屏模式
+                    if (customControls) {
+                        customControls.style.bottom = '30px';
+                        customControls.style.right = '30px';
+                        customControls.style.background = 'rgba(0,0,0,0.95)';
+                        customControls.style.fontSize = '14px';
+                    }
+                    if (fullscreenBtn) {
+                        fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i> 退出';
+                    }
+                } else {
+                    // 退出全屏
+                    if (customControls) {
+                        customControls.style.bottom = '15px';
+                        customControls.style.right = '15px';
                         customControls.style.background = 'rgba(0,0,0,0.9)';
-                    } else {
-                        // 退出全屏恢复样式
-                        customControls.style.bottom = '10px';
-                        customControls.style.right = '10px';
-                        customControls.style.background = 'rgba(0,0,0,0.8)';
+                        customControls.style.fontSize = '13px';
+                    }
+                    if (fullscreenBtn) {
+                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i> 全屏';
                     }
                 }
             });
