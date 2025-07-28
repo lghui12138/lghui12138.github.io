@@ -8484,12 +8484,19 @@
                 return;
             }
             
+            // 检查Chart.js是否可用
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js未加载，无法创建图表');
+                return;
+            }
+            
             if (window.scoreChart) {
                 window.scoreChart.destroy();
             }
             
             console.log('更新分数线图表:', year);
             console.log('可用数据:', scoreData);
+            console.log('Chart.js版本:', Chart.version);
             
             // 准备数据
             const years = Object.keys(scoreData).sort();
@@ -9044,7 +9051,21 @@
                 setTimeout(() => {
                     try {
                         console.log('初始化分数线图表...');
-                        updateScoreChart('2024');
+                        
+                        // 确保Chart.js已加载
+                        if (typeof Chart !== 'undefined') {
+                            updateScoreChart('2024');
+                        } else {
+                            console.warn('Chart.js未加载，延迟初始化图表...');
+                            setTimeout(() => {
+                                if (typeof Chart !== 'undefined') {
+                                    updateScoreChart('2024');
+                                } else {
+                                    console.error('Chart.js加载失败');
+                                }
+                            }, 2000);
+                        }
+                        
                         updateUIForUserRole();
                         renderVideoGrid();
                         renderExerciseGrid();
@@ -9372,13 +9393,41 @@
             chatHistory: [],
             apiKey: 'sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis',
             apiEndpoint: 'https://api.deepseek.com/v1/chat/completions',
-            model: 'deepseek-r1',
+            model: 'deepseek-chat',
             
             // 初始化AI助手
             init: function() {
                 this.createChatInterface();
                 this.loadKnowledgeBase();
                 this.addChatStyles();
+                
+                // 测试AI连接
+                this.testAIConnection();
+            },
+            
+            // 测试AI连接
+            testAIConnection: async function() {
+                try {
+                    console.log('测试AI连接...');
+                    const testResponse = await this.callAIAPI('你好，请简单回复"连接成功"');
+                    console.log('AI连接测试成功:', testResponse);
+                    
+                    // 在聊天界面显示连接状态
+                    const chatStatus = document.querySelector('.chat-status');
+                    if (chatStatus) {
+                        chatStatus.textContent = '在线 · AI连接正常';
+                        chatStatus.style.color = '#27ae60';
+                    }
+                } catch (error) {
+                    console.error('AI连接测试失败:', error);
+                    
+                    // 在聊天界面显示连接状态
+                    const chatStatus = document.querySelector('.chat-status');
+                    if (chatStatus) {
+                        chatStatus.textContent = '离线 · 使用本地回复';
+                        chatStatus.style.color = '#e74c3c';
+                    }
+                }
             },
             
             // 创建聊天界面
@@ -9859,41 +9908,62 @@
             // 调用AI API
             callAIAPI: async function(userMessage) {
                 try {
-                    const response = await fetch(this.apiEndpoint, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${this.apiKey}`
-                        },
-                        body: JSON.stringify({
-                            model: this.model,
-                            messages: [
-                                {
-                                    role: 'system',
-                                    content: `你是一个专业的流体力学AI助手，专门为中国海洋大学803流体力学专业的学生提供学习指导。你需要：
+                    console.log('开始调用AI API...');
+                    console.log('API端点:', this.apiEndpoint);
+                    console.log('模型:', this.model);
+                    
+                    const requestBody = {
+                        model: this.model,
+                        messages: [
+                            {
+                                role: 'system',
+                                content: `你是一个专业的流体力学AI助手，专门为中国海洋大学803流体力学专业的学生提供学习指导。你需要：
 1. 准确回答流体力学相关问题
 2. 提供学习建议和计划
 3. 解释复杂概念
 4. 批改学生作业
 5. 推荐学习资源
 请用中文回答，语言要专业但易懂。`
-                                },
-                                {
-                                    role: 'user',
-                                    content: userMessage
-                                }
-                            ],
-                            max_tokens: 1000,
-                            temperature: 0.7
-                        })
+                            },
+                            {
+                                role: 'user',
+                                content: userMessage
+                            }
+                        ],
+                        max_tokens: 1000,
+                        temperature: 0.7,
+                        stream: false
+                    };
+                    
+                    console.log('请求体:', JSON.stringify(requestBody, null, 2));
+                    
+                    const response = await fetch(this.apiEndpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.apiKey}`,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify(requestBody)
                     });
                     
+                    console.log('API响应状态:', response.status);
+                    console.log('API响应头:', Object.fromEntries(response.headers.entries()));
+                    
                     if (!response.ok) {
-                        throw new Error(`API调用失败: ${response.status}`);
+                        const errorText = await response.text();
+                        console.error('API错误响应:', errorText);
+                        throw new Error(`API调用失败: ${response.status} - ${errorText}`);
                     }
                     
                     const data = await response.json();
-                    return data.choices[0].message.content;
+                    console.log('API响应数据:', data);
+                    
+                    if (data.choices && data.choices[0] && data.choices[0].message) {
+                        return data.choices[0].message.content;
+                    } else {
+                        throw new Error('API响应格式错误');
+                    }
                 } catch (error) {
                     console.error('AI API调用失败:', error);
                     throw error;
