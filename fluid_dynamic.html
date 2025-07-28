@@ -5620,6 +5620,94 @@
                         points: 8
                     }
                 ]
+            },
+            {
+                id: 'exercise_001',
+                title: '流体静力学综合练习',
+                description: '涵盖流体静力学基本概念、压强分布、浮力计算等核心知识点的综合练习题集。',
+                category: '流体静力学',
+                difficulty: '基础',
+                questionCount: 20,
+                duration: '35分钟',
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-12-01',
+                attempts: 0,
+                averageScore: 0,
+                questions: [
+                    {
+                        id: 1,
+                        type: 'choice',
+                        question: '在静止流体中，压强的传递遵循什么定律？',
+                        options: ['帕斯卡定律', '阿基米德定律', '胡克定律', '牛顿定律'],
+                        correct: 0,
+                        explanation: '帕斯卡定律指出，在静止流体中，压强能够等值地传递到流体的各个部分。',
+                        hint: '考虑压强传递的物理机制',
+                        points: 5
+                    },
+                    {
+                        id: 2,
+                        type: 'choice', 
+                        question: '流体静力学基本方程dp = -ρg dz中，负号表示什么物理意义？',
+                        options: ['压强随高度增加而减小', '压强随高度增加而增大', '密度为负值', '重力加速度向下'],
+                        correct: 0,
+                        explanation: '负号表示压强随高度增加而减小，这是因为重力的作用。',
+                        hint: '思考重力对压强分布的影响',
+                        points: 5
+                    }
+                ],
+                tags: ['静力学', '压强', '浮力']
+            },
+            {
+                id: 'exercise_002',
+                title: '伯努利方程应用专题',
+                description: '通过典型工程案例深入理解伯努利方程的应用条件和计算方法。',
+                category: '流体动力学',
+                difficulty: '中级',
+                questionCount: 15,
+                duration: '30分钟',
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-12-01',
+                attempts: 0,
+                averageScore: 0,
+                questions: [
+                    {
+                        id: 1,
+                        type: 'choice',
+                        question: '伯努利方程的适用条件不包括以下哪项？',
+                        options: ['定常流动', '无粘性流体', '不可压缩流体', '有旋流动'],
+                        correct: 3,
+                        explanation: '伯努利方程适用于定常、无粘性、不可压缩的无旋流动。',
+                        hint: '回顾伯努利方程的推导条件',
+                        points: 5
+                    }
+                ],
+                tags: ['伯努利方程', '能量守恒', '工程应用']
+            },
+            {
+                id: 'exercise_003',
+                title: '边界层理论基础',
+                description: '边界层概念、边界层方程、边界层厚度等核心理论的练习题集。',
+                category: '边界层理论',
+                difficulty: '高级', 
+                questionCount: 12,
+                duration: '25分钟',
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-12-01',
+                attempts: 0,
+                averageScore: 0,
+                questions: [
+                    {
+                        id: 1,
+                        type: 'choice',
+                        question: '边界层理论的提出者是？',
+                        options: ['雷诺', '普朗特', '伯努利', '欧拉'],
+                        correct: 1,
+                        explanation: '普朗特(Prandtl)在1904年提出了边界层理论，被誉为现代流体力学之父。',
+                        hint: '回顾流体力学发展历史',
+                        points: 5
+                    }
+                ],
+                tags: ['边界层', '普朗特', '粘性流动']
             }
         ];
 
@@ -9249,12 +9337,12 @@
                 chatWidget.id = 'aiChatWidget';
                 chatWidget.className = 'ai-chat-widget';
                 chatWidget.innerHTML = `
-                    <div class="chat-toggle" onclick="AIAssistant.toggleChat()">
+                    <div class="chat-toggle" onclick="AIAssistant.toggleChat()" id="chatToggle">
                         <i class="fas fa-robot"></i>
                         <span class="chat-notification" id="chatNotification">AI助手</span>
                     </div>
                     <div class="chat-container" id="chatContainer" style="display: none;">
-                        <div class="chat-header">
+                        <div class="chat-header" id="chatHeader">
                             <div class="chat-avatar">
                                 <i class="fas fa-robot"></i>
                             </div>
@@ -9279,6 +9367,7 @@
                                         <li>🎯 推荐学习内容</li>
                                         <li>📊 分析学习进度</li>
                                         <li>💡 提供学习建议</li>
+                                        <li>✍️ 批改作业</li>
                                     </ul>
                                     <p>请随时向我提问！</p>
                                 </div>
@@ -9303,6 +9392,82 @@
                 
                 document.body.appendChild(chatWidget);
                 this.addChatStyles();
+                this.initDragAndDrop();
+            },
+            
+            // 初始化拖拽功能
+            initDragAndDrop: function() {
+                const chatWidget = document.getElementById('aiChatWidget');
+                const chatHeader = document.getElementById('chatHeader');
+                let isDragging = false;
+                let startX, startY, startLeft, startTop;
+                
+                // 鼠标按下事件
+                chatHeader.addEventListener('mousedown', (e) => {
+                    if (e.target.closest('.chat-close')) return;
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    startLeft = parseInt(chatWidget.style.left) || 0;
+                    startTop = parseInt(chatWidget.style.top) || 0;
+                    chatHeader.style.cursor = 'grabbing';
+                    e.preventDefault();
+                });
+                
+                // 鼠标移动事件
+                document.addEventListener('mousemove', (e) => {
+                    if (!isDragging) return;
+                    
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
+                    
+                    chatWidget.style.left = (startLeft + deltaX) + 'px';
+                    chatWidget.style.top = (startTop + deltaY) + 'px';
+                    chatWidget.style.right = 'auto';
+                    chatWidget.style.bottom = 'auto';
+                });
+                
+                // 鼠标释放事件
+                document.addEventListener('mouseup', () => {
+                    if (isDragging) {
+                        isDragging = false;
+                        chatHeader.style.cursor = 'grab';
+                        
+                        // 检查是否靠近边缘，如果是则自动隐藏
+                        const rect = chatWidget.getBoundingClientRect();
+                        const windowWidth = window.innerWidth;
+                        const windowHeight = window.innerHeight;
+                        
+                        if (rect.right < windowWidth * 0.1 || rect.left > windowWidth * 0.9) {
+                            setTimeout(() => {
+                                if (!this.isActive) {
+                                    chatWidget.style.transform = 'translateX(100%)';
+                                    setTimeout(() => {
+                                        chatWidget.style.display = 'none';
+                                    }, 300);
+                                }
+                            }, 2000);
+                        }
+                    }
+                });
+                
+                // 添加自动显示功能
+                let hideTimeout;
+                chatWidget.addEventListener('mouseenter', () => {
+                    clearTimeout(hideTimeout);
+                    chatWidget.style.transform = 'translateX(0)';
+                });
+                
+                chatWidget.addEventListener('mouseleave', () => {
+                    if (!this.isActive) {
+                        hideTimeout = setTimeout(() => {
+                            chatWidget.style.transform = 'translateX(100%)';
+                            setTimeout(() => {
+                                chatWidget.style.display = 'none';
+                            }, 300);
+                        }, 1000);
+                    }
+                });
             },
             
             // 添加聊天样式
@@ -9318,6 +9483,7 @@
                         right: var(--space-6);
                         z-index: var(--z-tooltip);
                         font-family: var(--font-sans);
+                        transition: transform 0.3s ease;
                     }
                     
                     .chat-toggle {
@@ -9386,6 +9552,12 @@
                         display: flex;
                         align-items: center;
                         gap: var(--space-3);
+                        cursor: grab;
+                        user-select: none;
+                    }
+                    
+                    .chat-header:active {
+                        cursor: grabbing;
                     }
                     
                     .chat-avatar {
