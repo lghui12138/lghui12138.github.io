@@ -5363,14 +5363,50 @@
         let videosData = [
             {
                 id: 'video1',
+                title: '动量输运、牛顿内摩擦定律、欧拉坐标',
+                description: '详细讲解流体力学中的动量输运原理、牛顿内摩擦定律的物理意义和数学表达，以及欧拉坐标系统在流体运动描述中的应用。深入理解流体内部的动量传递机制和粘性效应。',
+                source: 'https://v.douyin.com/7vrVT-4KmbI/',
+                sourceType: 'douyin',
+                duration: '抖音视频',
+                views: '教师原创',
+                category: '基础理论',
+                featured: true,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-12-01',
+                tags: ['动量输运', '牛顿内摩擦定律', '欧拉坐标'],
+                quality: ['精品内容'],
+                thumbnail: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225"><rect width="400" height="225" fill="%23ff0050"/><text x="200" y="112" text-anchor="middle" fill="white" font-size="16" font-family="Arial">抖音视频封面</text><text x="200" y="135" text-anchor="middle" fill="white" font-size="12" font-family="Arial">动量输运、牛顿内摩擦定律</text></svg>',
+                subtitles: true,
+                interactive: false
+            },
+            {
+                id: 'video2',
+                title: '欧拉、拉格朗日坐标系统',
+                description: '全面对比欧拉坐标和拉格朗日坐标两种描述流体运动的方法，详解流线和迹线的概念与区别，帮助理解流体运动的数学描述和物理意义。',
+                source: 'https://v.douyin.com/X-ud2xkwvII/',
+                sourceType: 'douyin',
+                duration: '抖音视频',
+                views: '教师原创',
+                category: '基础理论',
+                featured: false,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-11-25',
+                tags: ['欧拉坐标', '拉格朗日坐标', '流线', '迹线'],
+                quality: ['精品内容'],
+                thumbnail: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225"><rect width="400" height="225" fill="%23ff0050"/><text x="200" y="112" text-anchor="middle" fill="white" font-size="16" font-family="Arial">抖音视频封面</text><text x="200" y="135" text-anchor="middle" fill="white" font-size="12" font-family="Arial">欧拉、拉格朗日坐标系统</text></svg>',
+                subtitles: true,
+                interactive: false
+            },
+            {
+                id: 'video3',
                 title: '流体力学之美，太美了',
                 description: '探索流体世界的奇妙现象与科学原理，揭示自然界的流动艺术。通过精美的可视化展示，帮助学生理解复杂的流体现象。',
                 source: 'BV16T421D7k4',
-                sourceType: 'bilibili', // bilibili, youtube, local, douyin
+                sourceType: 'bilibili',
                 duration: '18:45',
                 views: '32,458',
                 category: '基础理论',
-                featured: true,
+                featured: false,
                 uploadedBy: 'liuguanghui6330156',
                 uploadDate: '2024-12-01',
                 tags: ['流体力学', '基础理论', '可视化'],
@@ -7392,18 +7428,32 @@
                 const videoCard = document.createElement('div');
                 videoCard.className = `video-card${video.featured ? ' featured' : ''}`;
                 
-                const iconMap = {
-                    'video1': 'fas fa-water',
-                    'video2': 'fas fa-tint', 
-                    'video3': 'fas fa-wind',
-                    'video4': 'fas fa-stream'
-                };
+                // 根据视频类型设置图标和播放按钮
+                let iconClass = 'fas fa-play-circle';
+                let playButtonContent = '<i class="fas fa-play"></i>';
+                let playButtonOnClick = `playVideo('${video.id}')`;
+                
+                if (video.sourceType === 'douyin') {
+                    iconClass = 'fab fa-tiktok';
+                    playButtonContent = '<i class="fab fa-tiktok"></i>';
+                    playButtonOnClick = `openDouyinVideo('${video.source}')`;
+                } else if (video.sourceType === 'bilibili') {
+                    iconClass = 'fab fa-bilibili';
+                    playButtonContent = '<i class="fas fa-play"></i>';
+                    playButtonOnClick = `openVideoModal('${video.source}')`;
+                }
                 
                 videoCard.innerHTML = `
                     <div class="video-preview">
-                        <i class="${iconMap[video.id] || 'fas fa-play-circle'}"></i>
-                        <div class="play-button" onclick="playVideo('${video.id}')">
-                            <i class="fas fa-play"></i>
+                        <i class="${iconClass}" style="${video.sourceType === 'douyin' ? 'color: #ff0050;' : ''}"></i>
+                        ${video.featured ? '<div class="featured-tag"><i class="fas fa-star"></i> 平台推荐</div>' : ''}
+                        ${video.sourceType === 'douyin' ? `
+                        <div class="platform-badge" style="position: absolute; top: 10px; right: 10px; background: #ff0050; color: white; padding: 4px 8px; border-radius: 12px; font-size: 12px; font-weight: bold;">
+                            <i class="fab fa-tiktok"></i> 抖音
+                        </div>
+                        ` : ''}
+                        <div class="play-button" onclick="${playButtonOnClick}">
+                            ${playButtonContent}
                         </div>
                     </div>
                     <div class="video-info">
@@ -7422,6 +7472,8 @@
                         <div class="video-duration">
                             <span><i class="far fa-clock"></i> ${video.duration}</span>
                             <span><i class="far fa-eye"></i> ${video.views}</span>
+                            ${video.sourceType === 'douyin' ? '<span><i class="fab fa-tiktok" style="color: #ff0050;"></i> 教师原创</span>' : ''}
+                            ${video.featured ? '<span><i class="fas fa-star" style="color: #ffd700;"></i> 精品内容</span>' : ''}
                         </div>
                     </div>
                 `;
@@ -7647,6 +7699,24 @@
             if (modal) {
                 modal.classList.remove('active');
                 setTimeout(() => modal.remove(), 300);
+            }
+        }
+
+        /**
+         * 打开抖音视频
+         */
+        function openDouyinVideo(douyinUrl) {
+            try {
+                // 尝试在新窗口中打开抖音视频
+                const newWindow = window.open(douyinUrl, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+                if (newWindow) {
+                    showMessage('🚀 已打开抖音视频页面', 'info');
+                } else {
+                    showMessage('❌ 无法打开抖音页面，请检查浏览器弹窗设置', 'error');
+                }
+            } catch (error) {
+                showMessage('❌ 打开抖音视频失败，请手动访问链接', 'error');
+                console.error('打开抖音视频失败:', error);
             }
         }
 
@@ -8106,49 +8176,153 @@
             const ctx = document.getElementById('scoreChart');
             if (!ctx) return;
             
-            const data = scoreData[year] || scoreData['2024'];
-            
             if (window.scoreChart) {
                 window.scoreChart.destroy();
             }
             
-            window.scoreChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['国家线', '复试线'],
-                    datasets: [{
-                        label: `${year}年分数线`,
-                        data: [data.national, data.reexam],
-                        backgroundColor: [
-                            'rgba(231, 76, 60, 0.8)',
-                            'rgba(52, 152, 219, 0.8)'
-                        ],
-                        borderColor: [
-                            'rgba(231, 76, 60, 1)',
-                            'rgba(52, 152, 219, 1)'
-                        ],
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 400,
-                            ticks: {
-                                stepSize: 50
+            // 准备数据
+            const years = Object.keys(scoreData).sort();
+            const nationalScores = years.map(year => scoreData[year].national);
+            const reexamScores = years.map(year => scoreData[year].reexam);
+            const applicants = years.map(year => admissionData[year]?.applicants || 0);
+            
+            // 如果是特定年份，只显示该年份数据
+            if (year !== 'all') {
+                const yearData = scoreData[year];
+                if (yearData) {
+                    window.scoreChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['国家线', '复试线'],
+                            datasets: [{
+                                label: `${year}年分数线`,
+                                data: [yearData.national, yearData.reexam],
+                                backgroundColor: [
+                                    'rgba(231, 76, 60, 0.8)',
+                                    'rgba(52, 152, 219, 0.8)'
+                                ],
+                                borderColor: [
+                                    'rgba(231, 76, 60, 1)',
+                                    'rgba(52, 152, 219, 1)'
+                                ],
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 400,
+                                    ticks: {
+                                        stepSize: 50
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
                             }
                         }
+                    });
+                }
+            } else {
+                // 显示所有年份的曲线图
+                window.scoreChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: years,
+                        datasets: [
+                            {
+                                label: '复试线',
+                                data: reexamScores,
+                                borderColor: '#3498db',
+                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#3498db',
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                tension: 0.2,
+                                fill: true,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '国家线',
+                                data: nationalScores,
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#e74c3c',
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                tension: 0.2,
+                                fill: true,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '报名人数',
+                                data: applicants,
+                                borderColor: '#27ae60',
+                                backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#27ae60',
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                tension: 0.2,
+                                fill: false,
+                                yAxisID: 'y1'
+                            }
+                        ]
                     },
-                    plugins: {
-                        legend: {
-                            display: false
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false
+                            },
+                            legend: {
+                                display: true,
+                                position: 'top'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
+                                beginAtZero: false,
+                                min: 260,
+                                max: 320,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                },
+                                title: {
+                                    display: true,
+                                    text: '分数'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                beginAtZero: true,
+                                max: 150,
+                                grid: {
+                                    drawOnChartArea: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: '报名人数'
+                                }
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
         
         /**
