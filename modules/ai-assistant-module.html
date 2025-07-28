@@ -542,6 +542,15 @@
     <div id="notification-container"></div>
     
     <script>
+        // AI助手配置
+        const aiAssistant = {
+            name: '流体力学AI助手',
+            version: '2.0.0',
+            capabilities: ['问答', '解题', '解释', '推荐', '智能出题'],
+            apiKey: 'sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsofbgajxnis',
+            apiEndpoint: 'https://api.siliconflow.com/v1/chat/completions'
+        };
+        
         // AI知识库
         const aiKnowledge = {
             '流体力学': {
@@ -567,6 +576,18 @@
             '应用': {
                 keywords: ['应用', '用途', '工程'],
                 response: '流体力学在多个领域有重要应用：1. 航空航天：机翼设计、发动机设计；2. 船舶工程：船体设计、推进系统；3. 建筑工程：通风系统、给排水；4. 能源工程：风力发电、水力发电；5. 环境工程：大气污染、水污染控制；6. 生物医学：血液流动、呼吸系统。'
+            },
+            '帕斯卡定律': {
+                keywords: ['帕斯卡', '帕斯卡定律', '压强传递'],
+                response: '帕斯卡定律指出，在静止流体中，压强能够等值地传递到流体的各个部分。这个定律在液压系统中有重要应用，如液压千斤顶、液压制动系统等。数学表达式为：Δp = ρgΔh，其中Δp是压强变化，ρ是流体密度，g是重力加速度，Δh是高度变化。'
+            },
+            '阿基米德定律': {
+                keywords: ['阿基米德', '阿基米德定律', '浮力'],
+                response: '阿基米德定律指出，浸在液体中的物体受到向上的浮力，浮力的大小等于物体排开液体的重力。数学表达式为：F浮 = ρ液gV排，其中F浮是浮力，ρ液是液体密度，g是重力加速度，V排是排开液体的体积。这个定律在船舶设计、潜水器设计等方面有重要应用。'
+            },
+            '智能出题': {
+                keywords: ['出题', '题目', '练习', '测试'],
+                response: '我可以为您生成流体力学相关的练习题。请告诉我您想要练习的章节（如流体静力学、伯努利方程、边界层理论等）和难度级别（简单、中等、困难），我会为您生成相应的题目。'
             }
         };
         
@@ -713,18 +734,103 @@
             // 显示打字指示器
             showTypingIndicator();
             
-            // 模拟AI思考时间
-            setTimeout(() => {
-                hideTypingIndicator();
-                
-                // 生成AI回复
-                const aiReply = aiResponse(message);
-                addMessage(aiReply, false);
-                
-                // 恢复发送按钮
-                sendBtn.disabled = false;
-                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发送';
-            }, 1500 + Math.random() * 1000);
+            // 检查是否是智能出题请求
+            if (message.includes('出题') || message.includes('题目') || message.includes('练习')) {
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    const questions = generateQuestions(message);
+                    addMessage(questions, false);
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发送';
+                }, 1500 + Math.random() * 1000);
+            } else {
+                // 模拟AI思考时间
+                setTimeout(() => {
+                    hideTypingIndicator();
+                    
+                    // 生成AI回复
+                    const aiReply = aiResponse(message);
+                    addMessage(aiReply, false);
+                    
+                    // 恢复发送按钮
+                    sendBtn.disabled = false;
+                    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发送';
+                }, 1500 + Math.random() * 1000);
+            }
+        }
+        
+        // 生成智能题目
+        function generateQuestions(userInput) {
+            const topics = ['流体静力学', '伯努利方程', '边界层理论', '雷诺数', '管道流动'];
+            const difficulties = ['简单', '中等', '困难'];
+            
+            let topic = '流体静力学';
+            let difficulty = '中等';
+            
+            // 简单的话题识别
+            if (userInput.includes('静力学') || userInput.includes('压强')) {
+                topic = '流体静力学';
+            } else if (userInput.includes('伯努利') || userInput.includes('能量')) {
+                topic = '伯努利方程';
+            } else if (userInput.includes('边界层') || userInput.includes('分离')) {
+                topic = '边界层理论';
+            } else if (userInput.includes('雷诺') || userInput.includes('层流')) {
+                topic = '雷诺数';
+            } else if (userInput.includes('管道') || userInput.includes('流动')) {
+                topic = '管道流动';
+            }
+            
+            if (userInput.includes('简单') || userInput.includes('基础')) {
+                difficulty = '简单';
+            } else if (userInput.includes('困难') || userInput.includes('高级')) {
+                difficulty = '困难';
+            }
+            
+            const questions = getQuestionsByTopic(topic, difficulty);
+            return `根据您的要求，我为您生成了${topic}相关的${difficulty}难度题目：\n\n${questions}`;
+        }
+        
+        // 根据主题和难度获取题目
+        function getQuestionsByTopic(topic, difficulty) {
+            const questionBank = {
+                '流体静力学': {
+                    '简单': [
+                        '1. 在静止流体中，压强的传递遵循什么定律？\n   A. 帕斯卡定律  B. 阿基米德定律  C. 胡克定律  D. 牛顿定律\n   答案：A',
+                        '2. 流体静力学基本方程dp = -ρg dz中，负号表示什么物理意义？\n   A. 压强随高度增加而减小  B. 压强随高度增加而增大  C. 密度为负值  D. 重力加速度向下\n   答案：A',
+                        '3. 阿基米德定律描述的是什么现象？\n   A. 浮力等于排开液体的重力  B. 浮力等于物体的重力  C. 浮力等于液体的重力  D. 浮力等于物体的体积\n   答案：A'
+                    ],
+                    '中等': [
+                        '1. 在重力场中，静止流体的等压面是什么形状？\n   A. 水平面  B. 垂直面  C. 斜面  D. 任意曲面\n   答案：A',
+                        '2. 流体静力学中，绝对压强与表压强的关系是？\n   A. 绝对压强 = 表压强 + 大气压强  B. 绝对压强 = 表压强 - 大气压强  C. 绝对压强 = 表压强  D. 绝对压强 = 大气压强 - 表压强\n   答案：A',
+                        '3. 一个圆柱形容器内装有水，容器底部受到的压力与什么因素有关？\n   A. 水的体积  B. 水的质量  C. 水的深度  D. 容器的形状\n   答案：C'
+                    ],
+                    '困难': [
+                        '1. 推导流体静力学基本方程，并说明其物理意义。\n   答案：dp = -ρg dz，表示压强随高度增加而减小，负号表示重力方向。',
+                        '2. 分析浮力产生的物理机制，并推导阿基米德定律。\n   答案：浮力是由于液体对物体上下表面的压力差产生的，F浮 = ρ液gV排。',
+                        '3. 在非惯性系中，流体静力学方程如何修改？\n   答案：需要考虑惯性力的影响，dp = -ρ(g-a)dz，其中a是加速度。'
+                    ]
+                },
+                '伯努利方程': {
+                    '简单': [
+                        '1. 伯努利方程的适用条件不包括以下哪项？\n   A. 定常流动  B. 无粘性流体  C. 不可压缩流体  D. 有旋流动\n   答案：D',
+                        '2. 伯努利方程中，动能项的形式是？\n   A. ρv²/2  B. ρv²  C. ρv/2  D. ρv\n   答案：A',
+                        '3. 在文丘里管中，流速最大的位置是？\n   A. 入口处  B. 喉部  C. 出口处  D. 中间位置\n   答案：B'
+                    ],
+                    '中等': [
+                        '1. 皮托管测量的是什么？\n   A. 静压  B. 动压  C. 总压  D. 差压\n   答案：C',
+                        '2. 伯努利方程中的势能项是？\n   A. ρgz  B. ρg  C. gz  D. ρz\n   答案：A',
+                        '3. 文丘里管的工作原理基于什么原理？\n   A. 质量守恒  B. 能量守恒  C. 动量守恒  D. 角动量守恒\n   答案：B'
+                    ],
+                    '困难': [
+                        '1. 推导伯努利方程，并说明各项的物理意义。\n   答案：p + ½ρv² + ρgh = 常数，分别表示压力能、动能和势能。',
+                        '2. 分析伯努利方程在工程中的应用，如机翼升力产生原理。\n   答案：机翼上下表面流速不同，根据伯努利方程产生压力差，形成升力。',
+                        '3. 讨论伯努利方程的局限性，什么情况下不适用？\n   答案：粘性流动、非定常流动、有旋流动、可压缩流动等情况下不适用。'
+                    ]
+                }
+            };
+            
+            const questions = questionBank[topic]?.[difficulty] || questionBank['流体静力学']['中等'];
+            return questions.join('\n\n');
         }
         
         // 快捷提问
