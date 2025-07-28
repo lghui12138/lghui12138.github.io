@@ -6,16 +6,25 @@
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https:; frame-ancestors 'none'; base-uri 'self';">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="X-XSS-Protection" content="1; mode=block">
     <meta name="referrer" content="strict-origin-when-cross-origin">
     <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, notranslate">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="apple-touch-fullscreen" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1e6fa8" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0d4f73" media="(prefers-color-scheme: dark)">
+    <meta name="color-scheme" content="light">
     <title>流体力学学习平台 - 中国海洋大学</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#1e6fa8">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="流体力学">
     
     <!-- External Resources -->
@@ -23,8 +32,51 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js" crossorigin="anonymous" defer></script>
     <script src="https://vjs.zencdn.net/8.7.0/video.min.js" crossorigin="anonymous" defer></script>
     <link href="https://vjs.zencdn.net/8.7.0/video-js.css" rel="stylesheet">
-
+    
+    <!-- Advanced Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js" crossorigin="anonymous" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js" crossorigin="anonymous" defer></script>
+    <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.7/dist/umd/ffmpeg.js" crossorigin="anonymous" defer></script>
+    
+    <!-- Video.js Plugins -->
+    <script src="https://vjs.zencdn.net/7.21.1/lang/zh-CN.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels@2.1.0/dist/videojs-contrib-quality-levels.min.js" defer></script>
+    
+    <!-- Additional Security Headers -->
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), interest-cohort=()">
+    <meta name="pinterest" content="nopin">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="流体力学学习平台">
+    <meta property="og:description" content="中国海洋大学803流体力学专业学习平台">
+    <meta property="og:image" content="/public/logo.png">
+    <meta name="twitter:card" content="summary">
+    
     <style>
+        /* 安全防护：反调试和反自动化 */
+        @media print {
+            * {
+                display: none !important;
+            }
+            
+            body::before {
+                content: "此内容受版权保护，禁止打印和截图" !important;
+                display: block !important;
+                position: fixed !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                text-align: center !important;
+                font-size: 48px !important;
+                color: red !important;
+                z-index: 999999 !important;
+                background: white !important;
+                padding: 50px !important;
+                border: 5px solid red !important;
+            }
+        }
+
+        /* CSS变量定义 */
         :root {
             --primary: #1e6fa8;
             --secondary: #2c9ab7;
@@ -63,11 +115,303 @@
             --space-16: 4rem;
         }
 
+        /* 防截图和反调试样式 */
+        * {
+            -webkit-user-select: none !important;
+            -moz-user-select: none !important;
+            -ms-user-select: none !important;
+            user-select: none !important;
+            -webkit-touch-callout: none !important;
+            -webkit-tap-highlight-color: transparent !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* 防止拖拽保存 */
+        img, video, audio, canvas, svg {
+            -webkit-user-drag: none !important;
+            -khtml-user-drag: none !important;
+            -moz-user-drag: none !important;
+            -o-user-drag: none !important;
+            user-drag: none !important;
+            pointer-events: none !important;
+        }
+
+        /* 基础样式重置 */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', 'Microsoft YaHei', 'Arial', sans-serif;
+        }
+
+        /* 高级动画定义 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes ripple {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(4); opacity: 0; }
+        }
+
+        @keyframes slideInUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes slideInDown {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes fadeInScale {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(77, 184, 214, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(77, 184, 214, 0.8); }
+        }
+
+        @keyframes wave {
+            0% { transform: rotate(0deg); }
+            10% { transform: rotate(14deg); }
+            20% { transform: rotate(-8deg); }
+            30% { transform: rotate(14deg); }
+            40% { transform: rotate(-4deg); }
+            50% { transform: rotate(10deg); }
+            60% { transform: rotate(0deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @keyframes typewriter {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+
+        @keyframes blink {
+            0%, 50% { border-color: transparent; }
+            51%, 100% { border-color: var(--primary); }
+        }
+
+        @keyframes progressFill {
+            0% { width: 0%; }
+            100% { width: var(--progress-width, 0%); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* 高级文件上传样式 */
+        .upload-container {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(248, 250, 252, 0.95));
+            backdrop-filter: blur(20px);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-8);
+            margin-bottom: var(--space-8);
+            border: 2px dashed rgba(30, 111, 168, 0.3);
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary), var(--accent));
+            border-radius: var(--radius-2xl);
+            z-index: -1;
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+        }
+
+        .upload-container:hover::before {
+            opacity: 0.1;
+        }
+
+        .upload-container.drag-over {
+            border-color: var(--accent);
+            background: rgba(77, 184, 214, 0.05);
+            transform: scale(1.02);
+        }
+
+        .upload-tabs {
+            display: flex;
+            gap: var(--space-2);
+            margin-bottom: var(--space-6);
+            background: rgba(240, 244, 248, 0.8);
+            padding: var(--space-1);
+            border-radius: var(--radius-xl);
+        }
+
+        .upload-tab {
+            flex: 1;
+            padding: var(--space-3) var(--space-4);
+            border: none;
+            background: transparent;
+            color: var(--secondary);
+            font-weight: 500;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            position: relative;
+        }
+
+        .upload-tab.active {
+            background: white;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .upload-tab:hover:not(.active) {
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .upload-content {
+            display: none;
+        }
+
+        .upload-content.active {
+            display: block;
+        }
+
+        .drop-zone {
+            border: 2px dashed rgba(30, 111, 168, 0.3);
+            border-radius: var(--radius-xl);
+            padding: var(--space-12);
+            text-align: center;
+            background: rgba(248, 250, 252, 0.5);
+            transition: all var(--transition-normal);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .drop-zone::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(77, 184, 214, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .drop-zone:hover::before {
+            left: 100%;
+        }
+
+        .drop-zone.drag-over {
+            border-color: var(--accent);
+            background: rgba(77, 184, 214, 0.1);
+            transform: scale(1.02);
+        }
+
+        .drop-zone i {
+            font-size: 3rem;
+            color: var(--accent);
+            margin-bottom: var(--space-4);
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .file-input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-progress {
+            display: none;
+            margin-top: var(--space-6);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(230, 236, 241, 0.8);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: var(--radius-full);
+            width: 0%;
+            transition: width 0.3s ease;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
+            animation: progressShine 2s infinite;
+        }
+
+        @keyframes progressShine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(200%); }
+        }
+
+        .upload-text textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: var(--space-4);
+            border: 1px solid rgba(30, 111, 168, 0.2);
+            border-radius: var(--radius-lg);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            resize: vertical;
+            background: rgba(255, 255, 255, 0.9);
+            transition: all var(--transition-normal);
+        }
+
+        .upload-text textarea:focus {
+            border-color: var(--accent);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(77, 184, 214, 0.1);
         }
 
         html {
@@ -536,6 +880,400 @@
             }
         }
 
+        /* 高级视频播放器控件 */
+        .video-player-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+            padding: var(--space-4);
+            transform: translateY(100%);
+            transition: transform var(--transition-normal);
+        }
+
+        .video-container:hover .video-player-controls {
+            transform: translateY(0);
+        }
+
+        .video-progress {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-bottom: var(--space-2);
+        }
+
+        .video-progress-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: var(--radius-full);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .video-progress-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: var(--radius-full);
+            width: 0%;
+            transition: width 0.1s ease;
+        }
+
+        .video-progress-thumb {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity var(--transition-normal);
+        }
+
+        .video-progress-bar:hover .video-progress-thumb {
+            opacity: 1;
+        }
+
+        .video-controls {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: white;
+        }
+
+        .video-control-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.125rem;
+            cursor: pointer;
+            padding: var(--space-2);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-normal);
+        }
+
+        .video-control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .video-time {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .video-quality-selector {
+            position: relative;
+        }
+
+        .video-quality-menu {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2);
+            display: none;
+            min-width: 100px;
+        }
+
+        .video-quality-menu.show {
+            display: block;
+        }
+
+        .video-quality-option {
+            display: block;
+            width: 100%;
+            background: none;
+            border: none;
+            color: white;
+            padding: var(--space-2);
+            text-align: left;
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            transition: background var(--transition-normal);
+        }
+
+        .video-quality-option:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        /* 高级模态框和弹窗样式 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-normal);
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: white;
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-xl);
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow: hidden;
+            transition: transform var(--transition-normal);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-6);
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(135deg, rgba(30, 111, 168, 0.05), rgba(77, 184, 214, 0.05));
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--secondary);
+            cursor: pointer;
+            padding: var(--space-2);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-normal);
+        }
+
+        .modal-close:hover {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--error);
+        }
+
+        .modal-body {
+            padding: var(--space-6);
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--space-3);
+            padding: var(--space-6);
+            border-top: 1px solid var(--border);
+            background: rgba(248, 250, 252, 0.5);
+        }
+
+        /* 交互式练习题样式 */
+        .question-container {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            margin-bottom: var(--space-6);
+            box-shadow: var(--shadow-md);
+            border-left: 4px solid var(--accent);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+        }
+
+        .question-number {
+            background: var(--accent);
+            color: white;
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-full);
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .question-timer {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            color: var(--secondary);
+            font-size: 0.875rem;
+        }
+
+        .question-title {
+            font-size: 1.125rem;
+            color: var(--dark);
+            margin-bottom: var(--space-6);
+            line-height: 1.6;
+        }
+
+        .question-options {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-3);
+            margin-bottom: var(--space-6);
+        }
+
+        .question-option {
+            display: flex;
+            align-items: flex-start;
+            gap: var(--space-3);
+            padding: var(--space-4);
+            border: 2px solid rgba(30, 111, 168, 0.1);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            background: rgba(248, 250, 252, 0.3);
+        }
+
+        .question-option:hover {
+            border-color: rgba(30, 111, 168, 0.3);
+            background: rgba(30, 111, 168, 0.05);
+        }
+
+        .question-option.selected {
+            border-color: var(--accent);
+            background: rgba(77, 184, 214, 0.1);
+        }
+
+        .question-option.correct {
+            border-color: var(--success);
+            background: rgba(39, 174, 96, 0.1);
+        }
+
+        .question-option.incorrect {
+            border-color: var(--error);
+            background: rgba(231, 76, 60, 0.1);
+        }
+
+        .option-label {
+            background: var(--secondary);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            flex: 1;
+            color: var(--dark);
+            line-height: 1.5;
+        }
+
+        .question-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .question-hint {
+            background: rgba(243, 156, 18, 0.1);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-top: var(--space-4);
+            display: none;
+        }
+
+        .question-hint.show {
+            display: block;
+            animation: slideInDown 0.3s ease;
+        }
+
+        .hint-btn {
+            background: rgba(243, 156, 18, 0.1);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+            color: var(--warning);
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+        }
+
+        .hint-btn:hover {
+            background: rgba(243, 156, 18, 0.2);
+        }
+
+        .submit-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all var(--transition-normal);
+        }
+
+        .submit-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 水印和版权保护 */
+        .watermark {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.05;
+            background-image: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 100px,
+                rgba(30, 111, 168, 0.1) 100px,
+                rgba(30, 111, 168, 0.1) 200px
+            );
+        }
+
+        .watermark::before {
+            content: attr(data-student);
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            font-size: 4rem;
+            font-weight: bold;
+            color: rgba(30, 111, 168, 0.1);
+            white-space: nowrap;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* 添加动画关键帧 */
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -551,18 +1289,189 @@
             75% { transform: translateX(5px); }
         }
 
-        @media print {
-            * {
-                display: none !important;
+        /* 学生特定样式 */
+        .student-only {
+            display: none;
+        }
+
+        .teacher-only {
+            display: none;
+        }
+
+        body.student .student-only {
+            display: block;
+        }
+
+        body.teacher .teacher-only {
+            display: block;
+        }
+
+        /* 密码修改样式 */
+        .password-change-form {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            margin-top: var(--space-6);
+            box-shadow: var(--shadow-md);
+        }
+
+        .password-change-form .form-group {
+            margin-bottom: var(--space-4);
+        }
+
+        .password-change-form .form-input {
+            width: 100%;
+            padding: var(--space-3) var(--space-4);
+            border: 1px solid rgba(30, 111, 168, 0.2);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            transition: all var(--transition-normal);
+        }
+
+        .password-change-form .form-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(77, 184, 214, 0.1);
+        }
+
+        /* GitHub连接状态 */
+        .github-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            margin-bottom: var(--space-4);
+        }
+
+        .github-status.connected {
+            background: rgba(39, 174, 96, 0.1);
+            color: var(--success);
+            border: 1px solid rgba(39, 174, 96, 0.3);
+        }
+
+        .github-status.disconnected {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .github-status.connecting {
+            background: rgba(243, 156, 18, 0.1);
+            color: var(--warning);
+            border: 1px solid rgba(243, 156, 18, 0.3);
+        }
+
+        /* 消息提示样式增强 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            box-shadow: var(--shadow-lg);
+            border-left: 4px solid var(--accent);
+            z-index: 10001;
+            transform: translateX(400px);
+            transition: transform var(--transition-normal);
+            max-width: 400px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.success {
+            border-left-color: var(--success);
+        }
+
+        .toast.error {
+            border-left-color: var(--error);
+        }
+
+        .toast.warning {
+            border-left-color: var(--warning);
+        }
+
+        /* 加载状态样式 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10002;
+            opacity: 0;
+            visibility: hidden;
+            transition: all var(--transition-normal);
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        /* 响应式设计增强 */
+        @media (max-width: 1200px) {
+            .upload-tabs {
+                flex-wrap: wrap;
             }
             
-            body::before {
-                content: "此内容受版权保护，禁止打印";
-                display: block !important;
-                text-align: center;
-                font-size: 24px;
-                color: red;
-                margin: 50px;
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .upload-container {
+                padding: var(--space-4);
+            }
+            
+            .drop-zone {
+                padding: var(--space-8);
+            }
+            
+            .modal-content {
+                max-width: 95vw;
+                margin: var(--space-4);
+            }
+            
+            .question-container {
+                padding: var(--space-4);
+            }
+            
+            .video-player-controls {
+                padding: var(--space-2);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .upload-tabs {
+                flex-direction: column;
+            }
+            
+            .question-option {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-2);
+            }
+            
+            .watermark::before {
+                font-size: 2rem;
             }
         }
 
@@ -1220,12 +2129,18 @@
                             <i class="fas fa-book" aria-hidden="true"></i>复习规划</a></li>
                         <li><a href="#" class="nav-link" onclick="showSection('videos')">
                             <i class="fas fa-video" aria-hidden="true"></i>视频课程</a></li>
+                        <li class="teacher-only"><a href="#" class="nav-link" onclick="showSection('uploadVideo')">
+                            <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>上传视频</a></li>
                         <li><a href="#" class="nav-link" onclick="showSection('exercises')">
                             <i class="fas fa-question-circle" aria-hidden="true"></i>题库练习</a></li>
+                        <li class="teacher-only"><a href="#" class="nav-link" onclick="showSection('uploadExercise')">
+                            <i class="fas fa-file-upload" aria-hidden="true"></i>上传练习</a></li>
                         <li><a href="#" class="nav-link" onclick="showSection('scores')">
                             <i class="fas fa-chart-line" aria-hidden="true"></i>分数线</a></li>
                         <li><a href="#" class="nav-link" onclick="showSection('grades')">
                             <i class="fas fa-graduation-cap" aria-hidden="true"></i>成绩录入</a></li>
+                        <li><a href="#" class="nav-link" onclick="showSection('settings')">
+                            <i class="fas fa-cogs" aria-hidden="true"></i>设置</a></li>
                     </ul>
                 </nav>
                 
@@ -1557,6 +2472,184 @@
                     </div>
                 </div>
             </section>
+
+            <!-- 视频上传 -->
+            <section id="uploadVideoSection" class="content-section">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>
+                    </div>
+                    <h2>视频课程上传</h2>
+                </div>
+                
+                <div class="upload-container">
+                    <div class="upload-tabs">
+                        <button class="upload-tab active" onclick="switchUploadTab('link')">链接上传</button>
+                        <button class="upload-tab" onclick="switchUploadTab('file')">文件上传</button>
+                        <button class="upload-tab" onclick="switchUploadTab('bilibili')">B站视频</button>
+                    </div>
+                    
+                    <div id="linkUpload" class="upload-content active">
+                        <div class="form-group">
+                            <label class="form-label">视频链接</label>
+                            <input type="url" class="form-input" placeholder="请输入视频链接" id="videoLink">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">视频标题</label>
+                            <input type="text" class="form-input" placeholder="请输入视频标题" id="videoTitle">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">视频描述</label>
+                            <textarea class="form-input" rows="4" placeholder="请输入视频描述" id="videoDescription"></textarea>
+                        </div>
+                        <button onclick="uploadVideoLink()" class="submit-btn">上传视频</button>
+                    </div>
+                    
+                    <div id="fileUpload" class="upload-content">
+                        <div class="drop-zone" onclick="document.getElementById('videoFile').click()">
+                            <input type="file" id="videoFile" class="file-input" accept="video/*" onchange="handleVideoFile(this)">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <h3>拖拽视频文件到此处</h3>
+                            <p>或点击选择文件</p>
+                            <small>支持 MP4, AVI, MOV, WMV 等格式</small>
+                        </div>
+                        <div class="upload-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="videoUploadProgress"></div>
+                            </div>
+                            <p id="videoUploadStatus">等待上传...</p>
+                        </div>
+                    </div>
+                    
+                    <div id="bilibiliUpload" class="upload-content">
+                        <div class="form-group">
+                            <label class="form-label">B站视频BV号</label>
+                            <input type="text" class="form-input" placeholder="例如：BV16T421D7k4" id="bilibiliId">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">视频标题（可选）</label>
+                            <input type="text" class="form-input" placeholder="自动获取或手动输入" id="bilibiliTitle">
+                        </div>
+                        <button onclick="addBilibiliVideo()" class="submit-btn">添加B站视频</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 练习上传 -->
+            <section id="uploadExerciseSection" class="content-section">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <i class="fas fa-file-upload" aria-hidden="true"></i>
+                    </div>
+                    <h2>练习题目上传</h2>
+                </div>
+                
+                <div class="upload-container">
+                    <div class="upload-tabs">
+                        <button class="upload-tab active" onclick="switchExerciseTab('json')">JSON格式</button>
+                        <button class="upload-tab" onclick="switchExerciseTab('text')">文本输入</button>
+                        <button class="upload-tab" onclick="switchExerciseTab('file')">文件上传</button>
+                    </div>
+                    
+                    <div id="jsonExercise" class="upload-content active">
+                        <div class="upload-text">
+                            <textarea placeholder='请输入JSON格式的练习题目，格式如下：
+{
+  "title": "流体静力学基础",
+  "questions": [
+    {
+      "question": "题目内容",
+      "options": ["选项A", "选项B", "选项C", "选项D"],
+      "correct": 0,
+      "explanation": "答案解释"
+    }
+  ]
+}' id="exerciseJson"></textarea>
+                        </div>
+                        <button onclick="uploadExerciseJson()" class="submit-btn">上传练习</button>
+                    </div>
+                    
+                    <div id="textExercise" class="upload-content">
+                        <div class="form-group">
+                            <label class="form-label">练习标题</label>
+                            <input type="text" class="form-input" placeholder="请输入练习标题" id="exerciseTitle">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">题目内容</label>
+                            <textarea class="form-input" rows="10" placeholder="请输入题目内容，每道题目用空行分隔" id="exerciseContent"></textarea>
+                        </div>
+                        <button onclick="uploadExerciseText()" class="submit-btn">创建练习</button>
+                    </div>
+                    
+                    <div id="fileExercise" class="upload-content">
+                        <div class="drop-zone" onclick="document.getElementById('exerciseFile').click()">
+                            <input type="file" id="exerciseFile" class="file-input" accept=".json,.txt,.doc,.docx" onchange="handleExerciseFile(this)">
+                            <i class="fas fa-file-upload"></i>
+                            <h3>拖拽练习文件到此处</h3>
+                            <p>或点击选择文件</p>
+                            <small>支持 JSON, TXT, DOC, DOCX 格式</small>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 设置页面 -->
+            <section id="settingsSection" class="content-section">
+                <div class="section-title">
+                    <div class="section-icon">
+                        <i class="fas fa-cogs" aria-hidden="true"></i>
+                    </div>
+                    <h2>系统设置</h2>
+                </div>
+                
+                <!-- GitHub连接状态 -->
+                <div class="card">
+                    <h3 style="margin-bottom: var(--space-4); color: var(--primary);">GitHub 数据同步</h3>
+                    <div id="githubStatus" class="github-status disconnected">
+                        <i class="fab fa-github"></i>
+                        <span>未连接到 GitHub</span>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">GitHub Token</label>
+                        <input type="password" class="form-input" placeholder="请输入 GitHub Personal Access Token" id="githubToken">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">仓库名称</label>
+                        <input type="text" class="form-input" placeholder="例如：username/repository" id="githubRepo">
+                    </div>
+                    <button onclick="connectGitHub()" class="submit-btn">连接 GitHub</button>
+                </div>
+                
+                <!-- 密码修改 -->
+                <div class="password-change-form">
+                    <h3 style="margin-bottom: var(--space-6); color: var(--primary);">修改密码</h3>
+                    <form onsubmit="changePassword(event)">
+                        <div class="form-group">
+                            <label class="form-label">当前密码</label>
+                            <input type="password" class="form-input" id="currentPassword" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">新密码</label>
+                            <input type="password" class="form-input" id="newPassword" required minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">确认新密码</label>
+                            <input type="password" class="form-input" id="confirmPassword" required minlength="6">
+                        </div>
+                        <button type="submit" class="submit-btn">修改密码</button>
+                    </form>
+                </div>
+                
+                <!-- 数据管理 -->
+                <div class="card">
+                    <h3 style="margin-bottom: var(--space-4); color: var(--primary);">数据管理</h3>
+                    <div style="display: flex; gap: var(--space-4); flex-wrap: wrap;">
+                        <button onclick="exportData()" class="submit-btn">导出数据</button>
+                        <button onclick="importData()" class="submit-btn">导入数据</button>
+                        <button onclick="clearLocalData()" class="submit-btn" style="background: var(--error);">清除本地数据</button>
+                    </div>
+                </div>
+            </section>
         </main>
         
         <footer class="footer">
@@ -1568,118 +2661,353 @@
             </div>
         </footer>
     </div>
+
+    <!-- 水印 -->
+    <div class="watermark" data-student="流体力学学习平台"></div>
+    
+    <!-- 加载覆盖层 -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
     
     <script>
         'use strict';
         
+        // 安全防护：反调试和反自动化
+        let devtoolsOpen = false;
+        let devtoolsCheckInterval;
+        
+        // 检测开发者工具
+        function detectDevTools() {
+            const threshold = 160;
+            if (window.outerHeight - window.innerHeight > threshold || 
+                window.outerWidth - window.innerWidth > threshold) {
+                if (!devtoolsOpen) {
+                    devtoolsOpen = true;
+                    console.clear();
+                    console.warn('%c⚠️ 检测到开发者工具', 'color: red; font-size: 20px; font-weight: bold;');
+                    console.warn('%c本平台受版权保护，禁止调试和逆向工程！', 'color: red; font-size: 16px;');
+                    // 实际应用中可以采取更严厉的措施
+                }
+            } else {
+                devtoolsOpen = false;
+            }
+        }
+
+        // 禁用常见调试快捷键
+        document.addEventListener('keydown', function(e) {
+            // F12
+            if (e.keyCode === 123) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+Shift+I
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 73) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+Shift+J
+            if (e.ctrlKey && e.shiftKey && e.keyCode === 74) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+U
+            if (e.ctrlKey && e.keyCode === 85) {
+                e.preventDefault();
+                return false;
+            }
+            // Ctrl+S
+            if (e.ctrlKey && e.keyCode === 83) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // 禁用右键菜单
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+            return false;
+        });
+
+        // 禁用拖拽
+        document.addEventListener('dragstart', function(e) {
+            e.preventDefault();
+            return false;
+        });
+
+        // 检测截图（部分浏览器支持）
+        if ('getDisplayMedia' in navigator.mediaDevices) {
+            const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
+            navigator.mediaDevices.getDisplayMedia = function() {
+                console.warn('检测到可能的截图行为');
+                // 实际应用中可以记录或阻止
+                return originalGetDisplayMedia.apply(this, arguments);
+            };
+        }
+
+        // 混淆console输出
+        const originalLog = console.log;
+        console.log = function() {
+            // 在实际应用中可以选择不输出或输出误导信息
+            return originalLog.apply(console, arguments);
+        };
+
         // 用户账号数据
-        const USER_ACCOUNTS = {
+        const accounts = {
             'liuguanghui6330156': { 
                 name: '刘光辉', 
                 role: 'teacher', 
                 password: 'Ll700306', 
-                avatar: '刘'
+                avatar: '刘',
+                github: { connected: false, token: '', repo: '' }
             },
             'student1': { 
                 name: '学生账号', 
                 role: 'student', 
                 password: '123456', 
-                avatar: '学'
+                avatar: '学',
+                github: { connected: false, token: '', repo: '' }
             },
             'niwenxuan': { 
                 name: '倪文轩', 
                 role: 'student', 
                 password: 'niwenxuan2025', 
-                avatar: '倪'
+                avatar: '倪',
+                github: { connected: false, token: '', repo: '' }
             },
             'hanwenxu': { 
                 name: '韩文旭', 
                 role: 'student', 
                 password: 'hanwenxu2025', 
-                avatar: '韩'
+                avatar: '韩',
+                github: { connected: false, token: '', repo: '' }
             }
         };
+
+        // 保持向后兼容
+        const USER_ACCOUNTS = accounts;
         
-        // 视频数据
-        const videosData = [
+        // 扩展的视频数据
+        let videosData = [
             {
                 id: 'video1',
                 title: '流体力学之美，太美了',
-                description: '探索流体世界的奇妙现象与科学原理，揭示自然界的流动艺术。',
+                description: '探索流体世界的奇妙现象与科学原理，揭示自然界的流动艺术。通过精美的可视化展示，帮助学生理解复杂的流体现象。',
                 source: 'BV16T421D7k4',
+                sourceType: 'bilibili', // bilibili, youtube, local, douyin
                 duration: '18:45',
                 views: '32,458',
                 category: '基础理论',
-                featured: true
+                featured: true,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-12-01',
+                tags: ['流体力学', '基础理论', '可视化'],
+                quality: ['720p', '1080p'],
+                thumbnail: 'https://i2.hdslb.com/bfs/archive/placeholder.jpg',
+                subtitles: true,
+                interactive: false
             },
             {
                 id: 'video2',
                 title: '伯努利方程详解',
-                description: '深入讲解伯努利方程的推导过程和实际应用。',
+                description: '深入讲解伯努利方程的推导过程和实际应用。从基本原理出发，逐步推导方程，并结合实际案例进行分析。',
                 source: 'sample2',
+                sourceType: 'local',
                 duration: '25:30',
                 views: '18,923',
-                category: '核心原理'
+                category: '核心原理',
+                featured: false,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-11-25',
+                tags: ['伯努利方程', '核心原理', '数学推导'],
+                quality: ['480p', '720p'],
+                thumbnail: '/videos/thumbnails/bernoulli.jpg',
+                subtitles: true,
+                interactive: true
             },
             {
                 id: 'video3',
                 title: '涡旋运动与环量',
-                description: '详细讲解涡旋运动的基本概念和环量的计算方法。',
+                description: '详细讲解涡旋运动的基本概念和环量的计算方法。通过动画演示涡旋的形成和发展过程。',
                 source: 'sample3',
+                sourceType: 'local',
                 duration: '22:15',
                 views: '15,672',
-                category: '高级理论'
+                category: '高级理论',
+                featured: false,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-11-20',
+                tags: ['涡旋', '环量', '高级理论'],
+                quality: ['720p', '1080p'],
+                thumbnail: '/videos/thumbnails/vortex.jpg',
+                subtitles: false,
+                interactive: true
             },
             {
                 id: 'video4',
                 title: '势流理论应用',
-                description: '势流理论在实际工程中的应用案例分析。',
+                description: '势流理论在实际工程中的应用案例分析。结合具体工程实例，展示势流理论的实用价值。',
                 source: 'sample4',
+                sourceType: 'local',
                 duration: '30:20',
                 views: '12,845',
-                category: '应用实践'
+                category: '应用实践',
+                featured: false,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-11-15',
+                tags: ['势流', '应用', '工程案例'],
+                quality: ['480p', '720p', '1080p'],
+                thumbnail: '/videos/thumbnails/potential.jpg',
+                subtitles: true,
+                interactive: false
             }
         ];
         
-        // 题库数据
-        const exercisesData = [
+        // 完整的练习数据
+        let exercisesData = [
             {
                 id: 'exercise1',
                 title: '流体静力学基础',
-                description: '流体静力学的基本概念和计算方法',
+                description: '流体静力学的基本概念和计算方法，包括压力分布、浮力计算等核心内容',
                 questionCount: 15,
                 duration: '30分钟',
                 difficulty: '基础',
-                category: '静力学'
+                category: '静力学',
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-11-01',
+                attempts: 156,
+                averageScore: 78,
+                questions: [
+                    {
+                        id: 'q1_1',
+                        question: '在静止流体中，压力的变化规律是什么？',
+                        options: [
+                            '压力随深度线性增加',
+                            '压力随深度指数增加', 
+                            '压力在各方向上相等',
+                            '压力只在垂直方向变化'
+                        ],
+                        correct: 0,
+                        explanation: '根据静力学基本方程，在重力场中，流体压力随深度线性增加，遵循 p = p₀ + ρgh 的规律。',
+                        hint: '考虑重力对流体压力分布的影响',
+                        points: 5
+                    },
+                    // 更多题目...
+                ]
             },
             {
                 id: 'exercise2',
                 title: '流体运动学',
-                description: '流体运动学的基本概念和计算方法',
+                description: '流体运动学的基本概念和计算方法，涵盖速度场、流线、迹线等重要概念',
                 questionCount: 20,
                 duration: '45分钟',
                 difficulty: '中等',
-                category: '运动学'
+                category: '运动学',
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-11-10',
+                attempts: 134,
+                averageScore: 72,
+                questions: [
+                    {
+                        id: 'q2_1',
+                        question: '速度势函数存在的条件是什么？',
+                        options: [
+                            '流体是无粘性的',
+                            '流动是无旋的',
+                            '流体是不可压缩的',
+                            '流动是定常的'
+                        ],
+                        correct: 1,
+                        explanation: '速度势函数存在的充分必要条件是流动无旋，即旋度为零。这是势流理论的基础。',
+                        hint: '思考旋度与势函数的关系',
+                        points: 5
+                    }
+                ]
             },
             {
                 id: 'exercise3',
                 title: '粘性流体流动',
-                description: '粘性流体流动的基本概念和计算方法',
+                description: '粘性流体流动的基本概念和计算方法，重点讲解Navier-Stokes方程及其应用',
                 questionCount: 12,
                 duration: '40分钟',
                 difficulty: '困难',
-                category: '动力学'
-            },
-            {
-                id: 'exercise4',
-                title: '伯努利方程应用',
-                description: '伯努利方程在实际问题中的应用',
-                questionCount: 18,
-                duration: '35分钟',
-                difficulty: '中等',
-                category: '应用'
+                category: '动力学',
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-11-15',
+                attempts: 89,
+                averageScore: 65,
+                questions: [
+                    {
+                        id: 'q3_1',
+                        question: 'Navier-Stokes方程中的粘性项代表什么物理意义？',
+                        options: [
+                            '流体的惯性力',
+                            '流体内部的摩擦力',
+                            '压力梯度的作用',
+                            '重力的影响'
+                        ],
+                        correct: 1,
+                        explanation: 'Navier-Stokes方程中的粘性项（拉普拉斯项）表示流体内部由于粘性而产生的摩擦力。',
+                        hint: '粘性系数与速度梯度的关系',
+                        points: 8
+                    }
+                ]
             }
         ];
+
+        // 流体力学概念题库
+        const fluidMechanicsConcepts = {
+            basic: [
+                {
+                    question: "连续介质假设的基本含义是什么？",
+                    options: [
+                        "流体是由连续分布的物质组成的",
+                        "流体分子之间没有间隙",
+                        "流体的密度处处相等",
+                        "流体不能被压缩"
+                    ],
+                    correct: 0,
+                    explanation: "连续介质假设认为流体是由连续分布的物质组成，忽略分子间的间隙和分子运动的细节。"
+                },
+                {
+                    question: "牛顿流体的主要特征是什么？",
+                    options: [
+                        "粘度随温度变化",
+                        "剪应力与剪应变率成正比",
+                        "密度恒定不变",
+                        "不能承受剪应力"
+                    ],
+                    correct: 1,
+                    explanation: "牛顿流体的特征是其剪应力与剪应变率成正比，比例常数为动力粘度。"
+                }
+            ],
+            intermediate: [
+                {
+                    question: "伯努利方程的适用条件不包括以下哪项？",
+                    options: [
+                        "理想流体",
+                        "定常流动",
+                        "无旋流动",
+                        "可压缩流体"
+                    ],
+                    correct: 3,
+                    explanation: "伯努利方程适用于理想、定常、无旋的不可压缩流体。"
+                }
+            ],
+            advanced: [
+                {
+                    question: "湍流的主要特征是什么？",
+                    options: [
+                        "流线规整有序",
+                        "雷诺数很小",
+                        "脉动和混合强烈",
+                        "粘性力占主导"
+                    ],
+                    correct: 2,
+                    explanation: "湍流的主要特征是流体的脉动和混合作用强烈，流动不规则。"
+                }
+            ]
+        };
         
         // 分数线数据
         const scoreData = {
@@ -1703,6 +3031,160 @@
             }
         };
         
+        // GitHub 数据管理类
+        class GitHubStorage {
+            constructor() {
+                this.token = '';
+                this.repo = '';
+                this.baseUrl = 'https://api.github.com';
+                this.isConnected = false;
+            }
+
+            async connect(token, repo) {
+                this.token = token;
+                this.repo = repo;
+                
+                try {
+                    // 验证token和repo的有效性
+                    const response = await this.makeRequest(`/repos/${repo}`);
+                    if (response.ok) {
+                        this.isConnected = true;
+                        this.updateStatus('connected', `已连接到 ${repo}`);
+                        return { success: true, message: '连接成功' };
+                    } else {
+                        throw new Error('仓库不存在或无权限访问');
+                    }
+                } catch (error) {
+                    this.isConnected = false;
+                    this.updateStatus('disconnected', `连接失败: ${error.message}`);
+                    return { success: false, message: error.message };
+                }
+            }
+
+            async makeRequest(endpoint, options = {}) {
+                const url = `${this.baseUrl}${endpoint}`;
+                const headers = {
+                    'Authorization': `token ${this.token}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                };
+
+                return fetch(url, {
+                    ...options,
+                    headers
+                });
+            }
+
+            async saveData(path, data, message = '更新数据') {
+                if (!this.isConnected) {
+                    throw new Error('未连接到GitHub');
+                }
+
+                try {
+                    // 首先尝试获取文件的SHA
+                    let sha = null;
+                    try {
+                        const response = await this.makeRequest(`/repos/${this.repo}/contents/${path}`);
+                        if (response.ok) {
+                            const fileData = await response.json();
+                            sha = fileData.sha;
+                        }
+                    } catch (error) {
+                        // 文件不存在，继续创建
+                    }
+
+                    const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
+                    const body = {
+                        message,
+                        content,
+                        ...(sha && { sha })
+                    };
+
+                    const response = await this.makeRequest(`/repos/${this.repo}/contents/${path}`, {
+                        method: 'PUT',
+                        body: JSON.stringify(body)
+                    });
+
+                    if (response.ok) {
+                        return { success: true, message: '数据保存成功' };
+                    } else {
+                        throw new Error('保存失败');
+                    }
+                } catch (error) {
+                    return { success: false, message: error.message };
+                }
+            }
+
+            async loadData(path) {
+                if (!this.isConnected) {
+                    throw new Error('未连接到GitHub');
+                }
+
+                try {
+                    const response = await this.makeRequest(`/repos/${this.repo}/contents/${path}`);
+                    if (response.ok) {
+                        const fileData = await response.json();
+                        const content = decodeURIComponent(escape(atob(fileData.content)));
+                        return { success: true, data: JSON.parse(content) };
+                    } else {
+                        throw new Error('文件不存在');
+                    }
+                } catch (error) {
+                    return { success: false, message: error.message };
+                }
+            }
+
+            async uploadBinary(path, blob, message = '上传文件') {
+                if (!this.isConnected) {
+                    throw new Error('未连接到GitHub');
+                }
+
+                try {
+                    const reader = new FileReader();
+                    return new Promise((resolve, reject) => {
+                        reader.onload = async () => {
+                            try {
+                                const content = btoa(reader.result);
+                                const body = {
+                                    message,
+                                    content
+                                };
+
+                                const response = await this.makeRequest(`/repos/${this.repo}/contents/${path}`, {
+                                    method: 'PUT',
+                                    body: JSON.stringify(body)
+                                });
+
+                                if (response.ok) {
+                                    resolve({ success: true, message: '文件上传成功' });
+                                } else {
+                                    throw new Error('上传失败');
+                                }
+                            } catch (error) {
+                                reject({ success: false, message: error.message });
+                            }
+                        };
+                        reader.onerror = () => reject({ success: false, message: '文件读取失败' });
+                        reader.readAsBinaryString(blob);
+                    });
+                } catch (error) {
+                    return { success: false, message: error.message };
+                }
+            }
+
+            updateStatus(status, message) {
+                const statusEl = document.getElementById('githubStatus');
+                if (statusEl) {
+                    statusEl.className = `github-status ${status}`;
+                    statusEl.innerHTML = `<i class="fab fa-github"></i><span>${message}</span>`;
+                }
+            }
+        }
+
+        // 创建GitHub存储实例
+        const githubStorage = new GitHubStorage();
+
         // 应用状态
         let currentUser = null;
         let isLoggedIn = false;
@@ -1711,6 +3193,19 @@
         const MAX_LOGIN_ATTEMPTS = 5;
         const LOCKOUT_DURATION = 15 * 60 * 1000;
         let lockoutEndTime = null;
+        
+        // 练习相关状态
+        let currentExercise = null;
+        let currentQuestion = 0;
+        let userAnswers = [];
+        let exerciseStartTime = null;
+        let questionTimer = null;
+
+        // 视频播放器状态
+        let currentVideoPlayer = null;
+        let videoQuality = '720p';
+        let videoSpeed = 1;
+        let isFullscreen = false;
         
         // DOM元素缓存
         const DOM = {};
@@ -1962,16 +3457,461 @@
                 activeLink.setAttribute('aria-current', 'page');
             }
             
+            // 根据用户角色显示/隐藏特定功能
+            updateUIForUserRole();
+            
             const titles = {
                 home: '首页',
-                review: '复习规划',
+                review: '复习规划', 
                 videos: '视频课程',
+                uploadVideo: '上传视频',
                 exercises: '题库练习',
+                uploadExercise: '上传练习',
                 scores: '分数线分析',
-                grades: '成绩录入'
+                grades: '成绩录入',
+                settings: '系统设置'
             };
             
             document.title = `${titles[sectionName] || '流体力学学习平台'} - 中国海洋大学`;
+        }
+
+        /**
+         * 根据用户角色更新UI
+         */
+        function updateUIForUserRole() {
+            if (!currentUser) return;
+            
+            // 更新body类名以应用角色特定样式
+            document.body.className = currentUser.role;
+            
+            // 更新水印显示学生信息
+            if (currentUser.role === 'student') {
+                const watermark = document.querySelector('.watermark');
+                if (watermark) {
+                    watermark.setAttribute('data-student', `${currentUser.name} - ${currentUser.username}`);
+                }
+            }
+        }
+
+        /**
+         * 显示教师功能
+         */
+        function showTeacherFeatures() {
+            const teacherElements = document.querySelectorAll('.teacher-only');
+            teacherElements.forEach(el => el.style.display = 'block');
+        }
+
+        /**
+         * 显示学生功能
+         */
+        function showStudentFeatures() {
+            const studentElements = document.querySelectorAll('.student-only');
+            studentElements.forEach(el => el.style.display = 'block');
+        }
+
+        /**
+         * 上传标签页切换
+         */
+        function switchUploadTab(tabName) {
+            document.querySelectorAll('.upload-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.upload-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}Upload`).classList.add('active');
+        }
+
+        /**
+         * 练习上传标签页切换
+         */
+        function switchExerciseTab(tabName) {
+            document.querySelectorAll('#uploadExerciseSection .upload-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('#uploadExerciseSection .upload-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            event.target.classList.add('active');
+            document.getElementById(`${tabName}Exercise`).classList.add('active');
+        }
+
+        /**
+         * 处理视频链接上传
+         */
+        async function uploadVideoLink() {
+            const link = document.getElementById('videoLink').value;
+            const title = document.getElementById('videoTitle').value;
+            const description = document.getElementById('videoDescription').value;
+            
+            if (!link || !title) {
+                showToast('请填写视频链接和标题', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const newVideo = {
+                    id: `video_${Date.now()}`,
+                    title,
+                    description,
+                    source: link,
+                    sourceType: 'external',
+                    duration: '未知',
+                    views: '0',
+                    category: '自定义',
+                    featured: false,
+                    uploadedBy: currentUser.username,
+                    uploadDate: new Date().toISOString().split('T')[0],
+                    tags: ['自定义'],
+                    quality: ['720p'],
+                    thumbnail: '',
+                    subtitles: false,
+                    interactive: false
+                };
+                
+                videosData.push(newVideo);
+                
+                // 保存到本地存储
+                localStorage.setItem('videosData', JSON.stringify(videosData));
+                
+                // 如果连接了GitHub，也保存到云端
+                if (githubStorage.isConnected) {
+                    await githubStorage.saveData('data/videos.json', videosData, '添加新视频');
+                }
+                
+                showToast('视频上传成功！', 'success');
+                
+                // 清空表单
+                document.getElementById('videoLink').value = '';
+                document.getElementById('videoTitle').value = '';
+                document.getElementById('videoDescription').value = '';
+                
+                // 刷新视频列表
+                if (currentSection === 'videos') {
+                    showSection('videos');
+                }
+                
+            } catch (error) {
+                showToast(`上传失败：${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        /**
+         * 处理视频文件上传
+         */
+        function handleVideoFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // 验证文件类型
+            const validTypes = ['video/mp4', 'video/avi', 'video/mov', 'video/wmv'];
+            if (!validTypes.includes(file.type)) {
+                showToast('不支持的视频格式', 'error');
+                return;
+            }
+            
+            // 验证文件大小（限制为500MB）
+            const maxSize = 500 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showToast('文件大小不能超过500MB', 'error');
+                return;
+            }
+            
+            uploadVideoFile(file);
+        }
+
+        /**
+         * 上传视频文件
+         */
+        async function uploadVideoFile(file) {
+            showLoading(true);
+            
+            try {
+                // 模拟上传进度
+                const progressEl = document.getElementById('videoUploadProgress');
+                const statusEl = document.getElementById('videoUploadStatus');
+                const uploadContainer = document.querySelector('#fileUpload .upload-progress');
+                
+                uploadContainer.style.display = 'block';
+                
+                for (let i = 0; i <= 100; i += 10) {
+                    progressEl.style.width = i + '%';
+                    statusEl.textContent = `上传中... ${i}%`;
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                }
+                
+                // 创建视频记录
+                const newVideo = {
+                    id: `video_${Date.now()}`,
+                    title: file.name.replace(/\.[^/.]+$/, ""), // 移除文件扩展名
+                    description: '用户上传的视频文件',
+                    source: `local_${Date.now()}`,
+                    sourceType: 'local',
+                    duration: '未知',
+                    views: '0',
+                    category: '自定义',
+                    featured: false,
+                    uploadedBy: currentUser.username,
+                    uploadDate: new Date().toISOString().split('T')[0],
+                    tags: ['用户上传'],
+                    quality: ['720p'],
+                    thumbnail: '',
+                    subtitles: false,
+                    interactive: false,
+                    fileSize: file.size,
+                    fileName: file.name
+                };
+                
+                videosData.push(newVideo);
+                
+                // 保存到本地存储
+                localStorage.setItem('videosData', JSON.stringify(videosData));
+                localStorage.setItem(`video_${newVideo.id}`, file);
+                
+                statusEl.textContent = '上传完成！';
+                showToast('视频上传成功！', 'success');
+                
+                setTimeout(() => {
+                    uploadContainer.style.display = 'none';
+                    progressEl.style.width = '0%';
+                }, 2000);
+                
+            } catch (error) {
+                showToast(`上传失败：${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        /**
+         * 添加B站视频
+         */
+        async function addBilibiliVideo() {
+            const bvId = document.getElementById('bilibiliId').value;
+            const title = document.getElementById('bilibiliTitle').value;
+            
+            if (!bvId) {
+                showToast('请输入B站视频BV号', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const newVideo = {
+                    id: `video_${Date.now()}`,
+                    title: title || `B站视频 ${bvId}`,
+                    description: '来自Bilibili的视频内容',
+                    source: bvId,
+                    sourceType: 'bilibili',
+                    duration: '未知',
+                    views: '0',
+                    category: 'B站视频',
+                    featured: false,
+                    uploadedBy: currentUser.username,
+                    uploadDate: new Date().toISOString().split('T')[0],
+                    tags: ['B站', '外部视频'],
+                    quality: ['720p', '1080p'],
+                    thumbnail: `https://i2.hdslb.com/bfs/archive/${bvId}.jpg`,
+                    subtitles: false,
+                    interactive: false
+                };
+                
+                videosData.push(newVideo);
+                
+                // 保存到本地存储
+                localStorage.setItem('videosData', JSON.stringify(videosData));
+                
+                showToast('B站视频添加成功！', 'success');
+                
+                // 清空表单
+                document.getElementById('bilibiliId').value = '';
+                document.getElementById('bilibiliTitle').value = '';
+                
+            } catch (error) {
+                showToast(`添加失败：${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        /**
+         * 上传JSON格式练习
+         */
+        async function uploadExerciseJson() {
+            const jsonContent = document.getElementById('exerciseJson').value;
+            
+            if (!jsonContent.trim()) {
+                showToast('请输入JSON内容', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const exerciseData = JSON.parse(jsonContent);
+                
+                // 验证数据格式
+                if (!exerciseData.title || !exerciseData.questions || !Array.isArray(exerciseData.questions)) {
+                    throw new Error('JSON格式不正确，请检查title和questions字段');
+                }
+                
+                const newExercise = {
+                    id: `exercise_${Date.now()}`,
+                    title: exerciseData.title,
+                    description: exerciseData.description || '用户上传的练习',
+                    questionCount: exerciseData.questions.length,
+                    duration: exerciseData.duration || '30分钟',
+                    difficulty: exerciseData.difficulty || '中等',
+                    category: exerciseData.category || '自定义',
+                    uploadedBy: currentUser.username,
+                    uploadDate: new Date().toISOString().split('T')[0],
+                    attempts: 0,
+                    averageScore: 0,
+                    questions: exerciseData.questions.map((q, index) => ({
+                        id: `q_${Date.now()}_${index}`,
+                        question: q.question,
+                        options: q.options,
+                        correct: q.correct,
+                        explanation: q.explanation || '',
+                        hint: q.hint || '',
+                        points: q.points || 5
+                    }))
+                };
+                
+                exercisesData.push(newExercise);
+                
+                // 保存到本地存储
+                localStorage.setItem('exercisesData', JSON.stringify(exercisesData));
+                
+                // 如果连接了GitHub，也保存到云端
+                if (githubStorage.isConnected) {
+                    await githubStorage.saveData('data/exercises.json', exercisesData, '添加新练习');
+                }
+                
+                showToast('练习上传成功！', 'success');
+                
+                // 清空表单
+                document.getElementById('exerciseJson').value = '';
+                
+            } catch (error) {
+                showToast(`上传失败：${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        /**
+         * 上传文本格式练习
+         */
+        async function uploadExerciseText() {
+            const title = document.getElementById('exerciseTitle').value;
+            const content = document.getElementById('exerciseContent').value;
+            
+            if (!title || !content.trim()) {
+                showToast('请填写练习标题和内容', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                // 简单解析文本内容（这里只是示例，实际需要更复杂的解析逻辑）
+                const questions = content.split('\n\n').filter(q => q.trim()).map((questionText, index) => ({
+                    id: `q_${Date.now()}_${index}`,
+                    question: questionText.trim(),
+                    options: ['选项A', '选项B', '选项C', '选项D'], // 默认选项
+                    correct: 0,
+                    explanation: '请补充解释',
+                    hint: '',
+                    points: 5
+                }));
+                
+                const newExercise = {
+                    id: `exercise_${Date.now()}`,
+                    title: title,
+                    description: '基于文本内容创建的练习',
+                    questionCount: questions.length,
+                    duration: '30分钟',
+                    difficulty: '中等',
+                    category: '自定义',
+                    uploadedBy: currentUser.username,
+                    uploadDate: new Date().toISOString().split('T')[0],
+                    attempts: 0,
+                    averageScore: 0,
+                    questions: questions
+                };
+                
+                exercisesData.push(newExercise);
+                
+                // 保存到本地存储
+                localStorage.setItem('exercisesData', JSON.stringify(exercisesData));
+                
+                // 如果连接了GitHub，也保存到云端
+                if (githubStorage.isConnected) {
+                    await githubStorage.saveData('data/exercises.json', exercisesData, '添加新练习');
+                }
+                
+                showToast('练习创建成功！', 'success');
+                
+                // 清空表单
+                document.getElementById('exerciseTitle').value = '';
+                document.getElementById('exerciseContent').value = '';
+                
+            } catch (error) {
+                showToast(`创建失败：${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        /**
+         * 处理练习文件上传
+         */
+        function handleExerciseFile(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // 验证文件类型
+            const validTypes = ['application/json', 'text/plain', 'application/msword', 
+                              'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            if (!validTypes.includes(file.type) && !file.name.endsWith('.txt') && 
+                !file.name.endsWith('.json') && !file.name.endsWith('.doc') && 
+                !file.name.endsWith('.docx')) {
+                showToast('不支持的文件格式', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    let content = e.target.result;
+                    
+                    if (file.type === 'application/json' || file.name.endsWith('.json')) {
+                        // JSON文件处理
+                        document.getElementById('exerciseJson').value = content;
+                        switchExerciseTab('json');
+                        showToast('JSON文件内容已导入', 'success');
+                    } else {
+                        // 文本文件处理
+                        document.getElementById('exerciseContent').value = content;
+                        document.getElementById('exerciseTitle').value = file.name.replace(/\.[^/.]+$/, "");
+                        switchExerciseTab('text');
+                        showToast('文本文件内容已导入', 'success');
+                    }
+                } catch (error) {
+                    showToast(`文件读取失败：${error.message}`, 'error');
+                }
+            };
+            
+            reader.readAsText(file);
         }
         
         /**
@@ -2018,6 +3958,226 @@
          */
         function showPasswordResetModal() {
             showMessage('密码重置功能正在开发中，请联系管理员', 'info');
+        }
+
+        /**
+         * 显示Toast提示
+         */
+        function showToast(message, type = 'info', duration = 3000) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: var(--space-2);">
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // 触发显示动画
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // 自动隐藏
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        /**
+         * 显示/隐藏加载状态
+         */
+        function showLoading(show = true) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                if (show) {
+                    overlay.classList.add('active');
+                } else {
+                    overlay.classList.remove('active');
+                }
+            }
+        }
+
+        /**
+         * 连接GitHub
+         */
+        async function connectGitHub() {
+            const token = document.getElementById('githubToken').value;
+            const repo = document.getElementById('githubRepo').value;
+            
+            if (!token || !repo) {
+                showToast('请填写GitHub Token和仓库名称', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            githubStorage.updateStatus('connecting', '正在连接...');
+            
+            try {
+                const result = await githubStorage.connect(token, repo);
+                
+                if (result.success) {
+                    // 保存连接信息到用户配置
+                    if (currentUser) {
+                        currentUser.github = {
+                            connected: true,
+                            token: token,
+                            repo: repo
+                        };
+                        accounts[currentUser.username] = currentUser;
+                        localStorage.setItem('accounts', JSON.stringify(accounts));
+                    }
+                    
+                    showToast('GitHub连接成功！', 'success');
+                } else {
+                    showToast(`连接失败：${result.message}`, 'error');
+                }
+            } catch (error) {
+                showToast(`连接失败：${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        /**
+         * 修改密码
+         */
+        async function changePassword(event) {
+            event.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!currentPassword || !newPassword || !confirmPassword) {
+                showToast('请填写完整信息', 'error');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                showToast('新密码与确认密码不一致', 'error');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                showToast('新密码长度至少6位', 'error');
+                return;
+            }
+            
+            if (currentPassword !== currentUser.password) {
+                showToast('当前密码错误', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                // 更新密码
+                currentUser.password = newPassword;
+                accounts[currentUser.username] = currentUser;
+                
+                // 保存到本地存储
+                localStorage.setItem('accounts', JSON.stringify(accounts));
+                
+                // 如果连接了GitHub，同步到云端
+                if (githubStorage.isConnected) {
+                    await githubStorage.saveData('data/accounts.json', accounts, '更新用户密码');
+                }
+                
+                showToast('密码修改成功！', 'success');
+                
+                // 清空表单
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+                
+            } catch (error) {
+                showToast(`密码修改失败：${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        /**
+         * 导出数据
+         */
+        function exportData() {
+            try {
+                const data = {
+                    accounts: accounts,
+                    videos: videosData,
+                    exercises: exercisesData,
+                    scores: scoreData,
+                    exportDate: new Date().toISOString()
+                };
+                
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `fluid_dynamics_data_${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                showToast('数据导出成功！', 'success');
+            } catch (error) {
+                showToast(`导出失败：${error.message}`, 'error');
+            }
+        }
+
+        /**
+         * 导入数据
+         */
+        function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        
+                        if (confirm('导入数据将覆盖当前数据，确定继续吗？')) {
+                            if (data.accounts) Object.assign(accounts, data.accounts);
+                            if (data.videos) videosData.splice(0, videosData.length, ...data.videos);
+                            if (data.exercises) exercisesData.splice(0, exercisesData.length, ...data.exercises);
+                            if (data.scores) Object.assign(scoreData, data.scores);
+                            
+                            // 保存到本地存储
+                            localStorage.setItem('accounts', JSON.stringify(accounts));
+                            localStorage.setItem('videosData', JSON.stringify(videosData));
+                            localStorage.setItem('exercisesData', JSON.stringify(exercisesData));
+                            localStorage.setItem('scoreData', JSON.stringify(scoreData));
+                            
+                            showToast('数据导入成功！请刷新页面查看', 'success');
+                        }
+                    } catch (error) {
+                        showToast(`导入失败：${error.message}`, 'error');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        /**
+         * 清除本地数据
+         */
+        function clearLocalData() {
+            if (confirm('确定要清除所有本地数据吗？此操作不可恢复！')) {
+                if (confirm('再次确认：清除数据后需要重新登录，确定继续吗？')) {
+                    localStorage.clear();
+                    showToast('本地数据已清除，页面将重新加载', 'success');
+                    setTimeout(() => location.reload(), 2000);
+                }
+            }
         }
         
         /**
@@ -2324,15 +4484,52 @@
             try {
                 console.info('正在初始化流体力学学习平台...');
                 
+                // 启动安全防护
+                devtoolsCheckInterval = setInterval(detectDevTools, 500);
+                
+                // 注册Service Worker
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('/sw.js')
+                        .then(registration => {
+                            console.info('Service Worker 注册成功');
+                        })
+                        .catch(error => {
+                            console.warn('Service Worker 注册失败:', error);
+                        });
+                }
+                
+                // 重写fetch以添加安全头部
+                const originalFetch = window.fetch;
+                window.fetch = function(...args) {
+                    if (args[1]) {
+                        args[1].headers = {
+                            ...args[1].headers,
+                            'X-Content-Type-Options': 'nosniff',
+                            'X-Frame-Options': 'DENY',
+                            'X-XSS-Protection': '1; mode=block'
+                        };
+                    }
+                    return originalFetch.apply(this, args);
+                };
+                
                 cacheDOM();
                 bindEvents();
+                
+                // 从本地存储加载数据
+                loadLocalData();
                 
                 if (!tryRestoreSession()) {
                     console.info('显示登录界面');
                 } else {
-                    // 如果已登录，初始化图表
+                    // 如果已登录，初始化图表和功能
                     setTimeout(() => {
                         updateScoreChart('2024');
+                        updateUIForUserRole();
+                        
+                        // 如果用户之前连接了GitHub，尝试重新连接
+                        if (currentUser && currentUser.github && currentUser.github.connected) {
+                            githubStorage.connect(currentUser.github.token, currentUser.github.repo);
+                        }
                     }, 500);
                 }
                 
@@ -2350,6 +4547,35 @@
                 `;
             }
         }
+
+        /**
+         * 从本地存储加载数据
+         */
+        function loadLocalData() {
+            try {
+                const savedAccounts = localStorage.getItem('accounts');
+                if (savedAccounts) {
+                    Object.assign(accounts, JSON.parse(savedAccounts));
+                }
+                
+                const savedVideos = localStorage.getItem('videosData');
+                if (savedVideos) {
+                    videosData.splice(0, videosData.length, ...JSON.parse(savedVideos));
+                }
+                
+                const savedExercises = localStorage.getItem('exercisesData');
+                if (savedExercises) {
+                    exercisesData.splice(0, exercisesData.length, ...JSON.parse(savedExercises));
+                }
+                
+                const savedScores = localStorage.getItem('scoreData');
+                if (savedScores) {
+                    Object.assign(scoreData, JSON.parse(savedScores));
+                }
+            } catch (error) {
+                console.warn('加载本地数据失败:', error);
+            }
+        }
         
         // 暴露全局函数
         window.showSection = showSection;
@@ -2363,6 +4589,23 @@
         window.closeVideoModal = closeVideoModal;
         window.editGrade = editGrade;
         window.deleteGrade = deleteGrade;
+        
+        // 新增功能函数
+        window.switchUploadTab = switchUploadTab;
+        window.switchExerciseTab = switchExerciseTab;
+        window.uploadVideoLink = uploadVideoLink;
+        window.handleVideoFile = handleVideoFile;
+        window.addBilibiliVideo = addBilibiliVideo;
+        window.uploadExerciseJson = uploadExerciseJson;
+        window.uploadExerciseText = uploadExerciseText;
+        window.handleExerciseFile = handleExerciseFile;
+        window.connectGitHub = connectGitHub;
+        window.changePassword = changePassword;
+        window.exportData = exportData;
+        window.importData = importData;
+        window.clearLocalData = clearLocalData;
+        window.showToast = showToast;
+        window.showLoading = showLoading;
         
         // 应用程序启动
         if (document.readyState === 'loading') {
