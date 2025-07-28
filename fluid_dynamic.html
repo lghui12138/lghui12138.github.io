@@ -4927,6 +4927,7 @@
                         <button class="upload-tab active" onclick="switchUploadTab('link')">链接上传</button>
                         <button class="upload-tab" onclick="switchUploadTab('file')">文件上传</button>
                         <button class="upload-tab" onclick="switchUploadTab('bilibili')">B站视频</button>
+                        <button class="upload-tab" onclick="switchUploadTab('douyin')">抖音视频</button>
                     </div>
                     
                     <div id="linkUpload" class="upload-content active">
@@ -4971,6 +4972,34 @@
                             <input type="text" class="form-input" placeholder="自动获取或手动输入" id="bilibiliTitle">
                         </div>
                         <button onclick="addBilibiliVideo()" class="submit-btn">添加B站视频</button>
+                    </div>
+                    
+                    <div id="douyinUpload" class="upload-content">
+                        <div class="form-group">
+                            <label class="form-label">抖音视频链接</label>
+                            <input type="url" class="form-input" placeholder="请输入抖音视频链接，例如：https://v.douyin.com/..." id="douyinLink">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">视频标题</label>
+                            <input type="text" class="form-input" placeholder="请输入视频标题" id="douyinTitle">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">视频描述</label>
+                            <textarea class="form-input" rows="4" placeholder="请输入视频描述" id="douyinDescription"></textarea>
+                        </div>
+                        <div class="upload-info" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #ff0050;">
+                            <p style="margin: 0; color: #666; font-size: 14px;">
+                                <i class="fab fa-tiktok" style="color: #ff0050; margin-right: 8px;"></i>
+                                <strong>使用说明：</strong>
+                            </p>
+                            <ol style="margin: 8px 0 0 0; padding-left: 20px; color: #666; font-size: 13px;">
+                                <li>先在抖音平台手动上传您的视频</li>
+                                <li>设置为横版、1080p、高质量、公开发布</li>
+                                <li>复制视频的分享链接</li>
+                                <li>将链接粘贴到上面的输入框中</li>
+                            </ol>
+                        </div>
+                        <button onclick="addDouyinVideo()" class="submit-btn">添加抖音视频</button>
                     </div>
                 </div>
             </section>
@@ -6499,6 +6528,65 @@
                 // 清空表单
                 document.getElementById('bilibiliId').value = '';
                 document.getElementById('bilibiliTitle').value = '';
+                
+            } catch (error) {
+                showToast(`添加失败：${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        /**
+         * 添加抖音视频
+         */
+        async function addDouyinVideo() {
+            const douyinLink = document.getElementById('douyinLink').value;
+            const title = document.getElementById('douyinTitle').value;
+            const description = document.getElementById('douyinDescription').value;
+            
+            if (!douyinLink) {
+                showToast('请输入抖音视频链接', 'error');
+                return;
+            }
+            
+            if (!title) {
+                showToast('请输入视频标题', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                const newVideo = {
+                    id: `video_${Date.now()}`,
+                    title: title,
+                    description: description || '来自抖音的视频内容',
+                    source: douyinLink,
+                    sourceType: 'douyin',
+                    duration: '抖音视频',
+                    views: '教师原创',
+                    category: '抖音视频',
+                    featured: false,
+                    uploadedBy: currentUser.username,
+                    uploadDate: new Date().toISOString().split('T')[0],
+                    tags: ['抖音', '教师原创'],
+                    quality: ['精品内容'],
+                    thumbnail: `data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225"><rect width="400" height="225" fill="%23ff0050"/><text x="200" y="112" text-anchor="middle" fill="white" font-size="16" font-family="Arial">抖音视频封面</text><text x="200" y="135" text-anchor="middle" fill="white" font-size="12" font-family="Arial">${title}</text></svg>`,
+                    subtitles: true,
+                    interactive: false
+                };
+                
+                videosData.push(newVideo);
+                
+                // 保存到本地存储
+                localStorage.setItem('videosData', JSON.stringify(videosData));
+                
+                showToast('抖音视频添加成功！', 'success');
+                
+                // 清空表单
+                document.getElementById('douyinLink').value = '';
+                document.getElementById('douyinTitle').value = '';
+                document.getElementById('douyinDescription').value = '';
                 
             } catch (error) {
                 showToast(`添加失败：${error.message}`, 'error');
@@ -8862,6 +8950,7 @@
         window.uploadVideoLink = uploadVideoLink;
         window.handleVideoFile = handleVideoFile;
         window.addBilibiliVideo = addBilibiliVideo;
+        window.addDouyinVideo = addDouyinVideo;
         window.uploadExerciseJson = uploadExerciseJson;
         window.uploadExerciseText = uploadExerciseText;
         window.handleExerciseFile = handleExerciseFile;
