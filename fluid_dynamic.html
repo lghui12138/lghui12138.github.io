@@ -6295,6 +6295,14 @@
             
             updateUserDisplay();
             showSection('home');
+            
+            // 初始化AI助手
+            setTimeout(() => {
+                console.log('登录后初始化AI助手...');
+                if (window.AIAssistant && window.AIAssistant.init) {
+                    window.AIAssistant.init();
+                }
+            }, 1000);
         }
         
         /**
@@ -7698,7 +7706,23 @@
             
             exerciseGrid.innerHTML = '';
             
-            exercisesData.forEach(exercise => {
+            // 只显示有题目的练习
+            const validExercises = exercisesData.filter(exercise => 
+                exercise.questions && exercise.questions.length > 0
+            );
+            
+            if (validExercises.length === 0) {
+                exerciseGrid.innerHTML = `
+                    <div class="no-exercises">
+                        <i class="fas fa-inbox" style="font-size: 3rem; color: var(--secondary); margin-bottom: var(--space-4);"></i>
+                        <h3>暂无练习题</h3>
+                        <p>教师可以上传新的练习题</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            validExercises.forEach(exercise => {
                 const exerciseCard = document.createElement('div');
                 exerciseCard.className = 'exercise-card';
                 
@@ -7715,7 +7739,7 @@
                     ` : ''}
                     <h3 class="exercise-title">${exercise.title}</h3>
                     <div class="exercise-meta">
-                        <span><i class="fas fa-list"></i> ${exercise.questionCount}题</span>
+                        <span><i class="fas fa-list"></i> ${exercise.questions ? exercise.questions.length : 0}题</span>
                         <span><i class="fas fa-clock"></i> ${exercise.duration}</span>
                         <span><i class="fas fa-star"></i> ${exercise.difficulty}</span>
                     </div>
@@ -9026,7 +9050,16 @@
                         renderExerciseGrid();
                         
                         // 启动AI助手和智能推荐
-                        AIAssistant.init();
+                        console.log('初始化AI助手...');
+                        if (window.AIAssistant && window.AIAssistant.init) {
+                            window.AIAssistant.init();
+                        } else {
+                            console.warn('AI助手未找到，尝试重新初始化...');
+                            // 如果AI助手未定义，重新创建
+                            if (typeof AIAssistant !== 'undefined') {
+                                AIAssistant.init();
+                            }
+                        }
                         SmartRecommendation.analyzeAndRecommend();
                         
                         // 如果用户之前连接了GitHub，尝试重新连接
@@ -9150,6 +9183,12 @@
         window.closeVideoModal = closeVideoModal;
         window.editGrade = editGrade;
         window.deleteGrade = deleteGrade;
+        
+        // AI助手全局函数
+        window.AIAssistant = window.AIAssistant || {};
+        window.AIAssistant.toggleChat = window.AIAssistant.toggleChat || function() {};
+        window.AIAssistant.sendMessage = window.AIAssistant.sendMessage || function() {};
+        window.AIAssistant.sendQuickReply = window.AIAssistant.sendQuickReply || function() {};
         
         // 新增功能函数
         window.switchUploadTab = switchUploadTab;
