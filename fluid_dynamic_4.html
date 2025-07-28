@@ -5817,6 +5817,8 @@
                             <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i><span>上传视频</span></a></li>
                         <li><a href="#" class="nav-link" onclick="LocalQuestionBank.showModal()">
                             <i class="fas fa-question-circle" aria-hidden="true"></i><span>题库练习</span></a></li>
+                        <li><a href="#" class="nav-link" onclick="AdvancedDataAnalyticsSystem.showDashboard()">
+                            <i class="fas fa-chart-bar" aria-hidden="true"></i><span>数据分析</span></a></li>
                         <li class="teacher-only"><a href="#" class="nav-link" onclick="showSection('uploadExercise')">
                             <i class="fas fa-file-upload" aria-hidden="true"></i><span>上传练习</span></a></li>
                         <li><a href="#" class="nav-link" onclick="showSection('scores')">
@@ -13308,6 +13310,436 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
               }
           };
 
+          // =============== 高级数据分析系统 ===============
+          const AdvancedDataAnalyticsSystem = {
+              dataSources: [],
+              analyticsModels: [],
+              visualizationTypes: ['line', 'bar', 'pie', 'scatter', 'heatmap', 'radar'],
+              realTimeData: [],
+              
+              init: function() {
+                  this.initializeDataSources();
+                  this.setupAnalyticsModels();
+                  this.createAnalyticsDashboard();
+                  this.startRealTimeMonitoring();
+              },
+              
+              initializeDataSources: function() {
+                  this.dataSources = [
+                      {
+                          id: 'student_performance',
+                          name: '学生成绩数据',
+                          type: 'performance',
+                          description: '学生考试成绩和学习进度数据',
+                          fields: ['student_id', 'score', 'subject', 'date', 'difficulty']
+                      },
+                      {
+                          id: 'learning_behavior',
+                          name: '学习行为数据',
+                          type: 'behavior',
+                          description: '学生学习行为和时间分布数据',
+                          fields: ['student_id', 'action', 'duration', 'timestamp', 'section']
+                      },
+                      {
+                          id: 'question_analytics',
+                          name: '题目分析数据',
+                          type: 'analytics',
+                          description: '题目难度和正确率分析数据',
+                          fields: ['question_id', 'difficulty', 'correct_rate', 'attempts', 'avg_time']
+                      }
+                  ];
+              },
+              
+              setupAnalyticsModels: function() {
+                  this.analyticsModels = [
+                      {
+                          id: 'performance_prediction',
+                          name: '成绩预测模型',
+                          type: 'regression',
+                          description: '基于历史数据预测学生未来成绩',
+                          accuracy: 0.85,
+                          lastUpdated: new Date()
+                      },
+                      {
+                          id: 'learning_pattern',
+                          name: '学习模式识别',
+                          type: 'clustering',
+                          description: '识别不同类型的学习模式',
+                          accuracy: 0.78,
+                          lastUpdated: new Date()
+                      },
+                      {
+                          id: 'difficulty_optimization',
+                          name: '难度优化模型',
+                          type: 'optimization',
+                          description: '根据学生表现优化题目难度',
+                          accuracy: 0.92,
+                          lastUpdated: new Date()
+                      }
+                  ];
+              },
+              
+              createAnalyticsDashboard: function() {
+                  const dashboardHTML = `
+                      <div id="analyticsDashboard" class="analytics-dashboard" style="display: none;">
+                          <div class="dashboard-header">
+                              <h3>高级数据分析仪表板</h3>
+                              <button class="close-btn" onclick="AdvancedDataAnalyticsSystem.closeDashboard()">&times;</button>
+                          </div>
+                          <div class="dashboard-content">
+                              <div class="analytics-grid">
+                                  <div class="analytics-card">
+                                      <h4>数据源概览</h4>
+                                      <div class="data-sources-list">
+                                          ${this.dataSources.map(source => `
+                                              <div class="data-source-item">
+                                                  <span class="source-name">${source.name}</span>
+                                                  <span class="source-type">${source.type}</span>
+                                                  <span class="source-status active">活跃</span>
+                                              </div>
+                                          `).join('')}
+                                      </div>
+                                  </div>
+                                  <div class="analytics-card">
+                                      <h4>分析模型</h4>
+                                      <div class="models-list">
+                                          ${this.analyticsModels.map(model => `
+                                              <div class="model-item">
+                                                  <div class="model-info">
+                                                      <span class="model-name">${model.name}</span>
+                                                      <span class="model-accuracy">准确率: ${(model.accuracy * 100).toFixed(1)}%</span>
+                                                  </div>
+                                                  <div class="model-actions">
+                                                      <button onclick="AdvancedDataAnalyticsSystem.runModel('${model.id}')" class="btn-run">运行</button>
+                                                      <button onclick="AdvancedDataAnalyticsSystem.updateModel('${model.id}')" class="btn-update">更新</button>
+                                                  </div>
+                                              </div>
+                                          `).join('')}
+                                      </div>
+                                  </div>
+                                  <div class="analytics-card">
+                                      <h4>实时数据监控</h4>
+                                      <div id="realTimeChart" class="real-time-chart">
+                                          <canvas id="realTimeCanvas"></canvas>
+                                      </div>
+                                  </div>
+                                  <div class="analytics-card">
+                                      <h4>预测分析</h4>
+                                      <div class="prediction-controls">
+                                          <select id="predictionType" class="prediction-select">
+                                              <option value="performance">成绩预测</option>
+                                              <option value="behavior">行为预测</option>
+                                              <option value="trend">趋势预测</option>
+                                          </select>
+                                          <button onclick="AdvancedDataAnalyticsSystem.generatePrediction()" class="btn-predict">生成预测</button>
+                                      </div>
+                                      <div id="predictionResults" class="prediction-results">
+                                          <!-- 预测结果将在这里显示 -->
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  `;
+                  
+                  const dashboardCSS = `
+                      <style>
+                          .analytics-dashboard {
+                              position: fixed;
+                              top: 0;
+                              left: 0;
+                              width: 100%;
+                              height: 100%;
+                              background: rgba(0, 0, 0, 0.8);
+                              z-index: 1000;
+                              display: flex;
+                              align-items: center;
+                              justify-content: center;
+                          }
+                          
+                          .dashboard-header {
+                              display: flex;
+                              justify-content: space-between;
+                              align-items: center;
+                              padding: 20px;
+                              background: linear-gradient(135deg, var(--primary), var(--secondary));
+                              color: white;
+                              border-radius: 12px 12px 0 0;
+                          }
+                          
+                          .dashboard-content {
+                              background: white;
+                              border-radius: 0 0 12px 12px;
+                              width: 90%;
+                              max-width: 1200px;
+                              max-height: 80vh;
+                              overflow-y: auto;
+                          }
+                          
+                          .analytics-grid {
+                              display: grid;
+                              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                              gap: 20px;
+                              padding: 20px;
+                          }
+                          
+                          .analytics-card {
+                              background: #f8f9fa;
+                              border-radius: 8px;
+                              padding: 20px;
+                              border: 1px solid #e9ecef;
+                          }
+                          
+                          .analytics-card h4 {
+                              margin-bottom: 15px;
+                              color: var(--primary);
+                              font-weight: 600;
+                          }
+                          
+                          .data-sources-list, .models-list {
+                              display: flex;
+                              flex-direction: column;
+                              gap: 10px;
+                          }
+                          
+                          .data-source-item, .model-item {
+                              display: flex;
+                              justify-content: space-between;
+                              align-items: center;
+                              padding: 10px;
+                              background: white;
+                              border-radius: 6px;
+                              border: 1px solid #e9ecef;
+                          }
+                          
+                          .source-name, .model-name {
+                              font-weight: 500;
+                          }
+                          
+                          .source-type, .model-accuracy {
+                              font-size: 12px;
+                              color: #6c757d;
+                          }
+                          
+                          .source-status {
+                              padding: 4px 8px;
+                              border-radius: 4px;
+                              font-size: 12px;
+                              font-weight: 500;
+                          }
+                          
+                          .source-status.active {
+                              background: var(--success);
+                              color: white;
+                          }
+                          
+                          .model-actions {
+                              display: flex;
+                              gap: 5px;
+                          }
+                          
+                          .btn-run, .btn-update, .btn-predict {
+                              padding: 6px 12px;
+                              border: none;
+                              border-radius: 4px;
+                              font-size: 12px;
+                              cursor: pointer;
+                              transition: all 0.3s;
+                          }
+                          
+                          .btn-run {
+                              background: var(--success);
+                              color: white;
+                          }
+                          
+                          .btn-update {
+                              background: var(--warning);
+                              color: white;
+                          }
+                          
+                          .btn-predict {
+                              background: var(--primary);
+                              color: white;
+                          }
+                          
+                          .real-time-chart {
+                              height: 200px;
+                              background: white;
+                              border-radius: 6px;
+                              padding: 10px;
+                          }
+                          
+                          .prediction-controls {
+                              display: flex;
+                              gap: 10px;
+                              margin-bottom: 15px;
+                          }
+                          
+                          .prediction-select {
+                              flex: 1;
+                              padding: 8px;
+                              border: 1px solid #ddd;
+                              border-radius: 4px;
+                          }
+                          
+                          .prediction-results {
+                              background: white;
+                              border-radius: 6px;
+                              padding: 15px;
+                              min-height: 100px;
+                          }
+                      </style>
+                  `;
+                  
+                  document.body.insertAdjacentHTML('beforeend', dashboardHTML);
+                  document.head.insertAdjacentHTML('beforeend', dashboardCSS);
+              },
+              
+              showDashboard: function() {
+                  document.getElementById('analyticsDashboard').style.display = 'flex';
+                  this.updateRealTimeChart();
+              },
+              
+              closeDashboard: function() {
+                  document.getElementById('analyticsDashboard').style.display = 'none';
+              },
+              
+              runModel: function(modelId) {
+                  const model = this.analyticsModels.find(m => m.id === modelId);
+                  if (!model) return;
+                  
+                  console.log(`运行分析模型: ${model.name}`);
+                  
+                  // 模拟模型运行
+                  setTimeout(() => {
+                      const accuracy = Math.random() * 0.2 + 0.8; // 80-100%
+                      model.accuracy = accuracy;
+                      model.lastUpdated = new Date();
+                      
+                      showMessage(`模型 ${model.name} 运行完成，准确率: ${(accuracy * 100).toFixed(1)}%`, 'success');
+                  }, 2000);
+              },
+              
+              updateModel: function(modelId) {
+                  const model = this.analyticsModels.find(m => m.id === modelId);
+                  if (!model) return;
+                  
+                  console.log(`更新分析模型: ${model.name}`);
+                  
+                  // 模拟模型更新
+                  setTimeout(() => {
+                      model.lastUpdated = new Date();
+                      showMessage(`模型 ${model.name} 更新完成`, 'success');
+                  }, 1500);
+              },
+              
+              generatePrediction: function() {
+                  const predictionType = document.getElementById('predictionType').value;
+                  const resultsDiv = document.getElementById('predictionResults');
+                  
+                  console.log(`生成预测分析: ${predictionType}`);
+                  
+                  // 模拟预测生成
+                  setTimeout(() => {
+                      const predictions = {
+                          performance: {
+                              title: '成绩预测分析',
+                              data: [
+                                  { student: '张三', current: 85, predicted: 88, confidence: 0.85 },
+                                  { student: '李四', current: 72, predicted: 75, confidence: 0.78 },
+                                  { student: '王五', current: 90, predicted: 92, confidence: 0.92 }
+                              ]
+                          },
+                          behavior: {
+                              title: '学习行为预测',
+                              data: [
+                                  { pattern: '晨间学习', probability: 0.65, effectiveness: 0.85 },
+                                  { pattern: '夜间学习', probability: 0.35, effectiveness: 0.72 },
+                                  { pattern: '周末集中', probability: 0.45, effectiveness: 0.78 }
+                              ]
+                          },
+                          trend: {
+                              title: '学习趋势预测',
+                              data: [
+                                  { month: '1月', trend: '上升', confidence: 0.82 },
+                                  { month: '2月', trend: '稳定', confidence: 0.75 },
+                                  { month: '3月', trend: '上升', confidence: 0.88 }
+                              ]
+                          }
+                      };
+                      
+                      const prediction = predictions[predictionType];
+                      resultsDiv.innerHTML = `
+                          <h5>${prediction.title}</h5>
+                          <div class="prediction-data">
+                              ${prediction.data.map(item => `
+                                  <div class="prediction-item">
+                                      ${predictionType === 'performance' ? 
+                                          `<span>${item.student}: ${item.current} → ${item.predicted} (置信度: ${(item.confidence * 100).toFixed(1)}%)</span>` :
+                                          predictionType === 'behavior' ?
+                                          `<span>${item.pattern}: 概率 ${(item.probability * 100).toFixed(1)}%, 效果 ${(item.effectiveness * 100).toFixed(1)}%</span>` :
+                                          `<span>${item.month}: ${item.trend} (置信度: ${(item.confidence * 100).toFixed(1)}%)</span>`
+                                      }
+                                  </div>
+                              `).join('')}
+                          </div>
+                      `;
+                  }, 1000);
+              },
+              
+              updateRealTimeChart: function() {
+                  const canvas = document.getElementById('realTimeCanvas');
+                  if (!canvas) return;
+                  
+                  // 生成实时数据
+                  const now = new Date();
+                  this.realTimeData.push({
+                      time: now.getTime(),
+                      value: Math.random() * 100 + 50
+                  });
+                  
+                  // 保持最近20个数据点
+                  if (this.realTimeData.length > 20) {
+                      this.realTimeData.shift();
+                  }
+                  
+                  // 创建实时图表
+                  const ctx = canvas.getContext('2d');
+                  const width = canvas.width;
+                  const height = canvas.height;
+                  
+                  // 清除画布
+                  ctx.clearRect(0, 0, width, height);
+                  
+                  // 绘制实时数据线
+                  ctx.strokeStyle = '#1e6fa8';
+                  ctx.lineWidth = 2;
+                  ctx.beginPath();
+                  
+                  this.realTimeData.forEach((point, index) => {
+                      const x = (index / (this.realTimeData.length - 1)) * width;
+                      const y = height - (point.value / 150) * height;
+                      
+                      if (index === 0) {
+                          ctx.moveTo(x, y);
+                      } else {
+                          ctx.lineTo(x, y);
+                      }
+                  });
+                  
+                  ctx.stroke();
+              },
+              
+              startRealTimeMonitoring: function() {
+                  // 每5秒更新一次实时数据
+                  setInterval(() => {
+                      if (document.getElementById('analyticsDashboard').style.display !== 'none') {
+                          this.updateRealTimeChart();
+                      }
+                  }, 5000);
+              }
+          };
+
           // =============== 视频上传管理系统 ===============
           const VideoUploadSystem = {
               videos: [],
@@ -13721,6 +14153,9 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
               }
               if (typeof PerformanceOptimizer !== 'undefined') {
                   PerformanceOptimizer.init();
+              }
+              if (typeof AdvancedDataAnalyticsSystem !== 'undefined') {
+                  AdvancedDataAnalyticsSystem.init();
               }
               
               console.log('企业级功能模块初始化完成');
