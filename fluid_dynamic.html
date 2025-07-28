@@ -9393,7 +9393,7 @@
             chatHistory: [],
             apiKey: 'sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis',
             apiEndpoint: 'https://api.deepseek.com/v1/chat/completions',
-            model: 'deepseek-chat',
+            model: 'deepseek-ai/DeepSeek-R1',
             
             // 初始化AI助手
             init: function() {
@@ -9427,6 +9427,185 @@
                         chatStatus.textContent = '离线 · 使用本地回复';
                         chatStatus.style.color = '#e74c3c';
                     }
+                }
+            },
+            
+            // 界面跳转功能
+            navigateToSection: function(section) {
+                try {
+                    console.log('AI助手跳转到:', section);
+                    
+                    // 隐藏所有内容区域
+                    const sections = ['home', 'videos', 'exercises', 'scores', 'review', 'upload', 'settings'];
+                    sections.forEach(s => {
+                        const element = document.getElementById(s + 'Section');
+                        if (element) element.style.display = 'none';
+                    });
+                    
+                    // 显示目标区域
+                    const targetSection = document.getElementById(section + 'Section');
+                    if (targetSection) {
+                        targetSection.style.display = 'block';
+                        
+                        // 更新导航栏状态
+                        const navLinks = document.querySelectorAll('.nav-link');
+                        navLinks.forEach(link => link.classList.remove('active'));
+                        
+                        const activeLink = document.querySelector(`[onclick="showSection('${section}')"]`);
+                        if (activeLink) activeLink.classList.add('active');
+                        
+                        // 特殊处理
+                        if (section === 'videos') {
+                            renderVideoGrid();
+                        } else if (section === 'exercises') {
+                            renderExerciseGrid();
+                        } else if (section === 'scores') {
+                            updateScoreChart('2024');
+                        }
+                        
+                        console.log('成功跳转到:', section);
+                    } else {
+                        console.warn('目标区域未找到:', section);
+                    }
+                } catch (error) {
+                    console.error('界面跳转失败:', error);
+                }
+            },
+            
+            // 视频控制功能
+            controlVideo: function(action) {
+                try {
+                    console.log('AI助手控制视频:', action);
+                    
+                    const videoModal = document.querySelector('.video-modal');
+                    const videoPlayer = videoModal ? videoModal.querySelector('video, iframe') : null;
+                    
+                    if (!videoPlayer) {
+                        console.warn('未找到视频播放器');
+                        return;
+                    }
+                    
+                    switch (action) {
+                        case 'fullscreen':
+                            if (videoPlayer.requestFullscreen) {
+                                videoPlayer.requestFullscreen();
+                            } else if (videoPlayer.webkitRequestFullscreen) {
+                                videoPlayer.webkitRequestFullscreen();
+                            } else if (videoPlayer.msRequestFullscreen) {
+                                videoPlayer.msRequestFullscreen();
+                            }
+                            break;
+                            
+                        case 'speed':
+                            // 显示倍速控制面板
+                            this.showSpeedControl();
+                            break;
+                            
+                        case 'pause':
+                            if (videoPlayer.pause) {
+                                videoPlayer.pause();
+                            }
+                            break;
+                            
+                        case 'play':
+                            if (videoPlayer.play) {
+                                videoPlayer.play();
+                            }
+                            break;
+                            
+                        default:
+                            console.warn('未知的视频控制动作:', action);
+                    }
+                } catch (error) {
+                    console.error('视频控制失败:', error);
+                }
+            },
+            
+            // 显示倍速控制面板
+            showSpeedControl: function() {
+                const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+                const speedHtml = speeds.map(speed => 
+                    `<button class="speed-btn" onclick="AIAssistant.setVideoSpeed(${speed})">${speed}x</button>`
+                ).join('');
+                
+                const speedPanel = document.createElement('div');
+                speedPanel.className = 'speed-control-panel';
+                speedPanel.innerHTML = `
+                    <div class="speed-control-header">
+                        <span>选择播放速度</span>
+                        <button onclick="this.parentElement.parentElement.remove()">×</button>
+                    </div>
+                    <div class="speed-buttons">
+                        ${speedHtml}
+                    </div>
+                `;
+                
+                // 添加样式
+                const style = document.createElement('style');
+                style.textContent = `
+                    .speed-control-panel {
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: white;
+                        border-radius: 12px;
+                        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                        z-index: 10000;
+                        padding: 20px;
+                        min-width: 300px;
+                    }
+                    .speed-control-header {
+                        display: flex;
+                        justify-content: space-between;
+                        align-items: center;
+                        margin-bottom: 15px;
+                        font-weight: bold;
+                    }
+                    .speed-buttons {
+                        display: grid;
+                        grid-template-columns: repeat(3, 1fr);
+                        gap: 10px;
+                    }
+                    .speed-btn {
+                        padding: 10px;
+                        border: 2px solid #3498db;
+                        background: white;
+                        color: #3498db;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                    }
+                    .speed-btn:hover {
+                        background: #3498db;
+                        color: white;
+                    }
+                `;
+                document.head.appendChild(style);
+                document.body.appendChild(speedPanel);
+            },
+            
+            // 设置视频播放速度
+            setVideoSpeed: function(speed) {
+                try {
+                    const videoModal = document.querySelector('.video-modal');
+                    const videoPlayer = videoModal ? videoModal.querySelector('video') : null;
+                    
+                    if (videoPlayer && videoPlayer.playbackRate !== undefined) {
+                        videoPlayer.playbackRate = speed;
+                        console.log('设置视频播放速度:', speed);
+                        
+                        // 移除速度控制面板
+                        const speedPanel = document.querySelector('.speed-control-panel');
+                        if (speedPanel) speedPanel.remove();
+                        
+                        // 显示确认消息
+                        this.addMessage(`亲爱的，我已经为您将视频播放速度设置为 ${speed}x 了～ ⚡`, 'ai');
+                    } else {
+                        console.warn('无法设置视频播放速度');
+                    }
+                } catch (error) {
+                    console.error('设置视频速度失败:', error);
                 }
             },
             
@@ -9879,6 +10058,49 @@
                 messagesContainer.scrollTop = messagesContainer.scrollHeight;
                 
                 this.chatHistory.push({ content, sender, timestamp: Date.now() });
+                
+                // 如果是AI回复，添加快速回复按钮
+                if (sender === 'ai') {
+                    this.addQuickReplies();
+                }
+            },
+            
+            // 添加快速回复按钮
+            addQuickReplies: function() {
+                const messagesContainer = document.getElementById('chatMessages');
+                if (!messagesContainer) return;
+                
+                const quickReplies = [
+                    { text: '💙 基础概念', action: '基础概念' },
+                    { text: '📝 练习题', action: '练习' },
+                    { text: '📊 分数线', action: '分数' },
+                    { text: '🎬 视频控制', action: '视频' },
+                    { text: '🏠 界面跳转', action: '界面' },
+                    { text: '✨ 批改作业', action: '批改' }
+                ];
+                
+                const quickReplyDiv = document.createElement('div');
+                quickReplyDiv.className = 'quick-replies';
+                quickReplyDiv.innerHTML = `
+                    <div class="quick-reply-buttons">
+                        ${quickReplies.map(reply => 
+                            `<button class="quick-reply-btn" onclick="AIAssistant.handleQuickReply('${reply.action}')">${reply.text}</button>`
+                        ).join('')}
+                    </div>
+                `;
+                
+                messagesContainer.appendChild(quickReplyDiv);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            },
+            
+            // 处理快速回复
+            handleQuickReply: function(action) {
+                const response = this.generateFallbackResponse(action);
+                this.addMessage(response, 'ai');
+                
+                // 移除快速回复按钮
+                const quickReplies = document.querySelectorAll('.quick-replies');
+                quickReplies.forEach(reply => reply.remove());
             },
             
             // 生成AI回复
@@ -9917,13 +10139,24 @@
                         messages: [
                             {
                                 role: 'system',
-                                content: `你是一个专业的流体力学AI助手，专门为中国海洋大学803流体力学专业的学生提供学习指导。你需要：
+                                content: `你是一个温柔贴心的流体力学AI助手，专门为中国海洋大学803流体力学专业的学生提供学习指导。你的性格特点：
+
+💕 温柔友好：用"亲爱的"、"同学"等亲切称呼，语气温暖
+🎯 专业准确：提供准确的流体力学知识解答
+🤝 耐心细致：详细解释复杂概念，不厌其烦
+💪 鼓励支持：给予学生信心和鼓励
+🎨 生动有趣：用表情符号和生动的语言
+
+你的功能包括：
 1. 准确回答流体力学相关问题
-2. 提供学习建议和计划
-3. 解释复杂概念
-4. 批改学生作业
-5. 推荐学习资源
-请用中文回答，语言要专业但易懂。`
+2. 提供个性化的学习建议和计划
+3. 温柔地解释复杂概念
+4. 耐心批改学生作业
+5. 推荐合适的学习资源
+6. 帮助学生跳转界面、控制视频播放
+7. 提供情感支持和鼓励
+
+请用中文回答，语言要专业但温柔易懂，多用表情符号让交流更生动。记住：你是一个温柔的朋友，而不仅仅是学习工具。`
                             },
                             {
                                 role: 'user',
@@ -9973,12 +10206,14 @@
             // 生成备用回复
             generateFallbackResponse: function(userMessage) {
                 const responses = {
-                    '基础概念': '流体力学基础概念包括：\n1. 流体的定义和特性\n2. 连续介质假设\n3. 流体的物理性质\n4. 压力、密度、粘度等基本参数\n\n建议从这些基础概念开始学习！',
-                    '练习': '推荐练习：\n1. 流体静力学计算题\n2. 伯努利方程应用题\n3. 动量方程推导题\n4. 边界层理论分析题\n\n建议每天练习2-3道题目。',
-                    '计划': '学习计划建议：\n1. 第1-2周：基础概念和流体静力学\n2. 第3-4周：流体动力学和伯努利方程\n3. 第5-6周：动量方程和能量方程\n4. 第7-8周：边界层理论和湍流\n\n每周学习时间建议：10-15小时',
-                    '分数': '分数线信息：\n2025年国家线：274分\n2025年复试线：274分\n\n建议目标分数：290分以上',
-                    '批改': '我可以帮您批改作业！请将您的作业内容发给我，我会：\n1. 检查计算过程\n2. 指出错误\n3. 提供正确答案\n4. 给出改进建议',
-                    'default': '我是流体力学AI助手，可以为您提供学习指导。请告诉我您想了解什么？'
+                    '基础概念': '亲爱的同学，让我温柔地为您介绍流体力学的基础概念：\n\n💙 流体的定义和特性\n💙 连续介质假设\n💙 流体的物理性质\n💙 压力、密度、粘度等基本参数\n\n建议从这些基础概念开始学习哦！有什么不懂的随时问我～',
+                    '练习': '亲爱的，我为您推荐一些练习：\n\n📝 流体静力学计算题\n📝 伯努利方程应用题\n📝 动量方程推导题\n📝 边界层理论分析题\n\n建议每天练习2-3道题目，循序渐进哦！',
+                    '计划': '亲爱的同学，我为您制定了一个温柔的学习计划：\n\n🌸 第1-2周：基础概念和流体静力学\n🌸 第3-4周：流体动力学和伯努利方程\n🌸 第5-6周：动量方程和能量方程\n🌸 第7-8周：边界层理论和湍流\n\n每周学习时间建议：10-15小时，不要太累哦～',
+                    '分数': '亲爱的，让我为您介绍分数线信息：\n\n📊 2025年国家线：274分\n📊 2025年复试线：274分\n\n建议目标分数：290分以上，我相信您一定可以的！💪',
+                    '批改': '亲爱的同学，我很乐意帮您批改作业！请将您的作业内容发给我，我会温柔地：\n\n✨ 检查计算过程\n✨ 指出错误\n✨ 提供正确答案\n✨ 给出改进建议\n\n让我们一起进步吧！',
+                    '视频': '亲爱的，我可以帮您调节视频播放哦！\n\n🎬 点击视频播放器，我可以帮您：\n- 调节播放速度（0.5x - 2x）\n- 全屏播放\n- 跳转到指定时间\n- 调节音量\n\n需要我帮您操作吗？',
+                    '界面': '亲爱的同学，我可以帮您跳转到不同的学习界面：\n\n🏠 主页\n📹 视频学习\n📝 练习题\n📊 分数线\n📚 复习计划\n\n告诉我您想去哪里，我帮您导航～',
+                    'default': '亲爱的同学，我是您的流体力学AI助手，可以温柔地为您提供学习指导。请告诉我您想了解什么？我会一直陪伴您学习哦～ 💕'
                 };
                 
                 for (let key in responses) {
@@ -9993,39 +10228,79 @@
             getSmartResponse: function(message) {
                 const lowerMessage = message.toLowerCase();
                 
+                // 界面跳转功能
+                if (lowerMessage.includes('主页') || lowerMessage.includes('首页')) {
+                    this.navigateToSection('home');
+                    return '亲爱的，我已经为您跳转到主页了～ 🏠';
+                }
+                if (lowerMessage.includes('视频') || lowerMessage.includes('课程')) {
+                    this.navigateToSection('videos');
+                    return '亲爱的，我已经为您跳转到视频学习页面了～ 📹';
+                }
+                if (lowerMessage.includes('练习') || lowerMessage.includes('题目')) {
+                    this.navigateToSection('exercises');
+                    return '亲爱的，我已经为您跳转到练习题页面了～ 📝';
+                }
+                if (lowerMessage.includes('分数') || lowerMessage.includes('分数线')) {
+                    this.navigateToSection('scores');
+                    return '亲爱的，我已经为您跳转到分数线页面了～ 📊';
+                }
+                if (lowerMessage.includes('复习') || lowerMessage.includes('计划')) {
+                    this.navigateToSection('review');
+                    return '亲爱的，我已经为您跳转到复习计划页面了～ 📚';
+                }
+                
+                // 视频控制功能
+                if (lowerMessage.includes('全屏') || lowerMessage.includes('放大')) {
+                    this.controlVideo('fullscreen');
+                    return '亲爱的，我已经为您将视频切换到全屏模式了～ 🎬';
+                }
+                if (lowerMessage.includes('倍速') || lowerMessage.includes('速度')) {
+                    this.controlVideo('speed');
+                    return '亲爱的，我已经为您打开视频倍速控制面板了～ ⚡';
+                }
+                if (lowerMessage.includes('暂停') || lowerMessage.includes('停止')) {
+                    this.controlVideo('pause');
+                    return '亲爱的，我已经为您暂停视频播放了～ ⏸️';
+                }
+                if (lowerMessage.includes('播放') || lowerMessage.includes('开始')) {
+                    this.controlVideo('play');
+                    return '亲爱的，我已经为您开始播放视频了～ ▶️';
+                }
+                
                 // 基础概念相关
                 if (lowerMessage.includes('基础') || lowerMessage.includes('概念')) {
                     return `
-                        <p>流体力学的基础概念包括：</p>
+                        <p>亲爱的同学，让我温柔地为您介绍流体力学的基础概念：</p>
                         <ul>
-                            <li><strong>连续介质假设</strong>：将流体视为连续分布的物质</li>
-                            <li><strong>流体的物理性质</strong>：密度、粘度、压缩性等</li>
-                            <li><strong>流动的分类</strong>：层流与湍流、定常与非定常流动</li>
-                            <li><strong>基本方程</strong>：连续性方程、动量方程、能量方程</li>
+                            <li>💙 <strong>连续介质假设</strong>：将流体视为连续分布的物质</li>
+                            <li>💙 <strong>流体的物理性质</strong>：密度、粘度、压缩性等</li>
+                            <li>💙 <strong>流动的分类</strong>：层流与湍流、定常与非定常流动</li>
+                            <li>💙 <strong>基本方程</strong>：连续性方程、动量方程、能量方程</li>
                         </ul>
-                        <p>建议您先从视频课程中的"流体力学之美"开始学习！</p>
+                        <p>建议您先从视频课程中的"流体力学之美"开始学习哦！有什么不懂的随时问我～</p>
                     `;
                 }
                 
                 // 练习推荐相关
                 if (lowerMessage.includes('练习') || lowerMessage.includes('推荐')) {
                     return `
-                        <p>根据您的学习情况，我推荐以下练习：</p>
+                        <p>亲爱的，我为您推荐以下练习：</p>
                         <ul>
                             <li>🟢 <strong>流体静力学基础</strong> - 15题，适合入门</li>
                             <li>🟡 <strong>伯努利方程应用</strong> - 18题，加深理解</li>
                             <li>🔴 <strong>粘性流体流动</strong> - 12题，进阶挑战</li>
                         </ul>
-                        <p>建议按难度顺序练习，每完成一个模块再进入下一个！</p>
+                        <p>建议按难度顺序练习，每完成一个模块再进入下一个！循序渐进哦～</p>
                     `;
                 }
                 
                 // 学习计划相关
                 if (lowerMessage.includes('计划') || lowerMessage.includes('安排')) {
                     return `
-                        <p>为您制定的学习计划：</p>
+                        <p>亲爱的同学，我为您制定了一个温柔的学习计划：</p>
                         <ul>
-                            <li><strong>第1-2周</strong>：流体的物理性质与基本概念</li>
+                            <li>🌸 <strong>第1-2周</strong>：流体的物理性质与基本概念</li>
                             <li><strong>第3-4周</strong>：流体静力学与伯努利方程</li>
                             <li><strong>第5-6周</strong>：粘性流体流动与边界层理论</li>
                             <li><strong>第7-8周</strong>：湍流与流动稳定性</li>
