@@ -5178,8 +5178,8 @@
                     <h2>系统设置</h2>
                 </div>
                 
-                <!-- GitHub连接状态 -->
-                <div class="card">
+                <!-- GitHub连接状态 (仅教师可见) -->
+                <div class="card teacher-only">
                     <h3 style="margin-bottom: var(--space-4); color: var(--primary);">GitHub 数据同步</h3>
                     <div id="githubStatus" class="github-status disconnected">
                         <i class="fab fa-github"></i>
@@ -8455,11 +8455,17 @@
          */
         function updateScoreChart(year) {
             const ctx = document.getElementById('scoreChart');
-            if (!ctx) return;
+            if (!ctx) {
+                console.warn('分数线图表容器未找到');
+                return;
+            }
             
             if (window.scoreChart) {
                 window.scoreChart.destroy();
             }
+            
+            console.log('更新分数线图表:', year);
+            console.log('可用数据:', scoreData);
             
             // 准备数据
             const years = Object.keys(scoreData).sort();
@@ -9012,20 +9018,25 @@
                 } else {
                                     // 如果已登录，初始化图表和功能
                 setTimeout(() => {
-                    updateScoreChart('2024');
-                    updateUIForUserRole();
-                    renderVideoGrid();
-                    renderExerciseGrid();
-                    
-                    // 启动AI助手和智能推荐
-                    AIAssistant.init();
-                    SmartRecommendation.analyzeAndRecommend();
-                    
-                    // 如果用户之前连接了GitHub，尝试重新连接
-                    if (currentUser && currentUser.github && currentUser.github.connected) {
-                        githubStorage.connect(currentUser.github.token, currentUser.github.repo);
+                    try {
+                        console.log('初始化分数线图表...');
+                        updateScoreChart('2024');
+                        updateUIForUserRole();
+                        renderVideoGrid();
+                        renderExerciseGrid();
+                        
+                        // 启动AI助手和智能推荐
+                        AIAssistant.init();
+                        SmartRecommendation.analyzeAndRecommend();
+                        
+                        // 如果用户之前连接了GitHub，尝试重新连接
+                        if (currentUser && currentUser.github && currentUser.github.connected) {
+                            githubStorage.connect(currentUser.github.token, currentUser.github.repo);
+                        }
+                    } catch (error) {
+                        console.error('初始化图表时出错:', error);
                     }
-                }, 500);
+                }, 1000);
                 }
                 
                 console.info('流体力学学习平台初始化完成！');
