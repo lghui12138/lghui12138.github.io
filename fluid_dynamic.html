@@ -1099,8 +1099,24 @@
             border-radius: var(--radius-full);
             transition: all var(--transition-normal);
             display: flex;
+            flex-direction: column;
             align-items: center;
-            gap: var(--space-2);
+            gap: var(--space-1);
+            min-width: 80px;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .nav-link i {
+            font-size: var(--text-lg);
+            margin-bottom: var(--space-1);
+        }
+
+        .nav-link span {
+            font-size: var(--text-xs);
+            line-height: 1.2;
+            word-break: keep-all;
+            white-space: nowrap;
         }
 
         .nav-link:hover,
@@ -4087,23 +4103,23 @@
                 <nav id="mainNav" role="navigation" aria-label="主导航">
                     <ul class="nav-menu">
                         <li><a href="#" class="nav-link active" onclick="showSection('home')" aria-current="page">
-                            <i class="fas fa-home" aria-hidden="true"></i>首页</a></li>
+                            <i class="fas fa-home" aria-hidden="true"></i><span>首页</span></a></li>
                         <li><a href="#" class="nav-link" onclick="showSection('review')">
-                            <i class="fas fa-book" aria-hidden="true"></i>复习规划</a></li>
+                            <i class="fas fa-book" aria-hidden="true"></i><span>复习规划</span></a></li>
                         <li><a href="#" class="nav-link" onclick="showSection('videos')">
-                            <i class="fas fa-video" aria-hidden="true"></i>视频课程</a></li>
+                            <i class="fas fa-video" aria-hidden="true"></i><span>视频课程</span></a></li>
                         <li class="teacher-only"><a href="#" class="nav-link" onclick="showSection('uploadVideo')">
-                            <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i>上传视频</a></li>
+                            <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i><span>上传视频</span></a></li>
                         <li><a href="#" class="nav-link" onclick="showSection('exercises')">
-                            <i class="fas fa-question-circle" aria-hidden="true"></i>题库练习</a></li>
+                            <i class="fas fa-question-circle" aria-hidden="true"></i><span>题库练习</span></a></li>
                         <li class="teacher-only"><a href="#" class="nav-link" onclick="showSection('uploadExercise')">
-                            <i class="fas fa-file-upload" aria-hidden="true"></i>上传练习</a></li>
+                            <i class="fas fa-file-upload" aria-hidden="true"></i><span>上传练习</span></a></li>
                         <li><a href="#" class="nav-link" onclick="showSection('scores')">
-                            <i class="fas fa-chart-line" aria-hidden="true"></i>分数线</a></li>
-                        <li><a href="#" class="nav-link" onclick="showSection('grades')">
-                            <i class="fas fa-graduation-cap" aria-hidden="true"></i>成绩录入</a></li>
+                            <i class="fas fa-chart-line" aria-hidden="true"></i><span>分数线</span></a></li>
+                        <li class="teacher-only"><a href="#" class="nav-link" onclick="showSection('grades')">
+                            <i class="fas fa-graduation-cap" aria-hidden="true"></i><span>成绩录入</span></a></li>
                         <li><a href="#" class="nav-link" onclick="showSection('settings')">
-                            <i class="fas fa-cogs" aria-hidden="true"></i>设置</a></li>
+                            <i class="fas fa-cogs" aria-hidden="true"></i><span>设置</span></a></li>
                     </ul>
                 </nav>
                 
@@ -5988,6 +6004,13 @@
             // 更新body类名以应用角色特定样式
             document.body.className = currentUser.role;
             
+            // 根据角色显示/隐藏功能
+            if (currentUser.role === 'teacher') {
+                showTeacherFeatures();
+            } else {
+                hideTeacherFeatures();
+            }
+            
             // 更新水印显示学生信息
             if (currentUser.role === 'student') {
                 const watermark = document.querySelector('.watermark');
@@ -6011,6 +6034,14 @@
         function showStudentFeatures() {
             const studentElements = document.querySelectorAll('.student-only');
             studentElements.forEach(el => el.style.display = 'block');
+        }
+
+        /**
+         * 隐藏教师功能
+         */
+        function hideTeacherFeatures() {
+            const teacherElements = document.querySelectorAll('.teacher-only');
+            teacherElements.forEach(el => el.style.display = 'none');
         }
 
         /**
