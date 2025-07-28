@@ -6466,6 +6466,1644 @@
             
             console.log('调试模式已启用，使用 window.DEBUG 访问调试工具');
         }
+
+        // 数据分析系统
+        const AnalyticsSystem = {
+            events: [],
+            metrics: {},
+            sessionStart: Date.now(),
+
+            init() {
+                this.setupEventListeners();
+                this.startPeriodicReporting();
+                console.log('数据分析系统已初始化');
+            },
+
+            trackEvent(eventName, properties = {}) {
+                const event = {
+                    id: Utils.generateId(),
+                    name: eventName,
+                    properties: {
+                        ...properties,
+                        timestamp: new Date().toISOString(),
+                        userId: APP_STATE.currentUser?.username || 'anonymous',
+                        sessionId: this.getSessionId(),
+                        userAgent: navigator.userAgent,
+                        url: window.location.href,
+                        screenSize: `${window.innerWidth}x${window.innerHeight}`,
+                        timeOnPage: Date.now() - this.sessionStart
+                    }
+                };
+
+                this.events.push(event);
+                this.updateMetrics(eventName, properties);
+
+                // 发送到分析服务器（如果有的话）
+                this.sendToAnalytics(event);
+
+                return event;
+            },
+
+            trackPageView(pageName, properties = {}) {
+                this.trackEvent('page_view', {
+                    page: pageName,
+                    referrer: document.referrer,
+                    ...properties
+                });
+            },
+
+            trackUserAction(action, target, properties = {}) {
+                this.trackEvent('user_action', {
+                    action: action,
+                    target: target,
+                    ...properties
+                });
+            },
+
+            trackError(error, context = '') {
+                this.trackEvent('error', {
+                    message: error.message || error,
+                    stack: error.stack,
+                    context: context,
+                    severity: 'error'
+                });
+            },
+
+            trackPerformance(metricName, value, properties = {}) {
+                this.trackEvent('performance', {
+                    metric: metricName,
+                    value: value,
+                    ...properties
+                });
+            },
+
+            updateMetrics(eventName, properties) {
+                if (!this.metrics[eventName]) {
+                    this.metrics[eventName] = {
+                        count: 0,
+                        firstSeen: new Date().toISOString(),
+                        lastSeen: new Date().toISOString(),
+                        properties: {}
+                    };
+                }
+
+                this.metrics[eventName].count++;
+                this.metrics[eventName].lastSeen = new Date().toISOString();
+
+                // 合并属性
+                Object.keys(properties).forEach(key => {
+                    if (!this.metrics[eventName].properties[key]) {
+                        this.metrics[eventName].properties[key] = [];
+                    }
+                    this.metrics[eventName].properties[key].push(properties[key]);
+                });
+            },
+
+            getSessionId() {
+                let sessionId = sessionStorage.getItem('analytics_session_id');
+                if (!sessionId) {
+                    sessionId = Utils.generateId();
+                    sessionStorage.setItem('analytics_session_id', sessionId);
+                }
+                return sessionId;
+            },
+
+            setupEventListeners() {
+                // 页面加载事件
+                this.trackPageView('app_loaded');
+
+                // 用户交互事件
+                document.addEventListener('click', (e) => {
+                    const target = e.target.closest('[data-analytics]');
+                    if (target) {
+                        const action = target.dataset.analytics;
+                        const properties = {};
+                        
+                        // 收集自定义属性
+                        Object.keys(target.dataset).forEach(key => {
+                            if (key.startsWith('analytics_') && key !== 'analytics') {
+                                const propName = key.replace('analytics_', '');
+                                properties[propName] = target.dataset[key];
+                            }
+                        });
+
+                        this.trackUserAction('click', action, properties);
+                    }
+                });
+
+                // 表单提交事件
+                document.addEventListener('submit', (e) => {
+                    const form = e.target;
+                    if (form.id) {
+                        this.trackUserAction('form_submit', form.id, {
+                            formAction: form.action,
+                            formMethod: form.method
+                        });
+                    }
+                });
+
+                // 页面可见性变化
+                document.addEventListener('visibilitychange', () => {
+                    this.trackEvent('visibility_change', {
+                        hidden: document.hidden,
+                        timeOnPage: Date.now() - this.sessionStart
+                    });
+                });
+
+                // 网络状态变化
+                window.addEventListener('online', () => {
+                    this.trackEvent('network_status', { status: 'online' });
+                });
+
+                window.addEventListener('offline', () => {
+                    this.trackEvent('network_status', { status: 'offline' });
+                });
+            },
+
+            startPeriodicReporting() {
+                // 每分钟报告一次会话数据
+                setInterval(() => {
+                    this.reportSessionData();
+                }, 60000);
+
+                // 页面卸载时发送最终数据
+                window.addEventListener('beforeunload', () => {
+                    this.reportSessionData();
+                });
+            },
+
+            reportSessionData() {
+                const sessionData = {
+                    sessionId: this.getSessionId(),
+                    userId: APP_STATE.currentUser?.username || 'anonymous',
+                    duration: Date.now() - this.sessionStart,
+                    events: this.events.length,
+                    metrics: this.metrics,
+                    timestamp: new Date().toISOString()
+                };
+
+                this.sendToAnalytics({
+                    type: 'session_report',
+                    data: sessionData
+                });
+
+                // 清空事件缓存
+                this.events = [];
+            },
+
+            sendToAnalytics(data) {
+                // 这里可以发送数据到分析服务器
+                // 目前只是记录到控制台
+                if (CONFIG.DEBUG_MODE) {
+                    console.log('Analytics Event:', data);
+                }
+
+                // 保存到本地存储作为备份
+                const analyticsData = Utils.storage.get('analytics_data') || [];
+                analyticsData.push({
+                    ...data,
+                    timestamp: new Date().toISOString()
+                });
+
+                // 只保留最近1000条记录
+                if (analyticsData.length > 1000) {
+                    analyticsData.splice(0, analyticsData.length - 1000);
+                }
+
+                Utils.storage.set('analytics_data', analyticsData);
+            },
+
+            getAnalyticsReport() {
+                const report = {
+                    sessionDuration: Date.now() - this.sessionStart,
+                    totalEvents: this.events.length,
+                    metrics: this.metrics,
+                    topEvents: this.getTopEvents(),
+                    userJourney: this.getUserJourney()
+                };
+
+                return report;
+            },
+
+            getTopEvents() {
+                const eventCounts = {};
+                this.events.forEach(event => {
+                    eventCounts[event.name] = (eventCounts[event.name] || 0) + 1;
+                });
+
+                return Object.entries(eventCounts)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 10)
+                    .map(([event, count]) => ({ event, count }));
+            },
+
+            getUserJourney() {
+                const pageViews = this.events.filter(e => e.name === 'page_view');
+                return pageViews.map(e => ({
+                    page: e.properties.page,
+                    timestamp: e.properties.timestamp,
+                    timeOnPage: e.properties.timeOnPage
+                }));
+            }
+        };
+
+        // 实时协作系统
+        const CollaborationSystem = {
+            connections: new Map(),
+            messages: [],
+            isConnected: false,
+            reconnectAttempts: 0,
+            maxReconnectAttempts: 5,
+
+            init() {
+                this.setupWebSocket();
+                this.setupEventListeners();
+                console.log('实时协作系统已初始化');
+            },
+
+            setupWebSocket() {
+                // 模拟WebSocket连接
+                this.simulateWebSocket();
+            },
+
+            simulateWebSocket() {
+                // 模拟连接延迟
+                setTimeout(() => {
+                    this.isConnected = true;
+                    this.onConnect();
+                    
+                    // 模拟接收消息
+                    setInterval(() => {
+                        if (this.isConnected && Math.random() < 0.1) {
+                            this.onMessage({
+                                type: 'user_activity',
+                                data: {
+                                    userId: 'user_' + Math.floor(Math.random() * 100),
+                                    action: 'viewing_page',
+                                    page: ['home', 'study', 'exercises', 'videos'][Math.floor(Math.random() * 4)],
+                                    timestamp: new Date().toISOString()
+                                }
+                            });
+                        }
+                    }, 5000);
+                }, 1000);
+            },
+
+            onConnect() {
+                console.log('协作系统已连接');
+                this.reconnectAttempts = 0;
+                this.broadcastMessage({
+                    type: 'user_joined',
+                    data: {
+                        userId: APP_STATE.currentUser?.username || 'anonymous',
+                        timestamp: new Date().toISOString()
+                    }
+                });
+            },
+
+            onMessage(message) {
+                this.messages.push(message);
+                
+                switch (message.type) {
+                    case 'user_activity':
+                        this.handleUserActivity(message.data);
+                        break;
+                    case 'chat_message':
+                        this.handleChatMessage(message.data);
+                        break;
+                    case 'collaboration_update':
+                        this.handleCollaborationUpdate(message.data);
+                        break;
+                    default:
+                        console.log('未知消息类型:', message.type);
+                }
+            },
+
+            handleUserActivity(data) {
+                // 显示用户活动通知
+                if (data.action === 'viewing_page' && data.userId !== APP_STATE.currentUser?.username) {
+                    MessageSystem.show(`${data.userId} 正在浏览 ${this.getPageName(data.page)}`, 'info', 3000);
+                }
+            },
+
+            handleChatMessage(data) {
+                // 处理聊天消息
+                console.log('收到聊天消息:', data);
+            },
+
+            handleCollaborationUpdate(data) {
+                // 处理协作更新
+                console.log('收到协作更新:', data);
+            },
+
+            broadcastMessage(message) {
+                if (!this.isConnected) {
+                    console.warn('协作系统未连接，无法发送消息');
+                    return;
+                }
+
+                // 模拟发送消息
+                console.log('发送消息:', message);
+                
+                // 添加到本地消息历史
+                this.messages.push({
+                    ...message,
+                    sent: true,
+                    timestamp: new Date().toISOString()
+                });
+            },
+
+            sendChatMessage(content, targetUserId = null) {
+                this.broadcastMessage({
+                    type: 'chat_message',
+                    data: {
+                        content: content,
+                        senderId: APP_STATE.currentUser?.username || 'anonymous',
+                        targetUserId: targetUserId,
+                        timestamp: new Date().toISOString()
+                    }
+                });
+            },
+
+            updateCollaborationStatus(status) {
+                this.broadcastMessage({
+                    type: 'collaboration_update',
+                    data: {
+                        userId: APP_STATE.currentUser?.username || 'anonymous',
+                        status: status,
+                        timestamp: new Date().toISOString()
+                    }
+                });
+            },
+
+            setupEventListeners() {
+                // 监听页面变化
+                const observer = new MutationObserver(() => {
+                    if (this.isConnected) {
+                        this.updateCollaborationStatus({
+                            currentPage: APP_STATE.currentSection,
+                            lastActivity: new Date().toISOString()
+                        });
+                    }
+                });
+
+                observer.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            },
+
+            getPageName(page) {
+                const pageNames = {
+                    home: '首页',
+                    study: '学习模块',
+                    exercises: '练习题',
+                    videos: '视频中心',
+                    'ai-assistant': 'AI助手',
+                    upload: '文件上传',
+                    profile: '用户资料'
+                };
+                return pageNames[page] || page;
+            },
+
+            getConnectionStatus() {
+                return {
+                    connected: this.isConnected,
+                    reconnectAttempts: this.reconnectAttempts,
+                    messageCount: this.messages.length
+                };
+            },
+
+            getRecentMessages(limit = 10) {
+                return this.messages.slice(-limit);
+            }
+        };
+
+        // 高级搜索系统
+        const AdvancedSearchSystem = {
+            searchIndex: new Map(),
+            searchHistory: [],
+            searchSuggestions: [],
+
+            init() {
+                this.buildSearchIndex();
+                this.loadSearchHistory();
+                this.setupEventListeners();
+                console.log('高级搜索系统已初始化');
+            },
+
+            buildSearchIndex() {
+                // 索引课程数据
+                STUDY_MODULES.forEach(module => {
+                    this.indexDocument('course', module.id, {
+                        title: module.title,
+                        description: module.description,
+                        tags: module.tags || [],
+                        content: module.chapters.map(ch => ch.title + ' ' + ch.content).join(' ')
+                    });
+                });
+
+                // 索引练习题数据
+                EXERCISES_DATA.categories.forEach(category => {
+                    this.indexDocument('exercise', category.id, {
+                        title: category.name,
+                        description: category.description,
+                        tags: category.tags || [],
+                        content: category.questions.map(q => q.question + ' ' + (q.explanation || '')).join(' ')
+                    });
+                });
+
+                // 索引视频数据
+                VIDEOS_DATA.forEach(video => {
+                    this.indexDocument('video', video.id, {
+                        title: video.title,
+                        description: video.description,
+                        tags: video.tags,
+                        instructor: video.instructor,
+                        content: video.chapters.map(ch => ch.title).join(' ')
+                    });
+                });
+
+                console.log('搜索索引构建完成');
+            },
+
+            indexDocument(type, id, content) {
+                const document = {
+                    type: type,
+                    id: id,
+                    ...content,
+                    indexedAt: new Date().toISOString()
+                };
+
+                // 创建倒排索引
+                const text = `${content.title} ${content.description} ${content.content || ''}`.toLowerCase();
+                const words = this.tokenize(text);
+                
+                words.forEach(word => {
+                    if (!this.searchIndex.has(word)) {
+                        this.searchIndex.set(word, []);
+                    }
+                    this.searchIndex.get(word).push(document);
+                });
+
+                // 存储完整文档
+                if (!this.searchIndex.has('_documents')) {
+                    this.searchIndex.set('_documents', new Map());
+                }
+                this.searchIndex.get('_documents').set(id, document);
+            },
+
+            tokenize(text) {
+                // 简单的分词处理
+                return text
+                    .replace(/[^\w\s\u4e00-\u9fff]/g, ' ')
+                    .split(/\s+/)
+                    .filter(word => word.length > 1)
+                    .map(word => word.toLowerCase());
+            },
+
+            search(query, options = {}) {
+                const {
+                    type = null,
+                    limit = 20,
+                    fuzzy = true,
+                    highlight = true
+                } = options;
+
+                if (!query.trim()) {
+                    return [];
+                }
+
+                const startTime = performance.now();
+                const results = this.performSearch(query, type, fuzzy);
+                const endTime = performance.now();
+
+                // 记录搜索历史
+                this.addToSearchHistory(query, results.length, endTime - startTime);
+
+                // 限制结果数量
+                const limitedResults = results.slice(0, limit);
+
+                // 高亮处理
+                if (highlight) {
+                    limitedResults.forEach(result => {
+                        result.highlightedTitle = this.highlightText(result.title, query);
+                        result.highlightedDescription = this.highlightText(result.description, query);
+                    });
+                }
+
+                return limitedResults;
+            },
+
+            performSearch(query, type, fuzzy) {
+                const queryWords = this.tokenize(query);
+                const documentScores = new Map();
+
+                queryWords.forEach(word => {
+                    const matchingDocs = this.searchIndex.get(word) || [];
+                    
+                    matchingDocs.forEach(doc => {
+                        if (type && doc.type !== type) return;
+
+                        const score = documentScores.get(doc.id) || 0;
+                        documentScores.set(doc.id, score + 1);
+                    });
+
+                    // 模糊搜索
+                    if (fuzzy) {
+                        this.searchIndex.forEach((docs, indexedWord) => {
+                            if (this.calculateSimilarity(word, indexedWord) > 0.7) {
+                                docs.forEach(doc => {
+                                    if (type && doc.type !== type) return;
+                                    
+                                    const score = documentScores.get(doc.id) || 0;
+                                    documentScores.set(doc.id, score + 0.5);
+                                });
+                            }
+                        });
+                    }
+                });
+
+                // 转换为结果数组并排序
+                const results = [];
+                documentScores.forEach((score, docId) => {
+                    const doc = this.searchIndex.get('_documents').get(docId);
+                    if (doc) {
+                        results.push({
+                            ...doc,
+                            score: score,
+                            relevance: this.calculateRelevance(score, queryWords.length)
+                        });
+                    }
+                });
+
+                return results.sort((a, b) => b.score - a.score);
+            },
+
+            calculateSimilarity(word1, word2) {
+                // 简单的字符串相似度计算
+                const longer = word1.length > word2.length ? word1 : word2;
+                const shorter = word1.length > word2.length ? word2 : word1;
+                
+                if (longer.length === 0) return 1.0;
+                
+                const editDistance = this.levenshteinDistance(longer, shorter);
+                return (longer.length - editDistance) / longer.length;
+            },
+
+            levenshteinDistance(str1, str2) {
+                const matrix = [];
+                
+                for (let i = 0; i <= str2.length; i++) {
+                    matrix[i] = [i];
+                }
+                
+                for (let j = 0; j <= str1.length; j++) {
+                    matrix[0][j] = j;
+                }
+                
+                for (let i = 1; i <= str2.length; i++) {
+                    for (let j = 1; j <= str1.length; j++) {
+                        if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
+                            matrix[i][j] = matrix[i - 1][j - 1];
+                        } else {
+                            matrix[i][j] = Math.min(
+                                matrix[i - 1][j - 1] + 1,
+                                matrix[i][j - 1] + 1,
+                                matrix[i - 1][j] + 1
+                            );
+                        }
+                    }
+                }
+                
+                return matrix[str2.length][str1.length];
+            },
+
+            calculateRelevance(score, queryLength) {
+                const maxScore = queryLength;
+                return Math.min(score / maxScore, 1);
+            },
+
+            highlightText(text, query) {
+                if (!text) return '';
+                
+                const queryWords = this.tokenize(query);
+                let highlightedText = text;
+                
+                queryWords.forEach(word => {
+                    const regex = new RegExp(`(${word})`, 'gi');
+                    highlightedText = highlightedText.replace(regex, '<mark>$1</mark>');
+                });
+                
+                return highlightedText;
+            },
+
+            addToSearchHistory(query, resultCount, searchTime) {
+                const searchRecord = {
+                    query: query,
+                    resultCount: resultCount,
+                    searchTime: searchTime,
+                    timestamp: new Date().toISOString(),
+                    userId: APP_STATE.currentUser?.username || 'anonymous'
+                };
+
+                this.searchHistory.unshift(searchRecord);
+                
+                // 只保留最近100条搜索记录
+                if (this.searchHistory.length > 100) {
+                    this.searchHistory.splice(100);
+                }
+
+                Utils.storage.set('search_history', this.searchHistory);
+            },
+
+            loadSearchHistory() {
+                this.searchHistory = Utils.storage.get('search_history') || [];
+            },
+
+            getSearchSuggestions(query) {
+                if (!query.trim()) {
+                    return this.getPopularSearches();
+                }
+
+                const suggestions = [];
+                const queryWords = this.tokenize(query);
+
+                // 基于搜索历史的建议
+                this.searchHistory.forEach(record => {
+                    if (record.query.toLowerCase().includes(query.toLowerCase())) {
+                        suggestions.push({
+                            type: 'history',
+                            text: record.query,
+                            count: 1
+                        });
+                    }
+                });
+
+                // 基于索引的建议
+                this.searchIndex.forEach((docs, word) => {
+                    if (word.toLowerCase().includes(query.toLowerCase())) {
+                        suggestions.push({
+                            type: 'index',
+                            text: word,
+                            count: docs.length
+                        });
+                    }
+                });
+
+                // 去重并排序
+                const uniqueSuggestions = [];
+                const seen = new Set();
+
+                suggestions.forEach(suggestion => {
+                    if (!seen.has(suggestion.text)) {
+                        seen.add(suggestion.text);
+                        uniqueSuggestions.push(suggestion);
+                    }
+                });
+
+                return uniqueSuggestions
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 10);
+            },
+
+            getPopularSearches() {
+                const searchCounts = {};
+                
+                this.searchHistory.forEach(record => {
+                    searchCounts[record.query] = (searchCounts[record.query] || 0) + 1;
+                });
+
+                return Object.entries(searchCounts)
+                    .sort(([,a], [,b]) => b - a)
+                    .slice(0, 10)
+                    .map(([query, count]) => ({
+                        type: 'popular',
+                        text: query,
+                        count: count
+                    }));
+            },
+
+            setupEventListeners() {
+                // 监听搜索框输入
+                document.addEventListener('input', (e) => {
+                    if (e.target.matches('#globalSearch, .search-input')) {
+                        const query = e.target.value.trim();
+                        if (query.length > 1) {
+                            this.showSearchSuggestions(query, e.target);
+                        }
+                    }
+                });
+            },
+
+            showSearchSuggestions(query, inputElement) {
+                const suggestions = this.getSearchSuggestions(query);
+                
+                // 这里可以实现搜索建议的UI显示
+                console.log('搜索建议:', suggestions);
+            },
+
+            getSearchStatistics() {
+                const totalSearches = this.searchHistory.length;
+                const uniqueQueries = new Set(this.searchHistory.map(r => r.query)).size;
+                const avgSearchTime = this.searchHistory.reduce((sum, r) => sum + r.searchTime, 0) / totalSearches;
+
+                return {
+                    totalSearches,
+                    uniqueQueries,
+                    avgSearchTime,
+                    recentSearches: this.searchHistory.slice(0, 10)
+                };
+            }
+        };
+
+        // 性能监控系统
+        const PerformanceMonitor = {
+            metrics: {
+                pageLoad: {},
+                userInteractions: [],
+                resourceTiming: [],
+                errors: []
+            },
+            observers: [],
+
+            init() {
+                this.setupPerformanceObservers();
+                this.setupErrorTracking();
+                this.startPeriodicReporting();
+                console.log('性能监控系统已初始化');
+            },
+
+            setupPerformanceObservers() {
+                // 页面加载性能
+                window.addEventListener('load', () => {
+                    setTimeout(() => {
+                        this.measurePageLoadPerformance();
+                    }, 0);
+                });
+
+                // 用户交互性能
+                this.observeUserInteractions();
+
+                // 资源加载性能
+                this.observeResourceTiming();
+
+                // 长任务监控
+                this.observeLongTasks();
+            },
+
+            measurePageLoadPerformance() {
+                const navigation = performance.getEntriesByType('navigation')[0];
+                const paint = performance.getEntriesByType('paint');
+
+                this.metrics.pageLoad = {
+                    timestamp: new Date().toISOString(),
+                    domContentLoaded: navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart,
+                    loadComplete: navigation.loadEventEnd - navigation.loadEventStart,
+                    firstPaint: paint.find(p => p.name === 'first-paint')?.startTime || 0,
+                    firstContentfulPaint: paint.find(p => p.name === 'first-contentful-paint')?.startTime || 0,
+                    totalLoadTime: navigation.loadEventEnd - navigation.fetchStart,
+                    url: window.location.href
+                };
+
+                // 记录到分析系统
+                AnalyticsSystem.trackPerformance('page_load', this.metrics.pageLoad.totalLoadTime, this.metrics.pageLoad);
+            },
+
+            observeUserInteractions() {
+                let interactionStart = 0;
+                let isInteracting = false;
+
+                const events = ['mousedown', 'keydown', 'touchstart'];
+                
+                events.forEach(eventType => {
+                    document.addEventListener(eventType, (e) => {
+                        if (!isInteracting) {
+                            interactionStart = performance.now();
+                            isInteracting = true;
+                        }
+                    }, { passive: true });
+
+                    document.addEventListener(eventType.replace('start', 'end'), (e) => {
+                        if (isInteracting) {
+                            const interactionTime = performance.now() - interactionStart;
+                            
+                            this.metrics.userInteractions.push({
+                                type: eventType,
+                                duration: interactionTime,
+                                timestamp: new Date().toISOString(),
+                                target: e.target.tagName + (e.target.id ? '#' + e.target.id : '')
+                            });
+
+                            isInteracting = false;
+                        }
+                    }, { passive: true });
+                });
+            },
+
+            observeResourceTiming() {
+                const observer = new PerformanceObserver((list) => {
+                    list.getEntries().forEach(entry => {
+                        if (entry.initiatorType === 'img' || entry.initiatorType === 'script' || entry.initiatorType === 'css') {
+                            this.metrics.resourceTiming.push({
+                                name: entry.name,
+                                type: entry.initiatorType,
+                                duration: entry.duration,
+                                size: entry.transferSize || 0,
+                                timestamp: new Date().toISOString()
+                            });
+                        }
+                    });
+                });
+
+                observer.observe({ entryTypes: ['resource'] });
+            },
+
+            observeLongTasks() {
+                const observer = new PerformanceObserver((list) => {
+                    list.getEntries().forEach(entry => {
+                        if (entry.duration > 50) { // 超过50ms的任务
+                            this.metrics.userInteractions.push({
+                                type: 'long_task',
+                                duration: entry.duration,
+                                timestamp: new Date().toISOString(),
+                                startTime: entry.startTime
+                            });
+                        }
+                    });
+                });
+
+                observer.observe({ entryTypes: ['longtask'] });
+            },
+
+            setupErrorTracking() {
+                // JavaScript错误
+                window.addEventListener('error', (e) => {
+                    this.metrics.errors.push({
+                        type: 'javascript_error',
+                        message: e.message,
+                        filename: e.filename,
+                        lineno: e.lineno,
+                        colno: e.colno,
+                        timestamp: new Date().toISOString()
+                    });
+                });
+
+                // Promise拒绝
+                window.addEventListener('unhandledrejection', (e) => {
+                    this.metrics.errors.push({
+                        type: 'promise_rejection',
+                        reason: e.reason,
+                        timestamp: new Date().toISOString()
+                    });
+                });
+
+                // 资源加载错误
+                window.addEventListener('error', (e) => {
+                    if (e.target && e.target.tagName) {
+                        this.metrics.errors.push({
+                            type: 'resource_error',
+                            resource: e.target.src || e.target.href,
+                            tagName: e.target.tagName,
+                            timestamp: new Date().toISOString()
+                        });
+                    }
+                }, true);
+            },
+
+            startPeriodicReporting() {
+                // 每分钟报告一次性能数据
+                setInterval(() => {
+                    this.reportPerformanceData();
+                }, 60000);
+            },
+
+            reportPerformanceData() {
+                const report = {
+                    timestamp: new Date().toISOString(),
+                    pageLoad: this.metrics.pageLoad,
+                    userInteractions: this.metrics.userInteractions.slice(-50), // 最近50次交互
+                    resourceTiming: this.metrics.resourceTiming.slice(-20), // 最近20个资源
+                    errors: this.metrics.errors.slice(-10), // 最近10个错误
+                    memory: this.getMemoryInfo(),
+                    network: this.getNetworkInfo()
+                };
+
+                // 发送到分析系统
+                AnalyticsSystem.trackEvent('performance_report', report);
+
+                // 清理旧数据
+                this.cleanupOldData();
+            },
+
+            getMemoryInfo() {
+                if (performance.memory) {
+                    return {
+                        usedJSHeapSize: performance.memory.usedJSHeapSize,
+                        totalJSHeapSize: performance.memory.totalJSHeapSize,
+                        jsHeapSizeLimit: performance.memory.jsHeapSizeLimit
+                    };
+                }
+                return null;
+            },
+
+            getNetworkInfo() {
+                if (navigator.connection) {
+                    return {
+                        effectiveType: navigator.connection.effectiveType,
+                        downlink: navigator.connection.downlink,
+                        rtt: navigator.connection.rtt
+                    };
+                }
+                return null;
+            },
+
+            cleanupOldData() {
+                const oneHourAgo = Date.now() - 60 * 60 * 1000;
+                
+                this.metrics.userInteractions = this.metrics.userInteractions.filter(
+                    interaction => new Date(interaction.timestamp).getTime() > oneHourAgo
+                );
+                
+                this.metrics.resourceTiming = this.metrics.resourceTiming.filter(
+                    resource => new Date(resource.timestamp).getTime() > oneHourAgo
+                );
+                
+                this.metrics.errors = this.metrics.errors.filter(
+                    error => new Date(error.timestamp).getTime() > oneHourAgo
+                );
+            },
+
+            measureFunction(name, fn) {
+                const start = performance.now();
+                try {
+                    const result = fn();
+                    const end = performance.now();
+                    const duration = end - start;
+                    
+                    this.metrics.userInteractions.push({
+                        type: 'function_call',
+                        name: name,
+                        duration: duration,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    return result;
+                } catch (error) {
+                    const end = performance.now();
+                    const duration = end - start;
+                    
+                    this.metrics.errors.push({
+                        type: 'function_error',
+                        name: name,
+                        duration: duration,
+                        error: error.message,
+                        timestamp: new Date().toISOString()
+                    });
+                    
+                    throw error;
+                }
+            },
+
+            getPerformanceReport() {
+                return {
+                    pageLoad: this.metrics.pageLoad,
+                    averageInteractionTime: this.calculateAverageInteractionTime(),
+                    errorRate: this.calculateErrorRate(),
+                    resourceLoadTimes: this.calculateResourceLoadTimes(),
+                    memoryUsage: this.getMemoryInfo(),
+                    networkInfo: this.getNetworkInfo()
+                };
+            },
+
+            calculateAverageInteractionTime() {
+                if (this.metrics.userInteractions.length === 0) return 0;
+                
+                const totalTime = this.metrics.userInteractions.reduce((sum, interaction) => sum + interaction.duration, 0);
+                return totalTime / this.metrics.userInteractions.length;
+            },
+
+            calculateErrorRate() {
+                const totalInteractions = this.metrics.userInteractions.length;
+                const totalErrors = this.metrics.errors.length;
+                
+                return totalInteractions > 0 ? (totalErrors / totalInteractions) * 100 : 0;
+            },
+
+            calculateResourceLoadTimes() {
+                const resourceTypes = {};
+                
+                this.metrics.resourceTiming.forEach(resource => {
+                    if (!resourceTypes[resource.type]) {
+                        resourceTypes[resource.type] = [];
+                    }
+                    resourceTypes[resource.type].push(resource.duration);
+                });
+
+                const averages = {};
+                Object.keys(resourceTypes).forEach(type => {
+                    const times = resourceTypes[type];
+                    averages[type] = times.reduce((sum, time) => sum + time, 0) / times.length;
+                });
+
+                return averages;
+            }
+        };
+
+        // 缓存管理系统
+        const CacheManager = {
+            caches: new Map(),
+            maxSize: 50 * 1024 * 1024, // 50MB
+            currentSize: 0,
+
+            init() {
+                this.loadCacheFromStorage();
+                this.setupCacheCleanup();
+                console.log('缓存管理系统已初始化');
+            },
+
+            set(key, value, options = {}) {
+                const {
+                    ttl = 3600000, // 默认1小时
+                    priority = 'normal',
+                    size = this.estimateSize(value)
+                } = options;
+
+                const cacheEntry = {
+                    key: key,
+                    value: value,
+                    size: size,
+                    priority: priority,
+                    createdAt: Date.now(),
+                    expiresAt: Date.now() + ttl,
+                    accessCount: 0,
+                    lastAccessed: Date.now()
+                };
+
+                // 检查缓存大小限制
+                if (this.currentSize + size > this.maxSize) {
+                    this.evictCache(size);
+                }
+
+                this.caches.set(key, cacheEntry);
+                this.currentSize += size;
+                this.saveCacheToStorage();
+
+                return cacheEntry;
+            },
+
+            get(key) {
+                const entry = this.caches.get(key);
+                
+                if (!entry) {
+                    return null;
+                }
+
+                // 检查是否过期
+                if (Date.now() > entry.expiresAt) {
+                    this.delete(key);
+                    return null;
+                }
+
+                // 更新访问统计
+                entry.accessCount++;
+                entry.lastAccessed = Date.now();
+                this.caches.set(key, entry);
+
+                return entry.value;
+            },
+
+            delete(key) {
+                const entry = this.caches.get(key);
+                if (entry) {
+                    this.currentSize -= entry.size;
+                    this.caches.delete(key);
+                    this.saveCacheToStorage();
+                }
+            },
+
+            clear() {
+                this.caches.clear();
+                this.currentSize = 0;
+                this.saveCacheToStorage();
+            },
+
+            has(key) {
+                const entry = this.caches.get(key);
+                return entry && Date.now() <= entry.expiresAt;
+            },
+
+            estimateSize(value) {
+                const str = JSON.stringify(value);
+                return new Blob([str]).size;
+            },
+
+            evictCache(requiredSize) {
+                // 按优先级和访问时间排序
+                const entries = Array.from(this.caches.values()).sort((a, b) => {
+                    // 首先按优先级排序
+                    const priorityOrder = { high: 3, normal: 2, low: 1 };
+                    const priorityDiff = priorityOrder[b.priority] - priorityOrder[a.priority];
+                    
+                    if (priorityDiff !== 0) {
+                        return priorityDiff;
+                    }
+                    
+                    // 然后按最后访问时间排序
+                    return a.lastAccessed - b.lastAccessed;
+                });
+
+                let freedSize = 0;
+                const toDelete = [];
+
+                for (const entry of entries) {
+                    if (freedSize >= requiredSize) break;
+                    
+                    toDelete.push(entry.key);
+                    freedSize += entry.size;
+                }
+
+                toDelete.forEach(key => this.delete(key));
+            },
+
+            loadCacheFromStorage() {
+                try {
+                    const cached = Utils.storage.get('app_cache');
+                    if (cached) {
+                        const data = JSON.parse(cached);
+                        this.caches = new Map(data.entries);
+                        this.currentSize = data.currentSize;
+                    }
+                } catch (error) {
+                    console.warn('加载缓存失败:', error);
+                    this.clear();
+                }
+            },
+
+            saveCacheToStorage() {
+                try {
+                    const data = {
+                        entries: Array.from(this.caches.entries()),
+                        currentSize: this.currentSize,
+                        timestamp: Date.now()
+                    };
+                    Utils.storage.set('app_cache', JSON.stringify(data));
+                } catch (error) {
+                    console.warn('保存缓存失败:', error);
+                }
+            },
+
+            setupCacheCleanup() {
+                // 每小时清理过期缓存
+                setInterval(() => {
+                    this.cleanupExpired();
+                }, 60 * 60 * 1000);
+            },
+
+            cleanupExpired() {
+                const now = Date.now();
+                const toDelete = [];
+
+                this.caches.forEach((entry, key) => {
+                    if (now > entry.expiresAt) {
+                        toDelete.push(key);
+                    }
+                });
+
+                toDelete.forEach(key => this.delete(key));
+                
+                if (toDelete.length > 0) {
+                    console.log(`清理了 ${toDelete.length} 个过期缓存项`);
+                }
+            },
+
+            getCacheStats() {
+                const stats = {
+                    totalEntries: this.caches.size,
+                    totalSize: this.currentSize,
+                    maxSize: this.maxSize,
+                    utilization: (this.currentSize / this.maxSize) * 100,
+                    priorityDistribution: { high: 0, normal: 0, low: 0 },
+                    expiredEntries: 0
+                };
+
+                const now = Date.now();
+                this.caches.forEach(entry => {
+                    stats.priorityDistribution[entry.priority]++;
+                    if (now > entry.expiresAt) {
+                        stats.expiredEntries++;
+                    }
+                });
+
+                return stats;
+            },
+
+            // 预加载常用数据
+            preloadData() {
+                // 预加载用户偏好设置
+                this.set('user_preferences', Utils.storage.get('userPreferences'), {
+                    priority: 'high',
+                    ttl: 24 * 60 * 60 * 1000 // 24小时
+                });
+
+                // 预加载搜索历史
+                this.set('search_history', Utils.storage.get('search_history'), {
+                    priority: 'normal',
+                    ttl: 7 * 24 * 60 * 60 * 1000 // 7天
+                });
+
+                // 预加载分析数据
+                this.set('analytics_data', Utils.storage.get('analytics_data'), {
+                    priority: 'low',
+                    ttl: 24 * 60 * 60 * 1000 // 24小时
+                });
+            }
+        };
+
+        // 初始化所有企业级系统
+        document.addEventListener('DOMContentLoaded', () => {
+            // 在应用初始化后启动企业级系统
+            setTimeout(() => {
+                AnalyticsSystem.init();
+                CollaborationSystem.init();
+                AdvancedSearchSystem.init();
+                PerformanceMonitor.init();
+                CacheManager.init();
+                
+                // 预加载数据
+                CacheManager.preloadData();
+                
+                console.log('所有企业级系统已启动');
+            }, 1000);
+        });
+
+        // 企业级仪表板系统
+        const DashboardSystem = {
+            init() {
+                this.createDashboard();
+                this.setupEventListeners();
+                this.startRealTimeUpdates();
+                console.log('企业级仪表板系统已初始化');
+            },
+
+            createDashboard() {
+                const dashboardContainer = document.createElement('div');
+                dashboardContainer.className = 'enterprise-dashboard';
+                dashboardContainer.id = 'enterpriseDashboard';
+                dashboardContainer.style.display = 'none';
+
+                dashboardContainer.innerHTML = `
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-chart-line"></i> 性能监控</h3>
+                        <div class="performance-metrics" id="performanceMetrics">
+                            <!-- 性能指标将在这里动态添加 -->
+                        </div>
+                        <div class="chart-container" id="performanceChart">
+                            <canvas width="400" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-users"></i> 实时协作</h3>
+                        <div class="system-status" id="collaborationStatus">
+                            <!-- 协作状态将在这里显示 -->
+                        </div>
+                        <div class="online-users" id="onlineUsers">
+                            <!-- 在线用户将在这里显示 -->
+                        </div>
+                        <div class="collaboration-messages" id="collaborationMessages">
+                            <!-- 协作消息将在这里显示 -->
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-search"></i> 搜索分析</h3>
+                        <div class="analytics-metrics" id="searchMetrics">
+                            <!-- 搜索指标将在这里显示 -->
+                        </div>
+                        <div class="analytics-chart" id="searchChart">
+                            <canvas width="400" height="200"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-database"></i> 缓存管理</h3>
+                        <div class="cache-stats" id="cacheStats">
+                            <!-- 缓存统计将在这里显示 -->
+                        </div>
+                        <div class="cache-progress">
+                            <div class="cache-progress-bar">
+                                <div class="cache-progress-fill" id="cacheProgressFill"></div>
+                            </div>
+                            <div class="cache-progress-text" id="cacheProgressText">
+                                <!-- 缓存进度文本将在这里显示 -->
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // 添加到主内容区域
+                const mainContent = document.querySelector('.main-content');
+                if (mainContent) {
+                    mainContent.appendChild(dashboardContainer);
+                }
+            },
+
+            setupEventListeners() {
+                // 添加仪表板切换按钮到导航
+                const navContainer = document.querySelector('.nav-links');
+                if (navContainer) {
+                    const dashboardLink = document.createElement('a');
+                    dashboardLink.href = '#';
+                    dashboardLink.className = 'nav-link';
+                    dashboardLink.dataset.section = 'dashboard';
+                    dashboardLink.innerHTML = '<i class="fas fa-tachometer-alt"></i> 仪表板';
+                    navContainer.appendChild(dashboardLink);
+                }
+
+                // 添加仪表板切换按钮到侧边栏
+                const sidebarContainer = document.querySelector('.sidebar-links');
+                if (sidebarContainer) {
+                    const dashboardSidebarLink = document.createElement('a');
+                    dashboardSidebarLink.href = '#';
+                    dashboardSidebarLink.className = 'sidebar-link';
+                    dashboardSidebarLink.dataset.section = 'dashboard';
+                    dashboardSidebarLink.innerHTML = '<i class="fas fa-tachometer-alt"></i> 仪表板';
+                    sidebarContainer.appendChild(dashboardSidebarLink);
+                }
+            },
+
+            showDashboard() {
+                const dashboard = document.getElementById('enterpriseDashboard');
+                if (dashboard) {
+                    dashboard.style.display = 'grid';
+                    this.updateDashboard();
+                }
+            },
+
+            hideDashboard() {
+                const dashboard = document.getElementById('enterpriseDashboard');
+                if (dashboard) {
+                    dashboard.style.display = 'none';
+                }
+            },
+
+            updateDashboard() {
+                this.updatePerformanceMetrics();
+                this.updateCollaborationStatus();
+                this.updateSearchMetrics();
+                this.updateCacheStats();
+            },
+
+            updatePerformanceMetrics() {
+                const container = document.getElementById('performanceMetrics');
+                if (!container) return;
+
+                const report = PerformanceMonitor.getPerformanceReport();
+                
+                container.innerHTML = `
+                    <div class="performance-metric ${this.getPerformanceClass(report.averageInteractionTime)}">
+                        <div class="performance-value">${report.averageInteractionTime.toFixed(2)}ms</div>
+                        <div class="performance-label">平均交互时间</div>
+                    </div>
+                    <div class="performance-metric ${this.getPerformanceClass(report.errorRate)}">
+                        <div class="performance-value">${report.errorRate.toFixed(2)}%</div>
+                        <div class="performance-label">错误率</div>
+                    </div>
+                    <div class="performance-metric ${this.getPerformanceClass(report.pageLoad?.totalLoadTime || 0)}">
+                        <div class="performance-value">${((report.pageLoad?.totalLoadTime || 0) / 1000).toFixed(2)}s</div>
+                        <div class="performance-label">页面加载时间</div>
+                    </div>
+                    <div class="performance-metric">
+                        <div class="performance-value">${this.getMemoryUsageText(report.memoryUsage)}</div>
+                        <div class="performance-label">内存使用</div>
+                    </div>
+                `;
+            },
+
+            updateCollaborationStatus() {
+                const statusContainer = document.getElementById('collaborationStatus');
+                const usersContainer = document.getElementById('onlineUsers');
+                const messagesContainer = document.getElementById('collaborationMessages');
+
+                if (statusContainer) {
+                    const status = CollaborationSystem.getConnectionStatus();
+                    statusContainer.innerHTML = `
+                        <div class="status-indicator ${status.connected ? 'online' : 'offline'}">
+                            <div class="status-dot"></div>
+                            <span>协作系统 ${status.connected ? '在线' : '离线'}</span>
+                        </div>
+                        <div class="status-indicator">
+                            <div class="status-dot"></div>
+                            <span>${status.messageCount} 条消息</span>
+                        </div>
+                    `;
+                }
+
+                if (usersContainer) {
+                    // 模拟在线用户
+                    const onlineUsers = [
+                        { id: 1, name: '张三', avatar: 'ZS' },
+                        { id: 2, name: '李四', avatar: 'LS' },
+                        { id: 3, name: '王五', avatar: 'WW' }
+                    ];
+
+                    usersContainer.innerHTML = onlineUsers.map(user => `
+                        <div class="online-user">
+                            <div class="online-user-avatar">${user.avatar}</div>
+                            <span>${user.name}</span>
+                        </div>
+                    `).join('');
+                }
+
+                if (messagesContainer) {
+                    const messages = CollaborationSystem.getRecentMessages(5);
+                    messagesContainer.innerHTML = messages.map(msg => `
+                        <div class="collaboration-message">
+                            <div class="collaboration-message-avatar">
+                                ${msg.data?.senderId?.charAt(0) || 'U'}
+                            </div>
+                            <div class="collaboration-message-content">
+                                <div class="collaboration-message-user">
+                                    ${msg.data?.senderId || 'Unknown'}
+                                </div>
+                                <div class="collaboration-message-text">
+                                    ${this.getCollaborationMessageText(msg)}
+                                </div>
+                                <div class="collaboration-message-time">
+                                    ${new Date(msg.timestamp).toLocaleTimeString()}
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            },
+
+            updateSearchMetrics() {
+                const container = document.getElementById('searchMetrics');
+                if (!container) return;
+
+                const stats = AdvancedSearchSystem.getSearchStatistics();
+                
+                container.innerHTML = `
+                    <div class="analytics-metric">
+                        <div class="analytics-metric-value">${stats.totalSearches}</div>
+                        <div class="analytics-metric-label">总搜索次数</div>
+                    </div>
+                    <div class="analytics-metric">
+                        <div class="analytics-metric-value">${stats.uniqueQueries}</div>
+                        <div class="analytics-metric-label">唯一查询</div>
+                    </div>
+                    <div class="analytics-metric">
+                        <div class="analytics-metric-value">${stats.avgSearchTime.toFixed(2)}ms</div>
+                        <div class="analytics-metric-label">平均搜索时间</div>
+                    </div>
+                    <div class="analytics-metric">
+                        <div class="analytics-metric-value">${this.getSearchIndexSize()}</div>
+                        <div class="analytics-metric-label">索引大小</div>
+                    </div>
+                `;
+            },
+
+            updateCacheStats() {
+                const container = document.getElementById('cacheStats');
+                const progressFill = document.getElementById('cacheProgressFill');
+                const progressText = document.getElementById('cacheProgressText');
+
+                if (!container) return;
+
+                const stats = CacheManager.getCacheStats();
+                
+                container.innerHTML = `
+                    <div class="cache-stat">
+                        <div class="cache-stat-value">${stats.totalEntries}</div>
+                        <div class="cache-stat-label">缓存条目</div>
+                    </div>
+                    <div class="cache-stat">
+                        <div class="cache-stat-value">${this.formatBytes(stats.totalSize)}</div>
+                        <div class="cache-stat-label">缓存大小</div>
+                    </div>
+                    <div class="cache-stat">
+                        <div class="cache-stat-value">${stats.utilization.toFixed(1)}%</div>
+                        <div class="cache-stat-label">使用率</div>
+                    </div>
+                    <div class="cache-stat">
+                        <div class="cache-stat-value">${stats.expiredEntries}</div>
+                        <div class="cache-stat-label">过期条目</div>
+                    </div>
+                `;
+
+                if (progressFill) {
+                    progressFill.style.width = `${stats.utilization}%`;
+                }
+
+                if (progressText) {
+                    progressText.innerHTML = `
+                        <span>已使用: ${this.formatBytes(stats.totalSize)}</span>
+                        <span>总容量: ${this.formatBytes(stats.maxSize)}</span>
+                    `;
+                }
+            },
+
+            startRealTimeUpdates() {
+                // 每5秒更新一次仪表板
+                setInterval(() => {
+                    if (document.getElementById('enterpriseDashboard')?.style.display !== 'none') {
+                        this.updateDashboard();
+                    }
+                }, 5000);
+            },
+
+            getPerformanceClass(value) {
+                if (value < 100) return 'good';
+                if (value < 500) return 'warning';
+                return 'poor';
+            },
+
+            getMemoryUsageText(memory) {
+                if (!memory) return 'N/A';
+                const usedMB = (memory.usedJSHeapSize / 1024 / 1024).toFixed(1);
+                const totalMB = (memory.totalJSHeapSize / 1024 / 1024).toFixed(1);
+                return `${usedMB}MB / ${totalMB}MB`;
+            },
+
+            getCollaborationMessageText(message) {
+                switch (message.type) {
+                    case 'user_joined':
+                        return '加入了协作';
+                    case 'user_activity':
+                        return `正在浏览 ${this.getPageName(message.data?.page)}`;
+                    case 'chat_message':
+                        return message.data?.content || '发送了消息';
+                    default:
+                        return '执行了操作';
+                }
+            },
+
+            getPageName(page) {
+                const pageNames = {
+                    home: '首页',
+                    study: '学习模块',
+                    exercises: '练习题',
+                    videos: '视频中心',
+                    'ai-assistant': 'AI助手',
+                    upload: '文件上传',
+                    profile: '用户资料'
+                };
+                return pageNames[page] || page;
+            },
+
+            getSearchIndexSize() {
+                return AdvancedSearchSystem.searchIndex.size;
+            },
+
+            formatBytes(bytes) {
+                if (bytes === 0) return '0 B';
+                const k = 1024;
+                const sizes = ['B', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+        };
+
+        // 扩展导航系统以支持仪表板
+        const originalShowSection = NavigationSystem.showSection;
+        NavigationSystem.showSection = function(section) {
+            if (section === 'dashboard') {
+                // 隐藏所有其他部分
+                document.querySelectorAll('.main-content > section').forEach(s => {
+                    s.style.display = 'none';
+                });
+                
+                // 显示仪表板
+                DashboardSystem.showDashboard();
+                
+                // 更新当前部分
+                APP_STATE.currentSection = section;
+                
+                // 更新导航状态
+                document.querySelectorAll('.nav-link, .sidebar-link').forEach(link => {
+                    link.classList.remove('active');
+                });
+                
+                document.querySelectorAll(`[data-section="${section}"]`).forEach(link => {
+                    link.classList.add('active');
+                });
+            } else {
+                // 隐藏仪表板
+                DashboardSystem.hideDashboard();
+                
+                // 调用原始方法
+                originalShowSection.call(this, section);
+            }
+        };
+
+        // 初始化仪表板系统
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                DashboardSystem.init();
+            }, 2000);
+        });
 </script>
 </body>
 </html>
