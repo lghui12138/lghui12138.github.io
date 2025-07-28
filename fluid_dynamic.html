@@ -12862,6 +12862,480 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
               }
           };
           
+          // =============== 企业级成绩图表系统 ===============
+          const AdvancedChartsSystem = {
+              charts: {},
+              init: function() {
+                  this.historicalData = this.getHistoricalData();
+                  this.createNationalLineChart();
+              },
+              
+              getHistoricalData: function() {
+                  return {
+                      nationalLine: [
+                          {year: 2020, score: 288, trend: 'stable'},
+                          {year: 2021, score: 280, trend: 'down'},
+                          {year: 2022, score: 290, trend: 'up'},
+                          {year: 2023, score: 279, trend: 'down'},
+                          {year: 2024, score: 288, trend: 'up'},
+                          {year: 2025, score: 274, trend: 'prediction'}
+                      ]
+                  };
+              },
+              
+              createNationalLineChart: function() {
+                  const ctx = document.getElementById('nationalLineChart');
+                  if (!ctx) return;
+                  
+                  this.charts.nationalLine = new Chart(ctx, {
+                      type: 'line',
+                      data: {
+                          labels: this.historicalData.nationalLine.map(d => d.year),
+                          datasets: [{
+                              label: '总分国家线',
+                              data: this.historicalData.nationalLine.map(d => d.score),
+                              borderColor: '#1e6fa8',
+                              backgroundColor: 'rgba(30, 111, 168, 0.1)',
+                              borderWidth: 3,
+                              fill: true,
+                              tension: 0.4
+                          }]
+                      }
+                  });
+              }
+          };
+
+          // =============== 本地题库管理系统 ===============
+          const LocalQuestionBank = {
+              questions: [],
+              categories: ['流体静力学', '流体运动学', '流体动力学', '粘性流动', '湍流理论'],
+              difficulties: ['简单', '中等', '困难', '极难'],
+              
+              init: function() {
+                  this.loadQuestions();
+                  this.setupEventListeners();
+              },
+              
+              loadQuestions: function() {
+                  this.questions = [
+                      {
+                          id: 1,
+                          type: '单选题',
+                          category: '流体静力学',
+                          difficulty: '简单',
+                          question: '静止流体中任意一点的压强大小（）。',
+                          options: ['A. 与方向有关', 'B. 与方向无关', 'C. 在水平方向最大', 'D. 在竖直方向最大'],
+                          correctAnswer: 'B',
+                          explanation: '根据流体静力学基本方程，静止流体中任意一点的压强是标量，与方向无关。'
+                      }
+                  ];
+              },
+              
+              searchQuestions: function(query, category, difficulty) {
+                  return this.questions.filter(q => {
+                      const matchesQuery = !query || q.question.toLowerCase().includes(query.toLowerCase());
+                      const matchesCategory = !category || q.category === category;
+                      const matchesDifficulty = !difficulty || q.difficulty === difficulty;
+                      return matchesQuery && matchesCategory && matchesDifficulty;
+                  });
+              },
+              
+              setupEventListeners: function() {
+                  console.log('题库系统初始化完成');
+              }
+          };
+
+          // =============== 视频上传管理系统 ===============
+          const VideoUploadSystem = {
+              videos: [],
+              uploadQueue: [],
+              isUploading: false,
+              maxFileSize: 500 * 1024 * 1024, // 500MB
+              supportedFormats: ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm'],
+              
+              init: function() {
+                  this.loadVideos();
+                  this.setupDropZone();
+              },
+              
+              loadVideos: function() {
+                  // 模拟加载视频数据
+                  this.videos = [
+                      {id: 1, name: '流体力学基础1.mp4', size: 104857600, uploadedAt: '2024-01-01'},
+                      {id: 2, name: '流体力学实验2.mp4', size: 209715200, uploadedAt: '2024-02-01'}
+                  ];
+              },
+              
+              setupDropZone: function() {
+                  // 这里只做简单的事件绑定示例
+                  console.log('视频上传拖拽区已初始化');
+              },
+              
+              uploadVideoFile: async function(file) {
+                  // 这里只做简单的上传示例
+                  console.log('上传视频文件:', file.name);
+              },
+              
+              startUploadQueue: function() {
+                  // 这里只做简单的队列处理示例
+                  console.log('开始上传队列');
+              },
+              
+              handleUploadError: function(error) {
+                  // 这里只做简单的错误处理示例
+                  console.error('视频上传错误:', error);
+              }
+          };
+
+          // =============== AI机器人助手系统 ===============
+          const AIAssistantSystem = {
+              conversationHistory: [],
+              isProcessing: false,
+              models: ['gpt-basic', 'gpt-advanced', 'bert-qa'],
+              selectedModel: 'gpt-basic',
+              
+              init: function() {
+                  this.setupChatInterface();
+                  this.loadConversationHistory();
+              },
+              
+              setupChatInterface: function() {
+                  console.log('AI聊天界面已初始化');
+              },
+              
+              loadConversationHistory: function() {
+                  this.conversationHistory = [
+                      {role: 'system', content: '我是流体力学学习助手，可以回答相关问题。'},
+                      {role: 'user', content: '什么是雷诺数？'},
+                      {role: 'assistant', content: '雷诺数是一个无量纲参数，表示惯性力与粘性力的比值，用于判断流体是否为层流或湍流。'}
+                  ];
+              },
+              
+              sendMessage: async function(message) {
+                  if (this.isProcessing) return;
+                  
+                  this.isProcessing = true;
+                  this.conversationHistory.push({role: 'user', content: message});
+                  
+                  try {
+                      // 模拟AI回复
+                      const response = await this.simulateAIResponse(message);
+                      this.conversationHistory.push({role: 'assistant', content: response});
+                  } catch (error) {
+                      console.error('AI响应错误:', error);
+                  } finally {
+                      this.isProcessing = false;
+                  }
+              },
+              
+              simulateAIResponse: function(message) {
+                  return new Promise(resolve => {
+                      setTimeout(() => {
+                          if (message.includes('流体')) {
+                              resolve('流体力学是研究流体静力学和流体动力学的科学，广泛应用于工程领域。');
+                          } else if (message.includes('考试')) {
+                              resolve('复习流体力学考试建议从基本概念入手，掌握核心公式，做大量习题巩固。');
+                          } else {
+                              resolve('您好，我是流体力学助手，请问有什么可以帮您的？');
+                          }
+                      }, 1000);
+                  });
+              }
+          };
+
+          // =============== 高级排版系统 ===============
+          const AdvancedLayoutSystem = {
+              themes: ['default', 'dark', 'light', 'high-contrast', 'print-friendly'],
+              currentTheme: 'default',
+              fontSizes: ['small', 'medium', 'large', 'extra-large'],
+              currentFontSize: 'medium',
+              
+              init: function() {
+                  this.loadUserPreferences();
+                  this.setupThemeToggle();
+                  this.setupFontSizeControls();
+                  this.applyCurrentTheme();
+                  this.setupResponsiveLayout();
+                  this.setupPrintStyles();
+              },
+              
+              loadUserPreferences: function() {
+                  // 尝试从localStorage加载用户偏好
+                  const savedTheme = localStorage.getItem('userTheme');
+                  const savedFontSize = localStorage.getItem('userFontSize');
+                  
+                  if (savedTheme && this.themes.includes(savedTheme)) {
+                      this.currentTheme = savedTheme;
+                  } else {
+                      // 自动检测系统主题偏好
+                      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                          this.currentTheme = 'dark';
+                      }
+                  }
+                  
+                  if (savedFontSize && this.fontSizes.includes(savedFontSize)) {
+                      this.currentFontSize = savedFontSize;
+                  }
+              },
+              
+              setupThemeToggle: function() {
+                  // 主题切换按钮事件绑定
+                  console.log('主题切换功能已初始化');
+              },
+              
+              setupFontSizeControls: function() {
+                  // 字体大小控制事件绑定
+                  console.log('字体大小控制已初始化');
+              },
+              
+              applyCurrentTheme: function() {
+                  document.documentElement.setAttribute('data-theme', this.currentTheme);
+                  document.documentElement.setAttribute('data-font-size', this.currentFontSize);
+                  localStorage.setItem('userTheme', this.currentTheme);
+                  localStorage.setItem('userFontSize', this.currentFontSize);
+              },
+              
+              setupResponsiveLayout: function() {
+                  // 设置响应式布局检测
+                  window.addEventListener('resize', this.handleResize.bind(this));
+                  this.handleResize(); // 初始调用
+              },
+              
+              handleResize: function() {
+                  const width = window.innerWidth;
+                  if (width < 576) {
+                      document.body.setAttribute('data-device', 'mobile');
+                  } else if (width < 992) {
+                      document.body.setAttribute('data-device', 'tablet');
+                  } else {
+                      document.body.setAttribute('data-device', 'desktop');
+                  }
+              },
+              
+              setupPrintStyles: function() {
+                  // 为打印设置特殊样式
+                  window.addEventListener('beforeprint', () => {
+                      const originalTheme = this.currentTheme;
+                      this.currentTheme = 'print-friendly';
+                      this.applyCurrentTheme();
+                      
+                      // 打印后恢复
+                      window.addEventListener('afterprint', () => {
+                          this.currentTheme = originalTheme;
+                          this.applyCurrentTheme();
+                      }, {once: true});
+                  });
+              }
+          };
+
+          // =============== 流体动力学可视化模拟系统 ===============
+          const FluidSimulationSystem = {
+              canvas: null,
+              ctx: null,
+              simulationTypes: ['水流模拟', '气流模拟', '湍流模拟', '边界层模拟'],
+              currentSimulation: '水流模拟',
+              particles: [],
+              obstacles: [],
+              gravity: 0.1,
+              friction: 0.99,
+              isRunning: false,
+              animationFrame: null,
+              
+              init: function() {
+                  this.setupCanvas();
+                  this.setupControls();
+                  this.createObstacles();
+                  this.createParticles(500); // 默认500个粒子
+              },
+              
+              setupCanvas: function() {
+                  this.canvas = document.getElementById('simulationCanvas');
+                  if (!this.canvas) return;
+                  
+                  this.ctx = this.canvas.getContext('2d');
+                  this.resizeCanvas();
+                  
+                  window.addEventListener('resize', () => {
+                      this.resizeCanvas();
+                  });
+              },
+              
+              resizeCanvas: function() {
+                  if (!this.canvas) return;
+                  
+                  const container = this.canvas.parentElement;
+                  this.canvas.width = container.clientWidth;
+                  this.canvas.height = container.clientHeight;
+              },
+              
+              setupControls: function() {
+                  // 简单模拟控制事件绑定
+                  console.log('流体模拟控制已初始化');
+              },
+              
+              createParticles: function(count) {
+                  if (!this.canvas) return;
+                  
+                  this.particles = [];
+                  for (let i = 0; i < count; i++) {
+                      this.particles.push({
+                          x: Math.random() * this.canvas.width,
+                          y: Math.random() * this.canvas.height,
+                          vx: Math.random() * 2 - 1, // -1到1之间的随机速度
+                          vy: Math.random() * 2 - 1,
+                          radius: Math.random() * 3 + 1, // 1-4之间的随机半径
+                          color: `rgba(0, 120, 255, ${Math.random() * 0.5 + 0.5})` // 随机蓝色
+                      });
+                  }
+              },
+              
+              createObstacles: function() {
+                  if (!this.canvas) return;
+                  
+                  this.obstacles = [
+                      {
+                          x: this.canvas.width * 0.5,
+                          y: this.canvas.height * 0.5,
+                          radius: 30,
+                          type: 'circle'
+                      },
+                      {
+                          x: this.canvas.width * 0.7,
+                          y: this.canvas.height * 0.3,
+                          width: 60,
+                          height: 20,
+                          angle: Math.PI / 4, // 45度角
+                          type: 'rectangle'
+                      }
+                  ];
+              },
+              
+              start: function() {
+                  if (this.isRunning) return;
+                  
+                  this.isRunning = true;
+                  this.animate();
+              },
+              
+              stop: function() {
+                  this.isRunning = false;
+                  if (this.animationFrame) {
+                      cancelAnimationFrame(this.animationFrame);
+                      this.animationFrame = null;
+                  }
+              },
+              
+              animate: function() {
+                  if (!this.isRunning) return;
+                  
+                  this.update();
+                  this.render();
+                  
+                  this.animationFrame = requestAnimationFrame(() => {
+                      this.animate();
+                  });
+              },
+              
+              update: function() {
+                  if (!this.canvas) return;
+                  
+                  this.particles.forEach(particle => {
+                      // 添加重力
+                      particle.vy += this.gravity;
+                      
+                      // 摩擦力
+                      particle.vx *= this.friction;
+                      particle.vy *= this.friction;
+                      
+                      // 更新位置
+                      particle.x += particle.vx;
+                      particle.y += particle.vy;
+                      
+                      // 边界碰撞
+                      if (particle.x < 0) {
+                          particle.x = 0;
+                          particle.vx = -particle.vx * 0.5;
+                      } else if (particle.x > this.canvas.width) {
+                          particle.x = this.canvas.width;
+                          particle.vx = -particle.vx * 0.5;
+                      }
+                      
+                      if (particle.y < 0) {
+                          particle.y = 0;
+                          particle.vy = -particle.vy * 0.5;
+                      } else if (particle.y > this.canvas.height) {
+                          particle.y = this.canvas.height;
+                          particle.vy = -particle.vy * 0.5;
+                      }
+                      
+                      // 障碍物碰撞
+                      this.obstacles.forEach(obstacle => {
+                          if (obstacle.type === 'circle') {
+                              const dx = particle.x - obstacle.x;
+                              const dy = particle.y - obstacle.y;
+                              const distance = Math.sqrt(dx * dx + dy * dy);
+                              
+                              if (distance < obstacle.radius + particle.radius) {
+                                  // 碰撞响应
+                                  const angle = Math.atan2(dy, dx);
+                                  const totalRadius = obstacle.radius + particle.radius;
+                                  
+                                  // 调整位置
+                                  particle.x = obstacle.x + Math.cos(angle) * totalRadius;
+                                  particle.y = obstacle.y + Math.sin(angle) * totalRadius;
+                                  
+                                  // 改变速度方向
+                                  const dotProduct = particle.vx * Math.cos(angle) + particle.vy * Math.sin(angle);
+                                  particle.vx -= 2 * dotProduct * Math.cos(angle);
+                                  particle.vy -= 2 * dotProduct * Math.sin(angle);
+                                  
+                                  // 减少能量
+                                  particle.vx *= 0.8;
+                                  particle.vy *= 0.8;
+                              }
+                          }
+                          // 矩形碰撞检测略复杂，这里省略
+                      });
+                  });
+              },
+              
+              render: function() {
+                  if (!this.canvas || !this.ctx) return;
+                  
+                  // 清空画布
+                  this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                  
+                  // 绘制背景
+                  this.ctx.fillStyle = 'rgba(240, 248, 255, 0.8)'; // 淡蓝色背景
+                  this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                  
+                  // 绘制障碍物
+                  this.obstacles.forEach(obstacle => {
+                      this.ctx.fillStyle = '#333';
+                      
+                      if (obstacle.type === 'circle') {
+                          this.ctx.beginPath();
+                          this.ctx.arc(obstacle.x, obstacle.y, obstacle.radius, 0, Math.PI * 2);
+                          this.ctx.fill();
+                      } else if (obstacle.type === 'rectangle') {
+                          this.ctx.save();
+                          this.ctx.translate(obstacle.x, obstacle.y);
+                          this.ctx.rotate(obstacle.angle);
+                          this.ctx.fillRect(-obstacle.width/2, -obstacle.height/2, obstacle.width, obstacle.height);
+                          this.ctx.restore();
+                      }
+                  });
+                  
+                  // 绘制粒子
+                  this.particles.forEach(particle => {
+                      this.ctx.fillStyle = particle.color;
+                      this.ctx.beginPath();
+                      this.ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2);
+                      this.ctx.fill();
+                  });
+              }
+          };
+
           // 应用程序启动
           if (document.readyState === 'loading') {
               document.addEventListener('DOMContentLoaded', initializeApp);
