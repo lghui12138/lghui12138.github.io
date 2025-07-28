@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎥 视频课程 - 流体力学海洋</title>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* ===== 海洋主题变量 ===== */
+        :root {
+            --ocean-blue: #006994;
+            --ocean-light: #4facfe;
+            --ocean-deep: #003d5b;
+            --coral: #ff6b6b;
+            --seafoam: #00f2fe;
+            --sand: #f4d03f;
+            --wave-blue: #3498db;
+            --bg-ocean: linear-gradient(135deg, #006994 0%, #4facfe 25%, #00f2fe 50%, #006994 75%, #003d5b 100%);
+            --text-light: #ffffff;
+            --text-dark: #2c3e50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-ocean);
+            background-size: 400% 400%;
+            animation: ocean-wave 15s ease-in-out infinite;
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+        
+        @keyframes ocean-wave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* ===== 海洋背景 ===== */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%2300f2fe"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%234facfe"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%23006994"/></svg>') repeat-x;
+            animation: wave-move 20s linear infinite;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: -5s;
+            opacity: 0.7;
+        }
+        
+        .wave:nth-child(3) {
+            animation-delay: -10s;
+            opacity: 0.5;
+        }
+        
+        @keyframes wave-move {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* ===== 导航栏 ===== */
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 3px solid var(--ocean-light);
+            padding: 15px 0;
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+            text-decoration: none;
+        }
+        
+        .nav-brand i {
+            font-size: 2rem;
+            animation: ocean-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes ocean-pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--ocean-light)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 20px var(--seafoam)); }
+        }
+        
+        .btn-back {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* ===== 主内容 ===== */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+        
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* ===== 视频网格 ===== */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .video-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            color: var(--text-dark);
+        }
+        
+        .video-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border-color: var(--coral);
+        }
+        
+        .video-thumbnail {
+            position: relative;
+            height: 200px;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: white;
+        }
+        
+        .video-thumbnail::before {
+            content: '▶';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            opacity: 0.8;
+        }
+        
+        .video-info {
+            padding: 20px;
+        }
+        
+        .video-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--ocean-blue);
+        }
+        
+        .video-description {
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .video-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--ocean-blue);
+        }
+        
+        .video-duration {
+            background: var(--seafoam);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+        
+        .video-category {
+            background: var(--coral);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+        
+        /* ===== 上传区域 ===== */
+        .upload-section {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            color: var(--text-dark);
+        }
+        
+        .upload-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            background: rgba(240, 244, 248, 0.8);
+            padding: 5px;
+            border-radius: 15px;
+        }
+        
+        .upload-tab {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            background: transparent;
+            color: var(--ocean-blue);
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-tab.active {
+            background: var(--ocean-light);
+            color: white;
+        }
+        
+        .upload-form {
+            display: none;
+        }
+        
+        .upload-form.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--ocean-deep);
+            font-weight: 600;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--coral);
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-upload {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-upload:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* ===== 通知系统 ===== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            color: var(--text-dark);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .notification.error {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        /* ===== 响应式设计 ===== */
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .upload-tabs {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 海洋背景 -->
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <i class="fas fa-video"></i>
+                <span>🎥 视频课程</span>
+            </a>
+            <a href="index-modular.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                返回主页
+            </a>
+        </div>
+    </nav>
+    
+    <!-- 主内容 -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">🎥 流体力学视频课程</h1>
+            <p class="page-subtitle">高质量教学视频，助您深入理解流体力学</p>
+        </div>
+        
+        <!-- 上传区域 -->
+        <div class="upload-section">
+            <h2 style="margin-bottom: 20px; color: var(--ocean-blue);">
+                <i class="fas fa-cloud-upload-alt"></i> 上传视频
+            </h2>
+            
+            <div class="upload-tabs">
+                <button class="upload-tab active" onclick="switchTab('link')">视频链接</button>
+                <button class="upload-tab" onclick="switchTab('bilibili')">B站视频</button>
+                <button class="upload-tab" onclick="switchTab('douyin')">抖音视频</button>
+            </div>
+            
+            <!-- 视频链接上传 -->
+            <div id="link-form" class="upload-form active">
+                <div class="form-group">
+                    <label class="form-label">视频链接</label>
+                    <input type="url" class="form-input" placeholder="请输入视频链接" id="videoLink">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">视频标题</label>
+                    <input type="text" class="form-input" placeholder="请输入视频标题" id="videoTitle">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">视频描述</label>
+                    <textarea class="form-input" rows="4" placeholder="请输入视频描述" id="videoDescription"></textarea>
+                </div>
+                <button onclick="uploadVideoLink()" class="btn-upload">
+                    <i class="fas fa-upload"></i> 上传视频
+                </button>
+            </div>
+            
+            <!-- B站视频上传 -->
+            <div id="bilibili-form" class="upload-form">
+                <div class="form-group">
+                    <label class="form-label">B站视频BV号</label>
+                    <input type="text" class="form-input" placeholder="请输入B站视频BV号，例如：BV1xx411c7mu" id="bilibiliBv">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">视频标题（可选）</label>
+                    <input type="text" class="form-input" placeholder="请输入视频标题" id="bilibiliTitle">
+                </div>
+                <button onclick="addBilibiliVideo()" class="btn-upload">
+                    <i class="fab fa-bilibili"></i> 添加B站视频
+                </button>
+            </div>
+            
+            <!-- 抖音视频上传 -->
+            <div id="douyin-form" class="upload-form">
+                <div class="form-group">
+                    <label class="form-label">抖音视频链接</label>
+                    <input type="url" class="form-input" placeholder="请输入抖音视频链接，例如：https://v.douyin.com/..." id="douyinLink">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">视频标题</label>
+                    <input type="text" class="form-input" placeholder="请输入视频标题" id="douyinTitle">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">视频描述</label>
+                    <textarea class="form-input" rows="4" placeholder="请输入视频描述" id="douyinDescription"></textarea>
+                </div>
+                <button onclick="addDouyinVideo()" class="btn-upload">
+                    <i class="fab fa-tiktok"></i> 添加抖音视频
+                </button>
+            </div>
+        </div>
+        
+        <!-- 视频网格 -->
+        <div class="video-grid" id="videoGrid">
+            <!-- 视频卡片将通过JavaScript动态生成 -->
+        </div>
+    </div>
+    
+    <!-- 通知容器 -->
+    <div id="notification-container"></div>
+    
+    <script>
+        // 完整的视频数据
+        const videosData = [
+            {
+                id: 'video1',
+                title: '动量输运、牛顿内摩擦定律、欧拉坐标',
+                description: '详细讲解流体力学中的动量输运原理、牛顿内摩擦定律的物理意义和数学表达，以及欧拉坐标系统在流体运动描述中的应用。深入理解流体内部的动量传递机制和粘性效应。',
+                source: 'https://v.douyin.com/7vrVT-4KmbI/',
+                sourceType: 'douyin',
+                duration: '抖音视频',
+                views: '教师原创',
+                category: '基础理论',
+                featured: true,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-12-01',
+                tags: ['动量输运', '牛顿内摩擦定律', '欧拉坐标'],
+                quality: ['精品内容'],
+                thumbnail: '🌊'
+            },
+            {
+                id: 'video2',
+                title: '欧拉、拉格朗日坐标系统',
+                description: '全面对比欧拉坐标和拉格朗日坐标两种描述流体运动的方法，详解流线和迹线的概念与区别，帮助理解流体运动的数学描述和物理意义。',
+                source: 'https://v.douyin.com/X-ud2xkwvII/',
+                sourceType: 'douyin',
+                duration: '抖音视频',
+                views: '教师原创',
+                category: '基础理论',
+                featured: false,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-11-25',
+                tags: ['欧拉坐标', '拉格朗日坐标', '流线', '迹线'],
+                quality: ['精品内容'],
+                thumbnail: '📐'
+            },
+            {
+                id: 'video3',
+                title: '流体力学之美，太美了',
+                description: '探索流体世界的奇妙现象与科学原理，揭示自然界的流动艺术。通过精美的可视化展示，帮助学生理解复杂的流体现象。',
+                source: 'BV16T421D7k4',
+                sourceType: 'bilibili',
+                duration: '18:45',
+                views: '32,458',
+                category: '基础理论',
+                featured: false,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-12-01',
+                tags: ['流体力学', '基础理论', '可视化'],
+                quality: ['720p', '1080p'],
+                thumbnail: '🎨'
+            },
+            {
+                id: 'video_001',
+                title: '流体力学基础理论体系',
+                description: '系统讲解流体力学的基本概念、基本方程和基本方法，包括连续介质假设、流体性质、运动学描述等核心内容。适合初学者建立完整的理论框架。',
+                source: 'https://www.bilibili.com/video/BV1Ux411L7Zd',
+                sourceType: 'bilibili',
+                duration: '45:30',
+                views: 15420,
+                category: '基础理论',
+                featured: false,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-12-01',
+                tags: ['理论基础', '连续介质', '流体性质'],
+                quality: ['720p'],
+                thumbnail: '📚'
+            },
+            {
+                id: 'video_002',
+                title: '流体静力学与压强分布',
+                description: '深入分析流体静力学基本方程，讲解静压强的分布规律、压强测量方法、液体对壁面的作用力计算等工程实际问题。',
+                source: 'https://www.bilibili.com/video/BV1Jx411m7Qr',
+                sourceType: 'bilibili',
+                duration: '38:15',
+                views: 12680,
+                category: '流体静力学',
+                featured: false,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-12-01',
+                tags: ['静力学', '压强分布', '工程应用'],
+                quality: ['720p'],
+                thumbnail: '⚖️'
+            },
+            {
+                id: 'video_003',
+                title: '伯努利方程及其工程应用',
+                description: '详细推导伯努利方程，分析其适用条件和物理意义，通过大量工程实例展示如何应用伯努利方程解决实际问题。',
+                source: 'https://www.bilibili.com/video/BV1mx411L7Zp',
+                sourceType: 'bilibili',
+                duration: '52:40',
+                views: 18950,
+                category: '流体动力学',
+                featured: false,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-12-01',
+                tags: ['伯努利方程', '能量守恒', '工程应用'],
+                quality: ['720p'],
+                thumbnail: '🔬'
+            },
+            {
+                id: 'video_004',
+                title: '粘性流动与雷诺数',
+                description: '讲解流体粘性的本质，分析层流与湍流的区别，深入理解雷诺数的物理意义及其在流动转捩中的作用。',
+                source: 'https://www.bilibili.com/video/BV1Wx411m7Qp',
+                sourceType: 'bilibili',
+                duration: '41:20',
+                views: 14230,
+                category: '粘性流动',
+                featured: false,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-12-01',
+                tags: ['粘性流动', '雷诺数', '层流湍流'],
+                quality: ['720p'],
+                thumbnail: '🌊'
+            },
+            {
+                id: 'video_005',
+                title: '边界层理论与应用',
+                description: '系统介绍普朗特边界层理论，分析边界层的形成机理、发展规律和工程意义，讲解边界层分离现象及其控制方法。',
+                source: 'https://www.bilibili.com/video/BV1Lx411L7Zm',
+                sourceType: 'bilibili',
+                duration: '49:55',
+                views: 11780,
+                category: '边界层理论',
+                featured: false,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-12-01',
+                tags: ['边界层', '普朗特理论', '分离控制'],
+                quality: ['720p'],
+                thumbnail: '📊'
+            },
+            {
+                id: 'video_006',
+                title: '管道流动与阻力计算',
+                description: '分析管道内流体流动的特点，讲解沿程阻力和局部阻力的计算方法，介绍管网计算的基本原理和工程应用。',
+                source: 'https://www.bilibili.com/video/BV1Px411m7Qw',
+                sourceType: 'bilibili',
+                duration: '44:10',
+                views: 16540,
+                category: '管道流动',
+                featured: false,
+                uploadedBy: 'liuguanghui6330156',
+                uploadDate: '2024-12-01',
+                tags: ['管道流动', '阻力计算', '管网设计'],
+                quality: ['720p'],
+                thumbnail: '🔧'
+            }
+        ];
+        
+        // 显示通知
+        function showNotification(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, duration);
+            }
+        }
+        
+        // 切换上传标签
+        function switchTab(tabName) {
+            // 移除所有活动状态
+            document.querySelectorAll('.upload-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.upload-form').forEach(form => {
+                form.classList.remove('active');
+            });
+            
+            // 添加活动状态
+            document.querySelector(`[onclick="switchTab('${tabName}')"]`).classList.add('active');
+            document.getElementById(`${tabName}-form`).classList.add('active');
+        }
+        
+        // 渲染视频卡片
+        function renderVideos() {
+            const videoGrid = document.getElementById('videoGrid');
+            videoGrid.innerHTML = '';
+            
+            videosData.forEach(video => {
+                const videoCard = document.createElement('div');
+                videoCard.className = 'video-card';
+                videoCard.onclick = () => playVideo(video);
+                
+                videoCard.innerHTML = `
+                    <div class="video-thumbnail">
+                        ${video.thumbnail}
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-description">${video.description}</div>
+                        <div class="video-meta">
+                            <span class="video-duration">${video.duration}</span>
+                            <span class="video-category">${video.category}</span>
+                        </div>
+                    </div>
+                `;
+                
+                videoGrid.appendChild(videoCard);
+            });
+        }
+        
+        // 播放视频
+        function playVideo(video) {
+            showNotification(`🎥 正在打开视频：${video.title}`, 'info');
+            
+            // 根据视频类型打开不同的播放方式
+            if (video.type === 'youtube') {
+                window.open(video.url, '_blank');
+            } else if (video.type === 'bilibili') {
+                window.open(video.url, '_blank');
+            } else if (video.type === 'douyin') {
+                window.open(video.url, '_blank');
+            }
+        }
+        
+        // 上传视频链接
+        function uploadVideoLink() {
+            const link = document.getElementById('videoLink').value.trim();
+            const title = document.getElementById('videoTitle').value.trim();
+            const description = document.getElementById('videoDescription').value.trim();
+            
+            if (!link || !title) {
+                showNotification('请填写视频链接和标题', 'error');
+                return;
+            }
+            
+            // 创建新视频对象
+            const newVideo = {
+                id: Date.now().toString(),
+                title: title,
+                description: description || '用户上传的视频',
+                duration: '未知',
+                category: '用户上传',
+                type: 'external',
+                url: link,
+                thumbnail: '📹'
+            };
+            
+            videosData.unshift(newVideo);
+            renderVideos();
+            
+            // 清空表单
+            document.getElementById('videoLink').value = '';
+            document.getElementById('videoTitle').value = '';
+            document.getElementById('videoDescription').value = '';
+            
+            showNotification('视频上传成功！', 'success');
+        }
+        
+        // 添加B站视频
+        function addBilibiliVideo() {
+            const bvId = document.getElementById('bilibiliBv').value.trim();
+            const title = document.getElementById('bilibiliTitle').value.trim();
+            
+            if (!bvId) {
+                showNotification('请输入B站视频BV号', 'error');
+                return;
+            }
+            
+            const newVideo = {
+                id: Date.now().toString(),
+                title: title || `B站视频 ${bvId}`,
+                description: '来自Bilibili的视频内容',
+                duration: 'B站视频',
+                category: 'B站视频',
+                type: 'bilibili',
+                url: `https://www.bilibili.com/video/${bvId}`,
+                thumbnail: '📺'
+            };
+            
+            videosData.unshift(newVideo);
+            renderVideos();
+            
+            // 清空表单
+            document.getElementById('bilibiliBv').value = '';
+            document.getElementById('bilibiliTitle').value = '';
+            
+            showNotification('B站视频添加成功！', 'success');
+        }
+        
+        // 添加抖音视频
+        function addDouyinVideo() {
+            const link = document.getElementById('douyinLink').value.trim();
+            const title = document.getElementById('douyinTitle').value.trim();
+            const description = document.getElementById('douyinDescription').value.trim();
+            
+            if (!link) {
+                showNotification('请输入抖音视频链接', 'error');
+                return;
+            }
+            
+            if (!title) {
+                showNotification('请输入视频标题', 'error');
+                return;
+            }
+            
+            const newVideo = {
+                id: Date.now().toString(),
+                title: title,
+                description: description || '来自抖音的视频内容',
+                duration: '抖音视频',
+                category: '抖音视频',
+                type: 'douyin',
+                url: link,
+                thumbnail: '📱'
+            };
+            
+            videosData.unshift(newVideo);
+            renderVideos();
+            
+            // 清空表单
+            document.getElementById('douyinLink').value = '';
+            document.getElementById('douyinTitle').value = '';
+            document.getElementById('douyinDescription').value = '';
+            
+            showNotification('抖音视频添加成功！', 'success');
+        }
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderVideos();
+            showNotification('🎥 视频课程模块已加载', 'success');
+        });
+        
+        console.log('🎥 视频课程模块已加载');
+    </script>
+</body>
+</html> 

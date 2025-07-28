@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📅 复习计划 - 流体力学海洋</title>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* ===== 海洋主题变量 ===== */
+        :root {
+            --ocean-blue: #006994;
+            --ocean-light: #4facfe;
+            --ocean-deep: #003d5b;
+            --coral: #ff6b6b;
+            --seafoam: #00f2fe;
+            --sand: #f4d03f;
+            --wave-blue: #3498db;
+            --bg-ocean: linear-gradient(135deg, #006994 0%, #4facfe 25%, #00f2fe 50%, #006994 75%, #003d5b 100%);
+            --text-light: #ffffff;
+            --text-dark: #2c3e50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-ocean);
+            background-size: 400% 400%;
+            animation: ocean-wave 15s ease-in-out infinite;
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+        
+        @keyframes ocean-wave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* ===== 海洋背景 ===== */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%2300f2fe"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%234facfe"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%23006994"/></svg>') repeat-x;
+            animation: wave-move 20s linear infinite;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: -5s;
+            opacity: 0.7;
+        }
+        
+        .wave:nth-child(3) {
+            animation-delay: -10s;
+            opacity: 0.5;
+        }
+        
+        @keyframes wave-move {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* ===== 导航栏 ===== */
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 3px solid var(--ocean-light);
+            padding: 15px 0;
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+            text-decoration: none;
+        }
+        
+        .nav-brand i {
+            font-size: 2rem;
+            animation: ocean-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes ocean-pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--ocean-light)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 20px var(--seafoam)); }
+        }
+        
+        .btn-back {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* ===== 主内容 ===== */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+        
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* ===== 进度概览 ===== */
+        .progress-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .progress-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+        
+        .progress-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border-color: var(--coral);
+        }
+        
+        .progress-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--ocean-blue);
+        }
+        
+        .progress-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--ocean-blue);
+        }
+        
+        .progress-label {
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+        
+        /* ===== 复习计划创建 ===== */
+        .plan-creation {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            color: var(--text-dark);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: var(--ocean-blue);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .plan-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-label {
+            margin-bottom: 8px;
+            color: var(--ocean-deep);
+            font-weight: 600;
+        }
+        
+        .form-input {
+            padding: 12px 15px;
+            border: 2px solid var(--ocean-light);
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--coral);
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .btn-create {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            align-self: end;
+        }
+        
+        .btn-create:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* ===== 复习计划列表 ===== */
+        .plan-list {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            color: var(--text-dark);
+        }
+        
+        .plan-item {
+            background: rgba(240, 244, 248, 0.8);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .plan-item:hover {
+            transform: translateX(10px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.2);
+        }
+        
+        .plan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .plan-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+        }
+        
+        .plan-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: var(--sand);
+            color: var(--text-dark);
+        }
+        
+        .status-in-progress {
+            background: var(--seafoam);
+            color: white;
+        }
+        
+        .status-completed {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .plan-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .plan-detail {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dark);
+        }
+        
+        .plan-progress {
+            margin-bottom: 15px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: rgba(79, 172, 254, 0.2);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            transition: width 0.3s ease;
+        }
+        
+        .plan-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-action {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-start {
+            background: var(--seafoam);
+            color: white;
+        }
+        
+        .btn-edit {
+            background: var(--sand);
+            color: var(--text-dark);
+        }
+        
+        .btn-delete {
+            background: var(--coral);
+            color: white;
+        }
+        
+        .btn-action:hover {
+            transform: scale(1.05);
+        }
+        
+        /* ===== 学习建议 ===== */
+        .suggestions {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            color: var(--text-dark);
+        }
+        
+        .suggestion-item {
+            background: rgba(79, 172, 254, 0.1);
+            border-left: 4px solid var(--ocean-light);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 0 10px 10px 0;
+        }
+        
+        .suggestion-title {
+            font-weight: bold;
+            color: var(--ocean-blue);
+            margin-bottom: 5px;
+        }
+        
+        .suggestion-text {
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+        
+        /* ===== 通知系统 ===== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            color: var(--text-dark);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .notification.error {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        /* ===== 响应式设计 ===== */
+        @media (max-width: 768px) {
+            .progress-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .plan-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .plan-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .plan-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 海洋背景 -->
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <i class="fas fa-calendar-alt"></i>
+                <span>📅 复习计划</span>
+            </a>
+            <a href="index-modular.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                返回主页
+            </a>
+        </div>
+    </nav>
+    
+    <!-- 主内容 -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">📅 个性化复习计划</h1>
+            <p class="page-subtitle">科学规划学习进度，高效掌握流体力学知识</p>
+        </div>
+        
+        <!-- 进度概览 -->
+        <div class="progress-overview">
+            <div class="progress-card">
+                <div class="progress-icon">📚</div>
+                <div class="progress-value" id="totalPlans">0</div>
+                <div class="progress-label">总计划数</div>
+            </div>
+            <div class="progress-card">
+                <div class="progress-icon">⏳</div>
+                <div class="progress-value" id="activePlans">0</div>
+                <div class="progress-label">进行中</div>
+            </div>
+            <div class="progress-card">
+                <div class="progress-icon">✅</div>
+                <div class="progress-value" id="completedPlans">0</div>
+                <div class="progress-label">已完成</div>
+            </div>
+            <div class="progress-card">
+                <div class="progress-icon">📈</div>
+                <div class="progress-value" id="avgProgress">0%</div>
+                <div class="progress-label">平均进度</div>
+            </div>
+        </div>
+        
+        <!-- 复习计划创建 -->
+        <div class="plan-creation">
+            <h2 class="section-title">
+                <i class="fas fa-plus-circle"></i>
+                创建复习计划
+            </h2>
+            
+            <form id="planForm" class="plan-form">
+                <div class="form-group">
+                    <label class="form-label">计划名称</label>
+                    <input type="text" class="form-input" id="planName" placeholder="例如：流体力学基础复习" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">学习内容</label>
+                    <select class="form-input" id="planContent" required>
+                        <option value="">请选择学习内容</option>
+                        <option value="流体力学基础概念">流体力学基础概念</option>
+                        <option value="伯努利方程">伯努利方程</option>
+                        <option value="雷诺数与流动状态">雷诺数与流动状态</option>
+                        <option value="边界层理论">边界层理论</option>
+                        <option value="计算流体力学">计算流体力学</option>
+                        <option value="综合复习">综合复习</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">开始日期</label>
+                    <input type="date" class="form-input" id="startDate" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">结束日期</label>
+                    <input type="date" class="form-input" id="endDate" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">每日学习时间(小时)</label>
+                    <input type="number" class="form-input" id="dailyHours" placeholder="1-8小时" min="1" max="8" required>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn-create">
+                        <i class="fas fa-plus"></i> 创建计划
+                    </button>
+                </div>
+            </form>
+        </div>
+        
+        <!-- 复习计划列表 -->
+        <div class="plan-list">
+            <h2 class="section-title">
+                <i class="fas fa-list"></i>
+                我的复习计划
+            </h2>
+            
+            <div id="planList">
+                <div style="text-align: center; padding: 40px; color: var(--ocean-blue);">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">📅</div>
+                    <h3>暂无复习计划</h3>
+                    <p>请先创建一个复习计划</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 学习建议 -->
+        <div class="suggestions">
+            <h2 class="section-title">
+                <i class="fas fa-lightbulb"></i>
+                学习建议
+            </h2>
+            
+            <div class="suggestion-item">
+                <div class="suggestion-title">🌊 制定合理的学习计划</div>
+                <div class="suggestion-text">根据考试时间倒推，合理分配每个章节的学习时间，确保重点内容有充足复习时间。</div>
+            </div>
+            
+            <div class="suggestion-item">
+                <div class="suggestion-title">📚 理论与实践相结合</div>
+                <div class="suggestion-text">理论学习后及时做练习题，通过实践加深理解，特别是伯努利方程和雷诺数的应用。</div>
+            </div>
+            
+            <div class="suggestion-item">
+                <div class="suggestion-title">🎯 重点突破难点</div>
+                <div class="suggestion-text">边界层理论和计算流体力学是难点，建议多花时间，可以观看相关视频和做仿真实验。</div>
+            </div>
+            
+            <div class="suggestion-item">
+                <div class="suggestion-title">📊 定期自我检测</div>
+                <div class="suggestion-text">每周进行一次自我测试，及时发现薄弱环节，调整学习计划。</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知容器 -->
+    <div id="notification-container"></div>
+    
+    <script>
+        // 完整的复习计划数据
+        let plansData = [
+            {
+                id: 'plan_001',
+                name: '流体静力学基础复习',
+                content: '系统复习流体静力学的基本概念、压强分布、浮力计算等核心知识点。',
+                category: '流体静力学',
+                difficulty: '基础',
+                duration: '2周',
+                progress: 0,
+                startDate: '2024-12-01',
+                endDate: '2024-12-15',
+                priority: 'high',
+                status: 'pending',
+                tasks: [
+                    { id: 1, title: '压强概念与单位', completed: false, duration: '2天' },
+                    { id: 2, title: '帕斯卡定律', completed: false, duration: '3天' },
+                    { id: 3, title: '阿基米德定律', completed: false, duration: '3天' },
+                    { id: 4, title: '流体静力学基本方程', completed: false, duration: '4天' },
+                    { id: 5, title: '等压面与压强分布', completed: false, duration: '2天' }
+                ]
+            },
+            {
+                id: 'plan_002',
+                name: '伯努利方程专题复习',
+                content: '深入理解伯努利方程的推导、适用条件和工程应用。',
+                category: '流体动力学',
+                difficulty: '中级',
+                duration: '3周',
+                progress: 0,
+                startDate: '2024-12-16',
+                endDate: '2025-01-06',
+                priority: 'high',
+                status: 'pending',
+                tasks: [
+                    { id: 1, title: '伯努利方程推导', completed: false, duration: '5天' },
+                    { id: 2, title: '适用条件分析', completed: false, duration: '3天' },
+                    { id: 3, title: '文丘里管应用', completed: false, duration: '4天' },
+                    { id: 4, title: '皮托管测量原理', completed: false, duration: '3天' },
+                    { id: 5, title: '工程案例分析', completed: false, duration: '5天' }
+                ]
+            },
+            {
+                id: 'plan_003',
+                name: '边界层理论深入复习',
+                content: '边界层概念、边界层方程、边界层厚度等核心理论的系统复习。',
+                category: '边界层理论',
+                difficulty: '高级',
+                duration: '4周',
+                progress: 0,
+                startDate: '2025-01-07',
+                endDate: '2025-02-04',
+                priority: 'medium',
+                status: 'pending',
+                tasks: [
+                    { id: 1, title: '边界层概念与定义', completed: false, duration: '3天' },
+                    { id: 2, title: '普朗特边界层理论', completed: false, duration: '5天' },
+                    { id: 3, title: '边界层方程推导', completed: false, duration: '7天' },
+                    { id: 4, title: '边界层厚度概念', completed: false, duration: '4天' },
+                    { id: 5, title: '边界层分离现象', completed: false, duration: '5天' },
+                    { id: 6, title: '边界层控制方法', completed: false, duration: '6天' }
+                ]
+            },
+            {
+                id: 'plan_004',
+                name: '雷诺数与流动状态复习',
+                content: '雷诺数的物理意义、临界雷诺数、层流与湍流的判断标准。',
+                category: '流动状态',
+                difficulty: '中级',
+                duration: '2周',
+                progress: 0,
+                startDate: '2025-02-05',
+                endDate: '2025-02-19',
+                priority: 'medium',
+                status: 'pending',
+                tasks: [
+                    { id: 1, title: '雷诺数定义与物理意义', completed: false, duration: '3天' },
+                    { id: 2, title: '临界雷诺数', completed: false, duration: '2天' },
+                    { id: 3, title: '层流特征', completed: false, duration: '3天' },
+                    { id: 4, title: '湍流特征', completed: false, duration: '3天' },
+                    { id: 5, title: '流动转捩过程', completed: false, duration: '3天' }
+                ]
+            },
+            {
+                id: 'plan_005',
+                name: '计算流体力学入门',
+                content: 'CFD基础、数值方法、网格划分等计算流体力学入门知识。',
+                category: '计算流体力学',
+                difficulty: '高级',
+                duration: '6周',
+                progress: 0,
+                startDate: '2025-02-20',
+                endDate: '2025-04-02',
+                priority: 'low',
+                status: 'pending',
+                tasks: [
+                    { id: 1, title: 'CFD基本概念', completed: false, duration: '5天' },
+                    { id: 2, title: '控制方程离散化', completed: false, duration: '7天' },
+                    { id: 3, title: '网格划分技术', completed: false, duration: '10天' },
+                    { id: 4, title: '数值求解方法', completed: false, duration: '8天' },
+                    { id: 5, title: '边界条件处理', completed: false, duration: '6天' },
+                    { id: 6, title: '结果后处理', completed: false, duration: '4天' }
+                ]
+            }
+        ];
+        
+        // 显示通知
+        function showNotification(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, duration);
+            }
+        }
+        
+        // 更新进度概览
+        function updateProgress() {
+            const totalPlans = plansData.length;
+            const activePlans = plansData.filter(plan => plan.status === 'in-progress').length;
+            const completedPlans = plansData.filter(plan => plan.status === 'completed').length;
+            const avgProgress = totalPlans > 0 ? Math.round(plansData.reduce((sum, plan) => sum + plan.progress, 0) / totalPlans) : 0;
+            
+            document.getElementById('totalPlans').textContent = totalPlans;
+            document.getElementById('activePlans').textContent = activePlans;
+            document.getElementById('completedPlans').textContent = completedPlans;
+            document.getElementById('avgProgress').textContent = avgProgress + '%';
+        }
+        
+        // 渲染计划列表
+        function renderPlanList() {
+            const planList = document.getElementById('planList');
+            
+            if (plansData.length === 0) {
+                planList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: var(--ocean-blue);">
+                        <div style="font-size: 3rem; margin-bottom: 15px;">📅</div>
+                        <h3>暂无复习计划</h3>
+                        <p>请先创建一个复习计划</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            planList.innerHTML = plansData.map((plan, index) => `
+                <div class="plan-item">
+                    <div class="plan-header">
+                        <div class="plan-title">${plan.name}</div>
+                        <div class="plan-status status-${plan.status}">
+                            ${plan.status === 'pending' ? '待开始' : 
+                              plan.status === 'in-progress' ? '进行中' : '已完成'}
+                        </div>
+                    </div>
+                    
+                    <div class="plan-details">
+                        <div class="plan-detail">
+                            <i class="fas fa-book"></i>
+                            <span>${plan.content}</span>
+                        </div>
+                        <div class="plan-detail">
+                            <i class="fas fa-calendar"></i>
+                            <span>${plan.startDate} - ${plan.endDate}</span>
+                        </div>
+                        <div class="plan-detail">
+                            <i class="fas fa-clock"></i>
+                            <span>每日 ${plan.dailyHours} 小时</span>
+                        </div>
+                    </div>
+                    
+                    <div class="plan-progress">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                            <span>进度: ${plan.progress}%</span>
+                            <span>${plan.completedDays}/${plan.totalDays} 天</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${plan.progress}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="plan-actions">
+                        ${plan.status === 'pending' ? 
+                            `<button class="btn-action btn-start" onclick="startPlan(${index})">
+                                <i class="fas fa-play"></i> 开始
+                            </button>` : 
+                            plan.status === 'in-progress' ? 
+                            `<button class="btn-action btn-start" onclick="updateProgress(${index})">
+                                <i class="fas fa-plus"></i> 更新进度
+                            </button>` : ''
+                        }
+                        <button class="btn-action btn-edit" onclick="editPlan(${index})">
+                            <i class="fas fa-edit"></i> 编辑
+                        </button>
+                        <button class="btn-action btn-delete" onclick="deletePlan(${index})">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 创建计划
+        function createPlan(planData) {
+            const startDate = new Date(planData.startDate);
+            const endDate = new Date(planData.endDate);
+            const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+            
+            const newPlan = {
+                ...planData,
+                id: Date.now(),
+                status: 'pending',
+                progress: 0,
+                completedDays: 0,
+                totalDays: totalDays,
+                createdAt: new Date().toISOString()
+            };
+            
+            plansData.push(newPlan);
+            localStorage.setItem('plansData', JSON.stringify(plansData));
+            
+            showNotification(`复习计划"${planData.name}"创建成功！`, 'success');
+            updateProgress();
+            renderPlanList();
+        }
+        
+        // 开始计划
+        function startPlan(index) {
+            plansData[index].status = 'in-progress';
+            plansData[index].startedAt = new Date().toISOString();
+            localStorage.setItem('plansData', JSON.stringify(plansData));
+            
+            showNotification(`复习计划"${plansData[index].name}"已开始！`, 'success');
+            updateProgress();
+            renderPlanList();
+        }
+        
+        // 更新进度
+        function updateProgress(planIndex) {
+            const plan = plansData[planIndex];
+            const increment = prompt(`当前进度: ${plan.progress}%\n请输入要增加的进度百分比:`, '10');
+            
+            if (increment !== null && !isNaN(increment)) {
+                const newProgress = Math.min(100, plan.progress + parseInt(increment));
+                plansData[planIndex].progress = newProgress;
+                plansData[planIndex].completedDays = Math.round((newProgress / 100) * plan.totalDays);
+                
+                if (newProgress >= 100) {
+                    plansData[planIndex].status = 'completed';
+                    plansData[planIndex].completedAt = new Date().toISOString();
+                }
+                
+                localStorage.setItem('plansData', JSON.stringify(plansData));
+                showNotification(`进度已更新至 ${newProgress}%`, 'success');
+                updateProgress();
+                renderPlanList();
+            }
+        }
+        
+        // 编辑计划
+        function editPlan(index) {
+            const plan = plansData[index];
+            const newName = prompt('请输入新的计划名称:', plan.name);
+            
+            if (newName && newName.trim()) {
+                plansData[index].name = newName.trim();
+                localStorage.setItem('plansData', JSON.stringify(plansData));
+                showNotification('计划名称已更新', 'success');
+                renderPlanList();
+            }
+        }
+        
+        // 删除计划
+        function deletePlan(index) {
+            if (confirm('确定要删除这个复习计划吗？')) {
+                const deletedPlan = plansData.splice(index, 1)[0];
+                localStorage.setItem('plansData', JSON.stringify(plansData));
+                showNotification(`复习计划"${deletedPlan.name}"已删除`, 'success');
+                updateProgress();
+                renderPlanList();
+            }
+        }
+        
+        // 表单提交处理
+        document.getElementById('planForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('planName').value.trim(),
+                content: document.getElementById('planContent').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                dailyHours: parseInt(document.getElementById('dailyHours').value)
+            };
+            
+            // 验证日期
+            if (new Date(formData.startDate) >= new Date(formData.endDate)) {
+                showNotification('结束日期必须晚于开始日期', 'error');
+                return;
+            }
+            
+            createPlan(formData);
+            this.reset();
+            
+            // 设置默认开始日期为今天
+            document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+        });
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 从本地存储加载数据
+            const savedData = localStorage.getItem('plansData');
+            if (savedData) {
+                plansData = JSON.parse(savedData);
+            }
+            
+            // 设置默认开始日期为今天
+            document.getElementById('startDate').value = new Date().toISOString().split('T')[0];
+            
+            updateProgress();
+            renderPlanList();
+            showNotification('📅 复习计划模块已加载', 'success');
+        });
+        
+        console.log('📅 复习计划模块已加载');
+    </script>
+</body>
+</html> 

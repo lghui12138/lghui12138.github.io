@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模块调试 - 流体力学学习平台</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        
+        .debug-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .debug-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid #3a3a3a;
+        }
+        
+        .debug-title {
+            color: #4facfe;
+            font-size: 1.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .module-status {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 4px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .status-loaded { background: #10b981; }
+        .status-error { background: #ef4444; }
+        .status-loading { background: #f59e0b; }
+        
+        .error-message {
+            background: #ef4444;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .success-message {
+            background: #10b981;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        
+        .log-output {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        button {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #0084ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="debug-container">
+        <h1>🔧 模块加载调试</h1>
+        
+        <div class="debug-section">
+            <h2 class="debug-title">文件检查</h2>
+            <div id="file-check"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h2 class="debug-title">模块加载状态</h2>
+            <div id="module-status"></div>
+        </div>
+        
+        <div class="debug-section">
+            <h2 class="debug-title">控制台日志</h2>
+            <div id="log-output" class="log-output"></div>
+            <button onclick="clearLog()">清空日志</button>
+            <button onclick="checkModules()">重新检查</button>
+        </div>
+        
+        <div class="debug-section">
+            <h2 class="debug-title">手动加载测试</h2>
+            <button onclick="loadConfig()">加载 Config</button>
+            <button onclick="loadUtils()">加载 Utils</button>
+            <button onclick="loadEventBus()">加载 EventBus</button>
+            <button onclick="loadAuth()">加载 Auth</button>
+            <button onclick="loadAll()">加载所有模块</button>
+        </div>
+    </div>
+
+    <script>
+        // 日志系统
+        const logOutput = document.getElementById('log-output');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logOutput.textContent += `[${timestamp}] ${message}\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            logOutput.textContent = '';
+        }
+        
+        // 检查文件是否存在
+        async function checkFile(url) {
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+        
+        // 检查文件状态
+        async function checkFiles() {
+            const files = [
+                'js/core/config.js',
+                'js/core/utils.js', 
+                'js/core/eventBus.js',
+                'js/auth/auth.js',
+                'js/storage/githubStorage.js',
+                'js/components/questionBank.js',
+                'js/components/aiAssistant.js',
+                'js/app.js',
+                'styles/main.css',
+                'styles/auth.css',
+                'styles/dashboard.css',
+                'styles/components.css'
+            ];
+            
+            const fileCheckDiv = document.getElementById('file-check');
+            let html = '';
+            
+            for (const file of files) {
+                const exists = await checkFile(file);
+                const statusClass = exists ? 'status-loaded' : 'status-error';
+                const statusText = exists ? '存在' : '不存在';
+                
+                html += `
+                    <div class="module-status">
+                        <span class="status-indicator ${statusClass}"></span>
+                        <span>${file}: ${statusText}</span>
+                    </div>
+                `;
+                
+                log(`${file}: ${statusText}`);
+            }
+            
+            fileCheckDiv.innerHTML = html;
+        }
+        
+        // 检查模块状态
+        function checkModules() {
+            const modules = [
+                'AppConfig', 'Utils', 'EventBus', 'SystemEvents',
+                'AuthSystem', 'GitHubStorage', 'LocalQuestionBank',
+                'IntelligentAIAssistant', 'App'
+            ];
+            
+            const moduleStatusDiv = document.getElementById('module-status');
+            let html = '';
+            
+            modules.forEach(module => {
+                const isLoaded = window[module] !== undefined;
+                const statusClass = isLoaded ? 'status-loaded' : 'status-error';
+                const statusText = isLoaded ? '已加载' : '未加载';
+                
+                html += `
+                    <div class="module-status">
+                        <span class="status-indicator ${statusClass}"></span>
+                        <span>${module}: ${statusText}</span>
+                    </div>
+                `;
+                
+                log(`${module}: ${statusText}`);
+            });
+            
+            moduleStatusDiv.innerHTML = html;
+        }
+        
+        // 手动加载模块
+        function loadScript(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => {
+                    log(`✅ 成功加载: ${src}`);
+                    resolve();
+                };
+                script.onerror = () => {
+                    log(`❌ 加载失败: ${src}`);
+                    reject(new Error(`Failed to load ${src}`));
+                };
+                document.head.appendChild(script);
+            });
+        }
+        
+        async function loadConfig() {
+            try {
+                await loadScript('js/core/config.js');
+                checkModules();
+            } catch (error) {
+                log(`Config加载错误: ${error.message}`);
+            }
+        }
+        
+        async function loadUtils() {
+            try {
+                await loadScript('js/core/utils.js');
+                checkModules();
+            } catch (error) {
+                log(`Utils加载错误: ${error.message}`);
+            }
+        }
+        
+        async function loadEventBus() {
+            try {
+                await loadScript('js/core/eventBus.js');
+                checkModules();
+            } catch (error) {
+                log(`EventBus加载错误: ${error.message}`);
+            }
+        }
+        
+        async function loadAuth() {
+            try {
+                await loadScript('js/auth/auth.js');
+                checkModules();
+            } catch (error) {
+                log(`Auth加载错误: ${error.message}`);
+            }
+        }
+        
+        async function loadAll() {
+            const scripts = [
+                'js/core/config.js',
+                'js/core/utils.js',
+                'js/core/eventBus.js',
+                'js/auth/auth.js',
+                'js/storage/githubStorage.js',
+                'js/components/questionBank.js',
+                'js/components/aiAssistant.js',
+                'js/app.js'
+            ];
+            
+            for (const script of scripts) {
+                try {
+                    await loadScript(script);
+                    await new Promise(resolve => setTimeout(resolve, 100)); // 短暂延迟
+                } catch (error) {
+                    log(`加载失败: ${script} - ${error.message}`);
+                }
+            }
+            
+            checkModules();
+        }
+        
+        // 页面加载时执行
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🔧 调试页面已加载');
+            checkFiles();
+            setTimeout(checkModules, 1000);
+        });
+        
+        // 捕获全局错误
+        window.addEventListener('error', (e) => {
+            log(`🚨 全局错误: ${e.message} at ${e.filename}:${e.lineno}`);
+        });
+        
+        // 捕获未处理的Promise错误
+        window.addEventListener('unhandledrejection', (e) => {
+            log(`🚨 Promise错误: ${e.reason}`);
+        });
+    </script>
+</body>
+</html> 

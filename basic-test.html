@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基本测试 - 流体力学学习平台</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        button {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #0084ff;
+        }
+        
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .success { background: rgba(16, 185, 129, 0.2); border: 1px solid #10b981; }
+        .error { background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; }
+        .info { background: rgba(79, 172, 254, 0.2); border: 1px solid #4facfe; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 基本功能测试</h1>
+        
+        <div class="test-section">
+            <h3>1. 页面加载测试</h3>
+            <p>当前时间: <span id="current-time"></span></p>
+            <p>页面URL: <span id="page-url"></span></p>
+            <div id="load-result" class="result success">✅ 页面加载成功</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. JavaScript功能测试</h3>
+            <button onclick="testBasicJS()">测试基本JavaScript</button>
+            <button onclick="testLocalStorage()">测试本地存储</button>
+            <button onclick="testFetch()">测试网络请求</button>
+            <div id="js-result" class="result info">点击按钮开始测试</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. 文件访问测试</h3>
+            <button onclick="testFileAccess()">测试文件访问</button>
+            <div id="file-result" class="result info">点击按钮开始测试</div>
+        </div>
+        
+        <div class="test-section">
+            <h3>4. 导航测试</h3>
+            <button onclick="window.location.href='index-simple.html'">打开简化版主页</button>
+            <button onclick="window.location.href='standalone-login.html'">打开独立登录页</button>
+            <button onclick="window.location.href='test-modules.html'">打开模块测试页</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>5. 控制台日志</h3>
+            <div id="console-log" style="background: #000; color: #00ff00; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto;"></div>
+        </div>
+    </div>
+
+    <script>
+        const logElement = document.getElementById('console-log');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.innerHTML += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+        
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+        }
+        
+        function testBasicJS() {
+            log('🧪 测试基本JavaScript功能...');
+            
+            try {
+                // 测试基本运算
+                const result = 2 + 2;
+                if (result === 4) {
+                    showResult('js-result', '✅ 基本运算正常', 'success');
+                    log('✅ 基本运算测试通过');
+                } else {
+                    throw new Error('基本运算异常');
+                }
+                
+                // 测试数组操作
+                const arr = [1, 2, 3];
+                arr.push(4);
+                if (arr.length === 4) {
+                    log('✅ 数组操作测试通过');
+                } else {
+                    throw new Error('数组操作异常');
+                }
+                
+                // 测试对象操作
+                const obj = { name: 'test', value: 123 };
+                if (obj.name === 'test' && obj.value === 123) {
+                    log('✅ 对象操作测试通过');
+                } else {
+                    throw new Error('对象操作异常');
+                }
+                
+                showResult('js-result', '✅ 所有基本JavaScript功能正常', 'success');
+                
+            } catch (error) {
+                showResult('js-result', `❌ JavaScript测试失败: ${error.message}`, 'error');
+                log(`❌ JavaScript测试失败: ${error.message}`);
+            }
+        }
+        
+        function testLocalStorage() {
+            log('🧪 测试本地存储功能...');
+            
+            try {
+                // 测试写入
+                localStorage.setItem('test-key', 'test-value');
+                
+                // 测试读取
+                const value = localStorage.getItem('test-key');
+                if (value === 'test-value') {
+                    log('✅ 本地存储读写测试通过');
+                    
+                    // 测试删除
+                    localStorage.removeItem('test-key');
+                    const deletedValue = localStorage.getItem('test-key');
+                    if (deletedValue === null) {
+                        log('✅ 本地存储删除测试通过');
+                        showResult('js-result', '✅ 本地存储功能正常', 'success');
+                    } else {
+                        throw new Error('删除操作异常');
+                    }
+                } else {
+                    throw new Error('读取操作异常');
+                }
+                
+            } catch (error) {
+                showResult('js-result', `❌ 本地存储测试失败: ${error.message}`, 'error');
+                log(`❌ 本地存储测试失败: ${error.message}`);
+            }
+        }
+        
+        function testFetch() {
+            log('🧪 测试网络请求功能...');
+            
+            // 测试fetch API是否可用
+            if (typeof fetch === 'function') {
+                log('✅ fetch API 可用');
+                
+                // 尝试请求当前页面
+                fetch(window.location.href)
+                    .then(response => {
+                        if (response.ok) {
+                            log('✅ 网络请求测试通过');
+                            showResult('js-result', '✅ 网络请求功能正常', 'success');
+                        } else {
+                            throw new Error(`HTTP ${response.status}`);
+                        }
+                    })
+                    .catch(error => {
+                        log(`⚠️ 网络请求测试: ${error.message}`);
+                        showResult('js-result', `⚠️ 网络请求测试: ${error.message}`, 'info');
+                    });
+            } else {
+                showResult('js-result', '❌ fetch API 不可用', 'error');
+                log('❌ fetch API 不可用');
+            }
+        }
+        
+        function testFileAccess() {
+            log('🧪 测试文件访问功能...');
+            
+            // 测试访问一个简单的文件
+            fetch('manifest.json')
+                .then(response => {
+                    if (response.ok) {
+                        log('✅ manifest.json 访问成功');
+                        return response.json();
+                    } else {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                })
+                .then(data => {
+                    log('✅ JSON解析成功');
+                    showResult('file-result', '✅ 文件访问功能正常', 'success');
+                })
+                .catch(error => {
+                    log(`❌ 文件访问测试失败: ${error.message}`);
+                    showResult('file-result', `❌ 文件访问失败: ${error.message}`, 'error');
+                });
+        }
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🔧 基本测试页面已加载');
+            
+            // 显示当前时间
+            document.getElementById('current-time').textContent = new Date().toLocaleString();
+            document.getElementById('page-url').textContent = window.location.href;
+            
+            log(`页面URL: ${window.location.href}`);
+            log(`协议: ${window.location.protocol}`);
+            log(`主机: ${window.location.host}`);
+            
+            if (window.location.protocol === 'file:') {
+                log('⚠️ 通过 file:// 协议访问，建议使用 HTTP 服务器');
+            } else {
+                log('✅ 通过 HTTP 协议访问');
+            }
+        });
+        
+        // 监听错误
+        window.addEventListener('error', (event) => {
+            log(`❌ 脚本错误: ${event.message} at ${event.filename}:${event.lineno}`);
+        });
+        
+        // 监听未处理的Promise拒绝
+        window.addEventListener('unhandledrejection', (event) => {
+            log(`❌ Promise错误: ${event.reason}`);
+        });
+    </script>
+</body>
+</html> 

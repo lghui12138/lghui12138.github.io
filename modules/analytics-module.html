@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 数据分析 - 流体力学海洋</title>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* ===== 海洋主题变量 ===== */
+        :root {
+            --ocean-blue: #006994;
+            --ocean-light: #4facfe;
+            --ocean-deep: #003d5b;
+            --coral: #ff6b6b;
+            --seafoam: #00f2fe;
+            --sand: #f4d03f;
+            --wave-blue: #3498db;
+            --bg-ocean: linear-gradient(135deg, #006994 0%, #4facfe 25%, #00f2fe 50%, #006994 75%, #003d5b 100%);
+            --text-light: #ffffff;
+            --text-dark: #2c3e50;
+            --primary: #1e6fa8;
+            --secondary: #2c3e50;
+            --accent: #e74c3c;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --teacher: #9b59b6;
+            --student: #3498db;
+            --reexam-color: #e74c3c;
+            --national-color: #3498db;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-ocean);
+            background-size: 400% 400%;
+            animation: ocean-wave 15s ease-in-out infinite;
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+        
+        @keyframes ocean-wave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* ===== 海洋背景 ===== */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%2300f2fe"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%234facfe"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%23006994"/></svg>') repeat-x;
+            animation: wave-move 20s linear infinite;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: -5s;
+            opacity: 0.7;
+        }
+        
+        .wave:nth-child(3) {
+            animation-delay: -10s;
+            opacity: 0.5;
+        }
+        
+        @keyframes wave-move {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* ===== 导航栏 ===== */
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 3px solid var(--ocean-light);
+            padding: 15px 0;
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+            text-decoration: none;
+        }
+        
+        .nav-brand i {
+            font-size: 2rem;
+            animation: ocean-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes ocean-pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--ocean-light)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 20px var(--seafoam)); }
+        }
+        
+        .btn-back {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* ===== 主内容 ===== */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+        
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* ===== 分析类型选择 ===== */
+        .analysis-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .analysis-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .analysis-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border-color: var(--coral);
+        }
+        
+        .analysis-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--ocean-blue);
+        }
+        
+        .analysis-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--ocean-blue);
+        }
+        
+        .analysis-description {
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        /* ===== 分数线分析界面 ===== */
+        .score-analysis {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            color: var(--text-dark);
+            display: none;
+        }
+        
+        .score-analysis.active {
+            display: block;
+        }
+        
+        .analysis-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--ocean-light);
+        }
+        
+        .analysis-title {
+            font-size: 1.8rem;
+            color: var(--ocean-blue);
+            font-weight: bold;
+        }
+        
+        .close-btn {
+            background: linear-gradient(45deg, var(--coral), #ff8e8e);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .close-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+        }
+        
+        /* ===== 分数线筛选器 ===== */
+        .score-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+        
+        .filter-btn {
+            background: rgba(79, 172, 254, 0.1);
+            border: 2px solid var(--ocean-light);
+            color: var(--ocean-blue);
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--ocean-light);
+            color: white;
+            transform: translateY(-2px);
+        }
+        
+        /* ===== 图表容器 ===== */
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .chart-title {
+            font-size: 1.3rem;
+            color: var(--ocean-blue);
+            font-weight: bold;
+        }
+        
+        .chart-legend {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+        
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 3px;
+        }
+        
+        .chart-box {
+            height: 400px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed var(--ocean-light);
+        }
+        
+        .chart-placeholder {
+            text-align: center;
+            color: var(--ocean-blue);
+        }
+        
+        .chart-placeholder i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        /* ===== 数据表格 ===== */
+        .data-table-container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow-x: auto;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .data-table th {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            border: none;
+            font-weight: 600;
+        }
+        
+        .data-table td {
+            padding: 12px;
+            text-align: center;
+            border: none;
+            border-bottom: 1px solid #e3edfa;
+        }
+        
+        .data-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .data-table tr:last-child {
+            background: #f0f8ff;
+            font-weight: bold;
+        }
+        
+        /* ===== 趋势分析 ===== */
+        .trend-analysis {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .trend-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .trend-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--ocean-light);
+        }
+        
+        .trend-title {
+            color: var(--secondary);
+            margin-bottom: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .trend-data {
+            line-height: 1.8;
+        }
+        
+        .trend-up {
+            color: var(--success);
+        }
+        
+        .trend-down {
+            color: var(--warning);
+        }
+        
+        /* ===== 通知系统 ===== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            color: var(--text-dark);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .notification.error {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        /* ===== 响应式设计 ===== */
+        @media (max-width: 768px) {
+            .analysis-types {
+                grid-template-columns: 1fr;
+            }
+            
+            .analysis-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .chart-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .trend-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .score-filters {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 海洋背景 -->
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <i class="fas fa-chart-pie"></i>
+                <span>📊 数据分析</span>
+            </a>
+            <a href="index-modular.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                返回主页
+            </a>
+        </div>
+    </nav>
+    
+    <!-- 主内容 -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">📊 数据分析中心</h1>
+            <p class="page-subtitle">深度分析学习数据，智能洞察学习趋势</p>
+        </div>
+        
+        <!-- 分析类型选择 -->
+        <div class="analysis-types" id="analysisTypes">
+            <div class="analysis-card" onclick="openScoreAnalysis()">
+                <div class="analysis-icon">📈</div>
+                <div class="analysis-title">分数线分析</div>
+                <div class="analysis-description">
+                    历年国家线和复试线对比分析，报考人数统计，录取率变化趋势
+                </div>
+            </div>
+            
+            <div class="analysis-card" onclick="openPerformanceAnalysis()">
+                <div class="analysis-icon">📊</div>
+                <div class="analysis-title">成绩分析</div>
+                <div class="analysis-description">
+                    个人成绩统计，知识点掌握情况，学习进度分析
+                </div>
+            </div>
+            
+            <div class="analysis-card" onclick="openLearningAnalysis()">
+                <div class="analysis-icon">🎯</div>
+                <div class="analysis-title">学习行为分析</div>
+                <div class="analysis-description">
+                    学习时长统计，做题习惯分析，学习效率评估
+                </div>
+            </div>
+            
+            <div class="analysis-card" onclick="openPredictiveAnalysis()">
+                <div class="analysis-icon">🔮</div>
+                <div class="analysis-title">预测分析</div>
+                <div class="analysis-description">
+                    基于历史数据的智能预测，学习建议和风险评估
+                </div>
+            </div>
+        </div>
+        
+        <!-- 分数线分析界面 -->
+        <div class="score-analysis" id="scoreAnalysis">
+            <div class="analysis-header">
+                <div class="analysis-title">国家线和复试线对比分析</div>
+                <button class="close-btn" onclick="closeAnalysis()">
+                    <i class="fas fa-times"></i> 关闭
+                </button>
+            </div>
+            
+            <!-- 分数线筛选器 -->
+            <div class="score-filters">
+                <button class="filter-btn active" onclick="filterScores('all')">全部年份</button>
+                <button class="filter-btn" onclick="filterScores('2020')">2020年</button>
+                <button class="filter-btn" onclick="filterScores('2021')">2021年</button>
+                <button class="filter-btn" onclick="filterScores('2022')">2022年</button>
+                <button class="filter-btn" onclick="filterScores('2023')">2023年</button>
+                <button class="filter-btn" onclick="filterScores('2024')">2024年</button>
+                <button class="filter-btn" onclick="filterScores('2025')">2025年</button>
+            </div>
+            
+            <!-- 图表容器 -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <div class="chart-title">803流体力学报考人数与分数线 (2020-2025)</div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--reexam-color);"></div>
+                            <span>复试线</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: var(--national-color);"></div>
+                            <span>国家线</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background: #27ae60;"></div>
+                            <span>报名人数</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-box">
+                    <div class="chart-placeholder">
+                        <i class="fas fa-chart-line"></i>
+                        <p>分数线趋势图表</p>
+                        <p style="font-size: 0.9rem; opacity: 0.7;">点击年份筛选器查看详细数据</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 数据统计表格 -->
+            <div class="data-table-container">
+                <h3 style="color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-info-circle"></i> 分数线详情与差异分析
+                </h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>年份</th>
+                            <th>国家线</th>
+                            <th>复试线</th>
+                            <th>报名人数</th>
+                            <th>复试人数</th>
+                            <th>录取人数</th>
+                            <th>录取率</th>
+                            <th>复试比例</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>2020年</td>
+                            <td>288分</td>
+                            <td>288分</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td style="color: var(--success);">-</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td>2021年</td>
+                            <td>280分</td>
+                            <td>313分</td>
+                            <td>-</td>
+                            <td>32人</td>
+                            <td>29人</td>
+                            <td style="color: var(--success);">-</td>
+                            <td>1.33</td>
+                        </tr>
+                        <tr>
+                            <td>2022年</td>
+                            <td>290分</td>
+                            <td>292分</td>
+                            <td>110人</td>
+                            <td>43人</td>
+                            <td>35人</td>
+                            <td style="color: var(--success);">31.8%</td>
+                            <td>1.3</td>
+                        </tr>
+                        <tr>
+                            <td>2023年</td>
+                            <td>279分</td>
+                            <td>294分</td>
+                            <td>105人</td>
+                            <td>30人</td>
+                            <td>27人</td>
+                            <td style="color: var(--success);">25.7%</td>
+                            <td>1.2</td>
+                        </tr>
+                        <tr>
+                            <td>2024年</td>
+                            <td>288分</td>
+                            <td>288分</td>
+                            <td>120人</td>
+                            <td>37人</td>
+                            <td>37人</td>
+                            <td style="color: var(--success);">30.8%</td>
+                            <td>1.0</td>
+                        </tr>
+                        <tr>
+                            <td>2025年</td>
+                            <td>274分</td>
+                            <td>274分</td>
+                            <td>125人</td>
+                            <td>35人</td>
+                            <td>35人</td>
+                            <td style="color: var(--success);">28.0%</td>
+                            <td>1.0</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 趋势分析 -->
+            <div class="trend-analysis">
+                <h4 style="color: var(--primary); margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-chart-line"></i> 数据趋势分析
+                </h4>
+                <div class="trend-grid">
+                    <div class="trend-item">
+                        <div class="trend-title">
+                            <i class="fas fa-users"></i>
+                            报名趋势
+                        </div>
+                        <div class="trend-data">
+                            <p>2020年：-</p>
+                            <p>2021年：-</p>
+                            <p>2022年：110人</p>
+                            <p>2023年：105人 <span class="trend-down">↓ 4.5%</span></p>
+                            <p>2024年：120人 <span class="trend-up">↑ 14.3%</span></p>
+                            <p>2025年：125人 <span class="trend-up">↑ 4.2%</span></p>
+                        </div>
+                    </div>
+                    <div class="trend-item">
+                        <div class="trend-title">
+                            <i class="fas fa-percentage"></i>
+                            录取率变化
+                        </div>
+                        <div class="trend-data">
+                            <p>2020年：-</p>
+                            <p>2021年：-</p>
+                            <p>2022年：31.8%</p>
+                            <p>2023年：25.7% <span class="trend-down">↓ 6.1%</span></p>
+                            <p>2024年：30.8% <span class="trend-up">↑ 5.1%</span></p>
+                            <p>2025年：28.0% <span class="trend-down">↓ 2.8%</span></p>
+                        </div>
+                    </div>
+                    <div class="trend-item">
+                        <div class="trend-title">
+                            <i class="fas fa-chart-bar"></i>
+                            分数线变化
+                        </div>
+                        <div class="trend-data">
+                            <p>2020年：国家线288分，复试线288分</p>
+                            <p>2021年：国家线280分，复试线313分</p>
+                            <p>2022年：国家线290分，复试线292分</p>
+                            <p>2023年：国家线279分，复试线294分</p>
+                            <p>2024年：国家线288分，复试线288分</p>
+                            <p>2025年：国家线274分，复试线274分</p>
+                        </div>
+                    </div>
+                    <div class="trend-item">
+                        <div class="trend-title">
+                            <i class="fas fa-balance-scale"></i>
+                            复试比例变化
+                        </div>
+                        <div class="trend-data">
+                            <p>2020年：-</p>
+                            <p>2021年：1.33</p>
+                            <p>2022年：1.3 <span class="trend-up">↓ 0.03</span></p>
+                            <p>2023年：1.2 <span class="trend-up">↓ 0.1</span></p>
+                            <p>2024年：1.0 <span class="trend-up">↓ 0.2</span></p>
+                            <p>2025年：1.0 <span class="trend-up">持平</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知容器 -->
+    <div id="notification-container"></div>
+    
+    <script>
+        // 显示通知
+        function showNotification(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, duration);
+            }
+        }
+        
+        // 打开分数线分析
+        function openScoreAnalysis() {
+            document.getElementById('analysisTypes').style.display = 'none';
+            document.getElementById('scoreAnalysis').classList.add('active');
+            showNotification('📈 分数线分析已加载', 'success');
+        }
+        
+        // 打开成绩分析
+        function openPerformanceAnalysis() {
+            showNotification('📊 成绩分析功能即将推出', 'info');
+        }
+        
+        // 打开学习行为分析
+        function openLearningAnalysis() {
+            showNotification('🎯 学习行为分析功能即将推出', 'info');
+        }
+        
+        // 打开预测分析
+        function openPredictiveAnalysis() {
+            showNotification('🔮 预测分析功能即将推出', 'info');
+        }
+        
+        // 关闭分析界面
+        function closeAnalysis() {
+            document.getElementById('scoreAnalysis').classList.remove('active');
+            document.getElementById('analysisTypes').style.display = 'grid';
+            showNotification('👋 已返回分析选择', 'info');
+        }
+        
+        // 筛选分数线数据
+        function filterScores(year) {
+            // 更新筛选器状态
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 显示筛选结果
+            showNotification(`显示${year}年分数线数据`, 'info');
+            
+            // 这里可以添加实际的图表更新逻辑
+            const chartPlaceholder = document.querySelector('.chart-placeholder');
+            if (year === 'all') {
+                chartPlaceholder.innerHTML = `
+                    <i class="fas fa-chart-line"></i>
+                    <p>分数线趋势图表 (2020-2025)</p>
+                    <p style="font-size: 0.9rem; opacity: 0.7;">显示全部年份数据</p>
+                `;
+            } else {
+                chartPlaceholder.innerHTML = `
+                    <i class="fas fa-chart-line"></i>
+                    <p>${year}年分数线数据</p>
+                    <p style="font-size: 0.9rem; opacity: 0.7;">国家线: ${getScoreData(year).national}分</p>
+                    <p style="font-size: 0.9rem; opacity: 0.7;">复试线: ${getScoreData(year).reexam}分</p>
+                `;
+            }
+        }
+        
+        // 获取分数线数据
+        function getScoreData(year) {
+            const scoreData = {
+                '2020': { national: 288, reexam: 288 },
+                '2021': { national: 280, reexam: 313 },
+                '2022': { national: 290, reexam: 292 },
+                '2023': { national: 279, reexam: 294 },
+                '2024': { national: 288, reexam: 288 },
+                '2025': { national: 274, reexam: 274 }
+            };
+            return scoreData[year] || { national: 0, reexam: 0 };
+        }
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            showNotification('📊 数据分析模块已加载', 'success');
+        });
+        
+        console.log('📊 数据分析模块已加载');
+    </script>
+</body>
+</html> 

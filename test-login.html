@@ -3,184 +3,535 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>登录测试</title>
+    <title>登录测试 - 流体力学学习平台</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/auth.css">
+    <link rel="stylesheet" href="styles/dashboard.css">
+    <link rel="stylesheet" href="styles/components.css">
+    
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0f1c 0%, #1a2332 50%, #2a3441 100%);
+            color: #ffffff;
             margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .login-box {
-            background: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            width: 300px;
+        
+        .test-container {
+            background: rgba(26, 35, 50, 0.95);
+            border: 1px solid #3a4a5c;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
         }
-        h1 {
+        
+        .test-header {
             text-align: center;
-            color: #333;
             margin-bottom: 30px;
         }
-        input {
-            width: 100%;
-            padding: 15px;
-            margin-bottom: 15px;
-            border: 2px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-            box-sizing: border-box;
+        
+        .test-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
-        input:focus {
-            border-color: #667eea;
-            outline: none;
+        
+        .test-subtitle {
+            color: #b8c5d1;
+            font-size: 1rem;
         }
-        button {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(42, 52, 65, 0.5);
+            border-radius: 8px;
+            border: 1px solid #3a4a5c;
+        }
+        
+        .test-section h3 {
+            margin-top: 0;
+            color: #4facfe;
+            font-size: 1.2rem;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
             color: white;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
+            padding: 12px 24px;
+            border-radius: 8px;
             cursor: pointer;
-            margin-bottom: 10px;
+            font-weight: 600;
+            margin: 5px;
+            transition: all 0.3s ease;
         }
-        button:hover {
-            opacity: 0.9;
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
         }
-        .quick-btn {
-            background: #f8f9fa;
-            color: #333;
-            border: 2px solid #ddd;
-            margin-bottom: 5px;
-            font-size: 14px;
+        
+        .test-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .test-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .test-result.success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            color: #10b981;
+        }
+        
+        .test-result.error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+        
+        .test-result.info {
+            background: rgba(79, 172, 254, 0.2);
+            border: 1px solid #4facfe;
+            color: #4facfe;
+        }
+        
+        .test-input {
+            background: rgba(42, 52, 65, 0.8);
+            border: 1px solid #3a4a5c;
+            color: #ffffff;
             padding: 10px;
+            border-radius: 6px;
+            margin: 5px;
+            width: 200px;
         }
-        .quick-btn:hover {
-            background: #e9ecef;
+        
+        .test-input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.2);
         }
-        .error {
-            background: #ffe6e6;
-            color: #d63384;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            display: none;
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
         }
-        .success {
-            background: #d1e7dd;
-            color: #0f5132;
-            padding: 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
-            display: none;
+        
+        .status-indicator.loaded {
+            background: #10b981;
+        }
+        
+        .status-indicator.error {
+            background: #ef4444;
+        }
+        
+        .status-indicator.loading {
+            background: #f59e0b;
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .loading-status {
+            text-align: center;
+            margin: 20px 0;
+            color: #b8c5d1;
         }
     </style>
 </head>
 <body>
-    <div class="login-box">
-        <h1>登录测试</h1>
+    <div class="test-container">
+        <div class="test-header">
+            <h1 class="test-title">登录系统测试</h1>
+            <p class="test-subtitle">流体力学学习平台 v4.0</p>
+        </div>
         
-        <div class="error" id="errorMsg"></div>
-        <div class="success" id="successMsg"></div>
+        <div class="loading-status" id="loading-status">
+            <i class="fas fa-spinner fa-spin"></i> 正在加载模块...
+        </div>
         
-        <input type="text" id="username" placeholder="用户名">
-        <input type="password" id="password" placeholder="密码">
+        <div class="test-section">
+            <h3>模块加载状态</h3>
+            <div id="module-status">
+                <div><span class="status-indicator loading"></span>检查模块加载状态...</div>
+            </div>
+        </div>
         
-        <button onclick="doLogin()">登录</button>
+        <div class="test-section">
+            <h3>登录测试</h3>
+            <div>
+                <input type="text" id="test-username" class="test-input" placeholder="用户名" value="admin">
+                <input type="password" id="test-password" class="test-input" placeholder="密码" value="Admin123!">
+                <button class="test-button" onclick="testLogin()">测试登录</button>
+                <button class="test-button" onclick="testLogout()">测试注销</button>
+            </div>
+            <div id="login-result" class="test-result info" style="display: none;"></div>
+        </div>
         
-        <button class="quick-btn" onclick="quickTeacher()">教师快速登录</button>
-        <button class="quick-btn" onclick="quickStudent()">学生快速登录</button>
-        <button class="quick-btn" onclick="showDebug()">显示调试信息</button>
+        <div class="test-section">
+            <h3>功能测试</h3>
+            <button class="test-button" onclick="testNotification()">测试通知</button>
+            <button class="test-button" onclick="testEventBus()">测试事件总线</button>
+            <button class="test-button" onclick="testStorage()">测试存储</button>
+            <button class="test-button" onclick="testUtils()">测试工具函数</button>
+            <div id="function-result" class="test-result info" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>系统信息</h3>
+            <button class="test-button" onclick="showSystemInfo()">显示系统信息</button>
+            <div id="system-info" class="test-result info" style="display: none;"></div>
+        </div>
     </div>
 
+    <!-- 加载状态更新函数 -->
     <script>
-        // 账号数据
-        const accounts = {
-            'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306' },
-            'student1': { name: '学生账号', role: 'student', password: '123456' },
-            'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025' },
-            'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025' }
-        };
-
-        function showError(msg) {
-            const errorDiv = document.getElementById('errorMsg');
-            errorDiv.textContent = msg;
-            errorDiv.style.display = 'block';
-            document.getElementById('successMsg').style.display = 'none';
+        function updateLoadingStatus(status) {
+            const statusEl = document.getElementById('loading-status');
+            if (statusEl) {
+                statusEl.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${status}`;
+            }
         }
+        
+        // 全局错误处理
+        window.addEventListener('error', function(e) {
+            console.error('Global Error:', e.error);
+            updateLoadingStatus('加载错误: ' + e.message);
+        });
+    </script>
 
-        function showSuccess(msg) {
-            const successDiv = document.getElementById('successMsg');
-            successDiv.textContent = msg;
-            successDiv.style.display = 'block';
-            document.getElementById('errorMsg').style.display = 'none';
+    <!-- 核心JavaScript模块 (加载顺序很重要) -->
+    <script>updateLoadingStatus('加载核心配置...');</script>
+    <script src="js/core/config.js"></script>
+    
+    <script>updateLoadingStatus('加载工具函数...');</script>
+    <script src="js/core/utils.js"></script>
+    
+    <script>updateLoadingStatus('初始化事件系统...');</script>
+    <script src="js/core/eventBus.js"></script>
+    
+    <!-- 认证模块 -->
+    <script>updateLoadingStatus('初始化认证系统...');</script>
+    <script src="js/auth/auth.js"></script>
+    
+    <!-- 存储模块 -->
+    <script>updateLoadingStatus('初始化存储系统...');</script>
+    <script src="js/storage/githubStorage.js"></script>
+    
+    <!-- 功能模块 -->
+    <script>updateLoadingStatus('加载题库系统...');</script>
+    <script src="js/components/questionBank.js"></script>
+    
+    <script>updateLoadingStatus('加载AI助手...');</script>
+    <script src="js/components/aiAssistant.js"></script>
+    
+    <!-- 主应用程序 -->
+    <script>updateLoadingStatus('启动主程序...');</script>
+    <script src="js/app.js"></script>
+
+    <!-- 测试脚本 -->
+    <script>
+        // 测试结果显示函数
+        function showResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            container.textContent = message;
+            container.className = `test-result ${type}`;
+            container.style.display = 'block';
         }
-
-        function doLogin() {
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
+        
+        // 检查模块加载状态
+        function checkModuleStatus() {
+            const modules = [
+                'AppConfig', 'Utils', 'EventBus', 'SystemEvents', 
+                'AuthSystem', 'GitHubStorage', 'LocalQuestionBank', 
+                'IntelligentAIAssistant', 'App'
+            ];
             
-            console.log('尝试登录:', username);
+            const statusDiv = document.getElementById('module-status');
+            let html = '';
+            let loadedCount = 0;
+            
+            modules.forEach(module => {
+                const isLoaded = window[module] !== undefined;
+                const statusClass = isLoaded ? 'loaded' : 'error';
+                const statusText = isLoaded ? '已加载' : '未加载';
+                
+                if (isLoaded) loadedCount++;
+                
+                html += `<div><span class="status-indicator ${statusClass}"></span>${module}: ${statusText}</div>`;
+            });
+            
+            statusDiv.innerHTML = html;
+            
+            // 更新加载状态
+            if (loadedCount === modules.length) {
+                updateLoadingStatus('所有模块加载完成！');
+                document.getElementById('loading-status').innerHTML = 
+                    '<i class="fas fa-check-circle" style="color: #10b981;"></i> 所有模块加载完成！';
+            } else {
+                updateLoadingStatus(`已加载 ${loadedCount}/${modules.length} 个模块`);
+            }
+            
+            return loadedCount === modules.length;
+        }
+        
+        // 测试登录
+        async function testLogin() {
+            const username = document.getElementById('test-username').value;
+            const password = document.getElementById('test-password').value;
             
             if (!username || !password) {
-                showError('请输入用户名和密码');
+                showResult('login-result', '请输入用户名和密码', 'error');
                 return;
             }
             
-            const account = accounts[username];
-            if (!account) {
-                showError('用户名不存在');
-                console.log('可用账号:', Object.keys(accounts));
-                return;
+            try {
+                showResult('login-result', '正在测试登录...', 'info');
+                
+                if (!window.AuthSystem) {
+                    throw new Error('AuthSystem 模块未加载');
+                }
+                
+                const result = await AuthSystem.login(username, password, false);
+                
+                if (result.success) {
+                    showResult('login-result', `✅ 登录成功！\n用户: ${result.user.username}\n角色: ${result.user.role}\n等级: ${result.user.profile.level}`, 'success');
+                } else {
+                    showResult('login-result', `❌ 登录失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showResult('login-result', `❌ 登录测试出错: ${error.message}`, 'error');
             }
-            
-            if (account.password !== password) {
-                showError('密码错误');
-                return;
+        }
+        
+        // 测试注销
+        async function testLogout() {
+            try {
+                if (!window.AuthSystem) {
+                    throw new Error('AuthSystem 模块未加载');
+                }
+                
+                await AuthSystem.logout();
+                showResult('login-result', '✅ 注销成功！', 'success');
+            } catch (error) {
+                showResult('login-result', `❌ 注销测试出错: ${error.message}`, 'error');
             }
+        }
+        
+        // 测试通知
+        function testNotification() {
+            try {
+                if (!window.App) {
+                    throw new Error('App 模块未加载');
+                }
+                
+                App.showNotification('这是一条测试通知消息', 'success', 5000);
+                showResult('function-result', '✅ 通知测试完成，请查看右上角通知', 'success');
+            } catch (error) {
+                showResult('function-result', `❌ 通知测试出错: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试事件总线
+        function testEventBus() {
+            try {
+                if (!window.EventBus || !window.SystemEvents) {
+                    throw new Error('EventBus 或 SystemEvents 模块未加载');
+                }
+                
+                let testResult = '✅ 事件总线测试:\n';
+                
+                // 测试事件发布
+                EventBus.emit('test:event', { message: '测试事件数据' });
+                testResult += '- 事件发布成功\n';
+                
+                // 测试事件监听
+                const listenerId = EventBus.on('test:event', (data) => {
+                    testResult += `- 事件监听成功，收到数据: ${JSON.stringify(data)}\n`;
+                });
+                
+                // 再次发布事件
+                EventBus.emit('test:event', { message: '第二次测试' });
+                
+                // 清理监听器
+                EventBus.off('test:event', listenerId);
+                testResult += '- 事件监听器清理成功\n';
+                
+                showResult('function-result', testResult, 'success');
+            } catch (error) {
+                showResult('function-result', `❌ 事件总线测试出错: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试存储
+        function testStorage() {
+            try {
+                if (!window.Utils) {
+                    throw new Error('Utils 模块未加载');
+                }
+                
+                let testResult = '✅ 存储测试:\n';
+                
+                // 测试设置值
+                Utils.storage.set('test:key', 'test:value', 60000);
+                testResult += '- 存储设置成功\n';
+                
+                // 测试获取值
+                const value = Utils.storage.get('test:key');
+                testResult += `- 存储获取成功: ${value}\n`;
+                
+                // 测试删除值
+                Utils.storage.remove('test:key');
+                const deletedValue = Utils.storage.get('test:key');
+                testResult += `- 存储删除成功: ${deletedValue === null ? '已删除' : '删除失败'}\n`;
+                
+                showResult('function-result', testResult, 'success');
+            } catch (error) {
+                showResult('function-result', `❌ 存储测试出错: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试工具函数
+        function testUtils() {
+            try {
+                if (!window.Utils) {
+                    throw new Error('Utils 模块未加载');
+                }
+                
+                let testResult = '✅ 工具函数测试:\n';
+                
+                // 测试DOM操作
+                const testElement = Utils.dom.create('div', { className: 'test-div' }, '测试内容');
+                testResult += '- DOM创建成功\n';
+                
+                // 测试格式化
+                const formattedNumber = Utils.format.number(1234.5678);
+                testResult += `- 数字格式化: ${formattedNumber}\n`;
+                
+                // 测试验证
+                const isValidEmail = Utils.validation.isEmail('test@example.com');
+                testResult += `- 邮箱验证: ${isValidEmail ? '有效' : '无效'}\n`;
+                
+                showResult('function-result', testResult, 'success');
+            } catch (error) {
+                showResult('function-result', `❌ 工具函数测试出错: ${error.message}`, 'error');
+            }
+        }
+        
+        // 显示系统信息
+        function showSystemInfo() {
+            try {
+                let info = '📊 系统信息:\n\n';
+                
+                // 浏览器信息
+                info += `浏览器: ${navigator.userAgent}\n`;
+                info += `语言: ${navigator.language}\n`;
+                info += `平台: ${navigator.platform}\n\n`;
+                
+                // 模块信息
+                if (window.App) {
+                    const appState = App.getAppState();
+                    info += `应用状态: ${JSON.stringify(appState, null, 2)}\n\n`;
+                }
+                
+                // 认证状态
+                if (window.AuthSystem) {
+                    const isAuth = AuthSystem.isAuthenticated();
+                    info += `认证状态: ${isAuth ? '已登录' : '未登录'}\n`;
+                    
+                    if (isAuth && AuthSystem.currentUser) {
+                        info += `当前用户: ${AuthSystem.currentUser.username}\n`;
+                        info += `用户角色: ${AuthSystem.currentUser.role}\n`;
+                    }
+                }
+                
+                showResult('system-info', info, 'info');
+            } catch (error) {
+                showResult('system-info', `❌ 获取系统信息出错: ${error.message}`, 'error');
+            }
+        }
+        
+        // 页面加载完成后检查模块状态
+        document.addEventListener('DOMContentLoaded', () => {
+            // 延迟检查，确保所有模块都有时间加载
+            setTimeout(() => {
+                const allLoaded = checkModuleStatus();
+                if (allLoaded) {
+                    console.log('🎉 所有模块加载成功！');
+                } else {
+                    console.warn('⚠️ 部分模块未加载');
+                }
+            }, 2000);
             
-            showSuccess(`登录成功！欢迎 ${account.name} (${account.role})`);
-            console.log('登录成功:', account);
-        }
-
-        function quickTeacher() {
-            document.getElementById('username').value = 'liuguanghui6330156';
-            document.getElementById('password').value = 'Ll700306';
-            setTimeout(doLogin, 100);
-        }
-
-        function quickStudent() {
-            document.getElementById('username').value = 'student1';
-            document.getElementById('password').value = '123456';
-            setTimeout(doLogin, 100);
-        }
-
-        function showDebug() {
-            console.log('=== 调试信息 ===');
-            console.log('账号数据:', accounts);
-            console.log('可用账号:', Object.keys(accounts));
-            console.log('页面元素:', {
-                username: document.getElementById('username'),
-                password: document.getElementById('password')
-            });
-            alert('调试信息已输出到控制台，请按F12查看');
-        }
-
-        // 回车键登录
-        document.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                doLogin();
+            // 定期更新状态
+            setInterval(checkModuleStatus, 3000);
+        });
+        
+        // 应用初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                updateLoadingStatus('正在启动应用...');
+                
+                // 确保所有模块都加载
+                const requiredModules = [
+                    'AppConfig', 'Utils', 'EventBus', 'AuthSystem', 
+                    'GitHubStorage', 'LocalQuestionBank', 'IntelligentAIAssistant', 'App'
+                ];
+                
+                for (const module of requiredModules) {
+                    if (!window[module]) {
+                        throw new Error(`模块 ${module} 未加载`);
+                    }
+                }
+                
+                updateLoadingStatus('初始化模块...');
+                
+                // 初始化应用
+                await App.init();
+                
+                updateLoadingStatus('启动完成！');
+                console.log('✅ 流体力学学习平台已成功启动');
+                
+            } catch (error) {
+                console.error('❌ 应用启动失败:', error);
+                updateLoadingStatus('启动失败: ' + error.message);
             }
         });
-
-        console.log('登录测试页面加载完成');
-        console.log('可用账号:', Object.keys(accounts));
+        
+        console.log('🎯 测试页面模块加载完成，等待DOM准备...');
     </script>
 </body>
 </html>

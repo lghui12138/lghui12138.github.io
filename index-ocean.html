@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌊 流体力学学习平台 - Ocean Edition</title>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* ===== 海洋主题变量 ===== */
+        :root {
+            --ocean-blue: #006994;
+            --ocean-light: #4facfe;
+            --ocean-deep: #003d5b;
+            --coral: #ff6b6b;
+            --seafoam: #00f2fe;
+            --sand: #f4d03f;
+            --wave-blue: #3498db;
+            --bg-ocean: linear-gradient(135deg, #006994 0%, #4facfe 25%, #00f2fe 50%, #006994 75%, #003d5b 100%);
+            --text-light: #ffffff;
+            --text-dark: #2c3e50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-ocean);
+            background-size: 400% 400%;
+            animation: ocean-wave 15s ease-in-out infinite;
+            color: var(--text-light);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        @keyframes ocean-wave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* ===== 海洋动画背景 ===== */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%2300f2fe"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%234facfe"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%23006994"/></svg>') repeat-x;
+            animation: wave-move 20s linear infinite;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: -5s;
+            opacity: 0.7;
+        }
+        
+        .wave:nth-child(3) {
+            animation-delay: -10s;
+            opacity: 0.5;
+        }
+        
+        @keyframes wave-move {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* ===== 海洋生物装饰 ===== */
+        .fish {
+            position: fixed;
+            font-size: 2rem;
+            animation: fish-swim 20s linear infinite;
+            z-index: 1;
+        }
+        
+        .fish:nth-child(1) { top: 20%; animation-delay: 0s; }
+        .fish:nth-child(2) { top: 40%; animation-delay: -5s; }
+        .fish:nth-child(3) { top: 60%; animation-delay: -10s; }
+        .fish:nth-child(4) { top: 80%; animation-delay: -15s; }
+        
+        @keyframes fish-swim {
+            0% { left: -50px; transform: scaleX(1); }
+            50% { left: 50%; transform: scaleX(1); }
+            51% { transform: scaleX(-1); }
+            100% { left: calc(100% + 50px); transform: scaleX(-1); }
+        }
+        
+        /* ===== 加载屏幕 ===== */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-ocean);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .ocean-loader {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 30px;
+        }
+        
+        .bubble {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: var(--seafoam);
+            border-radius: 50%;
+            animation: bubble-rise 2s ease-in-out infinite;
+        }
+        
+        .bubble:nth-child(1) { left: 20%; animation-delay: 0s; }
+        .bubble:nth-child(2) { left: 50%; animation-delay: 0.5s; }
+        .bubble:nth-child(3) { left: 80%; animation-delay: 1s; }
+        
+        @keyframes bubble-rise {
+            0% { bottom: 0; opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+            100% { bottom: 100px; opacity: 0; transform: scale(0); }
+        }
+        
+        /* ===== 登录模态框 ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            position: relative;
+            color: var(--text-dark);
+        }
+        
+        .modal-content h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: var(--ocean-blue);
+            font-size: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--ocean-deep);
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 15px 20px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            color: var(--text-dark);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--coral);
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+            transform: scale(1.02);
+        }
+        
+        .form-hint {
+            font-size: 0.9rem;
+            color: var(--ocean-blue);
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
+        }
+        
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transition: left 0.6s;
+        }
+        
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        /* ===== 主导航 ===== */
+        .main-nav {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 3px solid var(--ocean-light);
+            padding: 15px 0;
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+            text-decoration: none;
+        }
+        
+        .nav-brand i {
+            font-size: 2.5rem;
+            animation: ocean-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes ocean-pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--ocean-light)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 20px var(--seafoam)); }
+        }
+        
+        .nav-menu {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+        
+        .nav-menu a {
+            color: var(--ocean-deep);
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 500;
+        }
+        
+        .nav-menu a:hover,
+        .nav-menu a.active {
+            color: white;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.3);
+        }
+        
+        /* ===== 主内容 ===== */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            color: var(--text-dark);
+        }
+        
+        .card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border-color: var(--coral);
+        }
+        
+        .card h3 {
+            color: var(--ocean-blue);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            color: white;
+        }
+        
+        .stat-item:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.4);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        /* ===== 题库模态框 ===== */
+        .question-modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .question-modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .question-content {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            color: var(--text-dark);
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--ocean-light);
+        }
+        
+        .question-title {
+            font-size: 1.8rem;
+            color: var(--ocean-blue);
+            font-weight: bold;
+        }
+        
+        .question-controls {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn-control {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .btn-control:hover {
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .question-text {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+        
+        .options-list {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .option-item {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+        }
+        
+        .option-item:hover {
+            background: var(--ocean-light);
+            color: white;
+            transform: translateX(10px);
+        }
+        
+        .option-item.selected {
+            background: var(--coral);
+            color: white;
+            border-color: var(--coral);
+        }
+        
+        .question-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid var(--ocean-light);
+        }
+        
+        .progress-info {
+            color: var(--ocean-blue);
+            font-weight: 600;
+        }
+        
+        /* ===== 通知系统 ===== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            color: var(--text-dark);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-color: var(--success-color);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .notification.error {
+            border-color: var(--error-color);
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        /* ===== 响应式设计 ===== */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+            }
+            
+            .modal-content {
+                padding: 30px 20px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .question-content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 海洋背景动画 -->
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    
+    <!-- 海洋生物装饰 -->
+    <div class="fish">🐠</div>
+    <div class="fish">🐟</div>
+    <div class="fish">🐡</div>
+    <div class="fish">🦈</div>
+    
+    <!-- Loading Screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <div class="ocean-loader">
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+            </div>
+            <h2>🌊 正在潜入流体力学海洋...</h2>
+            <p>Ocean Edition v4.0</p>
+            <div style="margin-top: 20px; color: var(--text-light); font-size: 14px;">
+                <div id="loading-status">初始化海洋模块...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <h2>🌊 欢迎来到流体力学海洋</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user"></i> 用户名</label>
+                    <input type="text" id="username" value="admin" required placeholder="请输入用户名">
+                    <div class="form-hint">测试账户：admin 或 student</div>
+                </div>
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock"></i> 密码</label>
+                    <input type="password" id="password" value="Admin123!" required placeholder="请输入密码">
+                    <div class="form-hint">测试密码：Admin123! 或 Student123!</div>
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="fas fa-sign-in-alt"></i> 潜入海洋
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Navigation -->
+    <nav class="main-nav" id="main-nav" style="display: none;">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <i class="fas fa-water"></i>
+                <span>🌊 流体力学海洋</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="#dashboard" class="active"><i class="fas fa-tachometer-alt"></i> 仪表板</a></li>
+                <li><a href="#learning"><i class="fas fa-graduation-cap"></i> 学习中心</a></li>
+                <li><a href="#simulation"><i class="fas fa-flask"></i> 仿真实验</a></li>
+                <li><a href="#question-bank" onclick="openQuestionBank()"><i class="fas fa-question-circle"></i> 题库练习</a></li>
+                <li><a href="#ai-assistant"><i class="fas fa-robot"></i> AI助手</a></li>
+                <li><a href="#profile"><i class="fas fa-user"></i> 个人中心</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="btn-primary" onclick="logout()" style="padding: 10px 20px; font-size: 14px;">
+                    <i class="fas fa-sign-out-alt"></i> 退出
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content" id="main-content" style="display: none;">
+        <div id="dashboard-content">
+            <div class="dashboard-grid">
+                <div class="card">
+                    <h3><i class="fas fa-chart-line"></i> 🌊 学习统计</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-questions">150</div>
+                            <div class="stat-label">总题数</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="answered-questions">45</div>
+                            <div class="stat-label">已答题</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="total-score">320</div>
+                            <div class="stat-label">总分</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="accuracy">85%</div>
+                            <div class="stat-label">正确率</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3><i class="fas fa-clock"></i> 🐠 最近活动</h3>
+                    <div id="recent-activities">
+                        <div style="margin-bottom: 15px; padding: 15px; background: rgba(79, 172, 254, 0.1); border-radius: 15px; border-left: 4px solid var(--ocean-light);">
+                            <strong>🐚 完成基础概念测试</strong>
+                            <div style="color: var(--ocean-blue); font-size: 0.9rem; margin-top: 5px;">2小时前</div>
+                        </div>
+                        <div style="margin-bottom: 15px; padding: 15px; background: rgba(79, 172, 254, 0.1); border-radius: 15px; border-left: 4px solid var(--ocean-light);">
+                            <strong>🌊 观看流体力学视频</strong>
+                            <div style="color: var(--ocean-blue); font-size: 0.9rem; margin-top: 5px;">昨天</div>
+                        </div>
+                        <div style="padding: 15px; background: rgba(79, 172, 254, 0.1); border-radius: 15px; border-left: 4px solid var(--ocean-light);">
+                            <strong>🧪 完成仿真实验</strong>
+                            <div style="color: var(--ocean-blue); font-size: 0.9rem; margin-top: 5px;">3天前</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3><i class="fas fa-rocket"></i> 🚀 快速开始</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 20px;">
+                    <button class="btn-primary" onclick="startLearning()">
+                        <i class="fas fa-graduation-cap"></i> 开始学习
+                    </button>
+                    <button class="btn-primary" onclick="openQuestionBank()">
+                        <i class="fas fa-question-circle"></i> 题库练习
+                    </button>
+                    <button class="btn-primary" onclick="startSimulation()">
+                        <i class="fas fa-flask"></i> 仿真实验
+                    </button>
+                    <button class="btn-primary" onclick="openAIAssistant()">
+                        <i class="fas fa-robot"></i> AI助手
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 题库模态框 -->
+    <div id="question-modal" class="question-modal">
+        <div class="question-content">
+            <div class="question-header">
+                <div class="question-title">🌊 流体力学题库</div>
+                <div class="question-controls">
+                    <button class="btn-control" onclick="previousQuestion()">
+                        <i class="fas fa-chevron-left"></i> 上一题
+                    </button>
+                    <button class="btn-control" onclick="nextQuestion()">
+                        下一题 <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="btn-control" onclick="closeQuestionBank()">
+                        <i class="fas fa-times"></i> 关闭
+                    </button>
+                </div>
+            </div>
+            
+            <div id="question-container">
+                <div class="question-text" id="question-text">
+                    正在加载题目...
+                </div>
+                
+                <div class="options-list" id="options-list">
+                    <!-- 选项将在这里动态生成 -->
+                </div>
+            </div>
+            
+            <div class="question-footer">
+                <div class="progress-info" id="progress-info">
+                    第 1 题 / 共 150 题
+                </div>
+                <button class="btn-primary" onclick="submitAnswer()">
+                    <i class="fas fa-check"></i> 提交答案
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <script>
+        // 简化的认证系统
+        const AuthSystem = {
+            users: [
+                {
+                    username: 'admin',
+                    password: 'Admin123!',
+                    name: '管理员',
+                    role: 'admin',
+                    level: 10,
+                    exp: 5000
+                },
+                {
+                    username: 'student',
+                    password: 'Student123!',
+                    name: '学生用户',
+                    role: 'student',
+                    level: 3,
+                    exp: 150
+                }
+            ],
+            
+            currentUser: null,
+            
+            login(username, password) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const user = this.users.find(u => 
+                            u.username === username && u.password === password
+                        );
+                        
+                        if (user) {
+                            this.currentUser = {
+                                username: user.username,
+                                name: user.name,
+                                role: user.role,
+                                level: user.level,
+                                exp: user.exp,
+                                loginTime: new Date().toISOString()
+                            };
+                            
+                            localStorage.setItem('userSession', JSON.stringify({
+                                user: this.currentUser,
+                                expiresAt: Date.now() + (24 * 60 * 60 * 1000)
+                            }));
+                            
+                            resolve({ success: true, user: this.currentUser });
+                        } else {
+                            resolve({ success: false, error: '用户名或密码错误' });
+                        }
+                    }, 1000);
+                });
+            },
+            
+            logout() {
+                this.currentUser = null;
+                localStorage.removeItem('userSession');
+                showLoginModal();
+            },
+            
+            isAuthenticated() {
+                return this.currentUser !== null;
+            },
+            
+            restoreSession() {
+                const sessionData = localStorage.getItem('userSession');
+                if (sessionData) {
+                    const session = JSON.parse(sessionData);
+                    if (session.expiresAt > Date.now()) {
+                        this.currentUser = session.user;
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+        
+        // 题库系统
+        const QuestionBank = {
+            questions: [
+                {
+                    id: 1,
+                    text: "🌊 什么是流体的连续性方程？",
+                    options: [
+                        "A. 描述流体质量守恒的方程",
+                        "B. 描述流体能量守恒的方程", 
+                        "C. 描述流体动量守恒的方程",
+                        "D. 描述流体温度变化的方程"
+                    ],
+                    correct: 0,
+                    explanation: "连续性方程描述了流体在流动过程中质量的守恒，是流体力学的基本方程之一。"
+                },
+                {
+                    id: 2,
+                    text: "🐟 伯努利方程适用于什么条件？",
+                    options: [
+                        "A. 任何流体流动",
+                        "B. 理想流体、定常流动、无旋流动",
+                        "C. 粘性流体流动",
+                        "D. 湍流流动"
+                    ],
+                    correct: 1,
+                    explanation: "伯努利方程适用于理想流体、定常流动、无旋流动的条件。"
+                },
+                {
+                    id: 3,
+                    text: "🌊 雷诺数Re = ρVD/μ中，D代表什么？",
+                    options: [
+                        "A. 流体密度",
+                        "B. 流体速度",
+                        "C. 特征长度",
+                        "D. 流体粘度"
+                    ],
+                    correct: 2,
+                    explanation: "D代表特征长度，通常是管道的直径或物体的特征尺寸。"
+                }
+            ],
+            
+            currentQuestion: 0,
+            userAnswers: [],
+            
+            getCurrentQuestion() {
+                return this.questions[this.currentQuestion];
+            },
+            
+            nextQuestion() {
+                if (this.currentQuestion < this.questions.length - 1) {
+                    this.currentQuestion++;
+                    this.displayQuestion();
+                }
+            },
+            
+            previousQuestion() {
+                if (this.currentQuestion > 0) {
+                    this.currentQuestion--;
+                    this.displayQuestion();
+                }
+            },
+            
+            displayQuestion() {
+                const question = this.getCurrentQuestion();
+                document.getElementById('question-text').textContent = question.text;
+                
+                const optionsList = document.getElementById('options-list');
+                optionsList.innerHTML = '';
+                
+                question.options.forEach((option, index) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'option-item';
+                    optionDiv.textContent = option;
+                    optionDiv.onclick = () => this.selectOption(index);
+                    optionsList.appendChild(optionDiv);
+                });
+                
+                document.getElementById('progress-info').textContent = 
+                    `第 ${this.currentQuestion + 1} 题 / 共 ${this.questions.length} 题`;
+            },
+            
+            selectOption(index) {
+                const options = document.querySelectorAll('.option-item');
+                options.forEach(opt => opt.classList.remove('selected'));
+                options[index].classList.add('selected');
+                this.userAnswers[this.currentQuestion] = index;
+            },
+            
+            submitAnswer() {
+                const selectedOption = document.querySelector('.option-item.selected');
+                if (!selectedOption) {
+                    showNotification('请选择一个答案！', 'error');
+                    return;
+                }
+                
+                const question = this.getCurrentQuestion();
+                const selectedIndex = Array.from(document.querySelectorAll('.option-item')).indexOf(selectedOption);
+                const isCorrect = selectedIndex === question.correct;
+                
+                if (isCorrect) {
+                    showNotification('🎉 回答正确！' + question.explanation, 'success');
+                } else {
+                    showNotification('❌ 回答错误。正确答案是：' + question.options[question.correct], 'error');
+                }
+            }
+        };
+        
+        // 显示通知
+        function showNotification(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, duration);
+            }
+        }
+        
+        // 更新加载状态
+        function updateLoadingStatus(message) {
+            const statusElement = document.getElementById('loading-status');
+            if (statusElement) {
+                statusElement.textContent = message;
+            }
+            console.log('🌊 ' + message);
+        }
+        
+        // 显示登录模态框
+        function showLoginModal() {
+            document.getElementById('main-nav').style.display = 'none';
+            document.getElementById('main-content').style.display = 'none';
+            document.getElementById('login-modal').classList.add('show');
+        }
+        
+        // 隐藏登录模态框
+        function hideLoginModal() {
+            document.getElementById('login-modal').classList.remove('show');
+            document.getElementById('main-nav').style.display = 'block';
+            document.getElementById('main-content').style.display = 'block';
+        }
+        
+        // 隐藏加载屏幕
+        function hideLoadingScreen() {
+            document.getElementById('loading-screen').style.display = 'none';
+        }
+        
+        // 题库功能
+        function openQuestionBank() {
+            document.getElementById('question-modal').classList.add('show');
+            QuestionBank.displayQuestion();
+        }
+        
+        function closeQuestionBank() {
+            document.getElementById('question-modal').classList.remove('show');
+        }
+        
+        function nextQuestion() {
+            QuestionBank.nextQuestion();
+        }
+        
+        function previousQuestion() {
+            QuestionBank.previousQuestion();
+        }
+        
+        function submitAnswer() {
+            QuestionBank.submitAnswer();
+        }
+        
+        // 登录表单处理
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const loginBtn = this.querySelector('button[type="submit"]');
+            
+            if (!username || !password) {
+                showNotification('请输入用户名和密码', 'error');
+                return;
+            }
+            
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 潜入中...';
+            
+            try {
+                const result = await AuthSystem.login(username, password);
+                
+                if (result.success) {
+                    showNotification(`🌊 欢迎来到流体力学海洋，${result.user.name}！`, 'success');
+                    hideLoginModal();
+                } else {
+                    showNotification(`❌ 登录失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showNotification(`❌ 登录出错: ${error.message}`, 'error');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 潜入海洋';
+            }
+        });
+        
+        // 功能按钮
+        function startLearning() {
+            showNotification('🌊 学习中心功能开发中...', 'info');
+        }
+        
+        function startSimulation() {
+            showNotification('🧪 仿真实验功能开发中...', 'info');
+        }
+        
+        function openAIAssistant() {
+            showNotification('🤖 AI助手功能开发中...', 'info');
+        }
+        
+        function logout() {
+            AuthSystem.logout();
+            showNotification('👋 已退出海洋', 'info');
+        }
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                updateLoadingStatus('正在潜入海洋...');
+                
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                
+                updateLoadingStatus('海洋初始化完成...');
+                
+                // 检查用户会话
+                if (AuthSystem.restoreSession()) {
+                    showNotification(`🌊 欢迎回到海洋，${AuthSystem.currentUser.name}！`, 'success');
+                    hideLoginModal();
+                } else {
+                    showLoginModal();
+                }
+                
+                setTimeout(() => {
+                    hideLoadingScreen();
+                }, 500);
+                
+            } catch (error) {
+                console.error('❌ 海洋启动失败:', error);
+                updateLoadingStatus('启动失败: ' + error.message);
+            }
+        });
+        
+        console.log('🌊 海洋版流体力学学习平台已加载');
+    </script>
+</body>
+</html> 

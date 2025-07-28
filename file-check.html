@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件检查</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: #2a2a2a;
+            border-radius: 4px;
+        }
+        
+        .status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .status-exists { background: #10b981; }
+        .status-missing { background: #ef4444; }
+        
+        .file-path {
+            font-family: monospace;
+            color: #b8c5d1;
+        }
+        
+        .file-size {
+            margin-left: auto;
+            color: #6c7b7f;
+            font-size: 0.9rem;
+        }
+        
+        button {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        
+        button:hover {
+            background: #0084ff;
+        }
+        
+        .log {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📁 文件检查工具</h1>
+        
+        <div>
+            <button onclick="checkAllFiles()">检查所有文件</button>
+            <button onclick="clearLog()">清空日志</button>
+            <button onclick="loadTestFile()">测试加载文件</button>
+        </div>
+        
+        <div id="file-list"></div>
+        <div id="log" class="log"></div>
+    </div>
+
+    <script>
+        const logElement = document.getElementById('log');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            logElement.textContent = '';
+        }
+        
+        async function checkFile(url) {
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                if (response.ok) {
+                    const size = response.headers.get('content-length');
+                    return { exists: true, size: size };
+                } else {
+                    return { exists: false, size: 0 };
+                }
+            } catch (error) {
+                return { exists: false, size: 0, error: error.message };
+            }
+        }
+        
+        async function checkAllFiles() {
+            const files = [
+                'js/core/config.js',
+                'js/core/utils.js',
+                'js/core/eventBus.js',
+                'js/auth/auth.js',
+                'js/storage/githubStorage.js',
+                'js/components/questionBank.js',
+                'js/components/aiAssistant.js',
+                'js/app.js',
+                'styles/main.css',
+                'styles/auth.css',
+                'styles/dashboard.css',
+                'styles/components.css',
+                'index.html',
+                'manifest.json'
+            ];
+            
+            const fileList = document.getElementById('file-list');
+            let html = '';
+            
+            for (const file of files) {
+                log(`检查文件: ${file}`);
+                const result = await checkFile(file);
+                
+                const statusClass = result.exists ? 'status-exists' : 'status-missing';
+                const statusText = result.exists ? '存在' : '不存在';
+                const sizeText = result.exists && result.size ? `(${result.size} bytes)` : '';
+                
+                html += `
+                    <div class="file-item">
+                        <span class="status ${statusClass}"></span>
+                        <span class="file-path">${file}</span>
+                        <span class="file-size">${statusText} ${sizeText}</span>
+                    </div>
+                `;
+                
+                log(`${file}: ${statusText} ${sizeText}`);
+            }
+            
+            fileList.innerHTML = html;
+        }
+        
+        async function loadTestFile() {
+            try {
+                log('尝试加载测试文件...');
+                
+                // 测试加载一个简单的JS文件
+                const response = await fetch('js/core/config.js');
+                if (response.ok) {
+                    const content = await response.text();
+                    log(`✅ 成功加载 config.js，内容长度: ${content.length} 字符`);
+                    log(`文件开头: ${content.substring(0, 100)}...`);
+                } else {
+                    log(`❌ 加载失败，状态码: ${response.status}`);
+                }
+            } catch (error) {
+                log(`❌ 加载错误: ${error.message}`);
+            }
+        }
+        
+        // 页面加载时自动检查
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🔧 文件检查工具已加载');
+            log('当前URL: ' + window.location.href);
+            log('协议: ' + window.location.protocol);
+            
+            if (window.location.protocol === 'file:') {
+                log('⚠️ 警告: 通过 file:// 协议访问，建议使用 HTTP 服务器');
+                log('请访问: http://localhost:8000/file-check.html');
+            }
+            
+            setTimeout(checkAllFiles, 1000);
+        });
+    </script>
+</body>
+</html> 

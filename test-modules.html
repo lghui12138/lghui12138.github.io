@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模块测试 - 流体力学学习平台</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #ffffff;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .module-item {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+            padding: 15px;
+            background: #2a2a2a;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .module-status {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+        
+        .status-loaded { background: #10b981; }
+        .status-missing { background: #ef4444; }
+        
+        .module-info {
+            flex: 1;
+        }
+        
+        .module-name {
+            font-weight: bold;
+            color: #4facfe;
+        }
+        
+        .module-desc {
+            font-size: 0.9rem;
+            color: #6c7b7f;
+            margin-top: 4px;
+        }
+        
+        button {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        
+        button:hover {
+            background: #0084ff;
+        }
+        
+        .log {
+            background: #000;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            margin-top: 20px;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #2a2a2a;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 模块测试工具</h1>
+        
+        <div class="test-section">
+            <h3>模块加载状态</h3>
+            <div id="module-list"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>功能测试</h3>
+            <button onclick="testAuth()">测试认证系统</button>
+            <button onclick="testEventBus()">测试事件总线</button>
+            <button onclick="testUtils()">测试工具函数</button>
+            <button onclick="testConfig()">测试配置系统</button>
+            <button onclick="testApp()">测试应用初始化</button>
+        </div>
+        
+        <div class="test-section">
+            <h3>控制台日志</h3>
+            <div id="log" class="log"></div>
+        </div>
+    </div>
+
+    <!-- 加载所有模块 -->
+    <script src="js/core/config.js"></script>
+    <script src="js/core/utils.js"></script>
+    <script src="js/core/eventBus.js"></script>
+    <script src="js/auth/auth.js"></script>
+    <script src="js/storage/githubStorage.js"></script>
+    <script src="js/components/questionBank.js"></script>
+    <script src="js/components/aiAssistant.js"></script>
+    <script src="js/app.js"></script>
+
+    <script>
+        const logElement = document.getElementById('log');
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+        
+        function checkModules() {
+            const modules = [
+                { name: 'AppConfig', desc: '应用配置系统' },
+                { name: 'Utils', desc: '工具函数库' },
+                { name: 'EventBus', desc: '事件总线系统' },
+                { name: 'SystemEvents', desc: '系统事件定义' },
+                { name: 'AuthSystem', desc: '认证系统' },
+                { name: 'GitHubStorage', desc: 'GitHub存储系统' },
+                { name: 'LocalQuestionBank', desc: '本地题库系统' },
+                { name: 'IntelligentAIAssistant', desc: 'AI助手系统' },
+                { name: 'App', desc: '主应用系统' }
+            ];
+            
+            const moduleList = document.getElementById('module-list');
+            let html = '';
+            
+            modules.forEach(module => {
+                const isLoaded = !!window[module.name];
+                const statusClass = isLoaded ? 'status-loaded' : 'status-missing';
+                const statusText = isLoaded ? '已加载' : '未加载';
+                
+                html += `
+                    <div class="module-item">
+                        <span class="module-status ${statusClass}"></span>
+                        <div class="module-info">
+                            <div class="module-name">${module.name}</div>
+                            <div class="module-desc">${module.desc} - ${statusText}</div>
+                        </div>
+                    </div>
+                `;
+                
+                log(`${module.name}: ${statusText}`);
+            });
+            
+            moduleList.innerHTML = html;
+        }
+        
+        function testAuth() {
+            log('🧪 测试认证系统...');
+            if (window.AuthSystem) {
+                log('✅ AuthSystem 已加载');
+                log(`认证状态: ${AuthSystem.isAuthenticated()}`);
+                
+                // 测试登录
+                AuthSystem.login('admin', 'Admin123!').then(result => {
+                    log(`登录测试结果: ${JSON.stringify(result)}`);
+                }).catch(error => {
+                    log(`登录测试错误: ${error.message}`);
+                });
+            } else {
+                log('❌ AuthSystem 未加载');
+            }
+        }
+        
+        function testEventBus() {
+            log('🧪 测试事件总线...');
+            if (window.EventBus) {
+                log('✅ EventBus 已加载');
+                
+                // 测试事件监听
+                EventBus.on('test-event', (data) => {
+                    log(`收到测试事件: ${JSON.stringify(data)}`);
+                });
+                
+                // 测试事件发送
+                EventBus.emit('test-event', { message: 'Hello from test!' });
+            } else {
+                log('❌ EventBus 未加载');
+            }
+        }
+        
+        function testUtils() {
+            log('🧪 测试工具函数...');
+            if (window.Utils) {
+                log('✅ Utils 已加载');
+                log(`存储测试: ${Utils.storage.set('test', 'value')}`);
+                log(`读取测试: ${Utils.storage.get('test')}`);
+            } else {
+                log('❌ Utils 未加载');
+            }
+        }
+        
+        function testConfig() {
+            log('🧪 测试配置系统...');
+            if (window.AppConfig) {
+                log('✅ AppConfig 已加载');
+                log(`API配置: ${JSON.stringify(AppConfig.api)}`);
+            } else {
+                log('❌ AppConfig 未加载');
+            }
+        }
+        
+        function testApp() {
+            log('🧪 测试应用初始化...');
+            if (window.App) {
+                log('✅ App 已加载');
+                log(`App状态: ${JSON.stringify(App.getAppState ? App.getAppState() : 'getAppState方法不存在')}`);
+            } else {
+                log('❌ App 未加载');
+            }
+        }
+        
+        // 页面加载时检查模块
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🔧 模块测试工具已加载');
+            log('当前URL: ' + window.location.href);
+            
+            // 延迟检查，确保所有脚本都加载完成
+            setTimeout(() => {
+                checkModules();
+                log('📋 模块检查完成');
+            }, 1000);
+        });
+        
+        // 监听错误
+        window.addEventListener('error', (event) => {
+            log(`❌ 脚本错误: ${event.message} at ${event.filename}:${event.lineno}`);
+        });
+        
+        // 监听未处理的Promise拒绝
+        window.addEventListener('unhandledrejection', (event) => {
+            log(`❌ Promise错误: ${event.reason}`);
+        });
+    </script>
+</body>
+</html> 

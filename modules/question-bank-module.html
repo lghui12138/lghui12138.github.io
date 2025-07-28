@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>❓ 题库练习 - 流体力学海洋</title>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* ===== 海洋主题变量 ===== */
+        :root {
+            --ocean-blue: #006994;
+            --ocean-light: #4facfe;
+            --ocean-deep: #003d5b;
+            --coral: #ff6b6b;
+            --seafoam: #00f2fe;
+            --sand: #f4d03f;
+            --wave-blue: #3498db;
+            --bg-ocean: linear-gradient(135deg, #006994 0%, #4facfe 25%, #00f2fe 50%, #006994 75%, #003d5b 100%);
+            --text-light: #ffffff;
+            --text-dark: #2c3e50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-ocean);
+            background-size: 400% 400%;
+            animation: ocean-wave 15s ease-in-out infinite;
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+        
+        @keyframes ocean-wave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* ===== 海洋背景 ===== */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%2300f2fe"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%234facfe"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%23006994"/></svg>') repeat-x;
+            animation: wave-move 20s linear infinite;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: -5s;
+            opacity: 0.7;
+        }
+        
+        .wave:nth-child(3) {
+            animation-delay: -10s;
+            opacity: 0.5;
+        }
+        
+        @keyframes wave-move {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* ===== 导航栏 ===== */
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 3px solid var(--ocean-light);
+            padding: 15px 0;
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+            text-decoration: none;
+        }
+        
+        .nav-brand i {
+            font-size: 2rem;
+            animation: ocean-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes ocean-pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--ocean-light)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 20px var(--seafoam)); }
+        }
+        
+        .btn-back {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* ===== 主内容 ===== */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+        
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* ===== 统计卡片 ===== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            border-color: var(--coral);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: var(--ocean-blue);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: var(--ocean-blue);
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: var(--text-dark);
+        }
+        
+        /* ===== 题库控制 ===== */
+        .question-controls {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            color: var(--text-dark);
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .btn-control {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-control:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .btn-control.secondary {
+            background: linear-gradient(45deg, var(--coral), #ff8e8e);
+        }
+        
+        /* ===== 题目显示区域 ===== */
+        .question-container {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            color: var(--text-dark);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--ocean-light);
+        }
+        
+        .question-title {
+            font-size: 1.8rem;
+            color: var(--ocean-blue);
+            font-weight: bold;
+        }
+        
+        .question-progress {
+            color: var(--ocean-blue);
+            font-weight: 600;
+        }
+        
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            color: var(--text-dark);
+        }
+        
+        .options-list {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .option-item {
+            background: rgba(255, 255, 255, 0.8);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .option-item:hover {
+            background: var(--ocean-light);
+            color: white;
+            transform: translateX(10px);
+        }
+        
+        .option-item.selected {
+            background: var(--coral);
+            color: white;
+            border-color: var(--coral);
+        }
+        
+        .option-letter {
+            background: rgba(255, 255, 255, 0.2);
+            color: inherit;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        
+        .question-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid var(--ocean-light);
+        }
+        
+        .timer {
+            color: var(--ocean-blue);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        /* ===== AI出题区域 ===== */
+        .ai-section {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            color: var(--text-dark);
+        }
+        
+        .ai-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .ai-icon {
+            font-size: 2rem;
+            color: var(--ocean-blue);
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .ai-input {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .ai-input input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            font-size: 16px;
+        }
+        
+        .ai-input input:focus {
+            outline: none;
+            border-color: var(--coral);
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+        }
+        
+        /* ===== 通知系统 ===== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            color: var(--text-dark);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .notification.error {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        /* ===== 响应式设计 ===== */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .control-buttons {
+                flex-direction: column;
+            }
+            
+            .question-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .question-footer {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 海洋背景 -->
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <i class="fas fa-question-circle"></i>
+                <span>❓ 题库练习</span>
+            </a>
+            <a href="index-modular.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                返回主页
+            </a>
+        </div>
+    </nav>
+    
+    <!-- 主内容 -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">❓ 流体力学题库练习</h1>
+            <p class="page-subtitle">全面的题库系统，助您掌握流体力学知识</p>
+        </div>
+        
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📚</div>
+                <div class="stat-value" id="totalQuestions">150</div>
+                <div class="stat-label">总题数</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">✅</div>
+                <div class="stat-value" id="answeredQuestions">0</div>
+                <div class="stat-label">已答题</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-value" id="correctRate">0%</div>
+                <div class="stat-label">正确率</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-value" id="avgTime">0s</div>
+                <div class="stat-label">平均用时</div>
+            </div>
+        </div>
+        
+        <!-- AI出题区域 -->
+        <div class="ai-section">
+            <div class="ai-header">
+                <div class="ai-icon">🤖</div>
+                <h2>AI智能出题</h2>
+            </div>
+            <div class="ai-input">
+                <input type="text" id="aiTopic" placeholder="请输入出题主题，例如：伯努利方程、雷诺数、边界层理论等">
+                <button class="btn-control" onclick="generateAIQuestion()">
+                    <i class="fas fa-magic"></i> AI出题
+                </button>
+            </div>
+            <div id="aiQuestionResult" style="display: none;">
+                <!-- AI生成的题目将显示在这里 -->
+            </div>
+        </div>
+        
+        <!-- 题库控制 -->
+        <div class="question-controls">
+            <div class="control-buttons">
+                <button class="btn-control" onclick="startPractice()">
+                    <i class="fas fa-play"></i> 开始练习
+                </button>
+                <button class="btn-control" onclick="previousQuestion()">
+                    <i class="fas fa-chevron-left"></i> 上一题
+                </button>
+                <button class="btn-control" onclick="nextQuestion()">
+                    下一题 <i class="fas fa-chevron-right"></i>
+                </button>
+                <button class="btn-control secondary" onclick="submitAnswer()">
+                    <i class="fas fa-check"></i> 提交答案
+                </button>
+                <button class="btn-control" onclick="showExplanation()">
+                    <i class="fas fa-lightbulb"></i> 查看解析
+                </button>
+                <button class="btn-control" onclick="resetPractice()">
+                    <i class="fas fa-redo"></i> 重新开始
+                </button>
+            </div>
+        </div>
+        
+        <!-- 题目显示区域 -->
+        <div class="question-container" id="questionContainer">
+            <div style="text-align: center; color: var(--ocean-blue);">
+                <div style="font-size: 4rem; margin-bottom: 20px;">🌊</div>
+                <h2>欢迎来到题库练习</h2>
+                <p>点击"开始练习"按钮开始答题</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知容器 -->
+    <div id="notification-container"></div>
+    
+    <script>
+        // 完整的题库数据
+        const questionsData = [
+            {
+                id: 1,
+                text: "🌊 在静止流体中，压强的传递遵循什么定律？",
+                options: [
+                    "帕斯卡定律",
+                    "阿基米德定律", 
+                    "胡克定律",
+                    "牛顿定律"
+                ],
+                correct: 0,
+                explanation: "帕斯卡定律指出，在静止流体中，压强能够等值地传递到流体的各个部分。",
+                category: "流体静力学",
+                difficulty: "简单"
+            },
+            {
+                id: 2,
+                text: "📐 流体静力学基本方程dp = -ρg dz中，负号表示什么物理意义？",
+                options: [
+                    "压强随高度增加而减小",
+                    "压强随高度增加而增大",
+                    "密度为负值",
+                    "重力加速度向下"
+                ],
+                correct: 0,
+                explanation: "负号表示压强随高度增加而减小，这是因为重力的作用。",
+                category: "流体静力学",
+                difficulty: "简单"
+            },
+            {
+                id: 3,
+                text: "⚖️ 阿基米德定律描述的是什么现象？",
+                options: [
+                    "浮力等于排开液体的重力",
+                    "浮力等于物体的重力",
+                    "浮力等于液体的重力",
+                    "浮力等于物体的体积"
+                ],
+                correct: 0,
+                explanation: "阿基米德定律指出，浸在液体中的物体受到向上的浮力，浮力的大小等于物体排开液体的重力。",
+                category: "流体静力学",
+                difficulty: "简单"
+            },
+            {
+                id: 4,
+                text: "🔬 在静止流体中，等压面是什么形状？",
+                options: [
+                    "水平面",
+                    "垂直面",
+                    "斜面",
+                    "任意曲面"
+                ],
+                correct: 0,
+                explanation: "在重力场中，静止流体的等压面是水平面，这是因为重力只影响垂直方向的压强分布。",
+                category: "流体静力学",
+                difficulty: "简单"
+            },
+            {
+                id: 5,
+                text: "📊 流体静力学中，绝对压强与表压强的关系是？",
+                options: [
+                    "绝对压强 = 表压强 + 大气压强",
+                    "绝对压强 = 表压强 - 大气压强",
+                    "绝对压强 = 表压强",
+                    "绝对压强 = 大气压强 - 表压强"
+                ],
+                correct: 0,
+                explanation: "绝对压强是相对于真空的压强，表压强是相对于大气压的压强，两者关系为绝对压强 = 表压强 + 大气压强。",
+                category: "流体静力学",
+                difficulty: "简单"
+            },
+            {
+                id: 6,
+                text: "🌊 伯努利方程的适用条件不包括以下哪项？",
+                options: [
+                    "定常流动",
+                    "无粘性流体",
+                    "不可压缩流体",
+                    "有旋流动"
+                ],
+                correct: 3,
+                explanation: "伯努利方程适用于定常、无粘性、不可压缩的无旋流动。",
+                category: "流体动力学",
+                difficulty: "中等"
+            },
+            {
+                id: 7,
+                text: "📐 伯努利方程中，动能项的形式是？",
+                options: [
+                    "ρv²/2",
+                    "ρv²",
+                    "ρv/2",
+                    "ρv"
+                ],
+                correct: 0,
+                explanation: "伯努利方程中的动能项为ρv²/2，表示单位体积流体的动能。",
+                category: "流体动力学",
+                difficulty: "中等"
+            },
+            {
+                id: 8,
+                text: "🧪 在文丘里管中，流速最大的位置是？",
+                options: [
+                    "入口处",
+                    "喉部",
+                    "出口处",
+                    "中间位置"
+                ],
+                correct: 1,
+                explanation: "根据连续性方程，在文丘里管的喉部，截面积最小，流速最大。",
+                category: "流体动力学",
+                difficulty: "中等"
+            },
+            {
+                id: 9,
+                text: "📊 皮托管测量的是什么？",
+                options: [
+                    "静压",
+                    "动压",
+                    "总压",
+                    "差压"
+                ],
+                correct: 2,
+                explanation: "皮托管测量的是总压，即静压与动压之和。",
+                category: "测量仪器",
+                difficulty: "中等"
+            },
+            {
+                id: 10,
+                text: "⚖️ 伯努利方程中的势能项是？",
+                options: [
+                    "ρgz",
+                    "ρg",
+                    "gz",
+                    "ρz"
+                ],
+                correct: 0,
+                explanation: "伯努利方程中的势能项为ρgz，表示单位体积流体的重力势能。",
+                category: "流体动力学",
+                difficulty: "中等"
+            },
+            {
+                id: 11,
+                text: "🔬 边界层的定义是什么？",
+                options: [
+                    "流体与固体壁面接触的区域",
+                    "流速梯度很大的薄层",
+                    "粘性效应显著的薄层",
+                    "以上都是"
+                ],
+                correct: 3,
+                explanation: "边界层是流体与固体壁面接触的区域，是流速梯度很大、粘性效应显著的薄层。",
+                category: "边界层理论",
+                difficulty: "困难"
+            },
+            {
+                id: 12,
+                text: "📐 普朗特边界层理论的基本假设不包括？",
+                options: [
+                    "边界层很薄",
+                    "边界层内粘性力与惯性力同量级",
+                    "边界层外为无粘流动",
+                    "边界层内压力沿法向不变"
+                ],
+                correct: 1,
+                explanation: "普朗特边界层理论假设边界层内粘性力与惯性力同量级，这是边界层理论的核心。",
+                category: "边界层理论",
+                difficulty: "困难"
+            },
+            {
+                id: 13,
+                text: "🌊 边界层分离的条件是？",
+                options: [
+                    "壁面切应力为零",
+                    "壁面切应力为负",
+                    "壁面切应力为正",
+                    "壁面切应力无穷大"
+                ],
+                correct: 0,
+                explanation: "边界层分离的条件是壁面切应力为零，即∂u/∂y|y=0 = 0。",
+                category: "边界层理论",
+                difficulty: "困难"
+            },
+            {
+                id: 14,
+                text: "📊 边界层厚度δ的定义是？",
+                options: [
+                    "流速达到主流速度99%的距离",
+                    "流速达到主流速度90%的距离",
+                    "流速达到主流速度95%的距离",
+                    "流速达到主流速度50%的距离"
+                ],
+                correct: 0,
+                explanation: "边界层厚度δ定义为流速达到主流速度99%的距离。",
+                category: "边界层理论",
+                difficulty: "困难"
+            },
+            {
+                id: 15,
+                text: "⚖️ 平板边界层中，位移厚度δ*的物理意义是？",
+                options: [
+                    "边界层的实际厚度",
+                    "由于粘性效应造成的流量损失",
+                    "由于粘性效应造成的动量损失",
+                    "边界层的能量损失"
+                ],
+                correct: 1,
+                explanation: "位移厚度δ*表示由于粘性效应造成的流量损失，即无粘流动中流量减少的等效厚度。",
+                category: "边界层理论",
+                difficulty: "困难"
+            }
+        ];
+        
+        // 练习状态
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+        let practiceStarted = false;
+        let startTime = null;
+        let questionTimes = [];
+        
+        // 显示通知
+        function showNotification(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, duration);
+            }
+        }
+        
+        // 更新统计信息
+        function updateStats() {
+            const answered = userAnswers.filter(answer => answer !== undefined).length;
+            const correct = userAnswers.filter((answer, index) => 
+                answer === questionsData[index]?.correct
+            ).length;
+            const rate = answered > 0 ? Math.round((correct / answered) * 100) : 0;
+            
+            document.getElementById('totalQuestions').textContent = questionsData.length;
+            document.getElementById('answeredQuestions').textContent = answered;
+            document.getElementById('correctRate').textContent = rate + '%';
+            
+            const avgTime = questionTimes.length > 0 
+                ? Math.round(questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length)
+                : 0;
+            document.getElementById('avgTime').textContent = avgTime + 's';
+        }
+        
+        // 显示题目
+        function displayQuestion() {
+            if (!practiceStarted) {
+                return;
+            }
+            
+            const question = questionsData[currentQuestionIndex];
+            const container = document.getElementById('questionContainer');
+            
+            container.innerHTML = `
+                <div class="question-header">
+                    <div class="question-title">第 ${currentQuestionIndex + 1} 题</div>
+                    <div class="question-progress">${currentQuestionIndex + 1} / ${questionsData.length}</div>
+                </div>
+                
+                <div class="question-text">${question.text}</div>
+                
+                <div class="options-list">
+                    ${question.options.map((option, index) => `
+                        <div class="option-item ${userAnswers[currentQuestionIndex] === index ? 'selected' : ''}" 
+                             onclick="selectOption(${index})">
+                            <div class="option-letter">${String.fromCharCode(65 + index)}</div>
+                            <div>${option}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="question-footer">
+                    <div class="timer" id="timer">时间: 0s</div>
+                    <div>难度: ${question.difficulty} | 分类: ${question.category}</div>
+                </div>
+            `;
+            
+            // 开始计时
+            startTime = Date.now();
+            updateTimer();
+        }
+        
+        // 更新计时器
+        function updateTimer() {
+            if (!startTime) return;
+            
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const timerElement = document.getElementById('timer');
+            if (timerElement) {
+                timerElement.textContent = `时间: ${elapsed}s`;
+            }
+            
+            setTimeout(updateTimer, 1000);
+        }
+        
+        // 选择选项
+        function selectOption(index) {
+            if (!practiceStarted) return;
+            
+            userAnswers[currentQuestionIndex] = index;
+            
+            // 更新选项显示
+            const options = document.querySelectorAll('.option-item');
+            options.forEach((option, i) => {
+                option.classList.toggle('selected', i === index);
+            });
+        }
+        
+        // 开始练习
+        function startPractice() {
+            practiceStarted = true;
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            questionTimes = [];
+            startTime = Date.now();
+            
+            displayQuestion();
+            showNotification('🎯 练习开始！', 'success');
+        }
+        
+        // 上一题
+        function previousQuestion() {
+            if (!practiceStarted) {
+                showNotification('请先开始练习', 'error');
+                return;
+            }
+            
+            if (currentQuestionIndex > 0) {
+                // 记录当前题目用时
+                if (startTime) {
+                    questionTimes[currentQuestionIndex] = Math.floor((Date.now() - startTime) / 1000);
+                }
+                
+                currentQuestionIndex--;
+                displayQuestion();
+            } else {
+                showNotification('已经是第一题了', 'info');
+            }
+        }
+        
+        // 下一题
+        function nextQuestion() {
+            if (!practiceStarted) {
+                showNotification('请先开始练习', 'error');
+                return;
+            }
+            
+            if (currentQuestionIndex < questionsData.length - 1) {
+                // 记录当前题目用时
+                if (startTime) {
+                    questionTimes[currentQuestionIndex] = Math.floor((Date.now() - startTime) / 1000);
+                }
+                
+                currentQuestionIndex++;
+                displayQuestion();
+            } else {
+                showNotification('已经是最后一题了', 'info');
+            }
+        }
+        
+        // 提交答案
+        function submitAnswer() {
+            if (!practiceStarted) {
+                showNotification('请先开始练习', 'error');
+                return;
+            }
+            
+            if (userAnswers[currentQuestionIndex] === undefined) {
+                showNotification('请选择一个答案', 'error');
+                return;
+            }
+            
+            const question = questionsData[currentQuestionIndex];
+            const isCorrect = userAnswers[currentQuestionIndex] === question.correct;
+            
+            // 记录用时
+            if (startTime) {
+                questionTimes[currentQuestionIndex] = Math.floor((Date.now() - startTime) / 1000);
+            }
+            
+            if (isCorrect) {
+                showNotification('🎉 回答正确！', 'success');
+            } else {
+                showNotification(`❌ 回答错误。正确答案是：${String.fromCharCode(65 + question.correct)}`, 'error');
+            }
+            
+            updateStats();
+        }
+        
+        // 查看解析
+        function showExplanation() {
+            if (!practiceStarted) {
+                showNotification('请先开始练习', 'error');
+                return;
+            }
+            
+            const question = questionsData[currentQuestionIndex];
+            showNotification(`💡 解析：${question.explanation}`, 'info', 5000);
+        }
+        
+        // 重新开始
+        function resetPractice() {
+            practiceStarted = false;
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            questionTimes = [];
+            startTime = null;
+            
+            const container = document.getElementById('questionContainer');
+            container.innerHTML = `
+                <div style="text-align: center; color: var(--ocean-blue);">
+                    <div style="font-size: 4rem; margin-bottom: 20px;">🌊</div>
+                    <h2>欢迎来到题库练习</h2>
+                    <p>点击"开始练习"按钮开始答题</p>
+                </div>
+            `;
+            
+            updateStats();
+            showNotification('🔄 练习已重置', 'success');
+        }
+        
+        // AI出题
+        function generateAIQuestion() {
+            const topic = document.getElementById('aiTopic').value.trim();
+            
+            if (!topic) {
+                showNotification('请输入出题主题', 'error');
+                return;
+            }
+            
+            showNotification('🤖 AI正在生成题目...', 'info');
+            
+            // 模拟AI出题
+            setTimeout(() => {
+                const newQuestion = {
+                    id: questionsData.length + 1,
+                    text: `🤖 AI生成题目：关于${topic}，下列说法正确的是？`,
+                    options: [
+                        "这是一个AI生成的选项A",
+                        "这是一个AI生成的选项B", 
+                        "这是一个AI生成的选项C",
+                        "这是一个AI生成的选项D"
+                    ],
+                    correct: Math.floor(Math.random() * 4),
+                    explanation: "这是AI生成的题目解析，基于您提供的主题生成。",
+                    category: "AI生成",
+                    difficulty: "中等"
+                };
+                
+                questionsData.push(newQuestion);
+                
+                const resultDiv = document.getElementById('aiQuestionResult');
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <div style="background: rgba(79, 172, 254, 0.1); padding: 20px; border-radius: 15px; border-left: 4px solid var(--ocean-light);">
+                        <h3>🤖 AI生成的新题目：</h3>
+                        <p><strong>${newQuestion.text}</strong></p>
+                        <p>题目已添加到题库中，可以开始练习了！</p>
+                    </div>
+                `;
+                
+                showNotification('🤖 AI题目生成成功！', 'success');
+                updateStats();
+            }, 2000);
+        }
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            showNotification('❓ 题库练习模块已加载', 'success');
+        });
+        
+        console.log('❓ 题库练习模块已加载');
+    </script>
+</body>
+</html> 

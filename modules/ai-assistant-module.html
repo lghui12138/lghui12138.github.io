@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 AI助手 - 流体力学海洋</title>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* ===== 海洋主题变量 ===== */
+        :root {
+            --ocean-blue: #006994;
+            --ocean-light: #4facfe;
+            --ocean-deep: #003d5b;
+            --coral: #ff6b6b;
+            --seafoam: #00f2fe;
+            --sand: #f4d03f;
+            --wave-blue: #3498db;
+            --bg-ocean: linear-gradient(135deg, #006994 0%, #4facfe 25%, #00f2fe 50%, #006994 75%, #003d5b 100%);
+            --text-light: #ffffff;
+            --text-dark: #2c3e50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-ocean);
+            background-size: 400% 400%;
+            animation: ocean-wave 15s ease-in-out infinite;
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+        
+        @keyframes ocean-wave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* ===== 海洋背景 ===== */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%2300f2fe"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%234facfe"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%23006994"/></svg>') repeat-x;
+            animation: wave-move 20s linear infinite;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: -5s;
+            opacity: 0.7;
+        }
+        
+        .wave:nth-child(3) {
+            animation-delay: -10s;
+            opacity: 0.5;
+        }
+        
+        @keyframes wave-move {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* ===== 导航栏 ===== */
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 3px solid var(--ocean-light);
+            padding: 15px 0;
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+            text-decoration: none;
+        }
+        
+        .nav-brand i {
+            font-size: 2rem;
+            animation: ocean-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes ocean-pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--ocean-light)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 20px var(--seafoam)); }
+        }
+        
+        .btn-back {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* ===== 主内容 ===== */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+        
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* ===== 聊天界面 ===== */
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            height: 600px;
+            display: flex;
+            flex-direction: column;
+            color: var(--text-dark);
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background: var(--ocean-light);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .message {
+            display: flex;
+            gap: 10px;
+            max-width: 80%;
+        }
+        
+        .message.user {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+        
+        .message.assistant {
+            align-self: flex-start;
+        }
+        
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+        
+        .message.user .message-avatar {
+            background: var(--coral);
+            color: white;
+        }
+        
+        .message.assistant .message-avatar {
+            background: var(--seafoam);
+            color: white;
+        }
+        
+        .message-content {
+            background: rgba(240, 244, 248, 0.8);
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid var(--ocean-light);
+        }
+        
+        .message.user .message-content {
+            background: var(--ocean-light);
+            color: white;
+        }
+        
+        .message-text {
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+        
+        .message-time {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            text-align: right;
+        }
+        
+        .message.user .message-time {
+            text-align: left;
+        }
+        
+        .chat-input {
+            padding: 20px;
+            border-top: 2px solid var(--ocean-light);
+            background: rgba(248, 250, 252, 0.8);
+        }
+        
+        .input-container {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+        
+        .input-field {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            font-size: 16px;
+            resize: none;
+            min-height: 50px;
+            max-height: 100px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: var(--coral);
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
+        }
+        
+        .send-btn {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .send-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* ===== 快捷功能 ===== */
+        .quick-actions {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            color: var(--text-dark);
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: var(--ocean-blue);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .action-btn {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* ===== 加载动画 ===== */
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            padding: 15px;
+            background: rgba(240, 244, 248, 0.8);
+            border-radius: 15px;
+            border: 2px solid var(--ocean-light);
+            align-self: flex-start;
+            max-width: 80px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--ocean-blue);
+            border-radius: 50%;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1); }
+        }
+        
+        /* ===== 通知系统 ===== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            color: var(--text-dark);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .notification.error {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        /* ===== 响应式设计 ===== */
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 500px;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-container {
+                flex-direction: column;
+            }
+            
+            .send-btn {
+                align-self: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 海洋背景 -->
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <i class="fas fa-robot"></i>
+                <span>🤖 AI助手</span>
+            </a>
+            <a href="index-modular.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                返回主页
+            </a>
+        </div>
+    </nav>
+    
+    <!-- 主内容 -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">🤖 AI智能助手</h1>
+            <p class="page-subtitle">您的专属流体力学学习伙伴</p>
+        </div>
+        
+        <!-- 快捷功能 -->
+        <div class="quick-actions">
+            <h2 class="section-title">
+                <i class="fas fa-bolt"></i>
+                快捷功能
+            </h2>
+            
+            <div class="action-buttons">
+                <button class="action-btn" onclick="askQuestion('什么是流体力学？')">
+                    <i class="fas fa-question-circle"></i>
+                    基础概念
+                </button>
+                <button class="action-btn" onclick="askQuestion('伯努利方程是什么？')">
+                    <i class="fas fa-calculator"></i>
+                    伯努利方程
+                </button>
+                <button class="action-btn" onclick="askQuestion('雷诺数的作用是什么？')">
+                    <i class="fas fa-chart-line"></i>
+                    雷诺数
+                </button>
+                <button class="action-btn" onclick="askQuestion('边界层理论的主要内容？')">
+                    <i class="fas fa-layer-group"></i>
+                    边界层
+                </button>
+                <button class="action-btn" onclick="askQuestion('如何学好流体力学？')">
+                    <i class="fas fa-graduation-cap"></i>
+                    学习建议
+                </button>
+                <button class="action-btn" onclick="askQuestion('流体力学有哪些应用？')">
+                    <i class="fas fa-industry"></i>
+                    实际应用
+                </button>
+            </div>
+        </div>
+        
+        <!-- 聊天界面 -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <i class="fas fa-robot"></i>
+                AI助手 - 流体力学专家
+            </div>
+            
+            <div class="chat-messages" id="chatMessages">
+                <div class="message assistant">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div class="message-text">
+                            您好！我是您的流体力学AI助手。我可以帮助您：
+                            <br>• 解答流体力学相关问题
+                            <br>• 提供学习建议和方法
+                            <br>• 解释复杂概念和公式
+                            <br>• 推荐学习资源
+                            <br><br>请随时向我提问，我会尽力帮助您！
+                        </div>
+                        <div class="message-time">刚刚</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input">
+                <div class="input-container">
+                    <textarea 
+                        class="input-field" 
+                        id="messageInput" 
+                        placeholder="请输入您的问题..."
+                        rows="1"
+                    ></textarea>
+                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                        发送
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知容器 -->
+    <div id="notification-container"></div>
+    
+    <script>
+        // AI知识库
+        const aiKnowledge = {
+            '流体力学': {
+                keywords: ['流体力学', '流体', '力学', '基础'],
+                response: '流体力学是研究流体（液体和气体）运动规律及其与固体相互作用的科学。它是力学的一个重要分支，主要研究流体的静力学、运动学和动力学特性。流体力学在工程、气象、海洋学、生物学等领域有广泛应用。'
+            },
+            '伯努利方程': {
+                keywords: ['伯努利', '方程', '伯努利方程'],
+                response: '伯努利方程是流体力学中的基本方程之一，描述了理想流体在定常流动中沿流线的能量守恒。方程形式为：p + ½ρv² + ρgh = 常数，其中p是压力，ρ是密度，v是速度，g是重力加速度，h是高度。这个方程在管道流动、机翼升力计算等方面有重要应用。'
+            },
+            '雷诺数': {
+                keywords: ['雷诺数', '雷诺', 'Re'],
+                response: '雷诺数(Re)是判断流体流动状态的无量纲参数，定义为Re = ρVD/μ，其中ρ是流体密度，V是流速，D是特征长度，μ是流体粘度。当Re < 2300时，流动为层流；当Re > 4000时，流动为湍流；在2300-4000之间为过渡区。雷诺数在管道设计、模型试验等方面非常重要。'
+            },
+            '边界层': {
+                keywords: ['边界层', '边界', '层'],
+                response: '边界层是流体在固体表面附近形成的薄层，其中粘性效应显著。边界层理论由普朗特提出，将流动分为边界层内的粘性流动和边界层外的无粘流动。边界层分离现象会导致阻力增加，在工程设计中需要特别注意。'
+            },
+            '学习建议': {
+                keywords: ['学习', '建议', '方法', '如何学好'],
+                response: '学好流体力学建议：1. 掌握数学基础，特别是微积分和微分方程；2. 理解物理概念，建立直观认识；3. 多做练习题，巩固理论知识；4. 结合实验和仿真，加深理解；5. 关注实际应用，理论联系实际；6. 定期复习，建立知识体系。'
+            },
+            '应用': {
+                keywords: ['应用', '用途', '工程'],
+                response: '流体力学在多个领域有重要应用：1. 航空航天：机翼设计、发动机设计；2. 船舶工程：船体设计、推进系统；3. 建筑工程：通风系统、给排水；4. 能源工程：风力发电、水力发电；5. 环境工程：大气污染、水污染控制；6. 生物医学：血液流动、呼吸系统。'
+            }
+        };
+        
+        // 聊天记录
+        let chatHistory = [];
+        
+        // 显示通知
+        function showNotification(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, duration);
+            }
+        }
+        
+        // 添加消息到聊天界面
+        function addMessage(content, isUser = false) {
+            const chatMessages = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
+            
+            const avatar = isUser ? '👤' : '🤖';
+            const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                    <div class="message-text">${content}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // 保存到历史记录
+            chatHistory.push({
+                content: content,
+                isUser: isUser,
+                timestamp: new Date().toISOString()
+            });
+        }
+        
+        // 显示打字指示器
+        function showTypingIndicator() {
+            const chatMessages = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message assistant';
+            typingDiv.id = 'typingIndicator';
+            
+            typingDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(typingDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // 隐藏打字指示器
+        function hideTypingIndicator() {
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        // AI回复
+        function aiResponse(userMessage) {
+            // 简单的关键词匹配
+            let bestMatch = null;
+            let bestScore = 0;
+            
+            for (const [topic, data] of Object.entries(aiKnowledge)) {
+                for (const keyword of data.keywords) {
+                    if (userMessage.toLowerCase().includes(keyword.toLowerCase())) {
+                        const score = keyword.length;
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMatch = data.response;
+                        }
+                    }
+                }
+            }
+            
+            // 如果没有匹配，提供通用回复
+            if (!bestMatch) {
+                const genericResponses = [
+                    '这是一个很好的问题！让我为您详细解释一下...',
+                    '关于这个问题，我可以从以下几个方面为您解答...',
+                    '这是一个复杂的流体力学概念，让我为您分析一下...',
+                    '您的问题很有深度，让我为您提供专业的解答...'
+                ];
+                bestMatch = genericResponses[Math.floor(Math.random() * genericResponses.length)] + 
+                           '\n\n如果您需要更具体的答案，请尝试使用快捷功能按钮，或者更详细地描述您的问题。';
+            }
+            
+            return bestMatch;
+        }
+        
+        // 发送消息
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                showNotification('请输入消息内容', 'error');
+                return;
+            }
+            
+            // 禁用发送按钮
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发送中...';
+            
+            // 添加用户消息
+            addMessage(message, true);
+            messageInput.value = '';
+            
+            // 显示打字指示器
+            showTypingIndicator();
+            
+            // 模拟AI思考时间
+            setTimeout(() => {
+                hideTypingIndicator();
+                
+                // 生成AI回复
+                const aiReply = aiResponse(message);
+                addMessage(aiReply, false);
+                
+                // 恢复发送按钮
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发送';
+            }, 1500 + Math.random() * 1000);
+        }
+        
+        // 快捷提问
+        function askQuestion(question) {
+            const messageInput = document.getElementById('messageInput');
+            messageInput.value = question;
+            sendMessage();
+        }
+        
+        // 回车发送消息
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        
+        // 自动调整输入框高度
+        document.getElementById('messageInput').addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        });
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            showNotification('🤖 AI助手已准备就绪', 'success');
+        });
+        
+        console.log('🤖 AI助手模块已加载');
+    </script>
+</body>
+</html> 

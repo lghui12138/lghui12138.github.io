@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 仿真实验 - 流体力学海洋</title>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* ===== 海洋主题变量 ===== */
+        :root {
+            --ocean-blue: #006994;
+            --ocean-light: #4facfe;
+            --ocean-deep: #003d5b;
+            --coral: #ff6b6b;
+            --seafoam: #00f2fe;
+            --sand: #f4d03f;
+            --wave-blue: #3498db;
+            --bg-ocean: linear-gradient(135deg, #006994 0%, #4facfe 25%, #00f2fe 50%, #006994 75%, #003d5b 100%);
+            --text-light: #ffffff;
+            --text-dark: #2c3e50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-ocean);
+            background-size: 400% 400%;
+            animation: ocean-wave 15s ease-in-out infinite;
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+        
+        @keyframes ocean-wave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* ===== 海洋背景 ===== */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%2300f2fe"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%234facfe"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%23006994"/></svg>') repeat-x;
+            animation: wave-move 20s linear infinite;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: -5s;
+            opacity: 0.7;
+        }
+        
+        .wave:nth-child(3) {
+            animation-delay: -10s;
+            opacity: 0.5;
+        }
+        
+        @keyframes wave-move {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* ===== 导航栏 ===== */
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 3px solid var(--ocean-light);
+            padding: 15px 0;
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+            text-decoration: none;
+        }
+        
+        .nav-brand i {
+            font-size: 2rem;
+            animation: ocean-pulse 2s ease-in-out infinite;
+        }
+        
+        @keyframes ocean-pulse {
+            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--ocean-light)); }
+            50% { transform: scale(1.1); filter: drop-shadow(0 0 20px var(--seafoam)); }
+        }
+        
+        .btn-back {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* ===== 主内容 ===== */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--text-light);
+        }
+        
+        .page-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        /* ===== 实验类型选择 ===== */
+        .experiment-types {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .experiment-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .experiment-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            border-color: var(--coral);
+        }
+        
+        .experiment-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            color: var(--ocean-blue);
+        }
+        
+        .experiment-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: var(--ocean-blue);
+        }
+        
+        .experiment-description {
+            color: var(--text-dark);
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .experiment-status {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        
+        .status-available {
+            background: var(--seafoam);
+            color: white;
+        }
+        
+        .status-coming {
+            background: var(--sand);
+            color: var(--text-dark);
+        }
+        
+        /* ===== 实验界面 ===== */
+        .experiment-interface {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            color: var(--text-dark);
+            display: none;
+        }
+        
+        .experiment-interface.active {
+            display: block;
+        }
+        
+        .interface-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--ocean-light);
+        }
+        
+        .interface-title {
+            font-size: 1.8rem;
+            color: var(--ocean-blue);
+            font-weight: bold;
+        }
+        
+        .interface-controls {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .control-btn {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .control-btn.secondary {
+            background: linear-gradient(45deg, var(--coral), #ff8e8e);
+        }
+        
+        /* ===== 3D实验区域 ===== */
+        .experiment-area {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            border-radius: 15px;
+            height: 500px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .experiment-canvas {
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #4facfe 0%, #00f2fe 50%, #006994 100%);
+            position: relative;
+        }
+        
+        .experiment-object {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: var(--seafoam);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .experiment-object:hover {
+            transform: scale(1.2);
+            box-shadow: 0 0 30px var(--seafoam);
+        }
+        
+        /* ===== 实验参数控制 ===== */
+        .experiment-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .control-group {
+            background: rgba(240, 244, 248, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid var(--ocean-light);
+        }
+        
+        .control-label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--ocean-deep);
+            font-weight: 600;
+        }
+        
+        .control-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: var(--ocean-light);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .control-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--coral);
+            cursor: pointer;
+        }
+        
+        .control-value {
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+            color: var(--ocean-blue);
+        }
+        
+        /* ===== 实验数据 ===== */
+        .experiment-data {
+            background: rgba(240, 244, 248, 0.8);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .data-header {
+            font-size: 1.2rem;
+            color: var(--ocean-blue);
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        
+        .data-item {
+            text-align: center;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            border: 1px solid var(--ocean-light);
+        }
+        
+        .data-label {
+            font-size: 0.9rem;
+            color: var(--ocean-deep);
+            margin-bottom: 5px;
+        }
+        
+        .data-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+        }
+        
+        /* ===== 通知系统 ===== */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            color: var(--text-dark);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .notification.error {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        /* ===== 响应式设计 ===== */
+        @media (max-width: 768px) {
+            .experiment-types {
+                grid-template-columns: 1fr;
+            }
+            
+            .interface-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .interface-controls {
+                flex-wrap: wrap;
+            }
+            
+            .experiment-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 海洋背景 -->
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <i class="fas fa-vr-cardboard"></i>
+                <span>🧪 仿真实验</span>
+            </a>
+            <a href="index-modular.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                返回主页
+            </a>
+        </div>
+    </nav>
+    
+    <!-- 主内容 -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">🧪 流体力学仿真实验</h1>
+            <p class="page-subtitle">沉浸式虚拟实验，深度理解流体力学原理</p>
+        </div>
+        
+        <!-- 实验类型选择 -->
+        <div class="experiment-types" id="experimentTypes">
+            <div class="experiment-card" onclick="startExperiment('fluid-statics')">
+                <div class="experiment-icon">🌊</div>
+                <div class="experiment-title">流体静力学实验</div>
+                <div class="experiment-description">
+                    探索流体静力学原理，包括压强分布、浮力定律、帕斯卡原理等基础概念
+                </div>
+                <div class="experiment-status status-available">可用</div>
+            </div>
+            
+            <div class="experiment-card" onclick="startExperiment('flow-visualization')">
+                <div class="experiment-icon">🌀</div>
+                <div class="experiment-title">流动可视化实验</div>
+                <div class="experiment-description">
+                    观察流线、涡流、边界层等流动现象，理解流体运动规律
+                </div>
+                <div class="experiment-status status-available">可用</div>
+            </div>
+            
+            <div class="experiment-card" onclick="startExperiment('bernoulli')">
+                <div class="experiment-icon">📐</div>
+                <div class="experiment-title">伯努利方程实验</div>
+                <div class="experiment-description">
+                    验证伯努利方程，观察流速与压强的关系，理解能量守恒
+                </div>
+                <div class="experiment-status status-available">可用</div>
+            </div>
+            
+            <div class="experiment-card" onclick="startExperiment('reynolds')">
+                <div class="experiment-icon">🔬</div>
+                <div class="experiment-title">雷诺数实验</div>
+                <div class="experiment-description">
+                    观察层流与湍流的转换，理解雷诺数的物理意义
+                </div>
+                <div class="experiment-status status-available">可用</div>
+            </div>
+            
+            <div class="experiment-card" onclick="startExperiment('vr-lab')">
+                <div class="experiment-icon">🥽</div>
+                <div class="experiment-title">VR实验室</div>
+                <div class="experiment-description">
+                    完全沉浸式虚拟现实实验环境，身临其境的实验体验
+                </div>
+                <div class="experiment-status status-coming">即将推出</div>
+            </div>
+            
+            <div class="experiment-card" onclick="startExperiment('ar-lab')">
+                <div class="experiment-icon">📱</div>
+                <div class="experiment-title">AR增强现实</div>
+                <div class="experiment-description">
+                    增强现实技术，将虚拟实验元素叠加到现实环境中
+                </div>
+                <div class="experiment-status status-coming">即将推出</div>
+            </div>
+        </div>
+        
+        <!-- 实验界面 -->
+        <div class="experiment-interface" id="experimentInterface">
+            <div class="interface-header">
+                <div class="interface-title" id="experimentTitle">流体静力学实验</div>
+                <div class="interface-controls">
+                    <button class="control-btn" onclick="resetExperiment()">
+                        <i class="fas fa-redo"></i> 重置
+                    </button>
+                    <button class="control-btn" onclick="saveExperiment()">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                    <button class="control-btn secondary" onclick="closeExperiment()">
+                        <i class="fas fa-times"></i> 关闭
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 3D实验区域 -->
+            <div class="experiment-area">
+                <div class="experiment-canvas" id="experimentCanvas">
+                    <!-- 实验对象将在这里动态生成 -->
+                </div>
+            </div>
+            
+            <!-- 实验参数控制 -->
+            <div class="experiment-controls">
+                <div class="control-group">
+                    <label class="control-label">流体密度 (kg/m³)</label>
+                    <input type="range" class="control-slider" id="densitySlider" min="800" max="1200" value="1000" oninput="updateParameter('density', this.value)">
+                    <div class="control-value" id="densityValue">1000</div>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">流速 (m/s)</label>
+                    <input type="range" class="control-slider" id="velocitySlider" min="0" max="10" value="2" step="0.1" oninput="updateParameter('velocity', this.value)">
+                    <div class="control-value" id="velocityValue">2.0</div>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">温度 (°C)</label>
+                    <input type="range" class="control-slider" id="temperatureSlider" min="0" max="100" value="20" oninput="updateParameter('temperature', this.value)">
+                    <div class="control-value" id="temperatureValue">20</div>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">压力 (Pa)</label>
+                    <input type="range" class="control-slider" id="pressureSlider" min="90000" max="110000" value="101325" step="100" oninput="updateParameter('pressure', this.value)">
+                    <div class="control-value" id="pressureValue">101325</div>
+                </div>
+            </div>
+            
+            <!-- 实验数据 -->
+            <div class="experiment-data">
+                <div class="data-header">
+                    <i class="fas fa-chart-line"></i> 实时实验数据
+                </div>
+                <div class="data-grid">
+                    <div class="data-item">
+                        <div class="data-label">雷诺数</div>
+                        <div class="data-value" id="reynoldsNumber">2000</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">流动状态</div>
+                        <div class="data-value" id="flowState">层流</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">动能 (J/kg)</div>
+                        <div class="data-value" id="kineticEnergy">2.0</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">势能 (J/kg)</div>
+                        <div class="data-value" id="potentialEnergy">196.2</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知容器 -->
+    <div id="notification-container"></div>
+    
+    <script>
+        // 实验数据
+        let currentExperiment = null;
+        let experimentData = {
+            density: 1000,
+            velocity: 2.0,
+            temperature: 20,
+            pressure: 101325
+        };
+        
+        // 显示通知
+        function showNotification(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, duration);
+            }
+        }
+        
+        // 开始实验
+        function startExperiment(type) {
+            if (type === 'vr-lab' || type === 'ar-lab') {
+                showNotification('🥽 VR/AR功能即将推出，敬请期待！', 'info');
+                return;
+            }
+            
+            currentExperiment = type;
+            document.getElementById('experimentTypes').style.display = 'none';
+            document.getElementById('experimentInterface').classList.add('active');
+            
+            // 设置实验标题
+            const titles = {
+                'fluid-statics': '流体静力学实验',
+                'flow-visualization': '流动可视化实验',
+                'bernoulli': '伯努利方程实验',
+                'reynolds': '雷诺数实验'
+            };
+            document.getElementById('experimentTitle').textContent = titles[type];
+            
+            // 初始化实验场景
+            initializeExperiment(type);
+            
+            showNotification(`🧪 ${titles[type]}已启动`, 'success');
+        }
+        
+        // 初始化实验场景
+        function initializeExperiment(type) {
+            const canvas = document.getElementById('experimentCanvas');
+            canvas.innerHTML = '';
+            
+            if (type === 'fluid-statics') {
+                // 流体静力学实验对象
+                createFluidStaticsObjects();
+            } else if (type === 'flow-visualization') {
+                // 流动可视化实验对象
+                createFlowVisualizationObjects();
+            } else if (type === 'bernoulli') {
+                // 伯努利方程实验对象
+                createBernoulliObjects();
+            } else if (type === 'reynolds') {
+                // 雷诺数实验对象
+                createReynoldsObjects();
+            }
+            
+            // 更新实验数据
+            updateExperimentData();
+        }
+        
+        // 创建流体静力学实验对象
+        function createFluidStaticsObjects() {
+            const canvas = document.getElementById('experimentCanvas');
+            
+            // 容器
+            const container = document.createElement('div');
+            container.className = 'experiment-object';
+            container.style.left = '50%';
+            container.style.top = '60%';
+            container.style.width = '200px';
+            container.style.height = '150px';
+            container.style.borderRadius = '20px';
+            container.style.background = 'linear-gradient(45deg, var(--ocean-light), var(--seafoam))';
+            container.innerHTML = '🌊';
+            canvas.appendChild(container);
+            
+            // 浮动物体
+            const floatingObject = document.createElement('div');
+            floatingObject.className = 'experiment-object';
+            floatingObject.style.left = '45%';
+            floatingObject.style.top = '50%';
+            floatingObject.innerHTML = '🔵';
+            canvas.appendChild(floatingObject);
+            
+            // 压力传感器
+            const pressureSensor = document.createElement('div');
+            pressureSensor.className = 'experiment-object';
+            pressureSensor.style.left = '60%';
+            pressureSensor.style.top = '70%';
+            pressureSensor.innerHTML = '📊';
+            canvas.appendChild(pressureSensor);
+        }
+        
+        // 创建流动可视化实验对象
+        function createFlowVisualizationObjects() {
+            const canvas = document.getElementById('experimentCanvas');
+            
+            // 流线
+            for (let i = 0; i < 5; i++) {
+                const streamLine = document.createElement('div');
+                streamLine.className = 'experiment-object';
+                streamLine.style.left = `${20 + i * 15}%`;
+                streamLine.style.top = `${30 + i * 10}%`;
+                streamLine.style.animationDelay = `${i * 0.5}s`;
+                streamLine.innerHTML = '➡️';
+                canvas.appendChild(streamLine);
+            }
+            
+            // 涡流
+            const vortex = document.createElement('div');
+            vortex.className = 'experiment-object';
+            vortex.style.left = '70%';
+            vortex.style.top = '40%';
+            vortex.style.animation = 'spin 2s linear infinite';
+            vortex.innerHTML = '🌀';
+            canvas.appendChild(vortex);
+        }
+        
+        // 创建伯努利方程实验对象
+        function createBernoulliObjects() {
+            const canvas = document.getElementById('experimentCanvas');
+            
+            // 管道
+            const pipe = document.createElement('div');
+            pipe.className = 'experiment-object';
+            pipe.style.left = '30%';
+            pipe.style.top = '50%';
+            pipe.style.width = '300px';
+            pipe.style.height = '30px';
+            pipe.style.borderRadius = '15px';
+            pipe.style.background = 'linear-gradient(90deg, var(--ocean-light), var(--seafoam))';
+            pipe.innerHTML = '📏';
+            canvas.appendChild(pipe);
+            
+            // 流速计
+            const flowMeter = document.createElement('div');
+            flowMeter.className = 'experiment-object';
+            flowMeter.style.left = '50%';
+            flowMeter.style.top = '30%';
+            flowMeter.innerHTML = '🌊';
+            canvas.appendChild(flowMeter);
+            
+            // 压力计
+            const pressureGauge = document.createElement('div');
+            pressureGauge.className = 'experiment-object';
+            pressureGauge.style.left = '70%';
+            pressureGauge.style.top = '60%';
+            pressureGauge.innerHTML = '📈';
+            canvas.appendChild(pressureGauge);
+        }
+        
+        // 创建雷诺数实验对象
+        function createReynoldsObjects() {
+            const canvas = document.getElementById('experimentCanvas');
+            
+            // 管道
+            const pipe = document.createElement('div');
+            pipe.className = 'experiment-object';
+            pipe.style.left = '20%';
+            pipe.style.top = '50%';
+            pipe.style.width = '400px';
+            pipe.style.height = '40px';
+            pipe.style.borderRadius = '20px';
+            pipe.style.background = 'linear-gradient(90deg, var(--ocean-light), var(--seafoam))';
+            pipe.innerHTML = '🔬';
+            canvas.appendChild(pipe);
+            
+            // 染料注入器
+            const dyeInjector = document.createElement('div');
+            dyeInjector.className = 'experiment-object';
+            dyeInjector.style.left = '25%';
+            dyeInjector.style.top = '40%';
+            dyeInjector.innerHTML = '🎨';
+            canvas.appendChild(dyeInjector);
+            
+            // 流动观察窗
+            const observationWindow = document.createElement('div');
+            observationWindow.className = 'experiment-object';
+            observationWindow.style.left = '60%';
+            observationWindow.style.top = '30%';
+            observationWindow.innerHTML = '👁️';
+            canvas.appendChild(observationWindow);
+        }
+        
+        // 更新参数
+        function updateParameter(param, value) {
+            experimentData[param] = parseFloat(value);
+            
+            // 更新显示值
+            document.getElementById(`${param}Value`).textContent = value;
+            
+            // 更新实验数据
+            updateExperimentData();
+        }
+        
+        // 更新实验数据
+        function updateExperimentData() {
+            const { density, velocity, temperature, pressure } = experimentData;
+            
+            // 计算雷诺数
+            const diameter = 0.01; // 假设管道直径1cm
+            const viscosity = 1.8e-5; // 空气粘度
+            const reynoldsNumber = Math.round((density * velocity * diameter) / viscosity);
+            
+            // 判断流动状态
+            const flowState = reynoldsNumber < 2300 ? '层流' : reynoldsNumber > 4000 ? '湍流' : '过渡流';
+            
+            // 计算动能和势能
+            const kineticEnergy = (0.5 * velocity * velocity).toFixed(1);
+            const potentialEnergy = (9.81 * 20).toFixed(1); // 假设高度20m
+            
+            // 更新显示
+            document.getElementById('reynoldsNumber').textContent = reynoldsNumber;
+            document.getElementById('flowState').textContent = flowState;
+            document.getElementById('kineticEnergy').textContent = kineticEnergy;
+            document.getElementById('potentialEnergy').textContent = potentialEnergy;
+        }
+        
+        // 重置实验
+        function resetExperiment() {
+            if (!currentExperiment) return;
+            
+            // 重置参数
+            experimentData = {
+                density: 1000,
+                velocity: 2.0,
+                temperature: 20,
+                pressure: 101325
+            };
+            
+            // 重置滑块
+            document.getElementById('densitySlider').value = 1000;
+            document.getElementById('velocitySlider').value = 2.0;
+            document.getElementById('temperatureSlider').value = 20;
+            document.getElementById('pressureSlider').value = 101325;
+            
+            // 重置显示值
+            document.getElementById('densityValue').textContent = '1000';
+            document.getElementById('velocityValue').textContent = '2.0';
+            document.getElementById('temperatureValue').textContent = '20';
+            document.getElementById('pressureValue').textContent = '101325';
+            
+            // 重新初始化实验
+            initializeExperiment(currentExperiment);
+            
+            showNotification('🔄 实验已重置', 'success');
+        }
+        
+        // 保存实验
+        function saveExperiment() {
+            const experimentRecord = {
+                type: currentExperiment,
+                data: experimentData,
+                timestamp: new Date().toISOString()
+            };
+            
+            // 保存到本地存储
+            const savedExperiments = JSON.parse(localStorage.getItem('experiments') || '[]');
+            savedExperiments.push(experimentRecord);
+            localStorage.setItem('experiments', JSON.stringify(savedExperiments));
+            
+            showNotification('💾 实验数据已保存', 'success');
+        }
+        
+        // 关闭实验
+        function closeExperiment() {
+            document.getElementById('experimentInterface').classList.remove('active');
+            document.getElementById('experimentTypes').style.display = 'grid';
+            currentExperiment = null;
+            
+            showNotification('👋 实验已关闭', 'info');
+        }
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            showNotification('🧪 仿真实验模块已加载', 'success');
+        });
+        
+        console.log('🧪 仿真实验模块已加载');
+    </script>
+</body>
+</html> 

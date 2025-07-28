@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>简化测试 - 流体力学学习平台</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0f1c 0%, #1a2332 50%, #2a3441 100%);
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .test-container {
+            background: rgba(26, 35, 50, 0.95);
+            border: 1px solid #3a4a5c;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .test-subtitle {
+            color: #b8c5d1;
+            font-size: 0.9rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #b8c5d1;
+            font-weight: 500;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(42, 52, 65, 0.8);
+            border: 1px solid #3a4a5c;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.2);
+        }
+        
+        .btn-primary {
+            width: 100%;
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 172, 254, 0.3);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+        }
+        
+        .result-success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid #10b981;
+            color: #10b981;
+        }
+        
+        .result-error {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444;
+            color: #ef4444;
+        }
+        
+        .result-info {
+            background: rgba(79, 172, 254, 0.2);
+            border: 1px solid #4facfe;
+            color: #4facfe;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-loaded { background: #10b981; }
+        .status-error { background: #ef4444; }
+        
+        .module-status {
+            font-size: 12px;
+            color: #6c7b7f;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1 class="test-title">简化登录测试</h1>
+            <p class="test-subtitle">流体力学学习平台 v4.0</p>
+        </div>
+        
+        <div class="module-status" id="module-status">
+            检查模块状态...
+        </div>
+        
+        <form id="login-form">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" class="form-input" value="admin" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" class="form-input" value="Admin123!" required>
+            </div>
+            
+            <button type="submit" class="btn-primary" id="login-btn">
+                <i class="fas fa-sign-in-alt"></i> 登录
+            </button>
+        </form>
+        
+        <div id="result" class="result-message"></div>
+    </div>
+
+    <!-- 简化的认证系统 -->
+    <script>
+        // 简化的认证系统
+        const SimpleAuth = {
+            users: [
+                {
+                    username: 'admin',
+                    password: 'Admin123!',
+                    name: '管理员',
+                    role: 'admin'
+                },
+                {
+                    username: 'student',
+                    password: 'Student123!',
+                    name: '学生',
+                    role: 'student'
+                }
+            ],
+            
+            currentUser: null,
+            
+            login(username, password) {
+                const user = this.users.find(u => 
+                    u.username === username && u.password === password
+                );
+                
+                if (user) {
+                    this.currentUser = {
+                        username: user.username,
+                        name: user.name,
+                        role: user.role,
+                        loginTime: new Date().toISOString()
+                    };
+                    return { success: true, user: this.currentUser };
+                } else {
+                    return { success: false, error: '用户名或密码错误' };
+                }
+            },
+            
+            logout() {
+                this.currentUser = null;
+                return { success: true };
+            },
+            
+            isAuthenticated() {
+                return this.currentUser !== null;
+            }
+        };
+        
+        // 显示结果
+        function showResult(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = `result-message result-${type}`;
+            resultDiv.style.display = 'block';
+        }
+        
+        // 检查模块状态
+        function checkModules() {
+            const modules = ['AppConfig', 'Utils', 'EventBus', 'AuthSystem', 'App'];
+            const statusDiv = document.getElementById('module-status');
+            let html = '';
+            let loadedCount = 0;
+            
+            modules.forEach(module => {
+                const isLoaded = window[module] !== undefined;
+                const statusClass = isLoaded ? 'loaded' : 'error';
+                const statusText = isLoaded ? '已加载' : '未加载';
+                
+                if (isLoaded) loadedCount++;
+                
+                html += `<span class="status-indicator ${statusClass}"></span>${module}: ${statusText} `;
+            });
+            
+            statusDiv.innerHTML = html;
+            return loadedCount === modules.length;
+        }
+        
+        // 表单提交处理
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('login-btn');
+            
+            // 禁用按钮
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 登录中...';
+            
+            try {
+                // 首先尝试使用简化认证
+                const result = SimpleAuth.login(username, password);
+                
+                if (result.success) {
+                    showResult(`✅ 登录成功！欢迎 ${result.user.name} (${result.user.role})`, 'success');
+                    
+                    // 如果完整模块已加载，也尝试使用完整认证系统
+                    if (window.AuthSystem) {
+                        try {
+                            const fullResult = await AuthSystem.login(username, password, false);
+                            if (fullResult.success) {
+                                showResult(`✅ 完整认证系统也工作正常！`, 'success');
+                            }
+                        } catch (error) {
+                            console.warn('完整认证系统错误:', error);
+                        }
+                    }
+                } else {
+                    showResult(`❌ 登录失败: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ 登录出错: ${error.message}`, 'error');
+            } finally {
+                // 恢复按钮
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登录';
+            }
+        });
+        
+        // 页面加载完成后检查模块
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(checkModules, 1000);
+            setInterval(checkModules, 3000);
+        });
+    </script>
+
+    <!-- 尝试加载完整模块 -->
+    <script>
+        // 异步加载模块
+        async function loadModule(src) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+        
+        // 尝试加载核心模块
+        async function loadCoreModules() {
+            const modules = [
+                'js/core/config.js',
+                'js/core/utils.js',
+                'js/core/eventBus.js',
+                'js/auth/auth.js',
+                'js/app.js'
+            ];
+            
+            for (const module of modules) {
+                try {
+                    await loadModule(module);
+                    console.log(`✅ 加载成功: ${module}`);
+                } catch (error) {
+                    console.warn(`⚠️ 加载失败: ${module}`, error);
+                }
+            }
+        }
+        
+        // 延迟加载
+        setTimeout(loadCoreModules, 2000);
+    </script>
+</body>
+</html> 
