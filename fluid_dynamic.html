@@ -43,6 +43,10 @@
     <script src="https://vjs.zencdn.net/7.21.1/lang/zh-CN.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/videojs-contrib-quality-levels@2.1.0/dist/videojs-contrib-quality-levels.min.js" defer></script>
     
+    <!-- OCR and Image Processing Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/opencv.js@1.7.0/opencv.js" defer></script>
+    
     <!-- Additional Security Headers -->
     <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), interest-cohort=()">
     <meta name="pinterest" content="nopin">
@@ -412,6 +416,196 @@
             border-color: var(--accent);
             background: white;
             box-shadow: 0 0 0 3px rgba(77, 184, 214, 0.1);
+        }
+
+        /* OCR图片上传和处理样式 */
+        .image-upload-container {
+            border: 2px dashed rgba(30, 111, 168, 0.3);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            text-align: center;
+            background: rgba(248, 250, 252, 0.5);
+            transition: all var(--transition-normal);
+            cursor: pointer;
+            position: relative;
+            margin-bottom: var(--space-6);
+        }
+
+        .image-upload-container:hover {
+            border-color: var(--accent);
+            background: rgba(77, 184, 214, 0.1);
+        }
+
+        .image-upload-container.processing {
+            border-color: var(--warning);
+            background: rgba(243, 156, 18, 0.1);
+        }
+
+        .image-upload-container.drag-over {
+            border-color: var(--accent);
+            background: rgba(77, 184, 214, 0.2);
+            transform: scale(1.02);
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 400px;
+            margin: var(--space-4) 0;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+        }
+
+        .ocr-progress {
+            background: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-top: var(--space-4);
+            display: none;
+        }
+
+        .ocr-progress.active {
+            display: block;
+        }
+
+        .ocr-step {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-2) 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .ocr-step:last-child {
+            border-bottom: none;
+        }
+
+        .ocr-step-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .ocr-step-icon.pending {
+            background: rgba(189, 195, 199, 0.3);
+            color: var(--secondary);
+        }
+
+        .ocr-step-icon.processing {
+            background: rgba(243, 156, 18, 0.2);
+            color: var(--warning);
+            animation: spin 1s linear infinite;
+        }
+
+        .ocr-step-icon.completed {
+            background: rgba(39, 174, 96, 0.2);
+            color: var(--success);
+        }
+
+        .ocr-step-icon.error {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--error);
+        }
+
+        .ocr-result {
+            background: white;
+            border: 1px solid rgba(30, 111, 168, 0.2);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-top: var(--space-4);
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .ocr-result h4 {
+            margin-bottom: var(--space-3);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .ocr-result textarea {
+            width: 100%;
+            min-height: 200px;
+            border: 1px solid rgba(30, 111, 168, 0.2);
+            border-radius: var(--radius-md);
+            padding: var(--space-3);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.875rem;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .image-tools {
+            display: flex;
+            gap: var(--space-2);
+            margin-top: var(--space-4);
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .image-tool-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: var(--space-2) var(--space-4);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all var(--transition-normal);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .image-tool-btn:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+        }
+
+        .image-tool-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .confidence-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            margin-top: var(--space-3);
+            font-size: 0.875rem;
+        }
+
+        .confidence-bar {
+            flex: 1;
+            height: 6px;
+            background: rgba(230, 236, 241, 0.8);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .confidence-fill {
+            height: 100%;
+            border-radius: var(--radius-full);
+            transition: width 0.3s ease;
+        }
+
+        .confidence-fill.high {
+            background: var(--success);
+        }
+
+        .confidence-fill.medium {
+            background: var(--warning);
+        }
+
+        .confidence-fill.low {
+            background: var(--error);
         }
 
         html {
@@ -2625,6 +2819,7 @@
                     <div class="upload-tabs">
                         <button class="upload-tab active" onclick="switchExerciseTab('json')">JSON格式</button>
                         <button class="upload-tab" onclick="switchExerciseTab('text')">文本输入</button>
+                        <button class="upload-tab" onclick="switchExerciseTab('image')">图片识别</button>
                         <button class="upload-tab" onclick="switchExerciseTab('file')">文件上传</button>
                     </div>
                     
@@ -2656,6 +2851,81 @@
                             <textarea class="form-input" rows="10" placeholder="请输入题目内容，每道题目用空行分隔" id="exerciseContent"></textarea>
                         </div>
                         <button onclick="uploadExerciseText()" class="submit-btn">创建练习</button>
+                    </div>
+                    
+                    <div id="imageExercise" class="upload-content">
+                        <div class="form-group">
+                            <label class="form-label">练习标题</label>
+                            <input type="text" class="form-input" placeholder="请输入练习标题" id="imageExerciseTitle">
+                        </div>
+                        
+                        <div class="image-upload-container" id="imageUploadContainer" onclick="document.getElementById('imageInput').click()">
+                            <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(this)">
+                            <i class="fas fa-image" style="font-size: 3rem; color: var(--accent); margin-bottom: var(--space-4);"></i>
+                            <h3>上传题目图片</h3>
+                            <p>支持 JPG、PNG、GIF 等格式</p>
+                            <small>拖拽图片到此处或点击选择文件</small>
+                        </div>
+                        
+                        <div id="imagePreviewContainer" style="display: none;">
+                            <img id="imagePreview" class="image-preview" alt="题目图片预览">
+                            <div class="image-tools">
+                                <button class="image-tool-btn" onclick="enhanceImage()">
+                                    <i class="fas fa-magic"></i> 图像增强
+                                </button>
+                                <button class="image-tool-btn" onclick="rotateImage()">
+                                    <i class="fas fa-redo"></i> 旋转图片
+                                </button>
+                                <button class="image-tool-btn" onclick="startOCR()">
+                                    <i class="fas fa-eye"></i> 开始识别
+                                </button>
+                                <button class="image-tool-btn" onclick="clearImage()">
+                                    <i class="fas fa-trash"></i> 清除图片
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="ocr-progress" id="ocrProgress">
+                            <h4><i class="fas fa-cogs"></i> OCR 识别进度</h4>
+                            <div class="ocr-step">
+                                <div class="ocr-step-icon pending" id="step1Icon">1</div>
+                                <span>图像预处理</span>
+                            </div>
+                            <div class="ocr-step">
+                                <div class="ocr-step-icon pending" id="step2Icon">2</div>
+                                <span>文字检测</span>
+                            </div>
+                            <div class="ocr-step">
+                                <div class="ocr-step-icon pending" id="step3Icon">3</div>
+                                <span>文字识别</span>
+                            </div>
+                            <div class="ocr-step">
+                                <div class="ocr-step-icon pending" id="step4Icon">4</div>
+                                <span>格式化处理</span>
+                            </div>
+                        </div>
+                        
+                        <div class="ocr-result" id="ocrResult" style="display: none;">
+                            <h4>
+                                <i class="fas fa-text-width"></i> 识别结果
+                                <div class="confidence-indicator">
+                                    <span>识别准确度：</span>
+                                    <div class="confidence-bar">
+                                        <div class="confidence-fill" id="confidenceFill"></div>
+                                    </div>
+                                    <span id="confidenceText">0%</span>
+                                </div>
+                            </h4>
+                            <textarea id="ocrText" placeholder="OCR识别的文字将显示在这里，您可以手动编辑和完善..."></textarea>
+                            <div style="margin-top: var(--space-4); display: flex; gap: var(--space-3);">
+                                <button onclick="formatAsExercise()" class="submit-btn">
+                                    <i class="fas fa-magic"></i> 智能格式化
+                                </button>
+                                <button onclick="createExerciseFromOCR()" class="submit-btn">
+                                    <i class="fas fa-plus"></i> 创建练习
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     
                     <div id="fileExercise" class="upload-content">
@@ -3283,6 +3553,12 @@
         let videoQuality = '720p';
         let videoSpeed = 1;
         let isFullscreen = false;
+
+        // OCR相关状态
+        let currentImage = null;
+        let ocrWorker = null;
+        let imageRotation = 0;
+        let ocrInProgress = false;
         
         // DOM元素缓存
         const DOM = {};
@@ -4000,6 +4276,476 @@
             };
             
             reader.readAsText(file);
+        }
+
+        /**
+         * OCR图片处理功能
+         */
+        
+        // 处理图片上传
+        function handleImageUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            // 验证文件类型
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                showToast('不支持的图片格式，请上传 JPG、PNG、GIF 等格式的图片', 'error');
+                return;
+            }
+            
+            // 验证文件大小（限制为10MB）
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showToast('图片文件过大，请选择小于10MB的图片', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentImage = e.target.result;
+                displayImagePreview(currentImage);
+                showImageTools();
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 显示图片预览
+        function displayImagePreview(imageSrc) {
+            const preview = document.getElementById('imagePreview');
+            const container = document.getElementById('imagePreviewContainer');
+            const uploadContainer = document.getElementById('imageUploadContainer');
+            
+            preview.src = imageSrc;
+            container.style.display = 'block';
+            uploadContainer.style.display = 'none';
+        }
+
+        // 显示图片工具
+        function showImageTools() {
+            const tools = document.querySelector('.image-tools');
+            if (tools) {
+                tools.style.display = 'flex';
+            }
+        }
+
+        // 图像增强
+        function enhanceImage() {
+            if (!currentImage) return;
+            
+            showToast('正在增强图像...', 'info');
+            
+            try {
+                // 创建canvas进行图像处理
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                img.onload = function() {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    
+                    // 绘制原图
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // 获取图像数据
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+                    
+                    // 应用对比度和亮度增强
+                    for (let i = 0; i < data.length; i += 4) {
+                        // 增加对比度
+                        data[i] = Math.min(255, Math.max(0, (data[i] - 128) * 1.5 + 128));     // R
+                        data[i + 1] = Math.min(255, Math.max(0, (data[i + 1] - 128) * 1.5 + 128)); // G
+                        data[i + 2] = Math.min(255, Math.max(0, (data[i + 2] - 128) * 1.5 + 128)); // B
+                    }
+                    
+                    // 重新绘制处理后的图像
+                    ctx.putImageData(imageData, 0, 0);
+                    
+                    // 更新预览
+                    currentImage = canvas.toDataURL('image/png');
+                    displayImagePreview(currentImage);
+                    
+                    showToast('图像增强完成', 'success');
+                };
+                
+                img.src = currentImage;
+            } catch (error) {
+                showToast('图像增强失败：' + error.message, 'error');
+            }
+        }
+
+        // 旋转图片
+        function rotateImage() {
+            if (!currentImage) return;
+            
+            imageRotation = (imageRotation + 90) % 360;
+            
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = function() {
+                // 根据旋转角度调整canvas尺寸
+                if (imageRotation % 180 === 0) {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                } else {
+                    canvas.width = img.height;
+                    canvas.height = img.width;
+                }
+                
+                // 设置旋转中心点
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate((imageRotation * Math.PI) / 180);
+                ctx.drawImage(img, -img.width / 2, -img.height / 2);
+                
+                currentImage = canvas.toDataURL('image/png');
+                displayImagePreview(currentImage);
+                
+                showToast(`图片已旋转 ${imageRotation}°`, 'success');
+            };
+            
+            img.src = currentImage;
+        }
+
+        // 开始OCR识别
+        async function startOCR() {
+            if (!currentImage || ocrInProgress) return;
+            
+            ocrInProgress = true;
+            const progressContainer = document.getElementById('ocrProgress');
+            const resultContainer = document.getElementById('ocrResult');
+            
+            // 显示进度
+            progressContainer.classList.add('active');
+            resultContainer.style.display = 'none';
+            
+            try {
+                // 初始化OCR工作器
+                if (!ocrWorker) {
+                    updateOCRStep(1, 'processing');
+                    ocrWorker = await Tesseract.createWorker('chi_sim+eng', 1, {
+                        logger: m => {
+                            if (m.status === 'recognizing text') {
+                                const progress = Math.round(m.progress * 100);
+                                updateOCRStep(3, 'processing', `文字识别 ${progress}%`);
+                            }
+                        }
+                    });
+                    updateOCRStep(1, 'completed');
+                }
+                
+                // 文字检测
+                updateOCRStep(2, 'processing');
+                await new Promise(resolve => setTimeout(resolve, 500)); // 模拟检测时间
+                updateOCRStep(2, 'completed');
+                
+                // 文字识别
+                updateOCRStep(3, 'processing');
+                const { data: { text, confidence } } = await ocrWorker.recognize(currentImage);
+                updateOCRStep(3, 'completed');
+                
+                // 格式化处理
+                updateOCRStep(4, 'processing');
+                const formattedText = formatOCRText(text);
+                updateOCRStep(4, 'completed');
+                
+                // 显示结果
+                displayOCRResult(formattedText, confidence);
+                
+                showToast('OCR识别完成！', 'success');
+                
+            } catch (error) {
+                console.error('OCR识别失败:', error);
+                updateOCRStep(null, 'error');
+                showToast('OCR识别失败：' + error.message, 'error');
+            } finally {
+                ocrInProgress = false;
+            }
+        }
+
+        // 更新OCR步骤状态
+        function updateOCRStep(step, status, text) {
+            if (step) {
+                const icon = document.getElementById(`step${step}Icon`);
+                if (icon) {
+                    icon.className = `ocr-step-icon ${status}`;
+                    if (status === 'completed') {
+                        icon.innerHTML = '<i class="fas fa-check"></i>';
+                    } else if (status === 'error') {
+                        icon.innerHTML = '<i class="fas fa-times"></i>';
+                    } else if (status === 'processing') {
+                        icon.innerHTML = '<i class="fas fa-spinner"></i>';
+                    }
+                }
+            } else if (status === 'error') {
+                // 标记所有未完成的步骤为错误
+                for (let i = 1; i <= 4; i++) {
+                    const icon = document.getElementById(`step${i}Icon`);
+                    if (icon && icon.classList.contains('pending')) {
+                        icon.className = 'ocr-step-icon error';
+                        icon.innerHTML = '<i class="fas fa-times"></i>';
+                    }
+                }
+            }
+        }
+
+        // 格式化OCR文本
+        function formatOCRText(text) {
+            // 移除多余的空格和换行
+            let formatted = text.replace(/\s+/g, ' ').trim();
+            
+            // 尝试识别题目模式
+            formatted = formatted.replace(/(\d+\s*[\.、]\s*)/g, '\n\n$1'); // 题号分隔
+            formatted = formatted.replace(/([A-D]\s*[\.、]\s*)/g, '\n$1'); // 选项分隔
+            formatted = formatted.replace(/\n\s*\n/g, '\n\n'); // 规范化换行
+            
+            return formatted.trim();
+        }
+
+        // 显示OCR结果
+        function displayOCRResult(text, confidence) {
+            const resultContainer = document.getElementById('ocrResult');
+            const textArea = document.getElementById('ocrText');
+            const confidenceFill = document.getElementById('confidenceFill');
+            const confidenceText = document.getElementById('confidenceText');
+            
+            // 显示识别的文字
+            textArea.value = text;
+            
+            // 显示准确度
+            const confidencePercent = Math.round(confidence);
+            confidenceText.textContent = `${confidencePercent}%`;
+            confidenceFill.style.width = `${confidencePercent}%`;
+            
+            // 根据准确度设置颜色
+            if (confidencePercent >= 80) {
+                confidenceFill.className = 'confidence-fill high';
+            } else if (confidencePercent >= 60) {
+                confidenceFill.className = 'confidence-fill medium';
+            } else {
+                confidenceFill.className = 'confidence-fill low';
+            }
+            
+            // 显示结果区域
+            resultContainer.style.display = 'block';
+        }
+
+        // 智能格式化为练习题
+        function formatAsExercise() {
+            const textArea = document.getElementById('ocrText');
+            let text = textArea.value;
+            
+            if (!text.trim()) {
+                showToast('请先进行OCR识别或输入文字', 'error');
+                return;
+            }
+            
+            try {
+                // 智能解析题目结构
+                const formatted = parseExerciseText(text);
+                textArea.value = formatted;
+                showToast('智能格式化完成，请检查并调整格式', 'success');
+            } catch (error) {
+                showToast('格式化失败：' + error.message, 'error');
+            }
+        }
+
+        // 解析练习文本
+        function parseExerciseText(text) {
+            const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+            let formatted = '';
+            let currentQuestion = null;
+            
+            for (const line of lines) {
+                // 检测题号
+                if (/^\d+\s*[\.、]/.test(line)) {
+                    if (currentQuestion) {
+                        formatted += formatQuestion(currentQuestion) + '\n\n';
+                    }
+                    currentQuestion = {
+                        question: line,
+                        options: [],
+                        type: 'multiple'
+                    };
+                }
+                // 检测选项
+                else if (/^[A-D]\s*[\.、]/.test(line) && currentQuestion) {
+                    currentQuestion.options.push(line);
+                }
+                // 其他内容添加到当前题目
+                else if (currentQuestion) {
+                    currentQuestion.question += ' ' + line;
+                } else {
+                    formatted += line + '\n';
+                }
+            }
+            
+            // 处理最后一题
+            if (currentQuestion) {
+                formatted += formatQuestion(currentQuestion);
+            }
+            
+            return formatted;
+        }
+
+        // 格式化单个题目
+        function formatQuestion(question) {
+            let result = question.question + '\n';
+            
+            if (question.options.length > 0) {
+                result += question.options.join('\n') + '\n';
+                result += '正确答案: A\n';
+                result += '解释: 请补充答案解释';
+            }
+            
+            return result;
+        }
+
+        // 从OCR结果创建练习
+        async function createExerciseFromOCR() {
+            const title = document.getElementById('imageExerciseTitle').value;
+            const text = document.getElementById('ocrText').value;
+            
+            if (!title.trim()) {
+                showToast('请输入练习标题', 'error');
+                return;
+            }
+            
+            if (!text.trim()) {
+                showToast('请先进行OCR识别或输入题目内容', 'error');
+                return;
+            }
+            
+            showLoading(true);
+            
+            try {
+                // 解析题目
+                const questions = parseOCRToQuestions(text);
+                
+                if (questions.length === 0) {
+                    throw new Error('未能解析出有效的题目，请检查格式');
+                }
+                
+                const newExercise = {
+                    id: `exercise_${Date.now()}`,
+                    title: title,
+                    description: `基于OCR识别创建的练习（共${questions.length}题）`,
+                    questionCount: questions.length,
+                    duration: `${Math.max(15, questions.length * 2)}分钟`,
+                    difficulty: '中等',
+                    category: 'OCR识别',
+                    uploadedBy: currentUser.username,
+                    uploadDate: new Date().toISOString().split('T')[0],
+                    attempts: 0,
+                    averageScore: 0,
+                    questions: questions
+                };
+                
+                exercisesData.push(newExercise);
+                saveDataToStorage();
+                renderExerciseGrid();
+                
+                showToast(`练习"${title}"创建成功，共包含${questions.length}道题目！`, 'success');
+                
+                // 清空表单
+                clearImageUpload();
+                
+            } catch (error) {
+                showToast(`创建失败：${error.message}`, 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 解析OCR文本为题目对象
+        function parseOCRToQuestions(text) {
+            const questions = [];
+            const blocks = text.split(/\n\s*\n/).filter(block => block.trim());
+            
+            let questionIndex = 0;
+            
+            for (const block of blocks) {
+                const lines = block.split('\n').map(line => line.trim()).filter(line => line);
+                if (lines.length === 0) continue;
+                
+                let question = '';
+                let options = [];
+                let correct = 0;
+                let explanation = '';
+                
+                // 查找题目文本
+                let questionLines = [];
+                let optionLines = [];
+                let explanationLines = [];
+                let currentSection = 'question';
+                
+                for (const line of lines) {
+                    if (/^[A-D]\s*[\.、]/.test(line)) {
+                        currentSection = 'options';
+                        optionLines.push(line.replace(/^[A-D]\s*[\.、]\s*/, ''));
+                    } else if (/^(正确答案|答案)\s*[:：]\s*[A-D]/i.test(line)) {
+                        const match = line.match(/[A-D]/);
+                        if (match) {
+                            correct = match[0].charCodeAt(0) - 'A'.charCodeAt(0);
+                        }
+                    } else if (/^(解释|说明|解析)\s*[:：]/i.test(line)) {
+                        currentSection = 'explanation';
+                        explanationLines.push(line.replace(/^(解释|说明|解析)\s*[:：]\s*/i, ''));
+                    } else {
+                        if (currentSection === 'question') {
+                            questionLines.push(line);
+                        } else if (currentSection === 'explanation') {
+                            explanationLines.push(line);
+                        }
+                    }
+                }
+                
+                question = questionLines.join(' ').replace(/^\d+\s*[\.、]\s*/, '');
+                
+                if (question && optionLines.length >= 2) {
+                    questions.push({
+                        id: `q_ocr_${Date.now()}_${questionIndex++}`,
+                        question: question,
+                        options: optionLines,
+                        correct: correct,
+                        explanation: explanationLines.join(' ') || '暂无解释',
+                        hint: '',
+                        points: 5
+                    });
+                }
+            }
+            
+            return questions;
+        }
+
+        // 清除图片上传
+        function clearImage() {
+            clearImageUpload();
+            showToast('图片已清除', 'info');
+        }
+
+        function clearImageUpload() {
+            currentImage = null;
+            imageRotation = 0;
+            
+            document.getElementById('imageInput').value = '';
+            document.getElementById('imageExerciseTitle').value = '';
+            document.getElementById('imagePreviewContainer').style.display = 'none';
+            document.getElementById('imageUploadContainer').style.display = 'block';
+            document.getElementById('ocrProgress').classList.remove('active');
+            document.getElementById('ocrResult').style.display = 'none';
+            
+            // 重置进度图标
+            for (let i = 1; i <= 4; i++) {
+                const icon = document.getElementById(`step${i}Icon`);
+                if (icon) {
+                    icon.className = 'ocr-step-icon pending';
+                    icon.innerHTML = i;
+                }
+            }
         }
         
         /**
@@ -4946,6 +5692,9 @@
                 
                 // 启动安全防护
                 devtoolsCheckInterval = setInterval(detectDevTools, 500);
+
+                // 添加拖拽上传支持
+                setupDragAndDrop();
                 
                 // 注册Service Worker
                 if ('serviceWorker' in navigator) {
@@ -5038,6 +5787,58 @@
                 console.warn('加载本地数据失败:', error);
             }
         }
+
+        /**
+         * 设置拖拽上传功能
+         */
+        function setupDragAndDrop() {
+            // 阻止默认拖拽行为
+            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                document.addEventListener(eventName, preventDefaults, false);
+            });
+
+            function preventDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            // 图片上传区域拖拽支持
+            const imageUploadContainer = document.getElementById('imageUploadContainer');
+            if (imageUploadContainer) {
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    imageUploadContainer.addEventListener(eventName, highlight, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    imageUploadContainer.addEventListener(eventName, unhighlight, false);
+                });
+
+                imageUploadContainer.addEventListener('drop', handleImageDrop, false);
+            }
+
+            function highlight(e) {
+                e.currentTarget.classList.add('drag-over');
+            }
+
+            function unhighlight(e) {
+                e.currentTarget.classList.remove('drag-over');
+            }
+
+            function handleImageDrop(e) {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+
+                if (files.length > 0) {
+                    const file = files[0];
+                    // 模拟文件输入
+                    const input = document.getElementById('imageInput');
+                    const dataTransfer = new DataTransfer();
+                    dataTransfer.items.add(file);
+                    input.files = dataTransfer.files;
+                    handleImageUpload(input);
+                }
+            }
+        }
         
         // 暴露全局函数
         window.showSection = showSection;
@@ -5085,6 +5886,15 @@
         window.deleteExercise = deleteExercise;
         window.renderVideoGrid = renderVideoGrid;
         window.renderExerciseGrid = renderExerciseGrid;
+        
+        // OCR图片识别功能
+        window.handleImageUpload = handleImageUpload;
+        window.enhanceImage = enhanceImage;
+        window.rotateImage = rotateImage;
+        window.startOCR = startOCR;
+        window.clearImage = clearImage;
+        window.formatAsExercise = formatAsExercise;
+        window.createExerciseFromOCR = createExerciseFromOCR;
         
         // 应用程序启动
         if (document.readyState === 'loading') {
