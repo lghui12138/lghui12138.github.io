@@ -679,6 +679,26 @@
             transform: translateY(-8px);
             box-shadow: var(--shadow-xl);
         }
+        
+        .video-card.featured {
+            border: 2px solid var(--accent);
+            background: linear-gradient(145deg, #ffffff, #f8f9fa);
+            position: relative;
+        }
+        
+        .video-card.featured::before {
+            content: '推荐';
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            background: var(--accent);
+            color: white;
+            padding: 4px 12px;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+            z-index: 1;
+        }
 
         .video-preview {
             height: 160px;
@@ -922,6 +942,188 @@
                 padding: var(--space-6) var(--space-4);
             }
         }
+        
+        /* 视频模态框样式 */
+        .video-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .video-modal.active {
+            opacity: 1;
+        }
+        
+        .video-modal-content {
+            background: white;
+            border-radius: var(--radius-xl);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+        
+        .video-modal.active .video-modal-content {
+            transform: scale(1);
+        }
+        
+        .video-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-6);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .video-modal-header h3 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 1.25rem;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--secondary);
+            cursor: pointer;
+            padding: var(--space-2);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-normal);
+        }
+        
+        .close-btn:hover {
+            background: rgba(44, 154, 183, 0.1);
+            color: var(--primary);
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .video-placeholder {
+            text-align: center;
+            color: white;
+        }
+        
+        .video-placeholder i {
+            font-size: 4rem;
+            margin-bottom: var(--space-4);
+            opacity: 0.8;
+        }
+        
+        .video-placeholder p {
+            font-size: 1.25rem;
+            margin-bottom: var(--space-2);
+        }
+        
+        .video-placeholder small {
+            opacity: 0.8;
+            font-size: 0.875rem;
+        }
+        
+        .video-info {
+            padding: var(--space-6);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: var(--space-4);
+        }
+        
+        .video-info p {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            color: var(--secondary);
+            font-size: 0.875rem;
+        }
+        
+        .video-info i {
+            color: var(--accent);
+        }
+        
+        /* 成绩列表样式 */
+        .grade-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-4);
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--space-3);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            transition: all var(--transition-normal);
+        }
+        
+        .grade-item:hover {
+            background: rgba(255, 255, 255, 1);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        
+        .grade-info {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-1);
+        }
+        
+        .grade-name {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1rem;
+        }
+        
+        .grade-score {
+            color: var(--secondary);
+            font-size: 0.875rem;
+        }
+        
+        .grade-actions {
+            display: flex;
+            gap: var(--space-2);
+        }
+        
+        .edit-btn, .delete-btn {
+            background: none;
+            border: none;
+            padding: var(--space-2);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            font-size: 0.875rem;
+        }
+        
+        .edit-btn {
+            color: var(--accent);
+        }
+        
+        .edit-btn:hover {
+            background: rgba(77, 184, 214, 0.1);
+        }
+        
+        .delete-btn {
+            color: var(--error);
+        }
+        
+        .delete-btn:hover {
+            background: rgba(231, 76, 60, 0.1);
+        }
     </style>
 </head>
 <body>
@@ -1164,10 +1366,10 @@
                 </div>
                 
                 <div class="video-grid">
-                    <div class="video-card">
+                    <div class="video-card featured">
                         <div class="video-preview">
                             <i class="fas fa-water"></i>
-                            <div class="play-button" onclick="playVideo('BV16T421D7k4')">
+                            <div class="play-button" onclick="playVideo('video1')">
                                 <i class="fas fa-play"></i>
                             </div>
                         </div>
@@ -1184,7 +1386,7 @@
                     <div class="video-card">
                         <div class="video-preview">
                             <i class="fas fa-tint"></i>
-                            <div class="play-button" onclick="playVideo('sample2')">
+                            <div class="play-button" onclick="playVideo('video2')">
                                 <i class="fas fa-play"></i>
                             </div>
                         </div>
@@ -1194,6 +1396,40 @@
                             <div class="video-duration">
                                 <span><i class="far fa-clock"></i> 25:30</span>
                                 <span><i class="far fa-eye"></i> 18,923</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="video-card">
+                        <div class="video-preview">
+                            <i class="fas fa-wind"></i>
+                            <div class="play-button" onclick="playVideo('video3')">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">涡旋运动与环量</h3>
+                            <p class="video-description">详细讲解涡旋运动的基本概念和环量的计算方法。</p>
+                            <div class="video-duration">
+                                <span><i class="far fa-clock"></i> 22:15</span>
+                                <span><i class="far fa-eye"></i> 15,672</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="video-card">
+                        <div class="video-preview">
+                            <i class="fas fa-stream"></i>
+                            <div class="play-button" onclick="playVideo('video4')">
+                                <i class="fas fa-play"></i>
+                            </div>
+                        </div>
+                        <div class="video-info">
+                            <h3 class="video-title">势流理论应用</h3>
+                            <p class="video-description">势流理论在实际工程中的应用案例分析。</p>
+                            <div class="video-duration">
+                                <span><i class="far fa-clock"></i> 30:20</span>
+                                <span><i class="far fa-eye"></i> 12,845</span>
                             </div>
                         </div>
                     </div>
@@ -1238,6 +1474,36 @@
                             <span><i class="fas fa-star"></i> 困难</span>
                         </div>
                         <button class="start-btn" onclick="startExercise('viscous')">开始练习</button>
+                    </div>
+                    
+                    <div class="exercise-card">
+                        <h3 class="exercise-title">伯努利方程应用</h3>
+                        <div class="exercise-meta">
+                            <span><i class="fas fa-list"></i> 18题</span>
+                            <span><i class="fas fa-clock"></i> 35分钟</span>
+                            <span><i class="fas fa-star"></i> 中等</span>
+                        </div>
+                        <button class="start-btn" onclick="startExercise('bernoulli')">开始练习</button>
+                    </div>
+                    
+                    <div class="exercise-card">
+                        <h3 class="exercise-title">涡旋运动理论</h3>
+                        <div class="exercise-meta">
+                            <span><i class="fas fa-list"></i> 16题</span>
+                            <span><i class="fas fa-clock"></i> 38分钟</span>
+                            <span><i class="fas fa-star"></i> 困难</span>
+                        </div>
+                        <button class="start-btn" onclick="startExercise('vortex')">开始练习</button>
+                    </div>
+                    
+                    <div class="exercise-card">
+                        <h3 class="exercise-title">势流理论</h3>
+                        <div class="exercise-meta">
+                            <span><i class="fas fa-list"></i> 14题</span>
+                            <span><i class="fas fa-clock"></i> 32分钟</span>
+                            <span><i class="fas fa-star"></i> 中等</span>
+                        </div>
+                        <button class="start-btn" onclick="startExercise('potential')">开始练习</button>
                     </div>
                 </div>
             </section>
@@ -1331,6 +1597,109 @@
                 role: 'student', 
                 password: 'hanwenxu2025', 
                 avatar: '韩'
+            }
+        };
+        
+        // 视频数据
+        const videosData = [
+            {
+                id: 'video1',
+                title: '流体力学之美，太美了',
+                description: '探索流体世界的奇妙现象与科学原理，揭示自然界的流动艺术。',
+                source: 'BV16T421D7k4',
+                duration: '18:45',
+                views: '32,458',
+                category: '基础理论',
+                featured: true
+            },
+            {
+                id: 'video2',
+                title: '伯努利方程详解',
+                description: '深入讲解伯努利方程的推导过程和实际应用。',
+                source: 'sample2',
+                duration: '25:30',
+                views: '18,923',
+                category: '核心原理'
+            },
+            {
+                id: 'video3',
+                title: '涡旋运动与环量',
+                description: '详细讲解涡旋运动的基本概念和环量的计算方法。',
+                source: 'sample3',
+                duration: '22:15',
+                views: '15,672',
+                category: '高级理论'
+            },
+            {
+                id: 'video4',
+                title: '势流理论应用',
+                description: '势流理论在实际工程中的应用案例分析。',
+                source: 'sample4',
+                duration: '30:20',
+                views: '12,845',
+                category: '应用实践'
+            }
+        ];
+        
+        // 题库数据
+        const exercisesData = [
+            {
+                id: 'exercise1',
+                title: '流体静力学基础',
+                description: '流体静力学的基本概念和计算方法',
+                questionCount: 15,
+                duration: '30分钟',
+                difficulty: '基础',
+                category: '静力学'
+            },
+            {
+                id: 'exercise2',
+                title: '流体运动学',
+                description: '流体运动学的基本概念和计算方法',
+                questionCount: 20,
+                duration: '45分钟',
+                difficulty: '中等',
+                category: '运动学'
+            },
+            {
+                id: 'exercise3',
+                title: '粘性流体流动',
+                description: '粘性流体流动的基本概念和计算方法',
+                questionCount: 12,
+                duration: '40分钟',
+                difficulty: '困难',
+                category: '动力学'
+            },
+            {
+                id: 'exercise4',
+                title: '伯努利方程应用',
+                description: '伯努利方程在实际问题中的应用',
+                questionCount: 18,
+                duration: '35分钟',
+                difficulty: '中等',
+                category: '应用'
+            }
+        ];
+        
+        // 分数线数据
+        const scoreData = {
+            '2023': {
+                national: 280,
+                reexam: 320,
+                applicants: 150,
+                admitted: 45
+            },
+            '2024': {
+                national: 285,
+                reexam: 325,
+                applicants: 180,
+                admitted: 50
+            },
+            '2025': {
+                national: 290,
+                reexam: 330,
+                applicants: 200,
+                admitted: 55
             }
         };
         
@@ -1655,7 +2024,56 @@
          * 播放视频
          */
         function playVideo(videoId) {
-            showMessage('视频播放功能正在开发中', 'info');
+            const video = videosData.find(v => v.id === videoId);
+            if (video) {
+                showVideoModal(video);
+            } else {
+                showMessage('视频未找到', 'error');
+            }
+        }
+        
+        /**
+         * 显示视频模态框
+         */
+        function showVideoModal(video) {
+            const modal = document.createElement('div');
+            modal.className = 'video-modal';
+            modal.innerHTML = `
+                <div class="video-modal-content">
+                    <div class="video-modal-header">
+                        <h3>${video.title}</h3>
+                        <button onclick="closeVideoModal()" class="close-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="video-container">
+                        <div class="video-placeholder">
+                            <i class="fas fa-play-circle"></i>
+                            <p>视频播放器</p>
+                            <small>${video.description}</small>
+                        </div>
+                    </div>
+                    <div class="video-info">
+                        <p><i class="far fa-clock"></i> ${video.duration}</p>
+                        <p><i class="far fa-eye"></i> ${video.views} 次观看</p>
+                        <p><i class="fas fa-tag"></i> ${video.category}</p>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+        
+        /**
+         * 关闭视频模态框
+         */
+        function closeVideoModal() {
+            const modal = document.querySelector('.video-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
+            }
         }
         
         /**
@@ -1675,6 +2093,61 @@
             
             event.target.classList.add('active');
             showMessage(`显示${year}年分数线数据`, 'info');
+            
+            // 更新图表
+            updateScoreChart(year);
+        }
+        
+        /**
+         * 更新分数线图表
+         */
+        function updateScoreChart(year) {
+            const ctx = document.getElementById('scoreChart');
+            if (!ctx) return;
+            
+            const data = scoreData[year] || scoreData['2024'];
+            
+            if (window.scoreChart) {
+                window.scoreChart.destroy();
+            }
+            
+            window.scoreChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['国家线', '复试线'],
+                    datasets: [{
+                        label: `${year}年分数线`,
+                        data: [data.national, data.reexam],
+                        backgroundColor: [
+                            'rgba(231, 76, 60, 0.8)',
+                            'rgba(52, 152, 219, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(231, 76, 60, 1)',
+                            'rgba(52, 152, 219, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 400,
+                            ticks: {
+                                stepSize: 50
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
         }
         
         /**
@@ -1691,10 +2164,80 @@
                 return;
             }
             
+            // 验证成绩范围
+            const score = parseInt(gradeScore);
+            if (score < 0 || score > 150) {
+                showMessage('成绩必须在0-150分之间', 'error');
+                return;
+            }
+            
+            // 添加到成绩列表
+            addGradeToList(studentName, score);
+            
             showMessage(`已添加 ${studentName} 的成绩：${gradeScore}分`, 'success');
             
             document.getElementById('studentName').value = '';
             document.getElementById('gradeScore').value = '';
+        }
+        
+        /**
+         * 添加成绩到列表
+         */
+        function addGradeToList(name, score) {
+            const gradesList = document.getElementById('gradesList');
+            
+            // 如果是第一次添加，清除"暂无成绩记录"的提示
+            if (gradesList.querySelector('p')) {
+                gradesList.innerHTML = '';
+            }
+            
+            const gradeItem = document.createElement('div');
+            gradeItem.className = 'grade-item';
+            gradeItem.innerHTML = `
+                <div class="grade-info">
+                    <span class="grade-name">${name}</span>
+                    <span class="grade-score">${score}分</span>
+                </div>
+                <div class="grade-actions">
+                    <button onclick="editGrade(this)" class="edit-btn">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button onclick="deleteGrade(this)" class="delete-btn">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            
+            gradesList.appendChild(gradeItem);
+        }
+        
+        /**
+         * 编辑成绩
+         */
+        function editGrade(button) {
+            const gradeItem = button.closest('.grade-item');
+            const nameSpan = gradeItem.querySelector('.grade-name');
+            const scoreSpan = gradeItem.querySelector('.score');
+            
+            const newName = prompt('请输入新的姓名:', nameSpan.textContent);
+            const newScore = prompt('请输入新的成绩:', scoreSpan.textContent.replace('分', ''));
+            
+            if (newName && newScore) {
+                nameSpan.textContent = newName;
+                scoreSpan.textContent = newScore + '分';
+                showMessage('成绩已更新', 'success');
+            }
+        }
+        
+        /**
+         * 删除成绩
+         */
+        function deleteGrade(button) {
+            if (confirm('确定要删除这条成绩记录吗？')) {
+                const gradeItem = button.closest('.grade-item');
+                gradeItem.remove();
+                showMessage('成绩已删除', 'success');
+            }
         }
         
         /**
@@ -1786,6 +2329,11 @@
                 
                 if (!tryRestoreSession()) {
                     console.info('显示登录界面');
+                } else {
+                    // 如果已登录，初始化图表
+                    setTimeout(() => {
+                        updateScoreChart('2024');
+                    }, 500);
                 }
                 
                 console.info('流体力学学习平台初始化完成！');
@@ -1812,6 +2360,9 @@
         window.startExercise = startExercise;
         window.filterScores = filterScores;
         window.addGrade = addGrade;
+        window.closeVideoModal = closeVideoModal;
+        window.editGrade = editGrade;
+        window.deleteGrade = deleteGrade;
         
         // 应用程序启动
         if (document.readyState === 'loading') {
