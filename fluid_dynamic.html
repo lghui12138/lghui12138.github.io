@@ -8170,6 +8170,387 @@
         }
         
         /**
+         * 开始练习题目
+         */
+        function startExerciseQuestions(exerciseId) {
+            const exercise = exercisesData.find(e => e.id === exerciseId);
+            if (!exercise || !exercise.questions || exercise.questions.length === 0) {
+                showMessage('该练习暂无题目', 'error');
+                return;
+            }
+            
+            // 关闭模态框
+            closeExerciseModal();
+            
+            // 显示做题界面
+            showExerciseQuestions(exercise);
+        }
+        
+        /**
+         * 显示做题界面
+         */
+        function showExerciseQuestions(exercise) {
+            const modal = document.createElement('div');
+            modal.className = 'exercise-questions-modal';
+            modal.id = 'exerciseQuestionsModal';
+            
+            let questionsHtml = '';
+            exercise.questions.forEach((question, index) => {
+                const optionsHtml = question.options.map((option, optionIndex) => 
+                    `<label class="option-label">
+                        <input type="radio" name="q${question.id}" value="${optionIndex}" class="option-input">
+                        <span class="option-text">${option}</span>
+                    </label>`
+                ).join('');
+                
+                questionsHtml += `
+                    <div class="question-item" data-question-id="${question.id}">
+                        <div class="question-header">
+                            <span class="question-number">第${index + 1}题</span>
+                            <span class="question-points">${question.points}分</span>
+                        </div>
+                        <div class="question-content">
+                            <p class="question-text">${question.question}</p>
+                            <div class="options-container">
+                                ${optionsHtml}
+                            </div>
+                        </div>
+                        <div class="question-hint" style="display: none;">
+                            <i class="fas fa-lightbulb"></i> 提示：${question.hint}
+                        </div>
+                        <div class="question-explanation" style="display: none;">
+                            <i class="fas fa-check-circle"></i> 解析：${question.explanation}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            modal.innerHTML = `
+                <div class="exercise-questions-content">
+                    <div class="exercise-questions-header">
+                        <h3>${exercise.title}</h3>
+                        <div class="exercise-progress">
+                            <span id="currentQuestion">1</span> / <span id="totalQuestions">${exercise.questions.length}</span>
+                        </div>
+                        <button onclick="closeExerciseQuestions()" class="close-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="exercise-questions-body">
+                        <div class="questions-container">
+                            ${questionsHtml}
+                        </div>
+                    </div>
+                    <div class="exercise-questions-footer">
+                        <button onclick="showHint()" class="btn btn-secondary">
+                            <i class="fas fa-lightbulb"></i> 显示提示
+                        </button>
+                        <button onclick="checkAnswer()" class="btn btn-primary">
+                            <i class="fas fa-check"></i> 检查答案
+                        </button>
+                        <button onclick="submitExercise()" class="btn btn-success">
+                            <i class="fas fa-paper-plane"></i> 提交练习
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            setTimeout(() => modal.classList.add('active'), 10);
+            
+            // 添加样式
+            addExerciseQuestionsStyles();
+        }
+        
+        /**
+         * 添加做题界面样式
+         */
+        function addExerciseQuestionsStyles() {
+            if (document.getElementById('exerciseQuestionsStyles')) return;
+            
+            const style = document.createElement('style');
+            style.id = 'exerciseQuestionsStyles';
+            style.textContent = `
+                .exercise-questions-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10000;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                }
+                
+                .exercise-questions-modal.active {
+                    opacity: 1;
+                }
+                
+                .exercise-questions-content {
+                    background: white;
+                    border-radius: 15px;
+                    width: 90%;
+                    max-width: 800px;
+                    max-height: 90vh;
+                    display: flex;
+                    flex-direction: column;
+                    overflow: hidden;
+                }
+                
+                .exercise-questions-header {
+                    background: var(--gradient-primary);
+                    color: white;
+                    padding: 20px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+                
+                .exercise-progress {
+                    background: rgba(255, 255, 255, 0.2);
+                    padding: 8px 15px;
+                    border-radius: 20px;
+                    font-weight: bold;
+                }
+                
+                .exercise-questions-body {
+                    flex: 1;
+                    padding: 20px;
+                    overflow-y: auto;
+                }
+                
+                .question-item {
+                    margin-bottom: 30px;
+                    padding: 20px;
+                    border: 2px solid #e3edfa;
+                    border-radius: 10px;
+                    background: #f8f9fa;
+                }
+                
+                .question-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 15px;
+                }
+                
+                .question-number {
+                    font-weight: bold;
+                    color: var(--primary);
+                    font-size: 18px;
+                }
+                
+                .question-points {
+                    background: var(--accent);
+                    color: white;
+                    padding: 5px 10px;
+                    border-radius: 15px;
+                    font-size: 14px;
+                }
+                
+                .question-text {
+                    font-size: 16px;
+                    line-height: 1.6;
+                    margin-bottom: 20px;
+                    color: var(--text);
+                }
+                
+                .options-container {
+                    display: flex;
+                    flex-direction: column;
+                    gap: 10px;
+                }
+                
+                .option-label {
+                    display: flex;
+                    align-items: center;
+                    padding: 12px 15px;
+                    border: 2px solid #e3edfa;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    background: white;
+                }
+                
+                .option-label:hover {
+                    border-color: var(--accent);
+                    background: #f0f8ff;
+                }
+                
+                .option-input {
+                    margin-right: 10px;
+                }
+                
+                .option-text {
+                    flex: 1;
+                }
+                
+                .question-hint, .question-explanation {
+                    margin-top: 15px;
+                    padding: 15px;
+                    border-radius: 8px;
+                    font-size: 14px;
+                }
+                
+                .question-hint {
+                    background: #fff3cd;
+                    border: 1px solid #ffeaa7;
+                    color: #856404;
+                }
+                
+                .question-explanation {
+                    background: #d4edda;
+                    border: 1px solid #c3e6cb;
+                    color: #155724;
+                }
+                
+                .exercise-questions-footer {
+                    padding: 20px;
+                    display: flex;
+                    gap: 10px;
+                    justify-content: center;
+                    border-top: 1px solid #e3edfa;
+                }
+                
+                .btn {
+                    padding: 12px 20px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    transition: all 0.3s;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                
+                .btn-primary {
+                    background: var(--primary);
+                    color: white;
+                }
+                
+                .btn-secondary {
+                    background: var(--secondary);
+                    color: white;
+                }
+                
+                .btn-success {
+                    background: var(--success);
+                    color: white;
+                }
+                
+                .btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        /**
+         * 关闭做题界面
+         */
+        function closeExerciseQuestions() {
+            const modal = document.querySelector('.exercise-questions-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+        
+        /**
+         * 显示提示
+         */
+        function showHint() {
+            const currentQuestion = document.querySelector('.question-item:first-child');
+            if (currentQuestion) {
+                const hint = currentQuestion.querySelector('.question-hint');
+                if (hint) {
+                    hint.style.display = 'block';
+                }
+            }
+        }
+        
+        /**
+         * 检查答案
+         */
+        function checkAnswer() {
+            const currentQuestion = document.querySelector('.question-item:first-child');
+            if (currentQuestion) {
+                const questionId = currentQuestion.dataset.questionId;
+                const selectedOption = currentQuestion.querySelector(`input[name="q${questionId}"]:checked`);
+                
+                if (!selectedOption) {
+                    showMessage('请先选择一个答案', 'warning');
+                    return;
+                }
+                
+                const selectedValue = parseInt(selectedOption.value);
+                const question = exercisesData.flatMap(e => e.questions).find(q => q.id == questionId);
+                
+                if (question) {
+                    const explanation = currentQuestion.querySelector('.question-explanation');
+                    if (explanation) {
+                        explanation.style.display = 'block';
+                    }
+                    
+                    if (selectedValue === question.correct) {
+                        showMessage('回答正确！', 'success');
+                    } else {
+                        showMessage('回答错误，请查看解析', 'error');
+                    }
+                }
+            }
+        }
+        
+        /**
+         * 提交练习
+         */
+        function submitExercise() {
+            const questions = document.querySelectorAll('.question-item');
+            let answeredCount = 0;
+            let correctCount = 0;
+            
+            questions.forEach(questionItem => {
+                const questionId = questionItem.dataset.questionId;
+                const selectedOption = questionItem.querySelector(`input[name="q${questionId}"]:checked`);
+                
+                if (selectedOption) {
+                    answeredCount++;
+                    const selectedValue = parseInt(selectedOption.value);
+                    const question = exercisesData.flatMap(e => e.questions).find(q => q.id == questionId);
+                    
+                    if (question && selectedValue === question.correct) {
+                        correctCount++;
+                    }
+                }
+            });
+            
+            const totalQuestions = questions.length;
+            const score = Math.round((correctCount / totalQuestions) * 100);
+            
+            showMessage(`练习完成！得分：${score}分 (${correctCount}/${totalQuestions})`, 'success');
+            
+            // 显示详细结果
+            setTimeout(() => {
+                alert(`练习结果：
+                
+总题数：${totalQuestions}
+已答题：${answeredCount}
+正确题：${correctCount}
+得分：${score}分
+
+${score >= 80 ? '🎉 优秀！继续保持！' : score >= 60 ? '👍 良好，继续努力！' : '💪 加油，多练习！'}`);
+                
+                closeExerciseQuestions();
+            }, 1000);
+        }
+        
+        /**
          * 提交练习给AI批改
          */
         async function submitExerciseForAIReview(exerciseId) {
@@ -8487,6 +8868,14 @@
             // 检查Chart.js是否可用
             if (typeof Chart === 'undefined') {
                 console.error('Chart.js未加载，无法创建图表');
+                // 尝试重新加载Chart.js
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+                script.onload = () => {
+                    console.log('Chart.js重新加载成功');
+                    setTimeout(() => updateScoreChart(year), 500);
+                };
+                document.head.appendChild(script);
                 return;
             }
             
@@ -8497,6 +8886,10 @@
             console.log('更新分数线图表:', year);
             console.log('可用数据:', scoreData);
             console.log('Chart.js版本:', Chart.version);
+            
+            // 确保图表容器有尺寸
+            ctx.style.width = '100%';
+            ctx.style.height = '400px';
             
             // 准备数据
             const years = Object.keys(scoreData).sort();
@@ -9196,6 +9589,12 @@
         window.showPasswordResetModal = showPasswordResetModal;
         window.playVideo = playVideo;
         window.startExercise = startExercise;
+        window.startExerciseQuestions = startExerciseQuestions;
+        window.showExerciseQuestions = showExerciseQuestions;
+        window.closeExerciseQuestions = closeExerciseQuestions;
+        window.showHint = showHint;
+        window.checkAnswer = checkAnswer;
+        window.submitExercise = submitExercise;
         window.showExerciseModal = showExerciseModal;
         window.closeExerciseModal = closeExerciseModal;
         window.submitExerciseForAIReview = submitExerciseForAIReview;
