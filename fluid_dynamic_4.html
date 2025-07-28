@@ -15478,6 +15478,822 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
                       superposition: true
                   };
               }
+                     };
+
+          // =============== 增强现实(AR)和虚拟现实(VR)学习系统 ===============
+          const ARVRLearningSystem = {
+              arDevices: [],
+              vrDevices: [],
+              learningScenarios: {},
+              spatialTracking: {},
+              interactiveModels: {},
+              
+              init: function() {
+                  this.initializeARVRDevices();
+                  this.setupLearningScenarios();
+                  this.createInteractiveModels();
+                  this.setupSpatialTracking();
+              },
+              
+              initializeARVRDevices: function() {
+                  this.arDevices = [
+                      {
+                          id: 'ar-phone',
+                          type: 'mobile',
+                          capabilities: ['camera', 'sensors', 'display'],
+                          status: 'available'
+                      },
+                      {
+                          id: 'ar-glasses',
+                          type: 'wearable',
+                          capabilities: ['optical', 'sensors', 'holographic'],
+                          status: 'available'
+                      }
+                  ];
+                  
+                  this.vrDevices = [
+                      {
+                          id: 'vr-headset',
+                          type: 'immersive',
+                          capabilities: ['3d-display', 'motion-tracking', 'haptic'],
+                          status: 'available'
+                      },
+                      {
+                          id: 'vr-controller',
+                          type: 'input',
+                          capabilities: ['gesture', 'force-feedback'],
+                          status: 'available'
+                      }
+                  ];
+                  
+                  console.log('AR/VR设备系统已初始化');
+              },
+              
+              setupLearningScenarios: function() {
+                  this.learningScenarios = {
+                      fluidFlow: {
+                          name: '流体流动可视化',
+                          type: 'ar',
+                          description: '在真实环境中叠加流体流动的AR可视化',
+                          features: ['real-time-flow', 'pressure-visualization', 'velocity-vectors'],
+                          difficulty: 'intermediate'
+                      },
+                      virtualLab: {
+                          name: '虚拟实验室',
+                          type: 'vr',
+                          description: '完全沉浸式的流体力学实验环境',
+                          features: ['immersive-experiment', 'haptic-feedback', 'multi-user'],
+                          difficulty: 'advanced'
+                      },
+                      fieldTrip: {
+                          name: '虚拟实地考察',
+                          type: 'vr',
+                          description: '参观真实的流体力学设施和工程应用',
+                          features: ['360-video', 'interactive-tour', 'expert-commentary'],
+                          difficulty: 'beginner'
+                      },
+                      augmentedTextbook: {
+                          name: '增强现实教材',
+                          type: 'ar',
+                          description: '将静态教材内容转换为交互式3D模型',
+                          features: ['3d-models', 'interactive-diagrams', 'voice-narration'],
+                          difficulty: 'beginner'
+                      }
+                  };
+              },
+              
+              createInteractiveModels: function() {
+                  this.interactiveModels = {
+                      pipeFlow: {
+                          name: '管道流动模型',
+                          type: '3d-model',
+                          properties: {
+                              diameter: 0.1,
+                              length: 10,
+                              fluid: 'water',
+                              velocity: 2.0,
+                              reynolds: 200000
+                          },
+                          visualization: {
+                              streamlines: true,
+                              pressureContours: true,
+                              velocityVectors: true,
+                              turbulenceIntensity: 0.05
+                          }
+                      },
+                      airfoil: {
+                          name: '翼型流动模型',
+                          type: '3d-model',
+                          properties: {
+                              chord: 1.0,
+                              span: 5.0,
+                              angleOfAttack: 5,
+                              airspeed: 30,
+                              reynolds: 500000
+                          },
+                          visualization: {
+                              liftCoefficient: 0.8,
+                              dragCoefficient: 0.02,
+                              pressureDistribution: true,
+                              wakeVisualization: true
+                          }
+                      },
+                      damBreak: {
+                          name: '溃坝流动模型',
+                          type: '3d-model',
+                          properties: {
+                              damHeight: 10,
+                              waterDepth: 8,
+                              channelWidth: 20,
+                              gravity: 9.81
+                          },
+                          visualization: {
+                              waterSurface: true,
+                              velocityField: true,
+                              pressureField: true,
+                              particleTracking: true
+                          }
+                      }
+                  };
+              },
+              
+              setupSpatialTracking: function() {
+                  this.spatialTracking = {
+                      position: {x: 0, y: 0, z: 0},
+                      orientation: {pitch: 0, yaw: 0, roll: 0},
+                      gestures: [],
+                      eyeTracking: {x: 0, y: 0, focus: null},
+                      
+                      updatePosition: function(x, y, z) {
+                          this.position = {x, y, z};
+                      },
+                      
+                      updateOrientation: function(pitch, yaw, roll) {
+                          this.orientation = {pitch, yaw, roll};
+                      },
+                      
+                      detectGesture: function(handData) {
+                          // 手势识别逻辑
+                          const gestures = ['point', 'grab', 'release', 'swipe'];
+                          const detectedGesture = gestures[Math.floor(Math.random() * gestures.length)];
+                          this.gestures.push({
+                              type: detectedGesture,
+                              timestamp: Date.now(),
+                              confidence: Math.random() * 0.3 + 0.7
+                          });
+                          return detectedGesture;
+                      },
+                      
+                      trackEyeMovement: function(x, y) {
+                          this.eyeTracking.x = x;
+                          this.eyeTracking.y = y;
+                          
+                          // 确定焦点对象
+                          const focusObjects = ['flow-visualization', 'pressure-gauge', 'velocity-meter'];
+                          this.eyeTracking.focus = focusObjects[Math.floor(Math.random() * focusObjects.length)];
+                      }
+                  };
+              },
+              
+              startARExperience: function(scenarioId) {
+                  const scenario = this.learningScenarios[scenarioId];
+                  if (!scenario) return {error: '场景不存在'};
+                  
+                  console.log(`启动AR体验: ${scenario.name}`);
+                  
+                  return {
+                      scenario: scenario,
+                      status: 'active',
+                      device: this.arDevices[0],
+                      tracking: this.spatialTracking,
+                      features: scenario.features
+                  };
+              },
+              
+              startVRExperience: function(scenarioId) {
+                  const scenario = this.learningScenarios[scenarioId];
+                  if (!scenario) return {error: '场景不存在'};
+                  
+                  console.log(`启动VR体验: ${scenario.name}`);
+                  
+                  return {
+                      scenario: scenario,
+                      status: 'active',
+                      device: this.vrDevices[0],
+                      tracking: this.spatialTracking,
+                      features: scenario.features
+                  };
+              },
+              
+              loadInteractiveModel: function(modelId) {
+                  const model = this.interactiveModels[modelId];
+                  if (!model) return {error: '模型不存在'};
+                  
+                  console.log(`加载交互式模型: ${model.name}`);
+                  
+                  return {
+                      model: model,
+                      status: 'loaded',
+                      properties: model.properties,
+                      visualization: model.visualization
+                  };
+              },
+              
+              updateModelParameters: function(modelId, parameters) {
+                  const model = this.interactiveModels[modelId];
+                  if (!model) return {error: '模型不存在'};
+                  
+                  // 更新模型参数
+                  Object.assign(model.properties, parameters);
+                  
+                  // 重新计算相关属性
+                  if (model.properties.velocity && model.properties.diameter) {
+                      const kinematicViscosity = 1e-6; // 水的运动粘度
+                      model.properties.reynolds = (model.properties.velocity * model.properties.diameter) / kinematicViscosity;
+                  }
+                  
+                  console.log(`模型参数已更新: ${model.name}`);
+                  
+                  return {
+                      model: model,
+                      updatedProperties: parameters,
+                      recalculatedValues: {
+                          reynolds: model.properties.reynolds
+                      }
+                  };
+              },
+              
+              createHolographicDisplay: function(content) {
+                  return {
+                      type: 'hologram',
+                      content: content,
+                      position: this.spatialTracking.position,
+                      orientation: this.spatialTracking.orientation,
+                      scale: 1.0,
+                      opacity: 0.8,
+                      interactive: true
+                  };
+              },
+              
+              renderFlowVisualization: function(modelId, visualizationType) {
+                  const model = this.interactiveModels[modelId];
+                  if (!model) return {error: '模型不存在'};
+                  
+                  const visualization = {
+                      model: model.name,
+                      type: visualizationType,
+                      data: this.generateFlowData(model),
+                      rendering: {
+                          quality: 'high',
+                          frameRate: 60,
+                          resolution: '4k'
+                      }
+                  };
+                  
+                  return visualization;
+              },
+              
+              generateFlowData: function(model) {
+                  // 生成流动数据
+                  const data = {
+                      streamlines: [],
+                      pressureField: [],
+                      velocityField: [],
+                      particles: []
+                  };
+                  
+                  // 模拟数据生成
+                  for (let i = 0; i < 100; i++) {
+                      data.streamlines.push({
+                          x: Math.random() * model.properties.length,
+                          y: Math.random() * model.properties.diameter,
+                          z: Math.random() * model.properties.diameter,
+                          velocity: Math.random() * model.properties.velocity
+                      });
+                      
+                      data.pressureField.push({
+                          x: Math.random() * model.properties.length,
+                          y: Math.random() * model.properties.diameter,
+                          z: Math.random() * model.properties.diameter,
+                          pressure: Math.random() * 100000
+                      });
+                  }
+                  
+                  return data;
+              },
+              
+              setupMultiUserSession: function(sessionId, users) {
+                  return {
+                      sessionId: sessionId,
+                      users: users,
+                      sharedModels: Object.keys(this.interactiveModels),
+                      collaboration: {
+                          sharedView: true,
+                          voiceChat: true,
+                          gestureSharing: true,
+                          modelEditing: true
+                      },
+                      status: 'active'
+                  };
+              },
+              
+              getDeviceCapabilities: function() {
+                  return {
+                      ar: this.arDevices.map(device => ({
+                          id: device.id,
+                          type: device.type,
+                          capabilities: device.capabilities,
+                          status: device.status
+                      })),
+                      vr: this.vrDevices.map(device => ({
+                          id: device.id,
+                          type: device.type,
+                          capabilities: device.capabilities,
+                          status: device.status
+                      }))
+                  };
+              },
+              
+              calibrateDevice: function(deviceId) {
+                  console.log(`校准设备: ${deviceId}`);
+                  
+                  return new Promise(resolve => {
+                      setTimeout(() => {
+                          resolve({
+                              deviceId: deviceId,
+                              calibrated: true,
+                              accuracy: Math.random() * 0.1 + 0.9,
+                              timestamp: Date.now()
+                          });
+                      }, 2000);
+                  });
+              }
+                     };
+
+          // =============== 人工智能驱动的自适应学习系统 ===============
+          const AIAdaptiveLearningSystem = {
+              neuralNetworks: {},
+              learningModels: {},
+              adaptiveAlgorithms: {},
+              cognitiveProfiles: {},
+              personalizedContent: {},
+              
+              init: function() {
+                  this.initializeNeuralNetworks();
+                  this.setupLearningModels();
+                  this.createAdaptiveAlgorithms();
+                  this.setupCognitiveProfiles();
+              },
+              
+              initializeNeuralNetworks: function() {
+                  this.neuralNetworks = {
+                      performancePredictor: {
+                          type: 'LSTM',
+                          layers: [64, 32, 16, 1],
+                          activation: 'relu',
+                          optimizer: 'adam',
+                          loss: 'mse',
+                          accuracy: 0.89
+                      },
+                      contentRecommender: {
+                          type: 'Transformer',
+                          layers: [128, 64, 32],
+                          attentionHeads: 8,
+                          activation: 'gelu',
+                          optimizer: 'adamw',
+                          loss: 'categorical_crossentropy',
+                          accuracy: 0.92
+                      },
+                      difficultyEstimator: {
+                          type: 'CNN',
+                          layers: [32, 64, 128, 64, 32],
+                          activation: 'relu',
+                          optimizer: 'rmsprop',
+                          loss: 'binary_crossentropy',
+                          accuracy: 0.85
+                      },
+                      learningPathOptimizer: {
+                          type: 'ReinforcementLearning',
+                          algorithm: 'PPO',
+                          stateSpace: 100,
+                          actionSpace: 20,
+                          learningRate: 0.001,
+                          accuracy: 0.87
+                      }
+                  };
+              },
+              
+              setupLearningModels: function() {
+                  this.learningModels = {
+                      knowledgeGraph: {
+                          nodes: [],
+                          edges: [],
+                          concepts: ['流体静力学', '流体动力学', '粘性流动', '湍流理论', '边界层理论'],
+                          relationships: ['prerequisite', 'related', 'advanced', 'application']
+                      },
+                      skillTree: {
+                          root: '流体力学基础',
+                          branches: {
+                              '流体静力学': ['压力', '浮力', '表面张力'],
+                              '流体动力学': ['连续性方程', '伯努利方程', '动量方程'],
+                              '粘性流动': ['层流', '湍流', '雷诺数'],
+                              '湍流理论': ['雷诺应力', '湍流模型', '边界层']
+                          },
+                          levels: ['beginner', 'intermediate', 'advanced', 'expert']
+                      },
+                      learningObjectives: {
+                          '流体静力学': {
+                              'beginner': ['理解压力概念', '掌握帕斯卡原理'],
+                              'intermediate': ['分析复杂静力问题', '计算浮力'],
+                              'advanced': ['设计静力系统', '优化压力分布'],
+                              'expert': ['创新静力应用', '理论发展']
+                          }
+                      }
+                  };
+              },
+              
+              createAdaptiveAlgorithms: function() {
+                  this.adaptiveAlgorithms = {
+                      difficultyAdjustment: this.adjustDifficulty.bind(this),
+                      contentSelection: this.selectOptimalContent.bind(this),
+                      learningPathGeneration: this.generateLearningPath.bind(this),
+                      performanceAnalysis: this.analyzePerformance.bind(this),
+                      cognitiveLoadOptimization: this.optimizeCognitiveLoad.bind(this)
+                  };
+              },
+              
+              setupCognitiveProfiles: function() {
+                  this.cognitiveProfiles = {
+                      learningStyles: ['visual', 'auditory', 'kinesthetic', 'reading'],
+                      cognitiveLoad: {
+                          workingMemory: 7,
+                          attentionSpan: 20,
+                          processingSpeed: 'medium',
+                          fatigueLevel: 0.3
+                      },
+                      knowledgeGaps: [],
+                      strengths: [],
+                      weaknesses: [],
+                      preferences: {
+                          contentType: 'interactive',
+                          pace: 'adaptive',
+                          feedback: 'immediate',
+                          challenge: 'optimal'
+                      }
+                  };
+              },
+              
+              adjustDifficulty: function(userPerformance, currentLevel) {
+                  const performanceThreshold = 0.7;
+                  const difficultyStep = 0.1;
+                  
+                  let newDifficulty = currentLevel;
+                  
+                  if (userPerformance > performanceThreshold + 0.1) {
+                      // 表现优秀，提高难度
+                      newDifficulty = Math.min(currentLevel + difficultyStep, 1.0);
+                      console.log('提高学习难度');
+                  } else if (userPerformance < performanceThreshold - 0.1) {
+                      // 表现不佳，降低难度
+                      newDifficulty = Math.max(currentLevel - difficultyStep, 0.1);
+                      console.log('降低学习难度');
+                  }
+                  
+                  return {
+                      previousDifficulty: currentLevel,
+                      newDifficulty: newDifficulty,
+                      adjustment: newDifficulty - currentLevel,
+                      reason: this.getDifficultyAdjustmentReason(userPerformance, currentLevel)
+                  };
+              },
+              
+              selectOptimalContent: function(userProfile, availableContent) {
+                  const scores = availableContent.map(content => {
+                      let score = 0;
+                      
+                      // 基于学习风格评分
+                      if (content.type === userProfile.preferences.contentType) {
+                          score += 0.3;
+                      }
+                      
+                      // 基于知识水平评分
+                      if (content.difficulty === userProfile.currentLevel) {
+                          score += 0.4;
+                      }
+                      
+                      // 基于兴趣评分
+                      if (content.topic === userProfile.interests) {
+                          score += 0.2;
+                      }
+                      
+                      // 基于认知负荷评分
+                      if (content.complexity <= userProfile.cognitiveLoad.workingMemory) {
+                          score += 0.1;
+                      }
+                      
+                      return { content, score };
+                  });
+                  
+                  // 选择最高分的内容
+                  scores.sort((a, b) => b.score - a.score);
+                  return scores[0].content;
+              },
+              
+              generateLearningPath: function(userProfile, targetObjective) {
+                  const path = [];
+                  const visited = new Set();
+                  
+                  // 使用A*算法生成最优学习路径
+                  const startNode = this.findCurrentKnowledgeLevel(userProfile);
+                  const endNode = targetObjective;
+                  
+                  const openSet = [startNode];
+                  const cameFrom = new Map();
+                  const gScore = new Map();
+                  const fScore = new Map();
+                  
+                  gScore.set(startNode, 0);
+                  fScore.set(startNode, this.heuristic(startNode, endNode));
+                  
+                  while (openSet.length > 0) {
+                      const current = this.getLowestFScore(openSet, fScore);
+                      
+                      if (current === endNode) {
+                          return this.reconstructPath(cameFrom, current);
+                      }
+                      
+                      openSet.splice(openSet.indexOf(current), 1);
+                      visited.add(current);
+                      
+                      const neighbors = this.getNeighbors(current);
+                      for (const neighbor of neighbors) {
+                          if (visited.has(neighbor)) continue;
+                          
+                          const tentativeGScore = gScore.get(current) + this.getDistance(current, neighbor);
+                          
+                          if (!openSet.includes(neighbor)) {
+                              openSet.push(neighbor);
+                          } else if (tentativeGScore >= gScore.get(neighbor)) {
+                              continue;
+                          }
+                          
+                          cameFrom.set(neighbor, current);
+                          gScore.set(neighbor, tentativeGScore);
+                          fScore.set(neighbor, tentativeGScore + this.heuristic(neighbor, endNode));
+                      }
+                  }
+                  
+                  return path;
+              },
+              
+              analyzePerformance: function(userData) {
+                  const analysis = {
+                      overallScore: this.calculateOverallScore(userData),
+                      progressRate: this.calculateProgressRate(userData),
+                      knowledgeGaps: this.identifyKnowledgeGaps(userData),
+                      learningEfficiency: this.calculateLearningEfficiency(userData),
+                      recommendations: []
+                  };
+                  
+                  // 生成个性化建议
+                  if (analysis.overallScore < 0.7) {
+                      analysis.recommendations.push({
+                          type: 'review',
+                          priority: 'high',
+                          content: '建议复习基础概念',
+                          estimatedTime: '30分钟'
+                      });
+                  }
+                  
+                  if (analysis.progressRate < 0.5) {
+                      analysis.recommendations.push({
+                          type: 'practice',
+                          priority: 'medium',
+                          content: '增加练习时间',
+                          estimatedTime: '45分钟'
+                      });
+                  }
+                  
+                  return analysis;
+              },
+              
+              optimizeCognitiveLoad: function(userProfile, content) {
+                  const cognitiveLoad = this.calculateCognitiveLoad(content);
+                  const userCapacity = userProfile.cognitiveLoad.workingMemory;
+                  
+                  if (cognitiveLoad > userCapacity) {
+                      // 优化认知负荷
+                      return {
+                          originalContent: content,
+                          optimizedContent: this.breakDownContent(content),
+                          cognitiveLoadReduction: cognitiveLoad - userCapacity,
+                          optimizationStrategy: 'content_breakdown'
+                      };
+                  }
+                  
+                  return {
+                      originalContent: content,
+                      optimizedContent: content,
+                      cognitiveLoadReduction: 0,
+                      optimizationStrategy: 'no_optimization_needed'
+                  };
+              },
+              
+              calculateCognitiveLoad: function(content) {
+                  let load = 0;
+                  
+                  // 基于内容复杂度计算认知负荷
+                  if (content.type === 'video') load += 2;
+                  if (content.type === 'interactive') load += 3;
+                  if (content.type === 'text') load += 1;
+                  
+                  if (content.complexity === 'high') load += 2;
+                  if (content.complexity === 'medium') load += 1;
+                  
+                  if (content.duration > 20) load += 1;
+                  
+                  return load;
+              },
+              
+              breakDownContent: function(content) {
+                  // 将复杂内容分解为更小的部分
+                  const parts = [];
+                  const totalDuration = content.duration;
+                  const partDuration = Math.min(totalDuration / 3, 10);
+                  
+                  for (let i = 0; i < Math.ceil(totalDuration / partDuration); i++) {
+                      parts.push({
+                          ...content,
+                          id: `${content.id}_part_${i + 1}`,
+                          duration: Math.min(partDuration, totalDuration - i * partDuration),
+                          complexity: 'medium'
+                      });
+                  }
+                  
+                  return parts;
+              },
+              
+              trainModel: function(modelType, trainingData) {
+                  console.log(`训练${modelType}模型`);
+                  
+                  return new Promise(resolve => {
+                      setTimeout(() => {
+                          const accuracy = Math.random() * 0.2 + 0.8;
+                          this.neuralNetworks[modelType].accuracy = accuracy;
+                          
+                          resolve({
+                              modelType: modelType,
+                              accuracy: accuracy,
+                              trainingSamples: trainingData.length,
+                              trainingTime: Math.random() * 1000 + 500
+                          });
+                      }, 2000);
+                  });
+              },
+              
+              predictPerformance: function(userId, contentId) {
+                  const userProfile = this.getUserProfile(userId);
+                  const content = this.getContent(contentId);
+                  
+                  // 使用神经网络预测表现
+                  const features = this.extractFeatures(userProfile, content);
+                  const prediction = this.neuralNetworks.performancePredictor.predict(features);
+                  
+                  return {
+                      userId: userId,
+                      contentId: contentId,
+                      predictedScore: prediction,
+                      confidence: Math.random() * 0.3 + 0.7,
+                      factors: this.analyzePredictionFactors(userProfile, content)
+                  };
+              },
+              
+              extractFeatures: function(userProfile, content) {
+                  return [
+                      userProfile.currentLevel,
+                      userProfile.learningStyle,
+                      content.difficulty,
+                      content.complexity,
+                      userProfile.previousPerformance,
+                      content.type
+                  ];
+              },
+              
+              analyzePredictionFactors: function(userProfile, content) {
+                  return {
+                      userStrengths: userProfile.strengths,
+                      userWeaknesses: userProfile.weaknesses,
+                      contentAlignment: this.calculateContentAlignment(userProfile, content),
+                      difficultyMatch: Math.abs(userProfile.currentLevel - content.difficulty)
+                  };
+              },
+              
+              calculateContentAlignment: function(userProfile, content) {
+                  let alignment = 0;
+                  
+                  if (content.type === userProfile.preferences.contentType) alignment += 0.3;
+                  if (content.topic === userProfile.interests) alignment += 0.3;
+                  if (content.difficulty === userProfile.currentLevel) alignment += 0.4;
+                  
+                  return alignment;
+              },
+              
+              getUserProfile: function(userId) {
+                  // 模拟获取用户档案
+                  return {
+                      id: userId,
+                      currentLevel: 0.6,
+                      learningStyle: 'visual',
+                      interests: ['流体动力学'],
+                      strengths: ['数学计算'],
+                      weaknesses: ['概念理解'],
+                      previousPerformance: 0.75,
+                      preferences: this.cognitiveProfiles.preferences
+                  };
+              },
+              
+              getContent: function(contentId) {
+                  // 模拟获取内容信息
+                  return {
+                      id: contentId,
+                      type: 'interactive',
+                      difficulty: 0.6,
+                      complexity: 'medium',
+                      topic: '流体动力学',
+                      duration: 15
+                  };
+              },
+              
+              heuristic: function(node1, node2) {
+                  // 启发式函数
+                  return Math.abs(node1.level - node2.level);
+              },
+              
+              getNeighbors: function(node) {
+                  // 获取相邻节点
+                  return this.learningModels.knowledgeGraph.edges
+                      .filter(edge => edge.from === node.id)
+                      .map(edge => edge.to);
+              },
+              
+              getDistance: function(node1, node2) {
+                  // 计算节点间距离
+                  return Math.abs(node1.level - node2.level);
+              },
+              
+              getLowestFScore: function(openSet, fScore) {
+                  return openSet.reduce((lowest, node) => 
+                      fScore.get(node) < fScore.get(lowest) ? node : lowest
+                  );
+              },
+              
+              reconstructPath: function(cameFrom, current) {
+                  const path = [current];
+                  while (cameFrom.has(current)) {
+                      current = cameFrom.get(current);
+                      path.unshift(current);
+                  }
+                  return path;
+              },
+              
+              findCurrentKnowledgeLevel: function(userProfile) {
+                  return {
+                      id: 'current_level',
+                      level: userProfile.currentLevel,
+                      topic: userProfile.interests[0]
+                  };
+              },
+              
+              getDifficultyAdjustmentReason: function(performance, level) {
+                  if (performance > 0.8) return '表现优秀，需要更高挑战';
+                  if (performance < 0.6) return '表现不佳，需要降低难度';
+                  return '表现适中，保持当前难度';
+              },
+              
+              calculateOverallScore: function(userData) {
+                  return userData.reduce((sum, item) => sum + item.score, 0) / userData.length;
+              },
+              
+              calculateProgressRate: function(userData) {
+                  const recentData = userData.slice(-10);
+                  const earlyAvg = recentData.slice(0, 5).reduce((sum, item) => sum + item.score, 0) / 5;
+                  const laterAvg = recentData.slice(-5).reduce((sum, item) => sum + item.score, 0) / 5;
+                  return (laterAvg - earlyAvg) / earlyAvg;
+              },
+              
+              identifyKnowledgeGaps: function(userData) {
+                  const weakTopics = userData
+                      .filter(item => item.score < 0.7)
+                      .map(item => item.topic);
+                  
+                  return [...new Set(weakTopics)];
+              },
+              
+              calculateLearningEfficiency: function(userData) {
+                  const timeSpent = userData.reduce((sum, item) => sum + item.timeSpent, 0);
+                  const scoreGained = userData[userData.length - 1].score - userData[0].score;
+                  return scoreGained / timeSpent;
+              }
           };
 
           // 应用程序启动
