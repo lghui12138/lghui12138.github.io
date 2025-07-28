@@ -3866,6 +3866,110 @@
             }
         }
 
+        /* 练习模态框样式 */
+        .exercise-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .exercise-modal.active {
+            opacity: 1;
+        }
+
+        .exercise-modal-content {
+            background: white;
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-xl);
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+        }
+
+        .exercise-modal.active .exercise-modal-content {
+            transform: scale(1);
+        }
+
+        .exercise-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-6);
+            padding-bottom: var(--space-4);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .exercise-modal-header h3 {
+            margin: 0;
+            color: var(--primary);
+        }
+
+        .exercise-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-6);
+        }
+
+        .exercise-info {
+            display: flex;
+            gap: var(--space-4);
+            flex-wrap: wrap;
+        }
+
+        .exercise-info p {
+            margin: 0;
+            color: var(--secondary);
+            font-size: var(--text-sm);
+        }
+
+        .exercise-actions {
+            display: flex;
+            gap: var(--space-4);
+            justify-content: center;
+        }
+
+        .exercise-actions .btn {
+            padding: var(--space-3) var(--space-6);
+            border-radius: var(--radius-lg);
+            font-weight: 600;
+            transition: all var(--transition-normal);
+        }
+
+        .exercise-actions .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        .exercise-actions .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .exercise-actions .btn-secondary {
+            background: var(--secondary);
+            color: white;
+            border: none;
+        }
+
+        .exercise-actions .btn-secondary:hover {
+            background: var(--secondary-dark);
+            transform: translateY(-2px);
+        }
+
         /* 平板竖屏 (768px - 1023px) */
         @media (min-width: 768px) and (max-width: 1023px) {
             .video-grid,
@@ -7969,7 +8073,81 @@
          * 开始练习
          */
         function startExercise(type) {
-            showMessage(`${type}练习功能正在开发中`, 'info');
+            const exercise = exercisesData.find(e => e.id === type);
+            if (!exercise) {
+                showMessage('练习未找到', 'error');
+                return;
+            }
+            
+            // 显示练习模态框
+            showExerciseModal(exercise);
+        }
+        
+        /**
+         * 显示练习模态框
+         */
+        function showExerciseModal(exercise) {
+            const modal = document.createElement('div');
+            modal.className = 'exercise-modal';
+            modal.innerHTML = `
+                <div class="exercise-modal-content">
+                    <div class="exercise-modal-header">
+                        <h3>${exercise.title}</h3>
+                        <button onclick="closeExerciseModal()" class="close-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="exercise-content">
+                        <div class="exercise-info">
+                            <p><i class="fas fa-list"></i> ${exercise.questionCount}题</p>
+                            <p><i class="fas fa-clock"></i> ${exercise.duration}</p>
+                            <p><i class="fas fa-star"></i> ${exercise.difficulty}</p>
+                        </div>
+                        <div class="exercise-actions">
+                            <button onclick="startExerciseQuestions('${exercise.id}')" class="btn btn-primary">
+                                <i class="fas fa-play"></i> 开始练习
+                            </button>
+                            <button onclick="submitExerciseForAIReview('${exercise.id}')" class="btn btn-secondary">
+                                <i class="fas fa-robot"></i> AI批改
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+        
+        /**
+         * 关闭练习模态框
+         */
+        function closeExerciseModal() {
+            const modal = document.querySelector('.exercise-modal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
+            }
+        }
+        
+        /**
+         * 提交练习给AI批改
+         */
+        async function submitExerciseForAIReview(exerciseId) {
+            const exercise = exercisesData.find(e => e.id === exerciseId);
+            if (!exercise) {
+                showMessage('练习未找到', 'error');
+                return;
+            }
+            
+            // 打开AI助手并发送批改请求
+            AIAssistant.toggleChat();
+            setTimeout(() => {
+                AIAssistant.addMessage(`请帮我批改"${exercise.title}"这个练习，我有以下问题需要解答：`, 'user');
+                AIAssistant.generateAIResponse(`请帮我批改"${exercise.title}"这个练习，我有以下问题需要解答：`);
+            }, 500);
+            
+            closeExerciseModal();
         }
         
         /**
@@ -8938,6 +9116,9 @@
         window.showPasswordResetModal = showPasswordResetModal;
         window.playVideo = playVideo;
         window.startExercise = startExercise;
+        window.showExerciseModal = showExerciseModal;
+        window.closeExerciseModal = closeExerciseModal;
+        window.submitExerciseForAIReview = submitExerciseForAIReview;
         window.filterScores = filterScores;
         window.addGrade = addGrade;
         window.closeVideoModal = closeVideoModal;
@@ -9124,11 +9305,15 @@
         window.AIAssistant = {
             isActive: false,
             chatHistory: [],
+            apiKey: 'sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis',
+            apiEndpoint: 'https://api.deepseek.com/v1/chat/completions',
+            model: 'deepseek-r1',
             
             // 初始化AI助手
             init: function() {
                 this.createChatInterface();
                 this.loadKnowledgeBase();
+                this.addChatStyles();
             },
             
             // 创建聊天界面
@@ -9460,7 +9645,7 @@
             },
             
             // 发送消息
-            sendMessage: function() {
+            sendMessage: async function() {
                 const input = document.getElementById('chatInput');
                 const message = input.value.trim();
                 
@@ -9469,18 +9654,14 @@
                 this.addMessage(message, 'user');
                 input.value = '';
                 
-                // 模拟AI思考延迟
-                setTimeout(() => {
-                    this.generateAIResponse(message);
-                }, 800);
+                // 生成AI回复
+                await this.generateAIResponse(message);
             },
             
             // 发送快速回复
-            sendQuickReply: function(message) {
+            sendQuickReply: async function(message) {
                 this.addMessage(message, 'user');
-                setTimeout(() => {
-                    this.generateAIResponse(message);
-                }, 500);
+                await this.generateAIResponse(message);
             },
             
             // 添加消息到聊天界面
@@ -9503,12 +9684,93 @@
             },
             
             // 生成AI回复
-            generateAIResponse: function(userMessage) {
-                const responses = this.getSmartResponse(userMessage);
-                this.addMessage(responses, 'ai');
+            generateAIResponse: async function(userMessage) {
+                try {
+                    // 显示加载状态
+                    this.addMessage('正在思考中...', 'ai', true);
+                    
+                    // 调用AI API
+                    const aiResponse = await this.callAIAPI(userMessage);
+                    
+                    // 移除加载消息并添加AI回复
+                    const loadingMessage = document.querySelector('.ai-message.loading');
+                    if (loadingMessage) {
+                        loadingMessage.remove();
+                    }
+                    
+                    this.addMessage(aiResponse, 'ai');
+                } catch (error) {
+                    console.error('AI回复生成失败:', error);
+                    // 使用备用回复
+                    const fallbackResponse = this.generateFallbackResponse(userMessage);
+                    this.addMessage(fallbackResponse, 'ai');
+                }
             },
             
-            // 智能回复系统
+            // 调用AI API
+            callAIAPI: async function(userMessage) {
+                try {
+                    const response = await fetch(this.apiEndpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${this.apiKey}`
+                        },
+                        body: JSON.stringify({
+                            model: this.model,
+                            messages: [
+                                {
+                                    role: 'system',
+                                    content: `你是一个专业的流体力学AI助手，专门为中国海洋大学803流体力学专业的学生提供学习指导。你需要：
+1. 准确回答流体力学相关问题
+2. 提供学习建议和计划
+3. 解释复杂概念
+4. 批改学生作业
+5. 推荐学习资源
+请用中文回答，语言要专业但易懂。`
+                                },
+                                {
+                                    role: 'user',
+                                    content: userMessage
+                                }
+                            ],
+                            max_tokens: 1000,
+                            temperature: 0.7
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API调用失败: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    return data.choices[0].message.content;
+                } catch (error) {
+                    console.error('AI API调用失败:', error);
+                    throw error;
+                }
+            },
+            
+            // 生成备用回复
+            generateFallbackResponse: function(userMessage) {
+                const responses = {
+                    '基础概念': '流体力学基础概念包括：\n1. 流体的定义和特性\n2. 连续介质假设\n3. 流体的物理性质\n4. 压力、密度、粘度等基本参数\n\n建议从这些基础概念开始学习！',
+                    '练习': '推荐练习：\n1. 流体静力学计算题\n2. 伯努利方程应用题\n3. 动量方程推导题\n4. 边界层理论分析题\n\n建议每天练习2-3道题目。',
+                    '计划': '学习计划建议：\n1. 第1-2周：基础概念和流体静力学\n2. 第3-4周：流体动力学和伯努利方程\n3. 第5-6周：动量方程和能量方程\n4. 第7-8周：边界层理论和湍流\n\n每周学习时间建议：10-15小时',
+                    '分数': '分数线信息：\n2025年国家线：274分\n2025年复试线：274分\n\n建议目标分数：290分以上',
+                    '批改': '我可以帮您批改作业！请将您的作业内容发给我，我会：\n1. 检查计算过程\n2. 指出错误\n3. 提供正确答案\n4. 给出改进建议',
+                    'default': '我是流体力学AI助手，可以为您提供学习指导。请告诉我您想了解什么？'
+                };
+                
+                for (let key in responses) {
+                    if (userMessage.includes(key)) {
+                        return responses[key];
+                    }
+                }
+                return responses.default;
+            },
+            
+            // 智能回复系统（备用）
             getSmartResponse: function(message) {
                 const lowerMessage = message.toLowerCase();
                 
