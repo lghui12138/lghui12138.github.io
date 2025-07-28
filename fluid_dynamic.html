@@ -9443,7 +9443,7 @@ ${score >= 80 ? '🎉 优秀！继续保持！' : score >= 60 ? '👍 良好，�
                                     // 如果已登录，初始化图表和功能
                 setTimeout(() => {
                     try {
-                        console.log('初始化分数线图表...');
+                        console.log('🚀 开始初始化系统功能...');
                         
                         // 确保Chart.js已加载
                         if (typeof Chart !== 'undefined') {
@@ -9463,25 +9463,36 @@ ${score >= 80 ? '🎉 优秀！继续保持！' : score >= 60 ? '👍 良好，�
                         renderVideoGrid();
                         renderExerciseGrid();
                         
-                        // 启动AI助手和智能推荐
-                        console.log('初始化AI助手...');
+                        // 优先启动AI助手
+                        console.log('🤖 初始化AI助手...');
                         if (window.AIAssistant && window.AIAssistant.init) {
                             window.AIAssistant.init();
+                            
+                            // 立即测试AI连接
+                            setTimeout(() => {
+                                console.log('🔍 立即测试AI连接...');
+                                window.AIAssistant.testAIConnection();
+                            }, 500);
                         } else {
                             console.warn('AI助手未找到，尝试重新初始化...');
-                            // 如果AI助手未定义，重新创建
                             if (typeof AIAssistant !== 'undefined') {
                                 AIAssistant.init();
+                                setTimeout(() => {
+                                    AIAssistant.testAIConnection();
+                                }, 500);
                             }
                         }
+                        
                         SmartRecommendation.analyzeAndRecommend();
                         
                         // 如果用户之前连接了GitHub，尝试重新连接
                         if (currentUser && currentUser.github && currentUser.github.connected) {
                             githubStorage.connect(currentUser.github.token, currentUser.github.repo);
                         }
+                        
+                        console.log('✅ 系统初始化完成');
                     } catch (error) {
-                        console.error('初始化图表时出错:', error);
+                        console.error('❌ 初始化时出错:', error);
                     }
                 }, 1000);
                 }
@@ -9807,25 +9818,50 @@ ${score >= 80 ? '🎉 优秀！继续保持！' : score >= 60 ? '👍 良好，�
             // 测试AI连接
             testAIConnection: async function() {
                 try {
-                    console.log('测试AI连接...');
+                    console.log('🔍 开始测试AI连接...');
+                    console.log('🔑 API密钥:', this.apiKey.substring(0, 10) + '...');
+                    console.log('🌐 API端点:', this.apiEndpoint);
+                    console.log('🤖 模型:', this.model);
+                    
+                    // 更新状态为连接中
+                    this.updateConnectionStatus('连接中...', '#f39c12');
+                    
                     const testResponse = await this.callAIAPI('你好，请简单回复"连接成功"');
-                    console.log('AI连接测试成功:', testResponse);
+                    console.log('✅ AI连接测试成功:', testResponse);
                     
-                    // 在聊天界面显示连接状态
-                    const chatStatus = document.querySelector('.chat-status');
-                    if (chatStatus) {
-                        chatStatus.textContent = '在线 · AI连接正常';
-                        chatStatus.style.color = '#27ae60';
-                    }
+                    // 更新状态为在线
+                    this.updateConnectionStatus('在线 · AI连接正常', '#27ae60');
+                    
+                    // 显示成功消息
+                    this.addMessage('亲爱的同学，我已经成功连接到AI服务了！现在可以为您提供实时帮助～ 💕', 'ai');
+                    
                 } catch (error) {
-                    console.error('AI连接测试失败:', error);
+                    console.error('❌ AI连接测试失败:', error);
                     
-                    // 在聊天界面显示连接状态
-                    const chatStatus = document.querySelector('.chat-status');
-                    if (chatStatus) {
-                        chatStatus.textContent = '离线 · 使用本地回复';
-                        chatStatus.style.color = '#e74c3c';
-                    }
+                    // 更新状态为离线
+                    this.updateConnectionStatus('离线 · 使用本地回复', '#e74c3c');
+                    
+                    // 显示错误消息
+                    this.addMessage('抱歉，AI服务暂时无法连接，但我仍然可以为您提供本地帮助～ 请稍后再试 💪', 'ai');
+                }
+            },
+            
+            // 更新连接状态
+            updateConnectionStatus: function(status, color) {
+                const chatStatus = document.querySelector('.chat-status');
+                if (chatStatus) {
+                    chatStatus.textContent = status;
+                    chatStatus.style.color = color;
+                }
+                
+                // 同时更新聊天窗口标题
+                const chatTitle = document.querySelector('.chat-title');
+                if (chatTitle) {
+                    chatTitle.innerHTML = `
+                        <i class="fas fa-robot"></i>
+                        AI助手
+                        <span class="connection-indicator" style="color: ${color};">●</span>
+                    `;
                 }
             },
             
@@ -10024,12 +10060,17 @@ ${score >= 80 ? '🎉 优秀！继续保持！' : score >= 60 ? '👍 良好，�
                                 <i class="fas fa-robot"></i>
                             </div>
                             <div class="chat-info">
-                                <h4>流体力学AI助手</h4>
-                                <p class="chat-status">在线 · 随时为您服务</p>
+                                <h4 class="chat-title">流体力学AI助手</h4>
+                                <p class="chat-status">连接中...</p>
                             </div>
-                            <button onclick="AIAssistant.toggleChat()" class="chat-close">
-                                <i class="fas fa-times"></i>
-                            </button>
+                            <div class="chat-actions">
+                                <button onclick="AIAssistant.reconnectAI()" class="reconnect-btn" title="重新连接AI">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                                <button onclick="AIAssistant.toggleChat()" class="chat-close">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="chat-messages" id="chatMessages">
                             <div class="ai-message">
@@ -10259,8 +10300,30 @@ ${score >= 80 ? '🎉 优秀！继续保持！' : score >= 60 ? '👍 良好，�
                         opacity: 0.8;
                     }
                     
-                    .chat-close {
+                    .chat-actions {
+                        display: flex;
+                        gap: var(--space-2);
+                        align-items: center;
                         margin-left: auto;
+                    }
+                    
+                    .reconnect-btn {
+                        background: none;
+                        border: none;
+                        color: white;
+                        cursor: pointer;
+                        padding: var(--space-2);
+                        border-radius: var(--radius-md);
+                        transition: all var(--transition-fast);
+                        font-size: var(--text-sm);
+                    }
+                    
+                    .reconnect-btn:hover {
+                        background: rgba(255, 255, 255, 0.2);
+                        transform: rotate(180deg);
+                    }
+                    
+                    .chat-close {
                         background: none;
                         border: none;
                         color: white;
@@ -10502,6 +10565,19 @@ ${score >= 80 ? '🎉 优秀！继续保持！' : score >= 60 ? '👍 良好，�
                 quickReplies.forEach(reply => reply.remove());
             },
             
+            // 手动重新连接AI
+            reconnectAI: async function() {
+                console.log('🔄 手动重新连接AI...');
+                this.updateConnectionStatus('重新连接中...', '#f39c12');
+                
+                try {
+                    await this.testAIConnection();
+                    this.addMessage('亲爱的同学，AI连接已恢复！现在可以为您提供实时帮助了～ 💕', 'ai');
+                } catch (error) {
+                    this.addMessage('抱歉，重新连接失败。请检查网络连接或稍后再试 💪', 'ai');
+                }
+            },
+            
             // 生成AI回复
             generateAIResponse: async function(userMessage) {
                 try {
@@ -10528,17 +10604,25 @@ ${score >= 80 ? '🎉 优秀！继续保持！' : score >= 60 ? '👍 良好，�
             
             // 调用AI API
             callAIAPI: async function(userMessage) {
-                try {
-                    console.log('开始调用AI API...');
-                    console.log('API端点:', this.apiEndpoint);
-                    console.log('模型:', this.model);
-                    
-                    const requestBody = {
-                        model: this.model,
-                        messages: [
-                            {
-                                role: 'system',
-                                content: `你是一个温柔贴心的流体力学AI助手，专门为中国海洋大学803流体力学专业的学生提供学习指导。你的性格特点：
+                const maxRetries = 3;
+                let retryCount = 0;
+                
+                while (retryCount < maxRetries) {
+                    try {
+                        console.log(`🚀 开始调用AI API (第${retryCount + 1}次尝试)...`);
+                        console.log('🔑 API密钥:', this.apiKey.substring(0, 10) + '...');
+                        console.log('🌐 API端点:', this.apiEndpoint);
+                        console.log('🤖 模型:', this.model);
+                        
+                        // 更新状态为思考中
+                        this.updateConnectionStatus('思考中...', '#f39c12');
+                        
+                        const requestBody = {
+                            model: this.model,
+                            messages: [
+                                {
+                                    role: 'system',
+                                    content: `你是一个温柔贴心的流体力学AI助手，专门为中国海洋大学803流体力学专业的学生提供学习指导。你的性格特点：
 
 💕 温柔友好：用"亲爱的"、"同学"等亲切称呼，语气温暖
 🎯 专业准确：提供准确的流体力学知识解答
@@ -10556,49 +10640,84 @@ ${score >= 80 ? '🎉 优秀！继续保持！' : score >= 60 ? '👍 良好，�
 7. 提供情感支持和鼓励
 
 请用中文回答，语言要专业但温柔易懂，多用表情符号让交流更生动。记住：你是一个温柔的朋友，而不仅仅是学习工具。`
+                                },
+                                {
+                                    role: 'user',
+                                    content: userMessage
+                                }
+                            ],
+                            max_tokens: 1500,
+                            temperature: 0.7,
+                            stream: false
+                        };
+                        
+                        console.log('📤 发送请求体:', JSON.stringify(requestBody, null, 2));
+                        
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
+                        
+                        const response = await fetch(this.apiEndpoint, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${this.apiKey}`,
+                                'Accept': 'application/json',
+                                'User-Agent': 'FluidDynamics-AI-Assistant/1.0'
                             },
-                            {
-                                role: 'user',
-                                content: userMessage
+                            body: JSON.stringify(requestBody),
+                            signal: controller.signal
+                        });
+                        
+                        clearTimeout(timeoutId);
+                        
+                        console.log('📥 API响应状态:', response.status);
+                        console.log('📋 API响应头:', Object.fromEntries(response.headers.entries()));
+                        
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            console.error('❌ API错误响应:', errorText);
+                            
+                            if (response.status === 401) {
+                                throw new Error('API密钥无效或已过期');
+                            } else if (response.status === 429) {
+                                throw new Error('API请求频率过高，请稍后再试');
+                            } else if (response.status >= 500) {
+                                throw new Error('服务器错误，正在重试...');
+                            } else {
+                                throw new Error(`API调用失败: ${response.status} - ${errorText}`);
                             }
-                        ],
-                        max_tokens: 1000,
-                        temperature: 0.7,
-                        stream: false
-                    };
-                    
-                    console.log('请求体:', JSON.stringify(requestBody, null, 2));
-                    
-                    const response = await fetch(this.apiEndpoint, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${this.apiKey}`,
-                            'Accept': 'application/json'
-                        },
-                        body: JSON.stringify(requestBody)
-                    });
-                    
-                    console.log('API响应状态:', response.status);
-                    console.log('API响应头:', Object.fromEntries(response.headers.entries()));
-                    
-                    if (!response.ok) {
-                        const errorText = await response.text();
-                        console.error('API错误响应:', errorText);
-                        throw new Error(`API调用失败: ${response.status} - ${errorText}`);
+                        }
+                        
+                        const data = await response.json();
+                        console.log('✅ API响应数据:', data);
+                        
+                        if (data.choices && data.choices[0] && data.choices[0].message) {
+                            // 更新状态为在线
+                            this.updateConnectionStatus('在线 · AI连接正常', '#27ae60');
+                            return data.choices[0].message.content;
+                        } else {
+                            throw new Error('API响应格式错误');
+                        }
+                        
+                    } catch (error) {
+                        retryCount++;
+                        console.error(`❌ AI API调用失败 (第${retryCount}次):`, error);
+                        
+                        if (error.name === 'AbortError') {
+                            console.error('⏰ 请求超时');
+                        }
+                        
+                        if (retryCount >= maxRetries) {
+                            // 更新状态为离线
+                            this.updateConnectionStatus('离线 · 使用本地回复', '#e74c3c');
+                            throw error;
+                        } else {
+                            // 等待后重试
+                            const waitTime = retryCount * 1000;
+                            console.log(`⏳ 等待${waitTime}ms后重试...`);
+                            await new Promise(resolve => setTimeout(resolve, waitTime));
+                        }
                     }
-                    
-                    const data = await response.json();
-                    console.log('API响应数据:', data);
-                    
-                    if (data.choices && data.choices[0] && data.choices[0].message) {
-                        return data.choices[0].message.content;
-                    } else {
-                        throw new Error('API响应格式错误');
-                    }
-                } catch (error) {
-                    console.error('AI API调用失败:', error);
-                    throw error;
                 }
             },
             
