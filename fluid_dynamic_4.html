@@ -5819,6 +5819,8 @@
                             <i class="fas fa-question-circle" aria-hidden="true"></i><span>题库练习</span></a></li>
                         <li><a href="#" class="nav-link" onclick="AdvancedDataAnalyticsSystem.showDashboard()">
                             <i class="fas fa-chart-bar" aria-hidden="true"></i><span>数据分析</span></a></li>
+                        <li><a href="#" class="nav-link" onclick="AugmentedRealitySystem.startARSession('session_001')">
+                            <i class="fas fa-vr-cardboard" aria-hidden="true"></i><span>AR实验</span></a></li>
                         <li class="teacher-only"><a href="#" class="nav-link" onclick="showSection('uploadExercise')">
                             <i class="fas fa-file-upload" aria-hidden="true"></i><span>上传练习</span></a></li>
                         <li><a href="#" class="nav-link" onclick="showSection('scores')">
@@ -13740,6 +13742,607 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
               }
           };
 
+          // =============== 智能推荐系统 ===============
+          const IntelligentRecommendationSystem = {
+              userProfiles: [],
+              learningPaths: [],
+              contentRecommendations: [],
+              adaptiveAlgorithms: [],
+              
+              init: function() {
+                  this.initializeUserProfiles();
+                  this.setupLearningPaths();
+                  this.createRecommendationEngine();
+                  this.setupAdaptiveAlgorithms();
+              },
+              
+              initializeUserProfiles: function() {
+                  this.userProfiles = [
+                      {
+                          id: 'user_001',
+                          name: '张三',
+                          learningStyle: 'visual',
+                          strengths: ['流体静力学', '数学计算'],
+                          weaknesses: ['湍流理论', '实验操作'],
+                          progress: 0.75,
+                          preferences: {
+                              videoLength: 'medium',
+                              difficulty: 'adaptive',
+                              practiceFrequency: 'daily'
+                          }
+                      },
+                      {
+                          id: 'user_002',
+                          name: '李四',
+                          learningStyle: 'kinesthetic',
+                          strengths: ['实验操作', '概念理解'],
+                          weaknesses: ['数学推导', '理论记忆'],
+                          progress: 0.60,
+                          preferences: {
+                              videoLength: 'short',
+                              difficulty: 'progressive',
+                              practiceFrequency: 'weekly'
+                          }
+                      }
+                  ];
+              },
+              
+              setupLearningPaths: function() {
+                  this.learningPaths = [
+                      {
+                          id: 'path_001',
+                          name: '基础强化路径',
+                          description: '适合基础薄弱的学生',
+                          modules: [
+                              { id: 'm1', name: '流体静力学基础', duration: '2周', difficulty: 'beginner' },
+                              { id: 'm2', name: '流体运动学入门', duration: '3周', difficulty: 'beginner' },
+                              { id: 'm3', name: '伯努利方程应用', duration: '2周', difficulty: 'intermediate' }
+                          ],
+                          targetUsers: ['user_001', 'user_002']
+                      },
+                      {
+                          id: 'path_002',
+                          name: '高级提升路径',
+                          description: '适合基础扎实的学生',
+                          modules: [
+                              { id: 'm4', name: '湍流理论深入', duration: '4周', difficulty: 'advanced' },
+                              { id: 'm5', name: '数值模拟方法', duration: '3周', difficulty: 'advanced' },
+                              { id: 'm6', name: '实验设计优化', duration: '2周', difficulty: 'expert' }
+                          ],
+                          targetUsers: ['user_001']
+                      }
+                  ];
+              },
+              
+              createRecommendationEngine: function() {
+                  this.contentRecommendations = [
+                      {
+                          id: 'rec_001',
+                          type: 'video',
+                          title: '流体静力学可视化演示',
+                          description: '通过3D动画理解流体静力学原理',
+                          targetUser: 'user_001',
+                          confidence: 0.92,
+                          reason: '基于学习风格匹配'
+                      },
+                      {
+                          id: 'rec_002',
+                          type: 'exercise',
+                          title: '湍流理论专项练习',
+                          description: '针对薄弱环节的专项训练',
+                          targetUser: 'user_001',
+                          confidence: 0.85,
+                          reason: '基于弱点分析'
+                      },
+                      {
+                          id: 'rec_003',
+                          type: 'simulation',
+                          title: '流体流动交互式模拟',
+                          description: '动手操作理解流体行为',
+                          targetUser: 'user_002',
+                          confidence: 0.88,
+                          reason: '基于学习偏好'
+                      }
+                  ];
+              },
+              
+              setupAdaptiveAlgorithms: function() {
+                  this.adaptiveAlgorithms = [
+                      {
+                          id: 'algo_001',
+                          name: '协同过滤算法',
+                          description: '基于相似用户行为推荐内容',
+                          accuracy: 0.87,
+                          lastUpdated: new Date()
+                      },
+                      {
+                          id: 'algo_002',
+                          name: '内容过滤算法',
+                          description: '基于内容特征匹配用户兴趣',
+                          accuracy: 0.82,
+                          lastUpdated: new Date()
+                      },
+                      {
+                          id: 'algo_003',
+                          name: '深度学习推荐',
+                          description: '使用神经网络预测用户偏好',
+                          accuracy: 0.91,
+                          lastUpdated: new Date()
+                      }
+                  ];
+              },
+              
+              generatePersonalizedRecommendations: function(userId) {
+                  const user = this.userProfiles.find(u => u.id === userId);
+                  if (!user) return [];
+                  
+                  // 基于用户特征生成推荐
+                  const recommendations = this.contentRecommendations.filter(rec => 
+                      rec.targetUser === userId
+                  );
+                  
+                  // 添加动态推荐
+                  const dynamicRecommendations = this.createDynamicRecommendations(user);
+                  
+                  return [...recommendations, ...dynamicRecommendations];
+              },
+              
+              createDynamicRecommendations: function(user) {
+                  const recommendations = [];
+                  
+                  // 基于学习进度推荐
+                  if (user.progress < 0.5) {
+                      recommendations.push({
+                          id: `dynamic_${Date.now()}`,
+                          type: 'foundation',
+                          title: '基础概念复习',
+                          description: '建议复习基础概念以巩固知识',
+                          confidence: 0.90,
+                          reason: '基于学习进度分析'
+                      });
+                  }
+                  
+                  // 基于弱点推荐
+                  user.weaknesses.forEach(weakness => {
+                      recommendations.push({
+                          id: `weakness_${weakness}`,
+                          type: 'remedial',
+                          title: `${weakness}专项训练`,
+                          description: `针对${weakness}的专项练习`,
+                          confidence: 0.85,
+                          reason: '基于弱点分析'
+                      });
+                  });
+                  
+                  return recommendations;
+              },
+              
+              updateUserProfile: function(userId, newData) {
+                  const userIndex = this.userProfiles.findIndex(u => u.id === userId);
+                  if (userIndex !== -1) {
+                      this.userProfiles[userIndex] = { ...this.userProfiles[userIndex], ...newData };
+                      console.log(`用户 ${userId} 档案已更新`);
+                  }
+              },
+              
+              getLearningPath: function(userId) {
+                  const user = this.userProfiles.find(u => u.id === userId);
+                  if (!user) return null;
+                  
+                  // 根据用户特征选择最适合的学习路径
+                  if (user.progress < 0.6) {
+                      return this.learningPaths.find(p => p.id === 'path_001');
+                  } else {
+                      return this.learningPaths.find(p => p.id === 'path_002');
+                  }
+              }
+          };
+
+          // =============== 增强现实(AR)学习系统 ===============
+          const AugmentedRealitySystem = {
+              arScenes: [],
+              trackingDevices: [],
+              interactiveModels: [],
+              arSessions: [],
+              
+              init: function() {
+                  this.initializeARScenes();
+                  this.setupTrackingDevices();
+                  this.createInteractiveModels();
+                  this.setupARSessions();
+              },
+              
+              initializeARScenes: function() {
+                  this.arScenes = [
+                      {
+                          id: 'scene_001',
+                          name: '流体静力学实验室',
+                          description: '3D流体静力学实验环境',
+                          difficulty: 'beginner',
+                          features: ['3D模型', '交互式实验', '实时反馈'],
+                          models: ['pressure_vessel', 'fluid_container', 'pressure_sensor']
+                      },
+                      {
+                          id: 'scene_002',
+                          name: '流体流动可视化',
+                          description: '实时流体流动过程可视化',
+                          difficulty: 'intermediate',
+                          features: ['流动轨迹', '速度场', '压力分布'],
+                          models: ['flow_field', 'velocity_vectors', 'pressure_contours']
+                      },
+                      {
+                          id: 'scene_003',
+                          name: '湍流现象观察',
+                          description: '复杂湍流现象AR观察',
+                          difficulty: 'advanced',
+                          features: ['涡流显示', '能量耗散', '统计特性'],
+                          models: ['vortex_structures', 'turbulence_spectrum', 'energy_cascade']
+                      }
+                  ];
+              },
+              
+              setupTrackingDevices: function() {
+                  this.trackingDevices = [
+                      {
+                          id: 'device_001',
+                          type: 'camera',
+                          name: 'AR摄像头',
+                          status: 'active',
+                          capabilities: ['图像识别', '空间定位', '手势识别']
+                      },
+                      {
+                          id: 'device_002',
+                          type: 'sensor',
+                          name: '运动传感器',
+                          status: 'active',
+                          capabilities: ['加速度计', '陀螺仪', '磁力计']
+                      },
+                      {
+                          id: 'device_003',
+                          type: 'display',
+                          name: 'AR眼镜',
+                          status: 'standby',
+                          capabilities: ['立体显示', '透明叠加', '眼动追踪']
+                      }
+                  ];
+              },
+              
+              createInteractiveModels: function() {
+                  this.interactiveModels = [
+                      {
+                          id: 'model_001',
+                          name: '流体容器模型',
+                          type: '3D',
+                          description: '可交互的流体容器3D模型',
+                          properties: {
+                              volume: '1000ml',
+                              material: '透明玻璃',
+                              temperature: '25°C',
+                              pressure: '1atm'
+                          },
+                          interactions: ['旋转', '缩放', '测量', '参数调节']
+                      },
+                      {
+                          id: 'model_002',
+                          name: '压力传感器',
+                          type: 'sensor',
+                          description: '实时压力测量传感器',
+                          properties: {
+                              range: '0-10bar',
+                              accuracy: '±0.1%',
+                              response: '10ms'
+                          },
+                          interactions: ['读数显示', '校准', '数据记录']
+                      },
+                      {
+                          id: 'model_003',
+                          name: '流动轨迹',
+                          type: 'visualization',
+                          description: '流体粒子运动轨迹',
+                          properties: {
+                              particleCount: '1000',
+                              simulationTime: '60s',
+                              resolution: 'HD'
+                          },
+                          interactions: ['轨迹追踪', '速度分析', '路径回放']
+                      }
+                  ];
+              },
+              
+              setupARSessions: function() {
+                  this.arSessions = [
+                      {
+                          id: 'session_001',
+                          name: '流体静力学实验',
+                          sceneId: 'scene_001',
+                          duration: '30分钟',
+                          objectives: [
+                              '理解流体静力学原理',
+                              '观察压力分布',
+                              '进行虚拟实验'
+                          ],
+                          status: 'available'
+                      },
+                      {
+                          id: 'session_002',
+                          name: '流动可视化实验',
+                          sceneId: 'scene_002',
+                          duration: '45分钟',
+                          objectives: [
+                              '观察流体流动',
+                              '分析速度场',
+                              '理解伯努利方程'
+                          ],
+                          status: 'available'
+                      }
+                  ];
+              },
+              
+              startARSession: function(sessionId) {
+                  const session = this.arSessions.find(s => s.id === sessionId);
+                  if (!session) return false;
+                  
+                  console.log(`启动AR会话: ${session.name}`);
+                  
+                  // 模拟AR会话启动
+                  session.status = 'active';
+                  session.startTime = new Date();
+                  
+                  // 创建AR界面
+                  this.createARInterface(session);
+                  
+                  return true;
+              },
+              
+              createARInterface: function(session) {
+                  const arInterfaceHTML = `
+                      <div id="arInterface" class="ar-interface" style="display: none;">
+                          <div class="ar-header">
+                              <h3>${session.name}</h3>
+                              <button class="close-btn" onclick="AugmentedRealitySystem.closeARSession()">&times;</button>
+                          </div>
+                          <div class="ar-content">
+                              <div class="ar-viewport">
+                                  <canvas id="arCanvas"></canvas>
+                                  <div class="ar-overlay">
+                                      <div class="ar-controls">
+                                          <button onclick="AugmentedRealitySystem.interactWithModel('rotate')">旋转</button>
+                                          <button onclick="AugmentedRealitySystem.interactWithModel('scale')">缩放</button>
+                                          <button onclick="AugmentedRealitySystem.interactWithModel('measure')">测量</button>
+                                      </div>
+                                      <div class="ar-info">
+                                          <div class="info-panel">
+                                              <h4>实验信息</h4>
+                                              <p>场景: ${session.sceneId}</p>
+                                              <p>目标: ${session.objectives.join(', ')}</p>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  `;
+                  
+                  const arInterfaceCSS = `
+                      <style>
+                          .ar-interface {
+                              position: fixed;
+                              top: 0;
+                              left: 0;
+                              width: 100%;
+                              height: 100%;
+                              background: #000;
+                              z-index: 1000;
+                              display: flex;
+                              flex-direction: column;
+                          }
+                          
+                          .ar-header {
+                              display: flex;
+                              justify-content: space-between;
+                              align-items: center;
+                              padding: 15px;
+                              background: rgba(0, 0, 0, 0.8);
+                              color: white;
+                          }
+                          
+                          .ar-content {
+                              flex: 1;
+                              position: relative;
+                          }
+                          
+                          .ar-viewport {
+                              width: 100%;
+                              height: 100%;
+                              position: relative;
+                          }
+                          
+                          #arCanvas {
+                              width: 100%;
+                              height: 100%;
+                              background: linear-gradient(45deg, #1e6fa8, #2c9ab7);
+                          }
+                          
+                          .ar-overlay {
+                              position: absolute;
+                              top: 0;
+                              left: 0;
+                              width: 100%;
+                              height: 100%;
+                              pointer-events: none;
+                          }
+                          
+                          .ar-controls {
+                              position: absolute;
+                              bottom: 20px;
+                              left: 50%;
+                              transform: translateX(-50%);
+                              display: flex;
+                              gap: 10px;
+                              pointer-events: auto;
+                          }
+                          
+                          .ar-controls button {
+                              padding: 10px 20px;
+                              background: rgba(30, 111, 168, 0.8);
+                              color: white;
+                              border: none;
+                              border-radius: 6px;
+                              cursor: pointer;
+                              transition: all 0.3s;
+                          }
+                          
+                          .ar-controls button:hover {
+                              background: rgba(30, 111, 168, 1);
+                          }
+                          
+                          .ar-info {
+                              position: absolute;
+                              top: 20px;
+                              right: 20px;
+                              pointer-events: auto;
+                          }
+                          
+                          .info-panel {
+                              background: rgba(0, 0, 0, 0.8);
+                              color: white;
+                              padding: 15px;
+                              border-radius: 8px;
+                              max-width: 300px;
+                          }
+                          
+                          .info-panel h4 {
+                              margin-bottom: 10px;
+                              color: #4db8d6;
+                          }
+                      </style>
+                  `;
+                  
+                  document.body.insertAdjacentHTML('beforeend', arInterfaceHTML);
+                  document.head.insertAdjacentHTML('beforeend', arInterfaceCSS);
+                  
+                  // 显示AR界面
+                  document.getElementById('arInterface').style.display = 'flex';
+                  
+                  // 初始化AR画布
+                  this.initializeARCanvas();
+              },
+              
+              initializeARCanvas: function() {
+                  const canvas = document.getElementById('arCanvas');
+                  if (!canvas) return;
+                  
+                  const ctx = canvas.getContext('2d');
+                  const width = canvas.width;
+                  const height = canvas.height;
+                  
+                  // 绘制AR场景背景
+                  ctx.fillStyle = 'rgba(30, 111, 168, 0.1)';
+                  ctx.fillRect(0, 0, width, height);
+                  
+                  // 绘制3D模型占位符
+                  ctx.fillStyle = '#4db8d6';
+                  ctx.fillRect(width/2 - 50, height/2 - 50, 100, 100);
+                  
+                  // 添加AR效果
+                  this.addAREffects(ctx, width, height);
+              },
+              
+              addAREffects: function(ctx, width, height) {
+                  // 添加粒子效果
+                  for (let i = 0; i < 50; i++) {
+                      const x = Math.random() * width;
+                      const y = Math.random() * height;
+                      const size = Math.random() * 3;
+                      
+                      ctx.fillStyle = `rgba(77, 184, 214, ${Math.random() * 0.5})`;
+                      ctx.fillRect(x, y, size, size);
+                  }
+                  
+                  // 添加流动线条
+                  ctx.strokeStyle = '#2c9ab7';
+                  ctx.lineWidth = 2;
+                  for (let i = 0; i < 10; i++) {
+                      ctx.beginPath();
+                      ctx.moveTo(Math.random() * width, Math.random() * height);
+                      ctx.lineTo(Math.random() * width, Math.random() * height);
+                      ctx.stroke();
+                  }
+              },
+              
+              interactWithModel: function(action) {
+                  console.log(`AR交互: ${action}`);
+                  
+                  // 模拟AR交互效果
+                  const canvas = document.getElementById('arCanvas');
+                  if (!canvas) return;
+                  
+                  const ctx = canvas.getContext('2d');
+                  
+                  switch (action) {
+                      case 'rotate':
+                          this.rotateModel(ctx, canvas.width, canvas.height);
+                          break;
+                      case 'scale':
+                          this.scaleModel(ctx, canvas.width, canvas.height);
+                          break;
+                      case 'measure':
+                          this.measureModel(ctx, canvas.width, canvas.height);
+                          break;
+                  }
+              },
+              
+              rotateModel: function(ctx, width, height) {
+                  // 模拟旋转效果
+                  ctx.save();
+                  ctx.translate(width/2, height/2);
+                  ctx.rotate(Math.PI / 4);
+                  ctx.fillStyle = '#4db8d6';
+                  ctx.fillRect(-50, -50, 100, 100);
+                  ctx.restore();
+              },
+              
+              scaleModel: function(ctx, width, height) {
+                  // 模拟缩放效果
+                  ctx.save();
+                  ctx.translate(width/2, height/2);
+                  ctx.scale(1.5, 1.5);
+                  ctx.fillStyle = '#2c9ab7';
+                  ctx.fillRect(-50, -50, 100, 100);
+                  ctx.restore();
+              },
+              
+              measureModel: function(ctx, width, height) {
+                  // 模拟测量效果
+                  ctx.strokeStyle = '#ff6b6b';
+                  ctx.lineWidth = 3;
+                  ctx.beginPath();
+                  ctx.moveTo(width/2 - 60, height/2);
+                  ctx.lineTo(width/2 + 60, height/2);
+                  ctx.stroke();
+                  
+                  ctx.fillStyle = '#ff6b6b';
+                  ctx.font = '16px Arial';
+                  ctx.fillText('120mm', width/2 - 30, height/2 - 20);
+              },
+              
+              closeARSession: function() {
+                  const arInterface = document.getElementById('arInterface');
+                  if (arInterface) {
+                      arInterface.style.display = 'none';
+                  }
+                  
+                  // 更新会话状态
+                  const activeSession = this.arSessions.find(s => s.status === 'active');
+                  if (activeSession) {
+                      activeSession.status = 'completed';
+                      activeSession.endTime = new Date();
+                  }
+                  
+                  console.log('AR会话已关闭');
+              }
+          };
+
           // =============== 视频上传管理系统 ===============
           const VideoUploadSystem = {
               videos: [],
@@ -14157,6 +14760,12 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
               if (typeof AdvancedDataAnalyticsSystem !== 'undefined') {
                   AdvancedDataAnalyticsSystem.init();
               }
+              if (typeof IntelligentRecommendationSystem !== 'undefined') {
+                  IntelligentRecommendationSystem.init();
+              }
+              if (typeof AugmentedRealitySystem !== 'undefined') {
+                  AugmentedRealitySystem.init();
+              }
               
               console.log('企业级功能模块初始化完成');
           }
@@ -14518,192 +15127,7 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
               }
                      };
 
-          // =============== 智能推荐和个性化学习系统 ===============
-          const IntelligentRecommendationSystem = {
-              userProfile: {},
-              learningPath: [],
-              recommendations: [],
-              adaptiveContent: {},
-              
-              init: function() {
-                  this.buildUserProfile();
-                  this.generateLearningPath();
-                  this.createPersonalizedRecommendations();
-                  this.setupAdaptiveContent();
-              },
-              
-              buildUserProfile: function() {
-                  this.userProfile = {
-                      learningStyle: 'visual', // visual, auditory, kinesthetic
-                      difficultyLevel: 'intermediate',
-                      preferredTopics: ['流体静力学', '流体动力学'],
-                      weakAreas: ['湍流理论', '边界层理论'],
-                      studyTime: 'morning', // morning, afternoon, evening
-                      pace: 'moderate', // slow, moderate, fast
-                      goals: ['pass_exam', 'deep_understanding'],
-                      progress: {
-                          completedTopics: 6,
-                          totalTopics: 12,
-                          averageScore: 78,
-                          studyHours: 45
-                      }
-                  };
-              },
-              
-              generateLearningPath: function() {
-                  this.learningPath = [
-                      {
-                          phase: 1,
-                          name: '基础巩固',
-                          topics: ['流体静力学', '流体运动学'],
-                          duration: '2周',
-                          difficulty: 'easy',
-                          priority: 'high'
-                      },
-                      {
-                          phase: 2,
-                          name: '核心概念',
-                          topics: ['流体动力学', '伯努利方程'],
-                          duration: '3周',
-                          difficulty: 'medium',
-                          priority: 'high'
-                      },
-                      {
-                          phase: 3,
-                          name: '高级应用',
-                          topics: ['湍流理论', '边界层理论'],
-                          duration: '4周',
-                          difficulty: 'hard',
-                          priority: 'medium'
-                      },
-                      {
-                          phase: 4,
-                          name: '综合复习',
-                          topics: ['综合练习', '模拟考试'],
-                          duration: '2周',
-                          difficulty: 'mixed',
-                          priority: 'high'
-                      }
-                  ];
-              },
-              
-              createPersonalizedRecommendations: function() {
-                  this.recommendations = [
-                      {
-                          type: 'content',
-                          title: '推荐视频课程',
-                          items: [
-                              {name: '流体静力学深度解析', reason: '基于您的学习进度'},
-                              {name: '湍流理论入门', reason: '针对您的薄弱环节'}
-                          ]
-                      },
-                      {
-                          type: 'exercise',
-                          title: '推荐练习题',
-                          items: [
-                              {name: '伯努利方程应用', difficulty: 'medium', reason: '适合您的水平'},
-                              {name: '边界层计算', difficulty: 'hard', reason: '挑战性练习'}
-                          ]
-                      },
-                      {
-                          type: 'study_plan',
-                          title: '学习计划建议',
-                          items: [
-                              {name: '每日2小时专注学习', reason: '基于您的学习习惯'},
-                              {name: '周末重点复习', reason: '利用您的空闲时间'}
-                          ]
-                      }
-                  ];
-              },
-              
-              setupAdaptiveContent: function() {
-                  this.adaptiveContent = {
-                      difficultyAdjustment: this.adjustDifficulty.bind(this),
-                      contentFiltering: this.filterContent.bind(this),
-                      progressTracking: this.trackProgress.bind(this),
-                      feedbackLoop: this.processFeedback.bind(this)
-                  };
-              },
-              
-              adjustDifficulty: function(currentScore, targetScore) {
-                  if (currentScore < targetScore * 0.7) {
-                      return 'reduce'; // 降低难度
-                  } else if (currentScore > targetScore * 0.9) {
-                      return 'increase'; // 提高难度
-                  } else {
-                      return 'maintain'; // 保持当前难度
-                  }
-              },
-              
-              filterContent: function(content, userProfile) {
-                  return content.filter(item => {
-                      // 根据用户偏好过滤内容
-                      if (userProfile.preferredTopics.includes(item.topic)) {
-                          return true;
-                      }
-                      if (userProfile.weakAreas.includes(item.topic)) {
-                          return true; // 推荐薄弱环节的内容
-                      }
-                      return false;
-                  });
-              },
-              
-              trackProgress: function(topic, score, timeSpent) {
-                  // 更新学习进度
-                  const progress = this.userProfile.progress;
-                  progress.completedTopics = Math.min(progress.completedTopics + 1, 12);
-                  progress.averageScore = (progress.averageScore + score) / 2;
-                  progress.studyHours += timeSpent / 3600; // 转换为小时
-                  
-                  // 重新生成推荐
-                  this.createPersonalizedRecommendations();
-              },
-              
-              processFeedback: function(feedback) {
-                  // 处理用户反馈，调整推荐策略
-                  if (feedback.type === 'difficulty_too_high') {
-                      this.userProfile.difficultyLevel = 'beginner';
-                  } else if (feedback.type === 'content_not_relevant') {
-                      // 调整内容相关性
-                      this.userProfile.preferredTopics = feedback.suggestedTopics;
-                  }
-                  
-                  this.createPersonalizedRecommendations();
-              },
-              
-              getNextRecommendation: function() {
-                  // 获取下一个推荐内容
-                  const allRecommendations = this.recommendations.flatMap(rec => rec.items);
-                  return allRecommendations[Math.floor(Math.random() * allRecommendations.length)];
-              },
-              
-              generateStudyPlan: function(targetDate) {
-                  const daysUntilTarget = Math.ceil((new Date(targetDate) - new Date()) / (1000 * 60 * 60 * 24));
-                  const remainingTopics = 12 - this.userProfile.progress.completedTopics;
-                  const hoursPerDay = Math.ceil((remainingTopics * 2) / daysUntilTarget); // 假设每个主题需要2小时
-                  
-                  return {
-                      dailyHours: hoursPerDay,
-                      weeklyGoals: this.learningPath.slice(Math.floor(this.userProfile.progress.completedTopics / 3)),
-                      milestones: this.generateMilestones(daysUntilTarget, remainingTopics)
-                  };
-              },
-              
-              generateMilestones: function(days, topics) {
-                  const milestones = [];
-                  const topicsPerWeek = Math.ceil(topics / (days / 7));
-                  
-                  for (let week = 1; week <= Math.ceil(days / 7); week++) {
-                      milestones.push({
-                          week: week,
-                          targetTopics: Math.min(topicsPerWeek, topics - (week - 1) * topicsPerWeek),
-                          description: `完成第${week}周学习目标`
-                      });
-                  }
-                  
-                  return milestones;
-              }
-                     };
+
 
           // =============== 企业级报告和导出系统 ===============
           const EnterpriseReportingSystem = {
