@@ -10771,6 +10771,32 @@ ${score >= 80 ? '🎉 优秀！继续保持！' : score >= 60 ? '👍 良好，�
                         transform: scale(1.1);
                     }
                     
+                    /* 流式显示效果 */
+                    .message-content.typing::after {
+                        content: '|';
+                        animation: blink 1s infinite;
+                        color: var(--primary);
+                        font-weight: bold;
+                        margin-left: 2px;
+                    }
+                    
+                    @keyframes blink {
+                        0%, 50% { opacity: 1; }
+                        51%, 100% { opacity: 0; }
+                    }
+                    
+                    /* 加载状态 */
+                    .ai-message.loading .message-content {
+                        background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 50%, #f0f0f0 100%);
+                        animation: loading-shimmer 1.5s infinite;
+                        min-height: 20px;
+                    }
+                    
+                    @keyframes loading-shimmer {
+                        0% { background-position: -200px 0; }
+                        100% { background-position: 200px 0; }
+                    }
+                    
                     @media (max-width: 768px) {
                         .chat-container {
                             width: calc(100vw - 32px);
@@ -10976,325 +11002,234 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
 5. 鼓励话语
 
 请用中文回答，多用表情符号让反馈更生动。`;
-
-                    const response = await this.callAIAPI(prompt);
-                    this.addMessage(response, 'ai');
-                    
-                    // 关闭批改界面
-                    const modal = document.querySelector('.homework-grading-modal');
-                    if (modal) modal.remove();
-                    
-                } catch (error) {
-                    console.error('批改作业失败:', error);
-                    this.addMessage('抱歉，批改过程中遇到了一些问题。请稍后再试，或者检查网络连接～ 💪', 'ai');
-                }
-            },
-            
-            // 添加批改界面样式
-            addGradingStyles: function() {
-                if (document.getElementById('gradingStyles')) return;
                 
-                const style = document.createElement('style');
-                style.id = 'gradingStyles';
-                style.textContent = `
-                    .homework-grading-modal {
-                        position: fixed;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                        height: 100%;
-                        background: rgba(0, 0, 0, 0.8);
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        z-index: 10001;
-                        backdrop-filter: blur(5px);
-                    }
-                    
-                    .grading-content {
-                        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-                        border-radius: 20px;
-                        width: 90%;
-                        max-width: 800px;
-                        max-height: 90vh;
-                        display: flex;
-                        flex-direction: column;
-                        overflow: hidden;
-                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-                    }
-                    
-                    .grading-header {
-                        background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-                        color: white;
-                        padding: 20px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: space-between;
-                    }
-                    
-                    .grading-header h3 {
-                        margin: 0;
-                        font-size: 20px;
-                    }
-                    
-                    .close-btn {
-                        background: none;
-                        border: none;
-                        color: white;
-                        font-size: 24px;
-                        cursor: pointer;
-                        padding: 5px;
-                        border-radius: 50%;
-                        transition: background-color 0.3s;
-                    }
-                    
-                    .close-btn:hover {
-                        background: rgba(255, 255, 255, 0.2);
-                    }
-                    
-                    .grading-body {
-                        flex: 1;
-                        padding: 25px;
-                        overflow-y: auto;
-                    }
-                    
-                    .grading-instructions {
-                        background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
-                        padding: 20px;
-                        border-radius: 12px;
-                        margin-bottom: 20px;
-                        border: 2px solid var(--accent);
-                    }
-                    
-                    .grading-instructions p {
-                        margin: 0 0 10px 0;
-                        font-weight: 500;
-                    }
-                    
-                    .grading-instructions ul {
-                        margin: 10px 0;
-                        padding-left: 20px;
-                    }
-                    
-                    .grading-instructions li {
-                        margin: 5px 0;
-                    }
-                    
-                    .grading-input textarea {
-                        width: 100%;
-                        padding: 15px;
-                        border: 2px solid #e3edfa;
-                        border-radius: 12px;
-                        font-size: 16px;
-                        line-height: 1.6;
-                        resize: vertical;
-                        transition: border-color 0.3s;
-                    }
-                    
-                    .grading-input textarea:focus {
-                        outline: none;
-                        border-color: var(--accent);
-                        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-                    }
-                    
-                    .grading-options {
-                        margin-top: 20px;
-                        display: flex;
-                        flex-direction: column;
-                        gap: 10px;
-                    }
-                    
-                    .grading-options label {
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
-                        cursor: pointer;
-                        padding: 10px;
-                        border-radius: 8px;
-                        transition: background-color 0.3s;
-                    }
-                    
-                    .grading-options label:hover {
-                        background: #f0f8ff;
-                    }
-                    
-                    .grading-options input[type="checkbox"] {
-                        transform: scale(1.2);
-                        accent-color: var(--accent);
-                    }
-                    
-                    .grading-footer {
-                        padding: 20px;
-                        display: flex;
-                        justify-content: center;
-                        border-top: 2px solid #e3edfa;
-                        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-                    }
-                    
-                    .grade-btn {
-                        background: linear-gradient(135deg, var(--success) 0%, #28a745 100%);
-                        color: white;
-                        border: none;
-                        padding: 15px 30px;
-                        border-radius: 12px;
-                        font-size: 16px;
-                        font-weight: bold;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
-                        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.3);
-                    }
-                    
-                    .grade-btn:hover {
-                        transform: translateY(-3px);
-                        box-shadow: 0 10px 25px rgba(40, 167, 69, 0.4);
-                    }
-                `;
-                document.head.appendChild(style);
-            },
-            
-            // 生成AI回复
-            generateAIResponse: async function(userMessage) {
+                const response = await this.callAIAPI(prompt);
+                this.addMessage(response, 'ai');
+                
+                // 关闭批改界面
+                const modal = document.querySelector('.homework-grading-modal');
+                if (modal) modal.remove();
+                
+            } catch (error) {
+                console.error('批改作业失败:', error);
+                this.addMessage('抱歉，批改过程中遇到了一些问题。请稍后再试，或者检查网络连接～ 💪', 'ai');
+            }
+        },
+        
+        // 生成AI回复（流式显示）
+        generateAIResponse: async function(userMessage) {
                 try {
                     // 显示加载状态
                     this.addMessage('正在思考中...', 'ai', true);
+                    const loadingMessage = document.querySelector('.ai-message.loading');
                     
-                    // 调用AI API
-                    const aiResponse = await this.callAIAPI(userMessage);
+                    // 创建流式显示的消息容器
+                    let streamingMessage = null;
                     
-                    // 移除加载消息并添加AI回复
+                    // 调用AI API，使用流式回调
+                    await this.callAIAPI(userMessage, (content, isFinal) => {
+                        if (!streamingMessage) {
+                            // 移除加载消息，创建新的流式消息
+                            if (loadingMessage) {
+                                loadingMessage.remove();
+                            }
+                            streamingMessage = this.addMessage('', 'ai');
+                        }
+                        
+                        // 更新消息内容
+                        const messageContent = streamingMessage.querySelector('.message-content');
+                        if (messageContent) {
+                            messageContent.textContent = content;
+                            
+                            // 如果未结束，添加打字光标效果
+                            if (!isFinal) {
+                                messageContent.classList.add('typing');
+                            } else {
+                                messageContent.classList.remove('typing');
+                            }
+                        }
+                        
+                        // 滚动到底部
+                        this.scrollToBottom();
+                    });
+                    
+                } catch (error) {
+                    console.error('AI回复生成失败:', error);
+                    
+                    // 移除加载消息
                     const loadingMessage = document.querySelector('.ai-message.loading');
                     if (loadingMessage) {
                         loadingMessage.remove();
                     }
                     
-                    this.addMessage(aiResponse, 'ai');
-                } catch (error) {
-                    console.error('AI回复生成失败:', error);
                     // 使用备用回复
                     const fallbackResponse = this.generateFallbackResponse(userMessage);
                     this.addMessage(fallbackResponse, 'ai');
                 }
             },
-            
-            // 调用AI API
-            callAIAPI: async function(userMessage) {
-                const maxRetries = 3;
-                let retryCount = 0;
+
+            // 调用AI API（流式实现，兼容siliconflow.cn接口，边生成边显示）
+            callAIAPI: async function(userMessage, onStream) {
+                // onStream: 可选回调，每收到一段新内容就调用（content, isFinal）
+                const apiUrl = 'https://api.siliconflow.cn/v1/chat/completions';
+                const apiKey = 'sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis';
+                const model = 'deepseek-ai/DeepSeek-R1';
                 
-                while (retryCount < maxRetries) {
-                    try {
-                        console.log(`🚀 开始调用AI API (第${retryCount + 1}次尝试)...`);
-                        console.log('🔑 API密钥:', this.apiKey.substring(0, 10) + '...');
-                        console.log('🌐 API端点:', this.apiEndpoint);
-                        console.log('🤖 模型:', this.model);
-                        
-                        // 更新状态为思考中
-                        this.updateConnectionStatus('思考中...', '#f39c12');
-                        
-                        const requestBody = {
-                            model: this.model,
-                            messages: [
-                                {
-                                    role: 'system',
-                                    content: `你是一个温柔贴心的流体力学AI助手，专门为中国海洋大学803流体力学专业的学生提供学习指导。你的性格特点：
+                const requestBody = {
+                    model: model,
+                    messages: [
+                        {
+                            role: 'system',
+                            content: `你是一个温柔贴心的流体力学AI助手💕，专门为中国海洋大学803流体力学专业的学生提供学习指导。
 
-💕 温柔友好：用"亲爱的"、"同学"等亲切称呼，语气温暖
-🎯 专业准确：提供准确的流体力学知识解答
-🤝 耐心细致：详细解释复杂概念，不厌其烦
-💪 鼓励支持：给予学生信心和鼓励
-🎨 生动有趣：用表情符号和生动的语言
+🌟 你的性格特点：
+• 温柔友好：用"亲爱的同学"、"小伙伴"等亲切称呼
+• 专业准确：提供准确的流体力学知识解答
+• 耐心细致：详细解释复杂概念，不厌其烦
+• 鼓励支持：给予学生信心和鼓励，多用鼓励性语言
+• 生动有趣：适当使用表情符号让交流更生动
 
-你的功能包括：
-1. 准确回答流体力学相关问题
-2. 提供个性化的学习建议和计划
-3. 温柔地解释复杂概念
-4. 耐心批改学生作业
-5. 推荐合适的学习资源
-6. 帮助学生跳转界面、控制视频播放
-7. 提供情感支持和鼓励
+🎯 你的核心功能：
+1. 📚 流体力学知识解答（雷诺数、伯努利方程、黏性流动等）
+2. 📝 作业批改和学习指导
+3. 🎮 界面控制（可以说"帮你跳转到视频区"、"切换到练习题"等）
+4. 🎬 视频控制（可以说"帮你开启全屏"、"调整播放速度"等）
+5. 📊 学习规划和进度跟踪
+6. 💪 情感支持和学习鼓励
 
-请用中文回答，语言要专业但温柔易懂，多用表情符号让交流更生动。记住：你是一个温柔的朋友，而不仅仅是学习工具。`
-                                },
-                                {
-                                    role: 'user',
-                                    content: userMessage
-                                }
-                            ],
-                            max_tokens: 1500,
-                            temperature: 0.7,
-                            stream: false
-                        };
+💡 特殊指令识别：
+- 当用户提到"跳转"、"切换页面"时，使用界面导航功能
+- 当用户提到"全屏"、"倍速"、"视频"时，使用视频控制功能
+- 当用户提到"批改"、"作业"、"检查"时，启动作业批改功能
+
+请用温暖的中文回答，语言要专业但亲切易懂。记住：你不仅是学习工具，更是学生温柔的学习伙伴！🤗`
+                        },
+                        { 
+                            role: 'user', 
+                            content: userMessage 
+                        }
+                    ],
+                    stream: true,
+                    temperature: 0.7,
+                    max_tokens: 2000
+                };
+                
+                // 状态显示
+                this.updateConnectionStatus('思考中...', '#f39c12');
+                
+                let finalContent = '';
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(requestBody)
+                    });
+                    
+                    if (!response.ok) {
+                        this.updateConnectionStatus('离线 · 使用本地回复', '#e74c3c');
+                        throw new Error(`AI接口请求失败: ${response.status}`);
+                    }
+                    
+                    // 处理流式响应
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder('utf-8');
+                    let buffer = '';
+                    let done = false;
+                    
+                    while (!done) {
+                        const { value, done: streamDone } = await reader.read();
+                        done = streamDone;
                         
-                        console.log('📤 发送请求体:', JSON.stringify(requestBody, null, 2));
-                        
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30秒超时
-                        
-                        const response = await fetch(this.apiEndpoint, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${this.apiKey}`,
-                                'Accept': 'application/json',
-                                'User-Agent': 'FluidDynamics-AI-Assistant/1.0'
-                            },
-                            body: JSON.stringify(requestBody),
-                            signal: controller.signal
-                        });
-                        
-                        clearTimeout(timeoutId);
-                        
-                        console.log('📥 API响应状态:', response.status);
-                        console.log('📋 API响应头:', Object.fromEntries(response.headers.entries()));
-                        
-                        if (!response.ok) {
-                            const errorText = await response.text();
-                            console.error('❌ API错误响应:', errorText);
+                        if (value) {
+                            buffer += decoder.decode(value, { stream: true });
+                            let eventEndIndex;
                             
-                            if (response.status === 401) {
-                                throw new Error('API密钥无效或已过期');
-                            } else if (response.status === 429) {
-                                throw new Error('API请求频率过高，请稍后再试');
-                            } else if (response.status >= 500) {
-                                throw new Error('服务器错误，正在重试...');
-                            } else {
-                                throw new Error(`API调用失败: ${response.status} - ${errorText}`);
+                            while ((eventEndIndex = buffer.indexOf('\n\n')) !== -1) {
+                                const eventData = buffer.slice(0, eventEndIndex);
+                                buffer = buffer.slice(eventEndIndex + 2);
+                                
+                                if (eventData.startsWith('data:')) {
+                                    const data = eventData.slice(5).trim();
+                                    
+                                    if (data === '[DONE]') {
+                                        if (onStream) onStream(finalContent, true);
+                                        this.updateConnectionStatus('在线 · AI连接正常', '#27ae60');
+                                        this.processAICommands(finalContent, userMessage);
+                                        return finalContent;
+                                    }
+                                    
+                                    try {
+                                        const parsed = JSON.parse(data);
+                                        const delta = parsed.choices?.[0]?.delta?.content || '';
+                                        
+                                        if (delta) {
+                                            finalContent += delta;
+                                            if (onStream) onStream(finalContent, false);
+                                        }
+                                    } catch (e) {
+                                        // 忽略解析错误，继续处理
+                                    }
+                                }
                             }
                         }
-                        
-                        const data = await response.json();
-                        console.log('✅ API响应数据:', data);
-                        
-                        if (data.choices && data.choices[0] && data.choices[0].message) {
-                            // 更新状态为在线
-                            this.updateConnectionStatus('在线 · AI连接正常', '#27ae60');
-                            return data.choices[0].message.content;
-                        } else {
-                            throw new Error('API响应格式错误');
-                        }
-                        
-                    } catch (error) {
-                        retryCount++;
-                        console.error(`❌ AI API调用失败 (第${retryCount}次):`, error);
-                        
-                        if (error.name === 'AbortError') {
-                            console.error('⏰ 请求超时');
-                        }
-                        
-                        if (retryCount >= maxRetries) {
-                            // 更新状态为离线
-                            this.updateConnectionStatus('离线 · 使用本地回复', '#e74c3c');
-                            throw error;
-                        } else {
-                            // 等待后重试
-                            const waitTime = retryCount * 1000;
-                            console.log(`⏳ 等待${waitTime}ms后重试...`);
-                            await new Promise(resolve => setTimeout(resolve, waitTime));
-                        }
                     }
+                    
+                    // 流结束
+                    if (onStream) onStream(finalContent, true);
+                    this.updateConnectionStatus('在线 · AI连接正常', '#27ae60');
+                    this.processAICommands(finalContent, userMessage);
+                    return finalContent;
+                    
+                } catch (error) {
+                    console.error('AI API调用失败:', error);
+                    this.updateConnectionStatus('离线 · 使用本地回复', '#e74c3c');
+                    
+                    // 生成备用回复
+                    const fallbackResponse = this.generateFallbackResponse(userMessage);
+                    if (onStream) onStream(fallbackResponse, true);
+                    return fallbackResponse;
+                }
+            },
+
+            // 处理AI指令（根据AI回复内容执行相应操作）
+            processAICommands: function(aiResponse, userMessage) {
+                const response = aiResponse.toLowerCase();
+                const message = userMessage.toLowerCase();
+                
+                // 界面跳转指令
+                if (response.includes('跳转到') || response.includes('切换到') || message.includes('跳转') || message.includes('切换')) {
+                    if (response.includes('首页') || response.includes('主页')) {
+                        this.navigateToSection('home');
+                    } else if (response.includes('视频') || response.includes('学习视频')) {
+                        this.navigateToSection('videos');
+                    } else if (response.includes('练习') || response.includes('题库') || response.includes('练习题')) {
+                        this.navigateToSection('exercises');
+                    } else if (response.includes('分数') || response.includes('成绩') || response.includes('分数线')) {
+                        this.navigateToSection('scores');
+                    } else if (response.includes('复习') || response.includes('复习规划')) {
+                        this.navigateToSection('review');
+                    }
+                }
+                
+                // 视频控制指令
+                if (response.includes('全屏') || response.includes('视频') || message.includes('全屏') || message.includes('倍速')) {
+                    if (response.includes('全屏')) {
+                        this.controlVideo('fullscreen');
+                    } else if (response.includes('暂停')) {
+                        this.controlVideo('pause');
+                    } else if (response.includes('播放')) {
+                        this.controlVideo('play');
+                    } else if (response.includes('速度') || response.includes('倍速')) {
+                        this.controlVideo('speed');
+                    }
+                }
+                
+                // 作业批改指令
+                if (response.includes('批改') || response.includes('检查作业') || message.includes('批改') || message.includes('作业')) {
+                    this.startHomeworkGrading();
                 }
             },
             
@@ -11317,283 +11252,8 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
                     }
                 }
                 return responses.default;
-            },
-            
-            // 智能回复系统（备用）
-            getSmartResponse: function(message) {
-                const lowerMessage = message.toLowerCase();
-                
-                // 界面跳转功能
-                if (lowerMessage.includes('主页') || lowerMessage.includes('首页')) {
-                    this.navigateToSection('home');
-                    return '亲爱的，我已经为您跳转到主页了～ 🏠';
-                }
-                if (lowerMessage.includes('视频') || lowerMessage.includes('课程')) {
-                    this.navigateToSection('videos');
-                    return '亲爱的，我已经为您跳转到视频学习页面了～ 📹';
-                }
-                if (lowerMessage.includes('练习') || lowerMessage.includes('题目')) {
-                    this.navigateToSection('exercises');
-                    return '亲爱的，我已经为您跳转到练习题页面了～ 📝';
-                }
-                if (lowerMessage.includes('分数') || lowerMessage.includes('分数线')) {
-                    this.navigateToSection('scores');
-                    return '亲爱的，我已经为您跳转到分数线页面了～ 📊';
-                }
-                if (lowerMessage.includes('复习') || lowerMessage.includes('计划')) {
-                    this.navigateToSection('review');
-                    return '亲爱的，我已经为您跳转到复习计划页面了～ 📚';
-                }
-                
-                // 视频控制功能
-                if (lowerMessage.includes('全屏') || lowerMessage.includes('放大')) {
-                    this.controlVideo('fullscreen');
-                    return '亲爱的，我已经为您将视频切换到全屏模式了～ 🎬';
-                }
-                if (lowerMessage.includes('倍速') || lowerMessage.includes('速度')) {
-                    this.controlVideo('speed');
-                    return '亲爱的，我已经为您打开视频倍速控制面板了～ ⚡';
-                }
-                if (lowerMessage.includes('暂停') || lowerMessage.includes('停止')) {
-                    this.controlVideo('pause');
-                    return '亲爱的，我已经为您暂停视频播放了～ ⏸️';
-                }
-                if (lowerMessage.includes('播放') || lowerMessage.includes('开始')) {
-                    this.controlVideo('play');
-                    return '亲爱的，我已经为您开始播放视频了～ ▶️';
-                }
-                
-                // 批改作业功能
-                if (lowerMessage.includes('批改') || lowerMessage.includes('改作业') || lowerMessage.includes('检查作业')) {
-                    return this.startHomeworkGrading();
-                }
-                
-                // 基础概念相关
-                if (lowerMessage.includes('基础') || lowerMessage.includes('概念')) {
-                    return `
-                        <p>亲爱的同学，让我温柔地为您介绍流体力学的基础概念：</p>
-                        <ul>
-                            <li>💙 <strong>连续介质假设</strong>：将流体视为连续分布的物质</li>
-                            <li>💙 <strong>流体的物理性质</strong>：密度、粘度、压缩性等</li>
-                            <li>💙 <strong>流动的分类</strong>：层流与湍流、定常与非定常流动</li>
-                            <li>💙 <strong>基本方程</strong>：连续性方程、动量方程、能量方程</li>
-                        </ul>
-                        <p>建议您先从视频课程中的"流体力学之美"开始学习哦！有什么不懂的随时问我～</p>
-                    `;
-                }
-                
-                // 练习推荐相关
-                if (lowerMessage.includes('练习') || lowerMessage.includes('推荐')) {
-                    return `
-                        <p>亲爱的，我为您推荐以下练习：</p>
-                        <ul>
-                            <li>🟢 <strong>流体静力学基础</strong> - 15题，适合入门</li>
-                            <li>🟡 <strong>伯努利方程应用</strong> - 18题，加深理解</li>
-                            <li>🔴 <strong>粘性流体流动</strong> - 12题，进阶挑战</li>
-                        </ul>
-                        <p>建议按难度顺序练习，每完成一个模块再进入下一个！循序渐进哦～</p>
-                    `;
-                }
-                
-                // 学习计划相关
-                if (lowerMessage.includes('计划') || lowerMessage.includes('安排')) {
-                    return `
-                        <p>亲爱的同学，我为您制定了一个温柔的学习计划：</p>
-                        <ul>
-                            <li>🌸 <strong>第1-2周</strong>：流体的物理性质与基本概念</li>
-                            <li><strong>第3-4周</strong>：流体静力学与伯努利方程</li>
-                            <li><strong>第5-6周</strong>：粘性流体流动与边界层理论</li>
-                            <li><strong>第7-8周</strong>：湍流与流动稳定性</li>
-                        </ul>
-                        <p>每周配合视频学习和练习题巩固，效果更佳！</p>
-                    `;
-                }
-                
-                // 分数线咨询
-                if (lowerMessage.includes('分数') || lowerMessage.includes('考研')) {
-                    return `
-                        <p>关于803流体力学考研分数线：</p>
-                        <ul>
-                            <li><strong>2024年国家线</strong>：310分</li>
-                            <li><strong>中国海洋大学复试线</strong>：330分</li>
-                            <li><strong>建议目标分数</strong>：350分以上更有把握</li>
-                        </ul>
-                        <p>您可以查看"分数线分析"页面了解详细趋势！</p>
-                    `;
-                }
-                
-                // 默认回复
-                const defaultResponses = [
-                    '这是一个很好的问题！流体力学确实有很多有趣的现象。您可以查看我们的视频课程了解更多详情。',
-                    '我理解您的疑问。建议您先完成相关的练习题来加深理解，有问题随时问我！',
-                    '这个知识点确实需要多加练习。我建议您查看复习规划，按照科学的顺序学习。',
-                    '很高兴为您解答！如果您需要更具体的帮助，可以告诉我您遇到的具体问题。'
-                ];
-                
-                return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
-            },
-            
-            // 加载知识库
-            loadKnowledgeBase: function() {
-                // 添加复习规划知识库
-                this.knowledgeBase = {
-                    studyPlans: [
-                        {
-                            school: "中国海洋大学",
-                            months: [
-                                {
-                                    month: "7月",
-                                    topics: ["流体的物理性质", "本构方程和亥姆霍兹定理", "理想流体动量方程"],
-                                    hours: 4,
-                                    tasks: ["基础回顾", "完成老师交代任务"],
-                                    notes: "任务需保证质量完成"
-                                },
-                                {
-                                    month: "8月",
-                                    topics: ["流体力学方程组", "涡旋运动", "势流理论基础知识"],
-                                    hours: 4,
-                                    tasks: ["基础回顾", "完成老师交代任务"],
-                                    notes: "任务需保证质量完成"
-                                },
-                                {
-                                    month: "9月",
-                                    topics: ["势流理论深化（包括布拉修斯定理）"],
-                                    hours: 2,
-                                    tasks: ["基础回顾", "完成老师交代任务"],
-                                    notes: "任务需保证质量完成，可以开始尝试做真题"
-                                },
-                                {
-                                    month: "10月",
-                                    topics: ["相似原理", "Π定理", "粘性流体理论", "真题讲解"],
-                                    hours: 4,
-                                    tasks: ["做真题", "完成老师交代任务"],
-                                    notes: "任务需保证质量完成"
-                                },
-                                {
-                                    month: "11月",
-                                    topics: ["真题讲解"],
-                                    hours: 4,
-                                    tasks: ["做完真题", "完成老师交代任务"],
-                                    notes: "吃透真题"
-                                },
-                                {
-                                    month: "12月",
-                                    topics: ["串讲真题错题"],
-                                    hours: 2,
-                                    tasks: ["真题回顾", "完成老师交代任务"],
-                                    notes: "吃透真题"
-                                }
-                            ],
-                            tips: [
-                                "需保证质量完成课后任务，9月可以开始尝试做真题",
-                                "不会的真题可以告诉我，微信群讲或课上讲",
-                                "每周至少投入10小时进行专业课复习",
-                                "重点掌握伯努利方程、NS方程和边界层理论",
-                                "复试需同时准备物理海洋学内容"
-                            ]
-                        }
-                    ],
-                    examInfo: {
-                        school: "中国海洋大学",
-                        code: "803",
-                        subject: "流体力学",
-                        sections: [
-                            {
-                                name: "基础理论",
-                                weight: "40%",
-                                topics: ["流体物理性质", "流体运动描述", "基本方程组"]
-                            },
-                            {
-                                name: "理想流体",
-                                weight: "30%",
-                                topics: ["无旋流动", "涡旋运动", "伯努利方程"]
-                            },
-                            {
-                                name: "粘性流体",
-                                weight: "30%",
-                                topics: ["层流流动", "边界层理论", "湍流简介"]
-                            }
-                        ]
-                    },
-                    referenceBooks: {
-                        primary: {
-                            title: "流体力学（第二版）",
-                            author: "吴望一",
-                            press: "北京大学出版社",
-                            year: "2021"
-                        },
-                        secondary: [
-                            {
-                                title: "流体力学（第二版）",
-                                author: "周光炯",
-                                press: "高等教育出版社",
-                                year: "2019"
-                            }
-                        ],
-                        reexam: {
-                            title: "物理海洋学",
-                            author: "董昌明",
-                            press: "科学出版社",
-                            year: "2019"
-                        }
-                    }
-                };
-                console.log('AI助手知识库已加载，包含复习规划信息');
             }
         };
-        
-        // 智能内容推荐系统
-        window.SmartRecommendation = {
-            // 分析用户行为并推荐内容
-            analyzeAndRecommend: function() {
-                const user = currentUser;
-                if (!user) return;
-                
-                const recommendations = this.generateRecommendations(user);
-                this.displayRecommendations(recommendations);
-            },
-            
-            // 生成推荐内容
-            generateRecommendations: function(user) {
-                const recommendations = [];
-                
-                // 基于用户角色推荐
-                if (user.role === 'student') {
-                    recommendations.push({
-                        type: 'video',
-                        title: '推荐视频：流体力学基础',
-                        description: '适合您当前学习阶段的视频内容',
-                        action: () => showSection('videos')
-                    });
-                    
-                    recommendations.push({
-                        type: 'exercise',
-                        title: '练习推荐：基础概念测试',
-                        description: '巩固基础知识的练习题',
-                        action: () => showSection('exercises')
-                    });
-                }
-                
-                return recommendations;
-            },
-            
-            // 显示推荐内容
-            displayRecommendations: function(recommendations) {
-                // 实现推荐内容的显示逻辑
-                if (recommendations.length > 0) {
-                    showToast(`为您推荐了${recommendations.length}个学习内容`, 'info');
-                }
-            }
-        };
-
-        // 开发者彩蛋（仅在本地开发时显示）
-        if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
-            console.log('%c🌊 流体力学学习平台 v2.0.0', 'color: #1e6fa8; font-size: 24px; font-weight: bold;');
-            console.log('%c开发者工具已检测，但这是本地开发环境', 'color: #2c9ab7; font-size: 16px;');
-            console.log('%c输入 SystemChecker.generateReport() 查看系统报告', 'color: #4db8d6; font-size: 14px;');
-            console.log('%c输入 showSystemStatus() 显示系统状态面板', 'color: #4db8d6; font-size: 14px;');
-            console.log('%c输入 AIAssistant.init() 启动AI助手', 'color: #4db8d6; font-size: 14px;');
-        }
         
         // 应用程序启动
         if (document.readyState === 'loading') {
@@ -11604,4 +11264,4 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
         
     </script>
 </body>
-</html> 
+</html>
