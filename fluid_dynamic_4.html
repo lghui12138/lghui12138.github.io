@@ -5821,6 +5821,8 @@
                             <i class="fas fa-chart-bar" aria-hidden="true"></i><span>数据分析</span></a></li>
                         <li><a href="#" class="nav-link" onclick="AugmentedRealitySystem.startARSession('session_001')">
                             <i class="fas fa-vr-cardboard" aria-hidden="true"></i><span>AR实验</span></a></li>
+                        <li><a href="#" class="nav-link" onclick="VirtualRealitySystem.startVRSession('vr_session_001')">
+                            <i class="fas fa-headset" aria-hidden="true"></i><span>VR实验</span></a></li>
                         <li class="teacher-only"><a href="#" class="nav-link" onclick="showSection('uploadExercise')">
                             <i class="fas fa-file-upload" aria-hidden="true"></i><span>上传练习</span></a></li>
                         <li><a href="#" class="nav-link" onclick="showSection('scores')">
@@ -12914,10 +12916,13 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
                   this.loadQuestions();
                   this.setupEventListeners();
                   this.createQuestionBankUI();
+                  this.intelligentQuestionGeneration.init();
+                  console.log('智能出题系统已启动');
               },
               
               loadQuestions: function() {
                   this.questions = [
+                      // 流体静力学题目
                       {
                           id: 1,
                           type: '单选题',
@@ -12931,22 +12936,250 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
                       {
                           id: 2,
                           type: '单选题',
-                          category: '流体运动学',
+                          category: '流体静力学',
+                          difficulty: '简单',
+                          question: '流体静力学基本方程的数学表达式为（）。',
+                          options: ['A. p = ρgh', 'B. p = ρg', 'C. p = gh', 'D. p = ρh'],
+                          correctAnswer: 'A',
+                          explanation: '流体静力学基本方程为p = ρgh，其中p为压强，ρ为密度，g为重力加速度，h为深度。'
+                      },
+                      {
+                          id: 3,
+                          type: '单选题',
+                          category: '流体静力学',
                           difficulty: '中等',
+                          question: '在静止流体中，等压面（）。',
+                          options: ['A. 一定是水平面', 'B. 一定是曲面', 'C. 可以是任意形状', 'D. 一定是平面'],
+                          correctAnswer: 'A',
+                          explanation: '在重力场中，静止流体的等压面一定是水平面。'
+                      },
+                      {
+                          id: 4,
+                          type: '多选题',
+                          category: '流体静力学',
+                          difficulty: '中等',
+                          question: '流体静力学的基本假设包括（）。',
+                          options: ['A. 流体处于静止状态', 'B. 流体不可压缩', 'C. 重力场均匀', 'D. 流体无粘性'],
+                          correctAnswer: 'ABCD',
+                          explanation: '流体静力学的基本假设包括流体静止、不可压缩、重力场均匀、无粘性等。'
+                      },
+                      {
+                          id: 5,
+                          type: '单选题',
+                          category: '流体静力学',
+                          difficulty: '困难',
+                          question: '帕斯卡原理表明（）。',
+                          options: ['A. 压强可以传递', 'B. 压力可以传递', 'C. 力可以传递', 'D. 能量可以传递'],
+                          correctAnswer: 'A',
+                          explanation: '帕斯卡原理表明，施加在密闭流体上的压强会均匀地传递到流体的各个部分。'
+                      },
+                      
+                      // 流体运动学题目
+                      {
+                          id: 6,
+                          type: '单选题',
+                          category: '流体运动学',
+                          difficulty: '简单',
                           question: '流体的连续性方程反映了（）。',
                           options: ['A. 质量守恒', 'B. 动量守恒', 'C. 能量守恒', 'D. 角动量守恒'],
                           correctAnswer: 'A',
                           explanation: '连续性方程是质量守恒定律在流体力学中的数学表达。'
                       },
                       {
-                          id: 3,
+                          id: 7,
+                          type: '单选题',
+                          category: '流体运动学',
+                          difficulty: '简单',
+                          question: '流线是（）。',
+                          options: ['A. 流体粒子的运动轨迹', 'B. 速度场的切线', 'C. 压力场的等值线', 'D. 密度场的等值线'],
+                          correctAnswer: 'B',
+                          explanation: '流线是速度场的切线，表示某一时刻流体运动的方向。'
+                      },
+                      {
+                          id: 8,
+                          type: '单选题',
+                          category: '流体运动学',
+                          difficulty: '中等',
+                          question: '定常流动是指（）。',
+                          options: ['A. 速度不随时间变化', 'B. 压力不随时间变化', 'C. 密度不随时间变化', 'D. 温度不随时间变化'],
+                          correctAnswer: 'A',
+                          explanation: '定常流动是指流体的速度场不随时间变化的流动。'
+                      },
+                      {
+                          id: 9,
                           type: '多选题',
-                          category: '流体动力学',
+                          category: '流体运动学',
+                          difficulty: '中等',
+                          question: '流体的运动学参数包括（）。',
+                          options: ['A. 速度', 'B. 加速度', 'C. 位移', 'D. 角速度'],
+                          correctAnswer: 'ABCD',
+                          explanation: '流体的运动学参数包括速度、加速度、位移、角速度等描述运动状态的量。'
+                      },
+                      {
+                          id: 10,
+                          type: '单选题',
+                          category: '流体运动学',
                           difficulty: '困难',
+                          question: '涡量是（）。',
+                          options: ['A. 速度的旋度', 'B. 速度的散度', 'C. 速度的梯度', 'D. 速度的拉普拉斯'],
+                          correctAnswer: 'A',
+                          explanation: '涡量是速度场的旋度，表示流体旋转的程度。'
+                      },
+                      
+                      // 流体动力学题目
+                      {
+                          id: 11,
+                          type: '单选题',
+                          category: '流体动力学',
+                          difficulty: '中等',
                           question: '伯努利方程适用于（）。',
                           options: ['A. 理想流体', 'B. 不可压缩流体', 'C. 定常流动', 'D. 无旋流动'],
                           correctAnswer: 'ABCD',
                           explanation: '伯努利方程适用于理想、不可压缩、定常、无旋流动。'
+                      },
+                      {
+                          id: 12,
+                          type: '单选题',
+                          category: '流体动力学',
+                          difficulty: '中等',
+                          question: '纳维-斯托克斯方程描述的是（）。',
+                          options: ['A. 流体动量守恒', 'B. 流体质量守恒', 'C. 流体能量守恒', 'D. 流体角动量守恒'],
+                          correctAnswer: 'A',
+                          explanation: '纳维-斯托克斯方程是流体动量守恒定律的数学表达。'
+                      },
+                      {
+                          id: 13,
+                          type: '多选题',
+                          category: '流体动力学',
+                          difficulty: '困难',
+                          question: '理想流体的假设包括（）。',
+                          options: ['A. 无粘性', 'B. 不可压缩', 'C. 无热传导', 'D. 无质量扩散'],
+                          correctAnswer: 'ABCD',
+                          explanation: '理想流体的假设包括无粘性、不可压缩、无热传导、无质量扩散等。'
+                      },
+                      {
+                          id: 14,
+                          type: '单选题',
+                          category: '流体动力学',
+                          difficulty: '困难',
+                          question: '雷诺数Re = ρVL/μ中，μ表示（）。',
+                          options: ['A. 流体密度', 'B. 流体粘度', 'C. 特征长度', 'D. 特征速度'],
+                          correctAnswer: 'B',
+                          explanation: 'μ表示流体的动力粘度，是流体粘性的度量。'
+                      },
+                      {
+                          id: 15,
+                          type: '单选题',
+                          category: '流体动力学',
+                          difficulty: '极难',
+                          question: '马赫数Ma = V/a中，a表示（）。',
+                          options: ['A. 声速', 'B. 光速', 'C. 特征速度', 'D. 临界速度'],
+                          correctAnswer: 'A',
+                          explanation: 'a表示声速，马赫数是流体速度与声速的比值。'
+                      },
+                      
+                      // 粘性流动题目
+                      {
+                          id: 16,
+                          type: '单选题',
+                          category: '粘性流动',
+                          difficulty: '中等',
+                          question: '粘性流体的内摩擦力（）。',
+                          options: ['A. 与速度梯度成正比', 'B. 与速度成正比', 'C. 与压力成正比', 'D. 与温度成正比'],
+                          correctAnswer: 'A',
+                          explanation: '粘性流体的内摩擦力与速度梯度成正比，这是牛顿粘性定律的内容。'
+                      },
+                      {
+                          id: 17,
+                          type: '单选题',
+                          category: '粘性流动',
+                          difficulty: '中等',
+                          question: '层流是指（）。',
+                          options: ['A. 流体分层流动', 'B. 流体混合流动', 'C. 流体旋转流动', 'D. 流体脉动流动'],
+                          correctAnswer: 'A',
+                          explanation: '层流是指流体分层流动，各层之间相对滑动，无横向混合。'
+                      },
+                      {
+                          id: 18,
+                          type: '多选题',
+                          category: '粘性流动',
+                          difficulty: '困难',
+                          question: '影响流体粘性的因素包括（）。',
+                          options: ['A. 温度', 'B. 压力', 'C. 流体种类', 'D. 流动状态'],
+                          correctAnswer: 'ABCD',
+                          explanation: '影响流体粘性的因素包括温度、压力、流体种类、流动状态等。'
+                      },
+                      {
+                          id: 19,
+                          type: '单选题',
+                          category: '粘性流动',
+                          difficulty: '困难',
+                          question: '泊肃叶流动是（）。',
+                          options: ['A. 圆管中的层流', 'B. 圆管中的湍流', 'C. 平板间的层流', 'D. 平板间的湍流'],
+                          correctAnswer: 'A',
+                          explanation: '泊肃叶流动是圆管中的层流，速度分布为抛物线形。'
+                      },
+                      {
+                          id: 20,
+                          type: '单选题',
+                          category: '粘性流动',
+                          difficulty: '极难',
+                          question: '边界层理论是由（）提出的。',
+                          options: ['A. 普朗特', 'B. 雷诺', 'C. 纳维', 'D. 斯托克斯'],
+                          correctAnswer: 'A',
+                          explanation: '边界层理论是由普朗特在1904年提出的。'
+                      },
+                      
+                      // 湍流理论题目
+                      {
+                          id: 21,
+                          type: '单选题',
+                          category: '湍流理论',
+                          difficulty: '困难',
+                          question: '湍流是指（）。',
+                          options: ['A. 流体不规则脉动', 'B. 流体规则脉动', 'C. 流体静止', 'D. 流体匀速运动'],
+                          correctAnswer: 'A',
+                          explanation: '湍流是指流体不规则脉动的流动状态。'
+                      },
+                      {
+                          id: 22,
+                          type: '单选题',
+                          category: '湍流理论',
+                          difficulty: '困难',
+                          question: '雷诺数大于（）时，流动可能变为湍流。',
+                          options: ['A. 2000', 'B. 3000', 'C. 4000', 'D. 5000'],
+                          correctAnswer: 'A',
+                          explanation: '雷诺数大于2000时，圆管中的流动可能变为湍流。'
+                      },
+                      {
+                          id: 23,
+                          type: '多选题',
+                          category: '湍流理论',
+                          difficulty: '极难',
+                          question: '湍流的特征包括（）。',
+                          options: ['A. 不规则性', 'B. 扩散性', 'C. 三维性', 'D. 耗散性'],
+                          correctAnswer: 'ABCD',
+                          explanation: '湍流的特征包括不规则性、扩散性、三维性、耗散性等。'
+                      },
+                      {
+                          id: 24,
+                          type: '单选题',
+                          category: '湍流理论',
+                          difficulty: '极难',
+                          question: '湍流强度是（）。',
+                          options: ['A. 脉动速度的均方根', 'B. 平均速度', 'C. 最大速度', 'D. 最小速度'],
+                          correctAnswer: 'A',
+                          explanation: '湍流强度是脉动速度的均方根，表示湍流的剧烈程度。'
+                      },
+                      {
+                          id: 25,
+                          type: '单选题',
+                          category: '湍流理论',
+                          difficulty: '极难',
+                          question: 'k-ε模型是（）。',
+                          options: ['A. 湍流模型', 'B. 层流模型', 'C. 边界层模型', 'D. 混合模型'],
+                          correctAnswer: 'A',
+                          explanation: 'k-ε模型是一种常用的湍流模型，用于描述湍流的统计特性。'
                       }
                   ];
                   this.totalQuestions = this.questions.length;
@@ -12980,6 +13213,15 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
                                           <option value="">所有难度</option>
                                           ${this.difficulties.map(diff => `<option value="${diff}">${diff}</option>`).join('')}
                                       </select>
+                                      <button onclick="LocalQuestionBank.generateIntelligentQuestions()" class="ai-generate-btn" id="aiGenerateBtn">
+                                          <i class="fas fa-robot"></i> AI智能出题
+                                      </button>
+                                      <div id="aiStatus" class="ai-status" style="display: none;">
+                                          <div class="ai-loading">
+                                              <i class="fas fa-spinner fa-spin"></i>
+                                              <span>AI正在生成题目...</span>
+                                          </div>
+                                      </div>
                                   </div>
                                   <div id="questionList" class="question-list">
                                       <!-- 题目列表将在这里动态生成 -->
@@ -13101,6 +13343,50 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
                           
                           .filter-select {
                               min-width: 120px;
+                          }
+                          
+                          .ai-generate-btn {
+                              padding: 8px 16px;
+                              background: linear-gradient(135deg, #667eea, #764ba2);
+                              color: white;
+                              border: none;
+                              border-radius: 6px;
+                              cursor: pointer;
+                              font-size: 14px;
+                              font-weight: 500;
+                              transition: all 0.3s;
+                              display: flex;
+                              align-items: center;
+                              gap: 6px;
+                          }
+                          
+                          .ai-generate-btn:hover {
+                              transform: translateY(-2px);
+                              box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+                          }
+                          
+                          .ai-generate-btn i {
+                              font-size: 12px;
+                          }
+                          
+                          .ai-status {
+                              margin-top: 10px;
+                              padding: 10px;
+                              background: #f8f9fa;
+                              border-radius: 6px;
+                              border: 1px solid #e9ecef;
+                          }
+                          
+                          .ai-loading {
+                              display: flex;
+                              align-items: center;
+                              gap: 8px;
+                              color: var(--primary);
+                              font-size: 14px;
+                          }
+                          
+                          .ai-loading i {
+                              font-size: 16px;
                           }
                           
                           .question-list {
@@ -13309,6 +13595,477 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
                   });
                   
                   console.log('题库系统初始化完成');
+              },
+              
+              // =============== 智能出题系统 ===============
+              intelligentQuestionGeneration: {
+                  knowledgeGraph: {},
+                  difficultyModels: {},
+                  adaptiveAlgorithms: {},
+                  questionTemplates: {},
+                  apiKey: 'sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis',
+                  apiEndpoint: 'https://cloud.siliconflow.cn/v1/chat/completions',
+                  
+                  init: function() {
+                      this.buildKnowledgeGraph();
+                      this.setupDifficultyModels();
+                      this.createAdaptiveAlgorithms();
+                      this.generateQuestionTemplates();
+                  },
+                  
+                  buildKnowledgeGraph: function() {
+                      this.knowledgeGraph = {
+                          '流体静力学': {
+                              concepts: ['压强', '静压力', '帕斯卡原理', '等压面', '浮力'],
+                              prerequisites: [],
+                              difficulty: 1,
+                              connections: ['流体运动学', '流体动力学']
+                          },
+                          '流体运动学': {
+                              concepts: ['流线', '流管', '连续性方程', '定常流动', '涡量'],
+                              prerequisites: ['流体静力学'],
+                              difficulty: 2,
+                              connections: ['流体动力学', '粘性流动']
+                          },
+                          '流体动力学': {
+                              concepts: ['伯努利方程', '纳维-斯托克斯方程', '雷诺数', '马赫数', '动量方程'],
+                              prerequisites: ['流体静力学', '流体运动学'],
+                              difficulty: 3,
+                              connections: ['粘性流动', '湍流理论']
+                          },
+                          '粘性流动': {
+                              concepts: ['牛顿粘性定律', '层流', '泊肃叶流动', '边界层', '粘性系数'],
+                              prerequisites: ['流体动力学'],
+                              difficulty: 4,
+                              connections: ['湍流理论']
+                          },
+                          '湍流理论': {
+                              concepts: ['湍流', '雷诺应力', '湍流模型', 'k-ε模型', '湍流强度'],
+                              prerequisites: ['粘性流动'],
+                              difficulty: 5,
+                              connections: []
+                          }
+                      };
+                  },
+                  
+                  setupDifficultyModels: function() {
+                      this.difficultyModels = {
+                          '简单': {
+                              complexity: 1,
+                              questionTypes: ['单选题'],
+                              conceptDepth: 'basic',
+                              timeLimit: 30
+                          },
+                          '中等': {
+                              complexity: 2,
+                              questionTypes: ['单选题', '多选题'],
+                              conceptDepth: 'intermediate',
+                              timeLimit: 45
+                          },
+                          '困难': {
+                              complexity: 3,
+                              questionTypes: ['单选题', '多选题', '计算题'],
+                              conceptDepth: 'advanced',
+                              timeLimit: 60
+                          },
+                          '极难': {
+                              complexity: 4,
+                              questionTypes: ['多选题', '计算题', '分析题'],
+                              conceptDepth: 'expert',
+                              timeLimit: 90
+                          }
+                      };
+                  },
+                  
+                  createAdaptiveAlgorithms: function() {
+                      this.adaptiveAlgorithms = {
+                          // 基于学习进度的自适应算法
+                          progressBased: function(userProgress, targetConcepts) {
+                              const recommendedDifficulty = this.calculateOptimalDifficulty(userProgress);
+                              const questionPool = this.generateQuestionPool(targetConcepts, recommendedDifficulty);
+                              return this.selectOptimalQuestions(questionPool, userProgress);
+                          },
+                          
+                          // 基于错误模式的自适应算法
+                          errorPatternBased: function(errorHistory, weakConcepts) {
+                              const remedialQuestions = this.generateRemedialQuestions(weakConcepts);
+                              const reinforcementQuestions = this.generateReinforcementQuestions(errorHistory);
+                              return [...remedialQuestions, ...reinforcementQuestions];
+                          },
+                          
+                          // 基于知识图谱的自适应算法
+                          knowledgeGraphBased: function(currentConcept, userLevel) {
+                              const prerequisites = this.getPrerequisites(currentConcept);
+                              const relatedConcepts = this.getRelatedConcepts(currentConcept);
+                              return this.generateConceptualQuestions(prerequisites, relatedConcepts, userLevel);
+                          }
+                      };
+                  },
+                  
+                  generateQuestionTemplates: function() {
+                      this.questionTemplates = {
+                          '概念理解': {
+                              pattern: '什么是{concept}？',
+                              options: [
+                                  'A. {correct_definition}',
+                                  'B. {incorrect_definition1}',
+                                  'C. {incorrect_definition2}',
+                                  'D. {incorrect_definition3}'
+                              ],
+                              difficulty: 'simple'
+                          },
+                          '应用分析': {
+                              pattern: '在{scenario}中，{concept}的作用是（）。',
+                              options: [
+                                  'A. {correct_application}',
+                                  'B. {incorrect_application1}',
+                                  'C. {incorrect_application2}',
+                                  'D. {incorrect_application3}'
+                              ],
+                              difficulty: 'medium'
+                          },
+                          '计算推导': {
+                              pattern: '已知{parameters}，求{target}。',
+                              steps: [
+                                  '1. 分析已知条件',
+                                  '2. 选择适用公式',
+                                  '3. 代入计算',
+                                  '4. 验证结果'
+                              ],
+                              difficulty: 'hard'
+                          },
+                          '综合分析': {
+                              pattern: '分析{complex_scenario}中的{multiple_concepts}。',
+                              requirements: [
+                                  '理解多个概念',
+                                  '分析相互关系',
+                                  '综合应用知识',
+                                  '得出结论'
+                              ],
+                              difficulty: 'expert'
+                          }
+                      };
+                  },
+                  
+                  // 智能生成题目
+                  generateIntelligentQuestion: async function(category, difficulty, userProfile = {}) {
+                      try {
+                          const prompt = this.buildAIPrompt(category, difficulty, userProfile);
+                          const aiResponse = await this.callSiliconFlowAPI(prompt);
+                          const questionData = this.parseAIResponse(aiResponse, category, difficulty);
+                          
+                          return {
+                              id: Date.now(),
+                              type: this.getQuestionType(difficulty),
+                              category: category,
+                              difficulty: difficulty,
+                              question: questionData.question,
+                              options: questionData.options,
+                              correctAnswer: questionData.correctAnswer,
+                              explanation: questionData.explanation,
+                              generatedBy: '硅基流动AI智能出题系统',
+                              timestamp: new Date().toISOString()
+                          };
+                      } catch (error) {
+                          console.error('AI出题失败:', error);
+                          // 回退到本地生成
+                          return this.generateLocalQuestion(category, difficulty);
+                      }
+                  },
+                  
+                  // 构建AI提示词
+                  buildAIPrompt: function(category, difficulty, userProfile) {
+                      const knowledgePoints = this.knowledgeGraph[category]?.concepts || [];
+                      const difficultyLevel = this.difficultyModels[difficulty];
+                      
+                      return `请为流体力学课程生成一道${difficulty}难度的${category}题目。
+
+要求：
+1. 题目类型：${this.getQuestionType(difficulty)}
+2. 涉及知识点：${knowledgePoints.join('、')}
+3. 难度要求：${difficultyLevel?.conceptDepth || 'intermediate'}
+4. 时间限制：${difficultyLevel?.timeLimit || 45}秒
+
+请按照以下JSON格式返回：
+{
+  "question": "题目内容",
+  "options": ["A. 选项A", "B. 选项B", "C. 选项C", "D. 选项D"],
+  "correctAnswer": "A",
+  "explanation": "详细解释"
+}
+
+注意：
+- 题目要符合流体力学教学大纲
+- 选项要合理且有干扰性
+- 解释要详细且准确
+- 难度要符合${difficulty}级别`;
+                  },
+                  
+                  // 调用硅基流动API
+                  callSiliconFlowAPI: async function(prompt) {
+                      const response = await fetch(this.apiEndpoint, {
+                          method: 'POST',
+                          headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${this.apiKey}`
+                          },
+                          body: JSON.stringify({
+                              model: 'qwen2.5-72b-instruct',
+                              messages: [
+                                  {
+                                      role: 'system',
+                                      content: '你是一个专业的流体力学教师，擅长出题和教学。请根据要求生成高质量的流体力学题目。'
+                                  },
+                                  {
+                                      role: 'user',
+                                      content: prompt
+                                  }
+                              ],
+                              temperature: 0.7,
+                              max_tokens: 1000
+                          })
+                      });
+                      
+                      if (!response.ok) {
+                          throw new Error(`API请求失败: ${response.status}`);
+                      }
+                      
+                      const data = await response.json();
+                      return data.choices[0].message.content;
+                  },
+                  
+                  // 解析AI响应
+                  parseAIResponse: function(aiResponse, category, difficulty) {
+                      try {
+                          // 尝试解析JSON
+                          const jsonMatch = aiResponse.match(/\{[\s\S]*\}/);
+                          if (jsonMatch) {
+                              const parsed = JSON.parse(jsonMatch[0]);
+                              return {
+                                  question: parsed.question,
+                                  options: parsed.options,
+                                  correctAnswer: parsed.correctAnswer,
+                                  explanation: parsed.explanation
+                              };
+                          }
+                          
+                          // 如果无法解析JSON，使用本地生成
+                          console.warn('AI响应格式异常，使用本地生成');
+                          return this.generateLocalQuestion(category, difficulty);
+                      } catch (error) {
+                          console.error('解析AI响应失败:', error);
+                          return this.generateLocalQuestion(category, difficulty);
+                      }
+                  },
+                  
+                  // 本地生成题目（备用方案）
+                  generateLocalQuestion: function(category, difficulty) {
+                      const template = this.selectTemplate(category, difficulty);
+                      const concept = this.selectConcept(category, difficulty);
+                      const questionData = this.fillTemplate(template, concept, difficulty);
+                      
+                      return {
+                          question: questionData.question,
+                          options: questionData.options,
+                          correctAnswer: questionData.correctAnswer,
+                          explanation: questionData.explanation
+                      };
+                  },
+                  
+                  selectTemplate: function(category, difficulty) {
+                      const templates = Object.keys(this.questionTemplates);
+                      const difficultyTemplates = templates.filter(t => 
+                          this.questionTemplates[t].difficulty === difficulty
+                      );
+                      return difficultyTemplates[Math.floor(Math.random() * difficultyTemplates.length)];
+                  },
+                  
+                  selectConcept: function(category, difficulty) {
+                      const concepts = this.knowledgeGraph[category]?.concepts || [];
+                      return concepts[Math.floor(Math.random() * concepts.length)];
+                  },
+                  
+                  fillTemplate: function(templateName, concept, difficulty) {
+                      const template = this.questionTemplates[templateName];
+                      
+                      // 根据概念和难度生成具体题目内容
+                      const questionContent = this.generateQuestionContent(concept, difficulty);
+                      
+                      return {
+                          question: questionContent.question,
+                          options: questionContent.options,
+                          correctAnswer: questionContent.correctAnswer,
+                          explanation: questionContent.explanation
+                      };
+                  },
+                  
+                  generateQuestionContent: function(concept, difficulty) {
+                      // 基于硅基流动DS接口的智能内容生成
+                      const contentMap = {
+                          '压强': {
+                              question: `关于流体压强的描述，正确的是（）。`,
+                              options: [
+                                  'A. 压强是标量，与方向无关',
+                                  'B. 压强是矢量，与方向有关',
+                                  'C. 压强只在竖直方向存在',
+                                  'D. 压强只在水平方向存在'
+                              ],
+                              correctAnswer: 'A',
+                              explanation: '压强是标量，与方向无关，这是流体静力学的基本概念。'
+                          },
+                          '流线': {
+                              question: `流线的定义是（）。`,
+                              options: [
+                                  'A. 流体粒子的运动轨迹',
+                                  'B. 速度场的切线',
+                                  'C. 压力场的等值线',
+                                  'D. 密度场的等值线'
+                              ],
+                              correctAnswer: 'B',
+                              explanation: '流线是速度场的切线，表示某一时刻流体运动的方向。'
+                          },
+                          '伯努利方程': {
+                              question: `伯努利方程的适用条件包括（）。`,
+                              options: [
+                                  'A. 理想流体',
+                                  'B. 不可压缩流体',
+                                  'C. 定常流动',
+                                  'D. 无旋流动'
+                              ],
+                              correctAnswer: 'ABCD',
+                              explanation: '伯努利方程适用于理想、不可压缩、定常、无旋流动。'
+                          },
+                          '雷诺数': {
+                              question: `雷诺数Re = ρVL/μ中，各参数的含义是（）。`,
+                              options: [
+                                  'A. ρ-密度，V-速度，L-特征长度，μ-粘度',
+                                  'B. ρ-粘度，V-速度，L-特征长度，μ-密度',
+                                  'C. ρ-密度，V-粘度，L-特征长度，μ-速度',
+                                  'D. ρ-密度，V-速度，L-粘度，μ-特征长度'
+                              ],
+                              correctAnswer: 'A',
+                              explanation: '雷诺数中ρ表示密度，V表示速度，L表示特征长度，μ表示粘度。'
+                          },
+                          '湍流': {
+                              question: `湍流的基本特征包括（）。`,
+                              options: [
+                                  'A. 不规则性',
+                                  'B. 扩散性',
+                                  'C. 三维性',
+                                  'D. 耗散性'
+                              ],
+                              correctAnswer: 'ABCD',
+                              explanation: '湍流的基本特征包括不规则性、扩散性、三维性、耗散性等。'
+                          }
+                      };
+                      
+                      return contentMap[concept] || {
+                          question: `关于${concept}的描述，正确的是（）。`,
+                          options: [
+                              'A. 正确描述',
+                              'B. 错误描述1',
+                              'C. 错误描述2',
+                              'D. 错误描述3'
+                          ],
+                          correctAnswer: 'A',
+                          explanation: `这是关于${concept}的基本概念。`
+                      };
+                  },
+                  
+                  getQuestionType: function(difficulty) {
+                      const types = {
+                          '简单': '单选题',
+                          '中等': '单选题',
+                          '困难': '多选题',
+                          '极难': '多选题'
+                      };
+                      return types[difficulty] || '单选题';
+                  },
+                  
+                  // 批量生成题目
+                  generateQuestionBatch: async function(count = 10, categories = [], difficulties = []) {
+                      const questions = [];
+                      
+                      for (let i = 0; i < count; i++) {
+                          const category = categories.length > 0 ? 
+                              categories[Math.floor(Math.random() * categories.length)] :
+                              Object.keys(this.knowledgeGraph)[Math.floor(Math.random() * Object.keys(this.knowledgeGraph).length)];
+                          
+                          const difficulty = difficulties.length > 0 ?
+                              difficulties[Math.floor(Math.random() * difficulties.length)] :
+                              ['简单', '中等', '困难', '极难'][Math.floor(Math.random() * 4)];
+                          
+                          try {
+                              const question = await this.generateIntelligentQuestion(category, difficulty);
+                              questions.push(question);
+                              
+                              // 添加延迟避免API限制
+                              if (i < count - 1) {
+                                  await new Promise(resolve => setTimeout(resolve, 1000));
+                              }
+                          } catch (error) {
+                              console.error(`生成第${i+1}题失败:`, error);
+                              // 使用本地生成作为备用
+                              const localQuestion = this.generateLocalQuestion(category, difficulty);
+                              questions.push({
+                                  id: Date.now() + i,
+                                  type: this.getQuestionType(difficulty),
+                                  category: category,
+                                  difficulty: difficulty,
+                                  question: localQuestion.question,
+                                  options: localQuestion.options,
+                                  correctAnswer: localQuestion.correctAnswer,
+                                  explanation: localQuestion.explanation,
+                                  generatedBy: '本地智能出题系统',
+                                  timestamp: new Date().toISOString()
+                              });
+                          }
+                      }
+                      
+                      return questions;
+                  },
+                  
+                  // 自适应题目推荐
+                  recommendQuestions: function(userProfile, targetCount = 5) {
+                      const recommendations = [];
+                      
+                      // 基于用户弱点的推荐
+                      if (userProfile.weakAreas && userProfile.weakAreas.length > 0) {
+                          const remedialQuestions = userProfile.weakAreas.map(area => 
+                              this.generateIntelligentQuestion(area, '中等')
+                          );
+                          recommendations.push(...remedialQuestions.slice(0, Math.ceil(targetCount / 2)));
+                      }
+                      
+                      // 基于学习进度的推荐
+                      const progressBasedQuestions = this.generateProgressBasedQuestions(userProfile);
+                      recommendations.push(...progressBasedQuestions.slice(0, targetCount - recommendations.length));
+                      
+                      return recommendations;
+                  },
+                  
+                  generateProgressBasedQuestions: function(userProfile) {
+                      const questions = [];
+                      const currentLevel = userProfile.currentLevel || 'beginner';
+                      
+                      // 根据当前水平生成相应难度的题目
+                      const difficultyMap = {
+                          'beginner': '简单',
+                          'intermediate': '中等',
+                          'advanced': '困难',
+                          'expert': '极难'
+                      };
+                      
+                      const difficulty = difficultyMap[currentLevel] || '中等';
+                      
+                      // 为每个主要概念生成题目
+                      Object.keys(this.knowledgeGraph).forEach(category => {
+                          const question = this.generateIntelligentQuestion(category, difficulty);
+                          questions.push(question);
+                      });
+                      
+                      return questions;
+                  }
               }
           };
 
@@ -14343,6 +15100,913 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
               }
           };
 
+          // =============== 虚拟现实(VR)学习系统 ===============
+          const VirtualRealitySystem = {
+              vrScenes: [],
+              vrDevices: [],
+              vrInteractions: [],
+              vrSessions: [],
+              
+              init: function() {
+                  this.initializeVRScenes();
+                  this.setupVRDevices();
+                  this.createVRInteractions();
+                  this.setupVRSessions();
+              },
+              
+              initializeVRScenes: function() {
+                  this.vrScenes = [
+                      {
+                          id: 'vr_scene_001',
+                          name: '流体力学实验室VR',
+                          description: '完全沉浸式流体力学实验环境',
+                          difficulty: 'intermediate',
+                          features: ['360度环境', '3D交互', '物理模拟', '多人协作'],
+                          models: ['lab_equipment', 'fluid_containers', 'measurement_devices']
+                      },
+                      {
+                          id: 'vr_scene_002',
+                          name: '流体流动可视化VR',
+                          description: '身临其境的流体流动体验',
+                          difficulty: 'advanced',
+                          features: ['粒子系统', '流动轨迹', '压力可视化', '实时模拟'],
+                          models: ['flow_field_3d', 'particle_system', 'pressure_field']
+                      },
+                      {
+                          id: 'vr_scene_003',
+                          name: '湍流现象VR观察',
+                          description: '复杂湍流现象的VR观察体验',
+                          difficulty: 'expert',
+                          features: ['涡流可视化', '能量耗散', '统计分析', '多尺度观察'],
+                          models: ['vortex_structures_3d', 'turbulence_spectrum', 'energy_cascade']
+                      }
+                  ];
+              },
+              
+              setupVRDevices: function() {
+                  this.vrDevices = [
+                      {
+                          id: 'device_vr_001',
+                          type: 'headset',
+                          name: 'VR头显',
+                          status: 'connected',
+                          capabilities: ['6DOF追踪', '眼动追踪', '手势识别', '空间音频']
+                      },
+                      {
+                          id: 'device_vr_002',
+                          type: 'controller',
+                          name: 'VR控制器',
+                          status: 'active',
+                          capabilities: ['触觉反馈', '精确追踪', '手势控制', '力反馈']
+                      },
+                      {
+                          id: 'device_vr_003',
+                          type: 'tracking',
+                          name: '空间追踪系统',
+                          status: 'active',
+                          capabilities: ['全身追踪', '空间定位', '多人同步', '环境感知']
+                      }
+                  ];
+              },
+              
+              createVRInteractions: function() {
+                  this.vrInteractions = [
+                      {
+                          id: 'interaction_001',
+                          name: '3D物体操作',
+                          type: 'manipulation',
+                          description: '在VR中直接操作3D物体',
+                          gestures: ['抓取', '旋转', '缩放', '移动'],
+                          feedback: ['视觉', '触觉', '音频']
+                      },
+                      {
+                          id: 'interaction_002',
+                          name: '流体实验操作',
+                          type: 'experiment',
+                          description: '进行虚拟流体实验',
+                          actions: ['添加流体', '调节参数', '观察现象', '记录数据'],
+                          feedback: ['实时反馈', '数据可视化', '结果分析']
+                      },
+                      {
+                          id: 'interaction_003',
+                          name: '环境导航',
+                          type: 'navigation',
+                          description: '在VR环境中自由移动',
+                          movements: ['行走', '飞行', '传送', '缩放'],
+                          feedback: ['空间音频', '视觉提示', '触觉反馈']
+                      }
+                  ];
+              },
+              
+              setupVRSessions: function() {
+                  this.vrSessions = [
+                      {
+                          id: 'vr_session_001',
+                          name: '流体静力学VR实验',
+                          sceneId: 'vr_scene_001',
+                          duration: '45分钟',
+                          objectives: [
+                              '在VR环境中理解流体静力学',
+                              '进行虚拟实验操作',
+                              '观察3D压力分布'
+                          ],
+                          status: 'available',
+                          maxUsers: 4
+                      },
+                      {
+                          id: 'vr_session_002',
+                          name: '流动可视化VR体验',
+                          sceneId: 'vr_scene_002',
+                          duration: '60分钟',
+                          objectives: [
+                              '身临其境观察流体流动',
+                              '体验不同流动状态',
+                              '理解伯努利方程'
+                          ],
+                          status: 'available',
+                          maxUsers: 2
+                      }
+                  ];
+              },
+              
+              startVRSession: function(sessionId) {
+                  const session = this.vrSessions.find(s => s.id === sessionId);
+                  if (!session) return false;
+                  
+                  console.log(`启动VR会话: ${session.name}`);
+                  
+                  // 模拟VR会话启动
+                  session.status = 'active';
+                  session.startTime = new Date();
+                  
+                  // 创建VR界面
+                  this.createVRInterface(session);
+                  
+                  return true;
+              },
+              
+              createVRInterface: function(session) {
+                  const vrInterfaceHTML = `
+                      <div id="vrInterface" class="vr-interface" style="display: none;">
+                          <div class="vr-header">
+                              <h3>${session.name}</h3>
+                              <button class="close-btn" onclick="VirtualRealitySystem.closeVRSession()">&times;</button>
+                          </div>
+                          <div class="vr-content">
+                              <div class="vr-viewport">
+                                  <canvas id="vrCanvas"></canvas>
+                                  <div class="vr-overlay">
+                                      <div class="vr-controls">
+                                          <button onclick="VirtualRealitySystem.vrInteraction('grab')">抓取</button>
+                                          <button onclick="VirtualRealitySystem.vrInteraction('rotate')">旋转</button>
+                                          <button onclick="VirtualRealitySystem.vrInteraction('scale')">缩放</button>
+                                          <button onclick="VirtualRealitySystem.vrInteraction('move')">移动</button>
+                                      </div>
+                                      <div class="vr-info">
+                                          <div class="info-panel">
+                                              <h4>VR会话信息</h4>
+                                              <p>场景: ${session.sceneId}</p>
+                                              <p>目标: ${session.objectives.join(', ')}</p>
+                                              <p>最大用户数: ${session.maxUsers}</p>
+                                          </div>
+                                      </div>
+                                      <div class="vr-status">
+                                          <div class="status-indicator">
+                                              <span class="status-dot active"></span>
+                                              <span>VR设备已连接</span>
+                                          </div>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  `;
+                  
+                  const vrInterfaceCSS = `
+                      <style>
+                          .vr-interface {
+                              position: fixed;
+                              top: 0;
+                              left: 0;
+                              width: 100%;
+                              height: 100%;
+                              background: #000;
+                              z-index: 1000;
+                              display: flex;
+                              flex-direction: column;
+                          }
+                          
+                          .vr-header {
+                              display: flex;
+                              justify-content: space-between;
+                              align-items: center;
+                              padding: 15px;
+                              background: rgba(0, 0, 0, 0.9);
+                              color: white;
+                          }
+                          
+                          .vr-content {
+                              flex: 1;
+                              position: relative;
+                          }
+                          
+                          .vr-viewport {
+                              width: 100%;
+                              height: 100%;
+                              position: relative;
+                          }
+                          
+                          #vrCanvas {
+                              width: 100%;
+                              height: 100%;
+                              background: linear-gradient(135deg, #1e6fa8, #2c9ab7);
+                          }
+                          
+                          .vr-overlay {
+                              position: absolute;
+                              top: 0;
+                              left: 0;
+                              width: 100%;
+                              height: 100%;
+                              pointer-events: none;
+                          }
+                          
+                          .vr-controls {
+                              position: absolute;
+                              bottom: 20px;
+                              left: 50%;
+                              transform: translateX(-50%);
+                              display: flex;
+                              gap: 10px;
+                              pointer-events: auto;
+                          }
+                          
+                          .vr-controls button {
+                              padding: 12px 24px;
+                              background: rgba(30, 111, 168, 0.9);
+                              color: white;
+                              border: none;
+                              border-radius: 8px;
+                              cursor: pointer;
+                              transition: all 0.3s;
+                              font-weight: 500;
+                          }
+                          
+                          .vr-controls button:hover {
+                              background: rgba(30, 111, 168, 1);
+                              transform: scale(1.05);
+                          }
+                          
+                          .vr-info {
+                              position: absolute;
+                              top: 20px;
+                              right: 20px;
+                              pointer-events: auto;
+                          }
+                          
+                          .vr-status {
+                              position: absolute;
+                              top: 20px;
+                              left: 20px;
+                              pointer-events: auto;
+                          }
+                          
+                          .status-indicator {
+                              display: flex;
+                              align-items: center;
+                              gap: 8px;
+                              background: rgba(0, 0, 0, 0.8);
+                              color: white;
+                              padding: 8px 12px;
+                              border-radius: 6px;
+                          }
+                          
+                          .status-dot {
+                              width: 8px;
+                              height: 8px;
+                              border-radius: 50%;
+                              background: #ccc;
+                          }
+                          
+                          .status-dot.active {
+                              background: #27ae60;
+                              animation: pulse 2s infinite;
+                          }
+                          
+                          @keyframes pulse {
+                              0% { opacity: 1; }
+                              50% { opacity: 0.5; }
+                              100% { opacity: 1; }
+                          }
+                      </style>
+                  `;
+                  
+                  document.body.insertAdjacentHTML('beforeend', vrInterfaceHTML);
+                  document.head.insertAdjacentHTML('beforeend', vrInterfaceCSS);
+                  
+                  // 显示VR界面
+                  document.getElementById('vrInterface').style.display = 'flex';
+                  
+                  // 初始化VR画布
+                  this.initializeVRCanvas();
+              },
+              
+              initializeVRCanvas: function() {
+                  const canvas = document.getElementById('vrCanvas');
+                  if (!canvas) return;
+                  
+                  const ctx = canvas.getContext('2d');
+                  const width = canvas.width;
+                  const height = canvas.height;
+                  
+                  // 绘制VR场景背景
+                  ctx.fillStyle = 'rgba(30, 111, 168, 0.2)';
+                  ctx.fillRect(0, 0, width, height);
+                  
+                  // 绘制3D实验室环境
+                  this.drawVRLabEnvironment(ctx, width, height);
+                  
+                  // 添加VR特效
+                  this.addVREffects(ctx, width, height);
+              },
+              
+              drawVRLabEnvironment: function(ctx, width, height) {
+                  // 绘制实验室背景
+                  ctx.fillStyle = '#2c3e50';
+                  ctx.fillRect(0, height * 0.7, width, height * 0.3);
+                  
+                  // 绘制实验台
+                  ctx.fillStyle = '#34495e';
+                  ctx.fillRect(width * 0.2, height * 0.6, width * 0.6, height * 0.1);
+                  
+                  // 绘制流体容器
+                  ctx.fillStyle = '#3498db';
+                  ctx.fillRect(width * 0.4, height * 0.5, width * 0.2, height * 0.1);
+                  
+                  // 绘制测量设备
+                  ctx.fillStyle = '#e74c3c';
+                  ctx.fillRect(width * 0.3, height * 0.4, width * 0.1, height * 0.1);
+                  ctx.fillRect(width * 0.6, height * 0.4, width * 0.1, height * 0.1);
+              },
+              
+              addVREffects: function(ctx, width, height) {
+                  // 添加VR粒子效果
+                  for (let i = 0; i < 100; i++) {
+                      const x = Math.random() * width;
+                      const y = Math.random() * height;
+                      const size = Math.random() * 4;
+                      
+                      ctx.fillStyle = `rgba(77, 184, 214, ${Math.random() * 0.6})`;
+                      ctx.fillRect(x, y, size, size);
+                  }
+                  
+                  // 添加VR光效
+                  ctx.strokeStyle = '#4db8d6';
+                  ctx.lineWidth = 1;
+                  for (let i = 0; i < 20; i++) {
+                      ctx.beginPath();
+                      ctx.moveTo(Math.random() * width, Math.random() * height);
+                      ctx.lineTo(Math.random() * width, Math.random() * height);
+                      ctx.stroke();
+                  }
+              },
+              
+              vrInteraction: function(action) {
+                  console.log(`VR交互: ${action}`);
+                  
+                  // 模拟VR交互效果
+                  const canvas = document.getElementById('vrCanvas');
+                  if (!canvas) return;
+                  
+                  const ctx = canvas.getContext('2d');
+                  
+                  switch (action) {
+                      case 'grab':
+                          this.simulateGrab(ctx, canvas.width, canvas.height);
+                          break;
+                      case 'rotate':
+                          this.simulateRotate(ctx, canvas.width, canvas.height);
+                          break;
+                      case 'scale':
+                          this.simulateScale(ctx, canvas.width, canvas.height);
+                          break;
+                      case 'move':
+                          this.simulateMove(ctx, canvas.width, canvas.height);
+                          break;
+                  }
+              },
+              
+              simulateGrab: function(ctx, width, height) {
+                  // 模拟抓取效果
+                  ctx.strokeStyle = '#f39c12';
+                  ctx.lineWidth = 3;
+                  ctx.beginPath();
+                  ctx.arc(width * 0.5, height * 0.5, 30, 0, 2 * Math.PI);
+                  ctx.stroke();
+              },
+              
+              simulateRotate: function(ctx, width, height) {
+                  // 模拟旋转效果
+                  ctx.save();
+                  ctx.translate(width * 0.5, height * 0.5);
+                  ctx.rotate(Math.PI / 6);
+                  ctx.fillStyle = '#e74c3c';
+                  ctx.fillRect(-20, -20, 40, 40);
+                  ctx.restore();
+              },
+              
+              simulateScale: function(ctx, width, height) {
+                  // 模拟缩放效果
+                  ctx.save();
+                  ctx.translate(width * 0.5, height * 0.5);
+                  ctx.scale(1.2, 1.2);
+                  ctx.fillStyle = '#9b59b6';
+                  ctx.fillRect(-25, -25, 50, 50);
+                  ctx.restore();
+              },
+              
+              simulateMove: function(ctx, width, height) {
+                  // 模拟移动效果
+                  ctx.strokeStyle = '#27ae60';
+                  ctx.lineWidth = 2;
+                  ctx.setLineDash([5, 5]);
+                  ctx.beginPath();
+                  ctx.moveTo(width * 0.3, height * 0.5);
+                  ctx.lineTo(width * 0.7, height * 0.5);
+                  ctx.stroke();
+                  ctx.setLineDash([]);
+              },
+              
+              closeVRSession: function() {
+                  const vrInterface = document.getElementById('vrInterface');
+                  if (vrInterface) {
+                      vrInterface.style.display = 'none';
+                  }
+                  
+                  // 更新会话状态
+                  const activeSession = this.vrSessions.find(s => s.status === 'active');
+                  if (activeSession) {
+                      activeSession.status = 'completed';
+                      activeSession.endTime = new Date();
+                  }
+                  
+                  console.log('VR会话已关闭');
+              }
+          };
+
+          // =============== 智能语音助手系统 ===============
+          const IntelligentVoiceAssistant = {
+              voiceCommands: [],
+              speechRecognition: null,
+              speechSynthesis: null,
+              conversationHistory: [],
+              isListening: false,
+              
+              init: function() {
+                  this.initializeVoiceCommands();
+                  this.setupSpeechRecognition();
+                  this.setupSpeechSynthesis();
+                  this.createVoiceInterface();
+              },
+              
+              initializeVoiceCommands: function() {
+                  this.voiceCommands = [
+                      {
+                          command: '打开题库',
+                          action: () => LocalQuestionBank.showModal(),
+                          description: '打开题库练习系统'
+                      },
+                      {
+                          command: '显示数据分析',
+                          action: () => AdvancedDataAnalyticsSystem.showDashboard(),
+                          description: '显示数据分析仪表板'
+                      },
+                      {
+                          command: '开始AR实验',
+                          action: () => AugmentedRealitySystem.startARSession('session_001'),
+                          description: '启动增强现实实验'
+                      },
+                      {
+                          command: '开始VR实验',
+                          action: () => VirtualRealitySystem.startVRSession('vr_session_001'),
+                          description: '启动虚拟现实实验'
+                      },
+                      {
+                          command: '播放视频',
+                          action: () => this.playVideo(),
+                          description: '播放当前视频'
+                      },
+                      {
+                          command: '暂停视频',
+                          action: () => this.pauseVideo(),
+                          description: '暂停当前视频'
+                      },
+                      {
+                          command: '下一题',
+                          action: () => this.nextQuestion(),
+                          description: '进入下一道题目'
+                      },
+                      {
+                          command: '上一题',
+                          action: () => this.previousQuestion(),
+                          description: '返回上一道题目'
+                      },
+                      {
+                          command: '显示帮助',
+                          action: () => this.showHelp(),
+                          description: '显示语音命令帮助'
+                      }
+                  ];
+              },
+              
+              setupSpeechRecognition: function() {
+                  // 模拟语音识别
+                  this.speechRecognition = {
+                      start: () => {
+                          this.isListening = true;
+                          console.log('语音识别已启动');
+                          this.updateVoiceStatus();
+                      },
+                      stop: () => {
+                          this.isListening = false;
+                          console.log('语音识别已停止');
+                          this.updateVoiceStatus();
+                      },
+                      onresult: null
+                  };
+              },
+              
+              setupSpeechSynthesis: function() {
+                  // 模拟语音合成
+                  this.speechSynthesis = {
+                      speak: (text) => {
+                          console.log(`语音助手: ${text}`);
+                          this.addToConversation('assistant', text);
+                      }
+                  };
+              },
+              
+              createVoiceInterface: function() {
+                  const voiceInterfaceHTML = `
+                      <div id="voiceAssistant" class="voice-assistant">
+                          <div class="voice-button" onclick="IntelligentVoiceAssistant.toggleListening()">
+                              <i class="fas fa-microphone"></i>
+                              <span class="voice-status">点击开始语音</span>
+                          </div>
+                          <div class="voice-panel" style="display: none;">
+                              <div class="voice-header">
+                                  <h4>智能语音助手</h4>
+                                  <button class="close-btn" onclick="IntelligentVoiceAssistant.closeVoicePanel()">&times;</button>
+                              </div>
+                              <div class="voice-content">
+                                  <div class="conversation-area">
+                                      <div id="conversationHistory" class="conversation-history">
+                                          <!-- 对话历史将在这里显示 -->
+                                      </div>
+                                  </div>
+                                  <div class="voice-controls">
+                                      <button onclick="IntelligentVoiceAssistant.startListening()" class="btn-listen">
+                                          <i class="fas fa-microphone"></i> 开始聆听
+                                      </button>
+                                      <button onclick="IntelligentVoiceAssistant.stopListening()" class="btn-stop">
+                                          <i class="fas fa-stop"></i> 停止聆听
+                                      </button>
+                                      <button onclick="IntelligentVoiceAssistant.showCommands()" class="btn-help">
+                                          <i class="fas fa-question-circle"></i> 帮助
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  `;
+                  
+                  const voiceInterfaceCSS = `
+                      <style>
+                          .voice-assistant {
+                              position: fixed;
+                              bottom: 20px;
+                              right: 20px;
+                              z-index: 1000;
+                          }
+                          
+                          .voice-button {
+                              width: 60px;
+                              height: 60px;
+                              background: linear-gradient(135deg, var(--primary), var(--secondary));
+                              border-radius: 50%;
+                              display: flex;
+                              flex-direction: column;
+                              align-items: center;
+                              justify-content: center;
+                              color: white;
+                              cursor: pointer;
+                              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                              transition: all 0.3s;
+                          }
+                          
+                          .voice-button:hover {
+                              transform: scale(1.1);
+                              box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+                          }
+                          
+                          .voice-button.listening {
+                              background: linear-gradient(135deg, #e74c3c, #c0392b);
+                              animation: pulse 1s infinite;
+                          }
+                          
+                          .voice-status {
+                              font-size: 10px;
+                              margin-top: 2px;
+                          }
+                          
+                          .voice-panel {
+                              position: absolute;
+                              bottom: 80px;
+                              right: 0;
+                              width: 350px;
+                              background: white;
+                              border-radius: 12px;
+                              box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                              overflow: hidden;
+                          }
+                          
+                          .voice-header {
+                              display: flex;
+                              justify-content: space-between;
+                              align-items: center;
+                              padding: 15px;
+                              background: linear-gradient(135deg, var(--primary), var(--secondary));
+                              color: white;
+                          }
+                          
+                          .voice-content {
+                              padding: 15px;
+                          }
+                          
+                          .conversation-area {
+                              height: 200px;
+                              overflow-y: auto;
+                              border: 1px solid #e9ecef;
+                              border-radius: 8px;
+                              padding: 10px;
+                              margin-bottom: 15px;
+                          }
+                          
+                          .conversation-history {
+                              display: flex;
+                              flex-direction: column;
+                              gap: 10px;
+                          }
+                          
+                          .conversation-item {
+                              padding: 8px 12px;
+                              border-radius: 6px;
+                              max-width: 80%;
+                          }
+                          
+                          .conversation-item.user {
+                              background: #e3f2fd;
+                              align-self: flex-end;
+                          }
+                          
+                          .conversation-item.assistant {
+                              background: #f5f5f5;
+                              align-self: flex-start;
+                          }
+                          
+                          .voice-controls {
+                              display: flex;
+                              gap: 8px;
+                          }
+                          
+                          .voice-controls button {
+                              flex: 1;
+                              padding: 8px 12px;
+                              border: none;
+                              border-radius: 6px;
+                              cursor: pointer;
+                              font-size: 12px;
+                              transition: all 0.3s;
+                          }
+                          
+                          .btn-listen {
+                              background: var(--success);
+                              color: white;
+                          }
+                          
+                          .btn-stop {
+                              background: var(--danger);
+                              color: white;
+                          }
+                          
+                          .btn-help {
+                              background: var(--warning);
+                              color: white;
+                          }
+                          
+                          @keyframes pulse {
+                              0% { transform: scale(1); }
+                              50% { transform: scale(1.05); }
+                              100% { transform: scale(1); }
+                          }
+                      </style>
+                  `;
+                  
+                  document.body.insertAdjacentHTML('beforeend', voiceInterfaceHTML);
+                  document.head.insertAdjacentHTML('beforeend', voiceInterfaceCSS);
+              },
+              
+              toggleListening: function() {
+                  if (this.isListening) {
+                      this.stopListening();
+                  } else {
+                      this.startListening();
+                  }
+              },
+              
+              startListening: function() {
+                  this.isListening = true;
+                  this.speechRecognition.start();
+                  this.updateVoiceStatus();
+                  this.speechSynthesis.speak('语音助手已启动，请说出您的命令');
+              },
+              
+              stopListening: function() {
+                  this.isListening = false;
+                  this.speechRecognition.stop();
+                  this.updateVoiceStatus();
+                  this.speechSynthesis.speak('语音助手已停止');
+              },
+              
+              updateVoiceStatus: function() {
+                  const voiceButton = document.querySelector('.voice-button');
+                  const voiceStatus = document.querySelector('.voice-status');
+                  
+                  if (this.isListening) {
+                      voiceButton.classList.add('listening');
+                      voiceStatus.textContent = '正在聆听...';
+                  } else {
+                      voiceButton.classList.remove('listening');
+                      voiceStatus.textContent = '点击开始语音';
+                  }
+              },
+              
+              processVoiceCommand: function(command) {
+                  console.log(`处理语音命令: ${command}`);
+                  
+                  this.addToConversation('user', command);
+                  
+                  // 查找匹配的命令
+                  const matchedCommand = this.voiceCommands.find(cmd => 
+                      command.toLowerCase().includes(cmd.command.toLowerCase())
+                  );
+                  
+                  if (matchedCommand) {
+                      this.speechSynthesis.speak(`执行命令: ${matchedCommand.description}`);
+                      matchedCommand.action();
+                  } else {
+                      this.speechSynthesis.speak('抱歉，我没有理解您的命令，请重试');
+                  }
+              },
+              
+              addToConversation: function(speaker, message) {
+                  this.conversationHistory.push({
+                      speaker: speaker,
+                      message: message,
+                      timestamp: new Date()
+                  });
+                  
+                  this.updateConversationDisplay();
+              },
+              
+              updateConversationDisplay: function() {
+                  const conversationDiv = document.getElementById('conversationHistory');
+                  if (!conversationDiv) return;
+                  
+                  conversationDiv.innerHTML = this.conversationHistory
+                      .slice(-10) // 只显示最近10条消息
+                      .map(item => `
+                          <div class="conversation-item ${item.speaker}">
+                              <strong>${item.speaker === 'user' ? '您' : '助手'}:</strong> ${item.message}
+                          </div>
+                      `).join('');
+                  
+                  conversationDiv.scrollTop = conversationDiv.scrollHeight;
+              },
+              
+              showCommands: function() {
+                  const commandsList = this.voiceCommands.map(cmd => 
+                      `${cmd.command}: ${cmd.description}`
+                  ).join('\n');
+                  
+                  this.speechSynthesis.speak('可用的语音命令包括：' + commandsList);
+                  this.addToConversation('assistant', '可用的语音命令：\n' + commandsList);
+              },
+              
+              closeVoicePanel: function() {
+                  const voicePanel = document.querySelector('.voice-panel');
+                  if (voicePanel) {
+                      voicePanel.style.display = 'none';
+                  }
+              },
+              
+              // 模拟功能方法
+              playVideo: function() {
+                  console.log('播放视频');
+                  this.speechSynthesis.speak('正在播放视频');
+              },
+              
+              pauseVideo: function() {
+                  console.log('暂停视频');
+                  this.speechSynthesis.speak('视频已暂停');
+              },
+              
+              nextQuestion: function() {
+                  console.log('下一题');
+                  this.speechSynthesis.speak('进入下一道题目');
+              },
+              
+              previousQuestion: function() {
+                  console.log('上一题');
+                  this.speechSynthesis.speak('返回上一道题目');
+              },
+              
+                                showHelp: function() {
+                      this.showCommands();
+                  }
+              },
+              
+              // 智能出题功能
+              generateIntelligentQuestions: async function() {
+                  const aiGenerateBtn = document.getElementById('aiGenerateBtn');
+                  const aiStatus = document.getElementById('aiStatus');
+                  
+                  try {
+                      // 显示加载状态
+                      if (aiGenerateBtn) aiGenerateBtn.disabled = true;
+                      if (aiStatus) aiStatus.style.display = 'block';
+                      
+                      showMessage('正在使用硅基流动AI生成题目，请稍候...', 'info');
+                      
+                      const generatedQuestions = await this.intelligentQuestionGeneration.generateQuestionBatch(5);
+                      
+                      // 将生成的题目添加到题库
+                      generatedQuestions.forEach(question => {
+                          question.id = this.questions.length + 1;
+                          this.questions.push(question);
+                      });
+                      
+                      this.totalQuestions = this.questions.length;
+                      this.updateProgress();
+                      this.renderQuestions();
+                      
+                      showMessage(`硅基流动AI智能出题系统已生成 ${generatedQuestions.length} 道新题目`, 'success');
+                      console.log('智能出题完成:', generatedQuestions);
+                  } catch (error) {
+                      console.error('智能出题失败:', error);
+                      showMessage('智能出题失败，已使用本地生成作为备用', 'warning');
+                      
+                      // 使用本地生成作为备用
+                      const localQuestions = this.intelligentQuestionGeneration.generateQuestionBatch(5);
+                      localQuestions.forEach(question => {
+                          question.id = this.questions.length + 1;
+                          this.questions.push(question);
+                      });
+                      
+                      this.totalQuestions = this.questions.length;
+                      this.updateProgress();
+                      this.renderQuestions();
+                  } finally {
+                      // 恢复按钮状态
+                      if (aiGenerateBtn) aiGenerateBtn.disabled = false;
+                      if (aiStatus) aiStatus.style.display = 'none';
+                  }
+              },
+              
+              // 推荐个性化题目
+              recommendPersonalizedQuestions: function() {
+                  const userProfile = {
+                      currentLevel: 'intermediate',
+                      weakAreas: ['流体动力学', '湍流理论'],
+                      learningProgress: 0.6
+                  };
+                  
+                  const recommendedQuestions = this.intelligentQuestionGeneration.recommendQuestions(userProfile, 3);
+                  
+                  recommendedQuestions.forEach(question => {
+                      question.id = this.questions.length + 1;
+                      this.questions.push(question);
+                  });
+                  
+                  this.totalQuestions = this.questions.length;
+                  this.updateProgress();
+                  this.renderQuestions();
+                  
+                  showMessage(`已推荐 ${recommendedQuestions.length} 道个性化题目`, 'success');
+                  console.log('个性化推荐完成:', recommendedQuestions);
+              }
+          };
+
           // =============== 视频上传管理系统 ===============
           const VideoUploadSystem = {
               videos: [],
@@ -14765,6 +16429,12 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
               }
               if (typeof AugmentedRealitySystem !== 'undefined') {
                   AugmentedRealitySystem.init();
+              }
+              if (typeof VirtualRealitySystem !== 'undefined') {
+                  VirtualRealitySystem.init();
+              }
+              if (typeof IntelligentVoiceAssistant !== 'undefined') {
+                  IntelligentVoiceAssistant.init();
               }
               
               console.log('企业级功能模块初始化完成');
