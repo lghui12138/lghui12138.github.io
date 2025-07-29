@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📝 学习笔记 - 流体力学学习平台</title>
+    <title>📖 学习笔记 - 流体力学学习平台</title>
     
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- Quill.js 富文本编辑器 -->
+    <!-- Quill.js -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.min.js"></script>
     
@@ -136,10 +135,34 @@
             max-width: 1400px;
             margin: 0 auto;
             padding: 30px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .page-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        /* ===== 笔记布局 ===== */
+        .notes-layout {
             display: grid;
             grid-template-columns: 300px 1fr;
             gap: 30px;
-            min-height: calc(100vh - 100px);
+            height: calc(100vh - 200px);
         }
         
         /* ===== 侧边栏 ===== */
@@ -149,7 +172,9 @@
             padding: 25px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
-            height: fit-content;
+            color: var(--text-dark);
+            display: flex;
+            flex-direction: column;
         }
         
         .sidebar-header {
@@ -160,7 +185,25 @@
             font-size: 1.3rem;
             font-weight: bold;
             color: var(--ocean-blue);
-            margin-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .new-note-btn {
+            background: var(--ocean-light);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .new-note-btn:hover {
+            background: var(--ocean-blue);
+            transform: translateY(-2px);
         }
         
         .search-box {
@@ -170,8 +213,8 @@
         
         .search-input {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #eee;
+            padding: 12px 40px 12px 15px;
+            border: 2px solid #e9ecef;
             border-radius: 25px;
             font-size: 0.9rem;
             transition: border-color 0.3s ease;
@@ -190,93 +233,121 @@
             color: #999;
         }
         
-        .category-list {
-            margin-bottom: 25px;
-        }
-        
-        .category-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 8px;
-        }
-        
-        .category-item:hover {
-            background: rgba(79, 172, 254, 0.1);
-        }
-        
-        .category-item.active {
-            background: var(--ocean-light);
-            color: white;
-        }
-        
-        .category-icon {
-            margin-right: 10px;
-            font-size: 1.1rem;
-        }
-        
-        .category-name {
-            flex: 1;
-            font-weight: 500;
-        }
-        
-        .category-count {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 2px 8px;
-            border-radius: 10px;
-            font-size: 0.8rem;
-        }
-        
-        .btn-new-note {
-            width: 100%;
-            background: var(--ocean-light);
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
+        .category-filter {
             margin-bottom: 20px;
         }
         
-        .btn-new-note:hover {
-            background: var(--ocean-blue);
-            transform: translateY(-2px);
-        }
-        
-        /* ===== 笔记区域 ===== */
-        .notes-area {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 25px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        
-        .notes-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-        }
-        
-        .notes-title {
-            font-size: 1.5rem;
+        .filter-title {
             font-weight: bold;
+            margin-bottom: 10px;
             color: var(--ocean-blue);
         }
         
-        .notes-actions {
+        .filter-options {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 8px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .filter-option:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .filter-option.active {
+            background-color: var(--ocean-light);
+            color: white;
+        }
+        
+        .notes-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+        
+        .note-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .note-item:hover {
+            background-color: #f8f9fa;
+            transform: translateX(5px);
+        }
+        
+        .note-item.active {
+            background-color: var(--ocean-light);
+            color: white;
+        }
+        
+        .note-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .note-meta {
+            font-size: 0.8rem;
+            opacity: 0.7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .note-category {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            background: var(--ocean-light);
+            color: white;
+        }
+        
+        /* ===== 主编辑区 ===== */
+        .editor-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .editor-header {
+            background: var(--ocean-light);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .editor-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .editor-actions {
             display: flex;
             gap: 10px;
         }
         
-        .btn-action {
-            background: var(--ocean-light);
+        .editor-btn {
+            background: rgba(255, 255, 255, 0.2);
             color: white;
             border: none;
             padding: 8px 15px;
@@ -286,128 +357,171 @@
             transition: all 0.3s ease;
         }
         
-        .btn-action:hover {
-            background: var(--ocean-blue);
-        }
-        
-        .btn-action.secondary {
-            background: transparent;
-            color: var(--ocean-blue);
-            border: 2px solid var(--ocean-light);
-        }
-        
-        .btn-action.secondary:hover {
-            background: var(--ocean-light);
-            color: white;
-        }
-        
-        /* ===== 编辑器 ===== */
-        .editor-container {
-            border: 2px solid #eee;
-            border-radius: 15px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-        
-        .editor-toolbar {
-            background: #f8f9fa;
-            border-bottom: 1px solid #eee;
-            padding: 10px;
+        .editor-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
         }
         
         .editor-content {
-            min-height: 400px;
-            background: white;
-        }
-        
-        /* ===== 笔记列表 ===== */
-        .notes-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        
-        .note-card {
-            background: white;
-            border-radius: 15px;
+            flex: 1;
             padding: 20px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-            cursor: pointer;
-            border: 2px solid transparent;
+            overflow-y: auto;
         }
         
-        .note-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-            border-color: var(--ocean-light);
-        }
-        
-        .note-header {
+        .note-form {
             display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
+            flex-direction: column;
+            gap: 15px;
         }
         
-        .note-title {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--ocean-blue);
-            margin-bottom: 5px;
-        }
-        
-        .note-category {
-            background: rgba(79, 172, 254, 0.1);
-            color: var(--ocean-blue);
-            padding: 4px 8px;
-            border-radius: 10px;
-            font-size: 0.8rem;
-        }
-        
-        .note-content {
-            color: #666;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 15px;
-            max-height: 100px;
-            overflow: hidden;
-        }
-        
-        .note-meta {
+        .form-group {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.8rem;
-            color: #999;
-        }
-        
-        .note-actions {
-            display: flex;
+            flex-direction: column;
             gap: 5px;
         }
         
-        .note-btn {
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
+        .form-label {
+            font-weight: bold;
+            color: var(--ocean-blue);
         }
         
-        .note-btn:hover {
-            background: rgba(79, 172, 254, 0.1);
+        .form-input {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--ocean-light);
+        }
+        
+        .form-select {
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+        
+        .form-select:focus {
+            outline: none;
+            border-color: var(--ocean-light);
+        }
+        
+        .quill-editor {
+            height: 400px;
+            margin-bottom: 20px;
+        }
+        
+        .ql-editor {
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+        
+        .btn-primary {
+            background: var(--ocean-light);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: var(--ocean-blue);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+        
+        /* ===== 空状态 ===== */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #666;
+            text-align: center;
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .empty-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--ocean-blue);
+        }
+        
+        .empty-desc {
+            font-size: 1rem;
+            margin-bottom: 20px;
         }
         
         /* ===== 响应式设计 ===== */
         @media (max-width: 768px) {
-            .main-content {
+            .notes-layout {
                 grid-template-columns: 1fr;
+                height: auto;
             }
             
-            .notes-list {
-                grid-template-columns: 1fr;
+            .sidebar {
+                order: 2;
+            }
+            
+            .editor-container {
+                order: 1;
+                margin-bottom: 20px;
+            }
+            
+            .page-title {
+                font-size: 2rem;
             }
         }
         
@@ -458,7 +572,7 @@
     <!-- 导航栏 -->
     <nav class="nav-bar">
         <div class="nav-container">
-            <div class="nav-title">📝 学习笔记</div>
+            <div class="nav-title">📖 学习笔记</div>
             <div class="nav-actions">
                 <a href="../index-modular.html" class="btn-nav">
                     <i class="fas fa-home"></i> 返回主页
@@ -466,91 +580,118 @@
                 <button class="btn-nav" onclick="exportNotes()">
                     <i class="fas fa-download"></i> 导出笔记
                 </button>
+                <button class="btn-nav" onclick="importNotes()">
+                    <i class="fas fa-upload"></i> 导入笔记
+                </button>
             </div>
         </div>
     </nav>
     
     <!-- 主内容 -->
     <div class="main-content">
-        <!-- 侧边栏 -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h3 class="sidebar-title">📚 笔记管理</h3>
-            </div>
-            
-            <button class="btn-new-note" onclick="createNewNote()">
-                <i class="fas fa-plus"></i> 新建笔记
-            </button>
-            
-            <div class="search-box">
-                <input type="text" class="search-input" placeholder="搜索笔记..." id="searchInput">
-                <i class="fas fa-search search-icon"></i>
-            </div>
-            
-            <div class="category-list">
-                <div class="category-item active" data-category="all">
-                    <div class="category-icon">📋</div>
-                    <div class="category-name">全部笔记</div>
-                    <div class="category-count" id="allCount">0</div>
-                </div>
-                <div class="category-item" data-category="theory">
-                    <div class="category-icon">📖</div>
-                    <div class="category-name">理论笔记</div>
-                    <div class="category-count" id="theoryCount">0</div>
-                </div>
-                <div class="category-item" data-category="formula">
-                    <div class="category-icon">📐</div>
-                    <div class="category-name">公式总结</div>
-                    <div class="category-count" id="formulaCount">0</div>
-                </div>
-                <div class="category-item" data-category="example">
-                    <div class="category-icon">💡</div>
-                    <div class="category-name">例题解析</div>
-                    <div class="category-count" id="exampleCount">0</div>
-                </div>
-                <div class="category-item" data-category="review">
-                    <div class="category-icon">📝</div>
-                    <div class="category-name">复习要点</div>
-                    <div class="category-count" id="reviewCount">0</div>
-                </div>
-            </div>
+        <div class="page-header">
+            <h1 class="page-title">📖 学习笔记</h1>
+            <p class="page-subtitle">记录学习心得，整理知识点，构建个人知识体系</p>
         </div>
         
-        <!-- 笔记区域 -->
-        <div class="notes-area">
-            <div class="notes-header">
-                <h2 class="notes-title">我的笔记</h2>
-                <div class="notes-actions">
-                    <button class="btn-action secondary" onclick="toggleView()">
-                        <i class="fas fa-th-large"></i> 切换视图
-                    </button>
-                    <button class="btn-action" onclick="saveCurrentNote()">
-                        <i class="fas fa-save"></i> 保存
+        <!-- 笔记布局 -->
+        <div class="notes-layout">
+            <!-- 侧边栏 -->
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <div class="sidebar-title">📝 我的笔记</div>
+                    <button class="new-note-btn" onclick="createNewNote()">
+                        <i class="fas fa-plus"></i> 新建笔记
                     </button>
                 </div>
-            </div>
-            
-            <!-- 编辑器 -->
-            <div id="editorContainer" style="display: none;">
-                <div class="editor-container">
-                    <div class="editor-toolbar">
-                        <input type="text" placeholder="笔记标题..." id="noteTitle" style="width: 200px; padding: 8px; border: 1px solid #ddd; border-radius: 5px; margin-right: 10px;">
-                        <select id="noteCategory" style="padding: 8px; border: 1px solid #ddd; border-radius: 5px; margin-right: 10px;">
-                            <option value="theory">理论笔记</option>
-                            <option value="formula">公式总结</option>
-                            <option value="example">例题解析</option>
-                            <option value="review">复习要点</option>
-                        </select>
-                        <button class="btn-action" onclick="saveCurrentNote()">保存</button>
-                        <button class="btn-action secondary" onclick="cancelEdit()">取消</button>
+                
+                <!-- 搜索框 -->
+                <div class="search-box">
+                    <input type="text" class="search-input" placeholder="搜索笔记..." id="searchInput" onkeyup="searchNotes()">
+                    <i class="fas fa-search search-icon"></i>
+                </div>
+                
+                <!-- 分类过滤 -->
+                <div class="category-filter">
+                    <div class="filter-title">📂 分类</div>
+                    <div class="filter-options">
+                        <div class="filter-option active" onclick="filterByCategory('all')">
+                            <i class="fas fa-folder"></i> 全部笔记
+                        </div>
+                        <div class="filter-option" onclick="filterByCategory('theory')">
+                            <i class="fas fa-book"></i> 理论知识
+                        </div>
+                        <div class="filter-option" onclick="filterByCategory('formula')">
+                            <i class="fas fa-calculator"></i> 公式推导
+                        </div>
+                        <div class="filter-option" onclick="filterByCategory('example')">
+                            <i class="fas fa-lightbulb"></i> 例题解析
+                        </div>
+                        <div class="filter-option" onclick="filterByCategory('summary')">
+                            <i class="fas fa-list"></i> 知识总结
+                        </div>
                     </div>
-                    <div id="editor" class="editor-content"></div>
+                </div>
+                
+                <!-- 笔记列表 -->
+                <div class="notes-list" id="notesList">
+                    <!-- 笔记项目将在这里动态生成 -->
                 </div>
             </div>
             
-            <!-- 笔记列表 -->
-            <div id="notesList" class="notes-list">
-                <!-- 笔记卡片将通过JavaScript动态生成 -->
+            <!-- 主编辑区 -->
+            <div class="editor-container">
+                <div class="editor-header">
+                    <div class="editor-title" id="editorTitle">选择或创建笔记</div>
+                    <div class="editor-actions">
+                        <button class="editor-btn" onclick="saveNote()" id="saveBtn" style="display: none;">
+                            <i class="fas fa-save"></i> 保存
+                        </button>
+                        <button class="editor-btn" onclick="deleteNote()" id="deleteBtn" style="display: none;">
+                            <i class="fas fa-trash"></i> 删除
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="editor-content" id="editorContent">
+                    <!-- 空状态 -->
+                    <div class="empty-state" id="emptyState">
+                        <div class="empty-icon">📝</div>
+                        <div class="empty-title">开始记录您的学习笔记</div>
+                        <div class="empty-desc">点击"新建笔记"开始记录您的学习心得和知识点</div>
+                        <button class="btn-primary" onclick="createNewNote()">
+                            <i class="fas fa-plus"></i> 创建第一笔记
+                        </button>
+                    </div>
+                    
+                    <!-- 笔记表单 -->
+                    <div class="note-form" id="noteForm" style="display: none;">
+                        <div class="form-group">
+                            <label class="form-label">标题</label>
+                            <input type="text" class="form-input" id="noteTitle" placeholder="输入笔记标题...">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">分类</label>
+                            <select class="form-select" id="noteCategory">
+                                <option value="theory">理论知识</option>
+                                <option value="formula">公式推导</option>
+                                <option value="example">例题解析</option>
+                                <option value="summary">知识总结</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">内容</label>
+                            <div id="quillEditor" class="quill-editor"></div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button class="btn-secondary" onclick="cancelEdit()">取消</button>
+                            <button class="btn-primary" onclick="saveNote()">保存笔记</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -560,19 +701,19 @@
     
     <script>
         // 全局变量
+        let currentUser = null;
         let notes = [];
         let currentNote = null;
         let quill = null;
-        let currentCategory = 'all';
-        let currentUser = null;
+        let currentFilter = 'all';
         
         // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
             loadUserData();
             loadNotes();
-            initEditor();
-            setupEventListeners();
-            showNotification('📝 学习笔记模块已加载', 'success');
+            initQuill();
+            renderNotesList();
+            showNotification('📖 学习笔记模块已加载', 'success');
         });
         
         // 加载用户数据
@@ -584,373 +725,333 @@
             }
         }
         
-        // 初始化编辑器
-        function initEditor() {
-            const editor = document.getElementById('editor');
-            if (editor) {
-                quill = new Quill(editor, {
-                    theme: 'snow',
-                    modules: {
-                        toolbar: [
-                            [{ 'header': [1, 2, 3, false] }],
-                            ['bold', 'italic', 'underline'],
-                            [{ 'color': [] }, { 'background': [] }],
-                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                            ['link', 'image'],
-                            ['clean']
-                        ]
-                    },
-                    placeholder: '开始编写您的笔记...'
-                });
-            }
-        }
-        
-        // 设置事件监听器
-        function setupEventListeners() {
-            // 搜索功能
-            document.getElementById('searchInput').addEventListener('input', function(e) {
-                filterNotes(e.target.value);
-            });
-            
-            // 分类切换
-            document.querySelectorAll('.category-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    const category = this.dataset.category;
-                    switchCategory(category);
-                });
-            });
-        }
-        
-        // 加载笔记
+        // 加载笔记数据
         function loadNotes() {
             try {
-                const savedNotes = localStorage.getItem(`notes_${currentUser?.username || 'default'}`);
-                if (savedNotes) {
-                    notes = JSON.parse(savedNotes);
-                } else {
-                    // 创建示例笔记
-                    notes = [
-                        {
-                            id: 1,
-                            title: '伯努利方程笔记',
-                            content: '<h2>伯努利方程</h2><p>伯努利方程是流体力学中的重要方程，描述了理想流体在定常流动中的能量守恒。</p><h3>公式：</h3><p>p + ½ρv² + ρgh = 常数</p>',
-                            category: 'theory',
-                            createdAt: new Date('2024-01-15').toISOString(),
-                            updatedAt: new Date('2024-01-15').toISOString()
-                        },
-                        {
-                            id: 2,
-                            title: '雷诺数计算公式',
-                            content: '<h2>雷诺数</h2><p>雷诺数是判断流动状态的重要无量纲参数。</p><h3>公式：</h3><p>Re = ρVL/μ = VL/ν</p><p>其中：</p><ul><li>ρ - 流体密度</li><li>V - 特征速度</li><li>L - 特征长度</li><li>μ - 动力粘度</li><li>ν - 运动粘度</li></ul>',
-                            category: 'formula',
-                            createdAt: new Date('2024-01-10').toISOString(),
-                            updatedAt: new Date('2024-01-10').toISOString()
-                        },
-                        {
-                            id: 3,
-                            title: '管道流动例题解析',
-                            content: '<h2>管道流动问题</h2><p>题目：已知圆管直径D=0.1m，流速v=2m/s，运动粘度ν=1×10⁻⁶m²/s，求雷诺数。</p><h3>解析：</h3><p>Re = vD/ν = 2×0.1/(1×10⁻⁶) = 2×10⁵</p><p>由于Re > 2300，所以是湍流。</p>',
-                            category: 'example',
-                            createdAt: new Date('2024-01-08').toISOString(),
-                            updatedAt: new Date('2024-01-08').toISOString()
-                        }
-                    ];
-                }
-                renderNotes();
-                updateCategoryCounts();
+                const notesKey = `notes_${currentUser?.username || 'default'}`;
+                const savedNotes = localStorage.getItem(notesKey);
+                notes = savedNotes ? JSON.parse(savedNotes) : [
+                    {
+                        id: 1,
+                        title: '伯努利方程笔记',
+                        category: 'formula',
+                        content: '<h2>伯努利方程</h2><p>伯努利方程是流体力学中的重要方程，描述了理想流体在定常流动中的能量守恒。</p><h3>公式：</h3><p>p + ½ρv² + ρgh = 常数</p><p>其中：</p><ul><li>p - 压强</li><li>ρ - 密度</li><li>v - 速度</li><li>g - 重力加速度</li><li>h - 高度</li></ul>',
+                        createdAt: '2024-01-15T10:00:00Z',
+                        updatedAt: '2024-01-15T10:00:00Z'
+                    },
+                    {
+                        id: 2,
+                        title: '雷诺数概念总结',
+                        category: 'theory',
+                        content: '<h2>雷诺数</h2><p>雷诺数是判断流动状态的无量纲参数。</p><h3>定义：</h3><p>Re = VL/ν</p><p>其中：</p><ul><li>V - 特征速度</li><li>L - 特征长度</li><li>ν - 运动粘度</li></ul><h3>判断标准：</h3><ul><li>Re < 2300：层流</li><li>Re > 4000：湍流</li><li>2300 ≤ Re ≤ 4000：过渡区</li></ul>',
+                        createdAt: '2024-01-14T14:30:00Z',
+                        updatedAt: '2024-01-14T14:30:00Z'
+                    }
+                ];
             } catch (error) {
                 console.error('加载笔记失败:', error);
+                notes = [];
             }
+        }
+        
+        // 初始化Quill编辑器
+        function initQuill() {
+            const editor = document.getElementById('quillEditor');
+            if (!editor) return;
+            
+            quill = new Quill('#quillEditor', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        [{ 'color': [] }, { 'background': [] }],
+                        ['link', 'image'],
+                        ['clean']
+                    ]
+                },
+                placeholder: '开始编写您的笔记...'
+            });
         }
         
         // 渲染笔记列表
-        function renderNotes() {
+        function renderNotesList() {
             const notesList = document.getElementById('notesList');
             if (!notesList) return;
             
-            const filteredNotes = currentCategory === 'all' 
-                ? notes 
-                : notes.filter(note => note.category === currentCategory);
-            
-            if (filteredNotes.length === 0) {
-                notesList.innerHTML = `
-                    <div style="text-align: center; padding: 50px; color: #666;">
-                        <i class="fas fa-sticky-note" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
-                        <p>暂无笔记</p>
-                        <button class="btn-new-note" onclick="createNewNote()" style="margin-top: 20px;">
-                            <i class="fas fa-plus"></i> 创建第一篇笔记
-                        </button>
-                    </div>
-                `;
-                return;
-            }
+            const filteredNotes = filterNotes();
             
             notesList.innerHTML = filteredNotes.map(note => `
-                <div class="note-card" onclick="editNote(${note.id})">
-                    <div class="note-header">
-                        <div>
-                            <div class="note-title">${note.title}</div>
-                            <div class="note-category">${getCategoryName(note.category)}</div>
-                        </div>
-                        <div class="note-actions">
-                            <button class="note-btn" onclick="event.stopPropagation(); deleteNote(${note.id})" title="删除">
-                                <i class="fas fa-trash" style="color: #e74c3c;"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="note-content">${stripHtml(note.content)}</div>
+                <div class="note-item" onclick="selectNote(${note.id})" data-id="${note.id}">
+                    <div class="note-title">${note.title}</div>
                     <div class="note-meta">
+                        <span class="note-category">${getCategoryName(note.category)}</span>
                         <span>${formatDate(note.updatedAt)}</span>
-                        <span>${getCategoryIcon(note.category)}</span>
                     </div>
                 </div>
             `).join('');
-        }
-        
-        // 更新分类计数
-        function updateCategoryCounts() {
-            const categories = ['all', 'theory', 'formula', 'example', 'review'];
-            categories.forEach(category => {
-                const count = category === 'all' 
-                    ? notes.length 
-                    : notes.filter(note => note.category === category).length;
-                const countElement = document.getElementById(`${category}Count`);
-                if (countElement) {
-                    countElement.textContent = count;
-                }
-            });
-        }
-        
-        // 切换分类
-        function switchCategory(category) {
-            currentCategory = category;
-            
-            // 更新UI
-            document.querySelectorAll('.category-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            document.querySelector(`[data-category="${category}"]`).classList.add('active');
-            
-            renderNotes();
         }
         
         // 过滤笔记
-        function filterNotes(searchTerm) {
-            const filteredNotes = notes.filter(note => 
-                note.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                stripHtml(note.content).toLowerCase().includes(searchTerm.toLowerCase())
-            );
+        function filterNotes() {
+            let filtered = notes;
             
-            const notesList = document.getElementById('notesList');
-            if (!notesList) return;
-            
-            if (filteredNotes.length === 0) {
-                notesList.innerHTML = `
-                    <div style="text-align: center; padding: 50px; color: #666;">
-                        <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
-                        <p>未找到相关笔记</p>
-                    </div>
-                `;
-                return;
+            // 按分类过滤
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(note => note.category === currentFilter);
             }
             
-            notesList.innerHTML = filteredNotes.map(note => `
-                <div class="note-card" onclick="editNote(${note.id})">
-                    <div class="note-header">
-                        <div>
-                            <div class="note-title">${note.title}</div>
-                            <div class="note-category">${getCategoryName(note.category)}</div>
-                        </div>
-                        <div class="note-actions">
-                            <button class="note-btn" onclick="event.stopPropagation(); deleteNote(${note.id})" title="删除">
-                                <i class="fas fa-trash" style="color: #e74c3c;"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div class="note-content">${stripHtml(note.content)}</div>
-                    <div class="note-meta">
-                        <span>${formatDate(note.updatedAt)}</span>
-                        <span>${getCategoryIcon(note.category)}</span>
-                    </div>
-                </div>
-            `).join('');
-        }
-        
-        // 创建新笔记
-        function createNewNote() {
-            currentNote = {
-                id: Date.now(),
-                title: '',
-                content: '',
-                category: 'theory',
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString()
-            };
-            
-            document.getElementById('editorContainer').style.display = 'block';
-            document.getElementById('notesList').style.display = 'none';
-            
-            document.getElementById('noteTitle').value = '';
-            document.getElementById('noteCategory').value = 'theory';
-            
-            if (quill) {
-                quill.setText('');
+            // 按搜索关键词过滤
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            if (searchTerm) {
+                filtered = filtered.filter(note => 
+                    note.title.toLowerCase().includes(searchTerm) ||
+                    note.content.toLowerCase().includes(searchTerm)
+                );
             }
             
-            showNotification('📝 开始创建新笔记', 'info');
+            return filtered.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
         }
         
-        // 编辑笔记
-        function editNote(noteId) {
+        // 搜索笔记
+        function searchNotes() {
+            renderNotesList();
+        }
+        
+        // 按分类过滤
+        function filterByCategory(category) {
+            currentFilter = category;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.filter-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            renderNotesList();
+        }
+        
+        // 选择笔记
+        function selectNote(noteId) {
             const note = notes.find(n => n.id === noteId);
             if (!note) return;
             
             currentNote = note;
             
-            document.getElementById('editorContainer').style.display = 'block';
-            document.getElementById('notesList').style.display = 'none';
+            // 更新UI状态
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('noteForm').style.display = 'block';
+            document.getElementById('saveBtn').style.display = 'inline-block';
+            document.getElementById('deleteBtn').style.display = 'inline-block';
+            document.getElementById('editorTitle').textContent = note.title;
             
+            // 填充表单
             document.getElementById('noteTitle').value = note.title;
             document.getElementById('noteCategory').value = note.category;
+            quill.root.innerHTML = note.content;
             
-            if (quill) {
-                quill.root.innerHTML = note.content;
-            }
-            
-            showNotification('📝 正在编辑笔记', 'info');
+            // 更新选中状态
+            document.querySelectorAll('.note-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            document.querySelector(`[data-id="${noteId}"]`).classList.add('active');
         }
         
-        // 保存当前笔记
-        function saveCurrentNote() {
-            if (!currentNote) return;
+        // 创建新笔记
+        function createNewNote() {
+            currentNote = null;
             
+            // 更新UI状态
+            document.getElementById('emptyState').style.display = 'none';
+            document.getElementById('noteForm').style.display = 'block';
+            document.getElementById('saveBtn').style.display = 'inline-block';
+            document.getElementById('deleteBtn').style.display = 'none';
+            document.getElementById('editorTitle').textContent = '新建笔记';
+            
+            // 清空表单
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteCategory').value = 'theory';
+            quill.setText('');
+            
+            // 清除选中状态
+            document.querySelectorAll('.note-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // 聚焦到标题输入框
+            document.getElementById('noteTitle').focus();
+        }
+        
+        // 保存笔记
+        function saveNote() {
             const title = document.getElementById('noteTitle').value.trim();
             const category = document.getElementById('noteCategory').value;
+            const content = quill.root.innerHTML;
             
             if (!title) {
                 showNotification('请输入笔记标题', 'error');
                 return;
             }
             
-            currentNote.title = title;
-            currentNote.category = category;
-            currentNote.content = quill ? quill.root.innerHTML : '';
-            currentNote.updatedAt = new Date().toISOString();
+            if (!content || content === '<p><br></p>') {
+                showNotification('请输入笔记内容', 'error');
+                return;
+            }
             
-            // 如果是新笔记，添加到列表
-            if (!notes.find(n => n.id === currentNote.id)) {
-                notes.push(currentNote);
-            } else {
+            const now = new Date().toISOString();
+            
+            if (currentNote) {
                 // 更新现有笔记
+                currentNote.title = title;
+                currentNote.category = category;
+                currentNote.content = content;
+                currentNote.updatedAt = now;
+                
                 const index = notes.findIndex(n => n.id === currentNote.id);
-                notes[index] = currentNote;
+                if (index !== -1) {
+                    notes[index] = currentNote;
+                }
+            } else {
+                // 创建新笔记
+                const newNote = {
+                    id: Date.now(),
+                    title: title,
+                    category: category,
+                    content: content,
+                    createdAt: now,
+                    updatedAt: now
+                };
+                
+                notes.unshift(newNote);
+                currentNote = newNote;
             }
             
             saveNotes();
+            renderNotesList();
+            showNotification('📝 笔记保存成功', 'success');
+        }
+        
+        // 删除笔记
+        function deleteNote() {
+            if (!currentNote) return;
+            
+            if (!confirm(`确定要删除笔记"${currentNote.title}"吗？此操作不可恢复！`)) {
+                return;
+            }
+            
+            const index = notes.findIndex(n => n.id === currentNote.id);
+            if (index !== -1) {
+                notes.splice(index, 1);
+            }
+            
+            saveNotes();
+            renderNotesList();
             cancelEdit();
-            showNotification('✅ 笔记保存成功', 'success');
+            showNotification('🗑️ 笔记已删除', 'success');
         }
         
         // 取消编辑
         function cancelEdit() {
-            document.getElementById('editorContainer').style.display = 'none';
-            document.getElementById('notesList').style.display = 'grid';
             currentNote = null;
-        }
-        
-        // 删除笔记
-        function deleteNote(noteId) {
-            if (!confirm('确定要删除这篇笔记吗？')) return;
             
-            notes = notes.filter(note => note.id !== noteId);
-            saveNotes();
-            renderNotes();
-            updateCategoryCounts();
-            showNotification('🗑️ 笔记已删除', 'success');
+            // 更新UI状态
+            document.getElementById('emptyState').style.display = 'block';
+            document.getElementById('noteForm').style.display = 'none';
+            document.getElementById('saveBtn').style.display = 'none';
+            document.getElementById('deleteBtn').style.display = 'none';
+            document.getElementById('editorTitle').textContent = '选择或创建笔记';
+            
+            // 清除选中状态
+            document.querySelectorAll('.note-item').forEach(item => {
+                item.classList.remove('active');
+            });
         }
         
         // 保存笔记到本地存储
         function saveNotes() {
             try {
-                localStorage.setItem(`notes_${currentUser?.username || 'default'}`, JSON.stringify(notes));
+                const notesKey = `notes_${currentUser?.username || 'default'}`;
+                localStorage.setItem(notesKey, JSON.stringify(notes));
             } catch (error) {
                 console.error('保存笔记失败:', error);
+                showNotification('保存笔记失败', 'error');
             }
         }
         
         // 导出笔记
         function exportNotes() {
-            if (notes.length === 0) {
-                showNotification('暂无笔记可导出', 'warning');
-                return;
-            }
-            
-            const exportData = {
-                用户名: currentUser?.name || '未知用户',
-                导出时间: new Date().toLocaleString('zh-CN'),
-                笔记数量: notes.length,
-                笔记列表: notes.map(note => ({
-                    标题: note.title,
-                    分类: getCategoryName(note.category),
-                    内容: stripHtml(note.content),
-                    创建时间: formatDate(note.createdAt),
-                    更新时间: formatDate(note.updatedAt)
-                }))
+            const data = {
+                user: currentUser,
+                notes: notes,
+                exportTime: new Date().toISOString()
             };
             
-            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `学习笔记_${new Date().toISOString().split('T')[0]}.json`;
-            document.body.appendChild(a);
+            a.download = `notes_${currentUser?.username || 'user'}_${new Date().toISOString().split('T')[0]}.json`;
             a.click();
-            document.body.removeChild(a);
             URL.revokeObjectURL(url);
             
             showNotification('📤 笔记导出成功', 'success');
         }
         
-        // 切换视图
-        function toggleView() {
-            const notesList = document.getElementById('notesList');
-            if (notesList.style.gridTemplateColumns === 'repeat(auto-fill, minmax(300px, 1fr))') {
-                notesList.style.gridTemplateColumns = '1fr';
-            } else {
-                notesList.style.gridTemplateColumns = 'repeat(auto-fill, minmax(300px, 1fr))';
-            }
+        // 导入笔记
+        function importNotes() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            if (data.notes && Array.isArray(data.notes)) {
+                                notes = data.notes;
+                                saveNotes();
+                                renderNotesList();
+                                showNotification('📥 笔记导入成功', 'success');
+                            } else {
+                                showNotification('文件格式错误', 'error');
+                            }
+                        } catch (error) {
+                            showNotification('导入失败：文件格式错误', 'error');
+                        }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
         }
         
-        // 工具函数
+        // 获取分类名称
         function getCategoryName(category) {
-            const names = {
-                'theory': '理论笔记',
-                'formula': '公式总结',
+            const categories = {
+                'theory': '理论知识',
+                'formula': '公式推导',
                 'example': '例题解析',
-                'review': '复习要点'
+                'summary': '知识总结'
             };
-            return names[category] || '其他';
+            return categories[category] || category;
         }
         
-        function getCategoryIcon(category) {
-            const icons = {
-                'theory': '📖',
-                'formula': '📐',
-                'example': '💡',
-                'review': '📝'
-            };
-            return icons[category] || '📄';
-        }
-        
-        function stripHtml(html) {
-            const tmp = document.createElement('div');
-            tmp.innerHTML = html;
-            return tmp.textContent || tmp.innerText || '';
-        }
-        
+        // 格式化日期
         function formatDate(dateString) {
             const date = new Date(dateString);
-            return date.toLocaleDateString('zh-CN');
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 86400000) { // 1天内
+                return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+            } else if (diff < 604800000) { // 1周内
+                return `${Math.floor(diff / 86400000)}天前`;
+            } else {
+                return date.toLocaleDateString('zh-CN');
+            }
         }
         
         // 显示通知
@@ -982,7 +1083,7 @@
             }
         }
         
-        console.log('📝 学习笔记模块已加载');
+        console.log('📖 学习笔记模块已加载');
     </script>
 </body>
 </html> 

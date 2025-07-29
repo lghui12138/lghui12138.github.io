@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤖 AI助手 - 流体力学海洋</title>
+    <title>🤖 AI助手 - 流体力学学习平台</title>
     
     <!-- Font Awesome -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -99,51 +99,39 @@
             padding: 0 20px;
         }
         
-        .nav-brand {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+        .nav-title {
             font-size: 1.5rem;
             font-weight: bold;
             color: var(--ocean-blue);
-            text-decoration: none;
         }
         
-        .nav-brand i {
-            font-size: 2rem;
-            animation: ocean-pulse 2s ease-in-out infinite;
+        .nav-actions {
+            display: flex;
+            gap: 15px;
         }
         
-        @keyframes ocean-pulse {
-            0%, 100% { transform: scale(1); filter: drop-shadow(0 0 10px var(--ocean-light)); }
-            50% { transform: scale(1.1); filter: drop-shadow(0 0 20px var(--seafoam)); }
-        }
-        
-        .btn-back {
-            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+        .btn-nav {
+            background: var(--ocean-light);
             color: white;
             border: none;
             padding: 10px 20px;
             border-radius: 25px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 600;
             text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
         }
         
-        .btn-back:hover {
+        .btn-nav:hover {
+            background: var(--ocean-blue);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
         }
         
         /* ===== 主内容 ===== */
         .main-content {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 40px 20px;
+            padding: 30px 20px;
         }
         
         .page-header {
@@ -153,25 +141,29 @@
         
         .page-title {
             font-size: 2.5rem;
+            font-weight: bold;
             margin-bottom: 10px;
-            color: var(--text-light);
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .page-subtitle {
-            font-size: 1.2rem;
-            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+            opacity: 0.9;
         }
         
         /* ===== 聊天界面 ===== */
         .chat-container {
             background: rgba(255, 255, 255, 0.95);
-            border: 3px solid var(--ocean-light);
             border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            overflow: hidden;
             height: 600px;
             display: flex;
             flex-direction: column;
-            color: var(--text-dark);
-            overflow: hidden;
         }
         
         .chat-header {
@@ -179,8 +171,17 @@
             color: white;
             padding: 20px;
             text-align: center;
-            font-size: 1.2rem;
+        }
+        
+        .chat-title {
+            font-size: 1.3rem;
             font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .chat-status {
+            font-size: 0.9rem;
+            opacity: 0.9;
         }
         
         .chat-messages {
@@ -194,17 +195,24 @@
         
         .message {
             display: flex;
-            gap: 10px;
-            max-width: 80%;
+            align-items: flex-start;
+            gap: 15px;
+            animation: messageSlide 0.3s ease;
+        }
+        
+        @keyframes messageSlide {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
         .message.user {
-            align-self: flex-end;
             flex-direction: row-reverse;
-        }
-        
-        .message.assistant {
-            align-self: flex-start;
         }
         
         .message-avatar {
@@ -219,20 +227,22 @@
         }
         
         .message.user .message-avatar {
-            background: var(--coral);
+            background: var(--ocean-light);
             color: white;
         }
         
-        .message.assistant .message-avatar {
+        .message.ai .message-avatar {
             background: var(--seafoam);
             color: white;
         }
         
         .message-content {
-            background: rgba(240, 244, 248, 0.8);
+            background: #f8f9fa;
             padding: 15px;
             border-radius: 15px;
-            border: 2px solid var(--ocean-light);
+            max-width: 70%;
+            color: var(--text-dark);
+            line-height: 1.5;
         }
         
         .message.user .message-content {
@@ -240,177 +250,149 @@
             color: white;
         }
         
-        .message-text {
-            line-height: 1.5;
-            margin-bottom: 10px;
+        .message.ai .message-content {
+            background: white;
+            border: 1px solid #e9ecef;
         }
         
         .message-time {
             font-size: 0.8rem;
-            opacity: 0.7;
-            text-align: right;
+            color: #999;
+            margin-top: 5px;
         }
         
         .message.user .message-time {
-            text-align: left;
+            text-align: right;
         }
         
         .chat-input {
             padding: 20px;
-            border-top: 2px solid var(--ocean-light);
-            background: rgba(248, 250, 252, 0.8);
+            border-top: 1px solid #e9ecef;
+            background: white;
         }
         
         .input-container {
             display: flex;
-            gap: 15px;
-            align-items: end;
+            gap: 10px;
+            align-items: flex-end;
         }
         
         .input-field {
             flex: 1;
             padding: 15px;
-            border: 2px solid var(--ocean-light);
-            border-radius: 15px;
-            font-size: 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 1rem;
             resize: none;
             min-height: 50px;
-            max-height: 100px;
-            transition: all 0.3s ease;
+            max-height: 120px;
+            transition: border-color 0.3s ease;
         }
         
         .input-field:focus {
             outline: none;
-            border-color: var(--coral);
-            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
+            border-color: var(--ocean-light);
         }
         
         .send-btn {
-            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            background: var(--ocean-light);
             color: white;
             border: none;
             padding: 15px 20px;
-            border-radius: 15px;
+            border-radius: 25px;
             cursor: pointer;
+            font-size: 1rem;
             transition: all 0.3s ease;
-            font-size: 16px;
-            font-weight: 600;
+            min-width: 60px;
         }
         
         .send-btn:hover {
+            background: var(--ocean-blue);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
         }
         
         .send-btn:disabled {
-            opacity: 0.6;
+            background: #ccc;
             cursor: not-allowed;
             transform: none;
         }
         
-        /* ===== 快捷功能 ===== */
-        .quick-actions {
-            background: rgba(255, 255, 255, 0.95);
-            border: 3px solid var(--ocean-light);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 40px;
-            color: var(--text-dark);
+        /* ===== 快捷问题 ===== */
+        .quick-questions {
+            margin-top: 30px;
         }
         
-        .section-title {
-            font-size: 1.5rem;
+        .quick-title {
+            font-size: 1.2rem;
+            font-weight: bold;
             color: var(--ocean-blue);
             margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            text-align: center;
         }
         
-        .action-buttons {
+        .quick-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 15px;
         }
         
-        .action-btn {
-            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
-            color: white;
-            border: none;
+        .quick-btn {
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--ocean-light);
+            color: var(--ocean-blue);
             padding: 15px 20px;
             border-radius: 15px;
             cursor: pointer;
+            text-align: left;
             transition: all 0.3s ease;
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            justify-content: center;
+            backdrop-filter: blur(10px);
         }
         
-        .action-btn:hover {
+        .quick-btn:hover {
+            background: var(--ocean-light);
+            color: white;
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
         }
         
-        /* ===== 加载动画 ===== */
-        .typing-indicator {
-            display: flex;
-            gap: 5px;
-            padding: 15px;
-            background: rgba(240, 244, 248, 0.8);
-            border-radius: 15px;
-            border: 2px solid var(--ocean-light);
-            align-self: flex-start;
-            max-width: 80px;
+        .quick-btn i {
+            margin-right: 10px;
+            font-size: 1.1rem;
         }
         
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--ocean-blue);
-            border-radius: 50%;
-            animation: typing 1.4s infinite ease-in-out;
+        /* ===== 功能面板 ===== */
+        .features-panel {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
         }
         
-        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
-        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-        
-        @keyframes typing {
-            0%, 80%, 100% { transform: scale(0); }
-            40% { transform: scale(1); }
-        }
-        
-        /* ===== 通知系统 ===== */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
+        .feature-card {
             background: rgba(255, 255, 255, 0.95);
-            border: 2px solid var(--ocean-light);
             border-radius: 15px;
-            padding: 20px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
             color: var(--text-dark);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-            transform: translateX(100%);
-            transition: transform 0.3s ease;
-            z-index: 1000;
-            max-width: 350px;
         }
         
-        .notification.show {
-            transform: translateX(0);
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: var(--ocean-light);
         }
         
-        .notification.success {
-            border-color: #27ae60;
-            background: rgba(39, 174, 96, 0.1);
+        .feature-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--ocean-blue);
         }
         
-        .notification.error {
-            border-color: #e74c3c;
-            background: rgba(231, 76, 60, 0.1);
+        .feature-desc {
+            color: #666;
+            line-height: 1.5;
         }
         
         /* ===== 响应式设计 ===== */
@@ -419,16 +401,89 @@
                 height: 500px;
             }
             
-            .action-buttons {
+            .message-content {
+                max-width: 85%;
+            }
+            
+            .quick-grid {
                 grid-template-columns: 1fr;
             }
             
-            .input-container {
-                flex-direction: column;
+            .features-panel {
+                grid-template-columns: 1fr;
             }
             
-            .send-btn {
-                align-self: stretch;
+            .page-title {
+                font-size: 2rem;
+            }
+        }
+        
+        /* ===== 通知样式 ===== */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .notification {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-left: 4px solid var(--ocean-light);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-color: #27ae60;
+        }
+        
+        .notification.error {
+            border-color: #e74c3c;
+        }
+        
+        .notification.warning {
+            border-color: #f39c12;
+        }
+        
+        /* ===== 加载动画 ===== */
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 15px;
+            background: white;
+            border-radius: 15px;
+            border: 1px solid #e9ecef;
+            max-width: 70%;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% {
+                transform: scale(0.8);
+                opacity: 0.5;
+            }
+            40% {
+                transform: scale(1);
+                opacity: 1;
             }
         }
     </style>
@@ -444,78 +499,45 @@
     <!-- 导航栏 -->
     <nav class="nav-bar">
         <div class="nav-container">
-            <a href="#" class="nav-brand">
-                <i class="fas fa-robot"></i>
-                <span>🤖 AI助手</span>
-            </a>
-            <a href="../index-modular.html" class="btn-back">
-                <i class="fas fa-arrow-left"></i>
-                返回主页
-            </a>
+            <div class="nav-title">🤖 AI助手</div>
+            <div class="nav-actions">
+                <a href="../index-modular.html" class="btn-nav">
+                    <i class="fas fa-home"></i> 返回主页
+                </a>
+                <button class="btn-nav" onclick="clearChat()">
+                    <i class="fas fa-trash"></i> 清空对话
+                </button>
+            </div>
         </div>
     </nav>
     
     <!-- 主内容 -->
     <div class="main-content">
         <div class="page-header">
-            <h1 class="page-title">🤖 AI智能助手</h1>
-            <p class="page-subtitle">您的专属流体力学学习伙伴</p>
-        </div>
-        
-        <!-- 快捷功能 -->
-        <div class="quick-actions">
-            <h2 class="section-title">
-                <i class="fas fa-bolt"></i>
-                快捷功能
-            </h2>
-            
-            <div class="action-buttons">
-                <button class="action-btn" onclick="askQuestion('什么是流体力学？')">
-                    <i class="fas fa-question-circle"></i>
-                    基础概念
-                </button>
-                <button class="action-btn" onclick="askQuestion('伯努利方程是什么？')">
-                    <i class="fas fa-calculator"></i>
-                    伯努利方程
-                </button>
-                <button class="action-btn" onclick="askQuestion('雷诺数的作用是什么？')">
-                    <i class="fas fa-chart-line"></i>
-                    雷诺数
-                </button>
-                <button class="action-btn" onclick="askQuestion('边界层理论的主要内容？')">
-                    <i class="fas fa-layer-group"></i>
-                    边界层
-                </button>
-                <button class="action-btn" onclick="askQuestion('如何学好流体力学？')">
-                    <i class="fas fa-graduation-cap"></i>
-                    学习建议
-                </button>
-                <button class="action-btn" onclick="askQuestion('流体力学有哪些应用？')">
-                    <i class="fas fa-industry"></i>
-                    实际应用
-                </button>
-            </div>
+            <h1 class="page-title">🤖 智能学习助手</h1>
+            <p class="page-subtitle">基于AI的个性化学习指导，解答您的流体力学问题</p>
         </div>
         
         <!-- 聊天界面 -->
         <div class="chat-container">
             <div class="chat-header">
-                <i class="fas fa-robot"></i>
-                AI助手 - 流体力学专家
+                <div class="chat-title">流体力学AI助手</div>
+                <div class="chat-status" id="chatStatus">在线</div>
             </div>
             
             <div class="chat-messages" id="chatMessages">
-                <div class="message assistant">
+                <!-- 欢迎消息 -->
+                <div class="message ai">
                     <div class="message-avatar">🤖</div>
                     <div class="message-content">
-                        <div class="message-text">
-                            您好！我是您的流体力学AI助手。我可以帮助您：
-                            <br>• 解答流体力学相关问题
-                            <br>• 提供学习建议和方法
-                            <br>• 解释复杂概念和公式
-                            <br>• 推荐学习资源
-                            <br><br>请随时向我提问，我会尽力帮助您！
-                        </div>
+                        <div>您好！我是您的流体力学学习助手。我可以帮助您：</div>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li>解答流体力学相关问题</li>
+                            <li>提供学习建议和方法</li>
+                            <li>解释复杂概念和公式</li>
+                            <li>推荐学习资源</li>
+                        </ul>
+                        <div>请随时向我提问！</div>
                         <div class="message-time">刚刚</div>
                     </div>
                 </div>
@@ -525,14 +547,72 @@
                 <div class="input-container">
                     <textarea 
                         class="input-field" 
-                        id="messageInput" 
-                        placeholder="请输入您的问题..."
+                        placeholder="输入您的问题..." 
+                        id="messageInput"
                         rows="1"
+                        onkeydown="handleKeyDown(event)"
                     ></textarea>
-                    <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+                    <button class="send-btn" onclick="sendMessage()" id="sendBtn">
                         <i class="fas fa-paper-plane"></i>
-                        发送
                     </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 快捷问题 -->
+        <div class="quick-questions">
+            <h3 class="quick-title">💡 常见问题</h3>
+            <div class="quick-grid">
+                <button class="quick-btn" onclick="askQuickQuestion('什么是伯努利方程？')">
+                    <i class="fas fa-question-circle"></i>
+                    什么是伯努利方程？
+                </button>
+                <button class="quick-btn" onclick="askQuickQuestion('雷诺数的物理意义是什么？')">
+                    <i class="fas fa-calculator"></i>
+                    雷诺数的物理意义是什么？
+                </button>
+                <button class="quick-btn" onclick="askQuickQuestion('如何区分层流和湍流？')">
+                    <i class="fas fa-water"></i>
+                    如何区分层流和湍流？
+                </button>
+                <button class="quick-btn" onclick="askQuickQuestion('边界层理论的基本概念')">
+                    <i class="fas fa-layer-group"></i>
+                    边界层理论的基本概念
+                </button>
+                <button class="quick-btn" onclick="askQuickQuestion('流体静力学的基本原理')">
+                    <i class="fas fa-balance-scale"></i>
+                    流体静力学的基本原理
+                </button>
+                <button class="quick-btn" onclick="askQuickQuestion('如何学好流体力学？')">
+                    <i class="fas fa-graduation-cap"></i>
+                    如何学好流体力学？
+                </button>
+            </div>
+        </div>
+        
+        <!-- 功能面板 -->
+        <div class="features-panel">
+            <div class="feature-card">
+                <div class="feature-icon">🧠</div>
+                <div class="feature-title">智能问答</div>
+                <div class="feature-desc">
+                    基于深度学习的智能问答系统，能够理解您的问题并提供准确的答案
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <div class="feature-title">知识解析</div>
+                <div class="feature-desc">
+                    深入浅出地解释复杂的流体力学概念，帮助您更好地理解知识点
+                </div>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <div class="feature-title">学习建议</div>
+                <div class="feature-desc">
+                    根据您的学习情况，提供个性化的学习建议和复习计划
                 </div>
             </div>
         </div>
@@ -542,57 +622,287 @@
     <div id="notification-container"></div>
     
     <script>
-        // AI助手配置
-        const aiAssistant = {
-            name: '流体力学AI助手',
-            version: '2.0.0',
-            capabilities: ['问答', '解题', '解释', '推荐', '智能出题'],
-            apiKey: 'sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsofbgajxnis',
-            apiEndpoint: 'https://api.siliconflow.com/v1/chat/completions'
-        };
-        
-        // AI知识库
-        const aiKnowledge = {
-            '流体力学': {
-                keywords: ['流体力学', '流体', '力学', '基础'],
-                response: '流体力学是研究流体（液体和气体）运动规律及其与固体相互作用的科学。它是力学的一个重要分支，主要研究流体的静力学、运动学和动力学特性。流体力学在工程、气象、海洋学、生物学等领域有广泛应用。'
-            },
-            '伯努利方程': {
-                keywords: ['伯努利', '方程', '伯努利方程'],
-                response: '伯努利方程是流体力学中的基本方程之一，描述了理想流体在定常流动中沿流线的能量守恒。方程形式为：p + ½ρv² + ρgh = 常数，其中p是压力，ρ是密度，v是速度，g是重力加速度，h是高度。这个方程在管道流动、机翼升力计算等方面有重要应用。'
-            },
-            '雷诺数': {
-                keywords: ['雷诺数', '雷诺', 'Re'],
-                response: '雷诺数(Re)是判断流体流动状态的无量纲参数，定义为Re = ρVD/μ，其中ρ是流体密度，V是流速，D是特征长度，μ是流体粘度。当Re < 2300时，流动为层流；当Re > 4000时，流动为湍流；在2300-4000之间为过渡区。雷诺数在管道设计、模型试验等方面非常重要。'
-            },
-            '边界层': {
-                keywords: ['边界层', '边界', '层'],
-                response: '边界层是流体在固体表面附近形成的薄层，其中粘性效应显著。边界层理论由普朗特提出，将流动分为边界层内的粘性流动和边界层外的无粘流动。边界层分离现象会导致阻力增加，在工程设计中需要特别注意。'
-            },
-            '学习建议': {
-                keywords: ['学习', '建议', '方法', '如何学好'],
-                response: '学好流体力学建议：1. 掌握数学基础，特别是微积分和微分方程；2. 理解物理概念，建立直观认识；3. 多做练习题，巩固理论知识；4. 结合实验和仿真，加深理解；5. 关注实际应用，理论联系实际；6. 定期复习，建立知识体系。'
-            },
-            '应用': {
-                keywords: ['应用', '用途', '工程'],
-                response: '流体力学在多个领域有重要应用：1. 航空航天：机翼设计、发动机设计；2. 船舶工程：船体设计、推进系统；3. 建筑工程：通风系统、给排水；4. 能源工程：风力发电、水力发电；5. 环境工程：大气污染、水污染控制；6. 生物医学：血液流动、呼吸系统。'
-            },
-            '帕斯卡定律': {
-                keywords: ['帕斯卡', '帕斯卡定律', '压强传递'],
-                response: '帕斯卡定律指出，在静止流体中，压强能够等值地传递到流体的各个部分。这个定律在液压系统中有重要应用，如液压千斤顶、液压制动系统等。数学表达式为：Δp = ρgΔh，其中Δp是压强变化，ρ是流体密度，g是重力加速度，Δh是高度变化。'
-            },
-            '阿基米德定律': {
-                keywords: ['阿基米德', '阿基米德定律', '浮力'],
-                response: '阿基米德定律指出，浸在液体中的物体受到向上的浮力，浮力的大小等于物体排开液体的重力。数学表达式为：F浮 = ρ液gV排，其中F浮是浮力，ρ液是液体密度，g是重力加速度，V排是排开液体的体积。这个定律在船舶设计、潜水器设计等方面有重要应用。'
-            },
-            '智能出题': {
-                keywords: ['出题', '题目', '练习', '测试'],
-                response: '我可以为您生成流体力学相关的练习题。请告诉我您想要练习的章节（如流体静力学、伯努利方程、边界层理论等）和难度级别（简单、中等、困难），我会为您生成相应的题目。'
-            }
-        };
-        
-        // 聊天记录
+        // 全局变量
         let chatHistory = [];
+        let currentUser = null;
+        let isTyping = false;
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            loadChatHistory();
+            showNotification('🤖 AI助手模块已加载', 'success');
+        });
+        
+        // 加载用户数据
+        function loadUserData() {
+            try {
+                currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            } catch (error) {
+                console.error('加载用户数据失败:', error);
+            }
+        }
+        
+        // 加载聊天历史
+        function loadChatHistory() {
+            try {
+                const savedHistory = localStorage.getItem(`chat_history_${currentUser?.username || 'default'}`);
+                if (savedHistory) {
+                    chatHistory = JSON.parse(savedHistory);
+                    renderChatHistory();
+                }
+            } catch (error) {
+                console.error('加载聊天历史失败:', error);
+            }
+        }
+        
+        // 渲染聊天历史
+        function renderChatHistory() {
+            const chatMessages = document.getElementById('chatMessages');
+            if (!chatMessages) return;
+            
+            // 保留欢迎消息
+            const welcomeMessage = chatMessages.querySelector('.message.ai');
+            chatMessages.innerHTML = '';
+            if (welcomeMessage) {
+                chatMessages.appendChild(welcomeMessage);
+            }
+            
+            // 添加历史消息
+            chatHistory.forEach(message => {
+                addMessageToChat(message.content, message.type, message.timestamp);
+            });
+            
+            scrollToBottom();
+        }
+        
+        // 发送消息
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // 添加用户消息
+            addMessageToChat(message, 'user');
+            input.value = '';
+            
+            // 显示AI正在输入
+            showTypingIndicator();
+            
+            try {
+                // 调用AI API
+                const response = await callAIAPI(message);
+                
+                // 隐藏输入指示器
+                hideTypingIndicator();
+                
+                // 添加AI回复
+                addMessageToChat(response, 'ai');
+                
+                // 保存到历史记录
+                saveChatHistory();
+                
+            } catch (error) {
+                hideTypingIndicator();
+                console.error('AI回复失败:', error);
+                
+                // 使用备用回复
+                const fallbackResponse = getFallbackResponse(message);
+                addMessageToChat(fallbackResponse, 'ai');
+                saveChatHistory();
+            }
+        }
+        
+        // 调用AI API
+        async function callAIAPI(message) {
+            try {
+                const response = await fetch('https://api.siliconflow.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsofbgajxnis'
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: '你是一个专业的流体力学教师，擅长解答学生问题。请用简洁明了的语言回答，适当使用公式和图表说明。'
+                            },
+                            {
+                                role: 'user',
+                                content: message
+                            }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1000
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API请求失败: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                return data.choices[0].message.content;
+                
+            } catch (error) {
+                console.error('AI API调用失败:', error);
+                throw error;
+            }
+        }
+        
+        // 获取备用回复
+        function getFallbackResponse(message) {
+            const fallbackResponses = {
+                '伯努利方程': '伯努利方程是流体力学中的重要方程，描述了理想流体在定常流动中的能量守恒。公式为：p + ½ρv² + ρgh = 常数，其中p是压强，ρ是密度，v是速度，g是重力加速度，h是高度。',
+                '雷诺数': '雷诺数Re = VL/ν，是判断流动状态的无量纲参数。Re < 2300为层流，Re > 4000为湍流。它反映了惯性力与粘性力的比值。',
+                '层流': '层流是流体分层流动的状态，各层之间没有明显的混合。特点是流速较小，雷诺数较低，流动稳定有序。',
+                '湍流': '湍流是流体剧烈混合的流动状态，特点是流速较大，雷诺数较高，流动混乱无序，但传热传质效率高。',
+                '边界层': '边界层是靠近固体壁面的薄层流体，其中粘性效应显著。边界层厚度随距离的平方根增加，即δ ∝ √x。',
+                '流体静力学': '流体静力学研究静止流体的力学性质。主要定律包括帕斯卡定律（压强等值传递）和阿基米德定律（浮力）。'
+            };
+            
+            // 查找匹配的关键词
+            for (const [keyword, response] of Object.entries(fallbackResponses)) {
+                if (message.includes(keyword)) {
+                    return response;
+                }
+            }
+            
+            // 默认回复
+            return '这是一个很好的问题！由于网络连接问题，我暂时无法提供详细回答。建议您查看相关教材或联系老师获取更准确的解答。';
+        }
+        
+        // 添加消息到聊天界面
+        function addMessageToChat(content, type, timestamp = new Date().toISOString()) {
+            const chatMessages = document.getElementById('chatMessages');
+            if (!chatMessages) return;
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            const avatar = type === 'user' ? (currentUser?.avatar || '👤') : '🤖';
+            const time = formatTime(timestamp);
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                    <div>${content}</div>
+                    <div class="message-time">${time}</div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(messageDiv);
+            scrollToBottom();
+            
+            // 保存到历史记录
+            chatHistory.push({
+                content: content,
+                type: type,
+                timestamp: timestamp
+            });
+        }
+        
+        // 显示输入指示器
+        function showTypingIndicator() {
+            if (isTyping) return;
+            isTyping = true;
+            
+            const chatMessages = document.getElementById('chatMessages');
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'message ai';
+            typingDiv.id = 'typingIndicator';
+            
+            typingDiv.innerHTML = `
+                <div class="message-avatar">🤖</div>
+                <div class="typing-indicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            `;
+            
+            chatMessages.appendChild(typingDiv);
+            scrollToBottom();
+        }
+        
+        // 隐藏输入指示器
+        function hideTypingIndicator() {
+            isTyping = false;
+            const typingIndicator = document.getElementById('typingIndicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        // 快捷问题
+        function askQuickQuestion(question) {
+            const input = document.getElementById('messageInput');
+            input.value = question;
+            sendMessage();
+        }
+        
+        // 清空对话
+        function clearChat() {
+            if (!confirm('确定要清空所有对话记录吗？')) return;
+            
+            chatHistory = [];
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = `
+                <div class="message ai">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        <div>对话已清空。有什么可以帮助您的吗？</div>
+                        <div class="message-time">刚刚</div>
+                    </div>
+                </div>
+            `;
+            
+            saveChatHistory();
+            showNotification('🗑️ 对话已清空', 'success');
+        }
+        
+        // 保存聊天历史
+        function saveChatHistory() {
+            try {
+                localStorage.setItem(`chat_history_${currentUser?.username || 'default'}`, JSON.stringify(chatHistory));
+            } catch (error) {
+                console.error('保存聊天历史失败:', error);
+            }
+        }
+        
+        // 滚动到底部
+        function scrollToBottom() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // 处理键盘事件
+        function handleKeyDown(event) {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        }
+        
+        // 格式化时间
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) { // 1分钟内
+                return '刚刚';
+            } else if (diff < 3600000) { // 1小时内
+                return `${Math.floor(diff / 60000)}分钟前`;
+            } else if (diff < 86400000) { // 1天内
+                return `${Math.floor(diff / 3600000)}小时前`;
+            } else {
+                return date.toLocaleDateString('zh-CN');
+            }
+        }
         
         // 显示通知
         function showNotification(message, type = 'info', duration = 3000) {
@@ -622,296 +932,6 @@
                 }, duration);
             }
         }
-        
-        // 添加消息到聊天界面
-        function addMessage(content, isUser = false) {
-            const chatMessages = document.getElementById('chatMessages');
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${isUser ? 'user' : 'assistant'}`;
-            
-            const avatar = isUser ? '👤' : '🤖';
-            const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-            
-            messageDiv.innerHTML = `
-                <div class="message-avatar">${avatar}</div>
-                <div class="message-content">
-                    <div class="message-text">${content}</div>
-                    <div class="message-time">${time}</div>
-                </div>
-            `;
-            
-            chatMessages.appendChild(messageDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-            
-            // 保存到历史记录
-            chatHistory.push({
-                content: content,
-                isUser: isUser,
-                timestamp: new Date().toISOString()
-            });
-        }
-        
-        // 显示打字指示器
-        function showTypingIndicator() {
-            const chatMessages = document.getElementById('chatMessages');
-            const typingDiv = document.createElement('div');
-            typingDiv.className = 'message assistant';
-            typingDiv.id = 'typingIndicator';
-            
-            typingDiv.innerHTML = `
-                <div class="message-avatar">🤖</div>
-                <div class="typing-indicator">
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                    <div class="typing-dot"></div>
-                </div>
-            `;
-            
-            chatMessages.appendChild(typingDiv);
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-        
-        // 隐藏打字指示器
-        function hideTypingIndicator() {
-            const typingIndicator = document.getElementById('typingIndicator');
-            if (typingIndicator) {
-                typingIndicator.remove();
-            }
-        }
-        
-        // AI回复
-        function aiResponse(userMessage) {
-            // 简单的关键词匹配
-            let bestMatch = null;
-            let bestScore = 0;
-            
-            for (const [topic, data] of Object.entries(aiKnowledge)) {
-                for (const keyword of data.keywords) {
-                    if (userMessage.toLowerCase().includes(keyword.toLowerCase())) {
-                        const score = keyword.length;
-                        if (score > bestScore) {
-                            bestScore = score;
-                            bestMatch = data.response;
-                        }
-                    }
-                }
-            }
-            
-            // 如果没有匹配，提供通用回复
-            if (!bestMatch) {
-                const genericResponses = [
-                    '这是一个很好的问题！让我为您详细解释一下...',
-                    '关于这个问题，我可以从以下几个方面为您解答...',
-                    '这是一个复杂的流体力学概念，让我为您分析一下...',
-                    '您的问题很有深度，让我为您提供专业的解答...'
-                ];
-                bestMatch = genericResponses[Math.floor(Math.random() * genericResponses.length)] + 
-                           '\n\n如果您需要更具体的答案，请尝试使用快捷功能按钮，或者更详细地描述您的问题。';
-            }
-            
-            return bestMatch;
-        }
-        
-        // 发送消息
-        function sendMessage() {
-            const messageInput = document.getElementById('messageInput');
-            const sendBtn = document.getElementById('sendBtn');
-            const message = messageInput.value.trim();
-            
-            if (!message) {
-                showNotification('请输入消息内容', 'error');
-                return;
-            }
-            
-            // 禁用发送按钮
-            sendBtn.disabled = true;
-            sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发送中...';
-            
-            // 添加用户消息
-            addMessage(message, true);
-            messageInput.value = '';
-            
-            // 显示打字指示器
-            showTypingIndicator();
-            
-            // 检查是否是智能出题请求
-            if (message.includes('出题') || message.includes('题目') || message.includes('练习')) {
-                setTimeout(() => {
-                    hideTypingIndicator();
-                    const questions = generateQuestions(message);
-                    addMessage(questions, false);
-                    sendBtn.disabled = false;
-                    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发送';
-                }, 1500 + Math.random() * 1000);
-            } else {
-                // 模拟AI思考时间
-                setTimeout(() => {
-                    hideTypingIndicator();
-                    
-                    // 生成AI回复
-                    const aiReply = aiResponse(message);
-                    addMessage(aiReply, false);
-                    
-                    // 恢复发送按钮
-                    sendBtn.disabled = false;
-                    sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 发送';
-                }, 1500 + Math.random() * 1000);
-            }
-        }
-        
-        // 生成智能题目
-        function generateQuestions(userInput) {
-            const topics = ['流体静力学', '伯努利方程', '边界层理论', '雷诺数', '管道流动'];
-            const difficulties = ['简单', '中等', '困难'];
-            
-            let topic = '流体静力学';
-            let difficulty = '中等';
-            
-            // 简单的话题识别
-            if (userInput.includes('静力学') || userInput.includes('压强')) {
-                topic = '流体静力学';
-            } else if (userInput.includes('伯努利') || userInput.includes('能量')) {
-                topic = '伯努利方程';
-            } else if (userInput.includes('边界层') || userInput.includes('分离')) {
-                topic = '边界层理论';
-            } else if (userInput.includes('雷诺') || userInput.includes('层流')) {
-                topic = '雷诺数';
-            } else if (userInput.includes('管道') || userInput.includes('流动')) {
-                topic = '管道流动';
-            }
-            
-            if (userInput.includes('简单') || userInput.includes('基础')) {
-                difficulty = '简单';
-            } else if (userInput.includes('困难') || userInput.includes('高级')) {
-                difficulty = '困难';
-            }
-            
-            const questions = getQuestionsByTopic(topic, difficulty);
-            return `根据您的要求，我为您生成了${topic}相关的${difficulty}难度题目：\n\n${questions}`;
-        }
-        
-        // 根据主题和难度获取题目
-        function getQuestionsByTopic(topic, difficulty) {
-            const questionBank = {
-                '流体静力学': {
-                    '简单': [
-                        '1. 在静止流体中，压强的传递遵循什么定律？\n   A. 帕斯卡定律  B. 阿基米德定律  C. 胡克定律  D. 牛顿定律\n   答案：A',
-                        '2. 流体静力学基本方程dp = -ρg dz中，负号表示什么物理意义？\n   A. 压强随高度增加而减小  B. 压强随高度增加而增大  C. 密度为负值  D. 重力加速度向下\n   答案：A',
-                        '3. 阿基米德定律描述的是什么现象？\n   A. 浮力等于排开液体的重力  B. 浮力等于物体的重力  C. 浮力等于液体的重力  D. 浮力等于物体的体积\n   答案：A'
-                    ],
-                    '中等': [
-                        '1. 在重力场中，静止流体的等压面是什么形状？\n   A. 水平面  B. 垂直面  C. 斜面  D. 任意曲面\n   答案：A',
-                        '2. 流体静力学中，绝对压强与表压强的关系是？\n   A. 绝对压强 = 表压强 + 大气压强  B. 绝对压强 = 表压强 - 大气压强  C. 绝对压强 = 表压强  D. 绝对压强 = 大气压强 - 表压强\n   答案：A',
-                        '3. 一个圆柱形容器内装有水，容器底部受到的压力与什么因素有关？\n   A. 水的体积  B. 水的质量  C. 水的深度  D. 容器的形状\n   答案：C'
-                    ],
-                    '困难': [
-                        '1. 推导流体静力学基本方程，并说明其物理意义。\n   答案：dp = -ρg dz，表示压强随高度增加而减小，负号表示重力方向。',
-                        '2. 分析浮力产生的物理机制，并推导阿基米德定律。\n   答案：浮力是由于液体对物体上下表面的压力差产生的，F浮 = ρ液gV排。',
-                        '3. 在非惯性系中，流体静力学方程如何修改？\n   答案：需要考虑惯性力的影响，dp = -ρ(g-a)dz，其中a是加速度。'
-                    ]
-                },
-                '伯努利方程': {
-                    '简单': [
-                        '1. 伯努利方程的适用条件不包括以下哪项？\n   A. 定常流动  B. 无粘性流体  C. 不可压缩流体  D. 有旋流动\n   答案：D',
-                        '2. 伯努利方程中，动能项的形式是？\n   A. ρv²/2  B. ρv²  C. ρv/2  D. ρv\n   答案：A',
-                        '3. 在文丘里管中，流速最大的位置是？\n   A. 入口处  B. 喉部  C. 出口处  D. 中间位置\n   答案：B'
-                    ],
-                    '中等': [
-                        '1. 皮托管测量的是什么？\n   A. 静压  B. 动压  C. 总压  D. 差压\n   答案：C',
-                        '2. 伯努利方程中的势能项是？\n   A. ρgz  B. ρg  C. gz  D. ρz\n   答案：A',
-                        '3. 文丘里管的工作原理基于什么原理？\n   A. 质量守恒  B. 能量守恒  C. 动量守恒  D. 角动量守恒\n   答案：B'
-                    ],
-                    '困难': [
-                        '1. 推导伯努利方程，并说明各项的物理意义。\n   答案：p + ½ρv² + ρgh = 常数，分别表示压力能、动能和势能。',
-                        '2. 分析伯努利方程在工程中的应用，如机翼升力产生原理。\n   答案：机翼上下表面流速不同，根据伯努利方程产生压力差，形成升力。',
-                        '3. 讨论伯努利方程的局限性，什么情况下不适用？\n   答案：粘性流动、非定常流动、有旋流动、可压缩流动等情况下不适用。'
-                    ]
-                },
-                '边界层理论': {
-                    '简单': [
-                        '1. 边界层是指什么？\n   A. 流体与固体接触的薄层  B. 流体的中心区域  C. 流体的自由表面  D. 流体的底部\n   答案：A',
-                        '2. 边界层内流速的变化特点是？\n   A. 从零逐渐增加到主流速度  B. 保持恒定  C. 从主流速度逐渐减小到零  D. 无规律变化\n   答案：A',
-                        '3. 边界层分离发生在什么情况下？\n   A. 逆压梯度  B. 顺压梯度  C. 零压梯度  D. 任意情况\n   答案：A'
-                    ],
-                    '中等': [
-                        '1. 位移厚度的物理意义是？\n   A. 由于粘性效应造成的流量损失  B. 边界层的实际厚度  C. 流体的密度  D. 流速的大小\n   答案：A',
-                        '2. 动量厚度的定义是？\n   A. 由于粘性效应造成的动量损失  B. 边界层的厚度  C. 流体的动量  D. 流速的平方\n   答案：A',
-                        '3. 边界层方程是基于什么假设？\n   A. 边界层很薄  B. 流体不可压缩  C. 定常流动  D. 以上都是\n   答案：D'
-                    ],
-                    '困难': [
-                        '1. 推导边界层方程，并说明各项的物理意义。\n   答案：基于边界层很薄的假设，忽略某些项，得到简化的动量方程。',
-                        '2. 分析边界层分离的物理机制。\n   答案：逆压梯度导致边界层内流体减速，最终在壁面附近产生回流，导致分离。',
-                        '3. 讨论边界层控制技术。\n   答案：包括抽吸、吹气、表面粗糙度控制等技术来延缓分离。'
-                    ]
-                }
-            };
-            
-            const questions = questionBank[topic]?.[difficulty] || questionBank['流体静力学']['中等'];
-            return questions.join('\n\n');
-        }
-        
-        // 智能学习建议
-        function generateLearningAdvice(userInput) {
-            const advice = {
-                '流体静力学': '💡 学习建议：建议重点掌握压强概念、帕斯卡定律和阿基米德定律。可以通过实验加深理解。',
-                '伯努利方程': '💡 学习建议：注意方程的适用条件，理解动能、势能和压能之间的转换关系。',
-                '边界层理论': '💡 学习建议：关注边界层的形成和发展过程，理解位移厚度和动量厚度的概念。',
-                '管道流动': '💡 学习建议：重点学习摩擦阻力和局部阻力的计算方法，掌握雷诺数的判断标准。',
-                '雷诺数': '💡 学习建议：理解雷诺数的物理意义，掌握层流和湍流的判断方法。'
-            };
-            
-            for (let topic in advice) {
-                if (userInput.includes(topic)) {
-                    return advice[topic];
-                }
-            }
-            
-            return '💡 学习建议：建议系统学习流体力学的基础概念，多做练习题巩固理解。';
-        }
-        
-        // 智能错误分析
-        function analyzeError(userInput) {
-            const errorPatterns = {
-                '压强': '⚠️ 常见错误提醒：压强概念容易混淆绝对压强和表压强，注意区分。',
-                '伯努利': '⚠️ 常见错误提醒：伯努利方程使用时要注意适用条件，不可压缩、无粘性、定常流动。',
-                '雷诺数': '⚠️ 常见错误提醒：雷诺数计算时注意单位统一，判断层流湍流时要看具体数值。',
-                '浮力': '⚠️ 常见错误提醒：阿基米德定律中浮力等于排开液体的重力，不是物体的重力。'
-            };
-            
-            for (let pattern in errorPatterns) {
-                if (userInput.includes(pattern)) {
-                    return errorPatterns[pattern];
-                }
-            }
-            
-            return '⚠️ 错误分析：请提供具体的题目或概念，我可以帮您分析可能出现的错误。';
-        }
-        
-        // 快捷提问
-        function askQuestion(question) {
-            const messageInput = document.getElementById('messageInput');
-            messageInput.value = question;
-            sendMessage();
-        }
-        
-        // 回车发送消息
-        document.getElementById('messageInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-        
-        // 自动调整输入框高度
-        document.getElementById('messageInput').addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-        });
-        
-        // 页面初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            showNotification('🤖 AI助手已准备就绪', 'success');
-        });
         
         console.log('🤖 AI助手模块已加载');
     </script>
