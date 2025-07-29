@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库数据调试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+        .result {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>题库数据调试工具</h1>
+        
+        <div class="test-section">
+            <h3>当前页面信息</h3>
+            <div id="pageInfo" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>路径测试</h3>
+            <button onclick="testAllPaths()">测试所有路径</button>
+            <div id="pathResults" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>题库数据测试</h3>
+            <button onclick="testQuestionBankData()">测试题库数据</button>
+            <div id="dataResults" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 显示页面信息
+        document.getElementById('pageInfo').innerHTML = `
+当前URL: ${window.location.href}
+当前路径: ${window.location.pathname}
+协议: ${window.location.protocol}
+主机: ${window.location.host}
+        `;
+        
+        async function testAllPaths() {
+            const resultDiv = document.getElementById('pathResults');
+            resultDiv.innerHTML = '开始测试路径...\n';
+            
+            const paths = [
+                './question-banks/index.json',
+                '../question-banks/index.json',
+                'question-banks/index.json',
+                '/question-banks/index.json',
+                '/lghui12138.github.io/question-banks/index.json'
+            ];
+            
+            for (const path of paths) {
+                try {
+                    console.log(`测试路径: ${path}`);
+                    const response = await fetch(path);
+                    const status = response.status;
+                    const ok = response.ok;
+                    
+                    if (ok) {
+                        const data = await response.json();
+                        resultDiv.innerHTML += `✅ ${path} - 成功 (${status})\n`;
+                        resultDiv.innerHTML += `数据: ${JSON.stringify(data, null, 2)}\n\n`;
+                    } else {
+                        resultDiv.innerHTML += `❌ ${path} - 失败 (${status})\n\n`;
+                    }
+                } catch (error) {
+                    resultDiv.innerHTML += `❌ ${path} - 错误: ${error.message}\n\n`;
+                }
+            }
+        }
+        
+        async function testQuestionBankData() {
+            const resultDiv = document.getElementById('dataResults');
+            resultDiv.innerHTML = '开始测试题库数据...\n';
+            
+            try {
+                // 尝试加载索引文件
+                const response = await fetch('./question-banks/index.json');
+                if (!response.ok) {
+                    throw new Error(`索引文件加载失败: ${response.status}`);
+                }
+                
+                const index = await response.json();
+                resultDiv.innerHTML += `✅ 索引文件加载成功\n`;
+                resultDiv.innerHTML += `真题数量: ${index.real?.length || 0}\n`;
+                resultDiv.innerHTML += `分类数量: ${index.chapter?.length || 0}\n\n`;
+                
+                // 测试第一个题库文件
+                if (index.chapter && index.chapter.length > 0) {
+                    const firstFile = index.chapter[0].file;
+                    resultDiv.innerHTML += `测试文件: ${firstFile}\n`;
+                    
+                    const fileResponse = await fetch(`./question-banks/${firstFile}`);
+                    if (fileResponse.ok) {
+                        const fileData = await fileResponse.json();
+                        const questionCount = Array.isArray(fileData) ? fileData.length : (fileData.questions ? fileData.questions.length : 0);
+                        resultDiv.innerHTML += `✅ 题库文件加载成功\n`;
+                        resultDiv.innerHTML += `题目数量: ${questionCount}\n`;
+                    } else {
+                        resultDiv.innerHTML += `❌ 题库文件加载失败: ${fileResponse.status}\n`;
+                    }
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML += `❌ 测试失败: ${error.message}\n`;
+            }
+        }
+    </script>
+</body>
+</html> 
