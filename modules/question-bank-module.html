@@ -1563,7 +1563,13 @@
                 return;
             }
             
-            showNotification('🤖 AI正在生成题目...', 'info');
+            // 显示加载状态
+            const generateBtn = document.querySelector('button[onclick="generateAIQuestion()"]');
+            const originalText = generateBtn.innerHTML;
+            generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
+            generateBtn.disabled = true;
+            
+            showNotification('🤖 AI正在生成题目，请稍候...', 'info');
             
             try {
                 // 构建AI提示词
@@ -1711,6 +1717,14 @@
                     
                     updateStats();
                 }
+            } finally {
+                // 恢复按钮状态
+                const generateBtn = document.querySelector('button[onclick="generateAIQuestion()"]');
+                if (generateBtn) {
+                    generateBtn.innerHTML = '<i class="fas fa-magic"></i> 生成AI题目';
+                    generateBtn.disabled = false;
+                }
+            }
         }
         
         // 生成备用题目
