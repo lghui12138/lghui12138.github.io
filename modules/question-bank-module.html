@@ -1303,6 +1303,111 @@
           animation: fadeIn 0.3s ease;
         }
         
+        .qb-preview-tip.enhanced {
+          pointer-events: auto;
+          min-width: 320px;
+          max-width: 400px;
+          padding: 0;
+          border-radius: 16px;
+          box-shadow: 0 12px 40px rgba(0,105,148,0.2);
+          overflow: hidden;
+          opacity: 0;
+          transform: translateY(10px);
+          transition: all 0.3s ease;
+        }
+        
+        .preview-header {
+          background: linear-gradient(135deg, #4facfe, #00f2fe);
+          color: white;
+          padding: 12px 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          font-weight: bold;
+        }
+        
+        .preview-header i {
+          margin-right: 8px;
+        }
+        
+        .preview-close {
+          background: none;
+          border: none;
+          color: white;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          transition: background 0.2s ease;
+        }
+        
+        .preview-close:hover {
+          background: rgba(255,255,255,0.2);
+        }
+        
+        .preview-content {
+          padding: 16px;
+          max-height: 200px;
+          overflow-y: auto;
+        }
+        
+        .preview-item {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 12px;
+          padding: 8px;
+          background: rgba(79,172,254,0.05);
+          border-radius: 8px;
+          border-left: 3px solid #4facfe;
+        }
+        
+        .preview-number {
+          background: #4facfe;
+          color: white;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.8em;
+          font-weight: bold;
+          flex-shrink: 0;
+        }
+        
+        .preview-text {
+          flex: 1;
+          line-height: 1.4;
+          color: #333;
+        }
+        
+        .preview-footer {
+          background: rgba(0,0,0,0.03);
+          padding: 8px 16px;
+          text-align: center;
+          font-size: 0.9em;
+          color: #666;
+          border-top: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        /* 滚动条美化 */
+        .preview-content::-webkit-scrollbar {
+          width: 6px;
+        }
+        
+        .preview-content::-webkit-scrollbar-track {
+          background: rgba(0,0,0,0.05);
+          border-radius: 3px;
+        }
+        
+        .preview-content::-webkit-scrollbar-thumb {
+          background: rgba(79,172,254,0.3);
+          border-radius: 3px;
+        }
+        
+        .preview-content::-webkit-scrollbar-thumb:hover {
+          background: rgba(79,172,254,0.5);
+        }
+        
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
@@ -5272,25 +5377,31 @@
             // 按年份分组并排序
             const yearGroups = [];
             for(const qb of realWithMeta) {
-              // 使用已经获取的元信息，避免重复请求
-              const arr = Array.isArray(qb.meta.rawData) ? qb.meta.rawData : (qb.meta.rawData?.questions || []);
-              const yearMap = {};
-              arr.forEach(q=>{if(q.year){yearMap[q.year]=yearMap[q.year]||[];yearMap[q.year].push(q);}});
-              
-              Object.keys(yearMap).sort().forEach(year=>{
-                const questionCount = yearMap[year].length;
-                const progressKey = `${qb.file}?year=${year}`;
-                const completed = userProgress[progressKey] || 0;
+              // 重新获取数据，因为rawData可能不存在
+              try {
+                const res = await fetch('/question-banks/' + qb.file);
+                const data = await res.json();
+                const arr = Array.isArray(data) ? data : (data.questions || []);
+                const yearMap = {};
+                arr.forEach(q=>{if(q.year){yearMap[q.year]=yearMap[q.year]||[];yearMap[q.year].push(q);}});
                 
-                yearGroups.push({
-                  name: `${year}年真题`,
-                  count: questionCount,
-                  file: qb.file,
-                  year: year,
-                  preview: yearMap[year].slice(0,3).map(q=>q.title||q.question||q.text||''),
-                  completed: completed
+                Object.keys(yearMap).sort().forEach(year=>{
+                  const questionCount = yearMap[year].length;
+                  const progressKey = `${qb.file}?year=${year}`;
+                  const completed = userProgress[progressKey] || 0;
+                  
+                  yearGroups.push({
+                    name: `${year}年真题`,
+                    count: questionCount,
+                    file: qb.file,
+                    year: year,
+                    preview: yearMap[year].slice(0,3).map(q=>q.title||q.question||q.text||''),
+                    completed: completed
+                  });
                 });
-              });
+              } catch (error) {
+                console.error('Error loading question bank:', qb.file, error);
+              }
             }
             
             // 对年份组进行排序
@@ -5416,17 +5527,76 @@
             card.addEventListener('mouseenter',function(){
               let preview = JSON.parse(decodeURIComponent(this.getAttribute('data-preview'))||'[]');
               if(!preview.length) return;
+              
+              // 创建增强的预览弹窗
               let tip = document.createElement('div');
-              tip.className = 'qb-preview-tip';
-              tip.innerHTML = '<b>题目预览：</b><ul>'+preview.map(t=>`<li>${t}</li>`).join('')+'</ul>';
+              tip.className = 'qb-preview-tip enhanced';
+              tip.innerHTML = `
+                <div class="preview-header">
+                  <i class="fas fa-eye"></i>
+                  <span>题目预览</span>
+                  <button class="preview-close" onclick="this.parentElement.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+                <div class="preview-content">
+                  ${preview.map((t, index) => `
+                    <div class="preview-item">
+                      <div class="preview-number">${index + 1}</div>
+                      <div class="preview-text">${formatPreviewText(t)}</div>
+                    </div>
+                  `).join('')}
+                </div>
+                <div class="preview-footer">
+                  <span>共 ${preview.length} 道题目</span>
+                </div>
+              `;
+              
               document.body.appendChild(tip);
               let rect = this.getBoundingClientRect();
-              tip.style.left = (rect.right+10)+'px';
-              tip.style.top = (rect.top+window.scrollY)+'px';
+              
+              // 智能定位，避免超出屏幕
+              const tipWidth = 320;
+              const tipHeight = 200;
+              const viewportWidth = window.innerWidth;
+              const viewportHeight = window.innerHeight;
+              
+              let left = rect.right + 10;
+              let top = rect.top + window.scrollY;
+              
+              // 如果右侧空间不够，显示在左侧
+              if (left + tipWidth > viewportWidth) {
+                left = rect.left - tipWidth - 10;
+              }
+              
+              // 如果底部空间不够，向上调整
+              if (top + tipHeight > viewportHeight + window.scrollY) {
+                top = viewportHeight + window.scrollY - tipHeight - 10;
+              }
+              
+              tip.style.left = left + 'px';
+              tip.style.top = top + 'px';
               this._tip = tip;
+              
+              // 添加淡入动画
+              setTimeout(() => {
+                tip.style.opacity = '1';
+                tip.style.transform = 'translateY(0)';
+              }, 10);
             });
+            
             card.addEventListener('mouseleave',function(){
-              if(this._tip) {this._tip.remove();this._tip=null;}
+              if(this._tip) {
+                // 添加淡出动画
+                this._tip.style.opacity = '0';
+                this._tip.style.transform = 'translateY(10px)';
+                setTimeout(() => {
+                  if(this._tip && this._tip.parentNode) {
+                    this._tip.remove();
+                  }
+                  this._tip = null;
+                }, 300);
+              }
             });
           });
         }
@@ -5998,6 +6168,28 @@
               showNotification('已取消收藏', 'success');
               showFavoriteManagementView();
             }
+          }
+          
+          // 格式化预览文本
+          function formatPreviewText(text) {
+            if (!text) return '';
+            
+            // 移除HTML标签
+            text = text.replace(/<[^>]*>/g, '');
+            
+            // 截断长文本
+            if (text.length > 100) {
+              text = text.substring(0, 100) + '...';
+            }
+            
+            // 处理特殊字符
+            text = text.replace(/&/g, '&amp;')
+                      .replace(/</g, '&lt;')
+                      .replace(/>/g, '&gt;')
+                      .replace(/"/g, '&quot;')
+                      .replace(/'/g, '&#39;');
+            
+            return text;
           }
     </script>
     <style>
