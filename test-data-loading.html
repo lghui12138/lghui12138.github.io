@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库数据加载测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+        }
+        .result {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>题库数据加载测试</h1>
+        
+        <div class="test-section">
+            <h3>测试路径</h3>
+            <button onclick="testPath('./question-banks/index.json')">测试 ./question-banks/index.json</button>
+            <button onclick="testPath('../question-banks/index.json')">测试 ../question-banks/index.json</button>
+            <button onclick="testPath('question-banks/index.json')">测试 question-banks/index.json</button>
+            <button onclick="testPath('/question-banks/index.json')">测试 /question-banks/index.json</button>
+            <div id="pathResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>测试题库文件</h3>
+            <button onclick="testQuestionBank('分类_动量方程.json')">测试 分类_动量方程.json</button>
+            <button onclick="testQuestionBank('分类_压力.json')">测试 分类_压力.json</button>
+            <div id="questionBankResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>完整数据加载测试</h3>
+            <button onclick="testFullDataLoad()">测试完整数据加载</button>
+            <div id="fullDataResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testPath(path) {
+            const resultDiv = document.getElementById('pathResult');
+            resultDiv.innerHTML = `<div>测试路径: ${path}</div>`;
+            
+            try {
+                console.log(`测试路径: ${path}`);
+                const response = await fetch(path);
+                console.log(`响应状态: ${response.status}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    resultDiv.innerHTML += `<div class="success">✅ 成功加载数据</div>`;
+                    resultDiv.innerHTML += `<div>数据内容: ${JSON.stringify(data, null, 2)}</div>`;
+                } else {
+                    resultDiv.innerHTML += `<div class="error">❌ 请求失败: ${response.status} ${response.statusText}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML += `<div class="error">❌ 错误: ${error.message}</div>`;
+            }
+        }
+        
+        async function testQuestionBank(filename) {
+            const resultDiv = document.getElementById('questionBankResult');
+            resultDiv.innerHTML = `<div>测试题库文件: ${filename}</div>`;
+            
+            const paths = [
+                `./question-banks/${filename}`,
+                `../question-banks/${filename}`,
+                `question-banks/${filename}`,
+                `/question-banks/${filename}`
+            ];
+            
+            for (const path of paths) {
+                try {
+                    console.log(`尝试路径: ${path}`);
+                    const response = await fetch(path);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        resultDiv.innerHTML += `<div class="success">✅ 成功从 ${path} 加载</div>`;
+                        resultDiv.innerHTML += `<div>题目数量: ${Array.isArray(data) ? data.length : (data.questions ? data.questions.length : '未知格式')}</div>`;
+                        return;
+                    }
+                } catch (error) {
+                    console.log(`路径 ${path} 失败: ${error.message}`);
+                }
+            }
+            
+            resultDiv.innerHTML += `<div class="error">❌ 所有路径都失败</div>`;
+        }
+        
+        async function testFullDataLoad() {
+            const resultDiv = document.getElementById('fullDataResult');
+            resultDiv.innerHTML = '<div>开始完整数据加载测试...</div>';
+            
+            try {
+                // 测试索引文件
+                const indexResponse = await fetch('./question-banks/index.json');
+                if (!indexResponse.ok) {
+                    throw new Error(`索引文件加载失败: ${indexResponse.status}`);
+                }
+                
+                const index = await indexResponse.json();
+                resultDiv.innerHTML += `<div class="success">✅ 索引文件加载成功</div>`;
+                resultDiv.innerHTML += `<div>真题数量: ${index.real?.length || 0}</div>`;
+                resultDiv.innerHTML += `<div>分类数量: ${index.chapter?.length || 0}</div>`;
+                
+                // 测试第一个题库文件
+                if (index.chapter && index.chapter.length > 0) {
+                    const firstFile = index.chapter[0].file;
+                    const fileResponse = await fetch(`./question-banks/${firstFile}`);
+                    
+                    if (fileResponse.ok) {
+                        const fileData = await fileResponse.json();
+                        const questionCount = Array.isArray(fileData) ? fileData.length : (fileData.questions ? fileData.questions.length : 0);
+                        resultDiv.innerHTML += `<div class="success">✅ 题库文件加载成功: ${firstFile}</div>`;
+                        resultDiv.innerHTML += `<div>题目数量: ${questionCount}</div>`;
+                    } else {
+                        resultDiv.innerHTML += `<div class="error">❌ 题库文件加载失败: ${firstFile}</div>`;
+                    }
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML += `<div class="error">❌ 完整测试失败: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html> 

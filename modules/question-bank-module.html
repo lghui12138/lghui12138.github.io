@@ -6575,6 +6575,79 @@
               });
             }
             
+            // 导入题库按钮
+            const importBtn = document.getElementById('importBtn');
+            const importFile = document.getElementById('importFile');
+            if (importBtn) {
+              importBtn.addEventListener('click', function() {
+                importFile.click();
+              });
+            }
+            
+            if (importFile) {
+              importFile.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onload = function(e) {
+                    try {
+                      const data = JSON.parse(e.target.result);
+                      showNotification('题库导入成功！', 'success');
+                      console.log('导入的题库数据:', data);
+                    } catch (error) {
+                      showNotification('文件格式错误，请选择正确的JSON文件', 'error');
+                    }
+                  };
+                  reader.readAsText(file);
+                }
+              });
+            }
+            
+            // 导出题库按钮
+            const exportBtn = document.getElementById('exportBtn');
+            if (exportBtn) {
+              exportBtn.addEventListener('click', function() {
+                // 导出当前题库数据
+                const exportData = {
+                  timestamp: new Date().toISOString(),
+                  questionBanks: allBanks
+                };
+                const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `题库数据_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+                showNotification('题库数据导出成功！', 'success');
+              });
+            }
+            
+            // 错题本按钮
+            if (showWrongQuestionsBtn) {
+              showWrongQuestionsBtn.addEventListener('click', function() {
+                console.log('点击错题本按钮');
+                showWrongQuestions();
+              });
+            }
+            
+            // 收藏管理按钮
+            if (manageFavoritesBtn) {
+              manageFavoritesBtn.addEventListener('click', function() {
+                console.log('点击收藏管理按钮');
+                showFavoritesManagement();
+              });
+            }
+            
+            // 帮助按钮
+            const showHelpBtn = document.getElementById('showHelp');
+            if (showHelpBtn) {
+              showHelpBtn.addEventListener('click', function() {
+                console.log('点击帮助按钮');
+                showHelp();
+              });
+            }
+            
             // 收藏视图切换
             const showFavoritesBtn = document.getElementById('showFavorites');
             const showAllBtn = document.getElementById('showAll');
@@ -6947,6 +7020,137 @@
                }
              }, 300);
            }, 3000);
+         }
+         
+         // 显示错题本
+         function showWrongQuestions() {
+           const wrongQuestions = JSON.parse(localStorage.getItem('wrongQuestions') || '[]');
+           if (wrongQuestions.length === 0) {
+             showNotification('暂无错题记录', 'info');
+             return;
+           }
+           
+           // 创建错题本弹窗
+           const modal = document.createElement('div');
+           modal.style.cssText = `
+             position: fixed;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background: rgba(0,0,0,0.5);
+             z-index: 10000;
+             display: flex;
+             justify-content: center;
+             align-items: center;
+           `;
+           
+           modal.innerHTML = `
+             <div style="background: white; padding: 20px; border-radius: 10px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+               <h3>错题本 (${wrongQuestions.length}题)</h3>
+               <div id="wrongQuestionsList"></div>
+               <button onclick="this.parentElement.parentElement.remove()" style="margin-top: 10px; padding: 8px 16px; background: #666; color: white; border: none; border-radius: 5px; cursor: pointer;">关闭</button>
+             </div>
+           `;
+           
+           document.body.appendChild(modal);
+           
+           // 显示错题列表
+           const list = document.getElementById('wrongQuestionsList');
+           wrongQuestions.forEach((question, index) => {
+             const div = document.createElement('div');
+             div.style.cssText = 'margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px;';
+             div.innerHTML = `
+               <strong>第${index + 1}题:</strong> ${question.title || question.question || '题目内容'}
+             `;
+             list.appendChild(div);
+           });
+         }
+         
+         // 显示收藏管理
+         function showFavoritesManagement() {
+           const favorites = JSON.parse(localStorage.getItem('favoriteQuestions') || '[]');
+           if (favorites.length === 0) {
+             showNotification('暂无收藏题目', 'info');
+             return;
+           }
+           
+           // 创建收藏管理弹窗
+           const modal = document.createElement('div');
+           modal.style.cssText = `
+             position: fixed;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background: rgba(0,0,0,0.5);
+             z-index: 10000;
+             display: flex;
+             justify-content: center;
+             align-items: center;
+           `;
+           
+           modal.innerHTML = `
+             <div style="background: white; padding: 20px; border-radius: 10px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+               <h3>收藏管理 (${favorites.length}题)</h3>
+               <div id="favoritesList"></div>
+               <button onclick="this.parentElement.parentElement.remove()" style="margin-top: 10px; padding: 8px 16px; background: #666; color: white; border: none; border-radius: 5px; cursor: pointer;">关闭</button>
+             </div>
+           `;
+           
+           document.body.appendChild(modal);
+           
+           // 显示收藏列表
+           const list = document.getElementById('favoritesList');
+           favorites.forEach((question, index) => {
+             const div = document.createElement('div');
+             div.style.cssText = 'margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px;';
+             div.innerHTML = `
+               <strong>第${index + 1}题:</strong> ${question.title || question.question || '题目内容'}
+             `;
+             list.appendChild(div);
+           });
+         }
+         
+         // 显示帮助
+         function showHelp() {
+           const modal = document.createElement('div');
+           modal.style.cssText = `
+             position: fixed;
+             top: 0;
+             left: 0;
+             width: 100%;
+             height: 100%;
+             background: rgba(0,0,0,0.5);
+             z-index: 10000;
+             display: flex;
+             justify-content: center;
+             align-items: center;
+           `;
+           
+           modal.innerHTML = `
+             <div style="background: white; padding: 20px; border-radius: 10px; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+               <h3>帮助信息</h3>
+               <div style="line-height: 1.6;">
+                 <h4>快捷键:</h4>
+                 <ul>
+                   <li>Ctrl + F: 搜索题库</li>
+                   <li>Ctrl + S: 保存进度</li>
+                   <li>Ctrl + R: 刷新页面</li>
+                 </ul>
+                 <h4>功能说明:</h4>
+                 <ul>
+                   <li>导入题库: 支持JSON格式的题库文件</li>
+                   <li>导出题库: 导出当前题库数据</li>
+                   <li>收藏管理: 管理收藏的题目</li>
+                   <li>错题本: 查看做错的题目</li>
+                 </ul>
+               </div>
+               <button onclick="this.parentElement.parentElement.remove()" style="margin-top: 10px; padding: 8px 16px; background: #666; color: white; border: none; border-radius: 5px; cursor: pointer;">关闭</button>
+             </div>
+           `;
+           
+           document.body.appendChild(modal);
          }
 
         // 更新统计信息
