@@ -2,11 +2,17 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📊 成绩管理 - 流体力学海洋</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+    <title>📊 成绩管理 - 流体力学学习平台</title>
     
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Font Awesome - 使用国内CDN -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js - 使用国内CDN -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     
     <style>
         /* ===== 海洋主题变量 ===== */
@@ -403,6 +409,161 @@
             background: rgba(231, 76, 60, 0.1);
         }
         
+        /* ===== 详细分析 ===== */
+        .analysis-section {
+            margin-top: 40px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            color: var(--text-dark);
+        }
+        
+        .analysis-section h3 {
+            color: var(--ocean-blue);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .analysis-card {
+            background: rgba(240, 244, 248, 0.5);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .analysis-card h4 {
+            color: var(--ocean-blue);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .distribution-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .dist-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dist-label {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+        
+        .dist-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+        }
+        
+        .subject-performance {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .subject-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed var(--ocean-light);
+        }
+        
+        .subject-name {
+            font-weight: 600;
+            color: var(--ocean-deep);
+        }
+        
+        .subject-stats {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+        }
+        
+        .recommendations-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .recommendation-item {
+            background: rgba(240, 244, 248, 0.5);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 15px;
+            text-align: left;
+        }
+        
+        .recommendation-item.critical {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        .recommendation-item.improvement {
+            border-color: #f39c12;
+            background: rgba(243, 156, 18, 0.1);
+        }
+        
+        .recommendation-item.excellent {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .recommendation-item.warning {
+            border-color: #f39c12;
+            background: rgba(243, 156, 18, 0.1);
+        }
+        
+        .rec-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .rec-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--ocean-deep);
+        }
+        
+        .rec-description {
+            font-size: 0.9rem;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+        
+        .rec-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .action-tag {
+            background: var(--seafoam);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
         /* ===== 响应式设计 ===== */
         @media (max-width: 768px) {
             .stats-grid {
@@ -549,6 +710,11 @@
                     <p>当有足够的数据时，这里将显示成绩分布图表</p>
                 </div>
             </div>
+        </div>
+
+        <!-- 详细分析 -->
+        <div class="analysis-section" id="detailedAnalysis">
+            <!-- 内容将由JavaScript填充 -->
         </div>
     </div>
     
@@ -740,6 +906,7 @@
             showNotification(`已添加 ${gradeData.name} 的成绩：${gradeData.score}分`, 'success');
             updateStats();
             renderGradeList();
+            generateDetailedAnalysis(); // 添加成绩后重新生成分析
             return true;
         }
         
@@ -756,6 +923,7 @@
                     showNotification('成绩已更新', 'success');
                     updateStats();
                     renderGradeList();
+                    generateDetailedAnalysis(); // 编辑成绩后重新生成分析
                 } else {
                     showNotification('成绩必须在0-150分之间', 'error');
                 }
@@ -770,6 +938,7 @@
                 showNotification(`已删除 ${deletedGrade.name} 的成绩记录`, 'success');
                 updateStats();
                 renderGradeList();
+                generateDetailedAnalysis(); // 删除成绩后重新生成分析
             }
         }
         
@@ -805,8 +974,272 @@
             
             updateStats();
             renderGradeList();
+            generateDetailedAnalysis();
             showNotification('📊 成绩管理模块已加载', 'success');
         });
+        
+        // 生成详细成绩分析
+        function generateDetailedAnalysis() {
+            if (gradesData.length === 0) return;
+            
+            const analysis = {
+                totalStudents: gradesData.length,
+                averageScore: calculateAverage(),
+                highestScore: Math.max(...gradesData.map(g => g.score)),
+                lowestScore: Math.min(...gradesData.map(g => g.score)),
+                scoreDistribution: getScoreDistribution(),
+                subjectPerformance: getSubjectPerformance(),
+                trendAnalysis: getTrendAnalysis(),
+                recommendations: generateRecommendations()
+            };
+            
+            renderDetailedAnalysis(analysis);
+        }
+        
+        // 计算平均分
+        function calculateAverage() {
+            const total = gradesData.reduce((sum, grade) => sum + grade.score, 0);
+            return (total / gradesData.length).toFixed(1);
+        }
+        
+        // 获取分数分布
+        function getScoreDistribution() {
+            const distribution = {
+                excellent: 0, // 90-150分
+                good: 0,      // 80-89分
+                fair: 0,      // 70-79分
+                pass: 0,      // 60-69分
+                fail: 0       // 0-59分
+            };
+            
+            gradesData.forEach(grade => {
+                if (grade.score >= 90) distribution.excellent++;
+                else if (grade.score >= 80) distribution.good++;
+                else if (grade.score >= 70) distribution.fair++;
+                else if (grade.score >= 60) distribution.pass++;
+                else distribution.fail++;
+            });
+            
+            return distribution;
+        }
+        
+        // 获取各科目表现
+        function getSubjectPerformance() {
+            const subjects = {};
+            
+            gradesData.forEach(grade => {
+                if (!subjects[grade.subject]) {
+                    subjects[grade.subject] = {
+                        total: 0,
+                        count: 0,
+                        scores: []
+                    };
+                }
+                subjects[grade.subject].total += grade.score;
+                subjects[grade.subject].count++;
+                subjects[grade.subject].scores.push(grade.score);
+            });
+            
+            // 计算各科目平均分
+            Object.keys(subjects).forEach(subject => {
+                subjects[subject].average = (subjects[subject].total / subjects[subject].count).toFixed(1);
+                subjects[subject].max = Math.max(...subjects[subject].scores);
+                subjects[subject].min = Math.min(...subjects[subject].scores);
+            });
+            
+            return subjects;
+        }
+        
+        // 获取趋势分析
+        function getTrendAnalysis() {
+            const sortedGrades = gradesData.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            const trends = [];
+            
+            for (let i = 0; i < sortedGrades.length - 1; i++) {
+                const current = sortedGrades[i];
+                const next = sortedGrades[i + 1];
+                const trend = next.score - current.score;
+                
+                trends.push({
+                    from: current.name,
+                    to: next.name,
+                    change: trend,
+                    percentage: ((trend / current.score) * 100).toFixed(1)
+                });
+            }
+            
+            return trends;
+        }
+        
+        // 生成学习建议
+        function generateRecommendations() {
+            const recommendations = [];
+            const average = parseFloat(calculateAverage());
+            
+            if (average < 60) {
+                recommendations.push({
+                    type: 'critical',
+                    title: '需要重点关注',
+                    description: '平均分较低，建议加强基础知识的复习和练习',
+                    actions: ['增加练习时间', '重点复习基础概念', '寻求教师指导']
+                });
+            } else if (average < 80) {
+                recommendations.push({
+                    type: 'improvement',
+                    title: '有提升空间',
+                    description: '成绩中等，可以通过针对性练习提升成绩',
+                    actions: ['分析错题原因', '加强薄弱环节', '多做模拟题']
+                });
+            } else {
+                recommendations.push({
+                    type: 'excellent',
+                    title: '成绩优秀',
+                    description: '继续保持良好的学习状态',
+                    actions: ['挑战更高难度', '帮助其他同学', '参与竞赛活动']
+                });
+            }
+            
+            // 基于分数分布的建议
+            const distribution = getScoreDistribution();
+            if (distribution.fail > 0) {
+                recommendations.push({
+                    type: 'warning',
+                    title: '存在不及格情况',
+                    description: `${distribution.fail}名学生需要特别关注`,
+                    actions: ['一对一辅导', '制定个性化学习计划', '定期检查进度']
+                });
+            }
+            
+            return recommendations;
+        }
+        
+        // 渲染详细分析
+        function renderDetailedAnalysis(analysis) {
+            const container = document.getElementById('detailedAnalysis');
+            if (!container) return;
+            
+            container.innerHTML = `
+                <div class="analysis-section">
+                    <h3><i class="fas fa-chart-line"></i> 详细成绩分析</h3>
+                    
+                    <div class="analysis-grid">
+                        <div class="analysis-card">
+                            <h4>分数分布</h4>
+                            <div class="distribution-chart">
+                                <div class="dist-item">
+                                    <span class="dist-label">优秀 (90-150)</span>
+                                    <span class="dist-value">${analysis.scoreDistribution.excellent}人</span>
+                                </div>
+                                <div class="dist-item">
+                                    <span class="dist-label">良好 (80-89)</span>
+                                    <span class="dist-value">${analysis.scoreDistribution.good}人</span>
+                                </div>
+                                <div class="dist-item">
+                                    <span class="dist-label">中等 (70-79)</span>
+                                    <span class="dist-value">${analysis.scoreDistribution.fair}人</span>
+                                </div>
+                                <div class="dist-item">
+                                    <span class="dist-label">及格 (60-69)</span>
+                                    <span class="dist-value">${analysis.scoreDistribution.pass}人</span>
+                                </div>
+                                <div class="dist-item">
+                                    <span class="dist-label">不及格 (0-59)</span>
+                                    <span class="dist-value">${analysis.scoreDistribution.fail}人</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="analysis-card">
+                            <h4>各科目表现</h4>
+                            <div class="subject-performance">
+                                ${Object.entries(analysis.subjectPerformance).map(([subject, data]) => `
+                                    <div class="subject-item">
+                                        <div class="subject-name">${subject}</div>
+                                        <div class="subject-stats">
+                                            <span>平均: ${data.average}分</span>
+                                            <span>最高: ${data.max}分</span>
+                                            <span>最低: ${data.min}分</span>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        
+                        <div class="analysis-card">
+                            <h4>学习建议</h4>
+                            <div class="recommendations-list">
+                                ${analysis.recommendations.map(rec => `
+                                    <div class="recommendation-item ${rec.type}">
+                                        <div class="rec-header">
+                                            <i class="fas ${getRecommendationIcon(rec.type)}"></i>
+                                            <span class="rec-title">${rec.title}</span>
+                                        </div>
+                                        <p class="rec-description">${rec.description}</p>
+                                        <div class="rec-actions">
+                                            ${rec.actions.map(action => `<span class="action-tag">${action}</span>`).join('')}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 获取建议图标
+        function getRecommendationIcon(type) {
+            const iconMap = {
+                'critical': 'fa-exclamation-triangle',
+                'improvement': 'fa-arrow-up',
+                'excellent': 'fa-star',
+                'warning': 'fa-exclamation-circle'
+            };
+            return iconMap[type] || 'fa-lightbulb';
+        }
+        
+        // 导出成绩报告
+        function exportGradeReport() {
+            const report = {
+                title: '流体力学成绩报告',
+                date: new Date().toLocaleDateString(),
+                totalStudents: gradesData.length,
+                averageScore: calculateAverage(),
+                grades: gradesData,
+                analysis: {
+                    distribution: getScoreDistribution(),
+                    subjects: getSubjectPerformance(),
+                    recommendations: generateRecommendations()
+                }
+            };
+            
+            const reportText = `
+流体力学成绩报告
+生成时间: ${report.date}
+总人数: ${report.totalStudents}
+平均分: ${report.averageScore}
+
+成绩分布:
+优秀(90-150分): ${report.analysis.distribution.excellent}人
+良好(80-89分): ${report.analysis.distribution.good}人
+中等(70-79分): ${report.analysis.distribution.fair}人
+及格(60-69分): ${report.analysis.distribution.pass}人
+不及格(0-59分): ${report.analysis.distribution.fail}人
+
+详细成绩:
+${gradesData.map(grade => `${grade.name} - ${grade.subject} - ${grade.score}分`).join('\n')}
+            `;
+            
+            const blob = new Blob([reportText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `成绩报告_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showNotification('成绩报告已导出', 'success');
+        }
         
         console.log('📊 成绩管理模块已加载');
     </script>
