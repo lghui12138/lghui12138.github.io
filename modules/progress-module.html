@@ -1040,79 +1040,8 @@
                     <i class="fas fa-trophy"></i> 查看成就
                 </button>
             </div>
-            <div class="goals-grid">
-                <div class="goal-card">
-                    <div class="goal-header">
-                        <div class="goal-title">学习达人</div>
-                        <span class="plan-status active">进行中</span>
-                    </div>
-                    <div class="goal-description">
-                        累计学习时间超过1000分钟。
-                    </div>
-                    <div class="goal-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 100%"></div>
-                        </div>
-                        <span class="progress-text">已达成</span>
-                    </div>
-                    <div class="goal-deadline">
-                        当前进度：<span id="studyTimeAchievement">0分钟</span>
-                    </div>
-                </div>
-                <div class="goal-card">
-                    <div class="goal-header">
-                        <div class="goal-title">题目高手</div>
-                        <span class="plan-status active">进行中</span>
-                    </div>
-                    <div class="goal-description">
-                        完成50道题目。
-                    </div>
-                    <div class="goal-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 100%"></div>
-                        </div>
-                        <span class="progress-text">已达成</span>
-                    </div>
-                    <div class="goal-deadline">
-                        当前进度：<span id="questionsAchievement">0道</span>
-                    </div>
-                </div>
-                <div class="goal-card">
-                    <div class="goal-header">
-                        <div class="goal-title">视频专家</div>
-                        <span class="plan-status active">进行中</span>
-                    </div>
-                    <div class="goal-description">
-                        观看20个视频。
-                    </div>
-                    <div class="goal-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 100%"></div>
-                        </div>
-                        <span class="progress-text">已达成</span>
-                    </div>
-                    <div class="goal-deadline">
-                        当前进度：<span id="videosAchievement">0个</span>
-                    </div>
-                </div>
-                <div class="goal-card">
-                    <div class="goal-header">
-                        <div class="goal-title">学霸</div>
-                        <span class="plan-status active">进行中</span>
-                    </div>
-                    <div class="goal-description">
-                        累计学习时间超过5000分钟。
-                    </div>
-                    <div class="goal-progress">
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 100%"></div>
-                        </div>
-                        <span class="progress-text">已达成</span>
-                    </div>
-                    <div class="goal-deadline">
-                        当前进度：<span id="studyTimeAchievement">0分钟</span>
-                    </div>
-                </div>
+            <div class="goals-grid" id="achievementsGrid">
+                <!-- 动态渲染成就卡片 -->
             </div>
         </div>
     </div>
@@ -1134,6 +1063,7 @@
             loadGoals();
             loadLearningRecords();
             updateOverview();
+            renderAchievements(); // 新增：渲染成就
             showNotification('📊 学习进度模块已加载', 'success');
         });
         
@@ -1941,75 +1871,81 @@
         
         // 学习成就系统
         function checkAchievements() {
-            const achievements = [];
-            
-            // 检查各种成就
-            if ((userLearningData.studyTime || 0) >= 1000) {
-                achievements.push({ name: '学习达人', description: '累计学习时间超过1000分钟', icon: '🏆' });
-            }
-            
-            if ((userLearningData.completedQuestions || 0) >= 50) {
-                achievements.push({ name: '题目高手', description: '完成50道题目', icon: '🎯' });
-            }
-            
-            if ((userLearningData.watchedVideos || 0) >= 20) {
-                achievements.push({ name: '视频专家', description: '观看20个视频', icon: '📺' });
-            }
-            
-            if ((userLearningData.studyTime || 0) >= 5000) {
-                achievements.push({ name: '学霸', description: '累计学习时间超过5000分钟', icon: '👑' });
-            }
-            
-            // 显示新获得的成就
-            const newAchievements = achievements.filter(achievement => 
-                !userLearningData.achievements?.includes(achievement.name)
-            );
-            
-            if (newAchievements.length > 0) {
-                showAchievementNotification(newAchievements);
-                
-                // 保存成就
-                if (!userLearningData.achievements) {
-                    userLearningData.achievements = [];
-                }
-                userLearningData.achievements.push(...newAchievements.map(a => a.name));
-                saveUserData();
-            }
+            const studyTime = userLearningData.totalTime || 0;
+            const completedQuestions = userLearningData.completedQuestions || 0;
+            const watchedVideos = userLearningData.watchedVideos || 0;
+            let msg = '';
+            if (studyTime >= 1000) msg += '🎉 恭喜达成"学习达人"成就！\n';
+            if (completedQuestions >= 50) msg += '🎉 恭喜达成"题目高手"成就！\n';
+            if (watchedVideos >= 20) msg += '🎉 恭喜达成"视频专家"成就！\n';
+            if (studyTime >= 5000) msg += '🎉 恭喜达成"学霸"成就！\n';
+            if (!msg) msg = '继续努力，成就等你来解锁！';
+            showNotification(msg, 'info');
         }
         
-        // 显示成就通知
-        function showAchievementNotification(achievements) {
-            const notification = document.createElement('div');
-            notification.className = 'achievement-notification';
-            notification.innerHTML = `
-                <div class="achievement-content">
-                    <h3>🎉 恭喜获得新成就！</h3>
-                    ${achievements.map(achievement => `
-                        <div class="achievement-item">
-                            <span class="achievement-icon">${achievement.icon}</span>
-                            <div class="achievement-info">
-                                <h4>${achievement.name}</h4>
-                                <p>${achievement.description}</p>
-                            </div>
+        // 新增：动态渲染成就卡片
+        function renderAchievements() {
+            const grid = document.getElementById('achievementsGrid');
+            if (!grid) return;
+            // 读取数据
+            const studyTime = userLearningData.totalTime || 0;
+            const completedQuestions = userLearningData.completedQuestions || 0;
+            const watchedVideos = userLearningData.watchedVideos || 0;
+            // 成就定义
+            const achievements = [
+                {
+                    id: 'studyTime1000',
+                    title: '学习达人',
+                    desc: '累计学习时间超过1000分钟。',
+                    target: 1000,
+                    current: studyTime,
+                    type: 'time',
+                },
+                {
+                    id: 'questions50',
+                    title: '题目高手',
+                    desc: '完成50道题目。',
+                    target: 50,
+                    current: completedQuestions,
+                    type: 'questions',
+                },
+                {
+                    id: 'videos20',
+                    title: '视频专家',
+                    desc: '观看20个视频。',
+                    target: 20,
+                    current: watchedVideos,
+                    type: 'videos',
+                },
+                {
+                    id: 'studyTime5000',
+                    title: '学霸',
+                    desc: '累计学习时间超过5000分钟。',
+                    target: 5000,
+                    current: studyTime,
+                    type: 'time',
+                },
+            ];
+            // 渲染
+            grid.innerHTML = achievements.map(a => {
+                const percent = Math.min((a.current / a.target) * 100, 100);
+                const reached = a.current >= a.target;
+                return `
+                <div class="goal-card${reached ? ' achieved' : ''}">
+                    <div class="goal-header">
+                        <div class="goal-title">${a.title}</div>
+                        <span class="plan-status ${reached ? 'active' : ''}">${reached ? '已达成' : '进行中'}</span>
+                    </div>
+                    <div class="goal-description">${a.desc}</div>
+                    <div class="goal-progress">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${percent}%;${reached ? 'background: linear-gradient(90deg,#4facfe,#00f2fe);' : ''}"></div>
                         </div>
-                    `).join('')}
+                        <span class="progress-text">${a.type === 'time' ? a.current + '分钟' : a.type === 'questions' ? a.current + '道' : a.current + '个'} / ${a.target}${reached ? ' 🎉' : ''}</span>
+                    </div>
                 </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.classList.add('show');
-            }, 100);
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.remove();
-                    }
-                }, 300);
-            }, 5000);
+                `;
+            }).join('');
         }
     </script>
 </body>

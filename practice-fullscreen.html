@@ -10,48 +10,132 @@
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.bootcdn.net/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
     <style>
-        html, body {
-            height: 100%; margin: 0; padding: 0;
-            background: linear-gradient(135deg, #006994 0%, #4facfe 100%);
-            color: #222; font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            min-height: 100vh;
-            transition: background 0.3s, color 0.3s;
-        }
-        body.night {
-            background: #181c25;
-            color: #e0e0e0;
-        }
-        .fullscreen-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; width: 100vw; padding: 0; box-sizing: border-box; }
-        .fullscreen-question-card { background: #fff; border-radius: 20px; box-shadow: 0 8px 32px rgba(0,0,0,0.18); max-width: 600px; width: 96vw; margin: 0 auto; padding: 32px 20px 24px 20px; display: flex; flex-direction: column; align-items: stretch; transition: background 0.3s, color 0.3s; }
-        body.night .fullscreen-question-card { background: #23273a; color: #e0e0e0; }
-        .question-title { font-size: 1.2rem; font-weight: bold; margin-bottom: 18px; color: #006994; }
-        body.night .question-title { color: #4facfe; }
-        .question-options { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
-        .option-btn { background: #f4f8fb; border: 2px solid #4facfe; border-radius: 12px; padding: 14px 18px; font-size: 1rem; color: #222; cursor: pointer; transition: background 0.2s, border 0.2s; text-align: left; }
-        .option-btn.selected { background: #4facfe; color: #fff; border-color: #006994; }
-        .option-btn.correct { background: #27ae60; color: #fff; border-color: #27ae60; }
-        .option-btn.incorrect { background: #e74c3c; color: #fff; border-color: #e74c3c; }
-        body.night .option-btn { background: #23273a; color: #e0e0e0; border-color: #4facfe; }
-        .fullscreen-controls { display: flex; justify-content: center; align-items: center; gap: 24px; margin-bottom: 18px; }
-        .control-btn { background: #006994; color: #fff; border: none; border-radius: 50px; padding: 12px 28px; font-size: 1.1rem; font-weight: bold; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 8px; }
-        .control-btn:active { background: #4facfe; }
-        .explanation-section { background: #f4f8fb; border-radius: 12px; padding: 18px 14px; margin-top: 10px; color: #006994; font-size: 1rem; display: none; }
-        .explanation-section.active { display: block; }
-        body.night .explanation-section { background: #23273a; color: #4facfe; }
-        .fullscreen-progress { text-align: center; margin-bottom: 10px; color: #006994; font-size: 1rem; }
-        body.night .fullscreen-progress { color: #4facfe; }
-        .fullscreen-header { width: 100vw; display: flex; justify-content: flex-end; align-items: center; padding: 12px 18px 0 0; }
-        .close-btn { background: none; border: none; color: #006994; font-size: 2rem; cursor: pointer; }
-        body.night .close-btn { color: #4facfe; }
-        .night-btn { background: #23273a; color: #fff; border: none; border-radius: 8px; padding: 6px 16px; font-size: 1rem; margin-right: 12px; cursor: pointer; }
-        .night-btn:active { background: #4facfe; color: #fff; }
-        .stat-bar { display: flex; justify-content: center; align-items: center; gap: 18px; margin-bottom: 10px; font-size: 1rem; color: #006994; }
-        body.night .stat-bar { color: #4facfe; }
-        .stat-item { display: flex; align-items: center; gap: 6px; }
-        .fav-btn { background: none; border: none; color: #e67e22; font-size: 1.5rem; cursor: pointer; margin-left: 8px; }
-        .fav-btn.faved { color: #e74c3c; }
-        @media (max-width: 600px) { .fullscreen-question-card { padding: 18px 4vw 12px 4vw; max-width: 98vw; } .control-btn { padding: 10px 10vw; font-size: 1rem; } }
-        .question-title img, .option-btn img, .explanation-section img { max-width: 100%; height: auto; vertical-align: middle; }
+:root {
+  --main-radius: 14px;
+  --main-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  --main-bg: #f8fafd;
+  --main-border: #e0e6ef;
+  --main-font: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Arial', sans-serif;
+}
+body {
+  background: var(--main-bg);
+  font-family: var(--main-font);
+  color: #23273a;
+}
+button, .btn, .wrongbook-btn, .modal-btn {
+  border-radius: var(--main-radius) !important;
+  box-shadow: var(--main-shadow);
+  border: none;
+  font-family: var(--main-font);
+  font-size: 1.08em;
+  padding: 10px 22px;
+  margin: 4px 0;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.1s;
+}
+button:active, .btn:active, .wrongbook-btn:active, .modal-btn:active {
+  transform: scale(0.97);
+}
+input, select, textarea {
+  border-radius: var(--main-radius);
+  border: 1.5px solid var(--main-border);
+  padding: 8px 12px;
+  font-size: 1em;
+  font-family: var(--main-font);
+  margin: 2px 0;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+  outline: none;
+  transition: border 0.2s;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: #4facfe;
+}
+#searchBar, #importBar, #syncBar, #qbFilterBar {
+  background: #fff;
+  border-radius: var(--main-radius);
+  box-shadow: var(--main-shadow);
+  padding: 12px 18px;
+  margin-bottom: 16px;
+  align-items: center;
+}
+#searchResult, #previewBox, #metaEditBox, #modalBox, #qbManagePanel {
+  background: #fff;
+  border-radius: var(--main-radius);
+  box-shadow: var(--main-shadow);
+  padding: 24px 20px;
+}
+.fullscreen-container {
+  background: #fff;
+  border-radius: var(--main-radius);
+  box-shadow: var(--main-shadow);
+  padding: 24px 18px 18px 18px;
+  margin-bottom: 18px;
+}
+.fullscreen-progress {
+  font-size: 1.08em;
+  color: #4facfe;
+  margin-bottom: 12px;
+}
+.question-title, .fullscreen-question-card {
+  font-size: 1.18em;
+  font-weight: 500;
+  margin-bottom: 12px;
+  color: #23273a;
+  line-height: 1.7;
+}
+.question-title img, .fullscreen-question-card img, .question-options img, .explanation-section img {
+  max-width: 98%;
+  height: auto;
+  display: block;
+  margin: 8px auto;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.question-title table, .fullscreen-question-card table, .explanation-section table {
+  border-collapse: collapse;
+  margin: 10px 0;
+  width: 100%;
+}
+.question-title th, .question-title td, .fullscreen-question-card th, .fullscreen-question-card td, .explanation-section th, .explanation-section td {
+  border: 1px solid #e0e6ef;
+  padding: 6px 10px;
+  text-align: center;
+}
+.question-title ul, .fullscreen-question-card ul, .explanation-section ul {
+  margin: 8px 0 8px 24px;
+  padding-left: 18px;
+}
+.question-title code, .fullscreen-question-card code, .explanation-section code {
+  background: #f4f4f4;
+  color: #c7254e;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.98em;
+}
+#questionOptions, .fullscreen-options {
+  margin-bottom: 16px;
+}
+@media (max-width: 700px) {
+  #searchBar, #importBar, #syncBar, #qbFilterBar, #searchResult, #previewBox, #metaEditBox, #modalBox, #qbManagePanel, .fullscreen-container {
+    padding: 10px 4vw !important;
+    margin-bottom: 12px;
+  }
+  button, .btn, .wrongbook-btn, .modal-btn {
+    font-size: 1em;
+    padding: 10px 10vw;
+  }
+  input, select, textarea {
+    font-size: 1em;
+    padding: 8px 4vw;
+  }
+  .fullscreen-container {
+    padding: 12px 2vw 10px 2vw !important;
+  }
+  .question-title, .fullscreen-question-card, .explanation-section {
+    font-size: 1.05em;
+    line-height: 1.5;
+  }
+}
     </style>
 </head>
 <body>
@@ -60,8 +144,17 @@
         <button class="close-btn" onclick="window.location.href='index-modular.html'" title="退出全屏"><i class="fas fa-times"></i></button>
     </div>
     <div class="stat-bar" id="statBar"></div>
+    <!-- 题库筛选区 -->
+    <div id="qbFilterBar" style="margin: 10px 0 18px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+      <select id="qbTagFilter" class="qb-select" style="min-width:90px;"><option value="">全部标签</option></select>
+      <select id="qbLevelFilter" class="qb-select" style="min-width:90px;"><option value="">全部难度</option><option value="easy">简单</option><option value="medium">中等</option><option value="hard">困难</option></select>
+      <select id="qbUploaderFilter" class="qb-select" style="min-width:90px;"><option value="">全部上传者</option></select>
+      <span style="font-size:13px;color:#888;">（可多条件组合筛选）</span>
+    </div>
     <div class="questionbank-bar">
         <select id="qbSelect" class="qb-select"></select>
+        <select id="yearSelect" class="qb-select" style="min-width:90px;"><option value="">全部年份</option></select>
+        <button class="wrongbook-btn" id="randomBtn" style="background:#27ae60;" onclick="randomPractice()"><i class="fas fa-random"></i> 随机做题</button>
         <label class="qb-upload">
             <i class="fas fa-upload"></i> 本地题库
             <input type="file" id="qbUploadInput" accept=".json,.csv" style="display:none;">
@@ -72,18 +165,73 @@
         <button class="wrongbook-btn" id="qbManageBtn" style="display:none; background:#006994;" onclick="showQbManagePanel()"><i class="fas fa-cog"></i> 题库管理</button>
         <button class="wrongbook-btn" id="showAllQbBtn" style="display:none; background:#888;" onclick="toggleShowAllQb()"><i class="fas fa-eye"></i> 显示全部</button>
     </div>
-    <div id="qbManagePanel" style="display:none; position:fixed; top:20%; left:50%; transform:translateX(-50%); background:#fff; color:#222; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:32px 24px; z-index:9999; max-width:90vw;">
+    <div id="qbManagePanel" style="display:none; position:fixed; top:10%; left:50%; transform:translateX(-50%); background:#fff; color:#222; border-radius:16px; box-shadow:0 8px 32px rgba(0,0,0,0.18); padding:32px 24px; z-index:9999; max-width:96vw; min-width:320px;">
         <h3 style="margin-bottom:18px;">题库管理</h3>
-        <div style="margin-bottom:12px;">当前题库：<span id="manageQbName"></span></div>
+        <div id="qbManageList" style="max-height:40vh; overflow:auto; margin-bottom:18px; border-bottom:1px solid #eee; padding-bottom:10px;"></div>
         <div style="margin-bottom:18px;">
-            <input id="renameQbInput" class="qb-select" style="width:70%;" placeholder="新题库名（不含扩展名）">
-            <button class="wrongbook-btn" style="background:#27ae60; margin-left:8px;" onclick="renameQb()"><i class="fas fa-edit"></i> 重命名</button>
+            <button class="wrongbook-btn" style="background:#f39c12;" onclick="batchQbHidden()"><i class="fas fa-eye-slash"></i> 批量下架/上架</button>
+            <button class="wrongbook-btn" style="background:#e74c3c; margin-left:8px;" onclick="batchQbDelete()"><i class="fas fa-trash"></i> 批量删除</button>
         </div>
-        <button class="wrongbook-btn" style="background:#e74c3c;" onclick="deleteQb()"><i class="fas fa-trash"></i> 删除题库</button>
-        <button class="wrongbook-btn" style="background:#f39c12; margin-left:12px;" onclick="toggleQbHidden()" id="hideQbBtn"><i class="fas fa-eye-slash"></i> 下架/恢复</button>
-        <button class="wrongbook-btn" style="background:#888; margin-left:12px;" onclick="closeQbManagePanel()">取消</button>
+        <button class="wrongbook-btn" style="background:#888;" onclick="closeQbManagePanel()">关闭</button>
         <div id="qbManageStatus" style="margin-top:16px; color:#006994;"></div>
     </div>
+    <!-- 导入区 -->
+    <div id="importBar" style="margin: 10px 0 18px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+      <label class="wrongbook-btn" style="background:#4facfe;cursor:pointer;">
+        <i class="fas fa-file-import"></i> 导入题库
+        <input type="file" id="importQbInput" accept=".json" style="display:none;">
+      </label>
+      <label class="wrongbook-btn" style="background:#e67e22;cursor:pointer;">
+        <i class="fas fa-file-import"></i> 导入错题本
+        <input type="file" id="importWrongInput" accept=".json" style="display:none;">
+      </label>
+      <label class="wrongbook-btn" style="background:#f39c12;cursor:pointer;">
+        <i class="fas fa-file-import"></i> 导入收藏本
+        <input type="file" id="importFavInput" accept=".json" style="display:none;">
+      </label>
+      <span id="importStatus" style="font-size:13px;color:#888;"></span>
+    </div>
+    <div id="modalOverlay"><div id="modalBox"></div></div>
+    <!-- 题库元信息编辑弹窗 -->
+    <div id="metaEditOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.18); z-index:99999; align-items:center; justify-content:center;">
+      <div id="metaEditBox" style="background:#fff; color:#222; border-radius:12px; box-shadow:0 4px 24px rgba(0,0,0,0.18); padding:32px 28px; min-width:260px; max-width:90vw;">
+        <h3 style="margin-bottom:18px;">编辑题库元信息</h3>
+        <div style="margin-bottom:12px;">题库名：<span id="metaEditName"></span></div>
+        <div style="margin-bottom:12px;">难度：<select id="metaEditLevel"><option value="">未知</option><option value="easy">简单</option><option value="medium">中等</option><option value="hard">困难</option></select></div>
+        <div style="margin-bottom:12px;">标签：<input id="metaEditTags" style="width:70%;" placeholder="逗号分隔"></div>
+        <div style="margin-bottom:12px;">上传者：<input id="metaEditUploader" style="width:70%;" placeholder="如张老师"></div>
+        <button class="modal-btn" style="background:#27ae60;" onclick="saveMetaEdit()"><i class="fas fa-save"></i> 保存</button>
+        <button class="modal-btn" style="background:#888; margin-left:12px;" onclick="closeMetaEdit()">取消</button>
+        <div id="metaEditStatus" style="margin-top:16px; color:#006994;"></div>
+      </div>
+    </div>
+    <!-- 题库内容预览弹窗 -->
+    <div id="previewOverlay" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.18); z-index:99999; align-items:center; justify-content:center;">
+      <div id="previewBox" style="background:#fff; color:#222; border-radius:12px; box-shadow:0 4px 24px rgba(0,0,0,0.18); padding:32px 28px; min-width:320px; max-width:96vw; max-height:90vh; overflow:auto;">
+        <h3 style="margin-bottom:18px;">题库预览</h3>
+        <div id="previewMeta" style="margin-bottom:12px;"></div>
+        <div id="previewStats" style="margin-bottom:12px; color:#888;"></div>
+        <div id="previewQuestions"></div>
+        <button class="modal-btn" style="background:#888; margin-top:18px;" onclick="closePreview()">关闭</button>
+      </div>
+    </div>
+    <!-- 多端同步设置区 -->
+    <div id="syncBar" style="margin: 10px 0 18px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+      <label class="wrongbook-btn" style="background:#27ae60;cursor:pointer;">
+        <i class="fas fa-sync"></i> 同步进度
+        <input type="checkbox" id="syncEnable" style="margin-left:8px;vertical-align:middle;">
+      </label>
+      <span id="syncStatus" style="font-size:13px;color:#888;"></span>
+    </div>
+    <!-- 题库全文搜索区 -->
+<div id="searchBar" style="margin: 10px 0 18px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 12px;">
+  <input id="searchInput" class="qb-select" style="min-width:180px;" placeholder="输入关键词搜索题目/解析...">
+  <select id="searchCat" class="qb-select" style="min-width:90px;"><option value="">全部分类</option></select>
+  <select id="searchLevel" class="qb-select" style="min-width:90px;"><option value="">全部难度</option><option value="easy">简单</option><option value="medium">中等</option><option value="hard">困难</option></select>
+  <button class="wrongbook-btn" style="background:#4facfe;" onclick="searchQuestions()"><i class="fas fa-search"></i> 搜索</button>
+  <span id="searchStatus" style="font-size:13px;color:#888;"></span>
+</div>
+<div id="searchResult" style="display:none; background:#f8f8fa; border-radius:10px; padding:18px 12px; margin-bottom:18px; max-height:60vh; overflow:auto;"></div>
     <div class="fullscreen-container">
         <div class="fullscreen-progress" id="fullscreenProgress"></div>
         <div class="fullscreen-question-card">
@@ -105,53 +253,103 @@
         let answered = false;
         let wrongBook = [];
         let favBook = JSON.parse(localStorage.getItem('fullscreen_favbook')||'[]');
-        let qbList = [
-            {name: '默认题库', value: 'default', url: 'question-banks/default.json'},
-        ];
+        // 题库元信息结构扩展
+        let qbList = [];
         const GITHUB_REPO = 'lghui12138/lghui12138.github.io';
         const GITHUB_QB_DIR = 'question-banks';
         const GITHUB_TOKEN_KEY = 'github_token';
         let showAllQb = false;
         function getGithubToken() { return localStorage.getItem(GITHUB_TOKEN_KEY) || ''; }
+        // 修改 fetchGithubQuestionBanks 以本地聚合分类题库
         async function fetchGithubQuestionBanks() {
-            const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_QB_DIR}`;
-            const urlHidden = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_QB_DIR}/hidden`;
-            const token = getGithubToken();
-            const headers = token ? { 'Authorization': `token ${token}` } : {};
-            let files = [];
+          // 远程+本地分类题库
+          const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_QB_DIR}`;
+          const urlHidden = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_QB_DIR}/hidden`;
+          const token = getGithubToken();
+          const headers = token ? { 'Authorization': `token ${token}` } : {};
+          let files = [];
+          try {
+            const res = await fetch(url, {headers});
+            if (res.ok) files = await res.json();
+          } catch {}
+          if (showAllQb) {
             try {
-                const res = await fetch(url, {headers});
-                if (res.ok) files = await res.json();
+              const res2 = await fetch(urlHidden, {headers});
+              if (res2.ok) {
+                const hidden = await res2.json();
+                files = files.concat(hidden.map(f=>({...f, hidden:true})));
+              }
             } catch {}
-            if (showAllQb) {
-                try {
-                    const res2 = await fetch(urlHidden, {headers});
-                    if (res2.ok) {
-                        const hidden = await res2.json();
-                        files = files.concat(hidden.map(f=>({...f, hidden:true})));
-                    }
-                } catch {}
-            }
-            qbList = files.filter(f => /\.(json|csv)$/i.test(f.name)).map(f => ({
-                name: f.name,
-                value: f.name.replace(/\.[^.]+$/, ''),
-                url: f.download_url,
-                hidden: !!f.hidden || f.path.includes('/hidden/')
-            }));
-            if (!showAllQb) qbList = qbList.filter(qb=>!qb.hidden);
-            if (!qbList.length) qbList = [{name: '默认题库', value: 'default', url: 'question-banks/default.json'}];
+          }
+          // 本地分类题库聚合
+          try {
+            const localFiles = await fetch('question-banks/').then(r=>r.text()).then(html=>{
+              // 解析目录列表
+              const matches = Array.from(html.matchAll(/href="([^"]+分类_[^"]+\.json)"/g));
+              return matches.map(m=>({name:decodeURIComponent(m[1]), value:m[1].replace(/\.[^.]+$/, ''), url:'question-banks/'+m[1], hidden:false}));
+            });
+            files = files.concat(localFiles);
+          } catch {}
+          return files.filter(f => /\.(json|csv)$/i.test(f.name)).map(f => ({
+            name: f.name,
+            value: f.name.replace(/\.[^.]+$/, ''),
+            url: f.url,
+            hidden: !!f.hidden || (f.path && f.path.includes('/hidden/'))
+          }));
         }
         async function renderQBSelect() {
-            await fetchGithubQuestionBanks();
+            // 拉取题库元信息
+            qbList = await fetchGithubQuestionBanksWithMeta();
+            // 筛选条件
+            const tag = document.getElementById('qbTagFilter').value;
+            const level = document.getElementById('qbLevelFilter').value;
+            const uploader = document.getElementById('qbUploaderFilter').value;
+            // 过滤
+            let filtered = qbList.filter(qb => {
+              let ok = true;
+              if (tag && !(qb.tags||[]).includes(tag)) ok = false;
+              if (level && qb.level !== level) ok = false;
+              if (uploader && qb.uploader !== uploader) ok = false;
+              return ok;
+            });
+            // 渲染下拉
             const sel = document.getElementById('qbSelect');
-            sel.innerHTML = qbList.map(qb => `<option value="${qb.value}">${qb.name}${qb.hidden?'（下架）':''}</option>`).join('');
+            sel.innerHTML = filtered.map(qb =>
+              `<option value="${qb.name}">${qb.name}${qb.hidden?'（下架）':''}  [${qb.level||'未知'}]  ${qb.tags?.length?qb.tags.join(','):''}  ${qb.uploader?('by '+qb.uploader):''}</option>`
+            ).join('');
+            // 渲染筛选选项
+            const tagSet = new Set(), uploaderSet = new Set();
+            qbList.forEach(qb => {
+              (qb.tags||[]).forEach(t=>tagSet.add(t));
+              if(qb.uploader) uploaderSet.add(qb.uploader);
+            });
+            document.getElementById('qbTagFilter').innerHTML = '<option value="">全部标签</option>' + Array.from(tagSet).map(t=>`<option value="${t}">${t}</option>`).join('');
+            document.getElementById('qbUploaderFilter').innerHTML = '<option value="">全部上传者</option>' + Array.from(uploaderSet).map(u=>`<option value="${u}">${u}</option>`).join('');
             const preset = localStorage.getItem('fullscreen_qb_value');
             if (preset) sel.value = preset;
+            // 在 renderQBSelect 末尾添加年份聚合和下拉渲染
+            const yearSel = document.getElementById('yearSelect');
+            yearSel.innerHTML = '<option value="">全部年份</option>';
+            if (filtered.length) {
+              // 拉取题库内容，聚合所有年份
+              fetch(filtered[0].url).then(r=>r.json()).then(data=>{
+                if (!Array.isArray(data)) data = data.questions||data.data||[];
+                const yearSet = new Set();
+                data.forEach(q=>{ if(q.year) yearSet.add(q.year); });
+                yearSel.innerHTML = '<option value="">全部年份</option>' + Array.from(yearSet).sort().map(y=>`<option value="${y}">${y}</option>`).join('');
+              });
+            }
+            yearSel.onchange = function() {
+              loadQuestionsByValue(document.getElementById('qbSelect').value);
+            };
         }
         function loadQuestionsByValue(val) {
-            const qb = qbList.find(q => q.value === val);
+            const qb = qbList.find(q => q.name === val);
             if (qb && qb.url) {
                 fetch(qb.url).then(r=>r.json()).then(data => {
+                    if (!Array.isArray(data)) data = data.questions||data.data||[];
+                    const year = document.getElementById('yearSelect')?.value;
+                    if (year) data = data.filter(q=>q.year==year);
                     questions = data; current = 0; selected = null; answered = false;
                     localStorage.setItem('fullscreen_questions', JSON.stringify(questions));
                     renderQuestion();
@@ -296,13 +494,13 @@
             URL.revokeObjectURL(url);
         }
         function showQbManagePanel() {
-            const sel = document.getElementById('qbSelect');
-            const idx = sel.selectedIndex;
-            if (idx < 0) { alert('请先选择一个题库'); return; }
-            const qb = qbList[idx];
-            document.getElementById('manageQbName').textContent = qb.name;
-            document.getElementById('renameQbInput').value = qb.name.replace(/\.[^.]+$/, '');
+            // 渲染多选题库列表
+            let html = qbList.map((qb,i)=>
+                `<label style='display:flex;align-items:center;margin-bottom:6px;'><input type='checkbox' class='qb-multi' value='${qb.name}' data-hidden='${qb.hidden?1:0}' style='margin-right:8px;'>${qb.name}${qb.hidden?'（下架）':''}  [${qb.level||'未知'}]  ${qb.tags?.length?qb.tags.join(','):''}  ${qb.uploader?('by '+qb.uploader):''} <button class='modal-btn' style='margin-left:8px;padding:2px 10px;font-size:0.95em;' onclick='openMetaEdit("${qb.name}")'><i class="fas fa-edit"></i> 编辑</button></label>`
+            ).join('');
+            document.getElementById('qbManageList').innerHTML = html;
             document.getElementById('qbManagePanel').style.display = 'block';
+            document.getElementById('qbManageStatus').textContent = '';
         }
         function closeQbManagePanel() {
             document.getElementById('qbManagePanel').style.display = 'none';
@@ -400,6 +598,85 @@
             document.getElementById('showAllQbBtn').textContent = showAllQb ? '仅显示上架' : '显示全部';
             renderQBSelect();
         }
+        async function batchQbDelete() {
+            const selected = Array.from(document.querySelectorAll('.qb-multi:checked'));
+            if (!selected.length) { showError('请选择题库'); return; }
+            showModal('确定要批量删除选中题库？',{buttons:[{text:'取消',onclick:'hideModal()'},{text:'确定',danger:true,onclick:'hideModal();batchQbDeleteDo();'}]});
+        }
+        async function batchQbDeleteDo() {
+            const selected = Array.from(document.querySelectorAll('.qb-multi:checked'));
+            const token = localStorage.getItem('github_token');
+            if (!token) { showError('请先设置GitHub Token'); return; }
+            let ok = 0, fail = 0;
+            showLoading('正在删除...');
+            for (let cb of selected) {
+                const file = cb.value;
+                const isHidden = cb.dataset.hidden==='1';
+                const url = `https://api.github.com/repos/lghui12138/lghui12138.github.io/contents/question-banks/${isHidden?'hidden/':''}${file}`;
+                const res = await fetch(url, {headers:{'Authorization':`token ${token}`}});
+                if (!res.ok) { fail++; continue; }
+                const info = await res.json();
+                const delRes = await fetch(url, {
+                    method:'DELETE',
+                    headers:{'Authorization':`token ${token}`},
+                    body:JSON.stringify({message:`批量删除题库:${file}`,sha:info.sha,branch:'main'})
+                });
+                if (delRes.ok) ok++; else fail++;
+                showLoading(`正在删除... 成功:${ok} 失败:${fail}`);
+            }
+            if(ok) showSuccess(`批量删除完成！成功:${ok} 失败:${fail}`); else showError(`批量删除失败！成功:${ok} 失败:${fail}`);
+            await renderQBSelect();
+        }
+        async function batchQbHidden() {
+            const selected = Array.from(document.querySelectorAll('.qb-multi:checked'));
+            if (!selected.length) { showError('请选择题库'); return; }
+            showModal('确定要批量下架/上架选中题库？',{buttons:[{text:'取消',onclick:'hideModal()'},{text:'确定',danger:true,onclick:'hideModal();batchQbHiddenDo();'}]});
+        }
+        async function batchQbHiddenDo() {
+            const selected = Array.from(document.querySelectorAll('.qb-multi:checked'));
+            const token = localStorage.getItem('github_token');
+            if (!token) { showError('请先设置GitHub Token'); return; }
+            let ok = 0, fail = 0;
+            showLoading('正在操作...');
+            for (let cb of selected) {
+                const file = cb.value;
+                const isHidden = cb.dataset.hidden==='1';
+                const url = `https://api.github.com/repos/lghui12138/lghui12138.github.io/contents/question-banks/${isHidden?'hidden/':''}${file}`;
+                const res = await fetch(url, {headers:{'Authorization':`token ${token}`}});
+                if (!res.ok) { fail++; continue; }
+                const info = await res.json();
+                const newPath = isHidden ? `question-banks/${file}` : `question-banks/hidden/${file}`;
+                const mvRes = await fetch(url, {
+                    method:'PUT',
+                    headers:{'Authorization':`token ${token}`,'Content-Type':'application/json'},
+                    body:JSON.stringify({message:`批量${isHidden?'上架':'下架'}题库:${file}`,content:info.content,sha:info.sha,branch:'main',path:newPath})
+                });
+                if (mvRes.ok) ok++; else fail++;
+                showLoading(`正在操作... 成功:${ok} 失败:${fail}`);
+            }
+            if(ok) showSuccess(`批量下架/上架完成！成功:${ok} 失败:${fail}`); else showError(`批量操作失败！成功:${ok} 失败:${fail}`);
+            await renderQBSelect();
+        }
+        // 监听筛选
+        ['qbTagFilter','qbLevelFilter','qbUploaderFilter'].forEach(id=>{
+          document.getElementById(id).addEventListener('change',renderQBSelect);
+        });
+        // 拉取题库元信息
+        async function fetchGithubQuestionBanksWithMeta() {
+          // 兼容原有fetchGithubQuestionBanks，假设文件名格式: name_level_tag1,tag2_uploader.json
+          const list = await fetchGithubQuestionBanks();
+          return list.map(qb=>{
+            // 解析元信息
+            let m = qb.name.match(/^(.+?)(?:_([a-z]+))?(?:_([\w,]+))?(?:_by([\w\u4e00-\u9fa5]+))?\.[a-z]+$/i);
+            let tags = [], level = '', uploader = '';
+            if(m){
+              level = m[2]||'';
+              tags = m[3]?m[3].split(','):[];
+              uploader = m[4]||'';
+            }
+            return {...qb, level, tags, uploader};
+          });
+        }
         // 键盘快捷键
         document.addEventListener('keydown', function(e) {
             if (e.key === 'ArrowLeft') prevQuestion();
@@ -423,6 +700,354 @@
                 document.documentElement.requestFullscreen().catch(()=>{});
             }
         });
+        function showModal(msg, opts={}){
+          const overlay = document.getElementById('modalOverlay');
+          const box = document.getElementById('modalBox');
+          box.innerHTML = `<div style='font-size:1.15rem;'>${msg}</div>` + (opts.buttons?opts.buttons.map(btn=>`<button class='modal-btn${btn.danger?' danger':''}' onclick='${btn.onclick}'>${btn.text}</button>`).join(''):'');
+          overlay.style.display = 'flex';
+          overlay.onclick = e=>{ if(e.target===overlay) overlay.style.display='none'; };
+        }
+        function hideModal(){ document.getElementById('modalOverlay').style.display='none'; }
+        function showLoading(msg){ showModal(`<span class='loading-spinner'></span>${msg}`); }
+        function showSuccess(msg){ showModal(`<span style='color:#27ae60;font-size:1.5em;'>✔</span><br>${msg}`); setTimeout(hideModal,1200); }
+        function showError(msg){ showModal(`<span style='color:#e74c3c;font-size:1.5em;'>✖</span><br>${msg}`); setTimeout(hideModal,1800); }
+
+        // 批量删除/下架/上架增加二次确认和动画
+        async function batchQbDelete() {
+          const selected = Array.from(document.querySelectorAll('.qb-multi:checked'));
+          if (!selected.length) { showError('请选择题库'); return; }
+          showModal('确定要批量删除选中题库？',{buttons:[{text:'取消',onclick:'hideModal()'},{text:'确定',danger:true,onclick:'hideModal();batchQbDeleteDo();'}]});
+        }
+        async function batchQbDeleteDo() {
+          const selected = Array.from(document.querySelectorAll('.qb-multi:checked'));
+          const token = localStorage.getItem('github_token');
+          if (!token) { showError('请先设置GitHub Token'); return; }
+          let ok = 0, fail = 0;
+          showLoading('正在删除...');
+          for (let cb of selected) {
+            const file = cb.value;
+            const isHidden = cb.dataset.hidden==='1';
+            const url = `https://api.github.com/repos/lghui12138/lghui12138.github.io/contents/question-banks/${isHidden?'hidden/':''}${file}`;
+            const res = await fetch(url, {headers:{'Authorization':`token ${token}`}});
+            if (!res.ok) { fail++; continue; }
+            const info = await res.json();
+            const delRes = await fetch(url, {
+              method:'DELETE',
+              headers:{'Authorization':`token ${token}`},
+              body:JSON.stringify({message:`批量删除题库:${file}`,sha:info.sha,branch:'main'})
+            });
+            if (delRes.ok) ok++; else fail++;
+            showLoading(`正在删除... 成功:${ok} 失败:${fail}`);
+          }
+          if(ok) showSuccess(`批量删除完成！成功:${ok} 失败:${fail}`); else showError(`批量删除失败！成功:${ok} 失败:${fail}`);
+          await renderQBSelect();
+        }
+        async function batchQbHidden() {
+          const selected = Array.from(document.querySelectorAll('.qb-multi:checked'));
+          if (!selected.length) { showError('请选择题库'); return; }
+          showModal('确定要批量下架/上架选中题库？',{buttons:[{text:'取消',onclick:'hideModal()'},{text:'确定',danger:true,onclick:'hideModal();batchQbHiddenDo();'}]});
+        }
+        async function batchQbHiddenDo() {
+          const selected = Array.from(document.querySelectorAll('.qb-multi:checked'));
+          const token = localStorage.getItem('github_token');
+          if (!token) { showError('请先设置GitHub Token'); return; }
+          let ok = 0, fail = 0;
+          showLoading('正在操作...');
+          for (let cb of selected) {
+            const file = cb.value;
+            const isHidden = cb.dataset.hidden==='1';
+            const url = `https://api.github.com/repos/lghui12138/lghui12138.github.io/contents/question-banks/${isHidden?'hidden/':''}${file}`;
+            const res = await fetch(url, {headers:{'Authorization':`token ${token}`}});
+            if (!res.ok) { fail++; continue; }
+            const info = await res.json();
+            const newPath = isHidden ? `question-banks/${file}` : `question-banks/hidden/${file}`;
+            const mvRes = await fetch(url, {
+              method:'PUT',
+              headers:{'Authorization':`token ${token}`,'Content-Type':'application/json'},
+              body:JSON.stringify({message:`批量${isHidden?'上架':'下架'}题库:${file}`,content:info.content,sha:info.sha,branch:'main',path:newPath})
+            });
+            if (mvRes.ok) ok++; else fail++;
+            showLoading(`正在操作... 成功:${ok} 失败:${fail}`);
+          }
+          if(ok) showSuccess(`批量下架/上架完成！成功:${ok} 失败:${fail}`); else showError(`批量操作失败！成功:${ok} 失败:${fail}`);
+          await renderQBSelect();
+        }
+        // 导入操作动画
+        if(importQbInput){
+          importQbInput.addEventListener('change',async function(e){
+            const file = e.target.files[0];
+            if(!file) return;
+            try{
+              const text = await file.text();
+              const data = JSON.parse(text);
+              if(isTeacher()){
+                const token = localStorage.getItem('github_token');
+                if(!token){showError('请先设置GitHub Token');return;}
+                const now = new Date();
+                const fileName = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${file.name}`;
+                const path = `question-banks/${fileName}`;
+                const url = `https://api.github.com/repos/lghui12138/lghui12138.github.io/contents/${path}`;
+                const base64Content = btoa(unescape(encodeURIComponent(text)));
+                const body = {
+                  message: `导入题库: ${file.name}`,
+                  content: base64Content,
+                  branch: 'main',
+                  committer: { name: 'TeacherUploader', email: 'teacher@example.com' }
+                };
+                showLoading('正在上传到GitHub...');
+                const res = await fetch(url, {
+                  method: 'PUT',
+                  headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
+                  body: JSON.stringify(body)
+                });
+                if (!res.ok) {
+                  const err = await res.text();
+                  showError('上传失败: ' + err);
+                  return;
+                }
+                showSuccess('题库导入并上传成功！');
+                await renderQBSelect();
+              }else{
+                localStorage.setItem('fullscreen_local_qb',text);
+                showSuccess('题库已导入本地（仅本地可见）');
+                await renderQBSelect();
+              }
+            }catch(e){
+              showError('题库导入失败: '+e.message);
+            }
+          });
+        }
+        if(importWrongInput){
+          importWrongInput.addEventListener('change',async function(e){
+            const file = e.target.files[0];
+            if(!file) return;
+            try{
+              const text = await file.text();
+              const data = JSON.parse(text);
+              if(Array.isArray(data)){
+                let old = JSON.parse(localStorage.getItem('fullscreen_wrongbook')||'[]');
+                let merged = [...old,...data].filter((q,i,arr)=>arr.findIndex(x=>x.id===q.id)===i);
+                localStorage.setItem('fullscreen_wrongbook',JSON.stringify(merged));
+                showSuccess('错题本导入成功（自动合并去重）');
+              }else{
+                showError('格式错误');
+              }
+            }catch(e){
+              showError('错题本导入失败: '+e.message);
+            }
+          });
+        }
+        if(importFavInput){
+          importFavInput.addEventListener('change',async function(e){
+            const file = e.target.files[0];
+            if(!file) return;
+            try{
+              const text = await file.text();
+              const data = JSON.parse(text);
+              if(Array.isArray(data)){
+                let old = JSON.parse(localStorage.getItem('fullscreen_favbook')||'[]');
+                let merged = [...old,...data].filter((q,i,arr)=>arr.findIndex(x=>x.id===q.id)===i);
+                localStorage.setItem('fullscreen_favbook',JSON.stringify(merged));
+                showSuccess('收藏本导入成功（自动合并去重）');
+              }else{
+                showError('格式错误');
+              }
+            }catch(e){
+              showError('收藏本导入失败: '+e.message);
+            }
+          });
+        }
+        let metaEditQb = null;
+        function openMetaEdit(qbName) {
+          metaEditQb = qbList.find(q=>q.name===qbName);
+          if(!metaEditQb) return;
+          document.getElementById('metaEditName').textContent = metaEditQb.name;
+          document.getElementById('metaEditLevel').value = metaEditQb.level||'';
+          document.getElementById('metaEditTags').value = (metaEditQb.tags||[]).join(',');
+          document.getElementById('metaEditUploader').value = metaEditQb.uploader||'';
+          document.getElementById('metaEditStatus').textContent = '';
+          document.getElementById('metaEditOverlay').style.display = 'flex';
+        }
+        function closeMetaEdit(){ document.getElementById('metaEditOverlay').style.display='none'; }
+        async function saveMetaEdit(){
+          if(!metaEditQb) return;
+          const level = document.getElementById('metaEditLevel').value;
+          const tags = document.getElementById('metaEditTags').value.split(',').map(t=>t.trim()).filter(Boolean);
+          const uploader = document.getElementById('metaEditUploader').value.trim();
+          // 新文件名
+          let base = metaEditQb.name.replace(/(_[a-z]+)?(_[\w,]+)?(_by[\w\u4e00-\u9fa5]+)?\.[a-z]+$/i,'');
+          let ext = metaEditQb.name.replace(/^.+(\.[a-z]+)$/i,'$1');
+          let newName = base;
+          if(level) newName += '_'+level;
+          if(tags.length) newName += '_'+tags.join(',');
+          if(uploader) newName += '_by'+uploader;
+          newName += ext;
+          if(newName===metaEditQb.name){ document.getElementById('metaEditStatus').textContent='未修改'; return; }
+          // GitHub移动
+          const token = localStorage.getItem('github_token');
+          if(!token){ document.getElementById('metaEditStatus').textContent='❌ 请先设置GitHub Token'; return; }
+          const url = `https://api.github.com/repos/lghui12138/lghui12138.github.io/contents/question-banks/${metaEditQb.hidden?'hidden/':''}${metaEditQb.name}`;
+          const newPath = `question-banks/${metaEditQb.hidden?'hidden/':''}${newName}`;
+          document.getElementById('metaEditStatus').innerHTML = '<span class="loading-spinner"></span>正在保存...';
+          // 获取sha和内容
+          const res = await fetch(url, {headers:{'Authorization':`token ${token}`}});
+          if(!res.ok){ document.getElementById('metaEditStatus').textContent='❌ 获取文件信息失败'; return; }
+          const info = await res.json();
+          // 移动
+          const mvRes = await fetch(url, {
+            method:'PUT',
+            headers:{'Authorization':`token ${token}`,'Content-Type':'application/json'},
+            body:JSON.stringify({message:`编辑元信息重命名:${metaEditQb.name}→${newName}`,content:info.content,sha:info.sha,branch:'main',path:newPath})
+          });
+          if(mvRes.ok){
+            document.getElementById('metaEditStatus').textContent='✅ 保存成功';
+            setTimeout(()=>{closeMetaEdit();renderQBSelect();},1000);
+          }else{
+            document.getElementById('metaEditStatus').textContent='❌ 保存失败';
+          }
+        }
+        function closePreview(){ document.getElementById('previewOverlay').style.display='none'; }
+        async function openPreview(qbName){
+          const qb = qbList.find(q=>q.name===qbName);
+          if(!qb) return;
+          document.getElementById('previewMeta').innerHTML = `<b>${qb.name}</b>  [${qb.level||'未知'}]  ${qb.tags?.length?qb.tags.join(','):''}  ${qb.uploader?('by '+qb.uploader):''}`;
+          document.getElementById('previewStats').innerHTML = '<span class="loading-spinner"></span> 正在加载...';
+          document.getElementById('previewQuestions').innerHTML = '';
+          document.getElementById('previewOverlay').style.display = 'flex';
+          try{
+            const res = await fetch(qb.url);
+            let data = await res.json();
+            if(!Array.isArray(data)) data = data.questions||data.data||[];
+            // 统计
+            const total = data.length;
+            const cats = Array.from(new Set(data.map(q=>q.category||'未知')));
+            const levels = Array.from(new Set(data.map(q=>q.level||'未知')));
+            document.getElementById('previewStats').innerHTML = `共${total}题，分类：${cats.join('，')}，难度：${levels.join('，')}`;
+            // 题目预览
+            let html = data.slice(0,Math.max(5,Math.ceil(total/20))).map((q,i)=>
+              `<div style='margin-bottom:10px;'><b>Q${i+1}.</b> <span>${q.title||q.question||JSON.stringify(q).slice(0,60)}</span></div>`
+            ).join('');
+            if(total>html.length) html += `<div style='color:#aaa;'>...（仅预览部分题目）</div>`;
+            document.getElementById('previewQuestions').innerHTML = html;
+          }catch(e){
+            document.getElementById('previewStats').innerHTML = '❌ 加载失败';
+          }
+        }
+let lastSearchData = [];
+function parseKeywords(kw) {
+  if (!kw) return [];
+  return kw.split(/[\s,，]+/).map(s=>s.trim()).filter(Boolean);
+}
+function highlightText(text, kw) {
+  if (!kw) return text;
+  const kws = parseKeywords(kw);
+  if (!kws.length) return text;
+  try {
+    const re = new RegExp('(' + kws.map(k=>k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'gi');
+    return text.replace(re, '<span class="highlight">$1</span>');
+  } catch { return text; }
+}
+// 搜索支持多关键词和模糊
+async function searchQuestions(){
+  const kw = document.getElementById('searchInput').value.trim();
+  const cat = document.getElementById('searchCat').value;
+  const level = document.getElementById('searchLevel').value;
+  const sel = document.getElementById('qbSelect');
+  const qb = qbList.find(q=>q.name===sel.value);
+  if(!qb){ document.getElementById('searchStatus').textContent='❌ 未选择题库'; return; }
+  document.getElementById('searchStatus').innerHTML = '<span class="loading-spinner"></span> 正在搜索...';
+  document.getElementById('searchResult').style.display = 'none';
+  try{
+    const res = await fetch(qb.url);
+    let data = await res.json();
+    if(!Array.isArray(data)) data = data.questions||data.data||[];
+    // 分类选项自动聚合
+    const catSet = new Set();
+    data.forEach(q=>catSet.add(q.category||'未知'));
+    document.getElementById('searchCat').innerHTML = '<option value="">全部分类</option>' + Array.from(catSet).map(c=>`<option value="${c}">${c}</option>`).join('');
+    // 多关键词模糊搜索
+    const kws = parseKeywords(kw);
+    let filtered = data.filter(q=>{
+      let ok = true;
+      if(kws.length && !kws.some(k=>{
+        const reg = new RegExp(k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+        return reg.test(q.title||q.question||'') || reg.test(q.explanation||'');
+      })) ok = false;
+      if(cat && (q.category||'未知')!==cat) ok = false;
+      if(level && (q.level||'')!==level) ok = false;
+      return ok;
+    });
+    lastSearchData = filtered;
+    // 渲染结果（多关键词高亮）
+    let html = filtered.length?filtered.slice(0,30).map((q,i)=>
+      `<div style='margin-bottom:10px;'><b>Q${i+1}.</b> <span>${highlightText(q.title||q.question||JSON.stringify(q).slice(0,60), kw)}</span> <button class='modal-btn' style='margin-left:8px;padding:2px 10px;font-size:0.95em;' onclick='jumpToQuestion(${data.findIndex(x=>x.id===q.id)})'><i class="fas fa-arrow-right"></i> 跳转</button></div>`
+    ).join(''):`<div style='color:#aaa;'>未找到相关题目</div>`;
+    if(filtered.length>30) html += `<div style='color:#aaa;'>...仅显示前30条</div>`;
+    document.getElementById('searchResult').innerHTML = html;
+    document.getElementById('searchResult').style.display = 'block';
+    document.getElementById('searchStatus').textContent = `共${filtered.length}题`;
+  }catch(e){
+    document.getElementById('searchStatus').textContent = '❌ 搜索失败';
+  }
+}
+function jumpToQuestion(idx){
+  if(typeof idx!=='number'||idx<0) return;
+  current = idx; // 更新当前题目索引
+  selected = null;
+  answered = false;
+  renderQuestion();
+  window.scrollTo({top:0,behavior:'smooth'});
+  document.getElementById('searchResult').style.display = 'none';
+}
+function highlightText(text, kw) {
+  if (!kw) return text;
+  try {
+    const re = new RegExp('('+kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')+')', 'gi');
+    return text.replace(re, '<span class="highlight">$1</span>');
+  } catch { return text; }
+}
+// 做题界面多关键词高亮
+function showFullscreenQuestion() {
+  // ...原有代码...
+  const kw = document.getElementById('searchInput')?.value.trim();
+  lastHighlightKw = kw;
+  const q = questions[current];
+  let title = q.title||q.question||'';
+  if(kw) title = highlightText(title, kw);
+  document.getElementById('questionTitle').innerHTML = title;
+  if(q.options && Array.isArray(q.options)) {
+    q.options.forEach((opt, i) => {
+      let optText = opt;
+      if(kw) optText = highlightText(optText, kw);
+      document.getElementById('questionOptions').innerHTML = opts;
+    });
+  }
+  if(q.explanation && document.getElementById('explanationSection')) {
+    let exp = q.explanation;
+    if(kw) exp = highlightText(exp, kw);
+    document.getElementById('explanationSection').innerHTML = exp;
+  }
+  // ...原有代码...
+}
+// 新增随机做题功能
+function randomPractice() {
+  const qb = qbList.find(q => q.name === document.getElementById('qbSelect').value);
+  if (qb && qb.url) {
+    fetch(qb.url).then(r=>r.json()).then(data => {
+      if (!Array.isArray(data)) data = data.questions||data.data||[];
+      const year = document.getElementById('yearSelect')?.value;
+      if (year) data = data.filter(q=>q.year==year);
+      // 随机顺序
+      for (let i = data.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [data[i], data[j]] = [data[j], data[i]];
+      }
+      questions = data; current = 0; selected = null; answered = false;
+      localStorage.setItem('fullscreen_questions', JSON.stringify(questions));
+      renderQuestion();
+    });
+  }
+}
     </script>
 </body>
 </html> 
