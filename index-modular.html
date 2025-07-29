@@ -2,7 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
     <title>🌊 流体力学学习平台 - 模块化版本</title>
     
     <!-- Font Awesome - 使用国内CDN -->
@@ -1488,6 +1491,153 @@
         .student-data-table tr:last-child td {
             border-bottom: none;
         }
+        
+        /* ===== 移动端触摸优化 ===== */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                margin: 0;
+            }
+            
+            .page-title {
+                font-size: 1.5rem;
+                margin-bottom: 15px;
+            }
+            
+            .quick-access {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .quick-card {
+                padding: 20px;
+                border-radius: 15px;
+                min-height: 120px;
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+            
+            .quick-card:active {
+                transform: scale(0.95);
+            }
+            
+            .module-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            .module-card {
+                padding: 20px;
+                border-radius: 15px;
+                min-height: 100px;
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+            
+            .module-card:active {
+                transform: scale(0.95);
+            }
+            
+            .resource-section {
+                padding: 15px;
+                border-radius: 15px;
+            }
+            
+            .resource-btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+                border-radius: 25px;
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+            
+            .resource-btn:active {
+                transform: scale(0.95);
+            }
+            
+            .nav-link {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+            
+            .nav-link:active {
+                transform: scale(0.95);
+            }
+        }
+        
+        /* ===== Safari浏览器适配 ===== */
+        @supports (-webkit-appearance: none) {
+            .quick-card, .module-card, .resource-btn, .nav-link {
+                -webkit-appearance: none;
+                -webkit-tap-highlight-color: transparent;
+            }
+        }
+        
+        /* ===== iOS Safari特殊适配 ===== */
+        @media screen and (-webkit-min-device-pixel-ratio: 2) {
+            .container {
+                -webkit-text-size-adjust: 100%;
+            }
+            
+            .quick-card, .module-card, .resource-btn, .nav-link {
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                user-select: none;
+            }
+        }
+        
+        /* ===== 触摸设备优化 ===== */
+        @media (hover: none) and (pointer: coarse) {
+            .quick-card:hover,
+            .module-card:hover,
+            .resource-btn:hover,
+            .nav-link:hover {
+                transform: none;
+            }
+            
+            .quick-card:active,
+            .module-card:active,
+            .resource-btn:active,
+            .nav-link:active {
+                transform: scale(0.95);
+            }
+        }
+        
+        /* ===== 通用触摸优化 ===== */
+        .quick-card, .module-card, .resource-btn, .nav-link {
+            transition: transform 0.1s ease;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+        }
+        
+        /* ===== 防止双击缩放 ===== */
+        * {
+            touch-action: manipulation;
+        }
+        
+        /* ===== 移动端按钮优化 ===== */
+        @media (max-width: 768px) {
+            button, .btn, .btn-action {
+                min-height: 44px;
+                min-width: 44px;
+                padding: 12px 20px;
+                font-size: 16px;
+                -webkit-tap-highlight-color: transparent;
+                touch-action: manipulation;
+            }
+            
+            input, select, textarea {
+                font-size: 16px;
+                -webkit-appearance: none;
+                border-radius: 8px;
+            }
+        }
     </style>
     <script>
         // 备用CDN加载机制
@@ -2353,6 +2503,15 @@
         
         // 打开模块
         function openModule(moduleName) {
+            // 添加触摸反馈
+            const element = event.target.closest('[onclick*="openModule"]');
+            if (element) {
+                element.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    element.style.transform = '';
+                }, 150);
+            }
+            
             const moduleUrls = {
                 // 通用模块
                 'question-bank': 'modules/question-bank-module.html',
@@ -2376,11 +2535,18 @@
             
             const url = moduleUrls[moduleName];
             if (url) {
+                showNotification(`正在打开${moduleName}模块...`, 'info');
+                
                 // 检查文件是否存在
                 fetch(url, { method: 'HEAD' })
                     .then(response => {
                         if (response.ok) {
-                            window.open(url, '_blank');
+                            // 在移动端使用新窗口打开
+                            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                                window.location.href = url;
+                            } else {
+                                window.open(url, '_blank');
+                            }
                         } else {
                             showNotification('模块文件不存在，正在创建...', 'warning');
                             // 可以在这里创建默认模块页面
@@ -3682,6 +3848,94 @@
         document.addEventListener('DOMContentLoaded', function() {
             checkNetworkStatus();
         });
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 从本地存储加载数据
+            const savedData = localStorage.getItem('gradesData');
+            if (savedData) {
+                gradesData = JSON.parse(savedData);
+            }
+            
+            // 设置默认日期为今天
+            document.getElementById('examDate').value = new Date().toISOString().split('T')[0];
+            
+            updateStats();
+            renderGradeList();
+            generateDetailedAnalysis();
+            showNotification('📊 成绩管理模块已加载', 'success');
+            
+            // 移动端优化
+            setupMobileOptimizations();
+        });
+        
+        // 移动端优化设置
+        function setupMobileOptimizations() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                document.body.classList.add('mobile-device');
+                
+                // 添加触摸事件监听
+                setupTouchEvents();
+                
+                if (isSafari) {
+                    document.body.classList.add('safari-browser');
+                    // 防止Safari缩放
+                    document.addEventListener('gesturestart', function(e) {
+                        e.preventDefault();
+                    });
+                }
+            }
+        }
+        
+        // 设置触摸事件
+        function setupTouchEvents() {
+            // 为所有可点击元素添加触摸事件
+            const clickableElements = document.querySelectorAll('[onclick], .module-card, .quick-card, .resource-btn, .nav-link');
+            
+            clickableElements.forEach(element => {
+                // 添加触摸反馈
+                element.addEventListener('touchstart', function(e) {
+                    this.style.transform = 'scale(0.95)';
+                    this.style.transition = 'transform 0.1s ease';
+                });
+                
+                element.addEventListener('touchend', function(e) {
+                    this.style.transform = '';
+                    this.style.transition = '';
+                });
+                
+                element.addEventListener('touchcancel', function(e) {
+                    this.style.transform = '';
+                    this.style.transition = '';
+                });
+                
+                // 防止双击缩放
+                element.addEventListener('touchend', function(e) {
+                    e.preventDefault();
+                }, { passive: false });
+            });
+            
+            // 优化滚动
+            document.addEventListener('touchmove', function(e) {
+                // 允许正常滚动
+            }, { passive: true });
+            
+            // 防止页面缩放
+            document.addEventListener('gesturestart', function(e) {
+                e.preventDefault();
+            });
+            
+            document.addEventListener('gesturechange', function(e) {
+                e.preventDefault();
+            });
+            
+            document.addEventListener('gestureend', function(e) {
+                e.preventDefault();
+            });
+        }
     </script>
 </body>
 </html> 
