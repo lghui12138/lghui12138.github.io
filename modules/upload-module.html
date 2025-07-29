@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件上传系统 - 流体力学学习平台</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 文件处理库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    
+    <!-- 视频压缩和处理库 -->
+    <script src="https://cdn.jsdelivr.net/npm/ffmpeg@0.12.7/dist/ffmpeg.min.js"></script>
+    
+    <style>
+        :root {
+            --primary: #1a3a57;
+            --secondary: #2a6aa7;
+            --accent: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --error: #e74c3c;
+            --ocean-blue: #1e6fa8;
+            --ocean-light: #4facfe;
+            --seafoam: #00f2fe;
+            --coral: #ff6b6b;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --border: #bdc3c7;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f9ff 0%, #e6f0ff 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* 海洋背景 */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            opacity: 0.1;
+            animation: wave 10s ease-in-out infinite;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: -2s;
+            opacity: 0.05;
+        }
+        
+        .wave:nth-child(3) {
+            animation-delay: -4s;
+            opacity: 0.03;
+        }
+        
+        @keyframes wave {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-50%); }
+        }
+        
+        /* 导航栏 */
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--ocean-light);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--ocean-blue);
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .btn-back {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* 主内容 */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            color: var(--ocean-blue);
+            margin-bottom: 10px;
+        }
+        
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+        
+        /* 上传区域 */
+        .upload-section {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: var(--text-dark);
+        }
+        
+        .upload-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .upload-title {
+            font-size: 1.5rem;
+            color: var(--ocean-blue);
+            font-weight: bold;
+        }
+        
+        .upload-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .upload-btn {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .upload-btn.secondary {
+            background: linear-gradient(45deg, var(--coral), #ff8e8e);
+        }
+        
+        /* 进度条 */
+        .progress-container {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: var(--text-dark);
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .progress-title {
+            font-size: 1.3rem;
+            color: var(--ocean-blue);
+            font-weight: bold;
+        }
+        
+        .progress-text {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(79, 172, 254, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .progress-text {
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        /* 学生统计 */
+        .student-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card .stat-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stat-card i {
+            font-size: 20px;
+        }
+        
+        .stat-card h4 {
+            margin: 0;
+            color: var(--secondary);
+        }
+        
+        .stat-card p {
+            margin: 5px 0 0 0;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--ocean-light);
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            color: var(--ocean-blue);
+            font-weight: bold;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .close-btn:hover {
+            color: var(--error);
+        }
+        
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--ocean-light);
+        }
+        
+        .form-textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            min-height: 100px;
+            resize: vertical;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--ocean-light);
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-select:focus {
+            outline: none;
+            border-color: var(--ocean-light);
+        }
+        
+        .btn-submit {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* 文件上传区域 */
+        .file-upload-area {
+            border: 2px dashed var(--ocean-light);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(79, 172, 254, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .file-upload-area:hover {
+            border-color: var(--seafoam);
+            background: rgba(79, 172, 254, 0.1);
+        }
+        
+        .file-upload-area.dragover {
+            border-color: var(--seafoam);
+            background: rgba(79, 172, 254, 0.15);
+            transform: scale(1.02);
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--ocean-light);
+            margin-bottom: 15px;
+        }
+        
+        .upload-text {
+            color: var(--text-dark);
+            margin-bottom: 10px;
+        }
+        
+        .upload-hint {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        /* 通知系统 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            color: var(--text-dark);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .notification.error {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .upload-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            
+            .upload-buttons {
+                justify-content: center;
+            }
+            
+            .student-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 海洋背景 -->
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <i class="fas fa-cloud-upload-alt"></i>
+                <span>📤 文件上传</span>
+            </a>
+            <a href="index-modular.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                返回主页
+            </a>
+        </div>
+    </nav>
+    
+    <!-- 主内容 -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">📤 文件上传系统</h1>
+            <p class="page-subtitle">支持题库和视频文件上传，智能处理和管理</p>
+        </div>
+        
+        <!-- 上传区域 -->
+        <div class="upload-section">
+            <div class="upload-header">
+                <div>
+                    <h3>上传学习资源</h3>
+                    <p>支持PDF、Word、图片格式，可批量上传</p>
+                </div>
+                <div class="upload-buttons">
+                    <button class="upload-btn" onclick="openUploadModal('question')">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        上传题目
+                    </button>
+                    <button class="upload-btn secondary" onclick="openUploadModal('video')">
+                        <i class="fas fa-video"></i>
+                        添加视频
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 进度显示 -->
+        <div class="progress-container">
+            <div class="progress-header">
+                <h3>我的学习进度</h3>
+                <span id="studentProgressText">已完成 0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 0%;">
+                    <div class="progress-text">0%</div>
+                </div>
+            </div>
+            
+            <!-- 学生个人学习统计 -->
+            <div class="student-stats">
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <i class="fas fa-video" style="color: var(--primary);"></i>
+                        <div>
+                            <h4>视频学习</h4>
+                            <p style="color: var(--primary);">0/7 课程</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <i class="fas fa-question-circle" style="color: var(--accent);"></i>
+                        <div>
+                            <h4>题目练习</h4>
+                            <p style="color: var(--accent);">0/37 题</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <i class="fas fa-chart-line" style="color: var(--success);"></i>
+                        <div>
+                            <h4>平均成绩</h4>
+                            <p style="color: var(--success);">-- 分</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-content">
+                        <i class="fas fa-clock" style="color: var(--warning);"></i>
+                        <div>
+                            <h4>学习时长</h4>
+                            <p style="color: var(--warning);">0 小时</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 题库上传模态框 -->
+    <div id="questionUploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">上传题库</div>
+                <button class="close-btn" onclick="closeUploadModal()">&times;</button>
+            </div>
+            
+            <form id="questionUploadForm">
+                <div class="form-group">
+                    <label class="form-label">题库标题</label>
+                    <input type="text" class="form-input" id="questionTitle" placeholder="请输入题库标题" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">题库描述</label>
+                    <textarea class="form-textarea" id="questionDescription" placeholder="请输入题库描述"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">分类</label>
+                    <select class="form-select" id="questionCategory" required>
+                        <option value="">请选择分类</option>
+                        <option value="流体静力学">流体静力学</option>
+                        <option value="流体动力学">流体动力学</option>
+                        <option value="边界层理论">边界层理论</option>
+                        <option value="管道流动">管道流动</option>
+                        <option value="综合应用">综合应用</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">上传方式</label>
+                    <select class="form-select" id="questionSource" onchange="toggleQuestionSource()">
+                        <option value="file">文件上传</option>
+                        <option value="json">JSON格式</option>
+                        <option value="text">文本格式</option>
+                    </select>
+                </div>
+                
+                <!-- 文件上传 -->
+                <div id="fileUploadSection" class="form-group">
+                    <label class="form-label">选择文件</label>
+                    <div class="file-upload-area" onclick="document.getElementById('questionFile').click()">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">点击选择文件或拖拽到此处</div>
+                        <div class="upload-hint">支持 PDF、Word、TXT、JSON 格式</div>
+                    </div>
+                    <input type="file" id="questionFile" style="display: none;" accept=".pdf,.doc,.docx,.txt,.json">
+                </div>
+                
+                <!-- JSON输入 -->
+                <div id="jsonInputSection" class="form-group" style="display: none;">
+                    <label class="form-label">JSON格式题库</label>
+                    <textarea class="form-textarea" id="questionJsonInput" placeholder="请输入JSON格式的题库数据"></textarea>
+                </div>
+                
+                <!-- 文本输入 -->
+                <div id="textInputSection" class="form-group" style="display: none;">
+                    <label class="form-label">文本格式题库</label>
+                    <textarea class="form-textarea" id="questionTextInput" placeholder="题目|选项A|选项B|选项C|选项D|答案|解释"></textarea>
+                </div>
+                
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-upload"></i>
+                    上传题库
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 视频上传模态框 -->
+    <div id="videoUploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">上传视频</div>
+                <button class="close-btn" onclick="closeUploadModal()">&times;</button>
+            </div>
+            
+            <form id="videoUploadForm">
+                <div class="form-group">
+                    <label class="form-label">视频标题</label>
+                    <input type="text" class="form-input" id="videoTitle" placeholder="请输入视频标题" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">视频描述</label>
+                    <textarea class="form-textarea" id="videoDescription" placeholder="请输入视频描述"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">分类</label>
+                    <select class="form-select" id="videoCategory" required>
+                        <option value="">请选择分类</option>
+                        <option value="基础理论">基础理论</option>
+                        <option value="核心理论">核心理论</option>
+                        <option value="实验演示">实验演示</option>
+                        <option value="工程应用">工程应用</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">视频链接</label>
+                    <input type="url" class="form-input" id="videoUrl" placeholder="请输入视频链接（YouTube、Bilibili等）" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">时长</label>
+                    <input type="text" class="form-input" id="videoDuration" placeholder="例如：45:30">
+                </div>
+                
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-upload"></i>
+                    上传视频
+                </button>
+            </form>
+        </div>
+    </div>
+    
+    <!-- 通知容器 -->
+    <div id="notification-container"></div>
+    
+    <script>
+        // 全局变量
+        let uploadedExercises = [];
+        let uploadedVideos = [];
+        
+        // 显示通知
+        function showNotification(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, duration);
+            }
+        }
+        
+        // 打开上传模态框
+        function openUploadModal(type) {
+            if (type === 'question') {
+                document.getElementById('questionUploadModal').style.display = 'block';
+            } else if (type === 'video') {
+                document.getElementById('videoUploadModal').style.display = 'block';
+            }
+        }
+        
+        // 关闭上传模态框
+        function closeUploadModal() {
+            document.getElementById('questionUploadModal').style.display = 'none';
+            document.getElementById('videoUploadModal').style.display = 'none';
+        }
+        
+        // 切换题库上传方式
+        function toggleQuestionSource() {
+            const source = document.getElementById('questionSource').value;
+            const fileSection = document.getElementById('fileUploadSection');
+            const jsonSection = document.getElementById('jsonInputSection');
+            const textSection = document.getElementById('textInputSection');
+            
+            fileSection.style.display = 'none';
+            jsonSection.style.display = 'none';
+            textSection.style.display = 'none';
+            
+            if (source === 'file') {
+                fileSection.style.display = 'block';
+            } else if (source === 'json') {
+                jsonSection.style.display = 'block';
+            } else if (source === 'text') {
+                textSection.style.display = 'block';
+            }
+        }
+        
+        // 处理题库上传
+        document.getElementById('questionUploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const title = document.getElementById('questionTitle').value.trim();
+                const description = document.getElementById('questionDescription').value.trim();
+                const category = document.getElementById('questionCategory').value;
+                const source = document.getElementById('questionSource').value;
+                
+                let exerciseData = null;
+                
+                if (source === 'file') {
+                    const file = document.getElementById('questionFile').files[0];
+                    if (!file) {
+                        showNotification('请选择文件', 'error');
+                        return;
+                    }
+                    exerciseData = await processExerciseFile(file, title, description, category);
+                } else if (source === 'json') {
+                    const jsonInput = document.getElementById('questionJsonInput').value.trim();
+                    if (!jsonInput) {
+                        showNotification('请输入JSON格式的题库数据', 'error');
+                        return;
+                    }
+                    exerciseData = await processExerciseJson(jsonInput, title, description, category);
+                } else if (source === 'text') {
+                    const textInput = document.getElementById('questionTextInput').value.trim();
+                    if (!textInput) {
+                        showNotification('请输入文本格式的题库数据', 'error');
+                        return;
+                    }
+                    exerciseData = await processExerciseText(textInput, title, description, category);
+                }
+                
+                if (exerciseData) {
+                    uploadedExercises.push(exerciseData);
+                    localStorage.setItem('uploadedExercises', JSON.stringify(uploadedExercises));
+                    
+                    closeUploadModal();
+                    showNotification(`题库上传成功！包含 ${exerciseData.questionCount || 0} 道题目`, 'success');
+                    
+                    // 重置表单
+                    document.getElementById('questionUploadForm').reset();
+                }
+                
+            } catch (error) {
+                console.error('上传题库时出错:', error);
+                showNotification('上传题库时出现错误: ' + error.message, 'error');
+            }
+        });
+        
+        // 处理视频上传
+        document.getElementById('videoUploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const title = document.getElementById('videoTitle').value.trim();
+                const description = document.getElementById('videoDescription').value.trim();
+                const category = document.getElementById('videoCategory').value;
+                const url = document.getElementById('videoUrl').value.trim();
+                const duration = document.getElementById('videoDuration').value.trim();
+                
+                const videoData = {
+                    id: 'video_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    title: title,
+                    description: description,
+                    category: category,
+                    url: url,
+                    duration: duration,
+                    uploadTime: new Date().toISOString()
+                };
+                
+                uploadedVideos.push(videoData);
+                localStorage.setItem('uploadedVideos', JSON.stringify(uploadedVideos));
+                
+                closeUploadModal();
+                showNotification('视频上传成功！', 'success');
+                
+                // 重置表单
+                document.getElementById('videoUploadForm').reset();
+                
+            } catch (error) {
+                console.error('上传视频时出错:', error);
+                showNotification('上传视频时出现错误: ' + error.message, 'error');
+            }
+        });
+        
+        // 处理题库文件
+        async function processExerciseFile(file, title, description, category) {
+            const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+            
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        let questions = [];
+                        const content = e.target.result;
+                        
+                        if (fileExtension === '.json') {
+                            const jsonData = JSON.parse(content);
+                            questions = Array.isArray(jsonData) ? jsonData : [jsonData];
+                        } else if (fileExtension === '.txt' || fileExtension === '.csv') {
+                            const lines = content.split('\n').filter(line => line.trim());
+                            questions = lines.map((line, index) => {
+                                const parts = line.split('|');
+                                if (parts.length >= 6) {
+                                    return {
+                                        id: index + 1,
+                                        question: parts[0].trim(),
+                                        options: parts.slice(1, -2).map(opt => opt.trim()),
+                                        answer: parts[parts.length - 2].trim(),
+                                        explanation: parts[parts.length - 1].trim()
+                                    };
+                                }
+                                return null;
+                            }).filter(q => q !== null);
+                        }
+                        
+                        const exerciseData = {
+                            id: 'exercise_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                            title: title,
+                            description: description,
+                            category: category,
+                            questionCount: questions.length,
+                            questions: questions,
+                            sourceFile: file.name,
+                            sourceType: 'file',
+                            uploadTime: new Date().toISOString()
+                        };
+                        
+                        resolve(exerciseData);
+                    } catch (error) {
+                        reject(new Error('文件解析失败: ' + error.message));
+                    }
+                };
+                reader.onerror = () => reject(new Error('文件读取失败'));
+                reader.readAsText(file, 'UTF-8');
+            });
+        }
+        
+        // 处理JSON格式题库
+        async function processExerciseJson(jsonInput, title, description, category) {
+            try {
+                const jsonData = JSON.parse(jsonInput);
+                const questions = Array.isArray(jsonData) ? jsonData : [jsonData];
+                
+                const exerciseData = {
+                    id: 'exercise_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    title: title,
+                    description: description,
+                    category: category,
+                    questionCount: questions.length,
+                    questions: questions,
+                    sourceType: 'json',
+                    uploadTime: new Date().toISOString()
+                };
+                
+                return exerciseData;
+            } catch (error) {
+                throw new Error('JSON格式解析失败: ' + error.message);
+            }
+        }
+        
+        // 处理文本格式题库
+        async function processExerciseText(textInput, title, description, category) {
+            try {
+                const lines = textInput.split('\n').filter(line => line.trim());
+                const questions = lines.map((line, index) => {
+                    const parts = line.split('|');
+                    if (parts.length >= 6) {
+                        return {
+                            id: index + 1,
+                            question: parts[0].trim(),
+                            options: parts.slice(1, -2).map(opt => opt.trim()),
+                            answer: parts[parts.length - 2].trim(),
+                            explanation: parts[parts.length - 1].trim()
+                        };
+                    }
+                    return null;
+                }).filter(q => q !== null);
+                
+                if (questions.length === 0) {
+                    throw new Error('没有找到有效的题目，请检查格式');
+                }
+                
+                const exerciseData = {
+                    id: 'exercise_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    title: title,
+                    description: description,
+                    category: category,
+                    questionCount: questions.length,
+                    questions: questions,
+                    sourceType: 'text',
+                    uploadTime: new Date().toISOString()
+                };
+                
+                return exerciseData;
+            } catch (error) {
+                throw new Error('文本格式解析失败: ' + error.message);
+            }
+        }
+        
+        // 加载已上传的数据
+        function loadUploadedData() {
+            try {
+                const savedExercises = localStorage.getItem('uploadedExercises');
+                if (savedExercises) {
+                    uploadedExercises = JSON.parse(savedExercises);
+                    console.log('加载已保存的题库:', uploadedExercises.length + '个');
+                }
+                
+                const savedVideos = localStorage.getItem('uploadedVideos');
+                if (savedVideos) {
+                    uploadedVideos = JSON.parse(savedVideos);
+                    console.log('加载已保存的视频:', uploadedVideos.length + '个');
+                }
+            } catch (error) {
+                console.error('加载数据失败:', error);
+            }
+        }
+        
+        // 文件拖拽上传
+        function setupDragAndDrop() {
+            const uploadArea = document.querySelector('.file-upload-area');
+            const fileInput = document.getElementById('questionFile');
+            
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+            
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    showNotification('文件已选择: ' + files[0].name, 'success');
+                }
+            });
+        }
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUploadedData();
+            setupDragAndDrop();
+            showNotification('📤 文件上传系统已加载', 'success');
+        });
+        
+        console.log('📤 文件上传模块已加载');
+    </script>
+</body>
+</html> 
