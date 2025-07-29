@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库加载测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .result {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #4caf50;
+        }
+        .error {
+            background: #ffebee;
+            border-left-color: #f44336;
+        }
+        button {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #1976d2;
+        }
+        .question-bank-item {
+            background: #f9f9f9;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <h1>题库加载测试</h1>
+    
+    <div class="test-section">
+        <h2>测试题库文件访问</h2>
+        <button onclick="testQuestionBanksAccess()">测试题库文件访问</button>
+        <div id="accessResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试题库数据解析</h2>
+        <button onclick="testQuestionBanksParsing()">测试题库数据解析</button>
+        <div id="parsingResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试题库列表生成</h2>
+        <button onclick="testQuestionBanksList()">测试题库列表生成</button>
+        <div id="listResult"></div>
+    </div>
+
+    <script>
+        // 测试题库文件访问
+        async function testQuestionBanksAccess() {
+            const resultDiv = document.getElementById('accessResult');
+            resultDiv.innerHTML = '<div class="result">正在测试题库文件访问...</div>';
+            
+            try {
+                const res = await fetch('question-banks/');
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                
+                const html = await res.text();
+                const matches = Array.from(html.matchAll(/href=\"([^\"]+\.json)\"/g));
+                const files = matches.map(m => decodeURIComponent(m[1]));
+                
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <h3>✅ 题库文件访问成功</h3>
+                        <p>找到 ${files.length} 个题库文件：</p>
+                        <ul>
+                            ${files.map(file => `<li>${file}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ 题库文件访问失败</h3>
+                        <p>错误信息：${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 测试题库数据解析
+        async function testQuestionBanksParsing() {
+            const resultDiv = document.getElementById('parsingResult');
+            resultDiv.innerHTML = '<div class="result">正在测试题库数据解析...</div>';
+            
+            try {
+                // 测试真题文件
+                const realExamRes = await fetch('question-banks/真题_中国海洋大学_2000-2021.json');
+                const realExamData = await realExamRes.json();
+                
+                // 测试分类文件
+                const categoryRes = await fetch('question-banks/分类_流体性质.json');
+                const categoryData = await categoryRes.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="result">
+                        <h3>✅ 题库数据解析成功</h3>
+                        <p><strong>真题文件：</strong> ${realExamData.length} 道题目</p>
+                        <p><strong>分类文件：</strong> ${categoryData.length} 道题目</p>
+                        <p><strong>真题示例：</strong></p>
+                        <div class="question-bank-item">
+                            <strong>ID:</strong> ${realExamData[0].id}<br>
+                            <strong>年份:</strong> ${realExamData[0].year}<br>
+                            <strong>标题:</strong> ${realExamData[0].title.substring(0, 100)}...
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ 题库数据解析失败</h3>
+                        <p>错误信息：${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // 测试题库列表生成
+        async function testQuestionBanksList() {
+            const resultDiv = document.getElementById('listResult');
+            resultDiv.innerHTML = '<div class="result">正在测试题库列表生成...</div>';
+            
+            try {
+                // 获取所有题库文件
+                const res = await fetch('question-banks/');
+                const html = await res.text();
+                const matches = Array.from(html.matchAll(/href=\"([^\"]+\.json)\"/g));
+                const files = matches.map(m => decodeURIComponent(m[1]));
+                
+                // 分类文件
+                const wrongBanks = [];
+                const realBanks = [];
+                const chapterBanks = [];
+                
+                for (const file of files) {
+                    if (/易错|错题|wrong/i.test(file)) {
+                        wrongBanks.push(file);
+                    } else if (/真题/.test(file)) {
+                        realBanks.push(file);
+                    } else if (/分类_/.test(file)) {
+                        chapterBanks.push(file);
+                    }
+                }
+                
+                // 生成真题年份分组
+                let realYearEntrys = [];
+                for (const file of realBanks) {
+                    try {
+                        const data = await fetch('question-banks/' + file).then(r=>r.json());
+                        const arr = Array.isArray(data) ? data : (data.questions||data.data||[]);
+                        const yearMap = {};
+                        arr.forEach(q => {
+                            if (q.year) {
+                                if (!yearMap[q.year]) yearMap[q.year] = [];
+                                yearMap[q.year].push(q);
+                            }
+                        });
+                        Object.keys(yearMap).sort().forEach(year => {
+                            realYearEntrys.push({
+                                year,
+                                file,
+                                count: yearMap[year].length
+                            });
+                        });
+                    } catch (e) {
+                        console.error('解析真题文件失败:', file, e);
+                    }
+                }
+                
+                // 生成章节分类列表
+                let chapterList = [];
+                for (const file of chapterBanks) {
+                    try {
+                        const data = await fetch('question-banks/' + file).then(r=>r.json());
+                        chapterList.push({
+                            name: file.replace('分类_', '').replace('.json', ''),
+                            file,
+                            count: (Array.isArray(data) ? data : (data.questions||data.data||[])).length
+                        });
+                    } catch (e) {
+                        console.error('解析分类文件失败:', file, e);
+                    }
+                }
+                
+                let htmlContent = '<div class="result"><h3>✅ 题库列表生成成功</h3>';
+                
+                // 显示真题按年份
+                if (realYearEntrys.length) {
+                    htmlContent += '<h4>真题（按年份）：</h4>';
+                    realYearEntrys.sort((a,b)=>a.year-b.year).forEach(entry => {
+                        htmlContent += `<div class="question-bank-item">
+                            <strong>${entry.year}年真题</strong> - ${entry.count}题
+                        </div>`;
+                    });
+                }
+                
+                // 显示章节分类
+                if (chapterList.length) {
+                    htmlContent += '<h4>章节分类题库：</h4>';
+                    chapterList.forEach(qb => {
+                        htmlContent += `<div class="question-bank-item">
+                            <strong>${qb.name}</strong> - ${qb.count}题
+                        </div>`;
+                    });
+                }
+                
+                htmlContent += '</div>';
+                resultDiv.innerHTML = htmlContent;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <h3>❌ 题库列表生成失败</h3>
+                        <p>错误信息：${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

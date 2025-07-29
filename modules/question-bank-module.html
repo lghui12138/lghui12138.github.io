@@ -683,6 +683,84 @@
             border-color: #ff6b6b;
         }
         
+        /* ===== 题库选择区域样式 ===== */
+        .question-bank-section {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            color: var(--text-dark);
+            margin-bottom: 40px;
+            transition: all 0.3s ease;
+        }
+        
+        .question-bank-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.2);
+        }
+        
+        .question-bank-list {
+            margin-top: 20px;
+        }
+        
+        .question-bank-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: white;
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .question-bank-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.2);
+            border-color: var(--coral);
+        }
+        
+        .question-bank-item .btn {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 100px;
+            justify-content: center;
+        }
+        
+        .question-bank-item .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .question-bank-item .btn-primary {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+        }
+        
+        .question-bank-item .qb-title {
+            flex: 1;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .question-bank-item h3 {
+            color: var(--ocean-blue);
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        
         /* ===== 响应式设计 ===== */
         @media (max-width: 768px) {
             .stats-grid {
@@ -1297,12 +1375,29 @@
             </div>
         </div>
         
+        <!-- 题库选择区域 -->
+        <div class="question-bank-section">
+            <div class="section-header">
+                <div class="section-icon">📚</div>
+                <h3>选择题库</h3>
+                <p>选择您想要练习的题库类型</p>
+            </div>
+            <div class="question-bank-list" id="questionBankList">
+                <!-- 题库列表将在这里动态生成 -->
+                <div style="text-align: center; padding: 40px; color: var(--ocean-blue);">
+                    <div style="font-size: 3rem; margin-bottom: 20px;">📚</div>
+                    <h3>正在加载题库...</h3>
+                    <p>请稍候，正在获取题库数据</p>
+                </div>
+            </div>
+        </div>
+        
         <!-- 题目显示区域 -->
-        <div class="question-container" id="questionContainer">
+        <div class="question-container" id="questionContainer" style="display: none;">
             <div style="text-align: center; color: var(--ocean-blue);">
                 <div style="font-size: 4rem; margin-bottom: 20px;">🌊</div>
                 <h2>欢迎来到题库练习</h2>
-                <p>点击"开始练习"按钮开始答题</p>
+                <p>选择题库后开始答题</p>
             </div>
         </div>
         
@@ -4985,108 +5080,180 @@
 
         // ========== 题库聚合与分组渲染 ========== //
         async function fetchAllQuestionBanks() {
-          // 1. 获取所有题库文件名
-          const res = await fetch('question-banks/');
-          const html = await res.text();
-          const matches = Array.from(html.matchAll(/href=\"([^\"]+\.json)\"/g));
-          const files = matches.map(m => decodeURIComponent(m[1]));
-
-          // 2. 分类文件
-          const wrongBanks = [];
-          const realBanks = [];
-          const chapterBanks = [];
-
-          for (const file of files) {
-            if (/易错|错题|wrong/i.test(file)) {
-              wrongBanks.push(file);
-            } else if (/真题/.test(file)) {
-              realBanks.push(file);
-            } else if (/分类_/.test(file)) {
-              chapterBanks.push(file);
+          try {
+            console.log('开始获取题库文件列表...');
+            // 1. 获取所有题库文件名
+            const res = await fetch('question-banks/');
+            if (!res.ok) {
+              throw new Error(`无法访问题库目录: ${res.status} ${res.statusText}`);
             }
-          }
+            
+            const html = await res.text();
+            const matches = Array.from(html.matchAll(/href=\"([^\"]+\.json)\"/g));
+            const files = matches.map(m => decodeURIComponent(m[1]));
+            
+            console.log('找到题库文件:', files);
 
-          // 3. 真题按年份分组（每年一个入口，点击只做该年题）
-          let realYearEntrys = [];
-          for (const file of realBanks) {
-            try {
-              const data = await fetch('question-banks/' + file).then(r=>r.json());
-              const arr = Array.isArray(data) ? data : (data.questions||data.data||[]);
-              // 按年份分组
-              const yearMap = {};
-              arr.forEach(q => {
-                if (q.year) {
-                  if (!yearMap[q.year]) yearMap[q.year] = [];
-                  yearMap[q.year].push(q);
-                }
-              });
-              Object.keys(yearMap).sort().forEach(year => {
-                realYearEntrys.push({
-                  year,
-                  file,
-                  count: yearMap[year].length
+            // 2. 分类文件
+            const wrongBanks = [];
+            const realBanks = [];
+            const chapterBanks = [];
+
+            for (const file of files) {
+              if (/易错|错题|wrong/i.test(file)) {
+                wrongBanks.push(file);
+              } else if (/真题/.test(file)) {
+                realBanks.push(file);
+              } else if (/分类_/.test(file)) {
+                chapterBanks.push(file);
+              }
+            }
+            
+            console.log('文件分类结果:', { wrongBanks, realBanks, chapterBanks });
+
+            // 3. 真题按年份分组（每年一个入口，点击只做该年题）
+            let realYearEntrys = [];
+            for (const file of realBanks) {
+              try {
+                console.log('处理真题文件:', file);
+                const data = await fetch('question-banks/' + file).then(r=>r.json());
+                const arr = Array.isArray(data) ? data : (data.questions||data.data||[]);
+                console.log('真题数据长度:', arr.length);
+                
+                // 按年份分组
+                const yearMap = {};
+                arr.forEach(q => {
+                  if (q.year) {
+                    if (!yearMap[q.year]) yearMap[q.year] = [];
+                    yearMap[q.year].push(q);
+                  }
                 });
-              });
-            } catch {}
+                Object.keys(yearMap).sort().forEach(year => {
+                  realYearEntrys.push({
+                    year,
+                    file,
+                    count: yearMap[year].length
+                  });
+                });
+              } catch (error) {
+                console.error('处理真题文件失败:', file, error);
+              }
+            }
+            
+            // 4. 章节分类题库
+            let chapterList = [];
+            for (const file of chapterBanks) {
+              try {
+                console.log('处理分类文件:', file);
+                const data = await fetch('question-banks/' + file).then(r=>r.json());
+                chapterList.push({
+                  name: file.replace('分类_', '').replace('.json', ''),
+                  file,
+                  count: (Array.isArray(data) ? data : (data.questions||data.data||[])).length
+                });
+              } catch (error) {
+                console.error('处理分类文件失败:', file, error);
+              }
+            }
+            
+            // 5. 易错题（如有）
+            let wrongList = [];
+            for (const file of wrongBanks) {
+              try {
+                console.log('处理易错题文件:', file);
+                const data = await fetch('question-banks/' + file).then(r=>r.json());
+                wrongList.push({
+                  name: file.replace('.json', ''),
+                  file,
+                  count: (Array.isArray(data) ? data : (data.questions||data.data||[])).length
+                });
+              } catch (error) {
+                console.error('处理易错题文件失败:', file, error);
+              }
+            }
+            
+            console.log('题库数据处理完成:', { wrongList, realYearEntrys, chapterList });
+            return { wrongList, realYearEntrys, chapterList };
+          } catch (error) {
+            console.error('题库数据获取失败:', error);
+            throw error;
           }
-          // 4. 章节分类题库
-          let chapterList = [];
-          for (const file of chapterBanks) {
-            try {
-              const data = await fetch('question-banks/' + file).then(r=>r.json());
-              chapterList.push({
-                name: file.replace('分类_', '').replace('.json', ''),
-                file,
-                count: (Array.isArray(data) ? data : (data.questions||data.data||[])).length
-              });
-            } catch {}
-          }
-          // 5. 易错题（如有）
-          let wrongList = [];
-          for (const file of wrongBanks) {
-            try {
-              const data = await fetch('question-banks/' + file).then(r=>r.json());
-              wrongList.push({
-                name: file.replace('.json', ''),
-                file,
-                count: (Array.isArray(data) ? data : (data.questions||data.data||[])).length
-              });
-            } catch {}
-          }
-          return { wrongList, realYearEntrys, chapterList };
         }
 
         function renderAllQuestionBanks({ wrongList, realYearEntrys, chapterList }) {
           const list = document.getElementById('questionBankList');
+          if (!list) {
+            console.error('找不到题库列表容器');
+            return;
+          }
+          
           let html = '';
+          let hasContent = false;
+          
           // 易错题
-          if (wrongList.length) {
+          if (wrongList && wrongList.length > 0) {
             html += `<h3>易错题</h3>`;
             wrongList.forEach(qb => {
-              html += `<div class=\"question-bank-item\"><button class='btn btn-primary' onclick=\"startPracticeFullscreen('${qb.file}?year=易错')\">做题</button> <span class='qb-title'>${qb.name}（${qb.count}题）</span></div>`;
+              html += `<div class="question-bank-item"><button class='btn btn-primary' onclick="startPracticeFullscreen('${qb.file}?year=易错')">做题</button> <span class='qb-title'>${qb.name}（${qb.count}题）</span></div>`;
             });
+            hasContent = true;
           }
+          
           // 真题按年份入口
-          if (realYearEntrys.length) {
+          if (realYearEntrys && realYearEntrys.length > 0) {
             html += `<h3>真题（按年份）</h3>`;
             realYearEntrys.sort((a,b)=>a.year-b.year).forEach(entry => {
-              html += `<div class='question-bank-item'><button class='btn btn-primary' onclick=\"startPracticeFullscreen('${entry.file}?year=${entry.year}')\">做题</button> <span class='qb-title'>${entry.year}年真题（${entry.count}题）</span></div>`;
+              html += `<div class='question-bank-item'><button class='btn btn-primary' onclick="startPracticeFullscreen('${entry.file}?year=${entry.year}')">做题</button> <span class='qb-title'>${entry.year}年真题（${entry.count}题）</span></div>`;
             });
+            hasContent = true;
           }
+          
           // 章节分类
-          if (chapterList.length) {
+          if (chapterList && chapterList.length > 0) {
             html += `<h3>章节分类题库</h3>`;
             chapterList.forEach(qb => {
-              html += `<div class=\"question-bank-item\"><button class='btn btn-primary' onclick=\"startPracticeFullscreen('${qb.file}')\">做题</button> <span class='qb-title'>${qb.name}（${qb.count}题）</span></div>`;
+              html += `<div class="question-bank-item"><button class='btn btn-primary' onclick="startPracticeFullscreen('${qb.file}')">做题</button> <span class='qb-title'>${qb.name}（${qb.count}题）</span></div>`;
             });
+            hasContent = true;
           }
+          
+          if (!hasContent) {
+            html = `
+              <div style="text-align: center; padding: 40px; color: var(--ocean-blue);">
+                <div style="font-size: 3rem; margin-bottom: 20px;">📚</div>
+                <h3>暂无题库数据</h3>
+                <p>请检查题库文件是否存在</p>
+              </div>
+            `;
+          }
+          
           list.innerHTML = html;
+          console.log('题库列表渲染完成');
         }
 
         // 页面加载时自动聚合并渲染
         window.addEventListener('DOMContentLoaded', async () => {
-          const allBanks = await fetchAllQuestionBanks();
-          renderAllQuestionBanks(allBanks);
+          try {
+            console.log('开始加载题库数据...');
+            const allBanks = await fetchAllQuestionBanks();
+            console.log('题库数据加载完成:', allBanks);
+            renderAllQuestionBanks(allBanks);
+          } catch (error) {
+            console.error('题库加载失败:', error);
+            const list = document.getElementById('questionBankList');
+            if (list) {
+              list.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #e74c3c;">
+                  <div style="font-size: 3rem; margin-bottom: 20px;">❌</div>
+                  <h3>题库加载失败</h3>
+                  <p>错误信息：${error.message}</p>
+                  <button onclick="location.reload()" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+                    重新加载
+                  </button>
+                </div>
+              `;
+            }
+          }
         });
 
         // 修改全屏做题入口，支持按年份过滤
