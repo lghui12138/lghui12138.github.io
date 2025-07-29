@@ -1069,10 +1069,54 @@
         
         // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 检查教师权限
+            checkTeacherPermission();
+            
             loadUploadedData();
             setupDragAndDrop();
             showNotification('📤 文件上传系统已加载', 'success');
         });
+        
+        // 检查教师权限
+        function checkTeacherPermission() {
+            try {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                
+                if (!currentUser || currentUser.role !== 'teacher') {
+                    // 非教师用户，显示权限不足提示
+                    document.body.innerHTML = `
+                        <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: linear-gradient(135deg, #f5f9ff 0%, #e6f0ff 100%);">
+                            <div style="text-align: center; padding: 40px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                                <i class="fas fa-lock" style="font-size: 4rem; color: #e74c3c; margin-bottom: 20px;"></i>
+                                <h2 style="color: #2c3e50; margin-bottom: 15px;">权限不足</h2>
+                                <p style="color: #7f8c8d; margin-bottom: 25px;">文件上传功能仅对教师开放</p>
+                                <a href="../index-modular.html" style="background: var(--ocean-light); color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; display: inline-block;">
+                                    返回主页
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                console.log('教师权限验证通过');
+            } catch (error) {
+                console.error('权限检查失败:', error);
+                // 权限检查失败，也显示权限不足
+                document.body.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100vh; background: linear-gradient(135deg, #f5f9ff 0%, #e6f0ff 100%);">
+                        <div style="text-align: center; padding: 40px; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                            <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: #f39c12; margin-bottom: 20px;"></i>
+                            <h2 style="color: #2c3e50; margin-bottom: 15px;">访问受限</h2>
+                            <p style="color: #7f8c8d; margin-bottom: 25px;">请先登录教师账号</p>
+                            <a href="../index-modular.html" style="background: var(--ocean-light); color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; display: inline-block;">
+                                返回主页
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+        }
         
         console.log('📤 文件上传模块已加载');
     </script>

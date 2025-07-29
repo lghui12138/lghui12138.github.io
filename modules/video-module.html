@@ -546,8 +546,8 @@
             <p class="page-subtitle">高质量教学视频，助您深入理解流体力学</p>
         </div>
         
-        <!-- 上传区域 -->
-        <div class="upload-section">
+        <!-- 上传区域 - 仅教师可见 -->
+        <div class="upload-section" id="uploadSection" style="display: none;">
             <h2 style="margin-bottom: 20px; color: var(--ocean-blue);">
                 <i class="fas fa-cloud-upload-alt"></i> 上传视频
             </h2>
@@ -1131,9 +1131,41 @@
         
         // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 检查用户角色，控制上传区域显示
+            checkUserRole();
+            
             renderVideos();
             showNotification('🎥 视频课程模块已加载', 'success');
         });
+        
+        // 检查用户角色
+        function checkUserRole() {
+            try {
+                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                const uploadSection = document.getElementById('uploadSection');
+                
+                if (currentUser && currentUser.role === 'teacher') {
+                    // 教师端显示上传功能
+                    if (uploadSection) {
+                        uploadSection.style.display = 'block';
+                        console.log('教师端：显示上传功能');
+                    }
+                } else {
+                    // 学生端隐藏上传功能
+                    if (uploadSection) {
+                        uploadSection.style.display = 'none';
+                        console.log('学生端：隐藏上传功能');
+                    }
+                }
+            } catch (error) {
+                console.error('检查用户角色失败:', error);
+                // 默认隐藏上传功能
+                const uploadSection = document.getElementById('uploadSection');
+                if (uploadSection) {
+                    uploadSection.style.display = 'none';
+                }
+            }
+        }
         
         console.log('🎥 视频课程模块已加载');
     </script>
