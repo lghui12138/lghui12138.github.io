@@ -2240,23 +2240,26 @@
         function updateHomeStats() {
             if (!currentUser) return;
             
+            // 系统总资源数量（固定值）
+            const systemStats = {
+                totalQuestions: 200,  // 系统总题目数
+                totalVideos: 30,      // 系统总视频数
+            };
+            
+            // 获取注册用户数量
+            const allUserData = getAllUserData();
+            const registeredUsers = allUserData.length;
+            
             // 根据用户角色显示不同的统计数据
             if (currentUser.role === 'teacher') {
                 // 教师端显示全局统计
-                const allUserData = getAllUserData();
-                const stats = {
-                    questions: 200 + Math.floor(Math.random() * 50),
-                    videos: 30 + Math.floor(Math.random() * 10),
-                    users: allUserData.length
-                };
-                
-                document.getElementById('totalQuestions').textContent = stats.questions + '+';
-                document.getElementById('totalVideos').textContent = stats.videos + '+';
-                document.getElementById('activeUsers').textContent = stats.users + ' 人';
+                document.getElementById('totalQuestions').textContent = systemStats.totalQuestions + '+';
+                document.getElementById('totalVideos').textContent = systemStats.totalVideos + '+';
+                document.getElementById('activeUsers').textContent = registeredUsers + ' 人';
             } else {
-                // 学生端显示个人统计
-                document.getElementById('totalQuestions').textContent = userLearningData.completedQuestions + ' 题';
-                document.getElementById('totalVideos').textContent = userLearningData.watchedVideos + ' 个';
+                // 学生端显示：系统总资源 + 个人学习时长
+                document.getElementById('totalQuestions').textContent = systemStats.totalQuestions + '+';
+                document.getElementById('totalVideos').textContent = systemStats.totalVideos + '+';
                 document.getElementById('activeUsers').textContent = Math.floor(userLearningData.studyTime / 60) + ' 小时';
             }
         }
