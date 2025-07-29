@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>函数存在性测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .function-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            border-left: 4px solid #ddd;
+        }
+        .function-item.found {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+        .function-item.not-found {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+        .status {
+            font-weight: bold;
+        }
+        .found .status {
+            color: #28a745;
+        }
+        .not-found .status {
+            color: #dc3545;
+        }
+        .summary {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 5px;
+            text-align: center;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 函数存在性测试</h1>
+        <p>检查题库分组页面中的关键函数是否正确定义</p>
+        
+        <button onclick="runFunctionTest()">开始测试</button>
+        <button onclick="showDetails()">显示详细信息</button>
+        
+        <div id="results"></div>
+        <div id="summary" class="summary" style="display: none;"></div>
+    </div>
+
+    <script>
+        const requiredFunctions = [
+            'renderAllQuestionBanks',
+            'updateStats', 
+            'getUserProgress',
+            'isFavorite',
+            'toggleFavorite',
+            'showWrongQuestionsView',
+            'showFavoriteManagementView',
+            'showNotification'
+        ];
+
+        async function runFunctionTest() {
+            const resultsDiv = document.getElementById('results');
+            const summaryDiv = document.getElementById('summary');
+            
+            resultsDiv.innerHTML = '<p>正在检查函数...</p>';
+            
+            try {
+                const response = await fetch('modules/question-bank-module.html');
+                if (!response.ok) {
+                    resultsDiv.innerHTML = '<p style="color: red;">❌ 无法加载题库分组页面</p>';
+                    return;
+                }
+                
+                const htmlContent = await response.text();
+                let foundCount = 0;
+                let results = [];
+                
+                requiredFunctions.forEach(funcName => {
+                    const patterns = [
+                        `function ${funcName}(`,
+                        `async function ${funcName}(`,
+                        `${funcName}: function(`,
+                        `const ${funcName} = function(`,
+                        `let ${funcName} = function(`,
+                        `var ${funcName} = function(`
+                    ];
+                    
+                    const isFound = patterns.some(pattern => htmlContent.includes(pattern));
+                    if (isFound) foundCount++;
+                    
+                    results.push({
+                        name: funcName,
+                        found: isFound,
+                        patterns: patterns
+                    });
+                });
+                
+                // 显示结果
+                let html = '<h3>测试结果:</h3>';
+                results.forEach(result => {
+                    const className = result.found ? 'found' : 'not-found';
+                    const status = result.found ? '✅ 找到' : '❌ 未找到';
+                    
+                    html += `
+                        <div class="function-item ${className}">
+                            <span><strong>${result.name}</strong></span>
+                            <span class="status">${status}</span>
+                        </div>
+                    `;
+                });
+                
+                resultsDiv.innerHTML = html;
+                
+                // 显示摘要
+                const successRate = (foundCount / requiredFunctions.length * 100).toFixed(1);
+                const isSuccess = foundCount >= requiredFunctions.length * 0.9;
+                
+                summaryDiv.innerHTML = `
+                    <h3>📊 测试摘要</h3>
+                    <p><strong>找到函数:</strong> ${foundCount}/${requiredFunctions.length}</p>
+                    <p><strong>成功率:</strong> ${successRate}%</p>
+                    <p><strong>测试结果:</strong> <span style="color: ${isSuccess ? '#28a745' : '#dc3545'}; font-weight: bold;">
+                        ${isSuccess ? '✅ 通过' : '❌ 失败'}
+                    </span></p>
+                `;
+                summaryDiv.style.display = 'block';
+                
+                console.log('函数测试完成:', {
+                    found: foundCount,
+                    total: requiredFunctions.length,
+                    success: isSuccess,
+                    results: results
+                });
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<p style="color: red;">❌ 测试失败: ${error.message}</p>`;
+                console.error('函数测试错误:', error);
+            }
+        }
+        
+        function showDetails() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = `
+                <h3>🔍 详细检查信息</h3>
+                <p><strong>检查的文件:</strong> modules/question-bank-module.html</p>
+                <p><strong>检查的函数:</strong></p>
+                <ul>
+                    ${requiredFunctions.map(f => `<li><code>${f}</code></li>`).join('')}
+                </ul>
+                <p><strong>检查模式:</strong></p>
+                <ul>
+                    <li><code>function functionName(</code></li>
+                    <li><code>async function functionName(</code></li>
+                    <li><code>functionName: function(</code></li>
+                    <li><code>const functionName = function(</code></li>
+                    <li><code>let functionName = function(</code></li>
+                    <li><code>var functionName = function(</code></li>
+                </ul>
+            `;
+        }
+        
+        // 页面加载时自动运行测试
+        document.addEventListener('DOMContentLoaded', runFunctionTest);
+    </script>
+</body>
+</html> 

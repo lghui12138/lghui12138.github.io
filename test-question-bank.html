@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库分组测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .stat-item {
+            text-align: center;
+            margin: 10px;
+            padding: 15px;
+            background: rgba(79,172,254,0.1);
+            border-radius: 10px;
+            min-width: 120px;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4facfe;
+        }
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .buttons {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .btn {
+            margin: 5px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        .btn-favorites { background: #ff6b6b; color: white; }
+        .btn-all { background: #4facfe; color: white; }
+        .btn-wrong { background: #e74c3c; color: white; }
+        .btn-manage { background: #ffd700; color: #333; }
+        #questionBankList {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+        .qb-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        .qb-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #333; margin-bottom: 30px;">题库分组测试</h1>
+        
+        <div class="stats" id="questionBankStats">
+            <div class="stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">总题库数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">总题数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">已做题数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">未做题数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">错题数</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number">0</div>
+                <div class="stat-label">收藏数</div>
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button id="showFavorites" class="btn btn-favorites">⭐ 我的收藏</button>
+            <button id="showAll" class="btn btn-all">📚 全部题库</button>
+            <button id="showWrongQuestions" class="btn btn-wrong">❌ 错题本</button>
+            <button id="manageFavorites" class="btn btn-manage">📋 收藏管理</button>
+        </div>
+        
+        <div id="questionBankList"></div>
+        <div id="questionBankNoResult" style="display:none;text-align:center;color:#ff6b6b;font-size:1.2em;margin-top:32px;">未找到匹配的题库</div>
+    </div>
+
+    <script>
+        // 模拟题库数据
+        const mockQuestionBanks = {
+            wrongList: [],
+            realList: [
+                { name: "真题_中国海洋大学_2000-2021_cleaned", file: "真题_中国海洋大学_2000-2021_cleaned.json", intro: "2000-2021年中国海洋大学流体力学真题" },
+                { name: "真题_中国海洋大学_2000-2021", file: "真题_中国海洋大学_2000-2021.json", intro: "2000-2021年中国海洋大学流体力学真题原始数据" }
+            ],
+            chapterList: [
+                { name: "动量方程", file: "分类_动量方程.json", intro: "动量方程专题题库" },
+                { name: "势流", file: "分类_势流.json", intro: "势流理论与应用题" },
+                { name: "压力", file: "分类_压力.json", intro: "压力相关知识点与典型题目" },
+                { name: "粘性", file: "分类_粘性.json", intro: "粘性流体力学专题" },
+                { name: "能量方程", file: "分类_能量方程.json", intro: "能量方程专题题库" },
+                { name: "自由面", file: "分类_自由面.json", intro: "自由面流动相关题型" },
+                { name: "边界层", file: "分类_边界层.json", intro: "边界层理论与相关题型" },
+                { name: "雷诺数", file: "分类_雷诺数.json", intro: "雷诺数与流动状态判别题" }
+            ]
+        };
+
+        // 模拟题库元信息
+        async function getQuestionBankMeta(file) {
+            // 模拟不同题库的题目数量
+            const mockCounts = {
+                "真题_中国海洋大学_2000-2021_cleaned.json": 3005,
+                "真题_中国海洋大学_2000-2021.json": 6743,
+                "分类_动量方程.json": 258,
+                "分类_势流.json": 396,
+                "分类_压力.json": 464,
+                "分类_粘性.json": 671,
+                "分类_能量方程.json": 100,
+                "分类_自由面.json": 167,
+                "分类_边界层.json": 310,
+                "分类_雷诺数.json": 232
+            };
+            
+            return {
+                count: mockCounts[file] || 100,
+                intro: "模拟题库介绍",
+                preview: ["题目1", "题目2", "题目3"],
+                rawData: []
+            };
+        }
+
+        // 渲染题库卡片
+        async function renderAllQuestionBanks(allBanks, filter = "", filters = {}, sortOrder = "") {
+            const { wrongList, realList, chapterList } = allBanks;
+            const list = document.getElementById('questionBankList');
+            const noResult = document.getElementById('questionBankNoResult');
+            let html = '';
+            let totalCount = 0;
+            let totalBanks = 0;
+            let completedQuestions = 0;
+            let pendingQuestions = 0;
+            
+            // 真题分组
+            const realFiltered = realList.filter(qb => 
+                qb.name.toLowerCase().includes(filter.toLowerCase()) ||
+                qb.intro.toLowerCase().includes(filter.toLowerCase())
+            );
+            
+            if(realFiltered.length) {
+                html += `<div><h3 style='color:#006994;'><i class='fas fa-file-alt'></i> 真题</h3><div class='qb-group'>`;
+                
+                for(const qb of realFiltered) {
+                    const meta = await getQuestionBankMeta(qb.file);
+                    totalBanks++;
+                    totalCount += meta.count;
+                    
+                    html += `<div class='qb-card'>
+                        <div style='font-weight:bold;margin-bottom:10px;'>${qb.name}</div>
+                        <div style='color:#666;margin-bottom:10px;'>${meta.count}题 | ${qb.intro}</div>
+                        <div style='display:flex;gap:10px;'>
+                            <button class='btn btn-all' onclick="alert('开始做题：${qb.name}')">做题</button>
+                            <button class='btn btn-favorites' onclick="alert('收藏：${qb.name}')">收藏</button>
+                        </div>
+                    </div>`;
+                }
+                html += `</div></div>`;
+            }
+            
+            // 章节分类分组
+            const chapterFiltered = chapterList.filter(qb => 
+                qb.name.toLowerCase().includes(filter.toLowerCase()) ||
+                qb.intro.toLowerCase().includes(filter.toLowerCase())
+            );
+            
+            if(chapterFiltered.length) {
+                html += `<div><h3 style='color:#4facfe;'><i class='fas fa-layer-group'></i> 章节分类题库</h3><div class='qb-group'>`;
+                
+                for(const qb of chapterFiltered) {
+                    const meta = await getQuestionBankMeta(qb.file);
+                    totalBanks++;
+                    totalCount += meta.count;
+                    
+                    html += `<div class='qb-card'>
+                        <div style='font-weight:bold;margin-bottom:10px;'>${qb.name}</div>
+                        <div style='color:#666;margin-bottom:10px;'>${meta.count}题 | ${qb.intro}</div>
+                        <div style='display:flex;gap:10px;'>
+                            <button class='btn btn-all' onclick="alert('开始做题：${qb.name}')">做题</button>
+                            <button class='btn btn-favorites' onclick="alert('收藏：${qb.name}')">收藏</button>
+                        </div>
+                    </div>`;
+                }
+                html += `</div></div>`;
+            }
+            
+            // 更新统计信息
+            updateStats({
+                totalBanks: totalBanks,
+                totalQuestions: totalCount,
+                completedQuestions: completedQuestions,
+                pendingQuestions: pendingQuestions,
+                wrongQuestions: 0,
+                favoriteCount: 0
+            });
+            
+            list.innerHTML = html;
+            
+            if(!realFiltered.length && !chapterFiltered.length) {
+                noResult.style.display = '';
+            } else {
+                noResult.style.display = 'none';
+            }
+        }
+
+        // 更新统计信息
+        function updateStats(stats) {
+            const statsContainer = document.getElementById('questionBankStats');
+            const statDivs = statsContainer.querySelectorAll('.stat-number');
+            statDivs[0].textContent = stats.totalBanks;
+            statDivs[1].textContent = stats.totalQuestions;
+            statDivs[2].textContent = stats.completedQuestions;
+            statDivs[3].textContent = stats.pendingQuestions;
+            statDivs[4].textContent = stats.wrongQuestions;
+            statDivs[5].textContent = stats.favoriteCount;
+        }
+
+        // 页面初始化
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('页面加载完成，开始渲染题库...');
+            await renderAllQuestionBanks(mockQuestionBanks);
+            
+            // 按钮事件监听
+            const showFavoritesBtn = document.getElementById('showFavorites');
+            const showAllBtn = document.getElementById('showAll');
+            const showWrongQuestionsBtn = document.getElementById('showWrongQuestions');
+            const manageFavoritesBtn = document.getElementById('manageFavorites');
+            
+            showFavoritesBtn.addEventListener('click', function() {
+                alert('显示收藏题库');
+            });
+            
+            showAllBtn.addEventListener('click', function() {
+                renderAllQuestionBanks(mockQuestionBanks);
+            });
+            
+            showWrongQuestionsBtn.addEventListener('click', function() {
+                alert('显示错题本');
+            });
+            
+            manageFavoritesBtn.addEventListener('click', function() {
+                alert('收藏管理');
+            });
+            
+            console.log('题库渲染完成！');
+        });
+    </script>
+</body>
+</html> 
