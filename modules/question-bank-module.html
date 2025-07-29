@@ -4756,7 +4756,7 @@
         // 读取题库文件内容，返回题数、标签、简介、预览
         async function getQuestionBankMeta(file) {
           try {
-            const res = await fetch('question-banks/' + file);
+            const res = await fetch('/question-banks/' + file);
             const data = await res.json();
             const arr = Array.isArray(data) ? data : (data.questions||data.data||[]);
             let tags = new Set();
@@ -4780,7 +4780,7 @@
         }
 
         async function fetchAllQuestionBanks() {
-          const res = await fetch('question-banks/index.json');
+          const res = await fetch('/question-banks/index.json');
           const index = await res.json();
           // 组装分组
           const wrongList = (index.wrong || []).map(file => ({ name: file.replace('.json',''), file }));
@@ -4800,7 +4800,7 @@
               const meta = await getQuestionBankMeta(qb.file);
               // 按年份分组
               const yearMap = {};
-              const res = await fetch('question-banks/' + qb.file);
+              const res = await fetch('/question-banks/' + qb.file);
               const arr = Array.isArray(await res.json()) ? await res.json() : ((await res.json()).questions||[]);
               arr.forEach(q=>{if(q.year){yearMap[q.year]=yearMap[q.year]||[];yearMap[q.year].push(q);}});
               Object.keys(yearMap).sort().forEach(year=>{
