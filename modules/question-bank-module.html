@@ -4950,6 +4950,38 @@
                 });
             }
         });
+
+        // ... 题库渲染相关代码 ...
+        function renderQuestionBankList() {
+            // 假设有题库数组 questionBanks
+            const list = document.getElementById('questionBankList');
+            list.innerHTML = questionBanks.map((qb, idx) => `
+                <div class="question-bank-item">
+                    <button class="btn btn-primary" onclick="startPracticeFullscreen('${qb.value}')">
+                        <i class="fas fa-play"></i> 做题
+                    </button>
+                    <span class="qb-title">${qb.name}</span>
+                    <!-- 其它信息 -->
+                </div>
+            `).join('');
+        }
+        function startPracticeFullscreen(qbValue) {
+            // 保存题库标识到localStorage，供全屏页面读取
+            localStorage.setItem('fullscreen_qb_value', qbValue);
+            window.location.href = 'practice-fullscreen.html';
+        }
+        // ... 题库选项点击事件 ...
+        document.addEventListener('DOMContentLoaded', function() {
+            // ...
+            document.querySelectorAll('.question-bank-item').forEach(item => {
+                item.addEventListener('click', function(e) {
+                    if (e.target.classList.contains('btn-primary')) return; // 已处理
+                    // 其它区域点击也可进入全屏做题
+                    const qbValue = this.getAttribute('data-qb-value');
+                    if (qbValue) startPracticeFullscreen(qbValue);
+                });
+            });
+        });
     </script>
 </body>
 </html> 
