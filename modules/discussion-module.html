@@ -904,6 +904,209 @@
             }
         }
         
+        // 搜索帖子功能
+        function searchPosts() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!searchTerm) {
+                renderPosts();
+                return;
+            }
+            
+            const filteredPosts = posts.filter(post => 
+                post.title.toLowerCase().includes(searchTerm) ||
+                post.content.toLowerCase().includes(searchTerm) ||
+                post.authorName.toLowerCase().includes(searchTerm)
+            );
+            
+            renderFilteredPosts(filteredPosts);
+        }
+        
+        // 渲染搜索结果
+        function renderFilteredPosts(filteredPosts) {
+            const postsContainer = document.getElementById('postsContainer');
+            
+            if (filteredPosts.length === 0) {
+                postsContainer.innerHTML = `
+                    <div class="no-results">
+                        <i class="fas fa-search"></i>
+                        <h3>未找到相关帖子</h3>
+                        <p>请尝试其他关键词</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            postsContainer.innerHTML = filteredPosts.map(post => createPostHTML(post)).join('');
+        }
+        
+        // 置顶帖子功能
+        function togglePinPost(postId) {
+            if (!currentUser || currentUser.role !== 'teacher') {
+                showNotification('只有教师可以置顶帖子', 'error');
+                return;
+            }
+            
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                post.pinned = !post.pinned;
+                savePosts();
+                renderPosts();
+                showNotification(post.pinned ? '帖子已置顶' : '帖子已取消置顶', 'success');
+            }
+        }
+        
+        // 设置精华帖子
+        function toggleFeaturedPost(postId) {
+            if (!currentUser || currentUser.role !== 'teacher') {
+                showNotification('只有教师可以设置精华帖子', 'error');
+                return;
+            }
+            
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                post.featured = !post.featured;
+                savePosts();
+                renderPosts();
+                showNotification(post.featured ? '帖子已设为精华' : '帖子已取消精华', 'success');
+            }
+        }
+        
+        // 举报帖子
+        function reportPost(postId) {
+            if (!currentUser) {
+                showNotification('请先登录', 'error');
+                return;
+            }
+            
+            const reportReasons = [
+                '垃圾信息',
+                '不当内容',
+                '恶意攻击',
+                '重复发布',
+                '其他'
+            ];
+            
+            const modal = document.createElement('div');
+            modal.className = 'report-modal';
+            modal.innerHTML = `
+                <div class="report-content">
+                    <div class="report-header">
+                        <h3>举报帖子</h3>
+                        <button onclick="this.closest('.report-modal').remove()" class="close-btn">&times;</button>
+                    </div>
+                    <div class="report-body">
+                        <p>请选择举报原因：</p>
+                        <div class="report-reasons">
+                            ${reportReasons.map(reason => `
+                                <label class="report-reason">
+                                    <input type="radio" name="reportReason" value="${reason}">
+                                    <span>${reason}</span>
+                                </label>
+                            `).join('')}
+                        </div>
+                        <div class="form-group">
+                            <label>详细说明（可选）：</label>
+                            <textarea id="reportDetail" placeholder="请详细描述举报原因..."></textarea>
+                        </div>
+                    </div>
+                    <div class="report-footer">
+                        <button onclick="this.closest('.report-modal').remove()" class="btn-secondary">取消</button>
+                        <button onclick="submitReport(${postId})" class="btn-primary">提交举报</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // 提交举报
+        function submitReport(postId) {
+            const reason = document.querySelector('input[name="reportReason"]:checked');
+            const detail = document.getElementById('reportDetail').value;
+            
+            if (!reason) {
+                showNotification('请选择举报原因', 'error');
+                return;
+            }
+            
+            const report = {
+                postId: postId,
+                reporter: currentUser.username,
+                reason: reason.value,
+                detail: detail,
+                timestamp: new Date().toISOString()
+            };
+            
+            // 保存举报记录
+            const reports = JSON.parse(localStorage.getItem('discussion_reports') || '[]');
+            reports.push(report);
+            localStorage.setItem('discussion_reports', JSON.stringify(reports));
+            
+            document.querySelector('.report-modal').remove();
+            showNotification('举报已提交，我们会尽快处理', 'success');
+        }
+        
+        // 用户等级系统
+        function getUserLevel(username) {
+            const userPosts = posts.filter(p => p.author === username);
+            const totalPosts = userPosts.length;
+            const totalLikes = userPosts.reduce((sum, post) => sum + post.likes, 0);
+            
+            if (totalPosts >= 50 && totalLikes >= 100) return { level: '专家', color: '#e74c3c' };
+            if (totalPosts >= 20 && totalLikes >= 50) return { level: '活跃用户', color: '#f39c12' };
+            if (totalPosts >= 10 && totalLikes >= 20) return { level: '常客', color: '#27ae60' };
+            if (totalPosts >= 5) return { level: '新手', color: '#3498db' };
+            return { level: '游客', color: '#95a5a6' };
+        }
+        
+        // 帖子排序功能
+        function sortPosts(criteria) {
+            const sortFunctions = {
+                'latest': (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+                'popular': (a, b) => (b.likes + b.replies.length) - (a.likes + a.replies.length),
+                'mostReplies': (a, b) => b.replies.length - a.replies.length,
+                'mostLikes': (a, b) => b.likes - a.likes
+            };
+            
+            const sortedPosts = [...posts].sort(sortFunctions[criteria]);
+            renderFilteredPosts(sortedPosts);
+            
+            // 更新排序按钮状态
+            document.querySelectorAll('.sort-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`[data-sort="${criteria}"]`).classList.add('active');
+        }
+        
+        // 帖子统计功能
+        function updatePostStats() {
+            const stats = {
+                totalPosts: posts.length,
+                totalReplies: posts.reduce((sum, post) => sum + post.replies.length, 0),
+                totalLikes: posts.reduce((sum, post) => sum + post.likes, 0),
+                activeUsers: new Set(posts.map(p => p.author)).size
+            };
+            
+            const statsContainer = document.getElementById('postStats');
+            if (statsContainer) {
+                statsContainer.innerHTML = `
+                    <div class="stat-item">
+                        <i class="fas fa-file-alt"></i>
+                        <span>${stats.totalPosts} 个帖子</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-comments"></i>
+                        <span>${stats.totalReplies} 条回复</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-heart"></i>
+                        <span>${stats.totalLikes} 个点赞</span>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-users"></i>
+                        <span>${stats.activeUsers} 位活跃用户</span>
+                    </div>
+                `;
+            }
+        }
+        
         console.log('💬 讨论区模块已加载');
     </script>
 </body>
