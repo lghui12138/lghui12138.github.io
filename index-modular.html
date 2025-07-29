@@ -1269,6 +1269,13 @@
             if (activeLink) {
                 activeLink.classList.add('active');
             }
+            
+            // 如果显示分数分析页面，重新初始化图表
+            if (sectionName === 'scores') {
+                setTimeout(() => {
+                    initScoreChart();
+                }, 100);
+            }
         }
         
         // 打开模块
@@ -1360,11 +1367,23 @@
         // 初始化分数图表
         function initScoreChart() {
             const ctx = document.getElementById('scoreChart');
-            if (!ctx) return;
+            if (!ctx) {
+                console.log('分数图表容器未找到');
+                return;
+            }
+            
+            // 检查Chart.js是否已加载
+            if (typeof Chart === 'undefined') {
+                console.log('Chart.js未加载，等待加载...');
+                setTimeout(initScoreChart, 500);
+                return;
+            }
             
             if (scoreChart) {
                 scoreChart.destroy();
             }
+            
+            console.log('开始初始化分数图表...');
             
             scoreChart = new Chart(ctx, {
                 type: 'line',
@@ -1390,22 +1409,39 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeInOutQuart'
+                    },
                     plugins: {
                         title: {
                             display: true,
                             text: '803流体力学分数线趋势 (2020-2025)',
                             color: '#2c3e50',
                             font: {
-                                size: 16,
+                                size: 18,
                                 weight: 'bold'
-                            }
+                            },
+                            padding: 20
                         },
                         legend: {
                             position: 'top',
                             labels: {
                                 usePointStyle: true,
-                                padding: 20
+                                padding: 20,
+                                font: {
+                                    size: 14
+                                }
                             }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: 'white',
+                            bodyColor: 'white',
+                            borderColor: '#4facfe',
+                            borderWidth: 1
                         }
                     },
                     scales: {
@@ -1413,22 +1449,52 @@
                             beginAtZero: false,
                             min: 270,
                             max: 320,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
                             title: {
                                 display: true,
-                                text: '分数'
+                                text: '分数',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
                             }
                         },
                         x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            },
                             title: {
                                 display: true,
-                                text: '年份'
+                                text: '年份',
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
                             }
                         }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
                     }
                 }
             });
             
             updateScoreDetails('all');
+            console.log('分数图表初始化完成');
         }
         
         // 筛选分数
