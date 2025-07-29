@@ -4783,9 +4783,21 @@
           const res = await fetch('/question-banks/index.json');
           const index = await res.json();
           // 组装分组
-          const wrongList = (index.wrong || []).map(file => ({ name: file.replace('.json',''), file }));
-          const realList = (index.real || []).map(file => ({ name: file.replace('.json',''), file }));
-          const chapterList = (index.chapter || []).map(file => ({ name: file.replace('分类_','').replace('.json',''), file }));
+          const wrongList = (index.wrong || []).map(item => ({ 
+            name: item.file ? item.file.replace('.json','') : item.replace('.json',''), 
+            file: item.file || item,
+            intro: item.intro || ''
+          }));
+          const realList = (index.real || []).map(item => ({ 
+            name: item.file ? item.file.replace('.json','') : item.replace('.json',''), 
+            file: item.file || item,
+            intro: item.intro || ''
+          }));
+          const chapterList = (index.chapter || []).map(item => ({ 
+            name: (item.file || item).replace('分类_','').replace('.json',''), 
+            file: item.file || item,
+            intro: item.intro || ''
+          }));
           return { wrongList, realList, chapterList };
         }
 
@@ -4817,11 +4829,11 @@
           if(chapterList.length) {
             html += `<div><h3 style='color:#4facfe;'><i class='fas fa-layer-group'></i> 章节分类题库</h3><div class='qb-group'>`;
             for(const qb of chapterList) {
-              const meta = await getQuestionBankMeta('分类_'+qb.name+'.json');
+              const meta = await getQuestionBankMeta(qb.file);
               html += `<div class='qb-card qb-chapter' data-preview='${encodeURIComponent(JSON.stringify(meta.preview))}'>
                 <div class='qb-card-header'><span class='qb-card-title'>${qb.name}</span></div>
-                <div class='qb-card-meta'>${meta.count}题 | ${meta.intro}</div>
-                <button class='btn btn-primary' onclick="startPracticeFullscreen('分类_${qb.name}.json')">做题</button>
+                <div class='qb-card-meta'>${meta.count}题 | ${qb.intro || meta.intro}</div>
+                <button class='btn btn-primary' onclick="startPracticeFullscreen('${qb.file}')">做题</button>
               </div>`;
             }
             html += `</div></div>`;
@@ -4833,7 +4845,7 @@
               const meta = await getQuestionBankMeta(qb.file);
               html += `<div class='qb-card qb-wrong' data-preview='${encodeURIComponent(JSON.stringify(meta.preview))}'>
                 <div class='qb-card-header'><span class='qb-card-title'>${qb.name}</span></div>
-                <div class='qb-card-meta'>${meta.count}题 | ${meta.intro}</div>
+                <div class='qb-card-meta'>${meta.count}题 | ${qb.intro || meta.intro}</div>
                 <button class='btn btn-primary' onclick="startPracticeFullscreen('${qb.file}')">做题</button>
               </div>`;
             }
