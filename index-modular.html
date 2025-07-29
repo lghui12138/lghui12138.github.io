@@ -833,7 +833,20 @@
             
             const url = moduleUrls[moduleName];
             if (url) {
-                window.open(url, '_blank');
+                // 检查文件是否存在
+                fetch(url, { method: 'HEAD' })
+                    .then(response => {
+                        if (response.ok) {
+                            window.open(url, '_blank');
+                        } else {
+                            showNotification('模块文件不存在，正在创建...', 'warning');
+                            // 可以在这里创建默认模块页面
+                        }
+                    })
+                    .catch(error => {
+                        console.error('模块访问错误:', error);
+                        showNotification('模块访问失败，请检查网络连接', 'error');
+                    });
             } else {
                 showNotification('模块正在开发中...', 'info');
             }

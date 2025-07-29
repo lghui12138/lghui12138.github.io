@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>导航测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #006994, #4facfe);
+            color: white;
+            min-height: 100vh;
+        }
+        .nav-test {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .test-btn {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .test-btn:hover {
+            background: #006994;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success { background: rgba(39, 174, 96, 0.3); }
+        .error { background: rgba(231, 76, 60, 0.3); }
+    </style>
+</head>
+<body>
+    <h1>🌊 流体力学平台 - 导航测试</h1>
+    
+    <div class="nav-test">
+        <h2>主页面导航测试</h2>
+        <a href="index-modular.html" class="test-btn">测试主页面</a>
+        <a href="fluid_dynamic_4.html" class="test-btn">测试原版页面</a>
+    </div>
+    
+    <div class="nav-test">
+        <h2>模块页面测试</h2>
+        <a href="modules/question-bank-module.html" class="test-btn">题库模块</a>
+        <a href="modules/video-module.html" class="test-btn">视频模块</a>
+        <a href="modules/ai-assistant-module.html" class="test-btn">AI助手</a>
+        <a href="modules/analytics-module.html" class="test-btn">数据分析</a>
+        <a href="modules/upload-module.html" class="test-btn">文件上传</a>
+        <a href="modules/review-module.html" class="test-btn">复习计划</a>
+    </div>
+    
+    <div class="nav-test">
+        <h2>返回导航测试</h2>
+        <p>点击上面的模块链接，然后在模块页面点击"返回主页"按钮，测试是否能正确返回。</p>
+        <div id="testResults"></div>
+    </div>
+    
+    <script>
+        // 测试文件是否存在
+        async function testFileExists(url) {
+            try {
+                const response = await fetch(url, { method: 'HEAD' });
+                return response.ok;
+            } catch (error) {
+                return false;
+            }
+        }
+        
+        // 自动测试所有文件
+        async function runTests() {
+            const files = [
+                'index-modular.html',
+                'modules/question-bank-module.html',
+                'modules/video-module.html',
+                'modules/ai-assistant-module.html',
+                'modules/analytics-module.html',
+                'modules/upload-module.html',
+                'modules/review-module.html'
+            ];
+            
+            const results = document.getElementById('testResults');
+            results.innerHTML = '<h3>文件存在性测试结果：</h3>';
+            
+            for (const file of files) {
+                const exists = await testFileExists(file);
+                const statusClass = exists ? 'success' : 'error';
+                const statusText = exists ? '✅ 存在' : '❌ 不存在';
+                
+                results.innerHTML += `
+                    <div class="status ${statusClass}">
+                        ${file}: ${statusText}
+                    </div>
+                `;
+            }
+        }
+        
+        // 页面加载时运行测试
+        document.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html> 
