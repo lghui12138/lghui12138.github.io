@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>增强版视频课程 - 流体力学学习平台</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 高级视频播放器库 -->
+    <script src="https://vjs.zencdn.net/8.7.0/video.min.js"></script>
+    <link href="https://vjs.zencdn.net/8.7.0/video-js.css" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #1a3a57;
+            --secondary: #2a6aa7;
+            --accent: #3498db;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --error: #e74c3c;
+            --ocean-blue: #1e6fa8;
+            --ocean-light: #4facfe;
+            --seafoam: #00f2fe;
+            --coral: #ff6b6b;
+            --text-dark: #2c3e50;
+            --text-light: #7f8c8d;
+            --border: #bdc3c7;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f9ff 0%, #e6f0ff 100%);
+            color: var(--text-dark);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+        
+        /* 海洋背景 */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            opacity: 0.1;
+            animation: wave 10s ease-in-out infinite;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: -2s;
+            opacity: 0.05;
+        }
+        
+        .wave:nth-child(3) {
+            animation-delay: -4s;
+            opacity: 0.03;
+        }
+        
+        @keyframes wave {
+            0%, 100% { transform: translateX(0); }
+            50% { transform: translateX(-50%); }
+        }
+        
+        /* 导航栏 */
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 2px solid var(--ocean-light);
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--ocean-blue);
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .btn-back {
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        /* 主内容 */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            color: var(--ocean-blue);
+            margin-bottom: 10px;
+        }
+        
+        .page-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-light);
+        }
+        
+        /* 视频网格 */
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .video-card {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 25px;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(79, 172, 254, 0.3);
+            border-color: var(--seafoam);
+        }
+        
+        .video-card.featured {
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.1));
+            border-color: var(--coral);
+        }
+        
+        .video-card.featured::before {
+            content: '⭐ 推荐';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--coral);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .video-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background: var(--ocean-light);
+            border-radius: 0 0 20px 20px;
+            transition: width 0.3s ease;
+        }
+        
+        .video-thumbnail {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .video-thumbnail::before {
+            content: '▶';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            opacity: 0.8;
+            color: white;
+        }
+        
+        .video-info {
+            padding: 20px;
+        }
+        
+        .video-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: var(--ocean-blue);
+        }
+        
+        .video-description {
+            color: var(--text-dark);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .video-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--ocean-blue);
+        }
+        
+        .video-duration {
+            background: var(--seafoam);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+        
+        .video-category {
+            background: var(--coral);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+        
+        /* 视频播放器模态框 */
+        .video-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+        
+        .video-modal-content {
+            position: relative;
+            background: white;
+            margin: 2% auto;
+            padding: 20px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 1000px;
+            max-height: 90vh;
+            overflow: hidden;
+        }
+        
+        .video-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--ocean-light);
+        }
+        
+        .video-modal-title {
+            font-size: 1.5rem;
+            color: var(--ocean-blue);
+            font-weight: bold;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 5px;
+        }
+        
+        .close-btn:hover {
+            color: var(--error);
+        }
+        
+        .video-player-container {
+            width: 100%;
+            height: 500px;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .video-js {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* 学习进度 */
+        .progress-section {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: var(--text-dark);
+        }
+        
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .progress-title {
+            font-size: 1.3rem;
+            color: var(--ocean-blue);
+            font-weight: bold;
+        }
+        
+        .progress-text {
+            color: var(--text-light);
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: rgba(79, 172, 254, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .progress-text {
+            color: white;
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        /* 通知系统 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border: 2px solid var(--ocean-light);
+            border-radius: 15px;
+            padding: 20px;
+            color: var(--text-dark);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            max-width: 350px;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.1);
+        }
+        
+        .notification.error {
+            border-color: #e74c3c;
+            background: rgba(231, 76, 60, 0.1);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .video-modal-content {
+                margin: 5% auto;
+                width: 95%;
+                padding: 15px;
+            }
+            
+            .video-player-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 海洋背景 -->
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <i class="fas fa-video"></i>
+                <span>🎥 增强版视频课程</span>
+            </a>
+            <a href="index-modular.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                返回主页
+            </a>
+        </div>
+    </nav>
+    
+    <!-- 主内容 -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">🎥 增强版视频课程</h1>
+            <p class="page-subtitle">沉浸式学习体验，智能进度跟踪，海洋主题界面</p>
+        </div>
+        
+        <!-- 学习进度 -->
+        <div class="progress-section">
+            <div class="progress-header">
+                <h3>我的学习进度</h3>
+                <span id="progressText">已完成 0%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill" style="width: 0%;">
+                    <div class="progress-text">0%</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 视频网格 -->
+        <div class="video-grid" id="videoGrid">
+            <!-- 视频卡片将在这里动态生成 -->
+        </div>
+    </div>
+    
+    <!-- 视频播放器模态框 -->
+    <div id="videoModal" class="video-modal">
+        <div class="video-modal-content">
+            <div class="video-modal-header">
+                <div class="video-modal-title" id="modalTitle">视频播放</div>
+                <button class="close-btn" onclick="closeVideoModal()">&times;</button>
+            </div>
+            
+            <div class="video-player-container">
+                <video id="videoPlayer" class="video-js vjs-default-skin" controls preload="auto">
+                    <p class="vjs-no-js">
+                        要查看此视频，请启用JavaScript并考虑升级到支持HTML5视频的Web浏览器。
+                    </p>
+                </video>
+            </div>
+            
+            <div class="video-info">
+                <h3 id="modalVideoTitle"></h3>
+                <p id="modalVideoDescription"></p>
+                <div class="video-meta">
+                    <span id="modalVideoDuration"></span>
+                    <span id="modalVideoCategory"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知容器 -->
+    <div id="notification-container"></div>
+    
+    <script>
+        // 视频数据
+        const videosData = [
+            {
+                id: 1,
+                title: "流体静力学基础概念",
+                description: "深入讲解流体静力学的基本概念，包括压强、浮力、帕斯卡定律等核心知识点。",
+                url: "https://www.bilibili.com/video/BV1xx411c7mu",
+                duration: "45:30",
+                category: "基础理论",
+                thumbnail: "https://via.placeholder.com/400x200/4facfe/ffffff?text=流体静力学",
+                progress: 0,
+                featured: true
+            },
+            {
+                id: 2,
+                title: "伯努利方程详解",
+                description: "详细讲解伯努利方程的推导过程、物理意义和应用实例。",
+                url: "https://www.bilibili.com/video/BV1xx411c7mu",
+                duration: "52:15",
+                category: "核心理论",
+                thumbnail: "https://via.placeholder.com/400x200/00f2fe/ffffff?text=伯努利方程",
+                progress: 0,
+                featured: true
+            },
+            {
+                id: 3,
+                title: "边界层理论实验",
+                description: "通过实验演示边界层的形成和发展过程，加深对理论的理解。",
+                url: "https://www.bilibili.com/video/BV1xx411c7mu",
+                duration: "38:45",
+                category: "实验演示",
+                thumbnail: "https://via.placeholder.com/400x200/ff6b6b/ffffff?text=边界层实验",
+                progress: 0,
+                featured: false
+            },
+            {
+                id: 4,
+                title: "管道流动阻力分析",
+                description: "分析管道流动中的阻力损失，包括摩擦阻力和局部阻力。",
+                url: "https://www.bilibili.com/video/BV1xx411c7mu",
+                duration: "41:20",
+                category: "工程应用",
+                thumbnail: "https://via.placeholder.com/400x200/27ae60/ffffff?text=管道流动",
+                progress: 0,
+                featured: false
+            },
+            {
+                id: 5,
+                title: "雷诺数实验演示",
+                description: "通过实验观察不同雷诺数下的流动状态，理解层流与湍流的转换。",
+                url: "https://www.bilibili.com/video/BV1xx411c7mu",
+                duration: "35:10",
+                category: "实验演示",
+                thumbnail: "https://via.placeholder.com/400x200/f39c12/ffffff?text=雷诺数实验",
+                progress: 0,
+                featured: false
+            },
+            {
+                id: 6,
+                title: "文丘里管工作原理",
+                description: "详细讲解文丘里管的工作原理和在流量测量中的应用。",
+                url: "https://www.bilibili.com/video/BV1xx411c7mu",
+                duration: "48:30",
+                category: "工程应用",
+                thumbnail: "https://via.placeholder.com/400x200/9b59b6/ffffff?text=文丘里管",
+                progress: 0,
+                featured: false
+            }
+        ];
+        
+        let currentVideo = null;
+        let player = null;
+        
+        // 显示通知
+        function showNotification(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, duration);
+            }
+        }
+        
+        // 渲染视频网格
+        function renderVideoGrid() {
+            const grid = document.getElementById('videoGrid');
+            grid.innerHTML = videosData.map(video => `
+                <div class="video-card ${video.featured ? 'featured' : ''}" onclick="playVideo(${video.id})">
+                    <div class="video-progress" style="width: ${video.progress}%;"></div>
+                    <div class="video-thumbnail" style="background: linear-gradient(45deg, ${getCategoryColor(video.category)});">
+                        <div style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 10px; font-size: 12px;">
+                            ${video.progress}% 完成
+                        </div>
+                    </div>
+                    <div class="video-info">
+                        <div class="video-title">${video.title}</div>
+                        <div class="video-description">${video.description}</div>
+                        <div class="video-meta">
+                            <span class="video-duration">${video.duration}</span>
+                            <span class="video-category">${video.category}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 获取分类颜色
+        function getCategoryColor(category) {
+            const colors = {
+                '基础理论': '#4facfe, #00f2fe',
+                '核心理论': '#ff6b6b, #ee5a52',
+                '实验演示': '#27ae60, #2ecc71',
+                '工程应用': '#f39c12, #e67e22'
+            };
+            return colors[category] || '#4facfe, #00f2fe';
+        }
+        
+        // 播放视频
+        function playVideo(videoId) {
+            const video = videosData.find(v => v.id === videoId);
+            if (!video) return;
+            
+            currentVideo = video;
+            
+            // 更新模态框内容
+            document.getElementById('modalTitle').textContent = video.title;
+            document.getElementById('modalVideoTitle').textContent = video.title;
+            document.getElementById('modalVideoDescription').textContent = video.description;
+            document.getElementById('modalVideoDuration').textContent = video.duration;
+            document.getElementById('modalVideoCategory').textContent = video.category;
+            
+            // 显示模态框
+            document.getElementById('videoModal').style.display = 'block';
+            
+            // 初始化视频播放器
+            setTimeout(() => {
+                if (player) {
+                    player.dispose();
+                }
+                
+                player = videojs('videoPlayer', {
+                    controls: true,
+                    autoplay: false,
+                    preload: 'auto',
+                    fluid: true,
+                    responsive: true,
+                    playbackRates: [0.5, 0.75, 1, 1.25, 1.5, 2]
+                });
+                
+                // 设置视频源
+                player.src({
+                    type: 'video/youtube',
+                    src: video.url
+                });
+                
+                // 监听播放进度
+                player.on('timeupdate', function() {
+                    const progress = (player.currentTime() / player.duration()) * 100;
+                    updateVideoProgress(videoId, progress);
+                });
+                
+                // 监听播放结束
+                player.on('ended', function() {
+                    updateVideoProgress(videoId, 100);
+                    showNotification('🎉 视频学习完成！', 'success');
+                });
+                
+            }, 100);
+            
+            showNotification('🎥 正在加载视频...', 'info');
+        }
+        
+        // 关闭视频模态框
+        function closeVideoModal() {
+            document.getElementById('videoModal').style.display = 'none';
+            
+            if (player) {
+                player.pause();
+                player.dispose();
+                player = null;
+            }
+            
+            currentVideo = null;
+        }
+        
+        // 更新视频进度
+        function updateVideoProgress(videoId, progress) {
+            const video = videosData.find(v => v.id === videoId);
+            if (video) {
+                video.progress = Math.min(100, Math.max(0, progress));
+                updateOverallProgress();
+                renderVideoGrid();
+            }
+        }
+        
+        // 更新总体进度
+        function updateOverallProgress() {
+            const totalProgress = videosData.reduce((sum, video) => sum + video.progress, 0) / videosData.length;
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            
+            progressFill.style.width = totalProgress + '%';
+            progressFill.innerHTML = `<div class="progress-text">${Math.round(totalProgress)}%</div>`;
+            progressText.textContent = `已完成 ${Math.round(totalProgress)}%`;
+        }
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            renderVideoGrid();
+            updateOverallProgress();
+            showNotification('🎥 增强版视频课程已加载', 'success');
+        });
+        
+        console.log('🎥 增强版视频模块已加载');
+    </script>
+</body>
+</html> 

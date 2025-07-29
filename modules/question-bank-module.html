@@ -257,6 +257,47 @@
             display: flex;
             flex-direction: column;
             justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .question-container.fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1000;
+            border-radius: 0;
+            margin: 0;
+            padding: 60px 40px 40px;
+        }
+        
+        .fullscreen-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1001;
+        }
+        
+        .fullscreen-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--ocean-light);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .fullscreen-btn:hover {
+            background: var(--ocean-light);
+            color: white;
+            transform: scale(1.1);
         }
         
         .question-header {
@@ -831,6 +872,15 @@
             const container = document.getElementById('questionContainer');
             
             container.innerHTML = `
+                <div class="fullscreen-controls">
+                    <button class="fullscreen-btn" onclick="toggleFullscreen()" title="全屏模式">
+                        <i class="fas fa-expand" id="fullscreenIcon"></i>
+                    </button>
+                    <button class="fullscreen-btn" onclick="closeFullscreen()" title="关闭全屏" style="display: none;" id="closeFullscreenBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
                 <div class="question-header">
                     <div class="question-title">第 ${currentQuestionIndex + 1} 题</div>
                     <div class="question-progress">${currentQuestionIndex + 1} / ${questionsData.length}</div>
@@ -846,6 +896,29 @@
                             <div>${option}</div>
                         </div>
                     `).join('')}
+                </div>
+                
+                <div class="question-actions">
+                    <button class="btn-control" onclick="previousQuestion()" id="prevBtn" ${currentQuestionIndex === 0 ? 'disabled' : ''}>
+                        <i class="fas fa-chevron-left"></i>
+                        上一题
+                    </button>
+                    <button class="btn-control" onclick="nextQuestion()" id="nextBtn" ${currentQuestionIndex === questionsData.length - 1 ? 'disabled' : ''}>
+                        下一题
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button class="btn-control secondary" onclick="showExplanation()" id="explainBtn" style="display: none;">
+                        <i class="fas fa-lightbulb"></i>
+                        查看解析
+                    </button>
+                </div>
+                
+                <!-- 解析区域 -->
+                <div class="explanation-area" id="explanationArea" style="display: none; margin-top: 20px; padding: 20px; background: rgba(79, 172, 254, 0.1); border-radius: 15px; border-left: 4px solid var(--ocean-light);">
+                    <h4 style="color: var(--ocean-blue); margin-bottom: 10px;">
+                        <i class="fas fa-lightbulb"></i> 题目解析
+                    </h4>
+                    <div id="explanationText"></div>
                 </div>
                 
                 <div class="question-footer">
@@ -974,7 +1047,51 @@
             }
             
             const question = questionsData[currentQuestionIndex];
-            showNotification(`💡 解析：${question.explanation}`, 'info', 5000);
+            const explanationArea = document.getElementById('explanationArea');
+            const explanationText = document.getElementById('explanationText');
+            
+            if (explanationArea && explanationText) {
+                explanationText.innerHTML = `
+                    <p><strong>正确答案：</strong>${String.fromCharCode(65 + question.correct)}. ${question.options[question.correct]}</p>
+                    <p><strong>解析：</strong>${question.explanation}</p>
+                    <p><strong>你的答案：</strong>${userAnswers[currentQuestionIndex] !== undefined ? 
+                        String.fromCharCode(65 + userAnswers[currentQuestionIndex]) + '. ' + question.options[userAnswers[currentQuestionIndex]] : 
+                        '未选择'}</p>
+                    <p><strong>结果：</strong><span style="color: ${userAnswers[currentQuestionIndex] === question.correct ? 'var(--success)' : 'var(--error)'}; font-weight: bold;">
+                        ${userAnswers[currentQuestionIndex] === question.correct ? '✓ 正确' : '✗ 错误'}
+                    </span></p>
+                `;
+                explanationArea.style.display = 'block';
+                showNotification('解析已显示', 'info');
+            }
+        }
+        
+        // 切换全屏模式
+        function toggleFullscreen() {
+            const container = document.getElementById('questionContainer');
+            const fullscreenIcon = document.getElementById('fullscreenIcon');
+            const closeBtn = document.getElementById('closeFullscreenBtn');
+            
+            if (container.classList.contains('fullscreen')) {
+                closeFullscreen();
+            } else {
+                container.classList.add('fullscreen');
+                fullscreenIcon.className = 'fas fa-compress';
+                if (closeBtn) closeBtn.style.display = 'flex';
+                showNotification('已进入全屏模式', 'success');
+            }
+        }
+        
+        // 关闭全屏模式
+        function closeFullscreen() {
+            const container = document.getElementById('questionContainer');
+            const fullscreenIcon = document.getElementById('fullscreenIcon');
+            const closeBtn = document.getElementById('closeFullscreenBtn');
+            
+            container.classList.remove('fullscreen');
+            fullscreenIcon.className = 'fas fa-expand';
+            if (closeBtn) closeBtn.style.display = 'none';
+            showNotification('已退出全屏模式', 'info');
         }
         
         // 重新开始
