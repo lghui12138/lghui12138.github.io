@@ -5647,7 +5647,10 @@
         // 读取题库文件内容，返回题数、标签、简介、预览
         async function getQuestionBankMeta(file) {
           try {
-            const res = await fetch('/question-banks/' + file);
+            const res = await fetch('../question-banks/' + file);
+            if (!res.ok) {
+              throw new Error(`HTTP error! status: ${res.status}`);
+            }
             const data = await res.json();
             const arr = Array.isArray(data) ? data : (data.questions||data.data||[]);
             let tags = new Set();
@@ -5671,26 +5674,35 @@
           }
         }
 
-        async function fetchAllQuestionBanks() {
-          const res = await fetch('/question-banks/index.json');
-          const index = await res.json();
-          // 组装分组
-          const wrongList = (index.wrong || []).map(item => ({ 
-            name: item.file ? item.file.replace('.json','') : item.replace('.json',''), 
-            file: item.file || item,
-            intro: item.intro || ''
-          }));
-          const realList = (index.real || []).map(item => ({ 
-            name: item.file ? item.file.replace('.json','') : item.replace('.json',''), 
-            file: item.file || item,
-            intro: item.intro || ''
-          }));
-          const chapterList = (index.chapter || []).map(item => ({ 
-            name: (item.file || item).replace('分类_','').replace('.json',''), 
-            file: item.file || item,
-            intro: item.intro || ''
-          }));
-          return { wrongList, realList, chapterList };
+                async function fetchAllQuestionBanks() {
+          try {
+            const res = await fetch('../question-banks/index.json');
+            if (!res.ok) {
+              throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            const index = await res.json();
+            // 组装分组
+            const wrongList = (index.wrong || []).map(item => ({ 
+              name: item.file ? item.file.replace('.json','') : item.replace('.json',''), 
+              file: item.file || item,
+              intro: item.intro || ''
+            }));
+            const realList = (index.real || []).map(item => ({ 
+              name: item.file ? item.file.replace('.json','') : item.replace('.json',''), 
+              file: item.file || item,
+              intro: item.intro || ''
+            }));
+            const chapterList = (index.chapter || []).map(item => ({ 
+              name: (item.file || item).replace('分类_','').replace('.json',''), 
+              file: item.file || item,
+              intro: item.intro || ''
+            }));
+            return { wrongList, realList, chapterList };
+          } catch (error) {
+            console.error('加载题库数据失败:', error);
+            showNotification('题库数据加载失败，请检查网络连接或刷新页面重试', 'error');
+            return { wrongList: [], realList: [], chapterList: [] };
+          }
         }
 
         // 渲染题库卡片
@@ -6010,9 +6022,42 @@
             
             const allBanks = await fetchAllQuestionBanks();
             console.log('题库数据加载完成:', allBanks);
+            
+            // 检查是否成功加载到数据
+            const totalBanks = (allBanks.wrongList?.length || 0) + (allBanks.realList?.length || 0) + (allBanks.chapterList?.length || 0);
+            
+            if (totalBanks === 0) {
+              throw new Error('未找到题库数据');
+            }
+            
             await renderAllQuestionBanks(allBanks);
             
-            // 搜索框监听
+            // 显示成功通知
+            showNotification(`成功加载 ${totalBanks} 个题库`, 'success');
+            
+          } catch (error) {
+            console.error('题库数据加载失败:', error);
+            
+            // 显示错误信息
+            const list = document.getElementById('questionBankList');
+            if (list) {
+              list.innerHTML = `
+                <div style="text-align:center;padding:40px;color:#ff6b6b;">
+                  <i class="fas fa-exclamation-triangle" style="font-size:2em;margin-bottom:20px;"></i>
+                  <div style="font-size:1.2em;margin-bottom:10px;">题库数据加载失败</div>
+                  <div style="margin-bottom:20px;color:#666;">请检查网络连接或刷新页面重试</div>
+                  <button onclick="location.reload()" style="padding:10px 20px;background:#4facfe;color:white;border:none;border-radius:6px;cursor:pointer;">
+                    <i class="fas fa-redo"></i> 刷新页面
+                  </button>
+                </div>
+              `;
+            }
+            
+            showNotification('题库数据加载失败，请刷新页面重试', 'error');
+            return;
+          }
+          
+          // 搜索框监听
             const searchInput = document.getElementById('questionBankSearch');
             if (searchInput) {
               searchInput.addEventListener('input', async function() {
@@ -6148,10 +6193,7 @@
               }
             });
             
-                                     console.log('题库分组页面初始化完成');
-            
-            // 显示成功消息
-            showNotification('题库数据加载完成！', 'success');
+            console.log('题库分组页面初始化完成');
           } catch (error) {
             console.error('题库分组页面初始化失败:', error);
             
