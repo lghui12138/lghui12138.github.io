@@ -789,6 +789,9 @@
                         <button class="btn-control primary" onclick="generateBatchAIQuestions()">
                             <i class="fas fa-layer-group"></i> 批量生成
                         </button>
+                        <button class="btn-control secondary" onclick="testAIConnection()">
+                            <i class="fas fa-wifi"></i> 测试连接
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1565,18 +1568,20 @@
             try {
                 // 构建AI提示词
                 const prompt = `请为流体力学课程生成一道关于"${topic}"的选择题。要求：
-1. 题目要准确、有教育意义
+1. 题目要准确、有教育意义，符合流体力学教学大纲
 2. 提供4个选项，其中只有1个正确答案
-3. 提供详细的解析
+3. 提供详细的解析，包含相关公式和概念
 4. 难度适中，适合大学生学习
+5. 题目要有实际应用背景
 
-请按以下JSON格式返回：
+请严格按照以下JSON格式返回，不要包含其他内容：
 {
     "question": "题目内容",
     "options": ["选项A", "选项B", "选项C", "选项D"],
     "correct": 0,
     "explanation": "详细解析",
-    "difficulty": "easy/medium/hard"
+    "difficulty": "easy/medium/hard",
+    "category": "题目分类"
 }`;
 
                 // 调用SiliconFlow API
@@ -1661,25 +1666,159 @@
                 showNotification('🤖 AI题目生成成功！', 'success');
                 updateStats();
                 
+                            } catch (error) {
+                    console.error('AI生成题目失败:', error);
+                    
+                    // 根据错误类型显示不同的提示
+                    let errorMessage = 'AI生成失败，使用备用题目';
+                    if (error.message.includes('401')) {
+                        errorMessage = 'API密钥无效，使用备用题目';
+                    } else if (error.message.includes('429')) {
+                        errorMessage = 'API请求过于频繁，使用备用题目';
+                    } else if (error.message.includes('500')) {
+                        errorMessage = '服务器错误，使用备用题目';
+                    } else if (error.message.includes('fetch')) {
+                        errorMessage = '网络连接失败，使用备用题目';
+                    }
+                    
+                    showNotification(errorMessage, 'warning');
+                    
+                    // 使用备用题目
+                    const fallbackQuestion = generateFallbackQuestion(topic);
+                    questionsData.push(fallbackQuestion);
+                    
+                    // 保存到本地存储
+                    saveQuestionsToLocalStorage();
+                    
+                    const resultDiv = document.getElementById('aiQuestionResult');
+                    resultDiv.style.display = 'block';
+                    resultDiv.innerHTML = `
+                        <div style="background: rgba(255, 193, 7, 0.1); padding: 20px; border-radius: 15px; border-left: 4px solid #ffc107;">
+                            <h3>🤖 备用题目：</h3>
+                            <p><strong>${fallbackQuestion.text}</strong></p>
+                            <div style="margin: 10px 0;">
+                                <strong>选项：</strong>
+                                ${fallbackQuestion.options.map((option, index) => 
+                                    `<div style="margin: 5px 0; padding: 5px; background: rgba(255,255,255,0.1); border-radius: 5px;">
+                                        ${String.fromCharCode(65 + index)}. ${option}
+                                    </div>`
+                                ).join('')}
+                            </div>
+                            <p><strong>解析：</strong> ${fallbackQuestion.explanation}</p>
+                            <p style="color: #ffc107; font-weight: bold;">题目已添加到题库中，可以开始练习了！</p>
+                        </div>
+                    `;
+                    
+                    updateStats();
+                }
+        }
+        
+        // 生成备用题目
+        function generateFallbackQuestion(topic) {
+            const fallbackQuestions = {
+                '伯努利方程': {
+                    question: '伯努利方程适用于什么类型的流动？',
+                    options: [
+                        '理想流体、不可压缩、定常流动',
+                        '粘性流体、可压缩、非定常流动',
+                        '理想流体、可压缩、定常流动',
+                        '粘性流体、不可压缩、非定常流动'
+                    ],
+                    correct: 0,
+                    explanation: '伯努利方程适用于理想流体、不可压缩、定常流动。这是伯努利方程的基本适用条件。',
+                    difficulty: 'medium',
+                    category: '流体动力学'
+                },
+                '雷诺数': {
+                    question: '雷诺数Re的定义是什么？',
+                    options: [
+                        'Re = ρVL/μ',
+                        'Re = VL/ν',
+                        'Re = ρV²L/μ',
+                        'Re = V²L/ν'
+                    ],
+                    correct: 1,
+                    explanation: '雷诺数Re = VL/ν，其中V是特征速度，L是特征长度，ν是运动粘度。',
+                    difficulty: 'easy',
+                    category: '流动特性'
+                },
+                '边界层': {
+                    question: '边界层理论中，边界层厚度随距离如何变化？',
+                    options: [
+                        '线性增加',
+                        '平方根增加',
+                        '指数增加',
+                        '对数增加'
+                    ],
+                    correct: 1,
+                    explanation: '边界层厚度随距离的平方根增加，即δ ∝ √x。',
+                    difficulty: 'hard',
+                    category: '边界层理论'
+                },
+                '流体静力学': {
+                    question: '在静止流体中，压强的传递遵循什么定律？',
+                    options: [
+                        '帕斯卡定律',
+                        '阿基米德定律',
+                        '胡克定律',
+                        '牛顿定律'
+                    ],
+                    correct: 0,
+                    explanation: '帕斯卡定律指出，在静止流体中，压强能够等值地传递到流体的各个部分。',
+                    difficulty: 'easy',
+                    category: '流体静力学'
+                },
+                '管道流动': {
+                    question: '圆管层流中，速度分布是什么形状？',
+                    options: [
+                        '抛物线',
+                        '直线',
+                        '指数曲线',
+                        '对数曲线'
+                    ],
+                    correct: 0,
+                    explanation: '圆管层流中，速度分布是抛物线形状，最大速度在管轴处。',
+                    difficulty: 'medium',
+                    category: '管道流动'
+                }
+            };
+            
+            // 根据主题选择备用题目，如果没有匹配的，使用默认题目
+            const fallbackQuestion = fallbackQuestions[topic] || fallbackQuestions['伯努利方程'];
+            
+            return {
+                id: `fallback_${Date.now()}`,
+                text: `🤖 备用题目：${fallbackQuestion.question}`,
+                options: fallbackQuestion.options,
+                correct: fallbackQuestion.correct,
+                explanation: fallbackQuestion.explanation,
+                category: fallbackQuestion.category,
+                difficulty: fallbackQuestion.difficulty,
+                isFallback: true
+            };
+        }
+        
+        // 保存题目到本地存储
+        function saveQuestionsToLocalStorage() {
+            try {
+                localStorage.setItem('questionsData', JSON.stringify(questionsData));
+                console.log('题目数据已保存到本地存储');
             } catch (error) {
-                console.error('AI生成题目失败:', error);
-                showNotification('AI生成失败，使用备用题目', 'warning');
-                
-                // 使用备用题目
-                const fallbackQuestion = generateFallbackQuestion(topic);
-                questionsData.push(fallbackQuestion);
-                
-                const resultDiv = document.getElementById('aiQuestionResult');
-                resultDiv.style.display = 'block';
-                resultDiv.innerHTML = `
-                    <div style="background: rgba(255, 193, 7, 0.1); padding: 20px; border-radius: 15px; border-left: 4px solid #ffc107;">
-                        <h3>🤖 备用题目：</h3>
-                        <p><strong>${fallbackQuestion.text}</strong></p>
-                        <p>题目已添加到题库中，可以开始练习了！</p>
-                    </div>
-                `;
-                
-                updateStats();
+                console.error('保存题目数据失败:', error);
+            }
+        }
+        
+        // 从本地存储加载题目
+        function loadQuestionsFromLocalStorage() {
+            try {
+                const savedData = localStorage.getItem('questionsData');
+                if (savedData) {
+                    const loadedQuestions = JSON.parse(savedData);
+                    questionsData.push(...loadedQuestions);
+                    console.log('从本地存储加载了', loadedQuestions.length, '道题目');
+                }
+            } catch (error) {
+                console.error('加载题目数据失败:', error);
             }
         }
 
@@ -2093,6 +2232,59 @@
                 }
             ]
         };
+        
+        // 测试AI连接
+        async function testAIConnection() {
+            showNotification('🔍 正在测试AI连接...', 'info');
+            
+            try {
+                const response = await fetch('https://api.siliconflow.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsofbgajxnis'
+                    },
+                    body: JSON.stringify({
+                        model: 'deepseek-chat',
+                        messages: [
+                            {
+                                role: 'user',
+                                content: '请回复"连接成功"'
+                            }
+                        ],
+                        temperature: 0.1,
+                        max_tokens: 10
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`API请求失败: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const aiResponse = data.choices[0].message.content;
+                
+                if (aiResponse.includes('连接成功') || aiResponse.includes('成功')) {
+                    showNotification('✅ AI连接测试成功！', 'success');
+                } else {
+                    showNotification('⚠️ AI连接成功，但响应异常', 'warning');
+                }
+                
+            } catch (error) {
+                console.error('AI连接测试失败:', error);
+                let errorMessage = 'AI连接测试失败';
+                if (error.message.includes('401')) {
+                    errorMessage = 'API密钥无效，请检查配置';
+                } else if (error.message.includes('429')) {
+                    errorMessage = 'API请求过于频繁，请稍后再试';
+                } else if (error.message.includes('500')) {
+                    errorMessage = '服务器错误，请稍后再试';
+                } else if (error.message.includes('fetch')) {
+                    errorMessage = '网络连接失败，请检查网络';
+                }
+                showNotification(`❌ ${errorMessage}`, 'error');
+            }
+        }
 
         // 高级题库系统
         class AdvancedQuizSystem {
@@ -3114,6 +3306,9 @@
                 quizSystem.updateWrongQuestionsDisplay();
                 quizSystem.updateFavoritesDisplay();
             }
+            
+            // 加载本地存储的题目
+            loadQuestionsFromLocalStorage();
             
             // 显示第一题
             showQuestionWithAdvancedFeatures();
