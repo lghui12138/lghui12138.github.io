@@ -4982,6 +4982,126 @@
                 });
             });
         });
+
+        // ========== 题库聚合与分组渲染 ========== //
+        async function fetchAllQuestionBanks() {
+          // 1. 获取所有题库文件名
+          const res = await fetch('question-banks/');
+          const html = await res.text();
+          const matches = Array.from(html.matchAll(/href=\"([^\"]+\.json)\"/g));
+          const files = matches.map(m => decodeURIComponent(m[1]));
+
+          // 2. 分类文件
+          const wrongBanks = [];
+          const realBanks = [];
+          const chapterBanks = [];
+
+          for (const file of files) {
+            if (/易错|错题|wrong/i.test(file)) {
+              wrongBanks.push(file);
+            } else if (/真题/.test(file)) {
+              realBanks.push(file);
+            } else if (/分类_/.test(file)) {
+              chapterBanks.push(file);
+            }
+          }
+
+          // 3. 真题按年份分组（每年一个入口，点击只做该年题）
+          let realYearEntrys = [];
+          for (const file of realBanks) {
+            try {
+              const data = await fetch('question-banks/' + file).then(r=>r.json());
+              const arr = Array.isArray(data) ? data : (data.questions||data.data||[]);
+              // 按年份分组
+              const yearMap = {};
+              arr.forEach(q => {
+                if (q.year) {
+                  if (!yearMap[q.year]) yearMap[q.year] = [];
+                  yearMap[q.year].push(q);
+                }
+              });
+              Object.keys(yearMap).sort().forEach(year => {
+                realYearEntrys.push({
+                  year,
+                  file,
+                  count: yearMap[year].length
+                });
+              });
+            } catch {}
+          }
+          // 4. 章节分类题库
+          let chapterList = [];
+          for (const file of chapterBanks) {
+            try {
+              const data = await fetch('question-banks/' + file).then(r=>r.json());
+              chapterList.push({
+                name: file.replace('分类_', '').replace('.json', ''),
+                file,
+                count: (Array.isArray(data) ? data : (data.questions||data.data||[])).length
+              });
+            } catch {}
+          }
+          // 5. 易错题（如有）
+          let wrongList = [];
+          for (const file of wrongBanks) {
+            try {
+              const data = await fetch('question-banks/' + file).then(r=>r.json());
+              wrongList.push({
+                name: file.replace('.json', ''),
+                file,
+                count: (Array.isArray(data) ? data : (data.questions||data.data||[])).length
+              });
+            } catch {}
+          }
+          return { wrongList, realYearEntrys, chapterList };
+        }
+
+        function renderAllQuestionBanks({ wrongList, realYearEntrys, chapterList }) {
+          const list = document.getElementById('questionBankList');
+          let html = '';
+          // 易错题
+          if (wrongList.length) {
+            html += `<h3>易错题</h3>`;
+            wrongList.forEach(qb => {
+              html += `<div class=\"question-bank-item\"><button class='btn btn-primary' onclick=\"startPracticeFullscreen('${qb.file}?year=易错')\">做题</button> <span class='qb-title'>${qb.name}（${qb.count}题）</span></div>`;
+            });
+          }
+          // 真题按年份入口
+          if (realYearEntrys.length) {
+            html += `<h3>真题（按年份）</h3>`;
+            realYearEntrys.sort((a,b)=>a.year-b.year).forEach(entry => {
+              html += `<div class='question-bank-item'><button class='btn btn-primary' onclick=\"startPracticeFullscreen('${entry.file}?year=${entry.year}')\">做题</button> <span class='qb-title'>${entry.year}年真题（${entry.count}题）</span></div>`;
+            });
+          }
+          // 章节分类
+          if (chapterList.length) {
+            html += `<h3>章节分类题库</h3>`;
+            chapterList.forEach(qb => {
+              html += `<div class=\"question-bank-item\"><button class='btn btn-primary' onclick=\"startPracticeFullscreen('${qb.file}')\">做题</button> <span class='qb-title'>${qb.name}（${qb.count}题）</span></div>`;
+            });
+          }
+          list.innerHTML = html;
+        }
+
+        // 页面加载时自动聚合并渲染
+        window.addEventListener('DOMContentLoaded', async () => {
+          const allBanks = await fetchAllQuestionBanks();
+          renderAllQuestionBanks(allBanks);
+        });
+
+        // 修改全屏做题入口，支持按年份过滤
+        function startPracticeFullscreen(qbValueWithYear) {
+          // qbValueWithYear: '真题_中国海洋大学_2000-2021_cleaned.json?year=2001' 或普通文件名
+          if(qbValueWithYear.includes('?year=')) {
+            const [file, year] = qbValueWithYear.split('?year=');
+            localStorage.setItem('fullscreen_qb_value', file);
+            localStorage.setItem('fullscreen_qb_year', year);
+          } else {
+            localStorage.setItem('fullscreen_qb_value', qbValueWithYear);
+            localStorage.removeItem('fullscreen_qb_year');
+          }
+          window.location.href = 'practice-fullscreen.html';
+        }
     </script>
 </body>
 </html> 

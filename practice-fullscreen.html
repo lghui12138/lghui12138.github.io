@@ -343,18 +343,19 @@ input:focus, select:focus, textarea:focus {
               loadQuestionsByValue(document.getElementById('qbSelect').value);
             };
         }
-        function loadQuestionsByValue(val) {
+        async function loadQuestionsByValue(val) {
             const qb = qbList.find(q => q.name === val);
-            if (qb && qb.url) {
-                fetch(qb.url).then(r=>r.json()).then(data => {
-                    if (!Array.isArray(data)) data = data.questions||data.data||[];
-                    const year = document.getElementById('yearSelect')?.value;
-                    if (year) data = data.filter(q=>q.year==year);
-                    questions = data; current = 0; selected = null; answered = false;
-                    localStorage.setItem('fullscreen_questions', JSON.stringify(questions));
-                    renderQuestion();
-                });
+            if (!qb) return;
+            let data = await fetch(qb.url).then(r=>r.json());
+            if (!Array.isArray(data)) data = data.questions||data.data||[];
+            // 新增：如果有年份过滤，仅加载该年题目
+            const year = localStorage.getItem('fullscreen_qb_year');
+            if (year && year !== '易错') {
+                data = data.filter(q => String(q.year) === String(year));
             }
+            questions = data;
+            current = 0;
+            renderQuestion();
         }
         function loadWrongBook() {
             const wrong = JSON.parse(localStorage.getItem('fullscreen_wrongbook')||'[]');
