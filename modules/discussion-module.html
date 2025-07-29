@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💬 讨论区 - 流体力学学习平台</title>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        /* ===== 海洋主题变量 ===== */
+        :root {
+            --ocean-blue: #006994;
+            --ocean-light: #4facfe;
+            --ocean-deep: #003d5b;
+            --coral: #ff6b6b;
+            --seafoam: #00f2fe;
+            --sand: #f4d03f;
+            --wave-blue: #3498db;
+            --bg-ocean: linear-gradient(135deg, #006994 0%, #4facfe 25%, #00f2fe 50%, #006994 75%, #003d5b 100%);
+            --text-light: #ffffff;
+            --text-dark: #2c3e50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-ocean);
+            background-size: 400% 400%;
+            animation: ocean-wave 15s ease-in-out infinite;
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+        
+        @keyframes ocean-wave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* ===== 海洋背景 ===== */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%2300f2fe"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%234facfe"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%23006994"/></svg>') repeat-x;
+            animation: wave-move 20s linear infinite;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: -5s;
+            opacity: 0.7;
+        }
+        
+        .wave:nth-child(3) {
+            animation-delay: -10s;
+            opacity: 0.5;
+        }
+        
+        @keyframes wave-move {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* ===== 导航栏 ===== */
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 3px solid var(--ocean-light);
+            padding: 15px 0;
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .nav-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+        }
+        
+        .nav-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn-nav {
+            background: var(--ocean-light);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-nav:hover {
+            background: var(--ocean-blue);
+            transform: translateY(-2px);
+        }
+        
+        /* ===== 主内容 ===== */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .page-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        /* ===== 发帖区域 ===== */
+        .post-area {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            margin-bottom: 30px;
+        }
+        
+        .post-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .post-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--ocean-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            margin-right: 15px;
+        }
+        
+        .post-form {
+            flex: 1;
+        }
+        
+        .post-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #eee;
+            border-radius: 15px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 15px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .post-input:focus {
+            outline: none;
+            border-color: var(--ocean-light);
+        }
+        
+        .post-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .post-category {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .category-btn {
+            padding: 8px 15px;
+            border: 2px solid var(--ocean-light);
+            background: transparent;
+            color: var(--ocean-blue);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .category-btn.active {
+            background: var(--ocean-light);
+            color: white;
+        }
+        
+        .btn-post {
+            background: var(--ocean-light);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-post:hover {
+            background: var(--ocean-blue);
+            transform: translateY(-2px);
+        }
+        
+        /* ===== 帖子列表 ===== */
+        .posts-section {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .posts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        .posts-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+        }
+        
+        .posts-filter {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .filter-btn {
+            padding: 8px 15px;
+            border: 2px solid #eee;
+            background: white;
+            color: #666;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .filter-btn.active {
+            border-color: var(--ocean-light);
+            color: var(--ocean-blue);
+            background: rgba(79, 172, 254, 0.1);
+        }
+        
+        .post-item {
+            border-bottom: 1px solid #eee;
+            padding: 20px 0;
+            transition: background-color 0.3s ease;
+        }
+        
+        .post-item:hover {
+            background: rgba(79, 172, 254, 0.05);
+        }
+        
+        .post-header {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+        
+        .post-user-info {
+            flex: 1;
+        }
+        
+        .post-username {
+            font-weight: bold;
+            color: var(--ocean-blue);
+            margin-bottom: 5px;
+        }
+        
+        .post-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .post-category-tag {
+            background: rgba(79, 172, 254, 0.1);
+            color: var(--ocean-blue);
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+        }
+        
+        .post-content {
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+        
+        .post-actions {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .action-btn:hover {
+            background: rgba(79, 172, 254, 0.1);
+            color: var(--ocean-blue);
+        }
+        
+        .action-btn.liked {
+            color: #e74c3c;
+        }
+        
+        /* ===== 回复区域 ===== */
+        .replies-section {
+            margin-top: 15px;
+            padding-left: 20px;
+            border-left: 3px solid #eee;
+        }
+        
+        .reply-item {
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .reply-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .reply-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--seafoam);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            color: white;
+            margin-right: 10px;
+        }
+        
+        .reply-username {
+            font-weight: bold;
+            color: var(--ocean-blue);
+            margin-right: 10px;
+        }
+        
+        .reply-time {
+            color: #999;
+            font-size: 0.8rem;
+        }
+        
+        .reply-content {
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+        
+        .reply-form {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .reply-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            resize: vertical;
+            min-height: 60px;
+            margin-bottom: 10px;
+        }
+        
+        .reply-input:focus {
+            outline: none;
+            border-color: var(--ocean-light);
+        }
+        
+        .btn-reply {
+            background: var(--ocean-light);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        
+        .btn-reply:hover {
+            background: var(--ocean-blue);
+        }
+        
+        /* ===== 响应式设计 ===== */
+        @media (max-width: 768px) {
+            .post-actions {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .posts-filter {
+                flex-wrap: wrap;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+        }
+        
+        /* ===== 通知样式 ===== */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .notification {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-left: 4px solid var(--ocean-light);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-color: #27ae60;
+        }
+        
+        .notification.error {
+            border-color: #e74c3c;
+        }
+        
+        .notification.warning {
+            border-color: #f39c12;
+        }
+    </style>
+</head>
+<body>
+    <!-- 海洋背景 -->
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <div class="nav-title">💬 讨论区</div>
+            <div class="nav-actions">
+                <a href="../index-modular.html" class="btn-nav">
+                    <i class="fas fa-home"></i> 返回主页
+                </a>
+                <button class="btn-nav" onclick="refreshPosts()">
+                    <i class="fas fa-sync-alt"></i> 刷新
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- 主内容 -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">💬 学习讨论区</h1>
+            <p class="page-subtitle">与同学们交流学习心得，分享解题思路</p>
+        </div>
+        
+        <!-- 发帖区域 -->
+        <div class="post-area">
+            <div class="post-header">
+                <div class="post-avatar" id="userAvatar">👤</div>
+                <div class="post-form">
+                    <textarea class="post-input" placeholder="分享您的学习心得或提出问题..." id="postContent"></textarea>
+                    <div class="post-actions">
+                        <div class="post-category">
+                            <button class="category-btn active" data-category="general">💬 一般讨论</button>
+                            <button class="category-btn" data-category="question">❓ 问题求助</button>
+                            <button class="category-btn" data-category="share">📚 学习分享</button>
+                            <button class="category-btn" data-category="resource">🔗 资源推荐</button>
+                        </div>
+                        <button class="btn-post" onclick="createPost()">
+                            <i class="fas fa-paper-plane"></i> 发布
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 帖子列表 -->
+        <div class="posts-section">
+            <div class="posts-header">
+                <h3 class="posts-title">最新讨论</h3>
+                <div class="posts-filter">
+                    <button class="filter-btn active" data-filter="all">全部</button>
+                    <button class="filter-btn" data-filter="general">一般讨论</button>
+                    <button class="filter-btn" data-filter="question">问题求助</button>
+                    <button class="filter-btn" data-filter="share">学习分享</button>
+                    <button class="filter-btn" data-filter="resource">资源推荐</button>
+                </div>
+            </div>
+            
+            <div id="postsList">
+                <!-- 帖子将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知容器 -->
+    <div id="notification-container"></div>
+    
+    <script>
+        // 全局变量
+        let posts = [];
+        let currentUser = null;
+        let currentCategory = 'general';
+        let currentFilter = 'all';
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            loadPosts();
+            setupEventListeners();
+            showNotification('💬 讨论区模块已加载', 'success');
+        });
+        
+        // 加载用户数据
+        function loadUserData() {
+            try {
+                currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (currentUser) {
+                    document.getElementById('userAvatar').textContent = currentUser.avatar;
+                }
+            } catch (error) {
+                console.error('加载用户数据失败:', error);
+            }
+        }
+        
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 分类选择
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentCategory = this.dataset.category;
+                });
+            });
+            
+            // 过滤器
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentFilter = this.dataset.filter;
+                    renderPosts();
+                });
+            });
+        }
+        
+        // 加载帖子
+        function loadPosts() {
+            try {
+                const savedPosts = localStorage.getItem('discussion_posts');
+                if (savedPosts) {
+                    posts = JSON.parse(savedPosts);
+                } else {
+                    // 创建示例帖子
+                    posts = [
+                        {
+                            id: 1,
+                            author: 'liuguanghui6330156',
+                            authorName: '刘老师',
+                            avatar: '👨‍🏫',
+                            content: '大家好！欢迎来到流体力学学习讨论区。这里可以分享学习心得、讨论解题思路，也可以向我提问。希望大家积极参与讨论！',
+                            category: 'general',
+                            likes: 15,
+                            replies: 8,
+                            createdAt: new Date('2024-01-15T10:00:00').toISOString(),
+                            likedBy: [],
+                            replies: [
+                                {
+                                    id: 1,
+                                    author: 'niwenxuan',
+                                    authorName: '倪文轩',
+                                    avatar: '👨‍🎓',
+                                    content: '谢谢老师！我会积极参与讨论的。',
+                                    createdAt: new Date('2024-01-15T10:30:00').toISOString()
+                                },
+                                {
+                                    id: 2,
+                                    author: 'hanwenxu',
+                                    authorName: '韩文旭',
+                                    avatar: '👨‍🎓',
+                                    content: '老师好！我有一些关于伯努利方程的问题想请教。',
+                                    createdAt: new Date('2024-01-15T11:00:00').toISOString()
+                                }
+                            ]
+                        },
+                        {
+                            id: 2,
+                            author: 'niwenxuan',
+                            authorName: '倪文轩',
+                            avatar: '👨‍🎓',
+                            content: '请问有人能帮我解释一下雷诺数的物理意义吗？我在理解层流和湍流的区别时遇到了困难。',
+                            category: 'question',
+                            likes: 8,
+                            replies: 5,
+                            createdAt: new Date('2024-01-14T15:00:00').toISOString(),
+                            likedBy: [],
+                            replies: [
+                                {
+                                    id: 3,
+                                    author: 'liuguanghui6330156',
+                                    authorName: '刘老师',
+                                    avatar: '👨‍🏫',
+                                    content: '雷诺数反映了惯性力与粘性力的比值。当Re<2300时为层流，Re>4000时为湍流。层流中流体分层流动，湍流中流体混合剧烈。',
+                                    createdAt: new Date('2024-01-14T15:30:00').toISOString()
+                                }
+                            ]
+                        },
+                        {
+                            id: 3,
+                            author: 'hanwenxu',
+                            authorName: '韩文旭',
+                            avatar: '👨‍🎓',
+                            content: '分享一个学习伯努利方程的小技巧：画图很重要！画出流线和等压面，方程就变得直观多了。',
+                            category: 'share',
+                            likes: 12,
+                            replies: 3,
+                            createdAt: new Date('2024-01-13T09:00:00').toISOString(),
+                            likedBy: [],
+                            replies: []
+                        }
+                    ];
+                }
+                renderPosts();
+            } catch (error) {
+                console.error('加载帖子失败:', error);
+            }
+        }
+        
+        // 渲染帖子
+        function renderPosts() {
+            const postsList = document.getElementById('postsList');
+            if (!postsList) return;
+            
+            let filteredPosts = posts;
+            
+            // 应用过滤器
+            if (currentFilter !== 'all') {
+                filteredPosts = posts.filter(post => post.category === currentFilter);
+            }
+            
+            // 按时间排序
+            filteredPosts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            if (filteredPosts.length === 0) {
+                postsList.innerHTML = `
+                    <div style="text-align: center; padding: 50px; color: #666;">
+                        <i class="fas fa-comments" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                        <p>暂无讨论内容</p>
+                        <p>快来发布第一个讨论吧！</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            postsList.innerHTML = filteredPosts.map(post => `
+                <div class="post-item">
+                    <div class="post-header">
+                        <div class="post-avatar">${post.avatar}</div>
+                        <div class="post-user-info">
+                            <div class="post-username">${post.authorName}</div>
+                            <div class="post-meta">
+                                <span>${formatDate(post.createdAt)}</span>
+                                <span class="post-category-tag">${getCategoryName(post.category)}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-content">${post.content}</div>
+                    <div class="post-actions">
+                        <button class="action-btn ${post.likedBy.includes(currentUser?.username || '') ? 'liked' : ''}" onclick="toggleLike(${post.id})">
+                            <i class="fas fa-heart"></i>
+                            <span>${post.likes}</span>
+                        </button>
+                        <button class="action-btn" onclick="toggleReplyForm(${post.id})">
+                            <i class="fas fa-reply"></i>
+                            <span>回复</span>
+                        </button>
+                        <button class="action-btn" onclick="toggleReplies(${post.id})">
+                            <i class="fas fa-comments"></i>
+                            <span>${post.replies.length} 条回复</span>
+                        </button>
+                    </div>
+                    
+                    <!-- 回复区域 -->
+                    <div class="replies-section" id="replies-${post.id}" style="display: none;">
+                        ${post.replies.map(reply => `
+                            <div class="reply-item">
+                                <div class="reply-header">
+                                    <div class="reply-avatar">${reply.avatar}</div>
+                                    <div class="reply-username">${reply.authorName}</div>
+                                    <div class="reply-time">${formatDate(reply.createdAt)}</div>
+                                </div>
+                                <div class="reply-content">${reply.content}</div>
+                            </div>
+                        `).join('')}
+                        
+                        <!-- 回复表单 -->
+                        <div class="reply-form" id="reply-form-${post.id}">
+                            <textarea class="reply-input" placeholder="写下您的回复..." id="reply-content-${post.id}"></textarea>
+                            <button class="btn-reply" onclick="addReply(${post.id})">回复</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 创建帖子
+        function createPost() {
+            if (!currentUser) {
+                showNotification('请先登录', 'error');
+                return;
+            }
+            
+            const content = document.getElementById('postContent').value.trim();
+            if (!content) {
+                showNotification('请输入帖子内容', 'error');
+                return;
+            }
+            
+            const newPost = {
+                id: Date.now(),
+                author: currentUser.username,
+                authorName: currentUser.name,
+                avatar: currentUser.avatar,
+                content: content,
+                category: currentCategory,
+                likes: 0,
+                replies: [],
+                createdAt: new Date().toISOString(),
+                likedBy: []
+            };
+            
+            posts.unshift(newPost);
+            savePosts();
+            renderPosts();
+            
+            // 清空输入框
+            document.getElementById('postContent').value = '';
+            
+            showNotification('✅ 帖子发布成功', 'success');
+        }
+        
+        // 切换点赞
+        function toggleLike(postId) {
+            if (!currentUser) {
+                showNotification('请先登录', 'error');
+                return;
+            }
+            
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+            
+            const username = currentUser.username;
+            const likedIndex = post.likedBy.indexOf(username);
+            
+            if (likedIndex > -1) {
+                post.likedBy.splice(likedIndex, 1);
+                post.likes--;
+            } else {
+                post.likedBy.push(username);
+                post.likes++;
+            }
+            
+            savePosts();
+            renderPosts();
+        }
+        
+        // 切换回复表单显示
+        function toggleReplyForm(postId) {
+            if (!currentUser) {
+                showNotification('请先登录', 'error');
+                return;
+            }
+            
+            const replyForm = document.getElementById(`reply-form-${postId}`);
+            if (replyForm) {
+                replyForm.style.display = replyForm.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+        
+        // 切换回复列表显示
+        function toggleReplies(postId) {
+            const repliesSection = document.getElementById(`replies-${postId}`);
+            if (repliesSection) {
+                repliesSection.style.display = repliesSection.style.display === 'block' ? 'none' : 'block';
+            }
+        }
+        
+        // 添加回复
+        function addReply(postId) {
+            if (!currentUser) {
+                showNotification('请先登录', 'error');
+                return;
+            }
+            
+            const content = document.getElementById(`reply-content-${postId}`).value.trim();
+            if (!content) {
+                showNotification('请输入回复内容', 'error');
+                return;
+            }
+            
+            const post = posts.find(p => p.id === postId);
+            if (!post) return;
+            
+            const newReply = {
+                id: Date.now(),
+                author: currentUser.username,
+                authorName: currentUser.name,
+                avatar: currentUser.avatar,
+                content: content,
+                createdAt: new Date().toISOString()
+            };
+            
+            post.replies.push(newReply);
+            savePosts();
+            renderPosts();
+            
+            // 清空输入框
+            document.getElementById(`reply-content-${postId}`).value = '';
+            
+            showNotification('✅ 回复发布成功', 'success');
+        }
+        
+        // 刷新帖子
+        function refreshPosts() {
+            loadPosts();
+            showNotification('🔄 讨论区已刷新', 'success');
+        }
+        
+        // 保存帖子到本地存储
+        function savePosts() {
+            try {
+                localStorage.setItem('discussion_posts', JSON.stringify(posts));
+            } catch (error) {
+                console.error('保存帖子失败:', error);
+            }
+        }
+        
+        // 工具函数
+        function getCategoryName(category) {
+            const names = {
+                'general': '一般讨论',
+                'question': '问题求助',
+                'share': '学习分享',
+                'resource': '资源推荐'
+            };
+            return names[category] || '其他';
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) { // 1分钟内
+                return '刚刚';
+            } else if (diff < 3600000) { // 1小时内
+                return `${Math.floor(diff / 60000)}分钟前`;
+            } else if (diff < 86400000) { // 1天内
+                return `${Math.floor(diff / 3600000)}小时前`;
+            } else {
+                return date.toLocaleDateString('zh-CN');
+            }
+        }
+        
+        // 显示通知
+        function showNotification(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, duration);
+            }
+        }
+        
+        console.log('💬 讨论区模块已加载');
+    </script>
+</body>
+</html> 

@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 学习进度 - 流体力学学习平台</title>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        /* ===== 海洋主题变量 ===== */
+        :root {
+            --ocean-blue: #006994;
+            --ocean-light: #4facfe;
+            --ocean-deep: #003d5b;
+            --coral: #ff6b6b;
+            --seafoam: #00f2fe;
+            --sand: #f4d03f;
+            --wave-blue: #3498db;
+            --bg-ocean: linear-gradient(135deg, #006994 0%, #4facfe 25%, #00f2fe 50%, #006994 75%, #003d5b 100%);
+            --text-light: #ffffff;
+            --text-dark: #2c3e50;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-ocean);
+            background-size: 400% 400%;
+            animation: ocean-wave 15s ease-in-out infinite;
+            color: var(--text-light);
+            min-height: 100vh;
+        }
+        
+        @keyframes ocean-wave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+        
+        /* ===== 海洋背景 ===== */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,52.47V0Z" opacity=".25" fill="%2300f2fe"/><path d="M0,0V15.81C13,36.92,27.64,56.86,47.69,72.05,99.41,111.27,165,111,224.58,91.58c31.15-10.15,60.09-26.07,89.67-39.8,40.92-19,84.73-46,130.83-49.67,36.26-2.85,70.9,9.42,98.6,31.56,31.77,25.39,62.32,62,103.63,73,40.44,10.79,81.35-6.69,119.13-24.28s75.16-39,116.92-43.05c59.73-5.85,113.28,22.88,168.9,38.84,30.2,8.66,59,6.17,87.09-7.5,22.43-10.89,48-26.93,60.65-49.24V0Z" opacity=".5" fill="%234facfe"/><path d="M0,0V5.63C149.93,59,314.09,71.32,475.83,42.57c43-7.64,84.23-20.12,127.61-26.46,59-8.63,112.48,12.24,165.56,35.4C827.93,77.22,886,95.24,951.2,90c86.53-7,172.46-45.71,248.8-84.81V0Z" fill="%23006994"/></svg>') repeat-x;
+            animation: wave-move 20s linear infinite;
+        }
+        
+        .wave:nth-child(2) {
+            animation-delay: -5s;
+            opacity: 0.7;
+        }
+        
+        .wave:nth-child(3) {
+            animation-delay: -10s;
+            opacity: 0.5;
+        }
+        
+        @keyframes wave-move {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* ===== 导航栏 ===== */
+        .nav-bar {
+            background: rgba(255, 255, 255, 0.95);
+            border-bottom: 3px solid var(--ocean-light);
+            padding: 15px 0;
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+        }
+        
+        .nav-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+        }
+        
+        .nav-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn-nav {
+            background: var(--ocean-light);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-nav:hover {
+            background: var(--ocean-blue);
+            transform: translateY(-2px);
+        }
+        
+        /* ===== 主内容 ===== */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .page-subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        /* ===== 进度概览 ===== */
+        .progress-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+        
+        .overview-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .overview-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .overview-icon {
+            font-size: 2rem;
+            margin-right: 15px;
+        }
+        
+        .overview-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+        }
+        
+        .overview-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--ocean-light);
+            margin-bottom: 10px;
+        }
+        
+        .overview-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* ===== 图表区域 ===== */
+        .charts-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .chart-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+        
+        /* ===== 学习历史 ===== */
+        .learning-history {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        
+        .history-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--ocean-blue);
+            margin-bottom: 20px;
+        }
+        
+        .history-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s ease;
+        }
+        
+        .history-item:hover {
+            background: rgba(79, 172, 254, 0.1);
+        }
+        
+        .history-icon {
+            font-size: 1.5rem;
+            margin-right: 15px;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .history-content {
+            flex: 1;
+        }
+        
+        .history-title {
+            font-weight: bold;
+            color: var(--ocean-blue);
+            margin-bottom: 5px;
+        }
+        
+        .history-desc {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .history-time {
+            color: #999;
+            font-size: 0.8rem;
+        }
+        
+        /* ===== 响应式设计 ===== */
+        @media (max-width: 768px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .progress-overview {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+        }
+        
+        /* ===== 通知样式 ===== */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .notification {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border-left: 4px solid var(--ocean-light);
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-color: #27ae60;
+        }
+        
+        .notification.error {
+            border-color: #e74c3c;
+        }
+        
+        .notification.warning {
+            border-color: #f39c12;
+        }
+    </style>
+</head>
+<body>
+    <!-- 海洋背景 -->
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+    
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <div class="nav-title">📊 学习进度</div>
+            <div class="nav-actions">
+                <a href="../index-modular.html" class="btn-nav">
+                    <i class="fas fa-home"></i> 返回主页
+                </a>
+                <button class="btn-nav" onclick="exportProgress()">
+                    <i class="fas fa-download"></i> 导出报告
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- 主内容 -->
+    <div class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">📊 个人学习进度</h1>
+            <p class="page-subtitle">全面了解您的学习情况，科学规划学习路径</p>
+        </div>
+        
+        <!-- 进度概览 -->
+        <div class="progress-overview">
+            <div class="overview-card">
+                <div class="overview-header">
+                    <div class="overview-icon">📚</div>
+                    <div class="overview-title">总学习时长</div>
+                </div>
+                <div class="overview-value" id="totalStudyTime">0</div>
+                <div class="overview-label">小时</div>
+            </div>
+            
+            <div class="overview-card">
+                <div class="overview-header">
+                    <div class="overview-icon">✅</div>
+                    <div class="overview-title">完成题目</div>
+                </div>
+                <div class="overview-value" id="completedQuestions">0</div>
+                <div class="overview-label">道题目</div>
+            </div>
+            
+            <div class="overview-card">
+                <div class="overview-header">
+                    <div class="overview-icon">🎥</div>
+                    <div class="overview-title">观看视频</div>
+                </div>
+                <div class="overview-value" id="watchedVideos">0</div>
+                <div class="overview-label">个视频</div>
+            </div>
+            
+            <div class="overview-card">
+                <div class="overview-header">
+                    <div class="overview-icon">📈</div>
+                    <div class="overview-title">学习进度</div>
+                </div>
+                <div class="overview-value" id="learningProgress">0%</div>
+                <div class="overview-label">总体完成度</div>
+            </div>
+        </div>
+        
+        <!-- 图表区域 -->
+        <div class="charts-section">
+            <div class="chart-card">
+                <h3 class="chart-title">📊 学习活动分布</h3>
+                <div class="chart-container">
+                    <canvas id="activityChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="chart-card">
+                <h3 class="chart-title">📈 学习趋势</h3>
+                <div class="chart-container">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 学习历史 -->
+        <div class="learning-history">
+            <h3 class="history-title">📝 最近学习记录</h3>
+            <div class="history-list" id="historyList">
+                <!-- 学习记录将通过JavaScript动态生成 -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- 通知容器 -->
+    <div id="notification-container"></div>
+    
+    <script>
+        // 用户学习数据
+        let userLearningData = null;
+        let currentUser = null;
+        
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUserData();
+            initCharts();
+            updateProgressDisplay();
+            loadLearningHistory();
+            showNotification('📊 学习进度模块已加载', 'success');
+        });
+        
+        // 加载用户数据
+        function loadUserData() {
+            try {
+                currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                if (currentUser) {
+                    const savedData = localStorage.getItem(`userData_${currentUser.username}`);
+                    if (savedData) {
+                        userLearningData = JSON.parse(savedData);
+                    } else {
+                        // 初始化新用户数据
+                        userLearningData = {
+                            username: currentUser.username,
+                            totalStudyTime: 0,
+                            completedQuestions: 0,
+                            watchedVideos: 0,
+                            aiQuestions: 0,
+                            reviewPlans: 0,
+                            loginCount: 0,
+                            lastLogin: new Date().toISOString(),
+                            learningHistory: []
+                        };
+                    }
+                }
+            } catch (error) {
+                console.error('加载用户数据失败:', error);
+            }
+        }
+        
+        // 更新进度显示
+        function updateProgressDisplay() {
+            if (!userLearningData) return;
+            
+            document.getElementById('totalStudyTime').textContent = userLearningData.totalStudyTime || 0;
+            document.getElementById('completedQuestions').textContent = userLearningData.completedQuestions || 0;
+            document.getElementById('watchedVideos').textContent = userLearningData.watchedVideos || 0;
+            
+            // 计算学习进度
+            const totalItems = 20; // 预设总学习项目数
+            const completedItems = (userLearningData.completedQuestions || 0) + (userLearningData.watchedVideos || 0);
+            const progress = Math.min(Math.round((completedItems / totalItems) * 100), 100);
+            document.getElementById('learningProgress').textContent = progress + '%';
+        }
+        
+        // 初始化图表
+        function initCharts() {
+            initActivityChart();
+            initTrendChart();
+        }
+        
+        // 学习活动分布图表
+        function initActivityChart() {
+            const ctx = document.getElementById('activityChart');
+            if (!ctx) return;
+            
+            if (typeof Chart === 'undefined') {
+                setTimeout(initActivityChart, 500);
+                return;
+            }
+            
+            const data = {
+                labels: ['题目练习', '视频学习', 'AI问答', '复习计划'],
+                datasets: [{
+                    data: [
+                        userLearningData?.completedQuestions || 0,
+                        userLearningData?.watchedVideos || 0,
+                        userLearningData?.aiQuestions || 0,
+                        userLearningData?.reviewPlans || 0
+                    ],
+                    backgroundColor: [
+                        'rgba(231, 76, 60, 0.8)',
+                        'rgba(52, 152, 219, 0.8)',
+                        'rgba(46, 204, 113, 0.8)',
+                        'rgba(155, 89, 182, 0.8)'
+                    ],
+                    borderColor: [
+                        '#e74c3c',
+                        '#3498db',
+                        '#2ecc71',
+                        '#9b59b6'
+                    ],
+                    borderWidth: 2
+                }]
+            };
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true
+                            }
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        duration: 1500
+                    }
+                }
+            });
+        }
+        
+        // 学习趋势图表
+        function initTrendChart() {
+            const ctx = document.getElementById('trendChart');
+            if (!ctx) return;
+            
+            if (typeof Chart === 'undefined') {
+                setTimeout(initTrendChart, 500);
+                return;
+            }
+            
+            // 生成最近7天的数据
+            const labels = [];
+            const data = [];
+            const today = new Date();
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' }));
+                
+                // 模拟学习时间数据
+                const studyTime = Math.floor(Math.random() * 3) + 1;
+                data.push(studyTime);
+            }
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '学习时长（小时）',
+                        data: data,
+                        borderColor: '#4facfe',
+                        backgroundColor: 'rgba(79, 172, 254, 0.1)',
+                        tension: 0.4,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#4facfe',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        pointRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // 加载学习历史
+        function loadLearningHistory() {
+            const historyList = document.getElementById('historyList');
+            if (!historyList) return;
+            
+            const history = userLearningData?.learningHistory || [];
+            
+            if (history.length === 0) {
+                // 生成示例历史记录
+                const sampleHistory = [
+                    {
+                        type: 'question',
+                        title: '完成伯努利方程练习',
+                        desc: '完成了10道伯努利方程相关题目',
+                        time: '2小时前',
+                        icon: '📝'
+                    },
+                    {
+                        type: 'video',
+                        title: '观看流体力学基础视频',
+                        desc: '学习了流体静力学基本概念',
+                        time: '昨天',
+                        icon: '🎥'
+                    },
+                    {
+                        type: 'ai',
+                        title: '使用AI助手答疑',
+                        desc: '询问了关于雷诺数的问题',
+                        time: '3天前',
+                        icon: '🤖'
+                    },
+                    {
+                        type: 'review',
+                        title: '制定复习计划',
+                        desc: '创建了考前冲刺复习计划',
+                        time: '1周前',
+                        icon: '📅'
+                    }
+                ];
+                
+                historyList.innerHTML = sampleHistory.map(item => `
+                    <div class="history-item">
+                        <div class="history-icon">${item.icon}</div>
+                        <div class="history-content">
+                            <div class="history-title">${item.title}</div>
+                            <div class="history-desc">${item.desc}</div>
+                        </div>
+                        <div class="history-time">${item.time}</div>
+                    </div>
+                `).join('');
+            } else {
+                historyList.innerHTML = history.map(item => `
+                    <div class="history-item">
+                        <div class="history-icon">${item.icon}</div>
+                        <div class="history-content">
+                            <div class="history-title">${item.title}</div>
+                            <div class="history-desc">${item.desc}</div>
+                        </div>
+                        <div class="history-time">${item.time}</div>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // 导出进度报告
+        function exportProgress() {
+            if (!userLearningData) {
+                showNotification('暂无学习数据可导出', 'warning');
+                return;
+            }
+            
+            const report = {
+                用户名: currentUser?.name || '未知用户',
+                导出时间: new Date().toLocaleString('zh-CN'),
+                学习统计: {
+                    总学习时长: `${userLearningData.totalStudyTime || 0} 小时`,
+                    完成题目: `${userLearningData.completedQuestions || 0} 道`,
+                    观看视频: `${userLearningData.watchedVideos || 0} 个`,
+                    AI问答: `${userLearningData.aiQuestions || 0} 次`,
+                    复习计划: `${userLearningData.reviewPlans || 0} 个`
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `学习进度报告_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('学习进度报告已导出', 'success');
+        }
+        
+        // 显示通知
+        function showNotification(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+                ${message}
+            `;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            if (duration > 0) {
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.remove();
+                        }
+                    }, 300);
+                }, duration);
+            }
+        }
+        
+        console.log('📊 学习进度模块已加载');
+    </script>
+</body>
+</html> 
