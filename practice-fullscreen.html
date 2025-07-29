@@ -255,6 +255,41 @@ input:focus, select:focus, textarea:focus {
   const type = getQueryParam('type') || 'real';
   const bank = getQueryParam('bank');
   const mode = getQueryParam('mode') || 'order';
+  const resume = getQueryParam('resume');
+  if (!bank) return;
+  // 在顶部显示当前模式和返回分组页按钮
+  const modeMap = { order: '顺序练习', random: '随机练习', resume: '继续上次' };
+  const modeColor = { order: '#4facfe', random: '#27ae60', resume: '#888' };
+  const modeText = modeMap[mode] || '顺序练习';
+  const modeBar = document.createElement('div');
+  modeBar.style.textAlign = 'center';
+  modeBar.style.fontSize = '1.18em';
+  modeBar.style.fontWeight = '600';
+  modeBar.style.margin = '18px 0 0 0';
+  modeBar.style.color = modeColor[mode]||'#4facfe';
+  modeBar.style.display = 'flex';
+  modeBar.style.justifyContent = 'center';
+  modeBar.style.alignItems = 'center';
+  modeBar.innerHTML = `<span style='padding:6px 18px;border-radius:16px;background:${(modeColor[mode]||'#4facfe')}22;'><i class='fas fa-play-circle'></i> 当前模式：${modeText}</span><button style='margin-left:18px;padding:6px 18px;border-radius:16px;background:#eee;color:#333;font-size:0.98em;border:none;cursor:pointer;' onclick="window.location.href='practice-fullscreen.html?type=${type}'"><i class='fas fa-arrow-left'></i> 返回分组</button>`;
+  document.body.insertBefore(modeBar, document.body.firstChild);
+  // 做题进度条
+  const progressBar = document.createElement('div');
+  progressBar.id = 'practiceProgressBar';
+  progressBar.style.width = '100%';
+  progressBar.style.maxWidth = '900px';
+  progressBar.style.margin = '10px auto 0 auto';
+  progressBar.style.height = '18px';
+  progressBar.style.background = '#f0f4fa';
+  progressBar.style.borderRadius = '10px';
+  progressBar.style.overflow = 'hidden';
+  progressBar.innerHTML = `<div id='practiceProgressInner' style='height:100%;width:0;background:linear-gradient(90deg,#4facfe,#27ae60);border-radius:10px;transition:width 0.3s;'></div><div id='practiceProgressText' style='position:absolute;width:100%;text-align:center;line-height:18px;font-size:0.98em;color:#333;'></div>`;
+  modeBar.insertAdjacentElement('afterend', progressBar);
+  // 更新进度条函数
+  window.updatePracticeProgress = function(cur, total) {
+    const percent = total ? Math.round((cur+1)/total*100) : 0;
+    document.getElementById('practiceProgressInner').style.width = percent+'%';
+    document.getElementById('practiceProgressText').textContent = `进度：${cur+1} / ${total}（${percent}%）`;
+  };
   if (bank) return; // 已选具体题库，走原有做题逻辑
   const groupMap = { real: '真题', chapter: '章节分类', wrong: '易错题' };
   const groupColor = { real: '#4facfe', chapter: '#27ae60', wrong: '#e67e22' };
@@ -264,7 +299,7 @@ input:focus, select:focus, textarea:focus {
     wrong: 'https://img.icons8.com/color/96/000000/error--v1.png'
   };
   document.title = (groupMap[type] || '题库') + ' - 流体力学学习平台';
-  fetch('question-banks/index.json').then(r=>r.json()).then(async index => {
+  fetch('/question-banks/index.json').then(r=>r.json()).then(async index => {
     let files = index[type] || [];
     if (type === 'wrong' && files.length === 0) {
       document.body.innerHTML = '<div style="text-align:center;padding:60px 0;font-size:1.3em;color:#888;">暂无易错题数据</div>';
@@ -278,7 +313,7 @@ input:focus, select:focus, textarea:focus {
       const intro = typeof item === 'string' ? '' : (item.intro || '');
       let meta = { file, intro, count: 0, tags: [], preview: [] };
       try {
-        const res = await fetch('question-banks/' + file);
+        const res = await fetch('/question-banks/' + file);
         const data = await res.json();
         const arr = Array.isArray(data) ? data : (data.questions||data.data||[]);
         meta.count = arr.length;
@@ -606,6 +641,8 @@ input:focus, select:focus, textarea:focus {
             document.getElementById('explainBtn').disabled = !answered;
             renderStatBar();
             if (window.MathJax) MathJax.typesetPromise();
+            // 在renderQuestion()内调用updatePracticeProgress(current, questions.length);
+            window.updatePracticeProgress(current, questions.length);
         }
         function selectOption(i) {
             if (answered) return;
@@ -1239,6 +1276,41 @@ function randomPractice() {
     });
   }
 }
+        // ====== 做题核心逻辑 ======
+(function() {
+  // ... 保留前面代码 ...
+  // 快捷键支持
+  document.addEventListener('keydown', function(e) {
+    if (!questions || !questions.length) return;
+    // 方向键切换题目
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      if (typeof prevQuestion === 'function') prevQuestion();
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (typeof nextQuestion === 'function') nextQuestion();
+    }
+    // 数字键/字母键选择选项（A=0, B=1...）
+    const opts = questions[current]?.options || [];
+    if (opts.length) {
+      // 数字键1-9
+      if (/^[1-9]$/.test(e.key)) {
+        const idx = parseInt(e.key, 10) - 1;
+        if (idx < opts.length && typeof selectOption === 'function') selectOption(idx);
+      }
+      // 字母键A-D...
+      if (/^[a-zA-Z]$/.test(e.key)) {
+        const idx = e.key.toUpperCase().charCodeAt(0) - 65;
+        if (idx >= 0 && idx < opts.length && typeof selectOption === 'function') selectOption(idx);
+      }
+    }
+    // 空格键显示解析
+    if (e.key === ' ' || e.key === 'Spacebar') {
+      e.preventDefault();
+      if (typeof toggleExplanation === 'function') toggleExplanation(true);
+    }
+  });
+})();
     </script>
 </body>
 </html> 
