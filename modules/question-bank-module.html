@@ -6064,11 +6064,32 @@
         // 读取题库文件内容，返回题数、标签、简介、预览
         async function getQuestionBankMeta(file) {
           try {
-            const res = await fetch('../question-banks/' + file);
-            if (!res.ok) {
-              throw new Error(`HTTP error! status: ${res.status}`);
+            // 尝试多个可能的路径
+            const paths = [
+              '../question-banks/' + file,
+              './question-banks/' + file,
+              '/question-banks/' + file,
+              'question-banks/' + file
+            ];
+            
+            let res = null;
+            let data = null;
+            
+            for (const path of paths) {
+              try {
+                res = await fetch(path);
+                if (res.ok) {
+                  data = await res.json();
+                  break;
+                }
+              } catch (e) {
+                console.log(`路径 ${path} 失败:`, e.message);
+              }
             }
-            const data = await res.json();
+            
+            if (!data) {
+              throw new Error(`无法加载题库文件: ${file}`);
+            }
             const arr = Array.isArray(data) ? data : (data.questions||data.data||[]);
             let tags = new Set();
             let years = new Set();
@@ -6093,11 +6114,37 @@
 
                 async function fetchAllQuestionBanks() {
           try {
-            const res = await fetch('../question-banks/index.json');
-            if (!res.ok) {
-              throw new Error(`HTTP error! status: ${res.status}`);
+            console.log('开始获取题库索引文件...');
+            
+            // 尝试多个可能的路径
+            const paths = [
+              '../question-banks/index.json',
+              './question-banks/index.json',
+              '/question-banks/index.json',
+              'question-banks/index.json'
+            ];
+            
+            let res = null;
+            let index = null;
+            
+            for (const path of paths) {
+              try {
+                console.log(`尝试路径: ${path}`);
+                res = await fetch(path);
+                if (res.ok) {
+                  index = await res.json();
+                  console.log(`成功从路径 ${path} 加载数据:`, index);
+                  break;
+                }
+              } catch (e) {
+                console.log(`路径 ${path} 失败:`, e.message);
+              }
             }
-            const index = await res.json();
+            
+            if (!index) {
+              throw new Error('无法从任何路径加载题库数据');
+            }
+            
             // 组装分组
             const wrongList = (index.wrong || []).map(item => ({ 
               name: item.file ? item.file.replace('.json','') : item.replace('.json',''), 
@@ -6114,6 +6161,8 @@
               file: item.file || item,
               intro: item.intro || ''
             }));
+            
+            console.log('处理后的题库数据:', { wrongList, realList, chapterList });
             return { wrongList, realList, chapterList };
           } catch (error) {
             console.error('加载题库数据失败:', error);
