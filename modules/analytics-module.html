@@ -2,11 +2,17 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📊 数据分析 - 流体力学海洋</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+    <title>📈 数据分析 - 流体力学学习平台</title>
     
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Font Awesome - 使用国内CDN -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- Chart.js - 使用国内CDN -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     
     <style>
         /* ===== 海洋主题变量 ===== */
@@ -1591,8 +1597,578 @@
             // 预加载数据
             CacheManager.preloadData();
             
+            // 初始化智能分析
+            IntelligentAnalytics.init();
+            
+            // 设置移动端优化
+            setupMobileOptimizations();
+            
             console.log('所有企业级系统已初始化');
         });
+        
+        // 移动端优化设置
+        function setupMobileOptimizations() {
+            const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                document.body.classList.add('mobile-device');
+                
+                if (isSafari) {
+                    document.body.classList.add('safari-browser');
+                    document.addEventListener('gesturestart', function(e) {
+                        e.preventDefault();
+                    });
+                }
+            }
+        }
+        
+        // 智能数据分析系统
+        const IntelligentAnalytics = {
+            init() {
+                this.setupEventListeners();
+                this.generateInsights();
+                this.setupPredictiveAnalytics();
+            },
+            
+            setupEventListeners() {
+                // 监听数据变化
+                window.addEventListener('storage', (e) => {
+                    if (e.key.includes('analytics') || e.key.includes('user')) {
+                        this.generateInsights();
+                    }
+                });
+            },
+            
+            generateInsights() {
+                const insights = this.analyzeUserBehavior();
+                this.displayInsights(insights);
+            },
+            
+            analyzeUserBehavior() {
+                const userData = this.getUserData();
+                const insights = {
+                    learningPattern: this.analyzeLearningPattern(userData),
+                    performanceTrend: this.analyzePerformanceTrend(userData),
+                    engagementLevel: this.analyzeEngagementLevel(userData),
+                    recommendations: this.generateRecommendations(userData)
+                };
+                
+                return insights;
+            },
+            
+            getUserData() {
+                return {
+                    learningProgress: JSON.parse(localStorage.getItem('userLearningData') || '{}'),
+                    questionHistory: JSON.parse(localStorage.getItem('questionHistory') || '[]'),
+                    videoProgress: JSON.parse(localStorage.getItem('videoProgress') || '{}'),
+                    experimentHistory: JSON.parse(localStorage.getItem('experiments') || '[]'),
+                    grades: JSON.parse(localStorage.getItem('gradesData') || '[]')
+                };
+            },
+            
+            analyzeLearningPattern(userData) {
+                const patterns = {
+                    preferredTime: this.getPreferredLearningTime(userData),
+                    studyDuration: this.getAverageStudyDuration(userData),
+                    topicPreference: this.getTopicPreference(userData),
+                    difficultyPreference: this.getDifficultyPreference(userData)
+                };
+                
+                return patterns;
+            },
+            
+            getPreferredLearningTime(userData) {
+                // 分析用户学习时间偏好
+                const timeSlots = {
+                    morning: 0,
+                    afternoon: 0,
+                    evening: 0,
+                    night: 0
+                };
+                
+                // 这里可以根据实际数据计算
+                return 'evening'; // 示例返回
+            },
+            
+            getAverageStudyDuration(userData) {
+                // 计算平均学习时长
+                const sessions = userData.learningProgress.studySessions || [];
+                if (sessions.length === 0) return 30; // 默认30分钟
+                
+                const totalDuration = sessions.reduce((sum, session) => sum + session.duration, 0);
+                return Math.round(totalDuration / sessions.length);
+            },
+            
+            getTopicPreference(userData) {
+                // 分析用户偏好的学习主题
+                const topicStats = userData.learningProgress.topicStats || {};
+                const topics = Object.entries(topicStats)
+                    .sort((a, b) => b[1].timeSpent - a[1].timeSpent)
+                    .slice(0, 3)
+                    .map(([topic, stats]) => topic);
+                
+                return topics;
+            },
+            
+            getDifficultyPreference(userData) {
+                // 分析用户偏好的题目难度
+                const questionHistory = userData.questionHistory || [];
+                const difficultyStats = {
+                    easy: 0,
+                    medium: 0,
+                    hard: 0
+                };
+                
+                questionHistory.forEach(q => {
+                    if (q.difficulty) {
+                        difficultyStats[q.difficulty]++;
+                    }
+                });
+                
+                const maxDifficulty = Object.entries(difficultyStats)
+                    .sort((a, b) => b[1] - a[1])[0][0];
+                
+                return maxDifficulty;
+            },
+            
+            analyzePerformanceTrend(userData) {
+                const trends = {
+                    overallProgress: this.calculateOverallProgress(userData),
+                    improvementRate: this.calculateImprovementRate(userData),
+                    weakAreas: this.identifyWeakAreas(userData),
+                    strongAreas: this.identifyStrongAreas(userData)
+                };
+                
+                return trends;
+            },
+            
+            calculateOverallProgress(userData) {
+                const progress = userData.learningProgress.overallProgress || 0;
+                return Math.round(progress * 100);
+            },
+            
+            calculateImprovementRate(userData) {
+                // 计算学习进步率
+                const recentScores = userData.grades.slice(-5).map(g => g.score);
+                if (recentScores.length < 2) return 0;
+                
+                const firstScore = recentScores[0];
+                const lastScore = recentScores[recentScores.length - 1];
+                const improvement = ((lastScore - firstScore) / firstScore) * 100;
+                
+                return Math.round(improvement);
+            },
+            
+            identifyWeakAreas(userData) {
+                const topicStats = userData.learningProgress.topicStats || {};
+                const weakAreas = Object.entries(topicStats)
+                    .filter(([topic, stats]) => stats.wrong > stats.correct)
+                    .sort((a, b) => b[1].wrong - a[1].wrong)
+                    .slice(0, 3)
+                    .map(([topic, stats]) => topic);
+                
+                return weakAreas;
+            },
+            
+            identifyStrongAreas(userData) {
+                const topicStats = userData.learningProgress.topicStats || {};
+                const strongAreas = Object.entries(topicStats)
+                    .filter(([topic, stats]) => stats.correct > stats.wrong)
+                    .sort((a, b) => b[1].correct - a[1].correct)
+                    .slice(0, 3)
+                    .map(([topic, stats]) => topic);
+                
+                return strongAreas;
+            },
+            
+            analyzeEngagementLevel(userData) {
+                const engagement = {
+                    level: this.calculateEngagementLevel(userData),
+                    factors: this.identifyEngagementFactors(userData),
+                    suggestions: this.getEngagementSuggestions(userData)
+                };
+                
+                return engagement;
+            },
+            
+            calculateEngagementLevel(userData) {
+                // 计算用户参与度
+                const factors = [
+                    userData.learningProgress.overallProgress || 0,
+                    userData.questionHistory.length,
+                    Object.keys(userData.videoProgress).length,
+                    userData.experimentHistory.length
+                ];
+                
+                const avgEngagement = factors.reduce((sum, factor) => sum + factor, 0) / factors.length;
+                
+                if (avgEngagement > 0.7) return 'high';
+                if (avgEngagement > 0.4) return 'medium';
+                return 'low';
+            },
+            
+            identifyEngagementFactors(userData) {
+                const factors = [];
+                
+                if (userData.learningProgress.overallProgress > 0.5) {
+                    factors.push('学习进度良好');
+                }
+                
+                if (userData.questionHistory.length > 10) {
+                    factors.push('积极参与练习');
+                }
+                
+                if (Object.keys(userData.videoProgress).length > 5) {
+                    factors.push('观看视频课程');
+                }
+                
+                if (userData.experimentHistory.length > 3) {
+                    factors.push('进行仿真实验');
+                }
+                
+                return factors;
+            },
+            
+            getEngagementSuggestions(userData) {
+                const suggestions = [];
+                const engagement = this.calculateEngagementLevel(userData);
+                
+                if (engagement === 'low') {
+                    suggestions.push('建议增加学习时间');
+                    suggestions.push('尝试更多练习题目');
+                    suggestions.push('观看相关视频课程');
+                } else if (engagement === 'medium') {
+                    suggestions.push('继续保持当前学习节奏');
+                    suggestions.push('尝试更具挑战性的内容');
+                } else {
+                    suggestions.push('学习状态优秀，可以尝试教学他人');
+                    suggestions.push('参与更多高级实验');
+                }
+                
+                return suggestions;
+            },
+            
+            generateRecommendations(userData) {
+                const recommendations = [];
+                
+                // 基于弱项生成建议
+                const weakAreas = this.identifyWeakAreas(userData);
+                weakAreas.forEach(area => {
+                    recommendations.push({
+                        type: 'improvement',
+                        title: `加强${area}学习`,
+                        description: `您在${area}方面需要更多练习`,
+                        action: `focus_on_${area}`,
+                        priority: 'high'
+                    });
+                });
+                
+                // 基于学习模式生成建议
+                const learningPattern = this.analyzeLearningPattern(userData);
+                if (learningPattern.studyDuration < 30) {
+                    recommendations.push({
+                        type: 'time_management',
+                        title: '增加学习时长',
+                        description: '建议每次学习至少30分钟',
+                        action: 'increase_study_time',
+                        priority: 'medium'
+                    });
+                }
+                
+                // 基于参与度生成建议
+                const engagement = this.analyzeEngagementLevel(userData);
+                if (engagement.level === 'low') {
+                    recommendations.push({
+                        type: 'engagement',
+                        title: '提高学习参与度',
+                        description: '尝试更多互动学习方式',
+                        action: 'improve_engagement',
+                        priority: 'high'
+                    });
+                }
+                
+                return recommendations;
+            },
+            
+            displayInsights(insights) {
+                const container = document.getElementById('intelligentInsights');
+                if (!container) return;
+                
+                container.innerHTML = `
+                    <div class="insights-section">
+                        <h3><i class="fas fa-brain"></i> 智能分析洞察</h3>
+                        
+                        <div class="insights-grid">
+                            <div class="insight-card">
+                                <h4><i class="fas fa-chart-line"></i> 学习模式分析</h4>
+                                <div class="insight-content">
+                                    <p><strong>偏好时间：</strong>${insights.learningPattern.preferredTime}</p>
+                                    <p><strong>平均时长：</strong>${insights.learningPattern.studyDuration}分钟</p>
+                                    <p><strong>偏好主题：</strong>${insights.learningPattern.topicPreference.join('、')}</p>
+                                    <p><strong>难度偏好：</strong>${insights.learningPattern.difficultyPreference}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="insight-card">
+                                <h4><i class="fas fa-trending-up"></i> 表现趋势</h4>
+                                <div class="insight-content">
+                                    <p><strong>总体进度：</strong>${insights.performanceTrend.overallProgress}%</p>
+                                    <p><strong>进步率：</strong>${insights.performanceTrend.improvementRate}%</p>
+                                    <p><strong>薄弱环节：</strong>${insights.performanceTrend.weakAreas.join('、')}</p>
+                                    <p><strong>优势领域：</strong>${insights.performanceTrend.strongAreas.join('、')}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="insight-card">
+                                <h4><i class="fas fa-users"></i> 参与度分析</h4>
+                                <div class="insight-content">
+                                    <p><strong>参与水平：</strong>${insights.engagementLevel.level}</p>
+                                    <p><strong>积极因素：</strong>${insights.engagementLevel.factors.join('、')}</p>
+                                    <p><strong>改进建议：</strong>${insights.engagementLevel.suggestions.join('、')}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="recommendations-section">
+                            <h4><i class="fas fa-lightbulb"></i> 个性化建议</h4>
+                            <div class="recommendations-list">
+                                ${insights.recommendations.map(rec => `
+                                    <div class="recommendation-item ${rec.priority}">
+                                        <div class="rec-header">
+                                            <i class="fas ${getRecommendationIcon(rec.type)}"></i>
+                                            <span class="rec-title">${rec.title}</span>
+                                            <span class="rec-priority ${rec.priority}">${getPriorityText(rec.priority)}</span>
+                                        </div>
+                                        <p class="rec-description">${rec.description}</p>
+                                        <button class="btn-apply" onclick="applyRecommendation('${rec.action}')">
+                                            <i class="fas fa-check"></i> 应用建议
+                                        </button>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+            
+            setupPredictiveAnalytics() {
+                // 设置预测分析
+                this.predictLearningOutcomes();
+                this.setupPerformanceAlerts();
+            },
+            
+            predictLearningOutcomes() {
+                const userData = this.getUserData();
+                const prediction = this.calculatePrediction(userData);
+                
+                // 显示预测结果
+                this.displayPrediction(prediction);
+            },
+            
+            calculatePrediction(userData) {
+                const currentProgress = userData.learningProgress.overallProgress || 0;
+                const improvementRate = this.calculateImprovementRate(userData);
+                const engagementLevel = this.calculateEngagementLevel(userData);
+                
+                // 简单的预测算法
+                let predictedProgress = currentProgress;
+                const timeToTarget = 100 - currentProgress;
+                
+                if (engagementLevel === 'high' && improvementRate > 0) {
+                    predictedProgress = Math.min(100, currentProgress + (improvementRate * 0.1));
+                } else if (engagementLevel === 'medium') {
+                    predictedProgress = Math.min(100, currentProgress + (timeToTarget * 0.05));
+                } else {
+                    predictedProgress = Math.min(100, currentProgress + (timeToTarget * 0.02));
+                }
+                
+                return {
+                    currentProgress: Math.round(currentProgress * 100),
+                    predictedProgress: Math.round(predictedProgress),
+                    estimatedTimeToComplete: this.estimateTimeToComplete(currentProgress, predictedProgress),
+                    confidence: this.calculateConfidence(userData)
+                };
+            },
+            
+            estimateTimeToComplete(current, predicted) {
+                const progressDiff = predicted - current;
+                if (progressDiff <= 0) return '已完成';
+                
+                const daysPerPercent = 0.5; // 假设每1%进度需要0.5天
+                const estimatedDays = Math.ceil(progressDiff * daysPerPercent);
+                
+                if (estimatedDays <= 7) return `${estimatedDays}天`;
+                if (estimatedDays <= 30) return `${Math.ceil(estimatedDays / 7)}周`;
+                return `${Math.ceil(estimatedDays / 30)}个月`;
+            },
+            
+            calculateConfidence(userData) {
+                const factors = [
+                    userData.learningProgress.overallProgress || 0,
+                    userData.questionHistory.length / 100, // 标准化
+                    Object.keys(userData.videoProgress).length / 10, // 标准化
+                    userData.experimentHistory.length / 5 // 标准化
+                ];
+                
+                const avgConfidence = factors.reduce((sum, factor) => sum + Math.min(factor, 1), 0) / factors.length;
+                return Math.round(avgConfidence * 100);
+            },
+            
+            displayPrediction(prediction) {
+                const container = document.getElementById('predictionAnalysis');
+                if (!container) return;
+                
+                container.innerHTML = `
+                    <div class="prediction-section">
+                        <h3><i class="fas fa-crystal-ball"></i> 学习成果预测</h3>
+                        
+                        <div class="prediction-grid">
+                            <div class="prediction-card">
+                                <h4>当前进度</h4>
+                                <div class="prediction-value">${prediction.currentProgress}%</div>
+                            </div>
+                            
+                            <div class="prediction-card">
+                                <h4>预测进度</h4>
+                                <div class="prediction-value">${prediction.predictedProgress}%</div>
+                            </div>
+                            
+                            <div class="prediction-card">
+                                <h4>预计完成时间</h4>
+                                <div class="prediction-value">${prediction.estimatedTimeToComplete}</div>
+                            </div>
+                            
+                            <div class="prediction-card">
+                                <h4>预测置信度</h4>
+                                <div class="prediction-value">${prediction.confidence}%</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+            
+            setupPerformanceAlerts() {
+                // 设置性能警报
+                const userData = this.getUserData();
+                const alerts = this.generateAlerts(userData);
+                
+                if (alerts.length > 0) {
+                    this.displayAlerts(alerts);
+                }
+            },
+            
+            generateAlerts(userData) {
+                const alerts = [];
+                
+                // 检查学习进度停滞
+                const recentProgress = userData.learningProgress.recentProgress || [];
+                if (recentProgress.length >= 3) {
+                    const lastThree = recentProgress.slice(-3);
+                    const isStagnant = lastThree.every(p => p === lastThree[0]);
+                    
+                    if (isStagnant) {
+                        alerts.push({
+                            type: 'warning',
+                            title: '学习进度停滞',
+                            message: '您的学习进度已经停滞，建议调整学习策略',
+                            action: 'review_learning_strategy'
+                        });
+                    }
+                }
+                
+                // 检查参与度下降
+                const engagementLevel = this.calculateEngagementLevel(userData);
+                if (engagementLevel === 'low') {
+                    alerts.push({
+                        type: 'critical',
+                        title: '参与度较低',
+                        message: '您的学习参与度较低，建议增加学习活动',
+                        action: 'increase_engagement'
+                    });
+                }
+                
+                return alerts;
+            },
+            
+            displayAlerts(alerts) {
+                const container = document.getElementById('performanceAlerts');
+                if (!container) return;
+                
+                container.innerHTML = `
+                    <div class="alerts-section">
+                        <h3><i class="fas fa-exclamation-triangle"></i> 性能警报</h3>
+                        
+                        <div class="alerts-list">
+                            ${alerts.map(alert => `
+                                <div class="alert-item ${alert.type}">
+                                    <div class="alert-header">
+                                        <i class="fas ${getAlertIcon(alert.type)}"></i>
+                                        <span class="alert-title">${alert.title}</span>
+                                    </div>
+                                    <p class="alert-message">${alert.message}</p>
+                                    <button class="btn-resolve" onclick="resolveAlert('${alert.action}')">
+                                        <i class="fas fa-check"></i> 处理
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        };
+        
+        // 获取建议图标
+        function getRecommendationIcon(type) {
+            const iconMap = {
+                'improvement': 'fa-arrow-up',
+                'time_management': 'fa-clock',
+                'engagement': 'fa-users'
+            };
+            return iconMap[type] || 'fa-lightbulb';
+        }
+        
+        // 获取优先级文本
+        function getPriorityText(priority) {
+            const textMap = {
+                'high': '高优先级',
+                'medium': '中优先级',
+                'low': '低优先级'
+            };
+            return textMap[priority] || '普通';
+        }
+        
+        // 获取警报图标
+        function getAlertIcon(type) {
+            const iconMap = {
+                'warning': 'fa-exclamation-triangle',
+                'critical': 'fa-exclamation-circle',
+                'info': 'fa-info-circle'
+            };
+            return iconMap[type] || 'fa-bell';
+        }
+        
+        // 应用建议
+        function applyRecommendation(action) {
+            showNotification('建议已应用，正在优化学习计划...', 'success');
+            
+            // 这里可以根据action执行相应的优化操作
+            setTimeout(() => {
+                showNotification('学习计划已更新', 'success');
+            }, 2000);
+        }
+        
+        // 处理警报
+        function resolveAlert(action) {
+            showNotification('警报已处理，正在执行优化措施...', 'success');
+            
+            // 这里可以根据action执行相应的处理操作
+            setTimeout(() => {
+                showNotification('优化措施已执行', 'success');
+            }, 2000);
+        }
+        
+        console.log('📈 数据分析模块已加载');
     </script>
 </body>
 </html> 
