@@ -522,6 +522,167 @@
             background: rgba(231, 76, 60, 0.1);
         }
         
+        /* ===== 错题本和收藏功能样式 ===== */
+        .special-sections {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .special-section {
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid var(--ocean-light);
+            border-radius: 20px;
+            padding: 30px;
+            color: var(--text-dark);
+            transition: all 0.3s ease;
+        }
+        
+        .special-section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.2);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--ocean-light);
+        }
+        
+        .section-icon {
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(45deg, var(--ocean-light), var(--seafoam));
+            border-radius: 50%;
+            color: white;
+        }
+        
+        .section-header h3 {
+            font-size: 1.5rem;
+            color: var(--text-dark);
+            margin: 0;
+        }
+        
+        .section-header p {
+            font-size: 0.9rem;
+            color: #666;
+            margin: 5px 0 0 0;
+        }
+        
+        .section-content {
+            min-height: 200px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+        
+        .empty-state p {
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+        }
+        
+        .empty-state small {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        .section-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        
+        .wrong-questions-list,
+        .favorites-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 10px;
+            padding: 15px;
+            background: #f9f9f9;
+        }
+        
+        .question-item {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+        }
+        
+        .question-item:hover {
+            border-color: var(--ocean-light);
+            box-shadow: 0 2px 8px rgba(79, 172, 254, 0.1);
+        }
+        
+        .question-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .question-type {
+            background: var(--ocean-light);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        .question-actions {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .action-btn {
+            background: none;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background: var(--ocean-light);
+            color: white;
+            border-color: var(--ocean-light);
+        }
+        
+        .action-btn.favorite {
+            color: #ff6b6b;
+        }
+        
+        .action-btn.favorite.active {
+            background: #ff6b6b;
+            color: white;
+            border-color: #ff6b6b;
+        }
+        
         /* ===== 响应式设计 ===== */
         @media (max-width: 768px) {
             .stats-grid {
@@ -540,6 +701,10 @@
             .question-footer {
                 flex-direction: column;
                 gap: 15px;
+            }
+            
+            .special-sections {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -643,6 +808,61 @@
             </div>
             <div id="aiQuestionResult" style="display: none;">
                 <!-- AI生成的题目将显示在这里 -->
+            </div>
+        </div>
+        
+        <!-- 错题本和收藏功能 -->
+        <div class="special-sections">
+            <!-- 错题本 -->
+            <div class="special-section" id="wrongQuestionsSection">
+                <div class="section-header">
+                    <div class="section-icon">⚠️</div>
+                    <h3>错题本</h3>
+                    <p>记录您做错的题目，重点复习</p>
+                </div>
+                <div class="section-content">
+                    <div class="wrong-questions-list" id="wrongQuestionsList">
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>暂无错题记录</p>
+                            <small>开始练习后，做错的题目会自动添加到错题本</small>
+                        </div>
+                    </div>
+                    <div class="section-actions">
+                        <button class="btn-control secondary" onclick="practiceWrongQuestions()">
+                            <i class="fas fa-redo"></i> 练习错题
+                        </button>
+                        <button class="btn-control" onclick="clearWrongQuestions()">
+                            <i class="fas fa-trash"></i> 清空错题本
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 收藏题目 -->
+            <div class="special-section" id="favoritesSection">
+                <div class="section-header">
+                    <div class="section-icon">❤️</div>
+                    <h3>收藏题目</h3>
+                    <p>收藏重要的题目，方便复习</p>
+                </div>
+                <div class="section-content">
+                    <div class="favorites-list" id="favoritesList">
+                        <div class="empty-state">
+                            <i class="fas fa-heart"></i>
+                            <p>暂无收藏题目</p>
+                            <small>点击题目旁的❤️按钮可以收藏题目</small>
+                        </div>
+                    </div>
+                    <div class="section-actions">
+                        <button class="btn-control secondary" onclick="practiceFavorites()">
+                            <i class="fas fa-play"></i> 练习收藏
+                        </button>
+                        <button class="btn-control" onclick="exportFavorites()">
+                            <i class="fas fa-download"></i> 导出收藏
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -904,6 +1124,131 @@
         let practiceStarted = false;
         let startTime = null;
         let questionTimes = [];
+        let quizSystem = null;
+        
+        // 错题本和收藏功能
+        function showWrongQuestions() {
+            if (quizSystem) {
+                quizSystem.updateWrongQuestionsDisplay();
+            }
+        }
+        
+        function practiceWrongQuestions() {
+            if (!quizSystem || quizSystem.wrongQuestions.length === 0) {
+                showNotification('错题本为空，无法开始练习', 'error');
+                return;
+            }
+            startQuizWithQuestions(quizSystem.wrongQuestions);
+        }
+        
+        function clearWrongQuestions() {
+            if (quizSystem) {
+                quizSystem.clearWrongQuestions();
+            }
+        }
+        
+        function showFavorites() {
+            if (quizSystem) {
+                quizSystem.updateFavoritesDisplay();
+            }
+        }
+        
+        function practiceFavorites() {
+            if (!quizSystem || quizSystem.favoriteQuestions.length === 0) {
+                showNotification('收藏夹为空，无法开始练习', 'error');
+                return;
+            }
+            startQuizWithQuestions(quizSystem.favoriteQuestions);
+        }
+        
+        function exportFavorites() {
+            if (!quizSystem || quizSystem.favoriteQuestions.length === 0) {
+                showNotification('收藏夹为空，无法导出', 'error');
+                return;
+            }
+            
+            const data = {
+                favorites: quizSystem.favoriteQuestions,
+                exportTime: new Date().toISOString(),
+                totalCount: quizSystem.favoriteQuestions.length
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `收藏题目_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('收藏题目导出成功', 'success');
+        }
+        
+        // 使用指定题目开始练习
+        function startQuizWithQuestions(questions) {
+            if (questions.length === 0) {
+                showNotification('没有可用的题目', 'error');
+                return;
+            }
+            
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            startTime = new Date();
+            practiceStarted = true;
+            
+            // 显示第一题
+            displayQuestionWithData(questions[0]);
+            
+            showNotification(`开始练习 ${questions.length} 道题目`, 'success');
+        }
+        
+        // 显示指定题目数据
+        function displayQuestionWithData(question) {
+            const container = document.getElementById('questionContainer');
+            
+            container.innerHTML = `
+                <div class="fullscreen-controls">
+                    <button class="fullscreen-btn" onclick="toggleFullscreen()" title="全屏模式">
+                        <i class="fas fa-expand" id="fullscreenIcon"></i>
+                    </button>
+                    <button class="fullscreen-btn" onclick="closeFullscreen()" title="关闭全屏" style="display: none;" id="closeFullscreenBtn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="question-header">
+                    <div class="question-title">第 ${currentQuestionIndex + 1} 题</div>
+                    <div class="question-progress">${currentQuestionIndex + 1} / ${questions.length}</div>
+                </div>
+                
+                <div class="question-text">${question.question || question.text}</div>
+                
+                <div class="options-list">
+                    ${(question.options || []).map((option, index) => `
+                        <div class="option-item ${userAnswers[currentQuestionIndex] === index ? 'selected' : ''}" 
+                             onclick="selectOption(${index})">
+                            <div class="option-letter">${String.fromCharCode(65 + index)}</div>
+                            <div>${option}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="question-actions">
+                    <button class="btn-control" onclick="previousQuestion()" id="prevBtn" ${currentQuestionIndex === 0 ? 'disabled' : ''}>
+                        <i class="fas fa-chevron-left"></i>
+                        上一题
+                    </button>
+                    <button class="btn-control" onclick="nextQuestion()" id="nextBtn" ${currentQuestionIndex === questions.length - 1 ? 'disabled' : ''}>
+                        下一题
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            `;
+            
+            container.style.display = 'block';
+        }
         
         // 显示通知
         function showNotification(message, type = 'info', duration = 3000) {
@@ -1541,6 +1886,19 @@
         
         // 扩展题库数据 - 从Untitled.txt迁移
         const EXTENDED_EXERCISES_DATA = {
+            // 用户错题本
+            wrongQuestions: [],
+            // 收藏题目
+            favoriteQuestions: [],
+            // 学习进度
+            progress: {
+                totalQuestions: 0,
+                completedQuestions: 0,
+                correctAnswers: 0,
+                wrongAnswers: 0,
+                averageScore: 0,
+                studyTime: 0
+            },
             categories: [
                 {
                     id: 'fluid-basics',
@@ -1642,6 +2000,33 @@
                         },
                         {
                             id: 'hd-003',
+                            type: 'multiple',
+                            difficulty: 'medium',
+                            question: '伯努利方程包含以下哪些项？',
+                            options: [
+                                '压力能',
+                                '动能',
+                                '势能',
+                                '内能'
+                            ],
+                            correct: [0, 1, 2],
+                            explanation: '伯努利方程包含压力能、动能和势能三项。',
+                            points: 15,
+                            estimated_time: 45
+                        },
+                        {
+                            id: 'hd-004',
+                            type: 'calculation',
+                            difficulty: 'hard',
+                            question: '水在管道中流动，管道直径从10cm变为5cm，如果大直径处的流速为2m/s，求小直径处的流速。',
+                            answer: '8',
+                            unit: 'm/s',
+                            explanation: '根据连续性方程：A₁v₁ = A₂v₂，v₂ = (A₁/A₂)v₁ = (πr₁²/πr₂²)v₁ = (5²/2.5²)×2 = 8 m/s',
+                            points: 25,
+                            estimated_time: 90
+                        },
+                        {
+                            id: 'hd-005',
                             type: 'calculation',
                             difficulty: 'hard',
                             question: '如何计算管道中的压力损失？',
@@ -1715,6 +2100,8 @@
                 this.questionBank = [];
                 this.userAnswers = [];
                 this.currentQuestion = 0;
+                this.wrongQuestions = [];
+                this.favoriteQuestions = [];
                 this.analytics = {
                     totalQuestions: 0,
                     correctAnswers: 0,
@@ -1722,6 +2109,159 @@
                     categoryPerformance: {}
                 };
                 this.loadQuestionBank();
+                this.loadUserData();
+            }
+            
+            // 加载用户数据（错题本、收藏等）
+            loadUserData() {
+                try {
+                    const userData = localStorage.getItem('questionBankUserData');
+                    if (userData) {
+                        const data = JSON.parse(userData);
+                        this.wrongQuestions = data.wrongQuestions || [];
+                        this.favoriteQuestions = data.favoriteQuestions || [];
+                        this.analytics = data.analytics || this.analytics;
+                    }
+                    this.updateWrongQuestionsDisplay();
+                    this.updateFavoritesDisplay();
+                } catch (error) {
+                    console.error('加载用户数据失败:', error);
+                }
+            }
+            
+            // 保存用户数据
+            saveUserData() {
+                try {
+                    const userData = {
+                        wrongQuestions: this.wrongQuestions,
+                        favoriteQuestions: this.favoriteQuestions,
+                        analytics: this.analytics
+                    };
+                    localStorage.setItem('questionBankUserData', JSON.stringify(userData));
+                } catch (error) {
+                    console.error('保存用户数据失败:', error);
+                }
+            }
+            
+            // 添加错题
+            addWrongQuestion(question) {
+                if (!this.wrongQuestions.find(q => q.id === question.id)) {
+                    this.wrongQuestions.push({
+                        ...question,
+                        wrongTime: new Date().toISOString(),
+                        wrongCount: 1
+                    });
+                    this.saveUserData();
+                    this.updateWrongQuestionsDisplay();
+                } else {
+                    // 增加错误次数
+                    const existing = this.wrongQuestions.find(q => q.id === question.id);
+                    existing.wrongCount++;
+                    existing.wrongTime = new Date().toISOString();
+                    this.saveUserData();
+                    this.updateWrongQuestionsDisplay();
+                }
+            }
+            
+            // 移除错题
+            removeWrongQuestion(questionId) {
+                this.wrongQuestions = this.wrongQuestions.filter(q => q.id !== questionId);
+                this.saveUserData();
+                this.updateWrongQuestionsDisplay();
+            }
+            
+            // 清空错题本
+            clearWrongQuestions() {
+                if (confirm('确定要清空错题本吗？此操作不可恢复！')) {
+                    this.wrongQuestions = [];
+                    this.saveUserData();
+                    this.updateWrongQuestionsDisplay();
+                    showNotification('错题本已清空', 'success');
+                }
+            }
+            
+            // 添加收藏
+            toggleFavorite(question) {
+                const index = this.favoriteQuestions.findIndex(q => q.id === question.id);
+                if (index === -1) {
+                    this.favoriteQuestions.push({
+                        ...question,
+                        favoriteTime: new Date().toISOString()
+                    });
+                    showNotification('题目已收藏', 'success');
+                } else {
+                    this.favoriteQuestions.splice(index, 1);
+                    showNotification('已取消收藏', 'success');
+                }
+                this.saveUserData();
+                this.updateFavoritesDisplay();
+            }
+            
+            // 更新错题本显示
+            updateWrongQuestionsDisplay() {
+                const container = document.getElementById('wrongQuestionsList');
+                if (!container) return;
+                
+                if (this.wrongQuestions.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-clipboard-list"></i>
+                            <p>暂无错题记录</p>
+                            <small>开始练习后，做错的题目会自动添加到错题本</small>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = this.wrongQuestions.map(question => `
+                        <div class="question-item">
+                            <div class="question-item-header">
+                                <span class="question-type">${question.type || '选择题'}</span>
+                                <div class="question-actions">
+                                    <button class="action-btn" onclick="quizSystem.removeWrongQuestion('${question.id}')" title="移除">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="question-text">${question.question || question.text}</div>
+                            <div class="question-meta">
+                                <small>错误次数: ${question.wrongCount || 1}</small>
+                                <small>最后错误: ${new Date(question.wrongTime).toLocaleDateString()}</small>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+            
+            // 更新收藏显示
+            updateFavoritesDisplay() {
+                const container = document.getElementById('favoritesList');
+                if (!container) return;
+                
+                if (this.favoriteQuestions.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-heart"></i>
+                            <p>暂无收藏题目</p>
+                            <small>点击题目旁的❤️按钮可以收藏题目</small>
+                        </div>
+                    `;
+                } else {
+                    container.innerHTML = this.favoriteQuestions.map(question => `
+                        <div class="question-item">
+                            <div class="question-item-header">
+                                <span class="question-type">${question.type || '选择题'}</span>
+                                <div class="question-actions">
+                                    <button class="action-btn favorite active" onclick="quizSystem.toggleFavorite(${JSON.stringify(question)})" title="取消收藏">
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="question-text">${question.question || question.text}</div>
+                            <div class="question-meta">
+                                <small>收藏时间: ${new Date(question.favoriteTime).toLocaleDateString()}</small>
+                            </div>
+                        </div>
+                    `).join('');
+                }
             }
 
             // 加载题库数据
@@ -2565,6 +3105,15 @@
             
             // 预加载数据
             CacheManager.preloadData();
+            
+            // 初始化高级题库系统
+            quizSystem = new AdvancedQuizSystem();
+            
+            // 初始化错题本和收藏显示
+            if (quizSystem) {
+                quizSystem.updateWrongQuestionsDisplay();
+                quizSystem.updateFavoritesDisplay();
+            }
             
             // 显示第一题
             showQuestionWithAdvancedFeatures();
