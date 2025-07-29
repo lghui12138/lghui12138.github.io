@@ -198,6 +198,127 @@
             padding: 25px;
             border: 2px solid transparent;
         }
+        
+        /* ===== 交互式演示区域 ===== */
+        .interactive-demo {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 3px solid #4facfe;
+        }
+        
+        .demo-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .demo-tab {
+            background: #f0f0f0;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+        
+        .demo-tab.active {
+            background: #4facfe;
+            color: white;
+        }
+        
+        .demo-tab:hover {
+            background: #4facfe;
+            color: white;
+        }
+        
+        .demo-content {
+            min-height: 200px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 10px;
+        }
+        
+        /* ===== 实时演示区域 ===== */
+        .live-demo {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 3px solid #ffd700;
+        }
+        
+        .demo-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .demo-control {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .demo-control:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255,215,0,0.4);
+        }
+        
+        .demo-display {
+            background: #f0f0f0;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 150px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 1.1em;
+        }
+        
+        /* ===== 通知系统 ===== */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .notification {
+            background: rgba(255,255,255,0.95);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-left: 4px solid #4facfe;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-left-color: #4CAF50;
+        }
+        
+        .notification.error {
+            border-left-color: #F44336;
+        }
+        
+        .notification.warning {
+            border-left-color: #FF9800;
+        }
         .comparison-card.before {
             border-color: #ff6b6b;
         }
@@ -373,6 +494,46 @@
             </div>
         </div>
 
+        <!-- 交互式演示区域 -->
+        <div class="interactive-demo">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #4facfe;">🎮 交互式演示</h2>
+            <div class="demo-tabs">
+                <button class="demo-tab active" onclick="switchDemoTab('smart-search')">智能搜索</button>
+                <button class="demo-tab" onclick="switchDemoTab('advanced-filters')">高级筛选</button>
+                <button class="demo-tab" onclick="switchDemoTab('progress-tracker')">学习进度</button>
+                <button class="demo-tab" onclick="switchDemoTab('quick-actions')">快捷操作</button>
+            </div>
+            <div class="demo-content" id="demoContent">
+                <div id="smart-search-demo">
+                    <h3>🔍 智能搜索演示</h3>
+                    <p>输入关键词进行智能搜索，支持模糊匹配和语义搜索：</p>
+                    <div style="display: flex; gap: 10px; margin: 20px 0;">
+                        <input type="text" id="demoSearchInput" placeholder="输入搜索关键词..." style="flex: 1; padding: 10px; border: 2px solid #4facfe; border-radius: 8px;">
+                        <button onclick="demoSearch()" style="padding: 10px 20px; background: #4facfe; color: white; border: none; border-radius: 8px; cursor: pointer;">搜索</button>
+                    </div>
+                    <div id="demoSearchResults" style="background: #f0f0f0; padding: 15px; border-radius: 8px; margin-top: 15px; min-height: 100px;">
+                        <p style="color: #666; text-align: center;">搜索结果将在这里显示</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实时演示区域 -->
+        <div class="live-demo">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #ffd700;">⚡ 实时演示</h2>
+            <div class="demo-controls">
+                <button class="demo-control" onclick="demoAction('load-data')">加载数据</button>
+                <button class="demo-control" onclick="demoAction('search')">搜索功能</button>
+                <button class="demo-control" onclick="demoAction('filter')">筛选功能</button>
+                <button class="demo-control" onclick="demoAction('favorite')">收藏功能</button>
+                <button class="demo-control" onclick="demoAction('export')">导出数据</button>
+                <button class="demo-control" onclick="demoAction('reset')">重置演示</button>
+            </div>
+            <div class="demo-display" id="demoDisplay">
+                <p>点击上方按钮开始实时演示</p>
+            </div>
+        </div>
+
         <div class="stats-section">
             <h2>📊 项目成果统计</h2>
             <div class="stats-grid">
@@ -463,6 +624,421 @@
     </div>
 
     <script>
+        // 演示数据
+        const demoData = {
+            questionBanks: [
+                { name: '流体力学基础', count: 150, difficulty: '中等', tags: ['基础', '理论'] },
+                { name: '海洋工程应用', count: 200, difficulty: '困难', tags: ['应用', '实践'] },
+                { name: '流体动力学', count: 180, difficulty: '中等', tags: ['动力学', '计算'] },
+                { name: '波浪理论', count: 120, difficulty: '简单', tags: ['理论', '基础'] },
+                { name: '湍流模型', count: 90, difficulty: '困难', tags: ['模型', '高级'] }
+            ],
+            searchHistory: [],
+            demoState: {
+                loaded: false,
+                searching: false,
+                filtering: false,
+                favoriting: false
+            }
+        };
+
+        // 切换演示标签页
+        function switchDemoTab(tabName) {
+            // 更新标签页状态
+            document.querySelectorAll('.demo-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            // 更新演示内容
+            const content = document.getElementById('demoContent');
+            switch(tabName) {
+                case 'smart-search':
+                    content.innerHTML = `
+                        <div id="smart-search-demo">
+                            <h3>🔍 智能搜索演示</h3>
+                            <p>输入关键词进行智能搜索，支持模糊匹配和语义搜索：</p>
+                            <div style="display: flex; gap: 10px; margin: 20px 0;">
+                                <input type="text" id="demoSearchInput" placeholder="输入搜索关键词..." style="flex: 1; padding: 10px; border: 2px solid #4facfe; border-radius: 8px;">
+                                <button onclick="demoSearch()" style="padding: 10px 20px; background: #4facfe; color: white; border: none; border-radius: 8px; cursor: pointer;">搜索</button>
+                            </div>
+                            <div id="demoSearchResults" style="background: #f0f0f0; padding: 15px; border-radius: 8px; margin-top: 15px; min-height: 100px;">
+                                <p style="color: #666; text-align: center;">搜索结果将在这里显示</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'advanced-filters':
+                    content.innerHTML = `
+                        <div id="advanced-filters-demo">
+                            <h3>⚙️ 高级筛选演示</h3>
+                            <p>使用多维度筛选功能，精确找到需要的题库：</p>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">难度等级</label>
+                                    <select id="demoDifficultyFilter" style="width: 100%; padding: 8px; border: 2px solid #4facfe; border-radius: 6px;">
+                                        <option value="">全部难度</option>
+                                        <option value="简单">简单</option>
+                                        <option value="中等">中等</option>
+                                        <option value="困难">困难</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">题数范围</label>
+                                    <select id="demoCountFilter" style="width: 100%; padding: 8px; border: 2px solid #4facfe; border-radius: 6px;">
+                                        <option value="">全部题数</option>
+                                        <option value="0-100">0-100题</option>
+                                        <option value="100-200">100-200题</option>
+                                        <option value="200+">200题以上</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">标签筛选</label>
+                                    <select id="demoTagFilter" style="width: 100%; padding: 8px; border: 2px solid #4facfe; border-radius: 6px;">
+                                        <option value="">全部标签</option>
+                                        <option value="基础">基础</option>
+                                        <option value="理论">理论</option>
+                                        <option value="应用">应用</option>
+                                        <option value="实践">实践</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button onclick="demoFilter()" style="padding: 10px 20px; background: #4facfe; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px;">应用筛选</button>
+                            <div id="demoFilterResults" style="background: #f0f0f0; padding: 15px; border-radius: 8px; margin-top: 15px; min-height: 100px;">
+                                <p style="color: #666; text-align: center;">筛选结果将在这里显示</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+                case 'progress-tracker':
+                    content.innerHTML = `
+                        <div id="progress-tracker-demo">
+                            <h3>📊 学习进度追踪演示</h3>
+                            <p>实时追踪学习进度，可视化学习成果：</p>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 20px 0;">
+                                <div style="text-align: center; padding: 15px; background: rgba(79,172,254,0.1); border-radius: 10px;">
+                                    <div style="font-size: 1.5em; font-weight: bold; color: #4facfe;" id="demoTotalProgress">75%</div>
+                                    <div style="font-size: 0.9em; color: #666;">总体进度</div>
+                                </div>
+                                <div style="text-align: center; padding: 15px; background: rgba(76,175,80,0.1); border-radius: 10px;">
+                                    <div style="font-size: 1.5em; font-weight: bold; color: #4CAF50;" id="demoCorrectRate">85%</div>
+                                    <div style="font-size: 0.9em; color: #666;">正确率</div>
+                                </div>
+                                <div style="text-align: center; padding: 15px; background: rgba(255,152,0,0.1); border-radius: 10px;">
+                                    <div style="font-size: 1.5em; font-weight: bold; color: #FF9800;" id="demoStudyTime">12h</div>
+                                    <div style="font-size: 0.9em; color: #666;">学习时长</div>
+                                </div>
+                                <div style="text-align: center; padding: 15px; background: rgba(156,39,176,0.1); border-radius: 10px;">
+                                    <div style="font-size: 1.5em; font-weight: bold; color: #9C27B0;" id="demoStreakDays">15天</div>
+                                    <div style="font-size: 0.9em; color: #666;">连续学习</div>
+                                </div>
+                            </div>
+                            <div style="background: #e0e0e0; border-radius: 10px; height: 20px; margin: 15px 0; overflow: hidden;">
+                                <div style="height: 100%; background: linear-gradient(90deg, #4facfe, #00f2fe); width: 75%; border-radius: 10px; transition: width 0.5s ease;"></div>
+                            </div>
+                            <button onclick="demoUpdateProgress()" style="padding: 10px 20px; background: #4facfe; color: white; border: none; border-radius: 8px; cursor: pointer;">更新进度</button>
+                        </div>
+                    `;
+                    break;
+                case 'quick-actions':
+                    content.innerHTML = `
+                        <div id="quick-actions-demo">
+                            <h3>⚡ 快捷操作演示</h3>
+                            <p>一键操作功能，提升学习效率：</p>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin: 20px 0;">
+                                <button onclick="demoQuickAction('start-study')" style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">开始学习</button>
+                                <button onclick="demoQuickAction('review-wrong')" style="background: linear-gradient(135deg, #ff6b6b, #ff8e8e); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">复习错题</button>
+                                <button onclick="demoQuickAction('export-data')" style="background: linear-gradient(135deg, #4CAF50, #45a049); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">导出数据</button>
+                                <button onclick="demoQuickAction('view-stats')" style="background: linear-gradient(135deg, #FF9800, #f57c00); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">学习统计</button>
+                            </div>
+                            <div id="demoQuickActionResult" style="background: #f0f0f0; padding: 15px; border-radius: 8px; margin-top: 15px; min-height: 100px;">
+                                <p style="color: #666; text-align: center;">操作结果将在这里显示</p>
+                            </div>
+                        </div>
+                    `;
+                    break;
+            }
+        }
+
+        // 演示搜索功能
+        function demoSearch() {
+            const query = document.getElementById('demoSearchInput').value.trim();
+            if (!query) {
+                showDemoNotification('请输入搜索关键词', 'warning');
+                return;
+            }
+
+            const results = demoData.questionBanks.filter(bank => 
+                bank.name.toLowerCase().includes(query.toLowerCase()) ||
+                bank.tags.some(tag => tag.toLowerCase().includes(query.toLowerCase()))
+            );
+
+            const resultsDiv = document.getElementById('demoSearchResults');
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<p style="color: #ff6b6b; text-align: center;">未找到相关题库</p>';
+            } else {
+                resultsDiv.innerHTML = `
+                    <h4 style="margin-bottom: 10px;">找到 ${results.length} 个相关题库：</h4>
+                    ${results.map(bank => `
+                        <div style="background: white; padding: 10px; margin: 5px 0; border-radius: 6px; border-left: 3px solid #4facfe;">
+                            <strong>${bank.name}</strong> (${bank.count}题)
+                            <br><small style="color: #666;">难度: ${bank.difficulty} | 标签: ${bank.tags.join(', ')}</small>
+                        </div>
+                    `).join('')}
+                `;
+            }
+
+            showDemoNotification(`搜索完成，找到 ${results.length} 个结果`, 'success');
+        }
+
+        // 演示筛选功能
+        function demoFilter() {
+            const difficulty = document.getElementById('demoDifficultyFilter').value;
+            const count = document.getElementById('demoCountFilter').value;
+            const tag = document.getElementById('demoTagFilter').value;
+
+            let results = demoData.questionBanks;
+
+            if (difficulty) {
+                results = results.filter(bank => bank.difficulty === difficulty);
+            }
+            if (tag) {
+                results = results.filter(bank => bank.tags.includes(tag));
+            }
+            if (count) {
+                const [min, max] = count.split('-').map(Number);
+                if (max) {
+                    results = results.filter(bank => bank.count >= min && bank.count <= max);
+                } else {
+                    results = results.filter(bank => bank.count >= min);
+                }
+            }
+
+            const resultsDiv = document.getElementById('demoFilterResults');
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<p style="color: #ff6b6b; text-align: center;">未找到符合条件的题库</p>';
+            } else {
+                resultsDiv.innerHTML = `
+                    <h4 style="margin-bottom: 10px;">筛选结果 (${results.length}个)：</h4>
+                    ${results.map(bank => `
+                        <div style="background: white; padding: 10px; margin: 5px 0; border-radius: 6px; border-left: 3px solid #4facfe;">
+                            <strong>${bank.name}</strong> (${bank.count}题)
+                            <br><small style="color: #666;">难度: ${bank.difficulty} | 标签: ${bank.tags.join(', ')}</small>
+                        </div>
+                    `).join('')}
+                `;
+            }
+
+            showDemoNotification(`筛选完成，找到 ${results.length} 个结果`, 'success');
+        }
+
+        // 演示进度更新
+        function demoUpdateProgress() {
+            const progress = Math.floor(Math.random() * 20) + 70; // 70-90%
+            const correctRate = Math.floor(Math.random() * 15) + 80; // 80-95%
+            const studyTime = Math.floor(Math.random() * 5) + 10; // 10-15h
+            const streakDays = Math.floor(Math.random() * 10) + 10; // 10-20天
+
+            document.getElementById('demoTotalProgress').textContent = `${progress}%`;
+            document.getElementById('demoCorrectRate').textContent = `${correctRate}%`;
+            document.getElementById('demoStudyTime').textContent = `${studyTime}h`;
+            document.getElementById('demoStreakDays').textContent = `${streakDays}天`;
+
+            // 更新进度条
+            const progressBar = document.querySelector('#progress-tracker-demo .progress-bar div');
+            if (progressBar) {
+                progressBar.style.width = `${progress}%`;
+            }
+
+            showDemoNotification('学习进度已更新', 'success');
+        }
+
+        // 演示快捷操作
+        function demoQuickAction(action) {
+            const resultDiv = document.getElementById('demoQuickActionResult');
+            switch(action) {
+                case 'start-study':
+                    resultDiv.innerHTML = `
+                        <h4 style="color: #4facfe;">🎯 开始学习</h4>
+                        <p>正在为您推荐最适合的题库...</p>
+                        <div style="background: white; padding: 10px; margin: 10px 0; border-radius: 6px;">
+                            <strong>推荐题库:</strong> 流体力学基础<br>
+                            <small style="color: #666;">150题 | 中等难度 | 适合当前水平</small>
+                        </div>
+                    `;
+                    break;
+                case 'review-wrong':
+                    resultDiv.innerHTML = `
+                        <h4 style="color: #ff6b6b;">❌ 复习错题</h4>
+                        <p>找到 12 道需要复习的错题</p>
+                        <div style="background: white; padding: 10px; margin: 10px 0; border-radius: 6px;">
+                            <strong>错题分布:</strong><br>
+                            • 流体力学基础: 5题<br>
+                            • 海洋工程应用: 4题<br>
+                            • 流体动力学: 3题
+                        </div>
+                    `;
+                    break;
+                case 'export-data':
+                    resultDiv.innerHTML = `
+                        <h4 style="color: #4CAF50;">📤 导出数据</h4>
+                        <p>正在导出学习数据...</p>
+                        <div style="background: white; padding: 10px; margin: 10px 0; border-radius: 6px;">
+                            <strong>导出内容:</strong><br>
+                            • 学习进度: 75%<br>
+                            • 正确率: 85%<br>
+                            • 学习时长: 12小时<br>
+                            • 连续学习: 15天
+                        </div>
+                    `;
+                    break;
+                case 'view-stats':
+                    resultDiv.innerHTML = `
+                        <h4 style="color: #FF9800;">📊 学习统计</h4>
+                        <p>您的学习统计概览</p>
+                        <div style="background: white; padding: 10px; margin: 10px 0; border-radius: 6px;">
+                            <strong>统计详情:</strong><br>
+                            • 总题数: 600题<br>
+                            • 已完成: 450题<br>
+                            • 正确率: 85%<br>
+                            • 学习时长: 12小时<br>
+                            • 连续学习: 15天
+                        </div>
+                    `;
+                    break;
+            }
+
+            showDemoNotification('快捷操作执行完成', 'success');
+        }
+
+        // 实时演示功能
+        function demoAction(action) {
+            const display = document.getElementById('demoDisplay');
+            demoData.demoState[action] = true;
+
+            switch(action) {
+                case 'load-data':
+                    display.innerHTML = `
+                        <div style="text-align: center;">
+                            <div style="display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(79,172,254,0.3); border-radius: 50%; border-top-color: #4facfe; animation: spin 1s ease-in-out infinite;"></div>
+                            <p style="margin-top: 10px;">正在加载题库数据...</p>
+                        </div>
+                    `;
+                    setTimeout(() => {
+                        display.innerHTML = `
+                            <h4 style="color: #4CAF50;">✅ 数据加载成功</h4>
+                            <p>成功加载 5 个题库，总计 740 道题目</p>
+                            <div style="background: white; padding: 10px; margin: 10px 0; border-radius: 6px;">
+                                <strong>题库列表:</strong><br>
+                                • 流体力学基础 (150题)<br>
+                                • 海洋工程应用 (200题)<br>
+                                • 流体动力学 (180题)<br>
+                                • 波浪理论 (120题)<br>
+                                • 湍流模型 (90题)
+                            </div>
+                        `;
+                        demoData.demoState.loaded = true;
+                    }, 2000);
+                    break;
+                case 'search':
+                    if (!demoData.demoState.loaded) {
+                        display.innerHTML = '<p style="color: #ff6b6b;">请先加载数据</p>';
+                        return;
+                    }
+                    display.innerHTML = `
+                        <h4 style="color: #4facfe;">🔍 搜索功能演示</h4>
+                        <p>搜索关键词: "流体"</p>
+                        <div style="background: white; padding: 10px; margin: 10px 0; border-radius: 6px;">
+                            <strong>搜索结果:</strong><br>
+                            • 流体力学基础 (150题)<br>
+                            • 流体动力学 (180题)<br>
+                            <small style="color: #666;">找到 2 个相关题库</small>
+                        </div>
+                    `;
+                    break;
+                case 'filter':
+                    if (!demoData.demoState.loaded) {
+                        display.innerHTML = '<p style="color: #ff6b6b;">请先加载数据</p>';
+                        return;
+                    }
+                    display.innerHTML = `
+                        <h4 style="color: #4facfe;">⚙️ 筛选功能演示</h4>
+                        <p>筛选条件: 中等难度</p>
+                        <div style="background: white; padding: 10px; margin: 10px 0; border-radius: 6px;">
+                            <strong>筛选结果:</strong><br>
+                            • 流体力学基础 (150题)<br>
+                            • 流体动力学 (180题)<br>
+                            <small style="color: #666;">找到 2 个符合条件的题库</small>
+                        </div>
+                    `;
+                    break;
+                case 'favorite':
+                    if (!demoData.demoState.loaded) {
+                        display.innerHTML = '<p style="color: #ff6b6b;">请先加载数据</p>';
+                        return;
+                    }
+                    display.innerHTML = `
+                        <h4 style="color: #ffd700;">⭐ 收藏功能演示</h4>
+                        <p>已收藏 "流体力学基础" 题库</p>
+                        <div style="background: white; padding: 10px; margin: 10px 0; border-radius: 6px;">
+                            <strong>收藏列表:</strong><br>
+                            • 流体力学基础 (150题)<br>
+                            • 波浪理论 (120题)<br>
+                            <small style="color: #666;">共收藏 2 个题库</small>
+                        </div>
+                    `;
+                    break;
+                case 'export':
+                    display.innerHTML = `
+                        <h4 style="color: #4CAF50;">📤 导出功能演示</h4>
+                        <p>正在导出学习数据...</p>
+                        <div style="background: white; padding: 10px; margin: 10px 0; border-radius: 6px;">
+                            <strong>导出内容:</strong><br>
+                            • 题库数据: 5个题库<br>
+                            • 学习进度: 75%<br>
+                            • 收藏列表: 2个题库<br>
+                            • 导出时间: ${new Date().toLocaleString()}
+                        </div>
+                    `;
+                    break;
+                case 'reset':
+                    display.innerHTML = '<p>演示已重置，点击上方按钮开始新的演示</p>';
+                    Object.keys(demoData.demoState).forEach(key => {
+                        demoData.demoState[key] = false;
+                    });
+                    break;
+            }
+        }
+
+        // 通知系统
+        function showDemoNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container') || createDemoNotificationContainer();
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    container.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        function createDemoNotificationContainer() {
+            const container = document.createElement('div');
+            container.id = 'notification-container';
+            container.className = 'notification-container';
+            document.body.appendChild(container);
+            return container;
+        }
+
         // 添加一些动画效果
         document.addEventListener('DOMContentLoaded', function() {
             const cards = document.querySelectorAll('.demo-card');
@@ -497,6 +1073,35 @@
                     item.style.transform = 'translateY(0)';
                 }, 2000 + index * 100);
             });
+
+            // 交互式演示动画
+            const interactiveDemo = document.querySelector('.interactive-demo');
+            if (interactiveDemo) {
+                interactiveDemo.style.opacity = '0';
+                interactiveDemo.style.transform = 'translateY(30px)';
+                setTimeout(() => {
+                    interactiveDemo.style.transition = 'all 0.6s ease';
+                    interactiveDemo.style.opacity = '1';
+                    interactiveDemo.style.transform = 'translateY(0)';
+                }, 2500);
+            }
+
+            // 实时演示动画
+            const liveDemo = document.querySelector('.live-demo');
+            if (liveDemo) {
+                liveDemo.style.opacity = '0';
+                liveDemo.style.transform = 'translateY(30px)';
+                setTimeout(() => {
+                    liveDemo.style.transition = 'all 0.6s ease';
+                    liveDemo.style.opacity = '1';
+                    liveDemo.style.transform = 'translateY(0)';
+                }, 2800);
+            }
+
+            // 显示欢迎通知
+            setTimeout(() => {
+                showDemoNotification('欢迎体验题库分组修复项目演示！', 'success');
+            }, 1000);
         });
     </script>
 </body>

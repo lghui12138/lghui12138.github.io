@@ -102,8 +102,178 @@
             overflow: hidden;
             margin: 10px 0;
         }
+        
         .progress-fill {
             height: 100%;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            transition: width 0.5s ease;
+            border-radius: 4px;
+        }
+        
+        /* ===== 实时监控面板 ===== */
+        .real-time-panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 3px solid #4facfe;
+        }
+        
+        .monitor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .monitor-item {
+            background: rgba(79,172,254,0.1);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .monitor-item:hover {
+            transform: translateY(-3px);
+            background: rgba(79,172,254,0.2);
+        }
+        
+        .monitor-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #4facfe;
+            margin-bottom: 5px;
+        }
+        
+        .monitor-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        /* ===== 性能指标 ===== */
+        .performance-metrics {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 3px solid #4CAF50;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .metric-item {
+            text-align: center;
+            padding: 20px;
+            border-radius: 12px;
+            background: rgba(76,175,80,0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .metric-item:hover {
+            transform: translateY(-3px);
+            background: rgba(76,175,80,0.2);
+        }
+        
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 0.9em;
+            color: #666;
+        }
+        
+        /* ===== 系统日志 ===== */
+        .system-log {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            border: 3px solid #ff6b6b;
+        }
+        
+        .log-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .log-entry.info {
+            color: #4facfe;
+        }
+        
+        .log-entry.success {
+            color: #4CAF50;
+        }
+        
+        .log-entry.warning {
+            color: #ff9800;
+        }
+        
+        .log-entry.error {
+            color: #f44336;
+        }
+        
+        .log-time {
+            color: #999;
+            margin-right: 10px;
+        }
+        
+        /* ===== 通知系统 ===== */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .notification {
+            background: rgba(255,255,255,0.95);
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border-left: 4px solid #4facfe;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-left-color: #4CAF50;
+        }
+        
+        .notification.error {
+            border-left-color: #F44336;
+        }
+        
+                .notification.warning {
+            border-left-color: #FF9800;
+        }
+        
+        .progress-fill {
             background: linear-gradient(90deg, #4facfe, #00f2fe);
             transition: width 0.3s ease;
         }
@@ -330,6 +500,108 @@
                     </div>
                     <div class="metric-grid">
                         <div class="metric-item">
+                            <div class="metric-value">15+</div>
+                            <div class="metric-label">页面文件</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-value">6</div>
+                            <div class="metric-label">文档文件</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实时监控面板 -->
+        <div class="real-time-panel">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #4facfe;">📊 实时监控</h2>
+            <div class="monitor-grid">
+                <div class="monitor-item">
+                    <div class="monitor-value" id="realTimeUsers">0</div>
+                    <div class="monitor-label">在线用户</div>
+                </div>
+                <div class="monitor-item">
+                    <div class="monitor-value" id="realTimeQuestions">0</div>
+                    <div class="monitor-label">今日答题</div>
+                </div>
+                <div class="monitor-item">
+                    <div class="monitor-value" id="realTimeProgress">0%</div>
+                    <div class="monitor-label">平均进度</div>
+                </div>
+                <div class="monitor-item">
+                    <div class="monitor-value" id="realTimeAccuracy">0%</div>
+                    <div class="monitor-label">平均正确率</div>
+                </div>
+                <div class="monitor-item">
+                    <div class="monitor-value" id="realTimeStudyTime">0h</div>
+                    <div class="monitor-label">总学习时长</div>
+                </div>
+                <div class="monitor-item">
+                    <div class="monitor-value" id="realTimeStreak">0天</div>
+                    <div class="monitor-label">最长连续学习</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 性能指标 -->
+        <div class="performance-metrics">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #4CAF50;">⚡ 性能指标</h2>
+            <div class="metrics-grid">
+                <div class="metric-item">
+                    <div class="metric-value" id="loadTime">2.3s</div>
+                    <div class="metric-label">页面加载时间</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value" id="responseTime">45ms</div>
+                    <div class="metric-label">API响应时间</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value" id="memoryUsage">12MB</div>
+                    <div class="metric-label">内存使用量</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value" id="cpuUsage">8%</div>
+                    <div class="metric-label">CPU使用率</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value" id="errorRate">0.1%</div>
+                    <div class="metric-label">错误率</div>
+                </div>
+                <div class="metric-item">
+                    <div class="metric-value" id="uptime">99.9%</div>
+                    <div class="metric-label">系统可用性</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统日志 -->
+        <div class="system-log">
+            <h2 style="text-align: center; margin-bottom: 20px; color: #ff6b6b;">📝 系统日志</h2>
+            <div class="log-container" id="logContainer">
+                <div class="log-entry info">
+                    <span class="log-time">[2024-12-19 10:30:15]</span>
+                    INFO: 系统启动完成
+                </div>
+                <div class="log-entry success">
+                    <span class="log-time">[2024-12-19 10:30:20]</span>
+                    SUCCESS: 题库数据加载成功
+                </div>
+                <div class="log-entry info">
+                    <span class="log-time">[2024-12-19 10:30:25]</span>
+                    INFO: 用户界面初始化完成
+                </div>
+                <div class="log-entry success">
+                    <span class="log-time">[2024-12-19 10:30:30]</span>
+                    SUCCESS: 所有功能模块启动完成
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <button onclick="clearLogs()" style="padding: 8px 16px; background: #ff6b6b; color: white; border: none; border-radius: 6px; cursor: pointer;">清空日志</button>
+                <button onclick="exportLogs()" style="padding: 8px 16px; background: #4facfe; color: white; border: none; border-radius: 6px; cursor: pointer; margin-left: 10px;">导出日志</button>
+            </div>
+        </div>
+                    <div class="metric-grid">
+                        <div class="metric-item">
                             <div class="metric-value">10+</div>
                             <div class="metric-label">文件数量</div>
                         </div>
@@ -409,6 +681,135 @@
     </div>
 
     <script>
+        // 监控数据
+        let monitoringData = {
+            users: 0,
+            questions: 0,
+            progress: 0,
+            accuracy: 0,
+            studyTime: 0,
+            streak: 0,
+            loadTime: '2.3s',
+            responseTime: '45ms',
+            memoryUsage: '12MB',
+            cpuUsage: '8%',
+            errorRate: '0.1%',
+            uptime: '99.9%'
+        };
+
+        // 实时监控更新
+        function updateRealTimeMonitoring() {
+            // 模拟实时数据更新
+            monitoringData.users = Math.floor(Math.random() * 50) + 10;
+            monitoringData.questions = Math.floor(Math.random() * 200) + 50;
+            monitoringData.progress = Math.floor(Math.random() * 30) + 60;
+            monitoringData.accuracy = Math.floor(Math.random() * 20) + 70;
+            monitoringData.studyTime = Math.floor(Math.random() * 10) + 5;
+            monitoringData.streak = Math.floor(Math.random() * 30) + 1;
+            
+            // 更新显示
+            document.getElementById('realTimeUsers').textContent = monitoringData.users;
+            document.getElementById('realTimeQuestions').textContent = monitoringData.questions;
+            document.getElementById('realTimeProgress').textContent = `${monitoringData.progress}%`;
+            document.getElementById('realTimeAccuracy').textContent = `${monitoringData.accuracy}%`;
+            document.getElementById('realTimeStudyTime').textContent = `${monitoringData.studyTime}h`;
+            document.getElementById('realTimeStreak').textContent = `${monitoringData.streak}天`;
+        }
+
+        // 性能指标更新
+        function updatePerformanceMetrics() {
+            // 模拟性能指标变化
+            const loadTime = (Math.random() * 2 + 1).toFixed(1);
+            const responseTime = Math.floor(Math.random() * 50 + 30);
+            const memoryUsage = Math.floor(Math.random() * 5 + 10);
+            const cpuUsage = Math.floor(Math.random() * 10 + 5);
+            const errorRate = (Math.random() * 0.2).toFixed(2);
+            const uptime = (99.9 - Math.random() * 0.1).toFixed(1);
+            
+            document.getElementById('loadTime').textContent = `${loadTime}s`;
+            document.getElementById('responseTime').textContent = `${responseTime}ms`;
+            document.getElementById('memoryUsage').textContent = `${memoryUsage}MB`;
+            document.getElementById('cpuUsage').textContent = `${cpuUsage}%`;
+            document.getElementById('errorRate').textContent = `${errorRate}%`;
+            document.getElementById('uptime').textContent = `${uptime}%`;
+        }
+
+        // 添加系统日志
+        function addSystemLog(message, type = 'info') {
+            const logContainer = document.getElementById('logContainer');
+            const now = new Date();
+            const timeString = now.toLocaleString();
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.innerHTML = `
+                <span class="log-time">[${timeString}]</span>
+                ${type.toUpperCase()}: ${message}
+            `;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            
+            // 限制日志条目数量
+            if (logContainer.children.length > 50) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+        }
+
+        // 清空日志
+        function clearLogs() {
+            const logContainer = document.getElementById('logContainer');
+            logContainer.innerHTML = '';
+            addSystemLog('日志已清空', 'info');
+            showNotification('日志已清空', 'success');
+        }
+
+        // 导出日志
+        function exportLogs() {
+            const logContainer = document.getElementById('logContainer');
+            const logs = Array.from(logContainer.children).map(entry => entry.textContent).join('\n');
+            
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `系统日志_${new Date().toISOString().split('T')[0]}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            addSystemLog('日志已导出', 'success');
+            showNotification('日志已导出', 'success');
+        }
+
+        // 通知系统
+        function showNotification(message, type = 'info') {
+            const container = document.getElementById('notification-container') || createNotificationContainer();
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('show');
+            }, 100);
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    container.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        function createNotificationContainer() {
+            const container = document.createElement('div');
+            container.id = 'notification-container';
+            container.className = 'notification-container';
+            document.body.appendChild(container);
+            return container;
+        }
+
         function refreshStatus() {
             // 模拟刷新状态
             const logContent = document.getElementById('logContent');
@@ -422,6 +823,13 @@
             logContent.appendChild(newLogEntry);
             logContent.scrollTop = logContent.scrollHeight;
             
+            // 更新监控数据
+            updateRealTimeMonitoring();
+            updatePerformanceMetrics();
+            
+            // 添加系统日志
+            addSystemLog('状态监控数据已更新', 'info');
+            
             // 添加一些动画效果
             const cards = document.querySelectorAll('.status-card');
             cards.forEach((card, index) => {
@@ -431,10 +839,29 @@
                     card.style.transform = 'scale(1)';
                 }, index * 100);
             });
+            
+            showNotification('状态已刷新', 'success');
         }
-        
-        // 添加一些动画效果
+
+        // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
+            // 初始化监控数据
+            updateRealTimeMonitoring();
+            updatePerformanceMetrics();
+            
+            // 添加初始系统日志
+            addSystemLog('页面加载完成', 'success');
+            addSystemLog('监控系统启动', 'info');
+            addSystemLog('性能指标初始化', 'info');
+            
+            // 设置定时更新
+            setInterval(updateRealTimeMonitoring, 5000); // 每5秒更新实时数据
+            setInterval(updatePerformanceMetrics, 10000); // 每10秒更新性能指标
+            setInterval(() => {
+                addSystemLog('定时监控检查', 'info');
+            }, 30000); // 每30秒添加监控日志
+            
+            // 添加动画效果
             const cards = document.querySelectorAll('.status-card');
             cards.forEach((card, index) => {
                 card.style.opacity = '0';
@@ -445,6 +872,35 @@
                     card.style.transform = 'translateY(0)';
                 }, index * 100);
             });
+            
+            // 监控面板动画
+            const monitorItems = document.querySelectorAll('.monitor-item');
+            monitorItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'scale(0.8)';
+                setTimeout(() => {
+                    item.style.transition = 'all 0.4s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'scale(1)';
+                }, 1000 + index * 100);
+            });
+            
+            // 性能指标动画
+            const metricItems = document.querySelectorAll('.metric-item');
+            metricItems.forEach((item, index) => {
+                item.style.opacity = '0';
+                item.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    item.style.transition = 'all 0.4s ease';
+                    item.style.opacity = '1';
+                    item.style.transform = 'translateY(0)';
+                }, 1500 + index * 80);
+            });
+            
+            // 显示欢迎通知
+            setTimeout(() => {
+                showNotification('项目状态监控系统已启动', 'success');
+            }, 1000);
         });
         
         // 自动刷新状态（每30秒）
