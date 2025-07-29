@@ -2032,6 +2032,8 @@
         
         // 导航功能
         function showSection(sectionName) {
+            console.log('showSection 被调用:', sectionName);
+            
             // 隐藏所有section
             document.querySelectorAll('.content-section').forEach(section => {
                 section.style.display = 'none';
@@ -2041,6 +2043,9 @@
             const targetSection = document.getElementById(sectionName + 'Section');
             if (targetSection) {
                 targetSection.style.display = 'block';
+                console.log('显示section:', sectionName + 'Section');
+            } else {
+                console.error('未找到section:', sectionName + 'Section');
             }
             
             // 更新导航链接状态
@@ -2052,6 +2057,14 @@
             const activeLink = document.querySelector(`[onclick="showSection('${sectionName}')"]`);
             if (activeLink) {
                 activeLink.classList.add('active');
+            }
+            
+            // 如果显示功能模块页面，重新设置用户模块
+            if (sectionName === 'modules') {
+                console.log('显示功能模块页面，重新设置用户模块');
+                setTimeout(() => {
+                    setupUserModules();
+                }, 100);
             }
             
             // 如果显示分数分析页面，重新初始化图表
@@ -2105,8 +2118,14 @@
         
         // 根据用户角色设置功能模块显示
         function setupUserModules() {
+            console.log('setupUserModules 被调用');
+            console.log('currentUser:', currentUser);
+            
             const teacherModules = document.getElementById('teacherModules');
             const studentModules = document.getElementById('studentModules');
+            
+            console.log('teacherModules:', teacherModules);
+            console.log('studentModules:', studentModules);
             
             if (currentUser && currentUser.role === 'teacher') {
                 if (teacherModules) {
@@ -2128,6 +2147,7 @@
                 // 默认隐藏所有模块
                 if (teacherModules) teacherModules.style.display = 'none';
                 if (studentModules) studentModules.style.display = 'none';
+                console.log('未找到用户信息，隐藏所有模块');
             }
         }
         
@@ -2969,24 +2989,45 @@
         
         // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面初始化开始');
+            
             // 检查是否已登录
             const savedUser = localStorage.getItem('currentUser');
             if (savedUser) {
                 try {
                     currentUser = JSON.parse(savedUser);
+                    console.log('找到已登录用户:', currentUser);
+                    
                     document.getElementById('loginContainer').style.display = 'none';
                     document.getElementById('loggedInContent').classList.add('show');
                     
                     document.getElementById('userName').textContent = currentUser.name;
                     document.getElementById('userAvatar').textContent = currentUser.avatar;
                     
+                    // 设置功能模块显示
+                    setupUserModules();
+                    
+                    // 初始化用户学习数据
+                    initUserLearningData();
+                    
+                    // 更新用户资料显示
+                    updateProfileDisplay();
+                    
+                    // 初始化主页
+                    initHomePage();
+                    
                     // 初始化分数图表
                     setTimeout(() => {
                         initScoreChart();
                     }, 100);
+                    
+                    console.log('用户登录状态恢复完成');
                 } catch (error) {
+                    console.error('恢复用户登录状态失败:', error);
                     localStorage.removeItem('currentUser');
                 }
+            } else {
+                console.log('未找到已登录用户');
             }
         });
     </script>
