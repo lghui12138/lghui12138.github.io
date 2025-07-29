@@ -821,8 +821,133 @@
                 case 'pending': return '待批改';
                 case 'reviewed': return '已批改';
                 case 'late': return '逾期';
+                case 'approved': return '已通过';
+                case 'rejected': return '需修改';
                 default: return '未知';
             }
+        }
+        
+        // 作业模板功能
+        function loadHomeworkTemplates() {
+            const templates = [
+                {
+                    id: 'template1',
+                    title: '流体力学基础作业',
+                    type: '理论作业',
+                    chapter: '第一章 流体力学基础',
+                    description: '完成教材P15-P20的习题1-5，要求手写，拍照上传',
+                    deadline: '2024-12-20',
+                    points: 20
+                },
+                {
+                    id: 'template2',
+                    title: '伯努利方程应用',
+                    type: '计算作业',
+                    chapter: '第三章 伯努利方程',
+                    description: '完成教材P45-P50的习题1-3，要求详细计算过程',
+                    deadline: '2024-12-25',
+                    points: 30
+                },
+                {
+                    id: 'template3',
+                    title: '实验报告',
+                    type: '实验作业',
+                    chapter: '实验一 流体静力学',
+                    description: '完成实验报告，包括实验目的、原理、步骤、结果分析',
+                    deadline: '2024-12-30',
+                    points: 40
+                }
+            ];
+            
+            const templateContainer = document.getElementById('homeworkTemplates');
+            if (templateContainer) {
+                templateContainer.innerHTML = templates.map(template => `
+                    <div class="template-card" onclick="useTemplate('${template.id}')">
+                        <div class="template-header">
+                            <h3>${template.title}</h3>
+                            <span class="template-points">${template.points}分</span>
+                        </div>
+                        <div class="template-info">
+                            <p><strong>类型：</strong>${template.type}</p>
+                            <p><strong>章节：</strong>${template.chapter}</p>
+                            <p><strong>截止日期：</strong>${template.deadline}</p>
+                            <p><strong>要求：</strong>${template.description}</p>
+                        </div>
+                        <button class="use-template-btn">使用模板</button>
+                    </div>
+                `).join('');
+            }
+        }
+        
+        // 使用作业模板
+        function useTemplate(templateId) {
+            const templates = {
+                'template1': {
+                    title: '流体力学基础作业',
+                    type: '理论作业',
+                    chapter: '第一章 流体力学基础',
+                    description: '完成教材P15-P20的习题1-5，要求手写，拍照上传'
+                },
+                'template2': {
+                    title: '伯努利方程应用',
+                    type: '计算作业',
+                    chapter: '第三章 伯努利方程',
+                    description: '完成教材P45-P50的习题1-3，要求详细计算过程'
+                },
+                'template3': {
+                    title: '实验报告',
+                    type: '实验作业',
+                    chapter: '实验一 流体静力学',
+                    description: '完成实验报告，包括实验目的、原理、步骤、结果分析'
+                }
+            };
+            
+            const template = templates[templateId];
+            if (template) {
+                document.getElementById('homeworkTitle').value = template.title;
+                document.getElementById('homeworkType').value = template.type;
+                document.getElementById('homeworkChapter').value = template.chapter;
+                document.getElementById('homeworkDescription').value = template.description;
+                
+                showNotification('已加载作业模板', 'success');
+            }
+        }
+        
+        // 批量文件上传
+        function handleBatchUpload(event) {
+            const files = Array.from(event.target.files);
+            files.forEach(file => {
+                if (!selectedFiles.find(f => f.name === file.name)) {
+                    selectedFiles.push(file);
+                }
+            });
+            renderFileList();
+            showNotification(`已添加 ${files.length} 个文件`, 'success');
+        }
+        
+        // 文件预览功能
+        function previewFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const modal = document.createElement('div');
+                modal.className = 'preview-modal';
+                modal.innerHTML = `
+                    <div class="preview-content">
+                        <div class="preview-header">
+                            <h3>文件预览: ${file.name}</h3>
+                            <button onclick="this.closest('.preview-modal').remove()" class="close-btn">&times;</button>
+                        </div>
+                        <div class="preview-body">
+                            ${file.type.startsWith('image/') ? 
+                                `<img src="${e.target.result}" style="max-width: 100%; height: auto;">` :
+                                `<iframe src="${e.target.result}" style="width: 100%; height: 400px; border: none;"></iframe>`
+                            }
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            };
+            reader.readAsDataURL(file);
         }
         
         // 显示通知
