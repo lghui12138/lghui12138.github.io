@@ -139,6 +139,43 @@
             box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
         }
         
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info {
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--ocean-blue);
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            border: 2px solid var(--ocean-light);
+        }
+        
+        .btn-logout {
+            background: var(--coral);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid var(--coral);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-logout:hover {
+            background: #e74c3c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+        
         /* ===== 主内容 ===== */
         .main-content {
             max-width: 1200px;
@@ -721,10 +758,20 @@
                 <i class="fas fa-calendar-alt"></i>
                 <span>📅 复习计划</span>
             </a>
-            <a href="../index-modular.html" class="btn-back">
-                <i class="fas fa-arrow-left"></i>
-                返回主页
-            </a>
+            <div class="nav-actions">
+                <span class="user-info" id="userInfo">
+                    <i class="fas fa-user"></i>
+                    未登录
+                </span>
+                <a href="../index-modular.html" class="btn-back">
+                    <i class="fas fa-arrow-left"></i>
+                    返回主页
+                </a>
+                <button class="btn-logout" onclick="logout()" style="display: none;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    退出
+                </button>
+            </div>
         </div>
     </nav>
     
@@ -862,6 +909,66 @@
     <div id="notification-container"></div>
     
     <script>
+        // 用户账号信息 - 从fluid_dynamic_2.html迁移
+        const accounts = {
+            'liuguanghui6330156': { 
+                name: '刘光辉', 
+                role: 'teacher', 
+                password: 'Ll700306', 
+                color: 'teacher' 
+            },
+            'student1': { 
+                name: '学生账号', 
+                role: 'student', 
+                password: '123456', 
+                color: 'student', 
+                progress: 0, 
+                grades: [], 
+                videoProgress: 0, 
+                questionProgress: 0, 
+                studyTime: 0, 
+                watchedVideos: [], 
+                completedExercises: [] 
+            },
+            'niwenxuan': { 
+                name: '倪文轩', 
+                role: 'student', 
+                password: 'niwenxuan2025', 
+                color: 'student', 
+                progress: 0, 
+                grades: [], 
+                videoProgress: 0, 
+                questionProgress: 0, 
+                studyTime: 0, 
+                watchedVideos: [], 
+                completedExercises: [] 
+            },
+            'hanwenxu': { 
+                name: '韩文旭', 
+                role: 'student', 
+                password: 'hanwenxu2025', 
+                color: 'student', 
+                progress: 0, 
+                grades: [], 
+                videoProgress: 0, 
+                questionProgress: 0, 
+                studyTime: 0, 
+                watchedVideos: [], 
+                completedExercises: [] 
+            }
+        };
+
+        // 当前用户信息
+        let currentUser = null;
+
+        // 学习进度数据
+        let learningProgress = {
+            videoProgress: 0,
+            questionProgress: 0,
+            reviewProgress: 0,
+            totalProgress: 0
+        };
+
         // 复习计划数据 - 从fluid_dynamic_2.html迁移
         const reviewPlans = [
             {
@@ -876,19 +983,25 @@
                                 label: "第1周",
                                 title: "流体的物理性质",
                                 description: "连续介质模型、牛顿流体与非牛顿流体、流体的粘滞性",
-                                completed: true
+                                completed: true,
+                                videoId: 'video_001',
+                                questionCount: 15
                             },
                             {
                                 label: "第2周",
                                 title: "本构方程和亥姆霍兹定理",
                                 description: "应力张量、本构方程、速度分解定理",
-                                completed: true
+                                completed: true,
+                                videoId: 'video_002',
+                                questionCount: 20
                             },
                             {
                                 label: "第3-4周",
                                 title: "理想流体动量方程",
                                 description: "欧拉方程、伯努利方程及应用",
-                                completed: false
+                                completed: false,
+                                videoId: 'video_003',
+                                questionCount: 25
                             }
                         ]
                     },
@@ -899,19 +1012,25 @@
                                 label: "第1周",
                                 title: "流体力学方程组",
                                 description: "连续性方程、动量方程、能量方程",
-                                completed: false
+                                completed: false,
+                                videoId: 'video_004',
+                                questionCount: 30
                             },
                             {
                                 label: "第2周",
                                 title: "涡旋运动",
                                 description: "涡量、环量、涡旋运动基本定理",
-                                completed: false
+                                completed: false,
+                                videoId: 'video_005',
+                                questionCount: 18
                             },
                             {
                                 label: "第3-4周",
                                 title: "势流理论基础",
                                 description: "速度势函数、流函数、基本势流叠加原理",
-                                completed: false
+                                completed: false,
+                                videoId: 'video_006',
+                                questionCount: 22
                             }
                         ]
                     },
@@ -922,7 +1041,9 @@
                                 label: "第1-2周",
                                 title: "势流理论深化",
                                 description: "布拉修斯定理、镜像法、机翼理论",
-                                completed: false
+                                completed: false,
+                                videoId: 'video_007',
+                                questionCount: 28
                             }
                         ]
                     },
@@ -933,13 +1054,17 @@
                                 label: "第1周",
                                 title: "相似原理与量纲分析",
                                 description: "量纲齐次性原理、π定理应用、流动相似准数",
-                                completed: false
+                                completed: false,
+                                videoId: 'video_008',
+                                questionCount: 20
                             },
                             {
                                 label: "第2-4周",
                                 title: "粘性流体理论",
                                 description: "NS方程、层流与湍流、边界层理论",
-                                completed: false
+                                completed: false,
+                                videoId: 'video_009',
+                                questionCount: 35
                             }
                         ]
                     },
@@ -950,13 +1075,17 @@
                                 label: "11月",
                                 title: "真题精讲",
                                 description: "历年真题解析与考点归纳",
-                                completed: false
+                                completed: false,
+                                videoId: 'video_010',
+                                questionCount: 50
                             },
                             {
                                 label: "12月",
                                 title: "错题串讲",
                                 description: "高频错题分析与解题技巧",
-                                completed: false
+                                completed: false,
+                                videoId: 'video_011',
+                                questionCount: 40
                             }
                         ]
                     }
@@ -999,9 +1128,244 @@
 
         // 初始化页面
         function initReviewModule() {
+            checkUserLogin();
             renderReviewPlans();
             renderLearningTips();
             updateProgress();
+            setupStudentProtection();
+        }
+
+        // 检查用户登录状态
+        function checkUserLogin() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    updateUserInterface();
+                } catch (error) {
+                    console.error('解析用户信息失败:', error);
+                    showLoginModal();
+                }
+            } else {
+                showLoginModal();
+            }
+        }
+
+        // 显示登录模态框
+        function showLoginModal() {
+            const modalHtml = `
+                <div class="login-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+                    <div class="login-content" style="background: white; border-radius: 20px; padding: 40px; max-width: 400px; width: 90%; position: relative;">
+                        <button onclick="closeLoginModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">×</button>
+                        <h2 style="color: var(--ocean-blue); margin-bottom: 30px; text-align: center;">🔐 用户登录</h2>
+                        
+                        <form id="loginForm" style="margin-bottom: 20px;">
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; color: var(--ocean-blue); font-weight: 600;">用户名</label>
+                                <input type="text" id="loginUsername" placeholder="请输入用户名" required 
+                                       style="width: 100%; padding: 12px; border: 2px solid var(--ocean-light); border-radius: 10px; font-size: 16px;">
+                            </div>
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; color: var(--ocean-blue); font-weight: 600;">密码</label>
+                                <input type="password" id="loginPassword" placeholder="请输入密码" required 
+                                       style="width: 100%; padding: 12px; border: 2px solid var(--ocean-light); border-radius: 10px; font-size: 16px;">
+                            </div>
+                            <button type="submit" style="width: 100%; background: var(--ocean-light); color: white; border: none; padding: 12px; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;">
+                                登录
+                            </button>
+                        </form>
+                        
+                        <div style="text-align: center; margin-bottom: 20px;">
+                            <a href="#" onclick="showForgotPasswordModal()" style="color: var(--ocean-blue); text-decoration: none; font-size: 14px;">
+                                <i class="fas fa-key"></i> 忘记密码？
+                            </a>
+                        </div>
+                        
+                        <div style="background: rgba(79, 172, 254, 0.1); padding: 15px; border-radius: 10px; font-size: 14px; color: var(--ocean-blue);">
+                            <strong>测试账号：</strong><br>
+                            教师：liuguanghui6330156 / Ll700306<br>
+                            学生：student1 / 123456<br>
+                            学生：niwenxuan / niwenxuan2025<br>
+                            学生：hanwenxu / hanwenxu2025
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 绑定登录表单事件
+            document.getElementById('loginForm').addEventListener('submit', handleLogin);
+        }
+
+        // 关闭登录模态框
+        function closeLoginModal() {
+            const modal = document.querySelector('.login-modal');
+            if (modal) modal.remove();
+        }
+
+        // 处理登录
+        function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            if (accounts[username] && accounts[username].password === password) {
+                currentUser = accounts[username];
+                currentUser.username = username;
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                closeLoginModal();
+                updateUserInterface();
+                showNotification(`欢迎回来，${currentUser.name}！`, 'success');
+            } else {
+                showNotification('用户名或密码错误', 'error');
+            }
+        }
+
+        // 显示忘记密码模态框
+        function showForgotPasswordModal() {
+            const modalHtml = `
+                <div class="forgot-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10001; display: flex; align-items: center; justify-content: center;">
+                    <div class="forgot-content" style="background: white; border-radius: 20px; padding: 40px; max-width: 400px; width: 90%; position: relative;">
+                        <button onclick="closeForgotPasswordModal()" style="position: absolute; top: 15px; right: 20px; background: none; border: none; font-size: 24px; cursor: pointer; color: #666;">×</button>
+                        <h2 style="color: var(--ocean-blue); margin-bottom: 30px; text-align: center;">🔑 忘记密码</h2>
+                        
+                        <div style="background: rgba(255, 193, 7, 0.1); padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                            <h4 style="color: #856404; margin-bottom: 15px;">📧 联系管理员</h4>
+                            <p style="color: #856404; margin-bottom: 10px;">请通过以下方式联系管理员重置密码：</p>
+                            <ul style="color: #856404; margin-left: 20px;">
+                                <li>邮箱：liuguanghui6330156@163.com</li>
+                                <li>微信：liuguanghui6330156</li>
+                                <li>QQ：6330156</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="text-align: center;">
+                            <button onclick="closeForgotPasswordModal()" style="background: var(--ocean-light); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-size: 16px; cursor: pointer;">
+                                返回登录
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+        }
+
+        // 关闭忘记密码模态框
+        function closeForgotPasswordModal() {
+            const modal = document.querySelector('.forgot-modal');
+            if (modal) modal.remove();
+        }
+
+        // 更新用户界面
+        function updateUserInterface() {
+            if (!currentUser) return;
+            
+            // 更新用户信息显示
+            const userInfo = document.getElementById('userInfo');
+            const logoutBtn = document.querySelector('.btn-logout');
+            
+            if (userInfo) {
+                userInfo.innerHTML = `${currentUser.role === 'teacher' ? '👨‍🏫' : '👨‍🎓'} ${currentUser.name}`;
+            }
+            
+            if (logoutBtn) {
+                logoutBtn.style.display = 'inline-flex';
+            }
+            
+            // 根据用户角色显示/隐藏功能
+            if (currentUser.role === 'student') {
+                // 学生端隐藏上传功能
+                const uploadSection = document.querySelector('.plan-creation');
+                if (uploadSection) {
+                    uploadSection.style.display = 'none';
+                }
+            }
+        }
+
+        // 设置学生端保护
+        function setupStudentProtection() {
+            if (currentUser && currentUser.role === 'student') {
+                // 禁用右键菜单
+                document.addEventListener('contextmenu', e => e.preventDefault());
+                
+                // 禁用F12、Ctrl+Shift+I、Ctrl+U
+                document.addEventListener('keydown', e => {
+                    if (e.key === 'F12' || 
+                        (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+                        (e.ctrlKey && e.key === 'u')) {
+                        e.preventDefault();
+                        showNotification('此功能已被禁用', 'warning');
+                    }
+                });
+                
+                // 禁用选择文本
+                document.addEventListener('selectstart', e => e.preventDefault());
+                
+                // 添加水印
+                addWatermark();
+            }
+        }
+
+        // 添加水印
+        function addWatermark() {
+            const watermark = document.createElement('div');
+            watermark.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%) rotate(-45deg);
+                font-size: 24px;
+                color: rgba(0, 0, 0, 0.1);
+                pointer-events: none;
+                z-index: 9999;
+                user-select: none;
+                white-space: nowrap;
+            `;
+            watermark.textContent = `${currentUser.name} - 流体力学学习平台`;
+            document.body.appendChild(watermark);
+        }
+
+        // 计算真实进度
+        function calculateRealProgress() {
+            if (!currentUser) return 0;
+            
+            let totalWeeks = 0;
+            let completedWeeks = 0;
+            let videoProgress = 0;
+            let questionProgress = 0;
+            
+            // 计算复习计划进度
+            reviewPlans[0].months.forEach(month => {
+                month.weeks.forEach(week => {
+                    totalWeeks++;
+                    if (week.completed) completedWeeks++;
+                    
+                    // 计算视频进度
+                    if (week.videoId && currentUser.watchedVideos && currentUser.watchedVideos.includes(week.videoId)) {
+                        videoProgress += 1;
+                    }
+                    
+                    // 计算题目进度
+                    if (week.questionCount && currentUser.completedExercises) {
+                        const weekQuestions = currentUser.completedExercises.filter(q => q.weekId === week.label).length;
+                        questionProgress += weekQuestions / week.questionCount;
+                    }
+                });
+            });
+            
+            const reviewProgress = totalWeeks > 0 ? (completedWeeks / totalWeeks) * 100 : 0;
+            const avgVideoProgress = totalWeeks > 0 ? (videoProgress / totalWeeks) * 100 : 0;
+            const avgQuestionProgress = totalWeeks > 0 ? (questionProgress / totalWeeks) * 100 : 0;
+            
+            // 综合进度计算
+            const totalProgress = Math.round((reviewProgress * 0.4 + avgVideoProgress * 0.3 + avgQuestionProgress * 0.3));
+            
+            return {
+                reviewProgress: Math.round(reviewProgress),
+                videoProgress: Math.round(avgVideoProgress),
+                questionProgress: Math.round(avgQuestionProgress),
+                totalProgress: totalProgress
+            };
         }
 
         // 渲染复习计划
@@ -1015,13 +1379,17 @@
                         <div class="empty-icon">📅</div>
                         <h3>暂无复习计划</h3>
                         <p>请先创建一个复习计划</p>
-                        <button class="btn-primary" onclick="createNewPlan()">
-                            <i class="fas fa-plus"></i> 创建计划
-                        </button>
+                        ${currentUser && currentUser.role === 'teacher' ? 
+                            '<button class="btn-primary" onclick="createNewPlan()"><i class="fas fa-plus"></i> 创建计划</button>' : 
+                            '<p style="color: #666;">请联系教师创建复习计划</p>'
+                        }
                     </div>
                 `;
                 return;
             }
+
+            const progress = calculateRealProgress();
+            reviewPlans[0].progress = progress.totalProgress;
 
             plansContainer.innerHTML = reviewPlans.map(plan => `
                 <div class="review-plan-card">
@@ -1031,6 +1399,9 @@
                             <span>完成进度：${plan.progress}%</span>
                             <div class="progress-bar">
                                 <div class="progress-fill" style="width: ${plan.progress}%"></div>
+                            </div>
+                            <div class="progress-details" style="font-size: 0.9rem; margin-top: 5px; color: #666;">
+                                复习: ${progress.reviewProgress}% | 视频: ${progress.videoProgress}% | 题目: ${progress.questionProgress}%
                             </div>
                         </div>
                     </div>
@@ -1045,6 +1416,10 @@
                                         <div class="plan-content">
                                             <h5>${week.title}</h5>
                                             <p>${week.description}</p>
+                                            <div class="week-progress" style="margin-top: 10px; font-size: 0.9rem; color: #666;">
+                                                <span><i class="fas fa-video"></i> 视频: ${week.videoId ? '已观看' : '未观看'}</span>
+                                                <span><i class="fas fa-question-circle"></i> 题目: ${week.questionCount}道</span>
+                                            </div>
                                         </div>
                                         <div class="plan-status">
                                             <div class="status-check ${week.completed ? 'completed' : ''}" 
@@ -1078,7 +1453,12 @@
 
         // 切换周计划状态
         function toggleWeekStatus(monthTitle, weekLabel) {
-            const plan = reviewPlans[0]; // 假设只有一个计划
+            if (!currentUser || currentUser.role !== 'teacher') {
+                showNotification('只有教师可以修改复习计划状态', 'warning');
+                return;
+            }
+            
+            const plan = reviewPlans[0];
             const month = plan.months.find(m => m.title === monthTitle);
             if (month) {
                 const week = month.weeks.find(w => w.label === weekLabel);
@@ -1087,30 +1467,33 @@
                     updateProgress();
                     renderReviewPlans();
                     saveReviewData();
+                    showNotification(`已${week.completed ? '完成' : '取消'} ${week.title}`, 'success');
                 }
             }
         }
 
         // 更新进度
         function updateProgress() {
-            const plan = reviewPlans[0];
-            if (!plan) return;
-
-            let totalWeeks = 0;
-            let completedWeeks = 0;
-
-            plan.months.forEach(month => {
-                month.weeks.forEach(week => {
-                    totalWeeks++;
-                    if (week.completed) completedWeeks++;
-                });
+            const progress = calculateRealProgress();
+            learningProgress = progress;
+            
+            // 更新进度显示
+            const progressElements = document.querySelectorAll('.progress-value');
+            progressElements.forEach(element => {
+                if (element.id === 'totalPlans') element.textContent = reviewPlans.length;
+                if (element.id === 'activePlans') element.textContent = reviewPlans.filter(p => p.progress > 0 && p.progress < 100).length;
+                if (element.id === 'completedPlans') element.textContent = reviewPlans.filter(p => p.progress === 100).length;
+                if (element.id === 'avgProgress') element.textContent = `${progress.totalProgress}%`;
             });
-
-            plan.progress = totalWeeks > 0 ? Math.round((completedWeeks / totalWeeks) * 100) : 0;
         }
 
-        // 创建新计划
+        // 创建新计划（仅教师）
         function createNewPlan() {
+            if (!currentUser || currentUser.role !== 'teacher') {
+                showNotification('只有教师可以创建复习计划', 'warning');
+                return;
+            }
+            
             const planName = prompt('请输入计划名称：');
             if (planName) {
                 const newPlan = {
@@ -1129,6 +1512,9 @@
         // 保存复习数据
         function saveReviewData() {
             localStorage.setItem('reviewPlans', JSON.stringify(reviewPlans));
+            if (currentUser) {
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
         }
 
         // 加载复习数据
@@ -1143,6 +1529,14 @@
                     console.warn('加载复习数据失败:', error);
                 }
             }
+        }
+
+        // 用户退出
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            showNotification('已退出登录', 'info');
+            showLoginModal();
         }
 
         // 页面初始化
