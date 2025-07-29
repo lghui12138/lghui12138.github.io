@@ -1126,8 +1126,15 @@
     <!-- 主内容 -->
     <div class="main-content">
         <div class="page-header">
-            <h1 class="page-title">❓ 流体力学题库练习</h1>
-            <p class="page-subtitle">全面的题库系统，助您掌握流体力学知识</p>
+            <h1 class="page-title">❓ 题库练习</h1>
+            <p class="page-subtitle">丰富的流体力学题库，支持本地上传（仅教师）</p>
+            <div id="questionUploadSection" style="display:none; margin-top: 20px;">
+                <label for="questionUploadInput" class="btn btn-primary" style="cursor:pointer;">
+                    <i class="fas fa-upload"></i> 上传本地题库（≤50MB，支持json/csv/xlsx）
+                </label>
+                <input type="file" id="questionUploadInput" accept=".json,.csv,.xlsx" style="display:none;" />
+                <span id="questionUploadStatus" style="margin-left: 15px; color: #27ae60;"></span>
+            </div>
         </div>
         
         <!-- 统计卡片 -->
@@ -4864,6 +4871,85 @@
             
             showNotification(`⌨️ 快捷键: ${shortcutText}`, 'info', 5000);
         }
+
+        // GitHub上传相关配置
+        const GITHUB_REPO = 'lghui12138/lghui12138.github.io'; // 仓库名
+        const GITHUB_BRANCH = 'main';
+        const GITHUB_QB_DIR = 'question-banks';
+        const GITHUB_TOKEN_KEY = 'github_token';
+
+        // 获取/设置token
+        function getGithubToken() {
+            return localStorage.getItem(GITHUB_TOKEN_KEY) || '';
+        }
+        function setGithubToken(token) {
+            localStorage.setItem(GITHUB_TOKEN_KEY, token);
+        }
+
+        // 弹窗输入token
+        function promptGithubToken() {
+            let token = prompt('请输入你的GitHub Token（仅用于上传，前端本地保存）:', getGithubToken());
+            if (token) setGithubToken(token);
+            return token;
+        }
+
+        // 绑定上传事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('questionUploadInput');
+            if (input) {
+                input.addEventListener('change', async function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    if (file.size > 50 * 1024 * 1024) {
+                        document.getElementById('questionUploadStatus').textContent = '❌ 文件过大，最大50MB';
+                        return;
+                    }
+                    document.getElementById('questionUploadStatus').textContent = '正在读取文件...';
+                    // 读取文件内容
+                    const arrayBuffer = await file.arrayBuffer();
+                    const base64Content = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+                    // 获取token
+                    let token = getGithubToken();
+                    if (!token) token = promptGithubToken();
+                    if (!token) {
+                        document.getElementById('questionUploadStatus').textContent = '❌ 未提供GitHub Token';
+                        return;
+                    }
+                    // 构造API参数
+                    const now = new Date();
+                    const fileName = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${file.name}`;
+                    const path = `${GITHUB_QB_DIR}/${fileName}`;
+                    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${path}`;
+                    const body = {
+                        message: `上传题库: ${file.name}`,
+                        content: base64Content,
+                        branch: GITHUB_BRANCH,
+                        committer: { name: 'TeacherUploader', email: 'teacher@example.com' }
+                    };
+                    document.getElementById('questionUploadStatus').textContent = '正在上传到GitHub...';
+                    // 上传
+                    try {
+                        const res = await fetch(url, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `token ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(body)
+                        });
+                        if (!res.ok) {
+                            const err = await res.text();
+                            document.getElementById('questionUploadStatus').textContent = '❌ 上传失败: ' + err;
+                            return;
+                        }
+                        document.getElementById('questionUploadStatus').textContent = '✅ 上传成功！';
+                        // 可选：刷新题库列表，或将新题库加入本地数据
+                    } catch (e) {
+                        document.getElementById('questionUploadStatus').textContent = '❌ 上传异常: ' + e.message;
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html> 

@@ -712,8 +712,15 @@
     <!-- 主内容 -->
     <div class="main-content">
         <div class="page-header">
-            <h1 class="page-title">🎥 流体力学视频课程</h1>
-            <p class="page-subtitle">高质量教学视频，助您深入理解流体力学</p>
+            <h1 class="page-title">🎥 视频课程</h1>
+            <p class="page-subtitle">精选流体力学视频，支持本地上传（仅教师）</p>
+            <div id="videoUploadSection" style="display:none; margin-top: 20px;">
+                <label for="videoUploadInput" class="btn btn-primary" style="cursor:pointer;">
+                    <i class="fas fa-upload"></i> 上传本地视频（≤50MB）
+                </label>
+                <input type="file" id="videoUploadInput" accept="video/*" style="display:none;" />
+                <span id="videoUploadStatus" style="margin-left: 15px; color: #27ae60;"></span>
+            </div>
         </div>
         
         <!-- 上传区域 - 仅教师可见 -->
@@ -1299,6 +1306,85 @@
             showNotification('抖音视频添加成功！', 'success');
         }
         
+        // GitHub上传相关配置
+        const GITHUB_REPO = 'lghui12138/lghui12138.github.io'; // 仓库名
+        const GITHUB_BRANCH = 'main';
+        const GITHUB_VIDEO_DIR = 'videos';
+        const GITHUB_TOKEN_KEY = 'github_token';
+
+        // 获取/设置token
+        function getGithubToken() {
+            return localStorage.getItem(GITHUB_TOKEN_KEY) || '';
+        }
+        function setGithubToken(token) {
+            localStorage.setItem(GITHUB_TOKEN_KEY, token);
+        }
+
+        // 弹窗输入token
+        function promptGithubToken() {
+            let token = prompt('请输入你的GitHub Token（仅用于上传，前端本地保存）:', getGithubToken());
+            if (token) setGithubToken(token);
+            return token;
+        }
+
+        // 绑定上传事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('videoUploadInput');
+            if (input) {
+                input.addEventListener('change', async function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    if (file.size > 50 * 1024 * 1024) {
+                        document.getElementById('videoUploadStatus').textContent = '❌ 文件过大，最大50MB';
+                        return;
+                    }
+                    document.getElementById('videoUploadStatus').textContent = '正在读取文件...';
+                    // 读取文件内容
+                    const arrayBuffer = await file.arrayBuffer();
+                    const base64Content = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+                    // 获取token
+                    let token = getGithubToken();
+                    if (!token) token = promptGithubToken();
+                    if (!token) {
+                        document.getElementById('videoUploadStatus').textContent = '❌ 未提供GitHub Token';
+                        return;
+                    }
+                    // 构造API参数
+                    const now = new Date();
+                    const fileName = `${now.getFullYear()}${(now.getMonth()+1).toString().padStart(2,'0')}${now.getDate().toString().padStart(2,'0')}_${file.name}`;
+                    const path = `${GITHUB_VIDEO_DIR}/${fileName}`;
+                    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${path}`;
+                    const body = {
+                        message: `上传视频: ${file.name}`,
+                        content: base64Content,
+                        branch: GITHUB_BRANCH,
+                        committer: { name: 'TeacherUploader', email: 'teacher@example.com' }
+                    };
+                    document.getElementById('videoUploadStatus').textContent = '正在上传到GitHub...';
+                    // 上传
+                    try {
+                        const res = await fetch(url, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `token ${token}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(body)
+                        });
+                        if (!res.ok) {
+                            const err = await res.text();
+                            document.getElementById('videoUploadStatus').textContent = '❌ 上传失败: ' + err;
+                            return;
+                        }
+                        document.getElementById('videoUploadStatus').textContent = '✅ 上传成功！';
+                        // 可选：刷新视频列表，或将新视频加入本地数据
+                    } catch (e) {
+                        document.getElementById('videoUploadStatus').textContent = '❌ 上传异常: ' + e.message;
+                    }
+                });
+            }
+        });
+        
         // 页面初始化
         document.addEventListener('DOMContentLoaded', function() {
             // 检查用户角色，控制上传区域显示
@@ -1313,6 +1399,7 @@
             try {
                 const currentUser = JSON.parse(localStorage.getItem('currentUser'));
                 const uploadSection = document.getElementById('uploadSection');
+                const videoUploadSection = document.getElementById('videoUploadSection');
                 
                 if (currentUser && currentUser.role === 'teacher') {
                     // 教师端显示上传功能
@@ -1320,11 +1407,19 @@
                         uploadSection.style.display = 'block';
                         console.log('教师端：显示上传功能');
                     }
+                    if (videoUploadSection) {
+                        videoUploadSection.style.display = 'block';
+                        console.log('教师端：显示本地视频上传功能');
+                    }
                 } else {
                     // 学生端隐藏上传功能
                     if (uploadSection) {
                         uploadSection.style.display = 'none';
                         console.log('学生端：隐藏上传功能');
+                    }
+                    if (videoUploadSection) {
+                        videoUploadSection.style.display = 'none';
+                        console.log('学生端：隐藏本地视频上传功能');
                     }
                 }
             } catch (error) {
@@ -1333,6 +1428,10 @@
                 const uploadSection = document.getElementById('uploadSection');
                 if (uploadSection) {
                     uploadSection.style.display = 'none';
+                }
+                const videoUploadSection = document.getElementById('videoUploadSection');
+                if (videoUploadSection) {
+                    videoUploadSection.style.display = 'none';
                 }
             }
         }

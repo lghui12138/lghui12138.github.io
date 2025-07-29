@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="format-detection" content="telephone=no">
+    <title>全屏做题 - 流体力学学习平台</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #006994 0%, #4facfe 100%);
+            color: #222;
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            min-height: 100vh;
+        }
+        .fullscreen-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            width: 100vw;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        .fullscreen-question-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            max-width: 600px;
+            width: 96vw;
+            margin: 0 auto;
+            padding: 32px 20px 24px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .question-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 18px;
+            color: #006994;
+        }
+        .question-options {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+        .option-btn {
+            background: #f4f8fb;
+            border: 2px solid #4facfe;
+            border-radius: 12px;
+            padding: 14px 18px;
+            font-size: 1rem;
+            color: #222;
+            cursor: pointer;
+            transition: background 0.2s, border 0.2s;
+            text-align: left;
+        }
+        .option-btn.selected {
+            background: #4facfe;
+            color: #fff;
+            border-color: #006994;
+        }
+        .option-btn.correct {
+            background: #27ae60;
+            color: #fff;
+            border-color: #27ae60;
+        }
+        .option-btn.incorrect {
+            background: #e74c3c;
+            color: #fff;
+            border-color: #e74c3c;
+        }
+        .fullscreen-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 24px;
+            margin-bottom: 18px;
+        }
+        .control-btn {
+            background: #006994;
+            color: #fff;
+            border: none;
+            border-radius: 50px;
+            padding: 12px 28px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .control-btn:active {
+            background: #4facfe;
+        }
+        .explanation-section {
+            background: #f4f8fb;
+            border-radius: 12px;
+            padding: 18px 14px;
+            margin-top: 10px;
+            color: #006994;
+            font-size: 1rem;
+            display: none;
+        }
+        .explanation-section.active {
+            display: block;
+        }
+        .fullscreen-progress {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #006994;
+            font-size: 1rem;
+        }
+        .fullscreen-header {
+            width: 100vw;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 12px 18px 0 0;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            color: #006994;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+        @media (max-width: 600px) {
+            .fullscreen-question-card {
+                padding: 18px 4vw 12px 4vw;
+                max-width: 98vw;
+            }
+            .control-btn {
+                padding: 10px 10vw;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="fullscreen-header">
+        <button class="close-btn" onclick="window.location.href='index-modular.html'" title="退出全屏"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="fullscreen-container">
+        <div class="fullscreen-progress" id="fullscreenProgress"></div>
+        <div class="fullscreen-question-card">
+            <div class="question-title" id="questionTitle">题目加载中...</div>
+            <div class="question-options" id="questionOptions"></div>
+            <div class="fullscreen-controls">
+                <button class="control-btn" id="prevBtn" onclick="prevQuestion()"><i class="fas fa-chevron-left"></i> 上一题</button>
+                <button class="control-btn" id="explainBtn" onclick="toggleExplanation()"><i class="fas fa-lightbulb"></i> 查看解析</button>
+                <button class="control-btn" id="nextBtn" onclick="nextQuestion()">下一题 <i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="explanation-section" id="explanationSection"></div>
+        </div>
+    </div>
+    <script>
+        // ====== 题库数据加载与全屏做题核心逻辑 ======
+        let questions = [];
+        let current = 0;
+        let selected = null;
+        let answered = false;
+        // 支持题库选择（可扩展为从GitHub拉取）
+        async function loadQuestions() {
+            // 示例：本地存储/远程拉取/静态文件
+            // 可扩展为支持选择题库文件
+            try {
+                // 优先从localStorage加载
+                const local = localStorage.getItem('fullscreen_questions');
+                if (local) {
+                    questions = JSON.parse(local);
+                } else {
+                    // 也可从远程加载默认题库
+                    const res = await fetch('question-banks/default.json');
+                    questions = await res.json();
+                }
+            } catch {
+                questions = [{
+                    title: '示例题目：流体静力学的基本方程是？',
+                    options: ['连续性方程', '动量方程', '能量方程', '静力方程'],
+                    answer: 3,
+                    explanation: '流体静力学的基本方程是静力方程。',
+                }];
+            }
+            renderQuestion();
+        }
+        function renderQuestion() {
+            if (!questions.length) return;
+            const q = questions[current];
+            document.getElementById('questionTitle').textContent = q.title;
+            const opts = q.options.map((opt, i) => {
+                let cls = 'option-btn';
+                if (answered) {
+                    if (i === q.answer) cls += ' correct';
+                    else if (selected === i) cls += ' incorrect';
+                } else if (selected === i) {
+                    cls += ' selected';
+                }
+                return `<button class="${cls}" onclick="selectOption(${i})">${String.fromCharCode(65+i)}. ${opt}</button>`;
+            }).join('');
+            document.getElementById('questionOptions').innerHTML = opts;
+            document.getElementById('fullscreenProgress').textContent = `第 ${current+1} / ${questions.length} 题`;
+            document.getElementById('explanationSection').classList.remove('active');
+            document.getElementById('explanationSection').innerHTML = '';
+            document.getElementById('explainBtn').disabled = !answered;
+        }
+        function selectOption(i) {
+            if (answered) return;
+            selected = i;
+            answered = true;
+            renderQuestion();
+            // 自动弹出解析
+            setTimeout(() => toggleExplanation(true), 300);
+            saveProgress();
+        }
+        function prevQuestion() {
+            if (current > 0) {
+                current--;
+                selected = null;
+                answered = false;
+                renderQuestion();
+                saveProgress();
+            }
+        }
+        function nextQuestion() {
+            if (current < questions.length-1) {
+                current++;
+                selected = null;
+                answered = false;
+                renderQuestion();
+                saveProgress();
+            }
+        }
+        function toggleExplanation(forceShow) {
+            const q = questions[current];
+            const section = document.getElementById('explanationSection');
+            if (!answered) return;
+            if (forceShow || !section.classList.contains('active')) {
+                section.innerHTML = `<b>答案：</b> ${String.fromCharCode(65+q.answer)}<br><b>解析：</b> ${q.explanation || '暂无解析'}`;
+                section.classList.add('active');
+            } else {
+                section.classList.remove('active');
+                section.innerHTML = '';
+            }
+        }
+        function saveProgress() {
+            localStorage.setItem('fullscreen_questions', JSON.stringify(questions));
+            localStorage.setItem('fullscreen_progress', JSON.stringify({current, selected, answered}));
+        }
+        function loadProgress() {
+            const p = JSON.parse(localStorage.getItem('fullscreen_progress') || '{}');
+            if (typeof p.current === 'number') current = p.current;
+            if (typeof p.selected === 'number') selected = p.selected;
+            if (typeof p.answered === 'boolean') answered = p.answered;
+        }
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            loadProgress();
+            await loadQuestions();
+        });
+    </script>
+</body>
+</html> 
