@@ -1125,240 +1125,8 @@
     
     <!-- 主内容 -->
     <div class="main-content">
-        <div class="page-header">
-            <h1 class="page-title">❓ 题库练习</h1>
-            <p class="page-subtitle">丰富的流体力学题库，支持本地上传（仅教师）</p>
-            <div id="questionUploadSection" style="display:none; margin-top: 20px;">
-                <label for="questionUploadInput" class="btn btn-primary" style="cursor:pointer;">
-                    <i class="fas fa-upload"></i> 上传本地题库（≤50MB，支持json/csv/xlsx）
-                </label>
-                <input type="file" id="questionUploadInput" accept=".json,.csv,.xlsx" style="display:none;" />
-                <span id="questionUploadStatus" style="margin-left: 15px; color: #27ae60;"></span>
-            </div>
-        </div>
-        
-        <!-- 统计卡片 -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">📚</div>
-                <div class="stat-value" id="totalQuestions">150</div>
-                <div class="stat-label">总题数</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">✅</div>
-                <div class="stat-value" id="answeredQuestions">0</div>
-                <div class="stat-label">已答题</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">🎯</div>
-                <div class="stat-value" id="correctRate">0%</div>
-                <div class="stat-label">正确率</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-icon">⏱️</div>
-                <div class="stat-value" id="avgTime">0s</div>
-                <div class="stat-label">平均用时</div>
-            </div>
-        </div>
-        
-        <!-- AI出题区域 -->
-        <div class="ai-section">
-            <div class="ai-header">
-                <div class="ai-icon">🤖</div>
-                <h2>AI智能出题</h2>
-                <p style="font-size: 0.9em; opacity: 0.8; margin-top: 5px;">使用SiliconFlow AI生成专业流体力学题目</p>
-            </div>
-            <div class="ai-input">
-                <input type="text" id="aiTopic" placeholder="请输入出题主题，例如：伯努利方程、雷诺数、边界层理论等">
-                <div class="ai-controls">
-                    <div class="ai-options">
-                        <label for="aiQuestionCount">题目数量:</label>
-                        <select id="aiQuestionCount">
-                            <option value="1">1道</option>
-                            <option value="3">3道</option>
-                            <option value="5" selected>5道</option>
-                            <option value="8">8道</option>
-                            <option value="10">10道</option>
-                        </select>
-                    </div>
-                    <div class="ai-buttons">
-                        <button class="btn-control" onclick="generateAIQuestion()">
-                            <i class="fas fa-magic"></i> 单题生成
-                        </button>
-                        <button class="btn-control primary" onclick="generateBatchAIQuestions()">
-                            <i class="fas fa-layer-group"></i> 批量生成
-                        </button>
-                        <button class="btn-control secondary" onclick="testAIConnection()">
-                            <i class="fas fa-wifi"></i> 测试连接
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="ai-tips">
-                <div class="tip-item">
-                    <i class="fas fa-lightbulb"></i>
-                    <span>支持的主题：伯努利方程、雷诺数、边界层理论、流体粘性、压力损失等</span>
-                </div>
-                <div class="tip-item">
-                    <i class="fas fa-clock"></i>
-                    <span>生成时间：单题约2-3秒，批量生成会有进度提示</span>
-                </div>
-                <div class="tip-item">
-                    <i class="fas fa-shield-alt"></i>
-                    <span>备用机制：如果AI生成失败，会自动使用本地备用题目</span>
-                </div>
-            </div>
-            <div id="aiQuestionResult" style="display: none;">
-                <!-- AI生成的题目将显示在这里 -->
-            </div>
-        </div>
-        
-        <!-- 推荐题目 -->
-        <div id="recommendedQuestions" class="recommendation-section" style="display: none;">
-            <!-- 推荐题目将在这里动态生成 -->
-        </div>
-        
-        <!-- 错题本和收藏功能 -->
-        <div class="special-sections">
-            <!-- 错题本 -->
-            <div class="special-section" id="wrongQuestionsSection">
-                <div class="section-header">
-                    <div class="section-icon">⚠️</div>
-                    <h3>错题本</h3>
-                    <p>记录您做错的题目，重点复习</p>
-                </div>
-                <div class="section-content">
-                    <div class="wrong-questions-list" id="wrongQuestionsList">
-                        <div class="empty-state">
-                            <i class="fas fa-clipboard-list"></i>
-                            <p>暂无错题记录</p>
-                            <small>开始练习后，做错的题目会自动添加到错题本</small>
-                        </div>
-                    </div>
-                    <div class="section-actions">
-                        <button class="btn-control secondary" onclick="practiceWrongQuestions()">
-                            <i class="fas fa-redo"></i> 练习错题
-                        </button>
-                        <button class="btn-control" onclick="clearWrongQuestions()">
-                            <i class="fas fa-trash"></i> 清空错题本
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 收藏题目 -->
-            <div class="special-section" id="favoritesSection">
-                <div class="section-header">
-                    <div class="section-icon">❤️</div>
-                    <h3>收藏题目</h3>
-                    <p>收藏重要的题目，方便复习</p>
-                </div>
-                <div class="section-content">
-                    <div class="favorites-list" id="favoritesList">
-                        <div class="empty-state">
-                            <i class="fas fa-heart"></i>
-                            <p>暂无收藏题目</p>
-                            <small>点击题目旁的❤️按钮可以收藏题目</small>
-                        </div>
-                    </div>
-                    <div class="section-actions">
-                        <button class="btn-control secondary" onclick="practiceFavorites()">
-                            <i class="fas fa-play"></i> 练习收藏
-                        </button>
-                        <button class="btn-control" onclick="exportFavorites()">
-                            <i class="fas fa-download"></i> 导出收藏
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 题库控制 -->
-        <div class="question-controls">
-            <div class="control-buttons">
-                <button class="btn-control" onclick="startPractice()">
-                    <i class="fas fa-play"></i> 开始练习
-                </button>
-                <button class="btn-control" onclick="previousQuestion()">
-                    <i class="fas fa-chevron-left"></i> 上一题
-                </button>
-                <button class="btn-control" onclick="nextQuestion()">
-                    下一题 <i class="fas fa-chevron-right"></i>
-                </button>
-                <button class="btn-control secondary" onclick="submitAnswer()">
-                    <i class="fas fa-check"></i> 提交答案
-                </button>
-                <button class="btn-control" onclick="showExplanation()">
-                    <i class="fas fa-lightbulb"></i> 查看解析
-                </button>
-                <button class="btn-control" onclick="resetPractice()">
-                    <i class="fas fa-redo"></i> 重新开始
-                </button>
-            </div>
-        </div>
-        
-        <!-- 题目显示区域 -->
-        <div class="question-container" id="questionContainer">
-            <div style="text-align: center; color: var(--ocean-blue);">
-                <div style="font-size: 4rem; margin-bottom: 20px;">🌊</div>
-                <h2>欢迎来到题库练习</h2>
-                <p>点击"开始练习"按钮开始答题</p>
-            </div>
-        </div>
-        
-        <!-- 全屏题目查看 -->
-        <div class="fullscreen-overlay" id="fullscreenOverlay">
-            <div class="fullscreen-question">
-                <div class="fullscreen-header">
-                    <div class="fullscreen-title">题目详情</div>
-                    <button class="fullscreen-close" onclick="closeFullscreen()">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                
-                <div class="fullscreen-navigation">
-                    <button class="nav-btn" onclick="previousFullscreenQuestion()" id="prevFullscreenBtn">
-                        <i class="fas fa-chevron-left"></i> 上一题
-                    </button>
-                    <div class="question-progress" id="fullscreenProgress">
-                        第 1 题 / 共 0 题
-                    </div>
-                    <button class="nav-btn" onclick="nextFullscreenQuestion()" id="nextFullscreenBtn">
-                        下一题 <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-                
-                <div class="fullscreen-question-content" id="fullscreenQuestionContent">
-                    <!-- 题目内容将在这里显示 -->
-                </div>
-                
-                <div class="fullscreen-options" id="fullscreenOptions">
-                    <!-- 选项将在这里显示 -->
-                </div>
-                
-                <div class="fullscreen-explanation" id="fullscreenExplanation">
-                    <div class="explanation-title">
-                        <i class="fas fa-lightbulb"></i> 题目解析
-                    </div>
-                    <div class="explanation-content" id="fullscreenExplanationContent">
-                        <!-- 解析内容将在这里显示 -->
-                    </div>
-                </div>
-                
-                <div class="fullscreen-actions">
-                    <button class="action-btn secondary" onclick="toggleFullscreenExplanation()" id="explanationBtn">
-                        <i class="fas fa-lightbulb"></i> 查看解析
-                    </button>
-                    <button class="action-btn primary" onclick="submitFullscreenAnswer()" id="submitFullscreenBtn">
-                        <i class="fas fa-check"></i> 提交答案
-                    </button>
-                    <button class="action-btn" onclick="toggleFullscreenFavorite()" id="favoriteFullscreenBtn">
-                        <i class="fas fa-heart"></i> 收藏题目
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div id="questionBankList"></div>
+        <h2 style="text-align:center;margin-bottom:30px;">题库分组</h2>
+        <div id="questionBankList" style="display:grid;gap:32px;"></div>
     </div>
     
     <!-- 通知容器 -->
@@ -4985,6 +4753,32 @@
         });
 
         // ========== 题库聚合与分组渲染 ========== //
+        // 读取题库文件内容，返回题数、标签、简介、预览
+        async function getQuestionBankMeta(file) {
+          try {
+            const res = await fetch('question-banks/' + file);
+            const data = await res.json();
+            const arr = Array.isArray(data) ? data : (data.questions||data.data||[]);
+            let tags = new Set();
+            let years = new Set();
+            let preview = arr.slice(0,3).map(q=>q.title||q.question||q.text||'').filter(Boolean);
+            arr.forEach(q => {
+              if(q.tags) q.tags.forEach(t=>tags.add(t));
+              if(q.year) years.add(q.year);
+            });
+            let intro = '';
+            if(years.size) intro += [...years].sort().join(',')+'年';
+            if(tags.size) intro += ' | '+[...tags].slice(0,3).join('、');
+            return {
+              count: arr.length,
+              intro,
+              preview
+            };
+          } catch {
+            return {count:0,intro:'',preview:[]};
+          }
+        }
+
         async function fetchAllQuestionBanks() {
           const res = await fetch('question-banks/index.json');
           const index = await res.json();
@@ -4995,34 +4789,121 @@
           return { wrongList, realList, chapterList };
         }
 
-        function renderAllQuestionBanks({ wrongList, realList, chapterList }) {
+        // 渲染题库卡片
+        async function renderAllQuestionBanks({ wrongList, realList, chapterList }) {
           const list = document.getElementById('questionBankList');
           let html = '';
-          if (wrongList.length) {
-            html += `<h3>易错题</h3>`;
-            wrongList.forEach(qb => {
-              html += `<div class="question-bank-item"><button class='btn btn-primary' onclick="startPracticeFullscreen('${qb.file}')">做题</button> <span class='qb-title'>${qb.name}</span></div>`;
-            });
+          // 真题分组
+          if(realList.length) {
+            html += `<div><h3 style='color:#006994;'><i class='fas fa-file-alt'></i> 真题</h3><div class='qb-group'>`;
+            for(const qb of realList) {
+              const meta = await getQuestionBankMeta(qb.file);
+              // 按年份分组
+              const yearMap = {};
+              const res = await fetch('question-banks/' + qb.file);
+              const arr = Array.isArray(await res.json()) ? await res.json() : ((await res.json()).questions||[]);
+              arr.forEach(q=>{if(q.year){yearMap[q.year]=yearMap[q.year]||[];yearMap[q.year].push(q);}});
+              Object.keys(yearMap).sort().forEach(year=>{
+                html += `<div class='qb-card qb-real' data-preview='${encodeURIComponent(JSON.stringify(yearMap[year].slice(0,3).map(q=>q.title||q.question||q.text||'')))}'>
+                  <div class='qb-card-header'><span class='qb-card-title'>${year}年真题</span></div>
+                  <div class='qb-card-meta'>${yearMap[year].length}题</div>
+                  <button class='btn btn-primary' onclick="startPracticeFullscreen('${qb.file}?year=${year}')">做题</button>
+                </div>`;
+              });
+            }
+            html += `</div></div>`;
           }
-          if (realList.length) {
-            html += `<h3>真题</h3>`;
-            realList.forEach(qb => {
-              html += `<div class='question-bank-item'><button class='btn btn-primary' onclick="startPracticeFullscreen('${qb.file}')">做题</button> <span class='qb-title'>${qb.name}</span></div>`;
-            });
+          // 章节分类分组
+          if(chapterList.length) {
+            html += `<div><h3 style='color:#4facfe;'><i class='fas fa-layer-group'></i> 章节分类题库</h3><div class='qb-group'>`;
+            for(const qb of chapterList) {
+              const meta = await getQuestionBankMeta('分类_'+qb.name+'.json');
+              html += `<div class='qb-card qb-chapter' data-preview='${encodeURIComponent(JSON.stringify(meta.preview))}'>
+                <div class='qb-card-header'><span class='qb-card-title'>${qb.name}</span></div>
+                <div class='qb-card-meta'>${meta.count}题 | ${meta.intro}</div>
+                <button class='btn btn-primary' onclick="startPracticeFullscreen('分类_${qb.name}.json')">做题</button>
+              </div>`;
+            }
+            html += `</div></div>`;
           }
-          if (chapterList.length) {
-            html += `<h3>章节分类题库</h3>`;
-            chapterList.forEach(qb => {
-              html += `<div class='question-bank-item'><button class='btn btn-primary' onclick="startPracticeFullscreen('${qb.file}')">做题</button> <span class='qb-title'>${qb.name}</span></div>`;
-            });
+          // 易错题分组
+          if(wrongList.length) {
+            html += `<div><h3 style='color:#ff6b6b;'><i class='fas fa-exclamation-triangle'></i> 易错题</h3><div class='qb-group'>`;
+            for(const qb of wrongList) {
+              const meta = await getQuestionBankMeta(qb.file);
+              html += `<div class='qb-card qb-wrong' data-preview='${encodeURIComponent(JSON.stringify(meta.preview))}'>
+                <div class='qb-card-header'><span class='qb-card-title'>${qb.name}</span></div>
+                <div class='qb-card-meta'>${meta.count}题 | ${meta.intro}</div>
+                <button class='btn btn-primary' onclick="startPracticeFullscreen('${qb.file}')">做题</button>
+              </div>`;
+            }
+            html += `</div></div>`;
           }
           list.innerHTML = html;
+          // 题目预览交互
+          document.querySelectorAll('.qb-card').forEach(card=>{
+            card.addEventListener('mouseenter',function(){
+              let preview = JSON.parse(decodeURIComponent(this.getAttribute('data-preview'))||'[]');
+              if(!preview.length) return;
+              let tip = document.createElement('div');
+              tip.className = 'qb-preview-tip';
+              tip.innerHTML = '<b>题目预览：</b><ul>'+preview.map(t=>`<li>${t}</li>`).join('')+'</ul>';
+              document.body.appendChild(tip);
+              let rect = this.getBoundingClientRect();
+              tip.style.left = (rect.right+10)+'px';
+              tip.style.top = (rect.top+window.scrollY)+'px';
+              this._tip = tip;
+            });
+            card.addEventListener('mouseleave',function(){
+              if(this._tip) {this._tip.remove();this._tip=null;}
+            });
+          });
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
           const allBanks = await fetchAllQuestionBanks();
-          renderAllQuestionBanks(allBanks);
+          await renderAllQuestionBanks(allBanks);
         });
     </script>
+    <style>
+    .qb-group { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 12px; }
+    .qb-card {
+      background: rgba(255,255,255,0.95);
+      border-radius: 16px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+      padding: 20px 24px;
+      min-width: 220px;
+      max-width: 260px;
+      flex: 1 1 220px;
+      position: relative;
+      transition: box-shadow .2s;
+      border: 2px solid #e0e0e0;
+      cursor: pointer;
+    }
+    .qb-card:hover { box-shadow: 0 6px 24px rgba(0,105,148,0.12); border-color: #4facfe; }
+    .qb-card.qb-real { border-left: 6px solid #006994; }
+    .qb-card.qb-chapter { border-left: 6px solid #4facfe; }
+    .qb-card.qb-wrong { border-left: 6px solid #ff6b6b; }
+    .qb-card-header { font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; }
+    .qb-card-meta { color: #888; font-size: 0.95em; margin-bottom: 12px; }
+    .qb-preview-tip {
+      position: absolute;
+      z-index: 9999;
+      background: #fff;
+      color: #333;
+      border: 1px solid #4facfe;
+      border-radius: 8px;
+      box-shadow: 0 2px 12px rgba(0,105,148,0.12);
+      padding: 12px 18px;
+      min-width: 220px;
+      font-size: 0.98em;
+      pointer-events: none;
+      left: 0; top: 0;
+    }
+    @media (max-width: 900px) {
+      .qb-group { flex-direction: column; gap: 16px; }
+      .qb-card { max-width: 100%; min-width: 0; }
+    }
+    </style>
 </body>
 </html> 

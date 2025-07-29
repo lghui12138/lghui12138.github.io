@@ -246,6 +246,196 @@ input:focus, select:focus, textarea:focus {
         </div>
     </div>
     <script>
+        // ====== 新增：分组入口自动加载 ======
+(function() {
+  function getQueryParam(name) {
+    const url = new URL(window.location.href);
+    return url.searchParams.get(name);
+  }
+  const type = getQueryParam('type') || 'real';
+  const bank = getQueryParam('bank');
+  const mode = getQueryParam('mode') || 'order';
+  if (bank) return; // 已选具体题库，走原有做题逻辑
+  const groupMap = { real: '真题', chapter: '章节分类', wrong: '易错题' };
+  const groupColor = { real: '#4facfe', chapter: '#27ae60', wrong: '#e67e22' };
+  const groupIcon = {
+    real: 'https://img.icons8.com/color/96/000000/test-passed.png',
+    chapter: 'https://img.icons8.com/color/96/000000/open-book--v2.png',
+    wrong: 'https://img.icons8.com/color/96/000000/error--v1.png'
+  };
+  document.title = (groupMap[type] || '题库') + ' - 流体力学学习平台';
+  fetch('question-banks/index.json').then(r=>r.json()).then(async index => {
+    let files = index[type] || [];
+    if (type === 'wrong' && files.length === 0) {
+      document.body.innerHTML = '<div style="text-align:center;padding:60px 0;font-size:1.3em;color:#888;">暂无易错题数据</div>';
+      return;
+    }
+    // 预加载所有题库元信息
+    let metaList = [];
+    let tagSet = new Set();
+    for (const item of files) {
+      const file = typeof item === 'string' ? item : item.file;
+      const intro = typeof item === 'string' ? '' : (item.intro || '');
+      let meta = { file, intro, count: 0, tags: [], preview: [] };
+      try {
+        const res = await fetch('question-banks/' + file);
+        const data = await res.json();
+        const arr = Array.isArray(data) ? data : (data.questions||data.data||[]);
+        meta.count = arr.length;
+        meta.preview = arr.slice(0,3).map(q=>q.title||q.question||q.text||'').filter(Boolean);
+        let tags = new Set();
+        let years = new Set();
+        arr.forEach(q => { if(q.tags) q.tags.forEach(t=>{tags.add(t);tagSet.add(t);}); if(q.year) years.add(q.year); });
+        meta.tags = [...tags];
+        if(years.size) meta.intro += (meta.intro ? ' ' : '') + [...years].sort().join(',')+'年';
+        if(tags.size) meta.intro += (meta.intro ? ' | ' : '') + [...tags].slice(0,3).join('、');
+      } catch {}
+      metaList.push(meta);
+    }
+    // 搜索框
+    const searchBar = document.createElement('div');
+    searchBar.style.display = 'flex';
+    searchBar.style.justifyContent = 'center';
+    searchBar.style.margin = '0 0 18px 0';
+    searchBar.innerHTML = `<input id='groupSearchInput' type='text' placeholder='搜索题库名称/简介/标签' style='width:320px;max-width:90vw;font-size:1.08em;padding:8px 16px;border-radius:8px;border:1.5px solid #e0e6ef;box-shadow:0 2px 8px rgba(80,120,255,0.06);outline:none;'>`;
+    // 渲染排序和筛选控件
+    const controls = document.createElement('div');
+    controls.style.display = 'flex';
+    controls.style.justifyContent = 'flex-end';
+    controls.style.alignItems = 'center';
+    controls.style.gap = '18px';
+    controls.style.margin = '0 0 18px 0';
+    controls.innerHTML = `
+      <label style='font-size:1em;color:#555;'>排序：
+        <select id='sortSelect' style='font-size:1em;padding:4px 10px;border-radius:6px;'>
+          <option value='count'>题数最多优先</option>
+          <option value='name'>名称排序</option>
+        </select>
+      </label>
+      <label style='font-size:1em;color:#555;'>标签筛选：
+        <select id='tagSelect' style='font-size:1em;padding:4px 10px;border-radius:6px;'>
+          <option value=''>全部</option>
+          ${[...tagSet].sort().map(t=>`<option value='${t}'>${t}</option>`).join('')}
+        </select>
+      </label>
+    `;
+    // 悬停预览浮层
+    let previewLayer = null;
+    function showPreview(card, meta) {
+      if (window.innerWidth < 700) return; // 移动端不弹出
+      if (previewLayer) previewLayer.remove();
+      previewLayer = document.createElement('div');
+      previewLayer.style.position = 'absolute';
+      previewLayer.style.top = '16px';
+      previewLayer.style.right = '-340px';
+      previewLayer.style.width = '320px';
+      previewLayer.style.background = '#fff';
+      previewLayer.style.border = '1.5px solid #e0e6ef';
+      previewLayer.style.borderRadius = '14px';
+      previewLayer.style.boxShadow = '0 4px 24px rgba(80,120,255,0.13)';
+      previewLayer.style.padding = '18px 18px 12px 18px';
+      previewLayer.style.zIndex = 99;
+      previewLayer.innerHTML = `<div style='font-size:1.08em;font-weight:600;color:#4facfe;margin-bottom:8px;'>题目预览</div><ul style='padding-left:18px;margin:0;'>${meta.preview.map(t=>`<li style='margin-bottom:6px;'>${t}</li>`).join('')}</ul>`;
+      card.appendChild(previewLayer);
+    }
+    function hidePreview(card) {
+      if (previewLayer) { previewLayer.remove(); previewLayer = null; }
+    }
+    // 渲染分组卡片函数
+    function renderCards(list) {
+      cardList.innerHTML = '';
+      for (const meta of list) {
+        const card = document.createElement('div');
+        card.className = 'bank-card';
+        card.style.background = '#fff';
+        card.style.borderRadius = '18px';
+        card.style.boxShadow = `0 4px 24px ${groupColor[type]||'rgba(0,0,0,0.10)'}`;
+        card.style.width = '270px';
+        card.style.textAlign = 'center';
+        card.style.padding = '24px 18px 18px 18px';
+        card.style.cursor = 'pointer';
+        card.style.position = 'relative';
+        card.style.overflow = 'hidden';
+        card.style.transition = 'box-shadow 0.2s, transform 0.15s';
+        card.innerHTML = `
+          <img src='${groupIcon[type]||groupIcon.real}' alt='' style='width:68px;height:68px;object-fit:cover;border-radius:50%;margin-bottom:12px;box-shadow:0 2px 12px ${groupColor[type]||'#4facfe'}22;'>
+          <div style='font-size:1.18em;font-weight:600;color:#2b3a55;margin-bottom:10px;'>${meta.file.replace(/(真题_|分类_|.json)/g,'')}</div>
+          <div style='font-size:1em;color:#6a7ba2;margin-bottom:10px;'>${meta.intro}</div>
+          <div style='font-size:0.98em;color:#888;margin-bottom:10px;'>题数：${meta.count}</div>
+          <div style='background:#f8fafd;border-radius:10px;padding:10px 8px 6px 8px;min-height:48px;font-size:0.97em;color:#4facfe;'>
+            <b>题目预览：</b><ul style='text-align:left;padding-left:18px;margin:0;'>${meta.preview.map(t=>`<li>${t}</li>`).join('')}</ul>
+          </div>
+          <div style='margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;'>
+            <button class='bank-card-btn' style='background:${groupColor[type]};padding:8px 18px;' onclick="event.stopPropagation();window.location.href='practice-fullscreen.html?type=${type}&bank=${encodeURIComponent(meta.file)}&mode=order'">顺序练习</button>
+            <button class='bank-card-btn' style='background:linear-gradient(90deg,#27ae60,#4facfe);padding:8px 18px;' onclick="event.stopPropagation();window.location.href='practice-fullscreen.html?type=${type}&bank=${encodeURIComponent(meta.file)}&mode=random'">随机练习</button>
+            <button class='bank-card-btn' style='background:#888;padding:8px 18px;' onclick="event.stopPropagation();continueLastPractice('${meta.file}')">继续上次</button>
+          </div>
+        `;
+        card.onmouseenter = () => showPreview(card, meta);
+        card.onmouseleave = () => hidePreview(card);
+        card.ontouchstart = () => {};
+        card.onclick = () => {
+          localStorage.setItem('fullscreen_qb_value', meta.file.replace(/.json$/,''));
+          window.location.href = `practice-fullscreen.html?type=${type}&bank=${encodeURIComponent(meta.file)}&mode=order`;
+        };
+        cardList.appendChild(card);
+      }
+    }
+    // 继续上次练习逻辑
+    window.continueLastPractice = function(file) {
+      const key = 'fullscreen_progress_' + file.replace(/.json$/,'');
+      const p = JSON.parse(localStorage.getItem(key)||'{}');
+      if (typeof p.current === 'number') {
+        window.location.href = `practice-fullscreen.html?type=${type}&bank=${encodeURIComponent(file)}&mode=order&resume=1`;
+      } else {
+        window.location.href = `practice-fullscreen.html?type=${type}&bank=${encodeURIComponent(file)}&mode=order`;
+      }
+    }
+    // 排序和筛选逻辑
+    function updateCards() {
+      let list = metaList.slice();
+      const sortVal = document.getElementById('sortSelect').value;
+      const tagVal = document.getElementById('tagSelect').value;
+      const searchVal = (document.getElementById('groupSearchInput')?.value||'').trim();
+      if (tagVal) list = list.filter(meta => meta.tags.includes(tagVal));
+      if (searchVal) {
+        const kw = searchVal.toLowerCase();
+        list = list.filter(meta =>
+          meta.file.toLowerCase().includes(kw) ||
+          (meta.intro && meta.intro.toLowerCase().includes(kw)) ||
+          (meta.tags && meta.tags.some(t=>t.toLowerCase().includes(kw)))
+        );
+      }
+      if (sortVal === 'count') list.sort((a,b)=>b.count-a.count);
+      else if (sortVal === 'name') list.sort((a,b)=>a.file.localeCompare(b.file,'zh'));
+      renderCards(list);
+    }
+    // 搜索事件
+    setTimeout(()=>{
+      const input = document.getElementById('groupSearchInput');
+      if(input) input.oninput = updateCards;
+    }, 100);
+    controls.querySelector('#sortSelect').onchange = updateCards;
+    controls.querySelector('#tagSelect').onchange = updateCards;
+    // 页面结构
+    const container = document.createElement('div');
+    container.style.maxWidth = '900px';
+    container.style.margin = '0 auto';
+    container.style.padding = '32px 12px 24px 12px';
+    container.innerHTML = `<div style='text-align:center;font-size:2em;font-weight:700;margin-bottom:18px;'>${groupMap[type]||'题库'}分组</div>`;
+    container.appendChild(searchBar);
+    container.appendChild(controls);
+    const cardList = document.createElement('div');
+    cardList.style.display = 'flex';
+    cardList.style.flexWrap = 'wrap';
+    cardList.style.justifyContent = 'center';
+    cardList.style.gap = '32px';
+    container.appendChild(cardList);
+    document.body.innerHTML = '';
+    document.body.appendChild(container);
+    updateCards();
+  });
+})();
         // ====== 题库选择与错题本功能 ======
         let questions = [];
         let current = 0;
