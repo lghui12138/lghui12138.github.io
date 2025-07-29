@@ -1148,6 +1148,46 @@
         .about-info a:hover {
             text-decoration: underline;
         }
+        
+        /* 教师端数据监控样式 */
+        .teacher-controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .student-data-table {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .student-data-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .student-data-table th {
+            background: var(--ocean-light);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .student-data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .student-data-table tr:hover {
+            background: rgba(79, 172, 254, 0.05);
+        }
+        
+        .student-data-table tr:last-child td {
+            border-bottom: none;
+        }
     </style>
 </head>
 <body>
@@ -1645,6 +1685,27 @@
                         </div>
                     </div>
                     
+                    <!-- 教师端数据监控 -->
+                    <div class="settings-card" id="teacherDataCard" style="display: none;">
+                        <h3><i class="fas fa-chart-bar"></i> 学生数据监控</h3>
+                        <div class="settings-content">
+                            <div class="teacher-controls">
+                                <button class="settings-btn" onclick="showStudentData()">
+                                    <i class="fas fa-users"></i> 查看学生数据
+                                </button>
+                                <button class="settings-btn" onclick="exportStudentData()">
+                                    <i class="fas fa-download"></i> 导出数据
+                                </button>
+                                <button class="settings-btn" onclick="clearStudentData()">
+                                    <i class="fas fa-trash"></i> 清空数据
+                                </button>
+                            </div>
+                            <div id="studentDataDisplay" style="margin-top: 20px; display: none;">
+                                <!-- 学生数据将在这里显示 -->
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- 关于系统 -->
                     <div class="settings-card">
                         <h3><i class="fas fa-info-circle"></i> 关于系统</h3>
@@ -1735,6 +1796,12 @@
         let currentUser = null;
         let scoreChart = null;
         
+        // 用户学习数据存储
+        let userLearningData = {};
+        
+        // 访问者数据（教师端可见）
+        let visitorData = [];
+        
         // 登录功能
         async function performLogin(event) {
             event.preventDefault();
@@ -1774,6 +1841,9 @@
                 
                 // 更新设置页面的用户资料显示
                 updateProfileDisplay();
+                
+                // 初始化用户学习数据
+                initUserLearningData();
                 
                 // 根据用户角色设置功能模块显示
                 setupUserModules();
@@ -1957,6 +2027,12 @@
                 document.getElementById('profileName').textContent = currentUser.name;
                 document.getElementById('profileRole').textContent = currentUser.role === 'teacher' ? '教师' : '学生';
                 document.getElementById('profileUsername').textContent = currentUser.username;
+                
+                // 显示/隐藏教师端数据监控
+                const teacherDataCard = document.getElementById('teacherDataCard');
+                if (teacherDataCard) {
+                    teacherDataCard.style.display = currentUser.role === 'teacher' ? 'block' : 'none';
+                }
             }
         }
         
@@ -2057,14 +2133,16 @@
         
         // 更新学习进度
         function updateLearningProgress() {
-            // 模拟学习进度数据
-            const progress = 65; // 65%的进度
-            const completed = 13; // 已完成13项
-            const total = 20; // 总计20项
+            if (!currentUser || !userLearningData) return;
+            
+            // 计算实际学习进度
+            const totalItems = 20; // 预设总学习项目数
+            const completedItems = userLearningData.completedQuestions + userLearningData.watchedVideos;
+            const progress = Math.min(Math.round((completedItems / totalItems) * 100), 100);
             
             document.getElementById('learningProgress').textContent = progress + '%';
-            document.getElementById('completedItems').textContent = completed;
-            document.getElementById('totalItems').textContent = total;
+            document.getElementById('completedItems').textContent = completedItems;
+            document.getElementById('totalItems').textContent = totalItems;
             
             // 动画显示进度条
             setTimeout(() => {
@@ -2072,18 +2150,258 @@
             }, 500);
         }
         
+        // 用户学习数据管理
+        function initUserLearningData() {
+            if (!currentUser) return;
+            
+            const savedData = localStorage.getItem(`userData_${currentUser.username}`);
+            if (savedData) {
+                userLearningData = JSON.parse(savedData);
+            } else {
+                // 初始化新用户数据
+                userLearningData = {
+                    username: currentUser.username,
+                    name: currentUser.name,
+                    role: currentUser.role,
+                    totalQuestions: 0,
+                    completedQuestions: 0,
+                    totalVideos: 0,
+                    watchedVideos: 0,
+                    studyTime: 0, // 学习时长（分钟）
+                    lastLogin: new Date().toISOString(),
+                    questionHistory: [],
+                    videoHistory: [],
+                    loginCount: 1
+                };
+                saveUserLearningData();
+            }
+            
+            // 更新登录次数
+            userLearningData.loginCount++;
+            userLearningData.lastLogin = new Date().toISOString();
+            saveUserLearningData();
+        }
+        
+        function saveUserLearningData() {
+            if (currentUser) {
+                localStorage.setItem(`userData_${currentUser.username}`, JSON.stringify(userLearningData));
+            }
+        }
+        
+        function updateUserProgress(type, data) {
+            if (!currentUser) return;
+            
+            switch (type) {
+                case 'question_completed':
+                    userLearningData.completedQuestions++;
+                    userLearningData.questionHistory.push({
+                        questionId: data.questionId,
+                        timestamp: new Date().toISOString(),
+                        correct: data.correct
+                    });
+                    break;
+                case 'video_watched':
+                    userLearningData.watchedVideos++;
+                    userLearningData.videoHistory.push({
+                        videoId: data.videoId,
+                        timestamp: new Date().toISOString(),
+                        duration: data.duration
+                    });
+                    break;
+                case 'study_time':
+                    userLearningData.studyTime += data.minutes;
+                    break;
+            }
+            
+            saveUserLearningData();
+            updateLearningProgress();
+        }
+        
         // 更新主页统计数据
         function updateHomeStats() {
-            // 使用更实事求是的统计数据
-            const stats = {
-                questions: 200 + Math.floor(Math.random() * 50),
-                videos: 30 + Math.floor(Math.random() * 10),
-                users: 5 + Math.floor(Math.random() * 3)
+            if (!currentUser) return;
+            
+            // 根据用户角色显示不同的统计数据
+            if (currentUser.role === 'teacher') {
+                // 教师端显示全局统计
+                const allUserData = getAllUserData();
+                const stats = {
+                    questions: 200 + Math.floor(Math.random() * 50),
+                    videos: 30 + Math.floor(Math.random() * 10),
+                    users: allUserData.length
+                };
+                
+                document.getElementById('totalQuestions').textContent = stats.questions + '+';
+                document.getElementById('totalVideos').textContent = stats.videos + '+';
+                document.getElementById('activeUsers').textContent = stats.users + ' 人';
+            } else {
+                // 学生端显示个人统计
+                document.getElementById('totalQuestions').textContent = userLearningData.completedQuestions + ' 题';
+                document.getElementById('totalVideos').textContent = userLearningData.watchedVideos + ' 个';
+                document.getElementById('activeUsers').textContent = Math.floor(userLearningData.studyTime / 60) + ' 小时';
+            }
+        }
+        
+        // 获取所有用户数据（教师端功能）
+        function getAllUserData() {
+            const allData = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('userData_')) {
+                    try {
+                        const userData = JSON.parse(localStorage.getItem(key));
+                        allData.push(userData);
+                    } catch (e) {
+                        console.error('解析用户数据失败:', e);
+                    }
+                }
+            }
+            return allData;
+        }
+        
+        // 教师端数据监控功能
+        function showStudentData() {
+            const display = document.getElementById('studentDataDisplay');
+            const allUserData = getAllUserData();
+            const studentData = allUserData.filter(user => user.role === 'student');
+            
+            if (studentData.length === 0) {
+                display.innerHTML = '<p style="color: #666; text-align: center;">暂无学生数据</p>';
+                display.style.display = 'block';
+                return;
+            }
+            
+            let html = `
+                <div class="student-data-table">
+                    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                        <thead>
+                            <tr style="background: var(--ocean-light); color: white;">
+                                <th style="padding: 12px; text-align: left; border-radius: 8px 0 0 0;">学生姓名</th>
+                                <th style="padding: 12px; text-align: center;">做题次数</th>
+                                <th style="padding: 12px; text-align: center;">做题时长</th>
+                                <th style="padding: 12px; text-align: center;">观看视频</th>
+                                <th style="padding: 12px; text-align: center;">最后登录</th>
+                                <th style="padding: 12px; text-align: center; border-radius: 0 8px 0 0;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            studentData.forEach(student => {
+                const studyHours = Math.floor(student.studyTime / 60);
+                const studyMinutes = student.studyTime % 60;
+                const lastLogin = new Date(student.lastLogin).toLocaleString('zh-CN');
+                
+                html += `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 12px; font-weight: bold; color: var(--ocean-blue);">${student.name}</td>
+                        <td style="padding: 12px; text-align: center;">${student.completedQuestions} 题</td>
+                        <td style="padding: 12px; text-align: center;">${studyHours}小时${studyMinutes}分钟</td>
+                        <td style="padding: 12px; text-align: center;">${student.watchedVideos} 个</td>
+                        <td style="padding: 12px; text-align: center; font-size: 0.9em; color: #666;">${lastLogin}</td>
+                        <td style="padding: 12px; text-align: center;">
+                            <button class="settings-btn" style="padding: 6px 12px; font-size: 0.8em;" onclick="viewStudentDetail('${student.username}')">
+                                详情
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            display.innerHTML = html;
+            display.style.display = 'block';
+        }
+        
+        function viewStudentDetail(username) {
+            const userData = JSON.parse(localStorage.getItem(`userData_${username}`));
+            if (!userData) return;
+            
+            const detailHtml = `
+                <div style="background: rgba(79, 172, 254, 0.1); padding: 20px; border-radius: 15px; margin-top: 15px;">
+                    <h4 style="color: var(--ocean-blue); margin-bottom: 15px;">${userData.name} 的详细数据</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div>
+                            <strong>用户名：</strong> ${userData.username}
+                        </div>
+                        <div>
+                            <strong>登录次数：</strong> ${userData.loginCount} 次
+                        </div>
+                        <div>
+                            <strong>完成题目：</strong> ${userData.completedQuestions} 题
+                        </div>
+                        <div>
+                            <strong>观看视频：</strong> ${userData.watchedVideos} 个
+                        </div>
+                        <div>
+                            <strong>学习时长：</strong> ${Math.floor(userData.studyTime / 60)}小时${userData.studyTime % 60}分钟
+                        </div>
+                        <div>
+                            <strong>最后登录：</strong> ${new Date(userData.lastLogin).toLocaleString('zh-CN')}
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <button class="settings-btn" onclick="document.getElementById('studentDataDisplay').style.display = 'none'">
+                            返回列表
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('studentDataDisplay').innerHTML = detailHtml;
+        }
+        
+        function exportStudentData() {
+            const allUserData = getAllUserData();
+            const studentData = allUserData.filter(user => user.role === 'student');
+            
+            if (studentData.length === 0) {
+                showNotification('暂无学生数据可导出', 'warning');
+                return;
+            }
+            
+            const exportData = {
+                exportTime: new Date().toISOString(),
+                totalStudents: studentData.length,
+                students: studentData
             };
             
-            document.getElementById('totalQuestions').textContent = stats.questions + '+';
-            document.getElementById('totalVideos').textContent = stats.videos + '+';
-            document.getElementById('activeUsers').textContent = stats.users + '+';
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `学生数据_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('学生数据导出成功', 'success');
+        }
+        
+        function clearStudentData() {
+            if (!confirm('确定要清空所有学生数据吗？此操作不可恢复！')) return;
+            
+            const keysToRemove = [];
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('userData_')) {
+                    const userData = JSON.parse(localStorage.getItem(key));
+                    if (userData.role === 'student') {
+                        keysToRemove.push(key);
+                    }
+                }
+            }
+            
+            keysToRemove.forEach(key => localStorage.removeItem(key));
+            
+            showNotification('学生数据已清空', 'success');
+            showStudentData(); // 刷新显示
         }
         
         // 初始化分数图表
