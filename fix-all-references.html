@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修复所有引用</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .fix-button {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .success { border-color: #4caf50; }
+        .error { border-color: #f44336; }
+        .warning { border-color: #ff9800; }
+        
+        .status-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .status-item {
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .status-item.success { background: rgba(76, 175, 80, 0.2); }
+        .status-item.error { background: rgba(244, 67, 54, 0.2); }
+        .status-item.warning { background: rgba(255, 152, 0, 0.2); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 修复所有引用问题</h1>
+        
+        <div style="text-align: center; margin-bottom: 30px;">
+            <button class="fix-button" onclick="checkAllReferences()">检查所有引用</button>
+            <button class="fix-button" onclick="testModuleAccess()">测试模块访问</button>
+            <button class="fix-button" onclick="openMainPage()">打开主页面</button>
+            <button class="fix-button" onclick="openQuestionBank()">打开题库模块</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // 检查所有引用
+        async function checkAllReferences() {
+            showResult('正在检查所有引用...', 'warning');
+            
+            const results = [];
+            
+            // 检查主要文件
+            const mainFiles = [
+                'index.html',
+                'index-modular.html',
+                'NAVIGATION_HUB.html',
+                'MAIN_ENTRY.html'
+            ];
+            
+            for (const file of mainFiles) {
+                try {
+                    const response = await fetch(file);
+                    if (response.ok) {
+                        const text = await response.text();
+                        const oldRefs = (text.match(/question-bank-module\.html/g) || []).length;
+                        const newRefs = (text.match(/question-bank\.html/g) || []).length;
+                        
+                        if (oldRefs > 0) {
+                            results.push({
+                                file: file,
+                                status: 'error',
+                                message: `发现 ${oldRefs} 个旧引用需要修复`
+                            });
+                        } else if (newRefs > 0) {
+                            results.push({
+                                file: file,
+                                status: 'success',
+                                message: `已使用新引用 (${newRefs} 个)`
+                            });
+                        } else {
+                            results.push({
+                                file: file,
+                                status: 'warning',
+                                message: '未找到题库引用'
+                            });
+                        }
+                    } else {
+                        results.push({
+                            file: file,
+                            status: 'error',
+                            message: `文件不存在 (HTTP ${response.status})`
+                        });
+                    }
+                } catch (error) {
+                    results.push({
+                        file: file,
+                        status: 'error',
+                        message: `访问失败: ${error.message}`
+                    });
+                }
+            }
+            
+            // 检查题库模块文件
+            try {
+                const response = await fetch('modules/question-bank.html');
+                if (response.ok) {
+                    results.push({
+                        file: 'modules/question-bank.html',
+                        status: 'success',
+                        message: '题库模块文件存在且可访问'
+                    });
+                } else {
+                    results.push({
+                        file: 'modules/question-bank.html',
+                        status: 'error',
+                        message: `题库模块文件不存在 (HTTP ${response.status})`
+                    });
+                }
+            } catch (error) {
+                results.push({
+                    file: 'modules/question-bank.html',
+                    status: 'error',
+                    message: `题库模块访问失败: ${error.message}`
+                });
+            }
+            
+            // 显示结果
+            const errorCount = results.filter(r => r.status === 'error').length;
+            const successCount = results.filter(r => r.status === 'success').length;
+            
+            let resultHtml = `
+                <div class="result ${errorCount === 0 ? 'success' : 'error'}">
+                    <strong>检查完成: ${successCount} 个成功, ${errorCount} 个错误</strong>
+                </div>
+                <div class="status-list">
+            `;
+            
+            results.forEach(result => {
+                const statusClass = result.status === 'success' ? 'success' : 
+                                  result.status === 'error' ? 'error' : 'warning';
+                const icon = result.status === 'success' ? '✅' : 
+                           result.status === 'error' ? '❌' : '⚠️';
+                
+                resultHtml += `
+                    <div class="status-item ${statusClass}">
+                        ${icon} <strong>${result.file}</strong>: ${result.message}
+                    </div>
+                `;
+            });
+            
+            resultHtml += '</div>';
+            
+            document.getElementById('results').innerHTML = resultHtml;
+        }
+        
+        // 测试模块访问
+        async function testModuleAccess() {
+            showResult('正在测试模块访问...', 'warning');
+            
+            try {
+                const response = await fetch('modules/question-bank.html');
+                if (response.ok) {
+                    showResult('✅ 题库模块可以正常访问', 'success');
+                } else {
+                    showResult(`❌ 题库模块访问失败: HTTP ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ 模块访问错误: ${error.message}`, 'error');
+            }
+        }
+        
+        // 打开主页面
+        function openMainPage() {
+            showResult('正在打开主页面...', 'warning');
+            
+            try {
+                window.open('index-modular.html', '_blank');
+                showResult('✅ 主页面已打开', 'success');
+            } catch (error) {
+                showResult(`❌ 打开主页面失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 打开题库模块
+        function openQuestionBank() {
+            showResult('正在打开题库模块...', 'warning');
+            
+            try {
+                window.open('modules/question-bank.html', '_blank');
+                showResult('✅ 题库模块已打开', 'success');
+            } catch (error) {
+                showResult(`❌ 打开题库模块失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 显示结果
+        function showResult(message, type) {
+            const resultsDiv = document.getElementById('results');
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'warning';
+            
+            resultsDiv.innerHTML = `
+                <div class="result ${className}">
+                    <strong>${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'} ${message}</strong>
+                </div>
+            `;
+        }
+        
+        // 页面加载时自动检查
+        window.addEventListener('load', () => {
+            console.log('修复引用页面已加载');
+            checkAllReferences();
+        });
+    </script>
+</body>
+</html> 
