@@ -436,21 +436,29 @@ window.QuestionBankPractice = (function() {
                     
                     /* 全屏模式下答案显示区域更大 */
                     .practice-fullscreen #answerDisplay {
-                        max-height: 25vh !important;
-                        font-size: 22px !important;
-                        padding: 25px !important;
+                        max-height: 30vh !important;
+                        font-size: 26px !important;
+                        padding: 30px !important;
                         line-height: 1.8 !important;
                     }
                     
                     .practice-fullscreen #answerDisplay h5 {
-                        font-size: 26px !important;
-                        margin-bottom: 20px !important;
+                        font-size: 32px !important;
+                        margin-bottom: 25px !important;
+                        font-weight: bold !important;
                     }
                     
-                    .practice-fullscreen #answerContent,
-                    .practice-fullscreen #explanationContent {
-                        font-size: 20px !important;
+                    .practice-fullscreen #answerContent {
+                        font-size: 24px !important;
                         line-height: 1.8 !important;
+                        font-weight: 500 !important;
+                    }
+                    
+                    .practice-fullscreen #explanationContent {
+                        font-size: 22px !important;
+                        line-height: 1.8 !important;
+                        color: #555 !important;
+                        margin-top: 30px !important;
                     }
                     
                     /* 响应式设计 */
@@ -780,12 +788,12 @@ window.QuestionBankPractice = (function() {
                         </div>
                         
                         <!-- 答案显示区域 -->
-                        <div id="answerDisplay" class="question-card" style="background: rgba(240,248,255,0.95); border: 2px solid #007bff; display: none; max-height: 30vh; overflow-y: auto;">
-                            <h5 style="color: #007bff; margin-bottom: 20px; font-size: 1.3em;">
+                        <div id="answerDisplay" class="question-card" style="background: rgba(240,248,255,0.95); border: 2px solid #007bff; display: none; max-height: 35vh; overflow-y: auto;">
+                            <h5 style="color: #007bff; margin-bottom: 25px; font-size: 1.6em; font-weight: bold;">
                                 <i class="fas fa-lightbulb"></i> 参考答案
                             </h5>
-                            <div id="answerContent" style="font-size: 16px; line-height: 1.8;"></div>
-                            <div id="explanationContent" style="font-size: 16px; line-height: 1.8; margin-top: 20px;"></div>
+                            <div id="answerContent" style="font-size: 20px; line-height: 1.8; font-weight: 500;"></div>
+                            <div id="explanationContent" style="font-size: 18px; line-height: 1.8; margin-top: 25px; color: #555;"></div>
                         </div>
                         
                         <!-- 底部操作区域 -->
