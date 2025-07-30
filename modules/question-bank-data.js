@@ -703,9 +703,15 @@ window.QuestionBankData = (function() {
                 return;
             }
             
-            showNotification('正在加载题目数据...', 'info');
-            
+            // 显示选择模式对话框
+            this.showPracticeOptions(bank);
+        },
+        
+        // 显示练习选项
+        showPracticeOptions: async function(bank) {
             try {
+                showNotification('正在加载题库数据...', 'info');
+                
                 // 加载题库的具体题目数据
                 const questions = await this.loadBankQuestions(bank);
                 if (!questions || questions.length === 0) {
@@ -713,22 +719,180 @@ window.QuestionBankData = (function() {
                     return;
                 }
                 
-                // 创建完整的题库对象
-                const fullBank = {
-                    ...bank,
-                    questions: questions
-                };
+                // 获取年份列表
+                const years = this.getBankYears(questions);
                 
-                // 调用练习模块
-                if (typeof QuestionBankPractice !== 'undefined') {
-                    QuestionBankPractice.startPractice(fullBank);
-                } else {
-                    showNotification('练习模块未加载', 'warning');
-                }
+                // 创建选择对话框
+                const dialog = document.createElement('div');
+                dialog.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.8);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 10000;
+                `;
+                
+                const content = document.createElement('div');
+                content.style.cssText = `
+                    background: white;
+                    padding: 30px;
+                    border-radius: 10px;
+                    max-width: 500px;
+                    width: 90%;
+                    max-height: 80vh;
+                    overflow-y: auto;
+                `;
+                
+                content.innerHTML = `
+                    <h3 style="margin: 0 0 20px 0; color: #333;">选择练习模式</h3>
+                    <p style="margin: 0 0 20px 0; color: #666;">题库: ${bank.name} (共${questions.length}题)</p>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #333;">📚 完整练习</h4>
+                        <button onclick="QuestionBankData.startFullPractice('${bank.id}')" 
+                                style="width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 10px;">
+                            练习全部 ${questions.length} 题
+                        </button>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #333;">🎲 随机练习</h4>
+                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                            <input type="number" id="randomCount" value="5" min="1" max="${questions.length}" 
+                                   style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
+                            <button onclick="QuestionBankData.startRandomPractice('${bank.id}')" 
+                                    style="flex: 1; padding: 8px; background: #2196F3; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                                随机练习
+                            </button>
+                        </div>
+                    </div>
+                    
+                    ${years.length > 0 ? `
+                    <div style="margin-bottom: 20px;">
+                        <h4 style="margin: 0 0 10px 0; color: #333;">📅 按年份练习</h4>
+                        <select id="yearSelect" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; margin-bottom: 10px;">
+                            <option value="">选择年份</option>
+                            ${years.map(year => `<option value="${year}">${year}年</option>`).join('')}
+                        </select>
+                        <button onclick="QuestionBankData.startYearPractice('${bank.id}')" 
+                                style="width: 100%; padding: 8px; background: #FF9800; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                            按年份练习
+                        </button>
+                    </div>
+                    ` : ''}
+                    
+                    <button onclick="this.closest('.practice-dialog').remove()" 
+                            style="width: 100%; padding: 10px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                        取消
+                    </button>
+                `;
+                
+                dialog.appendChild(content);
+                dialog.className = 'practice-dialog';
+                document.body.appendChild(dialog);
+                
+                // 存储题库数据供后续使用
+                window.currentBankData = {
+                    bank: bank,
+                    questions: questions,
+                    years: years
+                };
                 
             } catch (error) {
                 console.error('加载题库数据失败:', error);
                 showNotification('加载题库数据失败', 'error');
+            }
+        },
+        
+        // 开始完整练习
+        startFullPractice: async function(bankId) {
+            const bankData = window.currentBankData;
+            if (!bankData) {
+                showNotification('题库数据未加载', 'error');
+                return;
+            }
+            
+            const fullBank = {
+                ...bankData.bank,
+                questions: bankData.questions
+            };
+            
+            // 移除对话框
+            document.querySelector('.practice-dialog')?.remove();
+            
+            // 调用练习模块
+            if (typeof QuestionBankPractice !== 'undefined') {
+                QuestionBankPractice.startPractice(fullBank);
+            } else {
+                showNotification('练习模块未加载', 'warning');
+            }
+        },
+        
+        // 开始随机练习
+        startRandomPractice: async function(bankId) {
+            const bankData = window.currentBankData;
+            if (!bankData) {
+                showNotification('题库数据未加载', 'error');
+                return;
+            }
+            
+            const count = parseInt(document.getElementById('randomCount').value) || 5;
+            const randomQuestions = this.getRandomQuestions(bankData.questions, count);
+            
+            const fullBank = {
+                ...bankData.bank,
+                questions: randomQuestions
+            };
+            
+            // 移除对话框
+            document.querySelector('.practice-dialog')?.remove();
+            
+            // 调用练习模块
+            if (typeof QuestionBankPractice !== 'undefined') {
+                QuestionBankPractice.startPractice(fullBank);
+            } else {
+                showNotification('练习模块未加载', 'warning');
+            }
+        },
+        
+        // 开始按年份练习
+        startYearPractice: async function(bankId) {
+            const bankData = window.currentBankData;
+            if (!bankData) {
+                showNotification('题库数据未加载', 'error');
+                return;
+            }
+            
+            const selectedYear = document.getElementById('yearSelect').value;
+            if (!selectedYear) {
+                showNotification('请选择年份', 'warning');
+                return;
+            }
+            
+            const yearQuestions = this.filterQuestionsByYear(bankData.questions, selectedYear);
+            if (yearQuestions.length === 0) {
+                showNotification(`${selectedYear}年没有题目`, 'warning');
+                return;
+            }
+            
+            const fullBank = {
+                ...bankData.bank,
+                questions: yearQuestions
+            };
+            
+            // 移除对话框
+            document.querySelector('.practice-dialog')?.remove();
+            
+            // 调用练习模块
+            if (typeof QuestionBankPractice !== 'undefined') {
+                QuestionBankPractice.startPractice(fullBank);
+            } else {
+                showNotification('练习模块未加载', 'warning');
             }
         },
         
@@ -788,6 +952,29 @@ window.QuestionBankData = (function() {
                 console.error(`加载题库 ${bank.name} 失败:`, error);
                 return [];
             }
+        },
+        
+        // 按年份筛选题目
+        filterQuestionsByYear: function(questions, year) {
+            if (!year) return questions;
+            return questions.filter(q => q.year === parseInt(year));
+        },
+        
+        // 随机选择题目
+        getRandomQuestions: function(questions, count) {
+            if (!questions || questions.length === 0) return [];
+            if (count >= questions.length) return questions;
+            
+            const shuffled = [...questions].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, count);
+        },
+        
+        // 获取题库年份列表
+        getBankYears: function(questions) {
+            if (!questions || questions.length === 0) return [];
+            
+            const years = [...new Set(questions.map(q => q.year).filter(y => y))];
+            return years.sort((a, b) => a - b);
         },
         
         previewBank: async function(bankId) {
