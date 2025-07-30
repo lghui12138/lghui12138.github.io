@@ -214,18 +214,62 @@ window.QuestionBankPractice = (function() {
                     }
                     
                     .practice-fullscreen .practice-container {
-                        max-width: 1200px;
+                        max-width: 1400px;
                         margin: 0 auto;
                         height: 100%;
                         display: flex;
                         flex-direction: column;
                     }
                     
+                    /* 题目显示区域优化 - 占据更大空间 */
+                    #questionDisplay {
+                        flex: 1;
+                        min-height: 60vh;
+                        max-height: 70vh;
+                        overflow-y: auto;
+                        font-size: 18px;
+                        line-height: 1.8;
+                        position: relative;
+                        background: rgba(255,255,255,0.98);
+                        border-radius: 20px;
+                        padding: 30px;
+                        margin: 20px 0;
+                        box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+                        border: 2px solid rgba(79,172,254,0.2);
+                    }
+                    
+                    /* 全屏模式下的题目显示优化 */
+                    .practice-fullscreen #questionDisplay {
+                        min-height: 75vh;
+                        max-height: 80vh;
+                        font-size: 20px;
+                        padding: 40px;
+                    }
+                    
+                    /* 控制面板优化 - 更紧凑 */
+                    .control-panel {
+                        background: rgba(255,255,255,0.95);
+                        border-radius: 15px;
+                        padding: 15px 20px;
+                        margin-bottom: 15px;
+                        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+                        border: 1px solid rgba(79,172,254,0.2);
+                    }
+                    
+                    /* 进度条优化 */
+                    .progress-section {
+                        background: rgba(255,255,255,0.9);
+                        border-radius: 15px;
+                        padding: 15px 20px;
+                        margin-bottom: 15px;
+                        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+                    }
+                    
                     /* 自定义滚动条样式 */
                     .practice-fullscreen::-webkit-scrollbar,
                     #questionDisplay::-webkit-scrollbar,
                     #answerDisplay::-webkit-scrollbar {
-                        width: 10px;
+                        width: 12px;
                     }
                     
                     .practice-fullscreen::-webkit-scrollbar-track,
@@ -263,6 +307,12 @@ window.QuestionBankPractice = (function() {
                         .control-panel > div {
                             flex-wrap: wrap;
                             justify-content: center;
+                        }
+                        
+                        #questionDisplay {
+                            min-height: 50vh;
+                            font-size: 16px;
+                            padding: 20px;
                         }
                     }
                     
@@ -392,12 +442,44 @@ window.QuestionBankPractice = (function() {
                         box-shadow: 0 0 20px rgba(79,172,254,0.3);
                         background: rgba(255,255,255,1);
                     }
+                    
+                    /* 全屏模式特殊样式 */
+                    .modal-fullscreen {
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        z-index: 10000 !important;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                        border-radius: 0 !important;
+                        margin: 0 !important;
+                        padding: 20px !important;
+                        box-sizing: border-box !important;
+                    }
+                    
+                    .modal-fullscreen #questionDisplay {
+                        min-height: 80vh !important;
+                        max-height: 85vh !important;
+                        font-size: 22px !important;
+                        padding: 40px !important;
+                    }
+                    
+                    .modal-fullscreen .control-panel {
+                        padding: 10px 15px !important;
+                        margin-bottom: 10px !important;
+                    }
+                    
+                    .modal-fullscreen .progress-section {
+                        padding: 10px 15px !important;
+                        margin-bottom: 10px !important;
+                    }
                 </style>
                 
                 <div id="practiceContainer" class="practice-fullscreen fade-in">
                     <div class="practice-container">
                         <!-- 顶部控制面板 -->
-                        <div class="question-card control-panel" style="margin-bottom: 20px;">
+                        <div class="control-panel">
                             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
                                 <!-- 左侧：时间显示 -->
                                 <div style="display: flex; align-items: center; gap: 15px;">
@@ -496,7 +578,7 @@ window.QuestionBankPractice = (function() {
                         </div>
                         
                         <!-- 进度条和导航 -->
-                        <div class="question-card" style="margin-bottom: 20px;">
+                        <div class="progress-section">
                             <!-- 进度滑块 -->
                             <div style="margin-bottom: 20px;">
                                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
@@ -532,13 +614,13 @@ window.QuestionBankPractice = (function() {
                             </div>
                         </div>
                         
-                        <!-- 题目显示区域 -->
-                        <div id="questionDisplay" class="question-card slide-in" style="flex: 1; max-height: 50vh; overflow-y: auto; font-size: 16px; line-height: 1.8; position: relative;">
+                        <!-- 题目显示区域 - 优化后占据更大空间 -->
+                        <div id="questionDisplay" class="slide-in">
                             <!-- 题目内容将在这里动态加载 -->
                         </div>
                         
                         <!-- 答案显示区域 -->
-                        <div id="answerDisplay" class="question-card" style="background: rgba(240,248,255,0.95); border: 2px solid #007bff; display: none; max-height: 40vh; overflow-y: auto;">
+                        <div id="answerDisplay" class="question-card" style="background: rgba(240,248,255,0.95); border: 2px solid #007bff; display: none; max-height: 30vh; overflow-y: auto;">
                             <h5 style="color: #007bff; margin-bottom: 20px; font-size: 1.3em;">
                                 <i class="fas fa-lightbulb"></i> 参考答案
                             </h5>
@@ -1584,27 +1666,27 @@ window.QuestionBankPractice = (function() {
             }
         },
         
-        // 全屏控制 - 优化版本
+        // 全屏控制 - 模态窗口全屏版本
         toggleFullscreen: function() {
-            const container = document.getElementById('practiceContainer');
+            const modalContainer = document.querySelector('.modal-content') || document.querySelector('.practice-modal');
             const fullscreenBtn = document.getElementById('fullscreenBtn');
             
-            if (!container) {
-                console.error('找不到练习容器');
+            if (!modalContainer) {
+                console.error('找不到模态窗口容器');
                 return;
             }
             
             try {
                 if (!document.fullscreenElement) {
-                    // 进入全屏
-                    if (container.requestFullscreen) {
-                        container.requestFullscreen();
-                    } else if (container.webkitRequestFullscreen) {
-                        container.webkitRequestFullscreen();
-                    } else if (container.msRequestFullscreen) {
-                        container.msRequestFullscreen();
-                    } else if (container.mozRequestFullScreen) {
-                        container.mozRequestFullScreen();
+                    // 进入全屏 - 针对模态窗口
+                    if (modalContainer.requestFullscreen) {
+                        modalContainer.requestFullscreen();
+                    } else if (modalContainer.webkitRequestFullscreen) {
+                        modalContainer.webkitRequestFullscreen();
+                    } else if (modalContainer.msRequestFullscreen) {
+                        modalContainer.msRequestFullscreen();
+                    } else if (modalContainer.mozRequestFullScreen) {
+                        modalContainer.mozRequestFullScreen();
                     } else {
                         showNotification('您的浏览器不支持全屏功能', 'warning');
                         return;
@@ -1618,8 +1700,8 @@ window.QuestionBankPractice = (function() {
                         fullscreenBtn.className = 'btn btn-primary btn-sm btn-hover-effect';
                     }
                     
-                    // 添加全屏样式
-                    container.classList.add('practice-fullscreen');
+                    // 添加模态窗口全屏样式
+                    modalContainer.classList.add('modal-fullscreen');
                     showNotification('已进入全屏模式', 'success');
                 } else {
                     // 退出全屏
@@ -1641,8 +1723,8 @@ window.QuestionBankPractice = (function() {
                         fullscreenBtn.className = 'btn btn-outline-primary btn-sm btn-hover-effect';
                     }
                     
-                    // 移除全屏样式
-                    container.classList.remove('practice-fullscreen');
+                    // 移除模态窗口全屏样式
+                    modalContainer.classList.remove('modal-fullscreen');
                     showNotification('已退出全屏模式', 'info');
                 }
             } catch (error) {
@@ -3641,6 +3723,594 @@ window.QuestionBankPractice = (function() {
             }
             
             return `答案：请参考相关教材或资料。`;
+        },
+        
+        // 智能推荐系统
+        getIntelligentRecommendations: function() {
+            const currentQuestion = currentSession.questions[currentSession.currentIndex];
+            if (!currentQuestion) return [];
+            
+            const recommendations = [];
+            
+            // 基于答题历史的推荐
+            const userAccuracy = this.calculateAccuracy();
+            if (userAccuracy < 60) {
+                recommendations.push({
+                    type: 'difficulty',
+                    title: '建议降低难度',
+                    description: '当前正确率较低，建议选择更基础的题目',
+                    action: 'switchToEasier'
+                });
+            } else if (userAccuracy > 90) {
+                recommendations.push({
+                    type: 'difficulty',
+                    title: '建议提高难度',
+                    description: '当前表现优秀，可以挑战更难的题目',
+                    action: 'switchToHarder'
+                });
+            }
+            
+            // 基于答题速度的推荐
+            const averageTime = this.calculateAverageTime();
+            if (averageTime > 120) {
+                recommendations.push({
+                    type: 'speed',
+                    title: '答题速度较慢',
+                    description: '建议提高答题效率，注意时间管理',
+                    action: 'showTimeManagementTips'
+                });
+            }
+            
+            // 基于错题类型的推荐
+            const wrongQuestions = currentSession.questions.filter(q => q.answered && !q.correct);
+            if (wrongQuestions.length > 0) {
+                const wrongTypes = wrongQuestions.map(q => q.type || '未知').filter((v, i, a) => a.indexOf(v) === i);
+                if (wrongTypes.length > 0) {
+                    recommendations.push({
+                        type: 'review',
+                        title: '重点复习建议',
+                        description: `建议重点复习以下类型题目：${wrongTypes.join('、')}`,
+                        action: 'focusOnWeakAreas'
+                    });
+                }
+            }
+            
+            return recommendations;
+        },
+        
+        // 自适应难度调整
+        adjustDifficulty: function() {
+            const accuracy = this.calculateAccuracy();
+            const recentAnswers = currentSession.userAnswers.slice(-5).filter(a => a !== null);
+            const recentAccuracy = recentAnswers.length > 0 ? 
+                recentAnswers.filter((answer, index) => {
+                    const question = currentSession.questions[currentSession.currentIndex - recentAnswers.length + index];
+                    return question && answer === question.correct;
+                }).length / recentAnswers.length * 100 : 0;
+            
+            let difficultyAdjustment = 0;
+            
+            if (recentAccuracy < 40) {
+                difficultyAdjustment = -1; // 降低难度
+            } else if (recentAccuracy > 80) {
+                difficultyAdjustment = 1; // 提高难度
+            }
+            
+            return {
+                adjustment: difficultyAdjustment,
+                reason: recentAccuracy < 40 ? '最近答题正确率较低' : 
+                       recentAccuracy > 80 ? '最近答题表现优秀' : '难度适中'
+            };
+        },
+        
+        // 学习路径规划
+        generateLearningPath: function() {
+            const userProfile = this.getUserProfile();
+            const learningPath = {
+                currentLevel: userProfile.level || 'beginner',
+                targetLevel: 'advanced',
+                milestones: [],
+                estimatedTime: 0,
+                recommendations: []
+            };
+            
+            // 根据用户表现生成学习里程碑
+            const accuracy = this.calculateAccuracy();
+            const averageTime = this.calculateAverageTime();
+            
+            if (accuracy < 60) {
+                learningPath.milestones.push({
+                    id: 'basic_mastery',
+                    title: '基础掌握',
+                    description: '掌握基础概念和简单题目',
+                    targetAccuracy: 70,
+                    estimatedHours: 10
+                });
+            }
+            
+            if (accuracy >= 60 && accuracy < 80) {
+                learningPath.milestones.push({
+                    id: 'intermediate_skills',
+                    title: '中级技能',
+                    description: '提升解题技巧和速度',
+                    targetAccuracy: 85,
+                    estimatedHours: 15
+                });
+            }
+            
+            if (accuracy >= 80) {
+                learningPath.milestones.push({
+                    id: 'advanced_mastery',
+                    title: '高级精通',
+                    description: '掌握复杂题目和高级技巧',
+                    targetAccuracy: 95,
+                    estimatedHours: 20
+                });
+            }
+            
+            // 计算总预计时间
+            learningPath.estimatedTime = learningPath.milestones.reduce((total, milestone) => total + milestone.estimatedHours, 0);
+            
+            return learningPath;
+        },
+        
+        // 获取用户学习档案
+        getUserProfile: function() {
+            const accuracy = this.calculateAccuracy();
+            const averageTime = this.calculateAverageTime();
+            const totalQuestions = currentSession.userAnswers.filter(a => a !== null).length;
+            
+            let level = 'beginner';
+            if (accuracy >= 90 && averageTime < 60) {
+                level = 'expert';
+            } else if (accuracy >= 75 && averageTime < 90) {
+                level = 'advanced';
+            } else if (accuracy >= 60) {
+                level = 'intermediate';
+            }
+            
+            return {
+                level: level,
+                accuracy: accuracy,
+                averageTime: averageTime,
+                totalQuestions: totalQuestions,
+                learningStyle: this.determineLearningStyle(),
+                strengths: this.identifyStrengths(),
+                weaknesses: this.identifyWeaknesses()
+            };
+        },
+        
+        // 确定学习风格
+        determineLearningStyle: function() {
+            const questionTimes = currentSession.questionTimes.filter(t => t > 0);
+            const averageTime = questionTimes.length > 0 ? 
+                questionTimes.reduce((sum, time) => sum + time, 0) / questionTimes.length : 0;
+            
+            if (averageTime < 30) {
+                return 'quick_learner';
+            } else if (averageTime < 90) {
+                return 'balanced_learner';
+            } else {
+                return 'thorough_learner';
+            }
+        },
+        
+        // 识别优势领域
+        identifyStrengths: function() {
+            const answeredQuestions = currentSession.questions.filter((q, index) => 
+                currentSession.userAnswers[index] !== null
+            );
+            
+            const strengths = [];
+            const typeAccuracy = {};
+            
+            answeredQuestions.forEach((question, index) => {
+                const userAnswer = currentSession.userAnswers[index];
+                const isCorrect = userAnswer === question.correct;
+                const type = question.type || '未知';
+                
+                if (!typeAccuracy[type]) {
+                    typeAccuracy[type] = { correct: 0, total: 0 };
+                }
+                
+                typeAccuracy[type].total++;
+                if (isCorrect) {
+                    typeAccuracy[type].correct++;
+                }
+            });
+            
+            Object.entries(typeAccuracy).forEach(([type, stats]) => {
+                const accuracy = (stats.correct / stats.total) * 100;
+                if (accuracy >= 80) {
+                    strengths.push({
+                        type: type,
+                        accuracy: accuracy,
+                        count: stats.total
+                    });
+                }
+            });
+            
+            return strengths;
+        },
+        
+        // 识别薄弱领域
+        identifyWeaknesses: function() {
+            const answeredQuestions = currentSession.questions.filter((q, index) => 
+                currentSession.userAnswers[index] !== null
+            );
+            
+            const weaknesses = [];
+            const typeAccuracy = {};
+            
+            answeredQuestions.forEach((question, index) => {
+                const userAnswer = currentSession.userAnswers[index];
+                const isCorrect = userAnswer === question.correct;
+                const type = question.type || '未知';
+                
+                if (!typeAccuracy[type]) {
+                    typeAccuracy[type] = { correct: 0, total: 0 };
+                }
+                
+                typeAccuracy[type].total++;
+                if (isCorrect) {
+                    typeAccuracy[type].correct++;
+                }
+            });
+            
+            Object.entries(typeAccuracy).forEach(([type, stats]) => {
+                const accuracy = (stats.correct / stats.total) * 100;
+                if (accuracy < 60) {
+                    weaknesses.push({
+                        type: type,
+                        accuracy: accuracy,
+                        count: stats.total,
+                        priority: 'high'
+                    });
+                } else if (accuracy < 80) {
+                    weaknesses.push({
+                        type: type,
+                        accuracy: accuracy,
+                        count: stats.total,
+                        priority: 'medium'
+                    });
+                }
+            });
+            
+            return weaknesses.sort((a, b) => a.accuracy - b.accuracy);
+        },
+        
+        // 智能练习模式
+        startIntelligentPractice: function() {
+            const userProfile = this.getUserProfile();
+            const recommendations = this.getIntelligentRecommendations();
+            const learningPath = this.generateLearningPath();
+            
+            // 根据用户档案调整练习策略
+            const practiceStrategy = {
+                difficulty: userProfile.level === 'beginner' ? 'easy' : 
+                           userProfile.level === 'expert' ? 'hard' : 'medium',
+                focusAreas: userProfile.weaknesses.map(w => w.type),
+                timeLimit: userProfile.learningStyle === 'quick_learner' ? 30 : 
+                          userProfile.learningStyle === 'thorough_learner' ? 120 : 60,
+                adaptiveMode: true
+            };
+            
+            // 显示智能练习建议
+            this.showIntelligentPracticeDialog(practiceStrategy, recommendations, learningPath);
+        },
+        
+        // 显示智能练习对话框
+        showIntelligentPracticeDialog: function(strategy, recommendations, learningPath) {
+            const dialogContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">
+                        <i class="fas fa-brain"></i> 智能练习建议
+                    </h4>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div style="background: rgba(79,172,254,0.1); border-radius: 15px; padding: 20px;">
+                            <h5 style="color: #4facfe; margin-bottom: 15px;">练习策略</h5>
+                            <ul style="color: #666; line-height: 1.6;">
+                                <li>难度等级：${strategy.difficulty}</li>
+                                <li>重点领域：${strategy.focusAreas.join('、') || '无'}</li>
+                                <li>时间限制：${strategy.timeLimit}秒/题</li>
+                                <li>自适应模式：${strategy.adaptiveMode ? '开启' : '关闭'}</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="background: rgba(40,167,69,0.1); border-radius: 15px; padding: 20px;">
+                            <h5 style="color: #28a745; margin-bottom: 15px;">学习路径</h5>
+                            <p style="color: #666; line-height: 1.6;">
+                                当前等级：${learningPath.currentLevel}<br>
+                                目标等级：${learningPath.targetLevel}<br>
+                                预计时间：${learningPath.estimatedTime}小时
+                            </p>
+                        </div>
+                    </div>
+                    
+                    ${recommendations.length > 0 ? `
+                        <div style="background: rgba(255,193,7,0.1); border-radius: 15px; padding: 20px; margin-top: 20px;">
+                            <h5 style="color: #ffc107; margin-bottom: 15px;">智能推荐</h5>
+                            ${recommendations.map(rec => `
+                                <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.8); border-radius: 10px;">
+                                    <strong>${rec.title}</strong><br>
+                                    <small style="color: #666;">${rec.description}</small>
+                                </div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                        <button class="btn btn-success btn-hover-effect" onclick="QuestionBankPractice.startAdaptivePractice()" style="border-radius: 15px; padding: 10px 20px;">
+                            <i class="fas fa-play"></i> 开始智能练习
+                        </button>
+                        <button class="btn btn-outline-secondary btn-hover-effect" onclick="QuestionBankUI.closeAllModals()" style="border-radius: 15px; padding: 10px 20px;">
+                            <i class="fas fa-times"></i> 取消
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '智能练习建议',
+                    content: dialogContent,
+                    size: 'large'
+                });
+            }
+        },
+        
+        // 开始自适应练习
+        startAdaptivePractice: function() {
+            const userProfile = this.getUserProfile();
+            const weaknesses = userProfile.weaknesses;
+            
+            // 根据薄弱领域筛选题目
+            let adaptiveQuestions = currentSession.questions;
+            if (weaknesses.length > 0) {
+                const focusTypes = weaknesses.slice(0, 3).map(w => w.type); // 重点练习前3个薄弱领域
+                adaptiveQuestions = currentSession.questions.filter(q => 
+                    focusTypes.includes(q.type || '未知')
+                );
+            }
+            
+            // 如果筛选后的题目太少，使用原题目
+            if (adaptiveQuestions.length < 5) {
+                adaptiveQuestions = currentSession.questions;
+            }
+            
+            // 开始自适应练习
+            this.startCustomPractice(adaptiveQuestions, '智能自适应练习');
+            
+            showNotification('已启动智能自适应练习模式', 'success');
+        },
+        
+        // 学习进度追踪
+        trackLearningProgress: function() {
+            const progress = {
+                sessionId: Date.now(),
+                startTime: currentSession.startTime,
+                currentTime: new Date(),
+                totalQuestions: currentSession.questions.length,
+                completedQuestions: currentSession.currentIndex + 1,
+                accuracy: this.calculateAccuracy(),
+                averageTime: this.calculateAverageTime(),
+                userProfile: this.getUserProfile(),
+                learningPath: this.generateLearningPath(),
+                recommendations: this.getIntelligentRecommendations()
+            };
+            
+            // 保存到本地存储
+            try {
+                const existingProgress = JSON.parse(localStorage.getItem('learningProgress') || '[]');
+                existingProgress.push(progress);
+                localStorage.setItem('learningProgress', JSON.stringify(existingProgress));
+            } catch (error) {
+                console.error('保存学习进度失败:', error);
+            }
+            
+            return progress;
+        },
+        
+        // 生成学习报告
+        generateLearningReport: function() {
+            const progress = this.trackLearningProgress();
+            const userProfile = progress.userProfile;
+            
+            const report = {
+                title: '学习进度报告',
+                date: new Date().toLocaleDateString(),
+                summary: {
+                    totalQuestions: progress.totalQuestions,
+                    completedQuestions: progress.completedQuestions,
+                    accuracy: progress.accuracy,
+                    averageTime: progress.averageTime,
+                    level: userProfile.level
+                },
+                analysis: {
+                    strengths: userProfile.strengths,
+                    weaknesses: userProfile.weaknesses,
+                    learningStyle: userProfile.learningStyle,
+                    recommendations: progress.recommendations
+                },
+                learningPath: progress.learningPath,
+                nextSteps: this.generateNextSteps(userProfile)
+            };
+            
+            return report;
+        },
+        
+        // 生成下一步学习建议
+        generateNextSteps: function(userProfile) {
+            const nextSteps = [];
+            
+            if (userProfile.weaknesses.length > 0) {
+                nextSteps.push({
+                    priority: 'high',
+                    action: 'focus_weak_areas',
+                    description: `重点复习薄弱领域：${userProfile.weaknesses.slice(0, 3).map(w => w.type).join('、')}`,
+                    estimatedTime: '2-3小时'
+                });
+            }
+            
+            if (userProfile.accuracy < 80) {
+                nextSteps.push({
+                    priority: 'medium',
+                    action: 'improve_accuracy',
+                    description: '通过更多练习提高答题准确率',
+                    estimatedTime: '1-2小时'
+                });
+            }
+            
+            if (userProfile.averageTime > 90) {
+                nextSteps.push({
+                    priority: 'medium',
+                    action: 'improve_speed',
+                    description: '练习提高答题速度',
+                    estimatedTime: '1小时'
+                });
+            }
+            
+            if (userProfile.level === 'beginner' || userProfile.level === 'intermediate') {
+                nextSteps.push({
+                    priority: 'low',
+                    action: 'advance_level',
+                    description: '挑战更高难度的题目',
+                    estimatedTime: '2-4小时'
+                });
+            }
+            
+            return nextSteps;
+        },
+        
+        // 显示学习报告
+        showLearningReport: function() {
+            const report = this.generateLearningReport();
+            
+            const reportContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">
+                        <i class="fas fa-chart-line"></i> 学习进度报告
+                    </h4>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                        <div style="background: rgba(79,172,254,0.1); border-radius: 15px; padding: 20px;">
+                            <h5 style="color: #4facfe; margin-bottom: 15px;">学习概况</h5>
+                            <ul style="color: #666; line-height: 1.6;">
+                                <li>总题目数：${report.summary.totalQuestions}</li>
+                                <li>已完成：${report.summary.completedQuestions}</li>
+                                <li>正确率：${report.summary.accuracy}%</li>
+                                <li>平均用时：${report.summary.averageTime}秒</li>
+                                <li>当前等级：${report.summary.level}</li>
+                            </ul>
+                        </div>
+                        
+                        <div style="background: rgba(40,167,69,0.1); border-radius: 15px; padding: 20px;">
+                            <h5 style="color: #28a745; margin-bottom: 15px;">优势领域</h5>
+                            ${report.analysis.strengths.length > 0 ? 
+                                report.analysis.strengths.map(strength => `
+                                    <div style="margin-bottom: 8px;">
+                                        <strong>${strength.type}</strong> - ${strength.accuracy.toFixed(1)}% (${strength.count}题)
+                                    </div>
+                                `).join('') : 
+                                '<p style="color: #666;">暂无优势领域</p>'
+                            }
+                        </div>
+                        
+                        <div style="background: rgba(220,53,69,0.1); border-radius: 15px; padding: 20px;">
+                            <h5 style="color: #dc3545; margin-bottom: 15px;">薄弱领域</h5>
+                            ${report.analysis.weaknesses.length > 0 ? 
+                                report.analysis.weaknesses.slice(0, 3).map(weakness => `
+                                    <div style="margin-bottom: 8px;">
+                                        <strong>${weakness.type}</strong> - ${weakness.accuracy.toFixed(1)}% (${weakness.count}题)
+                                    </div>
+                                `).join('') : 
+                                '<p style="color: #666;">暂无薄弱领域</p>'
+                            }
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255,193,7,0.1); border-radius: 15px; padding: 20px; margin-top: 20px;">
+                        <h5 style="color: #ffc107; margin-bottom: 15px;">下一步建议</h5>
+                        ${report.nextSteps.map((step, index) => `
+                            <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.8); border-radius: 10px;">
+                                <strong>${index + 1}. ${step.description}</strong><br>
+                                <small style="color: #666;">预计时间：${step.estimatedTime}</small>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+                        <button class="btn btn-success btn-hover-effect" onclick="QuestionBankPractice.exportLearningReport()" style="border-radius: 15px; padding: 10px 20px;">
+                            <i class="fas fa-download"></i> 导出报告
+                        </button>
+                        <button class="btn btn-primary btn-hover-effect" onclick="QuestionBankPractice.startIntelligentPractice()" style="border-radius: 15px; padding: 10px 20px;">
+                            <i class="fas fa-play"></i> 智能练习
+                        </button>
+                        <button class="btn btn-outline-secondary btn-hover-effect" onclick="QuestionBankUI.closeAllModals()" style="border-radius: 15px; padding: 10px 20px;">
+                            <i class="fas fa-times"></i> 关闭
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '学习进度报告',
+                    content: reportContent,
+                    size: 'large'
+                });
+            }
+        },
+        
+        // 导出学习报告
+        exportLearningReport: function() {
+            const report = this.generateLearningReport();
+            
+            const reportText = `
+学习进度报告
+================
+
+日期：${report.date}
+练习名称：${currentSession.sessionName}
+
+学习概况：
+- 总题目数：${report.summary.totalQuestions}
+- 已完成：${report.summary.completedQuestions}
+- 正确率：${report.summary.accuracy}%
+- 平均用时：${report.summary.averageTime}秒
+- 当前等级：${report.summary.level}
+
+优势领域：
+${report.analysis.strengths.map(s => `- ${s.type}: ${s.accuracy.toFixed(1)}% (${s.count}题)`).join('\n')}
+
+薄弱领域：
+${report.analysis.weaknesses.slice(0, 3).map(w => `- ${w.type}: ${w.accuracy.toFixed(1)}% (${w.count}题)`).join('\n')}
+
+学习建议：
+${report.nextSteps.map((step, index) => `${index + 1}. ${step.description} (预计时间：${step.estimatedTime})`).join('\n')}
+
+学习路径：
+- 当前等级：${report.learningPath.currentLevel}
+- 目标等级：${report.learningPath.targetLevel}
+- 预计完成时间：${report.learningPath.estimatedTime}小时
+
+里程碑：
+${report.learningPath.milestones.map(m => `- ${m.title}: ${m.description} (目标正确率：${m.targetAccuracy}%)`).join('\n')}
+            `;
+            
+            const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `learning-report-${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('学习报告已导出', 'success');
         }
     };
 })(); 
