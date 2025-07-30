@@ -92,21 +92,53 @@ window.QuestionBankPractice = (function() {
                 }
             });
             
-            // 鼠标滚轮切题（非全屏下）
-            const mainContent = document.querySelector('.main-content') || document.body;
-            mainContent.addEventListener('wheel', (e) => {
+            // 优化鼠标滚轮处理 - 修复滚动问题
+            this.setupWheelEvents();
+        },
+        
+        // 设置滚轮事件 - 新增方法
+        setupWheelEvents: function() {
+            // 监听整个文档的滚轮事件
+            document.addEventListener('wheel', (e) => {
                 if (!practiceState.isActive) return;
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-                if (practiceState.isFullscreen) return;
-                // 只在没有滚动条或滚动到顶部/底部时切题
-                const container = document.getElementById('questionDisplay');
-                if (container && (container.scrollHeight > container.clientHeight)) {
-                    // 允许正常滚动
+                
+                // 如果目标元素是输入框或文本域，允许正常滚动
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
                     return;
                 }
+                
+                // 获取题目显示容器
+                const questionDisplay = document.getElementById('questionDisplay');
+                if (!questionDisplay) return;
+                
+                // 检查容器是否有滚动条
+                const hasScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
+                
+                // 如果容器有滚动条且不在顶部或底部，允许正常滚动
+                if (hasScrollbar) {
+                    const isAtTop = questionDisplay.scrollTop === 0;
+                    const isAtBottom = questionDisplay.scrollTop + questionDisplay.clientHeight >= questionDisplay.scrollHeight;
+                    
+                    // 只有在顶部向上滚动或底部向下滚动时才切换题目
+                    if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+                        e.preventDefault();
+                        if (e.deltaY > 0) {
+                            this.nextQuestion();
+                        } else {
+                            this.previousQuestion();
+                        }
+                    }
+                    // 其他情况允许正常滚动
+                    return;
+                }
+                
+                // 如果容器没有滚动条，直接切换题目
                 e.preventDefault();
-                if (e.deltaY > 0) this.nextQuestion();
-                else if (e.deltaY < 0) this.previousQuestion();
+                if (e.deltaY > 0) {
+                    this.nextQuestion();
+                } else {
+                    this.previousQuestion();
+                }
             }, { passive: false });
         },
         
@@ -241,44 +273,45 @@ window.QuestionBankPractice = (function() {
                     /* 题目显示区域优化 - 占据更大空间 */
                     #questionDisplay {
                         flex: 1;
-                        min-height: 60vh;
-                        max-height: 70vh;
+                        min-height: 70vh;
+                        max-height: 80vh;
                         overflow-y: auto;
-                        font-size: 18px;
-                        line-height: 1.8;
+                        font-size: 22px;
+                        line-height: 2.0;
                         position: relative;
                         background: rgba(255,255,255,0.98);
                         border-radius: 20px;
-                        padding: 30px;
+                        padding: 40px;
                         margin: 20px 0;
                         box-shadow: 0 15px 50px rgba(0,0,0,0.1);
                         border: 2px solid rgba(79,172,254,0.2);
+                        scroll-behavior: smooth;
                     }
                     
                     /* 全屏模式下的题目显示优化 - 最大化显示 */
                     .practice-fullscreen #questionDisplay {
-                        min-height: 90vh;
-                        max-height: 95vh;
-                        font-size: 28px;
-                        line-height: 2.2;
-                        padding: 60px;
+                        min-height: 95vh;
+                        max-height: 98vh;
+                        font-size: 32px;
+                        line-height: 2.4;
+                        padding: 80px;
                         margin: 5px 0;
                     }
                     
                     /* 全屏模式下题目内容字体更大 */
                     .practice-fullscreen #questionDisplay h4 {
-                        font-size: 32px !important;
-                        margin-bottom: 30px !important;
+                        font-size: 36px !important;
+                        margin-bottom: 35px !important;
                     }
                     
                     .practice-fullscreen #questionDisplay div[style*="font-size: 1.1em"] {
-                        font-size: 1.6em !important;
-                        line-height: 2.4 !important;
+                        font-size: 1.8em !important;
+                        line-height: 2.6 !important;
                     }
                     
                     .practice-fullscreen #questionDisplay div[style*="font-size: 1.2em"] {
-                        font-size: 1.8em !important;
-                        line-height: 2.6 !important;
+                        font-size: 2.0em !important;
+                        line-height: 2.8 !important;
                     }
                     
                     /* 全屏模式下选项字体更大 */
@@ -314,40 +347,54 @@ window.QuestionBankPractice = (function() {
                         min-width: 150px !important;
                     }
                     
-                    /* 字体大小调节按钮 */
+                    /* 字体大小调节按钮 - 优化版本 */
                     .font-size-controls {
                         position: fixed;
                         top: 20px;
                         right: 20px;
                         z-index: 10000;
                         display: flex;
-                        gap: 10px;
+                        align-items: center;
+                        gap: 15px;
                         background: rgba(255,255,255,0.95);
-                        padding: 10px;
-                        border-radius: 15px;
-                        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+                        padding: 15px 20px;
+                        border-radius: 20px;
+                        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+                        border: 2px solid rgba(79,172,254,0.2);
                     }
                     
                     .font-size-controls button {
-                        width: 40px;
-                        height: 40px;
+                        width: 45px;
+                        height: 45px;
                         border: none;
                         border-radius: 50%;
                         background: #4facfe;
                         color: white;
-                        font-size: 18px;
+                        font-size: 20px;
+                        font-weight: bold;
                         cursor: pointer;
                         transition: all 0.3s ease;
+                        box-shadow: 0 3px 10px rgba(79,172,254,0.3);
                     }
                     
                     .font-size-controls button:hover {
                         background: #00f2fe;
                         transform: scale(1.1);
+                        box-shadow: 0 5px 15px rgba(0,242,254,0.4);
                     }
                     
                     .font-size-controls button:disabled {
                         background: #ccc;
                         cursor: not-allowed;
+                        box-shadow: none;
+                    }
+                    
+                    .font-size-display {
+                        font-size: 16px;
+                        font-weight: bold;
+                        color: #333;
+                        min-width: 50px;
+                        text-align: center;
                     }
                     
                     /* 控制面板优化 - 更紧凑 */
@@ -386,32 +433,50 @@ window.QuestionBankPractice = (function() {
                         margin-bottom: 10px;
                     }
                     
-                    /* 自定义滚动条样式 */
+                    /* 自定义滚动条样式 - 优化版本 */
                     .practice-fullscreen::-webkit-scrollbar,
                     #questionDisplay::-webkit-scrollbar,
                     #answerDisplay::-webkit-scrollbar {
-                        width: 12px;
+                        width: 16px;
                     }
                     
                     .practice-fullscreen::-webkit-scrollbar-track,
                     #questionDisplay::-webkit-scrollbar-track,
                     #answerDisplay::-webkit-scrollbar-track {
-                        background: rgba(255,255,255,0.1);
-                        border-radius: 10px;
+                        background: rgba(79,172,254,0.1);
+                        border-radius: 12px;
+                        border: 1px solid rgba(79,172,254,0.2);
                     }
                     
                     .practice-fullscreen::-webkit-scrollbar-thumb,
                     #questionDisplay::-webkit-scrollbar-thumb,
                     #answerDisplay::-webkit-scrollbar-thumb {
                         background: linear-gradient(180deg, #4facfe, #00f2fe);
-                        border-radius: 10px;
-                        border: 2px solid rgba(255,255,255,0.3);
+                        border-radius: 12px;
+                        border: 2px solid rgba(255,255,255,0.5);
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
                     }
                     
                     .practice-fullscreen::-webkit-scrollbar-thumb:hover,
                     #questionDisplay::-webkit-scrollbar-thumb:hover,
                     #answerDisplay::-webkit-scrollbar-thumb:hover {
                         background: linear-gradient(180deg, #00f2fe, #4facfe);
+                        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                        transform: scale(1.05);
+                    }
+                    
+                    /* 滚动条按钮样式 */
+                    .practice-fullscreen::-webkit-scrollbar-button,
+                    #questionDisplay::-webkit-scrollbar-button,
+                    #answerDisplay::-webkit-scrollbar-button {
+                        background: rgba(79,172,254,0.3);
+                        border-radius: 8px;
+                    }
+                    
+                    .practice-fullscreen::-webkit-scrollbar-button:hover,
+                    #questionDisplay::-webkit-scrollbar-button:hover,
+                    #answerDisplay::-webkit-scrollbar-button:hover {
+                        background: rgba(79,172,254,0.5);
                     }
                     
                     /* 全屏模式下底部操作区域更紧凑 */
@@ -829,6 +894,9 @@ window.QuestionBankPractice = (function() {
             const questionHTML = this.generateQuestionHTML(question, currentSession.currentIndex);
             questionDisplay.innerHTML = questionHTML;
             
+            // 恢复保存的字体大小
+            this.restoreFontSize();
+            
             // 更新进度信息
             this.updateProgress();
             
@@ -851,9 +919,9 @@ window.QuestionBankPractice = (function() {
             if (question.options && Array.isArray(question.options) && question.options.length > 0) {
                 optionsHTML = question.options.map((option, optIndex) => `
                     <div class="option-item" onclick="QuestionBankPractice.selectOption(${optIndex})" 
-                         style="background: white; border: 2px solid #e9ecef; border-radius: 15px; padding: 20px; margin: 15px 0; cursor: pointer; transition: all 0.3s ease; font-size: 1.1em; line-height: 1.6;"
+                         style="background: white; border: 2px solid #e9ecef; border-radius: 15px; padding: 25px; margin: 18px 0; cursor: pointer; transition: all 0.3s ease; font-size: 1.3em; line-height: 1.8;"
                          data-option-index="${optIndex}">
-                        <span style="display: inline-block; width: 35px; height: 35px; border-radius: 50%; background: #4facfe; color: white; text-align: center; line-height: 35px; margin-right: 20px; font-weight: bold; font-size: 1.1em;">
+                        <span style="display: inline-block; width: 40px; height: 40px; border-radius: 50%; background: #4facfe; color: white; text-align: center; line-height: 40px; margin-right: 25px; font-weight: bold; font-size: 1.2em;">
                             ${String.fromCharCode(65 + optIndex)}
                         </span>
                         ${option}
@@ -875,7 +943,7 @@ window.QuestionBankPractice = (function() {
                     <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px;">
                         <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">📝 请输入答案：</label>
                         <input type="text" id="fillAnswer" placeholder="请输入答案..." 
-                               style="width: 100%; padding: 22px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.2em; box-sizing: border-box; transition: all 0.3s ease;"
+                               style="width: 100%; padding: 25px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.4em; box-sizing: border-box; transition: all 0.3s ease;"
                                onchange="QuestionBankPractice.handleFillAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
                     </div>
                 `;
@@ -884,7 +952,7 @@ window.QuestionBankPractice = (function() {
                     <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px;">
                         <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">📝 请输入详细答案：</label>
                         <textarea id="essayAnswer" placeholder="请输入详细答案..." 
-                                  style="width: 100%; min-height: 180px; padding: 22px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.2em; box-sizing: border-box; resize: vertical; transition: all 0.3s ease; line-height: 1.8;"
+                                  style="width: 100%; min-height: 200px; padding: 25px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.4em; box-sizing: border-box; resize: vertical; transition: all 0.3s ease; line-height: 2.0;"
                                   onchange="QuestionBankPractice.handleEssayAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'"></textarea>
                     </div>
                 `;
@@ -951,7 +1019,7 @@ window.QuestionBankPractice = (function() {
                         </div>
                     </div>
                     
-                    <div style="font-size: 1.2em; line-height: 1.8; margin-bottom: 30px; color: #333; text-align: justify;">
+                    <div style="font-size: 1.4em; line-height: 2.2; margin-bottom: 35px; color: #333; text-align: justify; font-weight: 500;">
                         ${question.question || question.title || '题目内容'}
                     </div>
                     
@@ -2042,6 +2110,75 @@ window.QuestionBankPractice = (function() {
                     showAnswerBtn.className = 'btn btn-outline-success btn-sm';
                 }
             }
+        },
+        
+        // 字体大小控制功能
+        changeFontSize: function(delta) {
+            const questionDisplay = document.getElementById('questionDisplay');
+            const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+            
+            if (!questionDisplay || !fontSizeDisplay) return;
+            
+            // 获取当前字体大小
+            let currentSize = parseInt(fontSizeDisplay.textContent) || 22;
+            
+            // 计算新字体大小
+            let newSize = currentSize + (delta * 2);
+            
+            // 限制字体大小范围
+            newSize = Math.max(16, Math.min(48, newSize));
+            
+            // 更新显示
+            fontSizeDisplay.textContent = newSize + 'px';
+            
+            // 应用字体大小到题目显示区域
+            questionDisplay.style.fontSize = newSize + 'px';
+            
+            // 同时调整行高
+            const lineHeight = Math.max(1.6, newSize / 16);
+            questionDisplay.style.lineHeight = lineHeight;
+            
+            // 保存到本地存储
+            localStorage.setItem('questionBankFontSize', newSize);
+            
+            // 显示通知
+            showNotification(`字体大小已调整为 ${newSize}px`, 'info', 1500);
+        },
+        
+        // 重置字体大小
+        resetFontSize: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+            
+            if (!questionDisplay || !fontSizeDisplay) return;
+            
+            const defaultSize = 22;
+            fontSizeDisplay.textContent = defaultSize + 'px';
+            questionDisplay.style.fontSize = defaultSize + 'px';
+            questionDisplay.style.lineHeight = '2.0';
+            
+            localStorage.setItem('questionBankFontSize', defaultSize);
+            showNotification('字体大小已重置为默认值', 'info', 1500);
+        },
+        
+        // 恢复保存的字体大小
+        restoreFontSize: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+            
+            if (!questionDisplay || !fontSizeDisplay) return;
+            
+            // 从本地存储获取保存的字体大小
+            const savedSize = localStorage.getItem('questionBankFontSize');
+            const fontSize = savedSize ? parseInt(savedSize) : 22;
+            
+            // 应用字体大小
+            fontSizeDisplay.textContent = fontSize + 'px';
+            questionDisplay.style.fontSize = fontSize + 'px';
+            
+            // 调整行高
+            const lineHeight = Math.max(1.6, fontSize / 16);
+            questionDisplay.style.lineHeight = lineHeight;
         },
         
         // 键盘快捷键增强
