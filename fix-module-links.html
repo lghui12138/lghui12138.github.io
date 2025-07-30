@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模块链接修复</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .fix-button {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .success { border-color: #4caf50; }
+        .error { border-color: #f44336; }
+        .warning { border-color: #ff9800; }
+        
+        .module-link {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .module-link:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateX(5px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 模块链接修复</h1>
+        
+        <div style="text-align: center; margin-bottom: 30px;">
+            <button class="fix-button" onclick="testDirectAccess()">测试直接访问</button>
+            <button class="fix-button" onclick="openMainPage()">打开主页面</button>
+            <button class="fix-button" onclick="openQuestionBank()">打开题库模块</button>
+        </div>
+        
+        <div id="results"></div>
+        
+        <div style="margin-top: 30px;">
+            <h3>📚 直接访问链接</h3>
+            <a href="index-modular.html" class="module-link" target="_blank">
+                🏠 主界面 (index-modular.html)
+            </a>
+            <a href="modules/question-bank.html" class="module-link" target="_blank">
+                📚 题库模块 (modules/question-bank.html)
+            </a>
+            <a href="test-module-access.html" class="module-link" target="_blank">
+                🔧 模块访问测试 (test-module-access.html)
+            </a>
+            <a href="test-question-bank-simple.html" class="module-link" target="_blank">
+                🧪 题库功能测试 (test-question-bank-simple.html)
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // 测试直接访问
+        async function testDirectAccess() {
+            showResult('正在测试直接访问...', 'warning');
+            
+            try {
+                // 测试题库模块
+                const response = await fetch('modules/question-bank.html');
+                if (response.ok) {
+                    showResult('✅ 题库模块可以直接访问', 'success');
+                } else {
+                    showResult(`❌ 题库模块访问失败: HTTP ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ 访问错误: ${error.message}`, 'error');
+            }
+        }
+        
+        // 打开主页面
+        function openMainPage() {
+            showResult('正在打开主页面...', 'warning');
+            
+            try {
+                window.open('index-modular.html', '_blank');
+                showResult('✅ 主页面已打开', 'success');
+            } catch (error) {
+                showResult(`❌ 打开主页面失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 打开题库模块
+        function openQuestionBank() {
+            showResult('正在打开题库模块...', 'warning');
+            
+            try {
+                window.open('modules/question-bank.html', '_blank');
+                showResult('✅ 题库模块已打开', 'success');
+            } catch (error) {
+                showResult(`❌ 打开题库模块失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 显示结果
+        function showResult(message, type) {
+            const resultsDiv = document.getElementById('results');
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'warning';
+            
+            resultsDiv.innerHTML = `
+                <div class="result ${className}">
+                    <strong>${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'} ${message}</strong>
+                </div>
+            `;
+        }
+        
+        // 页面加载时自动测试
+        window.addEventListener('load', () => {
+            console.log('模块链接修复页面已加载');
+            testDirectAccess();
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模块访问测试</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 14px;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .success { border-color: #4caf50; }
+        .error { border-color: #f44336; }
+        .warning { border-color: #ff9800; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 模块访问测试</h1>
+        
+        <div style="text-align: center; margin-bottom: 30px;">
+            <button class="test-button" onclick="testQuestionBank()">测试题库模块</button>
+            <button class="test-button" onclick="testAllModules()">测试所有模块</button>
+            <button class="test-button" onclick="openQuestionBank()">直接打开题库</button>
+        </div>
+        
+        <div id="results"></div>
+    </div>
+
+    <script>
+        // 测试题库模块访问
+        async function testQuestionBank() {
+            showResult('正在测试题库模块访问...', 'warning');
+            
+            try {
+                const response = await fetch('modules/question-bank.html', { method: 'HEAD' });
+                if (response.ok) {
+                    showResult('✅ 题库模块文件存在且可访问', 'success');
+                } else {
+                    showResult(`❌ 题库模块访问失败: HTTP ${response.status}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ 题库模块访问错误: ${error.message}`, 'error');
+            }
+        }
+        
+        // 测试所有模块
+        async function testAllModules() {
+            showResult('正在测试所有模块...', 'warning');
+            
+            const modules = [
+                'modules/question-bank.html',
+                'modules/video-module.html',
+                'modules/ai-assistant-module.html',
+                'modules/review-module.html',
+                'modules/grade-module.html'
+            ];
+            
+            const results = [];
+            
+            for (const module of modules) {
+                try {
+                    const response = await fetch(module, { method: 'HEAD' });
+                    if (response.ok) {
+                        results.push(`✅ ${module}`);
+                    } else {
+                        results.push(`❌ ${module} (HTTP ${response.status})`);
+                    }
+                } catch (error) {
+                    results.push(`❌ ${module} (错误: ${error.message})`);
+                }
+            }
+            
+            const allOk = results.every(r => r.startsWith('✅'));
+            showResult(
+                `模块测试完成:\n\n${results.join('\n')}`, 
+                allOk ? 'success' : 'error'
+            );
+        }
+        
+        // 直接打开题库
+        function openQuestionBank() {
+            showResult('正在打开题库模块...', 'warning');
+            
+            try {
+                window.open('modules/question-bank.html', '_blank');
+                showResult('✅ 题库模块已在新窗口打开', 'success');
+            } catch (error) {
+                showResult(`❌ 打开题库模块失败: ${error.message}`, 'error');
+            }
+        }
+        
+        // 显示结果
+        function showResult(message, type) {
+            const resultsDiv = document.getElementById('results');
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'warning';
+            
+            resultsDiv.innerHTML = `
+                <div class="result ${className}">
+                    <strong>${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'} ${message}</strong>
+                </div>
+            `;
+        }
+        
+        // 页面加载时自动测试
+        window.addEventListener('load', () => {
+            console.log('模块访问测试页面已加载');
+            testQuestionBank();
+        });
+    </script>
+</body>
+</html> 
