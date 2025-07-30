@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库数据加载测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 5px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .result {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: rgba(255,0,0,0.3);
+        }
+        .success {
+            background: rgba(0,255,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>题库数据加载测试</h1>
+        
+        <div class="test-section">
+            <h3>1. 测试文件路径</h3>
+            <button onclick="testFilePaths()">测试文件路径</button>
+            <div id="pathResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. 测试题库数据加载</h3>
+            <button onclick="testQuestionLoading()">测试题库加载</button>
+            <div id="loadingResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. 测试真题数据</h3>
+            <button onclick="testRealExamData()">测试真题数据</button>
+            <div id="realExamResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 测试文件路径
+        async function testFilePaths() {
+            const resultDiv = document.getElementById('pathResult');
+            resultDiv.innerHTML = '正在测试文件路径...\n';
+            
+            const filename = '真题_中国海洋大学_2000-2021_cleaned.json';
+            const paths = [
+                `../question-banks/${filename}`,
+                `../../question-banks/${filename}`,
+                `question-banks/${filename}`,
+                `/question-banks/${filename}`
+            ];
+            
+            let successPath = null;
+            
+            for (const path of paths) {
+                try {
+                    const response = await fetch(path);
+                    if (response.ok) {
+                        successPath = path;
+                        resultDiv.innerHTML += `✅ 成功: ${path}\n`;
+                        break;
+                    } else {
+                        resultDiv.innerHTML += `❌ 失败: ${path} (${response.status})\n`;
+                    }
+                } catch (e) {
+                    resultDiv.innerHTML += `❌ 错误: ${path} - ${e.message}\n`;
+                }
+            }
+            
+            if (successPath) {
+                resultDiv.className = 'result success';
+            } else {
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        // 测试题库数据加载
+        async function testQuestionLoading() {
+            const resultDiv = document.getElementById('loadingResult');
+            resultDiv.innerHTML = '正在测试题库数据加载...\n';
+            
+            try {
+                const response = await fetch('../question-banks/index.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML += `✅ 索引文件加载成功\n`;
+                resultDiv.innerHTML += `题库数量: ${data.questionBanks ? data.questionBanks.length : 0}\n`;
+                
+                if (data.questionBanks && data.questionBanks.length > 0) {
+                    const firstBank = data.questionBanks[0];
+                    resultDiv.innerHTML += `第一个题库: ${firstBank.name}\n`;
+                    resultDiv.innerHTML += `文件名: ${firstBank.filename}\n`;
+                    resultDiv.innerHTML += `题目数量: ${firstBank.questionCount}\n`;
+                    
+                    // 尝试加载第一个题库的数据
+                    try {
+                        const bankResponse = await fetch(`../question-banks/${firstBank.filename}`);
+                        if (bankResponse.ok) {
+                            const bankData = await bankResponse.json();
+                            resultDiv.innerHTML += `✅ 题库数据加载成功\n`;
+                            resultDiv.innerHTML += `实际题目数量: ${Array.isArray(bankData) ? bankData.length : '未知'}\n`;
+                        } else {
+                            resultDiv.innerHTML += `❌ 题库数据加载失败: ${bankResponse.status}\n`;
+                        }
+                    } catch (e) {
+                        resultDiv.innerHTML += `❌ 题库数据加载错误: ${e.message}\n`;
+                    }
+                }
+                
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.innerHTML += `❌ 索引文件加载失败: ${error.message}\n`;
+                resultDiv.className = 'result error';
+            }
+        }
+        
+        // 测试真题数据
+        async function testRealExamData() {
+            const resultDiv = document.getElementById('realExamResult');
+            resultDiv.innerHTML = '正在测试真题数据...\n';
+            
+            try {
+                const response = await fetch('../question-banks/真题_中国海洋大学_2000-2021_cleaned.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                resultDiv.innerHTML += `✅ 真题数据加载成功\n`;
+                resultDiv.innerHTML += `数据类型: ${typeof data}\n`;
+                resultDiv.innerHTML += `是否为数组: ${Array.isArray(data)}\n`;
+                resultDiv.innerHTML += `题目数量: ${Array.isArray(data) ? data.length : '未知'}\n`;
+                
+                if (Array.isArray(data) && data.length > 0) {
+                    const firstQuestion = data[0];
+                    resultDiv.innerHTML += `\n第一道题:\n`;
+                    resultDiv.innerHTML += `ID: ${firstQuestion.id}\n`;
+                    resultDiv.innerHTML += `标题: ${firstQuestion.title.substring(0, 100)}...\n`;
+                    resultDiv.innerHTML += `年份: ${firstQuestion.year}\n`;
+                    resultDiv.innerHTML += `类型: ${firstQuestion.type}\n`;
+                }
+                
+                resultDiv.className = 'result success';
+            } catch (error) {
+                resultDiv.innerHTML += `❌ 真题数据加载失败: ${error.message}\n`;
+                resultDiv.className = 'result error';
+            }
+        }
+    </script>
+</body>
+</html> 

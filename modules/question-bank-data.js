@@ -740,21 +740,47 @@ window.QuestionBankData = (function() {
             }
             
             try {
-                const response = await fetch(`../question-banks/${bank.filename}`);
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
+                // 尝试多种路径
+                let response;
+                const paths = [
+                    `../question-banks/${bank.filename}`,
+                    `../../question-banks/${bank.filename}`,
+                    `question-banks/${bank.filename}`,
+                    `/question-banks/${bank.filename}`
+                ];
+                
+                for (const path of paths) {
+                    try {
+                        response = await fetch(path);
+                        if (response.ok) {
+                            console.log(`成功从路径加载: ${path}`);
+                            break;
+                        }
+                    } catch (e) {
+                        console.log(`路径 ${path} 失败:`, e.message);
+                    }
+                }
+                
+                if (!response || !response.ok) {
+                    throw new Error(`无法加载文件: ${bank.filename}`);
                 }
                 
                 const data = await response.json();
                 console.log(`加载题库 ${bank.name} 数据:`, data);
+                console.log(`数据类型:`, typeof data);
+                console.log(`是否为数组:`, Array.isArray(data));
+                console.log(`数据长度:`, Array.isArray(data) ? data.length : 'N/A');
                 
                 // 处理不同格式的数据
                 if (Array.isArray(data)) {
+                    console.log(`返回数组数据，长度: ${data.length}`);
                     return data;
                 } else if (data.questions && Array.isArray(data.questions)) {
+                    console.log(`返回questions数组，长度: ${data.questions.length}`);
                     return data.questions;
                 } else {
                     console.warn('题库数据格式未知:', data);
+                    console.warn('数据键:', Object.keys(data || {}));
                     return [];
                 }
                 
