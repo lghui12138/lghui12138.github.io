@@ -101,45 +101,45 @@ window.TeacherManagement = (function() {
                 showNotification('查看题库错误', 'error');
             }
         },
-        
+
         // 显示题库视图
         showBankView: function(bank) {
-            const content = `
-                <div class="bank-view">
-                    <div class="bank-header">
-                        <h3>${bank.name}</h3>
-                        <div class="bank-stats">
-                            <span>题目总数: ${bank.questions ? bank.questions.length : 0}</span>
-                            <span>最后更新: ${bank.lastUpdated || '未知'}</span>
+            const container = document.getElementById('bankView');
+            if (!container) return;
+            
+            const html = `
+                <div class="bank-header">
+                    <h3>${bank.name}</h3>
+                    <div class="bank-stats">
+                        <span>题目数量: ${bank.questions ? bank.questions.length : 0}</span>
+                        <span>最后更新: ${bank.lastUpdated || '未知'}</span>
+                    </div>
+                </div>
+                <div class="questions-list">
+                    ${bank.questions ? bank.questions.map((question, index) => `
+                        <div class="question-item" data-question-id="${index}">
+                            <div class="question-content">
+                                <h5>题目 ${index + 1}</h5>
+                                <p>${question.question}</p>
+                                ${question.options ? `<p>选项: ${question.options.join(', ')}</p>` : ''}
+                                <p>答案: ${question.answer}</p>
+                            </div>
+                            <div class="question-actions">
+                                <button class="btn btn-warning btn-sm" onclick="TeacherManagement.editQuestion(${index})">
+                                    <i class="fas fa-edit"></i> 编辑
+                                </button>
+                                <button class="btn btn-danger btn-sm" onclick="TeacherManagement.deleteQuestion(${index})">
+                                    <i class="fas fa-trash"></i> 删除
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="bank-actions">
-                        <button class="btn btn-success" onclick="TeacherManagement.addQuestion('${bank.id}')">
-                            <i class="fas fa-plus"></i> 添加题目
-                        </button>
-                        <button class="btn btn-primary" onclick="TeacherManagement.exportBank('${bank.id}')">
-                            <i class="fas fa-download"></i> 导出题库
-                        </button>
-                        <button class="btn btn-warning" onclick="TeacherManagement.backToList()">
-                            <i class="fas fa-arrow-left"></i> 返回列表
-                        </button>
-                    </div>
-                    
-                    <div class="questions-list">
-                        ${this.generateQuestionsList(bank.questions || [])}
-                    </div>
+                    `).join('') : '<p>暂无题目</p>'}
                 </div>
             `;
             
-            if (typeof QuestionBankUI !== 'undefined') {
-                QuestionBankUI.createModal({
-                    title: `题库管理 - ${bank.name}`,
-                    content: content,
-                    size: 'large',
-                    closable: true
-                });
-            }
+            container.innerHTML = html;
+            document.getElementById('bankView').style.display = 'block';
+            document.getElementById('banksList').style.display = 'none';
         },
         
         // 生成题目列表HTML
@@ -175,83 +175,22 @@ window.TeacherManagement = (function() {
         
         // 添加题目
         addQuestion: function(bankId) {
-            const content = `
-                <div class="question-form">
-                    <h4>添加新题目</h4>
-                    <form id="addQuestionForm">
-                        <div class="form-group">
-                            <label>题目类型:</label>
-                            <select id="questionType" class="form-control">
-                                <option value="选择题">选择题</option>
-                                <option value="填空题">填空题</option>
-                                <option value="判断题">判断题</option>
-                                <option value="解答题">解答题</option>
-                                <option value="计算题">计算题</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>题目内容:</label>
-                            <textarea id="questionContent" class="form-control" rows="4" placeholder="请输入题目内容..."></textarea>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>难度:</label>
-                            <select id="questionDifficulty" class="form-control">
-                                <option value="简单">简单</option>
-                                <option value="中等" selected>中等</option>
-                                <option value="困难">困难</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>分类:</label>
-                            <input type="text" id="questionCategory" class="form-control" placeholder="请输入分类...">
-                        </div>
-                        
-                        <div id="optionsContainer" class="form-group">
-                            <label>选项:</label>
-                            <div id="optionsList">
-                                <div class="option-item">
-                                    <input type="text" class="form-control" placeholder="选项A">
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="this.parentElement.remove()">删除</button>
-                                </div>
-                            </div>
-                            <button type="button" class="btn btn-sm btn-success" onclick="TeacherManagement.addOption()">添加选项</button>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>正确答案:</label>
-                            <input type="text" id="correctAnswer" class="form-control" placeholder="请输入正确答案...">
-                        </div>
-                        
-                        <div class="form-group">
-                            <label>解析:</label>
-                            <textarea id="questionExplanation" class="form-control" rows="3" placeholder="请输入题目解析..."></textarea>
-                        </div>
-                        
-                        <div class="form-actions">
-                            <button type="submit" class="btn btn-success">保存题目</button>
-                            <button type="button" class="btn btn-secondary" onclick="TeacherManagement.closeForm()">取消</button>
-                        </div>
-                    </form>
-                </div>
-            `;
+            const question = {
+                question: prompt('请输入题目内容:'),
+                options: [],
+                answer: prompt('请输入答案:'),
+                explanation: prompt('请输入解析(可选):')
+            };
             
-            if (typeof QuestionBankUI !== 'undefined') {
-                QuestionBankUI.createModal({
-                    title: '添加题目',
-                    content: content,
-                    size: 'large',
-                    closable: true
-                });
+            if (question.question && question.answer) {
+                if (!currentBank.questions) {
+                    currentBank.questions = [];
+                }
+                currentBank.questions.push(question);
+                this.saveToGitHub(currentBank, `添加题目到题库 ${currentBank.name}`);
+                this.showBankView(currentBank);
+                showNotification('题目添加成功', 'success');
             }
-            
-            // 绑定表单提交事件
-            document.getElementById('addQuestionForm').addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.saveQuestion();
-            });
         },
         
         // 添加选项
@@ -310,21 +249,30 @@ window.TeacherManagement = (function() {
         },
         
         // 编辑题目
-        editQuestion: function(index) {
-            if (!currentBank || !currentBank.questions) return;
+        editQuestion: function(questionIndex) {
+            const question = currentBank.questions[questionIndex];
+            if (!question) return;
             
-            const question = currentBank.questions[index];
-            // 实现编辑功能
-            showNotification('编辑功能开发中...', 'info');
+            const newQuestion = prompt('请输入新的题目内容:', question.question);
+            const newAnswer = prompt('请输入新的答案:', question.answer);
+            const newExplanation = prompt('请输入新的解析(可选):', question.explanation);
+            
+            if (newQuestion && newAnswer) {
+                question.question = newQuestion;
+                question.answer = newAnswer;
+                question.explanation = newExplanation;
+                
+                this.saveToGitHub(currentBank, `编辑题库 ${currentBank.name} 中的题目`);
+                this.showBankView(currentBank);
+                showNotification('题目编辑成功', 'success');
+            }
         },
         
         // 删除题目
-        deleteQuestion: function(index) {
-            if (!currentBank || !currentBank.questions) return;
-            
+        deleteQuestion: function(questionIndex) {
             if (confirm('确定要删除这道题目吗？')) {
-                currentBank.questions.splice(index, 1);
-                this.saveToGitHub();
+                currentBank.questions.splice(questionIndex, 1);
+                this.saveToGitHub(currentBank, `删除题库 ${currentBank.name} 中的题目`);
                 this.showBankView(currentBank);
                 showNotification('题目删除成功', 'success');
             }
@@ -344,8 +292,12 @@ window.TeacherManagement = (function() {
         // 删除题库
         deleteBank: function(bankId) {
             if (confirm('确定要删除这个题库吗？此操作不可恢复！')) {
-                // 实现删除题库功能
-                showNotification('删除题库功能开发中...', 'info');
+                // 从GitHub删除题库文件
+                this.deleteFromGitHub(bankId);
+                // 从本地列表中移除
+                questionBanks = questionBanks.filter(bank => bank.id !== bankId);
+                this.updateBanksList();
+                showNotification('题库删除成功', 'success');
             }
         },
         
@@ -368,27 +320,109 @@ window.TeacherManagement = (function() {
         },
         
         // 保存到GitHub
-        saveToGitHub: async function() {
-            if (!currentBank) return;
-            
+        saveToGitHub: async function(data, commitMessage) {
             try {
-                // 这里需要实现GitHub API调用
-                // 由于需要GitHub Token，这里先模拟保存
-                console.log('保存到GitHub:', currentBank);
-                showNotification('题库已保存', 'success');
+                if (!config.githubToken) {
+                    showNotification('请先配置GitHub Token', 'warning');
+                    return;
+                }
+
+                const content = btoa(JSON.stringify(data, null, 2));
+                const path = `question-banks/${data.id || 'temp'}.json`;
+                
+                const response = await fetch(`https://api.github.com/repos/${config.githubRepo}/contents/${path}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${config.githubToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: commitMessage,
+                        content: content,
+                        branch: config.githubBranch
+                    })
+                });
+
+                if (response.ok) {
+                    console.log('成功保存到GitHub');
+                    showNotification('已同步到GitHub', 'success');
+                } else {
+                    console.error('保存到GitHub失败');
+                    showNotification('保存到GitHub失败', 'error');
+                }
             } catch (error) {
-                console.error('保存到GitHub失败:', error);
-                showNotification('保存失败', 'error');
+                console.error('GitHub同步错误:', error);
+                showNotification('GitHub同步错误', 'error');
             }
         },
-        
-        // 关闭表单
-        closeForm: function() {
-            if (typeof QuestionBankUI !== 'undefined') {
-                QuestionBankUI.closeAllModals();
+
+        // 从GitHub删除
+        deleteFromGitHub: async function(bankId) {
+            try {
+                if (!config.githubToken) {
+                    showNotification('请先配置GitHub Token', 'warning');
+                    return;
+                }
+
+                const path = `question-banks/${bankId}.json`;
+                
+                // 首先获取文件的SHA
+                const getResponse = await fetch(`https://api.github.com/repos/${config.githubRepo}/contents/${path}`, {
+                    headers: {
+                        'Authorization': `token ${config.githubToken}`,
+                    }
+                });
+
+                if (getResponse.ok) {
+                    const fileInfo = await getResponse.json();
+                    
+                    // 删除文件
+                    const deleteResponse = await fetch(`https://api.github.com/repos/${config.githubRepo}/contents/${path}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `token ${config.githubToken}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message: `删除题库 ${bankId}`,
+                            sha: fileInfo.sha,
+                            branch: config.githubBranch
+                        })
+                    });
+
+                    if (deleteResponse.ok) {
+                        console.log('成功从GitHub删除');
+                        showNotification('已从GitHub删除', 'success');
+                    } else {
+                        console.error('从GitHub删除失败');
+                        showNotification('从GitHub删除失败', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('GitHub删除错误:', error);
+                showNotification('GitHub删除错误', 'error');
             }
         },
-        
+
+        // 设置GitHub Token
+        setGitHubToken: function(token) {
+            config.githubToken = token;
+            localStorage.setItem('githubToken', token);
+            showNotification('GitHub Token已设置', 'success');
+        },
+
+        // 获取GitHub Token
+        getGitHubToken: function() {
+            return config.githubToken || localStorage.getItem('githubToken');
+        },
+
+        // 保存当前题库
+        saveCurrentBank: function() {
+            if (currentBank) {
+                this.saveToGitHub(currentBank, `更新题库 ${currentBank.name}`);
+            }
+        },
+
         // 返回列表
         backToList: function() {
             this.closeForm();
@@ -480,6 +514,16 @@ window.TeacherManagement = (function() {
                 }
             };
             input.click();
+        },
+
+        // 显示通知
+        showNotification: function(message, type = 'info') {
+            // 使用全局通知函数或创建简单的通知
+            if (typeof showNotification === 'function') {
+                showNotification(message, type);
+            } else {
+                alert(`${type.toUpperCase()}: ${message}`);
+            }
         }
     };
 })(); 
