@@ -248,6 +248,21 @@ window.QuestionBankPractice = (function() {
                                 <i class="fas fa-chart-bar"></i>
                             </button>
                             
+                            <!-- 笔记功能 -->
+                            <button id="noteBtn" class="btn btn-outline-warning btn-sm" onclick="QuestionBankPractice.toggleNotePanel()" title="添加笔记" style="border-radius: 20px; padding: 8px 15px;">
+                                <i class="fas fa-sticky-note"></i>
+                            </button>
+                            
+                            <!-- 智能提示 -->
+                            <button id="aiHintBtn" class="btn btn-outline-info btn-sm" onclick="QuestionBankPractice.showAIHint()" title="AI智能提示" style="border-radius: 20px; padding: 8px 15px;">
+                                <i class="fas fa-robot"></i>
+                            </button>
+                            
+                            <!-- 学习模式 -->
+                            <button id="modeBtn" class="btn btn-outline-dark btn-sm" onclick="QuestionBankPractice.toggleLearningMode()" title="切换学习模式" style="border-radius: 20px; padding: 8px 15px;">
+                                <i class="fas fa-graduation-cap"></i>
+                            </button>
+                            
                             <!-- 全屏按钮 -->
                             <button id="fullscreenBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.toggleFullscreen()" title="全屏" style="border-radius: 20px; padding: 8px 15px;">
                                 <i class="fas fa-expand"></i>
@@ -402,6 +417,34 @@ window.QuestionBankPractice = (function() {
                                 <button class="btn btn-secondary" onclick="QuestionBankPractice.closeBatchDeleteDialog()" style="border-radius: 20px; padding: 10px 20px;">
                                     ❌ 取消
                                 </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 笔记面板 -->
+                    <div id="notePanel" style="display: none; position: fixed; top: 0; right: 0; width: 350px; height: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-left: 2px solid #ffc107; box-shadow: -5px 0 20px rgba(0,0,0,0.1); z-index: 999; overflow-y: auto;">
+                        <div style="padding: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <h5 style="color: #333; margin: 0;">📝 学习笔记</h5>
+                                <button onclick="QuestionBankPractice.toggleNotePanel()" style="background: none; border: none; font-size: 20px; color: #666; cursor: pointer;">×</button>
+                            </div>
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: bold;">当前题目笔记：</label>
+                                <textarea id="currentNote" placeholder="在这里记录你的学习心得、解题思路或重要知识点..." style="width: 100%; height: 120px; padding: 12px; border: 2px solid #ffc107; border-radius: 10px; resize: vertical; font-size: 14px; line-height: 1.5;"></textarea>
+                                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                    <button onclick="QuestionBankPractice.saveNote()" class="btn btn-warning btn-sm" style="border-radius: 15px; padding: 8px 15px;">
+                                        💾 保存笔记
+                                    </button>
+                                    <button onclick="QuestionBankPractice.clearNote()" class="btn btn-outline-secondary btn-sm" style="border-radius: 15px; padding: 8px 15px;">
+                                        🗑️ 清空
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="border-top: 1px solid #dee2e6; padding-top: 20px;">
+                                <h6 style="color: #333; margin-bottom: 15px;">📚 笔记历史</h6>
+                                <div id="noteHistory" style="max-height: 300px; overflow-y: auto;">
+                                    <p style="color: #666; text-align: center; font-size: 14px;">暂无笔记历史</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1580,6 +1623,21 @@ window.QuestionBankPractice = (function() {
                         e.preventDefault();
                         this.showKeyboardHelp();
                         break;
+                    case 'n':
+                    case 'N':
+                        e.preventDefault();
+                        this.toggleNotePanel();
+                        break;
+                    case 'i':
+                    case 'I':
+                        e.preventDefault();
+                        this.showAIHint();
+                        break;
+                    case 'm':
+                    case 'M':
+                        e.preventDefault();
+                        this.toggleLearningMode();
+                        break;
                 }
             });
             
@@ -1670,6 +1728,9 @@ window.QuestionBankPractice = (function() {
                             <div><kbd>P</kbd> 暂停/继续</div>
                             <div><kbd>R</kbd> 重新开始</div>
                             <div><kbd>?</kbd> 显示帮助</div>
+                            <div><kbd>N</kbd> 笔记面板</div>
+                            <div><kbd>I</kbd> AI智能提示</div>
+                            <div><kbd>M</kbd> 切换学习模式</div>
                         </div>
                     </div>
                     <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
@@ -1786,6 +1847,254 @@ window.QuestionBankPractice = (function() {
                 estimatedRemainingTime,
                 progressPercentage
             };
+        },
+        
+        // 切换笔记面板
+        toggleNotePanel: function() {
+            const notePanel = document.getElementById('notePanel');
+            if (notePanel) {
+                const isVisible = notePanel.style.display !== 'none';
+                notePanel.style.display = isVisible ? 'none' : 'block';
+                
+                if (!isVisible) {
+                    this.loadCurrentNote();
+                    this.loadNoteHistory();
+                }
+            }
+        },
+        
+        // 保存笔记
+        saveNote: function() {
+            const noteText = document.getElementById('currentNote').value.trim();
+            if (!noteText) {
+                showNotification('请输入笔记内容', 'warning');
+                return;
+            }
+            
+            const question = currentSession.questions[currentSession.currentIndex];
+            const noteData = {
+                questionId: question.id,
+                questionTitle: question.title.substring(0, 50) + (question.title.length > 50 ? '...' : ''),
+                note: noteText,
+                timestamp: new Date().toISOString(),
+                sessionId: currentSession.bankId
+            };
+            
+            // 保存到本地存储
+            let notes = JSON.parse(localStorage.getItem('questionBankNotes') || '[]');
+            notes.push(noteData);
+            localStorage.setItem('questionBankNotes', JSON.stringify(notes));
+            
+            showNotification('笔记已保存', 'success');
+            this.loadNoteHistory();
+        },
+        
+        // 清空当前笔记
+        clearNote: function() {
+            if (confirm('确定要清空当前笔记吗？')) {
+                document.getElementById('currentNote').value = '';
+                showNotification('笔记已清空', 'info');
+            }
+        },
+        
+        // 加载当前题目笔记
+        loadCurrentNote: function() {
+            const question = currentSession.questions[currentSession.currentIndex];
+            const notes = JSON.parse(localStorage.getItem('questionBankNotes') || '[]');
+            const currentNote = notes.find(note => note.questionId === question.id);
+            
+            const noteTextarea = document.getElementById('currentNote');
+            if (noteTextarea) {
+                noteTextarea.value = currentNote ? currentNote.note : '';
+            }
+        },
+        
+        // 加载笔记历史
+        loadNoteHistory: function() {
+            const notes = JSON.parse(localStorage.getItem('questionBankNotes') || '[]');
+            const historyContainer = document.getElementById('noteHistory');
+            
+            if (!historyContainer) return;
+            
+            if (notes.length === 0) {
+                historyContainer.innerHTML = '<p style="color: #666; text-align: center; font-size: 14px;">暂无笔记历史</p>';
+                return;
+            }
+            
+            // 按时间倒序排列
+            const sortedNotes = notes.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            let html = '';
+            sortedNotes.slice(0, 10).forEach(note => {
+                const date = new Date(note.timestamp).toLocaleString();
+                html += `
+                    <div style="background: rgba(255,193,7,0.1); border-radius: 10px; padding: 15px; margin-bottom: 10px;">
+                        <div style="font-weight: bold; color: #333; margin-bottom: 5px; font-size: 13px;">
+                            ${note.questionTitle}
+                        </div>
+                        <div style="color: #666; font-size: 12px; margin-bottom: 8px;">
+                            ${date}
+                        </div>
+                        <div style="color: #333; font-size: 13px; line-height: 1.4;">
+                            ${note.note}
+                        </div>
+                        <button onclick="QuestionBankPractice.deleteNote('${note.timestamp}')" style="background: none; border: none; color: #dc3545; font-size: 12px; cursor: pointer; margin-top: 8px;">
+                            🗑️ 删除
+                        </button>
+                    </div>
+                `;
+            });
+            
+            historyContainer.innerHTML = html;
+        },
+        
+        // 删除笔记
+        deleteNote: function(timestamp) {
+            if (confirm('确定要删除这条笔记吗？')) {
+                let notes = JSON.parse(localStorage.getItem('questionBankNotes') || '[]');
+                notes = notes.filter(note => note.timestamp !== timestamp);
+                localStorage.setItem('questionBankNotes', JSON.stringify(notes));
+                
+                showNotification('笔记已删除', 'success');
+                this.loadNoteHistory();
+            }
+        },
+        
+        // 显示AI智能提示
+        showAIHint: function() {
+            const question = currentSession.questions[currentSession.currentIndex];
+            const questionText = question.title || question.question || '';
+            const questionType = question.type || '选择题';
+            
+            // 根据题目类型和内容生成智能提示
+            let hint = this.generateAIHint(questionText, questionType);
+            
+            const hintContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; max-width: 600px; margin: 20px auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">🤖 AI智能提示</h4>
+                    <div style="background: rgba(23,162,184,0.1); border-left: 4px solid #17a2b8; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <h6 style="color: #17a2b8; margin-bottom: 15px;">💡 解题思路</h6>
+                        <div style="color: #333; line-height: 1.6; font-size: 14px;">
+                            ${hint.thinking}
+                        </div>
+                    </div>
+                    <div style="background: rgba(40,167,69,0.1); border-left: 4px solid #28a745; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <h6 style="color: #28a745; margin-bottom: 15px;">📚 相关知识点</h6>
+                        <div style="color: #333; line-height: 1.6; font-size: 14px;">
+                            ${hint.knowledge}
+                        </div>
+                    </div>
+                    <div style="background: rgba(255,193,7,0.1); border-left: 4px solid #ffc107; padding: 20px; border-radius: 10px;">
+                        <h6 style="color: #ffc107; margin-bottom: 15px;">⚡ 解题技巧</h6>
+                        <div style="color: #333; line-height: 1.6; font-size: 14px;">
+                            ${hint.tips}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: 'AI智能提示',
+                    content: hintContent,
+                    size: 'medium',
+                    closable: true
+                });
+            } else {
+                alert(`AI智能提示：\n\n解题思路：${hint.thinking}\n\n相关知识点：${hint.knowledge}\n\n解题技巧：${hint.tips}`);
+            }
+        },
+        
+        // 生成AI提示
+        generateAIHint: function(questionText, questionType) {
+            // 关键词匹配和智能分析
+            const keywords = {
+                '边界层': {
+                    thinking: '边界层理论是流体力学中的重要概念，需要考虑边界层厚度、分离条件等。',
+                    knowledge: '边界层厚度δ∝√(νx/U)，雷诺数Re=ρUL/μ，边界层分离条件。',
+                    tips: '注意边界层内外流动特性的差异，边界层内粘性重要，外部可视为无粘流动。'
+                },
+                '雷诺数': {
+                    thinking: '雷诺数是判断流动状态的重要无量纲参数，影响流动的稳定性。',
+                    knowledge: 'Re=ρUL/μ，层流Re<2300，湍流Re>4000，过渡区2300<Re<4000。',
+                    tips: '雷诺数越大，惯性力越重要；雷诺数越小，粘性力越重要。'
+                },
+                '伯努利方程': {
+                    thinking: '伯努利方程适用于理想流体，需要考虑能量守恒和压力变化。',
+                    knowledge: 'p/ρ + v²/2 + gz = 常数，适用于不可压缩、无粘、定常流动。',
+                    tips: '注意应用条件，通常用于计算压力分布和速度变化。'
+                },
+                '势流': {
+                    thinking: '势流理论适用于高雷诺数流动，边界层外的主流区域。',
+                    knowledge: '势函数φ满足∇²φ=0，流函数ψ满足∇²ψ=0，复势w=φ+iψ。',
+                    tips: '势流可以叠加，注意边界条件的处理。'
+                },
+                '动量方程': {
+                    thinking: '动量方程描述流体运动的基本规律，需要考虑力和加速度。',
+                    knowledge: 'ρ(∂v/∂t + v·∇v) = -∇p + μ∇²v + ρg，包括惯性力、压力梯度、粘性力和重力。',
+                    tips: '注意各项的物理意义，选择合适的坐标系简化计算。'
+                },
+                '连续性方程': {
+                    thinking: '连续性方程体现质量守恒，适用于所有流体流动。',
+                    knowledge: '∂ρ/∂t + ∇·(ρv) = 0，不可压缩流体∇·v = 0。',
+                    tips: '连续性方程是求解流动问题的基本方程之一。'
+                }
+            };
+            
+            // 查找匹配的关键词
+            let matchedHint = null;
+            for (const [key, hint] of Object.entries(keywords)) {
+                if (questionText.includes(key)) {
+                    matchedHint = hint;
+                    break;
+                }
+            }
+            
+            // 如果没有匹配的关键词，提供通用提示
+            if (!matchedHint) {
+                matchedHint = {
+                    thinking: '仔细分析题目条件，确定适用的物理定律和数学方法。',
+                    knowledge: '复习相关的基础概念和公式，注意应用条件。',
+                    tips: '画图帮助理解，注意单位统一，检查计算过程。'
+                };
+            }
+            
+            // 根据题目类型调整提示
+            if (questionType === '计算题') {
+                matchedHint.tips += ' 注意计算步骤的准确性，检查最终结果的合理性。';
+            } else if (questionType === '选择题') {
+                matchedHint.tips += ' 仔细分析各选项的差异，排除明显错误的选项。';
+            } else if (questionType === '填空题') {
+                matchedHint.tips += ' 注意答案的格式和单位，确保填写完整。';
+            }
+            
+            return matchedHint;
+        },
+        
+        // 切换学习模式
+        toggleLearningMode: function() {
+            const modeBtn = document.getElementById('modeBtn');
+            const currentMode = currentSession.learningMode || 'practice';
+            const newMode = currentMode === 'practice' ? 'study' : 'practice';
+            
+            currentSession.learningMode = newMode;
+            
+            if (modeBtn) {
+                if (newMode === 'study') {
+                    modeBtn.innerHTML = '<i class="fas fa-book-open"></i>';
+                    modeBtn.title = '切换到练习模式';
+                    modeBtn.className = 'btn btn-dark btn-sm';
+                    showNotification('已切换到学习模式 - 显示详细解析', 'info');
+                } else {
+                    modeBtn.innerHTML = '<i class="fas fa-graduation-cap"></i>';
+                    modeBtn.title = '切换到学习模式';
+                    modeBtn.className = 'btn btn-outline-dark btn-sm';
+                    showNotification('已切换到练习模式 - 隐藏详细解析', 'info');
+                }
+            }
+            
+            // 重新显示当前题目以应用新模式
+            this.displayCurrentQuestion();
         },
         
         // 生成答案
