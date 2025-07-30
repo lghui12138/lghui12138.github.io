@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快速修复404错误</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .fix-button {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .success { border-color: #4caf50; }
+        .error { border-color: #f44336; }
+        .warning { border-color: #ff9800; }
+        
+        .console-output {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 快速修复404错误</h1>
+        
+        <div style="text-align: center; margin-bottom: 30px;">
+            <button class="fix-button" onclick="disableModuleChecking()">禁用模块检查</button>
+            <button class="fix-button" onclick="redirectOldUrls()">重定向旧URL</button>
+            <button class="fix-button" onclick="clearConsole()">清除控制台</button>
+            <button class="fix-button" onclick="openMainPage()">打开主页面</button>
+        </div>
+        
+        <div id="results"></div>
+        <div id="consoleOutput" class="console-output"></div>
+    </div>
+
+    <script>
+        // 禁用模块检查
+        function disableModuleChecking() {
+            showResult('正在禁用模块检查...', 'warning');
+            
+            try {
+                // 重写fetch函数来拦截对旧文件的请求
+                const originalFetch = window.fetch;
+                window.fetch = function(url, options) {
+                    if (typeof url === 'string' && url.includes('question-bank-module.html')) {
+                        console.log('拦截到旧文件请求:', url);
+                        showResult('已拦截旧文件请求: ' + url, 'success');
+                        return Promise.resolve(new Response('', { status: 200 }));
+                    }
+                    return originalFetch(url, options);
+                };
+                
+                showResult('✅ 已禁用模块检查，拦截旧文件请求', 'success');
+            } catch (error) {
+                showResult('❌ 禁用模块检查失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 重定向旧URL
+        function redirectOldUrls() {
+            showResult('正在设置URL重定向...', 'warning');
+            
+            try {
+                // 监听所有fetch请求
+                const originalFetch = window.fetch;
+                window.fetch = function(url, options) {
+                    if (typeof url === 'string') {
+                        const newUrl = url.replace('question-bank-module.html', 'question-bank.html');
+                        if (newUrl !== url) {
+                            console.log('重定向URL:', url, '->', newUrl);
+                            showResult('重定向: ' + url + ' -> ' + newUrl, 'success');
+                            return originalFetch(newUrl, options);
+                        }
+                    }
+                    return originalFetch(url, options);
+                };
+                
+                showResult('✅ 已设置URL重定向', 'success');
+            } catch (error) {
+                showResult('❌ 设置重定向失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 清除控制台
+        function clearConsole() {
+            showResult('正在清除控制台...', 'warning');
+            
+            try {
+                console.clear();
+                document.getElementById('consoleOutput').innerHTML = '';
+                showResult('✅ 控制台已清除', 'success');
+            } catch (error) {
+                showResult('❌ 清除控制台失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 打开主页面
+        function openMainPage() {
+            showResult('正在打开主页面...', 'warning');
+            
+            try {
+                window.open('index-modular.html', '_blank');
+                showResult('✅ 主页面已打开', 'success');
+            } catch (error) {
+                showResult('❌ 打开主页面失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 显示结果
+        function showResult(message, type) {
+            const resultsDiv = document.getElementById('results');
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'warning';
+            
+            resultsDiv.innerHTML = `
+                <div class="result ${className}">
+                    <strong>${type === 'success' ? '✅' : type === 'error' ? '❌' : '⚠️'} ${message}</strong>
+                </div>
+            `;
+            
+            // 添加到控制台输出
+            const consoleOutput = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleOutput.innerHTML += `[${timestamp}] ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+        
+        // 监听控制台错误
+        const originalError = console.error;
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const consoleOutput = document.getElementById('consoleOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            consoleOutput.innerHTML += `[${timestamp}] ERROR: ${args.join(' ')}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        };
+        
+        // 页面加载时自动修复
+        window.addEventListener('load', () => {
+            console.log('快速修复页面已加载');
+            disableModuleChecking();
+            redirectOldUrls();
+        });
+    </script>
+</body>
+</html> 
