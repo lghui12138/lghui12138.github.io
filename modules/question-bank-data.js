@@ -151,7 +151,7 @@ window.QuestionBankData = (function() {
                                 description: item.intro,
                                 difficulty: 'medium',
                                 tags: ['真题', '考试'],
-                                questionCount: 50,
+                                questionCount: 120,
                                 color: '#4facfe',
                                 lastUpdated: new Date().toISOString().split('T')[0]
                             });
@@ -696,39 +696,137 @@ window.QuestionBankData = (function() {
         },
         
         // 题库操作方法
-        startPractice: function(bankId) {
+        startPractice: async function(bankId) {
             const bank = questionBanks.find(b => b.id === bankId);
             if (!bank) {
                 showNotification('题库不存在', 'error');
                 return;
             }
             
-            // 这里应该调用练习模块
-            if (typeof QuestionBankPractice !== 'undefined') {
-                QuestionBankPractice.startPractice(bank);
-            } else {
-                showNotification('练习模块未加载', 'warning');
+            showNotification('正在加载题目数据...', 'info');
+            
+            try {
+                // 加载题库的具体题目数据
+                const questions = await this.loadBankQuestions(bank);
+                if (!questions || questions.length === 0) {
+                    showNotification('该题库没有可用的题目', 'warning');
+                    return;
+                }
+                
+                // 创建完整的题库对象
+                const fullBank = {
+                    ...bank,
+                    questions: questions
+                };
+                
+                // 调用练习模块
+                if (typeof QuestionBankPractice !== 'undefined') {
+                    QuestionBankPractice.startPractice(fullBank);
+                } else {
+                    showNotification('练习模块未加载', 'warning');
+                }
+                
+            } catch (error) {
+                console.error('加载题库数据失败:', error);
+                showNotification('加载题库数据失败', 'error');
             }
         },
         
-        previewBank: function(bankId) {
-            const bank = questionBanks.find(b => b.id === bankId);
-            if (!bank) {
-                showNotification('题库不存在', 'error');
-                return;
+        // 加载题库题目数据
+        loadBankQuestions: async function(bank) {
+            if (!bank.filename) {
+                console.error('题库缺少文件名:', bank);
+                return [];
             }
             
-            showNotification(`预览题库: ${bank.name} (${bank.questionCount}题)`, 'info');
+            try {
+                const response = await fetch(`../question-banks/${bank.filename}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+                const data = await response.json();
+                console.log(`加载题库 ${bank.name} 数据:`, data);
+                
+                // 处理不同格式的数据
+                if (Array.isArray(data)) {
+                    return data;
+                } else if (data.questions && Array.isArray(data.questions)) {
+                    return data.questions;
+                } else {
+                    console.warn('题库数据格式未知:', data);
+                    return [];
+                }
+                
+            } catch (error) {
+                console.error(`加载题库 ${bank.name} 失败:`, error);
+                return [];
+            }
         },
         
-        quickTest: function(bankId) {
+        previewBank: async function(bankId) {
             const bank = questionBanks.find(b => b.id === bankId);
             if (!bank) {
                 showNotification('题库不存在', 'error');
                 return;
             }
             
-            showNotification(`开始快速测试: ${bank.name}`, 'info');
+            try {
+                const questions = await this.loadBankQuestions(bank);
+                const previewCount = Math.min(3, questions.length);
+                const previewQuestions = questions.slice(0, previewCount);
+                
+                let previewContent = `题库: ${bank.name}\n题目数量: ${questions.length}题\n\n预览题目:\n\n`;
+                
+                previewQuestions.forEach((q, index) => {
+                    previewContent += `${index + 1}. ${q.title}\n`;
+                    if (q.options && q.options.length > 0) {
+                        previewContent += `选项: ${q.options.join(', ')}\n`;
+                    }
+                    previewContent += '\n';
+                });
+                
+                showNotification(previewContent, 'info', 10000);
+                
+            } catch (error) {
+                console.error('预览题库失败:', error);
+                showNotification('预览题库失败', 'error');
+            }
+        },
+        
+        quickTest: async function(bankId) {
+            const bank = questionBanks.find(b => b.id === bankId);
+            if (!bank) {
+                showNotification('题库不存在', 'error');
+                return;
+            }
+            
+            try {
+                const questions = await this.loadBankQuestions(bank);
+                if (!questions || questions.length === 0) {
+                    showNotification('该题库没有可用的题目', 'warning');
+                    return;
+                }
+                
+                // 随机选择5道题进行快速测试
+                const shuffled = questions.sort(() => 0.5 - Math.random());
+                const quickQuestions = shuffled.slice(0, 5);
+                
+                const fullBank = {
+                    ...bank,
+                    questions: quickQuestions
+                };
+                
+                if (typeof QuestionBankPractice !== 'undefined') {
+                    QuestionBankPractice.startPractice(fullBank);
+                } else {
+                    showNotification('练习模块未加载', 'warning');
+                }
+                
+            } catch (error) {
+                console.error('快速测试失败:', error);
+                showNotification('快速测试失败', 'error');
+            }
         },
         
         // 获取题库数据
