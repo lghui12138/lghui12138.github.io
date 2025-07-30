@@ -92,30 +92,22 @@ window.QuestionBankPractice = (function() {
                 }
             });
             
-            // 添加鼠标滚轮滑动功能
-            document.addEventListener('wheel', (e) => {
+            // 鼠标滚轮切题（非全屏下）
+            const mainContent = document.querySelector('.main-content') || document.body;
+            mainContent.addEventListener('wheel', (e) => {
                 if (!practiceState.isActive) return;
-                
-                // 防止在输入框中触发滚轮事件
                 if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-                
-                // 检查是否在全屏模式下
-                if (practiceState.isFullscreen) {
-                    // 在全屏模式下，滚轮可以正常滚动页面
+                if (practiceState.isFullscreen) return;
+                // 只在没有滚动条或滚动到顶部/底部时切题
+                const container = document.getElementById('questionDisplay');
+                if (container && (container.scrollHeight > container.clientHeight)) {
+                    // 允许正常滚动
                     return;
                 }
-                
-                // 在非全屏模式下，滚轮可以切换题目
-                if (e.deltaY > 0) {
-                    // 向下滚动，下一题
-                    e.preventDefault();
-                    this.nextQuestion();
-                } else if (e.deltaY < 0) {
-                    // 向上滚动，上一题
-                    e.preventDefault();
-                    this.previousQuestion();
-                }
-            });
+                e.preventDefault();
+                if (e.deltaY > 0) this.nextQuestion();
+                else if (e.deltaY < 0) this.previousQuestion();
+            }, { passive: false });
         },
         
         // 开始练习（从题库）
