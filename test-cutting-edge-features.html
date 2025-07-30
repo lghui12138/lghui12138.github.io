@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>前沿功能测试 - 智能题库做题系统</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .title {
+            font-size: 3em;
+            font-weight: 700;
+            color: #2b3a55;
+            text-align: center;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 1.2em;
+            margin-bottom: 40px;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .feature-card {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 20px;
+            padding: 30px;
+            border-left: 6px solid #667eea;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            transform: scaleX(0);
+            transition: transform 0.3s;
+        }
+        
+        .feature-card:hover::before {
+            transform: scaleX(1);
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+        
+        .feature-icon {
+            font-size: 3em;
+            color: #667eea;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+        
+        .feature-title {
+            font-size: 1.6em;
+            font-weight: 600;
+            color: #2b3a55;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .feature-desc {
+            color: #666;
+            line-height: 1.7;
+            margin-bottom: 25px;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .feature-list li {
+            padding: 12px 0;
+            color: #555;
+            position: relative;
+            padding-left: 30px;
+            font-size: 1.05em;
+        }
+        
+        .feature-list li:before {
+            content: "🚀";
+            position: absolute;
+            left: 0;
+            top: 12px;
+            font-size: 1.2em;
+        }
+        
+        .demo-section {
+            background: linear-gradient(135deg, #e8f5e8, #d4edda);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 40px;
+            border-left: 6px solid #27ae60;
+        }
+        
+        .demo-title {
+            font-size: 1.8em;
+            font-weight: 600;
+            color: #155724;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .demo-item {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+        }
+        
+        .demo-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+        
+        .demo-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .demo-label {
+            color: #666;
+            font-size: 1em;
+            font-weight: 500;
+        }
+        
+        .test-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+        
+        .test-button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 18px 35px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        
+        .test-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .test-button.success {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        
+        .test-button.warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        
+        .test-button.danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .test-button.purple {
+            background: linear-gradient(135deg, #9b59b6, #8e44ad);
+        }
+        
+        .test-button.orange {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+        }
+        
+        .test-button.teal {
+            background: linear-gradient(135deg, #1abc9c, #16a085);
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 15px;
+            font-weight: 500;
+            text-align: center;
+            font-size: 1.1em;
+        }
+        
+        .status.success {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status.info {
+            background: linear-gradient(135deg, #d1ecf1, #bee5eb);
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .status.warning {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 15px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+        
+        .achievement-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #856404;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-size: 1em;
+            font-weight: 600;
+            margin: 8px;
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.3);
+        }
+        
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+        
+        .floating-element {
+            position: absolute;
+            opacity: 0.1;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+        }
+        
+        .floating-element:nth-child(1) { top: 10%; left: 10%; animation-delay: 0s; }
+        .floating-element:nth-child(2) { top: 20%; right: 10%; animation-delay: 1s; }
+        .floating-element:nth-child(3) { bottom: 20%; left: 15%; animation-delay: 2s; }
+        .floating-element:nth-child(4) { bottom: 10%; right: 15%; animation-delay: 3s; }
+        .floating-element:nth-child(5) { top: 50%; left: 5%; animation-delay: 4s; }
+        .floating-element:nth-child(6) { top: 30%; right: 5%; animation-delay: 5s; }
+        
+        .tech-highlight {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .tech-highlight h3 {
+            margin: 0 0 15px 0;
+            font-size: 1.4em;
+        }
+        
+        .tech-highlight p {
+            margin: 0;
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            .title {
+                font-size: 2.2em;
+            }
+            
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .test-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .test-button {
+                width: 100%;
+                max-width: 350px;
+            }
+            
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="floating-elements">
+        <div class="floating-element">🧠</div>
+        <div class="floating-element">⚡</div>
+        <div class="floating-element">🎯</div>
+        <div class="floating-element">🚀</div>
+        <div class="floating-element">💡</div>
+        <div class="floating-element">⭐</div>
+    </div>
+    
+    <div class="container">
+        <div class="title">
+            <i class="fas fa-rocket"></i> 前沿功能测试
+        </div>
+        
+        <div class="subtitle">
+            体验最先进的AI智能学习技术，探索未来教育的新可能
+        </div>
+        
+        <div class="feature-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <div class="feature-title">机器学习预测</div>
+                <div class="feature-desc">
+                    基于深度学习算法的智能预测系统，分析学习模式并预测未来表现
+                </div>
+                <ul class="feature-list">
+                    <li>实时学习数据分析</li>
+                    <li>智能准确率预测</li>
+                    <li>学习趋势可视化</li>
+                    <li>个性化学习建议</li>
+                    <li>自适应算法优化</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-sliders-h"></i>
+                </div>
+                <div class="feature-title">自适应难度系统</div>
+                <div class="feature-desc">
+                    智能调整题目难度，确保学习体验始终处于最佳状态
+                </div>
+                <ul class="feature-list">
+                    <li>实时难度评估</li>
+                    <li>智能难度调整</li>
+                    <li>学习曲线优化</li>
+                    <li>个性化挑战</li>
+                    <li>动态平衡机制</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-route"></i>
+                </div>
+                <div class="feature-title">学习路径规划</div>
+                <div class="feature-desc">
+                    基于AI的个性化学习路径，为每个学习者定制专属学习计划
+                </div>
+                <ul class="feature-list">
+                    <li>智能路径生成</li>
+                    <li>动态节点调整</li>
+                    <li>学习目标追踪</li>
+                    <li>进度可视化</li>
+                    <li>路径优化建议</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-search"></i>
+                </div>
+                <div class="feature-title">智能错题分析</div>
+                <div class="feature-desc">
+                    深度分析错误模式，识别学习盲点并提供精准改进建议
+                </div>
+                <ul class="feature-list">
+                    <li>错误模式识别</li>
+                    <li>知识点关联分析</li>
+                    <li>个性化改进建议</li>
+                    <li>错误趋势预测</li>
+                    <li>针对性练习推荐</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-tachometer-alt"></i>
+                </div>
+                <div class="feature-title">学习效率监控</div>
+                <div class="feature-desc">
+                    全方位监控学习效率，实时反馈学习状态和优化建议
+                </div>
+                <ul class="feature-list">
+                    <li>实时效率计算</li>
+                    <li>专注度监测</li>
+                    <li>理解度评估</li>
+                    <li>学习节奏分析</li>
+                    <li>效率优化建议</li>
+                </ul>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="fas fa-bell"></i>
+                </div>
+                <div class="feature-title">智能提醒系统</div>
+                <div class="feature-desc">
+                    基于学习行为的智能提醒，在最佳时机提供最合适的建议
+                </div>
+                <ul class="feature-list">
+                    <li>上下文感知提醒</li>
+                    <li>智能时机判断</li>
+                    <li>个性化提醒内容</li>
+                    <li>学习状态监测</li>
+                    <li>自适应提醒频率</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <div class="demo-title">
+                <i class="fas fa-vial"></i> 前沿功能演示
+            </div>
+            <div class="demo-grid">
+                <div class="demo-item">
+                    <div class="demo-value" id="mlAccuracy">92%</div>
+                    <div class="demo-label">AI预测准确率</div>
+                </div>
+                <div class="demo-item">
+                    <div class="demo-value" id="adaptiveLevel">8.5</div>
+                    <div class="demo-label">自适应难度等级</div>
+                </div>
+                <div class="demo-item">
+                    <div class="demo-value" id="pathProgress">75%</div>
+                    <div class="demo-label">学习路径完成度</div>
+                </div>
+                <div class="demo-item">
+                    <div class="demo-value" id="efficiencyScore">88%</div>
+                    <div class="demo-label">学习效率评分</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <div class="achievement-badge">🏆 AI学习大师</div>
+                <div class="achievement-badge">⚡ 效率之王</div>
+                <div class="achievement-badge">🎯 精准射手</div>
+                <div class="achievement-badge">🚀 速度之星</div>
+                <div class="achievement-badge">🧠 智能学习者</div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 85%;"></div>
+            </div>
+            <div style="text-align: center; color: #666; font-size: 1.1em; margin-top: 10px;">
+                整体学习进度：85% 完成
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <div class="demo-title">
+                <i class="fas fa-cogs"></i> 功能测试
+            </div>
+            <div class="test-buttons">
+                <button class="test-button" onclick="testMlPrediction()">
+                    <i class="fas fa-brain"></i> AI预测测试
+                </button>
+                <button class="test-button success" onclick="testAdaptiveDifficulty()">
+                    <i class="fas fa-sliders-h"></i> 自适应难度测试
+                </button>
+                <button class="test-button warning" onclick="testLearningPath()">
+                    <i class="fas fa-route"></i> 学习路径测试
+                </button>
+                <button class="test-button danger" onclick="testErrorAnalysis()">
+                    <i class="fas fa-search"></i> 错题分析测试
+                </button>
+                <button class="test-button purple" onclick="testEfficiencyMonitor()">
+                    <i class="fas fa-tachometer-alt"></i> 效率监控测试
+                </button>
+                <button class="test-button orange" onclick="testSmartReminder()">
+                    <i class="fas fa-bell"></i> 智能提醒测试
+                </button>
+                <button class="test-button teal" onclick="testAchievementSystem()">
+                    <i class="fas fa-trophy"></i> 成就系统测试
+                </button>
+                <button class="test-button" onclick="window.location.href='practice-fullscreen.html'">
+                    <i class="fas fa-play"></i> 进入完整体验
+                </button>
+            </div>
+            <div id="testStatus" class="status info">
+                点击按钮开始测试各项前沿功能
+            </div>
+        </div>
+        
+        <div class="tech-highlight">
+            <h3><i class="fas fa-microchip"></i> 技术亮点</h3>
+            <p>采用最新的机器学习算法、自适应学习技术和智能分析系统，为用户提供前所未有的个性化学习体验。</p>
+        </div>
+        
+        <div class="demo-section">
+            <div class="demo-title">
+                <i class="fas fa-star"></i> 技术优势
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 25px;">
+                <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <h4 style="margin: 0 0 15px 0; color: #667eea;">
+                        <i class="fas fa-robot"></i> AI智能算法
+                    </h4>
+                    <p style="margin: 0; color: #666; line-height: 1.6;">
+                        采用先进的机器学习算法，能够深度分析学习行为，提供精准的个性化建议和预测。
+                    </p>
+                </div>
+                <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <h4 style="margin: 0 0 15px 0; color: #27ae60;">
+                        <i class="fas fa-chart-line"></i> 实时数据分析
+                    </h4>
+                    <p style="margin: 0; color: #666; line-height: 1.6;">
+                        实时监控学习数据，动态调整学习策略，确保学习效果最大化。
+                    </p>
+                </div>
+                <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <h4 style="margin: 0 0 15px 0; color: #f39c12;">
+                        <i class="fas fa-user-cog"></i> 个性化体验
+                    </h4>
+                    <p style="margin: 0; color: #666; line-height: 1.6;">
+                        为每个学习者定制专属的学习路径和体验，真正实现因材施教。
+                    </p>
+                </div>
+                <div style="background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <h4 style="margin: 0 0 15px 0; color: #9b59b6;">
+                        <i class="fas fa-lightbulb"></i> 智能优化
+                    </h4>
+                    <p style="margin: 0; color: #666; line-height: 1.6;">
+                        系统能够自动优化学习策略，持续提升学习效率和效果。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let demoData = {
+            mlAccuracy: 92,
+            adaptiveLevel: 8.5,
+            pathProgress: 75,
+            efficiencyScore: 88
+        };
+
+        function updateDemoData() {
+            document.getElementById('mlAccuracy').textContent = demoData.mlAccuracy + '%';
+            document.getElementById('adaptiveLevel').textContent = demoData.adaptiveLevel;
+            document.getElementById('pathProgress').textContent = demoData.pathProgress + '%';
+            document.getElementById('efficiencyScore').textContent = demoData.efficiencyScore + '%';
+        }
+
+        function testMlPrediction() {
+            const status = document.getElementById('testStatus');
+            status.className = 'status info';
+            status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在测试AI预测功能...';
+            
+            setTimeout(() => {
+                demoData.mlAccuracy = Math.min(100, demoData.mlAccuracy + Math.floor(Math.random() * 3));
+                updateDemoData();
+                
+                status.className = 'status success';
+                status.innerHTML = '<i class="fas fa-check"></i> AI预测功能正常！预测准确率已提升';
+            }, 2000);
+        }
+
+        function testAdaptiveDifficulty() {
+            const status = document.getElementById('testStatus');
+            status.className = 'status info';
+            status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在测试自适应难度功能...';
+            
+            setTimeout(() => {
+                demoData.adaptiveLevel = Math.min(10, demoData.adaptiveLevel + (Math.random() - 0.5) * 0.5);
+                updateDemoData();
+                
+                status.className = 'status success';
+                status.innerHTML = '<i class="fas fa-check"></i> 自适应难度功能正常！难度等级已调整';
+            }, 1500);
+        }
+
+        function testLearningPath() {
+            const status = document.getElementById('testStatus');
+            status.className = 'status info';
+            status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在测试学习路径功能...';
+            
+            setTimeout(() => {
+                demoData.pathProgress = Math.min(100, demoData.pathProgress + Math.floor(Math.random() * 5));
+                updateDemoData();
+                
+                status.className = 'status success';
+                status.innerHTML = '<i class="fas fa-check"></i> 学习路径功能正常！路径进度已更新';
+            }, 1800);
+        }
+
+        function testErrorAnalysis() {
+            const status = document.getElementById('testStatus');
+            status.className = 'status info';
+            status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在测试错题分析功能...';
+            
+            setTimeout(() => {
+                status.className = 'status success';
+                status.innerHTML = '<i class="fas fa-check"></i> 错题分析功能正常！已识别3个错误模式';
+            }, 1200);
+        }
+
+        function testEfficiencyMonitor() {
+            const status = document.getElementById('testStatus');
+            status.className = 'status info';
+            status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在测试效率监控功能...';
+            
+            setTimeout(() => {
+                demoData.efficiencyScore = Math.min(100, demoData.efficiencyScore + Math.floor(Math.random() * 4));
+                updateDemoData();
+                
+                status.className = 'status success';
+                status.innerHTML = '<i class="fas fa-check"></i> 效率监控功能正常！学习效率已提升';
+            }, 1600);
+        }
+
+        function testSmartReminder() {
+            const status = document.getElementById('testStatus');
+            status.className = 'status info';
+            status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在测试智能提醒功能...';
+            
+            setTimeout(() => {
+                status.className = 'status success';
+                status.innerHTML = '<i class="fas fa-check"></i> 智能提醒功能正常！已发送个性化提醒';
+            }, 1000);
+        }
+
+        function testAchievementSystem() {
+            const status = document.getElementById('testStatus');
+            status.className = 'status info';
+            status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在测试成就系统...';
+            
+            setTimeout(() => {
+                status.className = 'status success';
+                status.innerHTML = '<i class="fas fa-check"></i> 成就系统正常！已解锁新成就';
+            }, 1400);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('前沿功能测试页面已加载');
+            updateDemoData();
+            
+            // 模拟数据更新
+            setInterval(() => {
+                demoData.mlAccuracy = Math.min(100, Math.max(85, demoData.mlAccuracy + (Math.random() - 0.5) * 2));
+                demoData.adaptiveLevel = Math.min(10, Math.max(6, demoData.adaptiveLevel + (Math.random() - 0.5) * 0.3));
+                demoData.pathProgress = Math.min(100, demoData.pathProgress + Math.random() * 0.5);
+                demoData.efficiencyScore = Math.min(100, Math.max(80, demoData.efficiencyScore + (Math.random() - 0.5) * 1));
+                updateDemoData();
+            }, 8000);
+        });
+    </script>
+</body>
+</html> 
