@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库功能测试</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #fff;
+        }
+        
+        .test-button {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(79, 172, 254, 0.4);
+        }
+        
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .status {
+            display: inline-block;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .status.success { background: #4caf50; }
+        .status.error { background: #f44336; }
+        .status.pending { background: #ff9800; }
+        
+        .bank-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .bank-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .bank-card h4 {
+            margin: 0 0 10px 0;
+            color: #4facfe;
+        }
+        
+        .bank-card p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 题库功能测试</h1>
+        
+        <div style="text-align: center; margin-bottom: 30px;">
+            <button class="test-button" onclick="testDataLoading()">测试数据加载</button>
+            <button class="test-button" onclick="testModuleAccess()">测试模块访问</button>
+            <button class="test-button" onclick="testCache()">测试缓存功能</button>
+            <button class="test-button" onclick="openQuestionBank()">打开题库模块</button>
+        </div>
+        
+        <div id="testResults"></div>
+        <div id="bankList" class="bank-list"></div>
+    </div>
+
+    <script src="verify-question-bank.js"></script>
+    <script>
+        // 测试数据加载
+        async function testDataLoading() {
+            showResult('正在测试数据加载...', 'pending');
+            
+            try {
+                const result = await QuestionBankVerifier.verifyQuestionBankData();
+                showResult(result.message, result.success ? 'success' : 'error');
+                
+                if (result.success) {
+                    // 显示题库列表
+                    await displayQuestionBanks();
+                }
+            } catch (error) {
+                showResult('数据加载测试失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 测试模块访问
+        async function testModuleAccess() {
+            showResult('正在测试模块访问...', 'pending');
+            
+            try {
+                const result = await QuestionBankVerifier.verifyQuestionBankModules();
+                showResult(result.message, result.success ? 'success' : 'error');
+                
+                if (result.details) {
+                    const details = result.details.join('\n');
+                    showResult(result.message + '\n\n' + details, result.success ? 'success' : 'error');
+                }
+            } catch (error) {
+                showResult('模块访问测试失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 测试缓存功能
+        function testCache() {
+            showResult('正在测试缓存功能...', 'pending');
+            
+            try {
+                const result = QuestionBankVerifier.verifyCacheMechanism();
+                showResult(result.message, result.success ? 'success' : 'error');
+            } catch (error) {
+                showResult('缓存测试失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 打开题库模块
+        function openQuestionBank() {
+            showResult('正在打开题库模块...', 'pending');
+            
+            try {
+                // 预加载数据
+                if (typeof preloadQuestionBankData === 'function') {
+                    preloadQuestionBankData().then(() => {
+                        window.open('modules/question-bank.html', '_blank');
+                        showResult('题库模块已打开', 'success');
+                    }).catch(error => {
+                        console.warn('预加载失败，直接打开:', error);
+                        window.open('modules/question-bank.html', '_blank');
+                        showResult('题库模块已打开（预加载失败）', 'success');
+                    });
+                } else {
+                    window.open('modules/question-bank.html', '_blank');
+                    showResult('题库模块已打开', 'success');
+                }
+            } catch (error) {
+                showResult('打开题库模块失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 显示题库列表
+        async function displayQuestionBanks() {
+            try {
+                const response = await fetch('question-banks/index.json');
+                const data = await response.json();
+                
+                const bankList = document.getElementById('bankList');
+                bankList.innerHTML = '';
+                
+                if (data.questionBanks && data.questionBanks.length > 0) {
+                    data.questionBanks.forEach(bank => {
+                        const card = document.createElement('div');
+                        card.className = 'bank-card';
+                        card.innerHTML = `
+                            <h4>${bank.name}</h4>
+                            <p><strong>描述:</strong> ${bank.description}</p>
+                            <p><strong>题目数量:</strong> ${bank.questionCount}</p>
+                            <p><strong>难度:</strong> ${bank.difficulty}</p>
+                            <p><strong>标签:</strong> ${bank.tags.join(', ')}</p>
+                        `;
+                        bankList.appendChild(card);
+                    });
+                }
+            } catch (error) {
+                console.error('显示题库列表失败:', error);
+            }
+        }
+        
+        // 显示结果
+        function showResult(message, type) {
+            const resultsDiv = document.getElementById('testResults');
+            const statusClass = type === 'success' ? 'success' : type === 'error' ? 'error' : 'pending';
+            
+            resultsDiv.innerHTML = `
+                <div class="result">
+                    <span class="status ${statusClass}"></span>
+                    <span>${message}</span>
+                </div>
+            `;
+        }
+        
+        // 页面加载时自动运行基础测试
+        window.addEventListener('load', () => {
+            console.log('题库测试页面已加载');
+            showResult('页面已加载，可以开始测试', 'success');
+        });
+    </script>
+</body>
+</html> 
