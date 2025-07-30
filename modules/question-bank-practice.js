@@ -258,13 +258,39 @@ window.QuestionBankPractice = (function() {
                         </div>
                     </div>
                     
-                    <!-- 进度条 -->
-                    <div style="background: rgba(255,255,255,0.2); border-radius: 15px; height: 12px; margin-bottom: 25px; overflow: hidden;">
-                        <div id="progressBar" style="background: linear-gradient(90deg, #4facfe, #00f2fe); height: 100%; border-radius: 15px; width: 0%; transition: width 0.3s ease; box-shadow: 0 2px 8px rgba(79,172,254,0.3);"></div>
+                    <!-- 进度条和导航 -->
+                    <div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; margin-bottom: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+                        <!-- 进度滑块 -->
+                        <div style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <span style="font-weight: bold; color: #333; font-size: 16px;">练习进度</span>
+                                <span id="progressText" style="font-weight: bold; color: #4facfe; font-size: 14px;">0%</span>
+                            </div>
+                            <div style="background: rgba(79,172,254,0.2); border-radius: 15px; height: 12px; position: relative; overflow: hidden;">
+                                <div id="progressBar" style="background: linear-gradient(90deg, #4facfe, #00f2fe); height: 100%; border-radius: 15px; transition: width 0.3s ease; width: 0%; box-shadow: 0 2px 8px rgba(79,172,254,0.3);"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- 题目导航 -->
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <span id="questionCounter" style="font-size: 16px; color: #333; font-weight: bold;">题目 1 / ${currentSession.questions.length}</span>
+                                <span style="color: #666; font-size: 14px;">|</span>
+                                <span style="color: #666; font-size: 14px;">剩余 ${currentSession.questions.length - 1} 题</span>
+                            </div>
+                            <div style="display: flex; gap: 10px;">
+                                <button id="prevBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.previousQuestion()" disabled style="border-radius: 15px; padding: 8px 15px; font-size: 14px; transition: all 0.3s ease;">
+                                    <i class="fas fa-chevron-left"></i> 上一题
+                                </button>
+                                <button id="nextBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.nextQuestion()" style="border-radius: 15px; padding: 8px 15px; font-size: 14px; transition: all 0.3s ease;">
+                                    下一题 <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                     
                     <!-- 题目显示区域 -->
-                    <div id="questionDisplay" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border: none; border-radius: 20px; padding: 30px; margin-bottom: 25px; max-height: 60vh; overflow-y: auto; font-size: 16px; line-height: 1.8; box-shadow: 0 12px 40px rgba(0,0,0,0.15); scrollbar-width: thin; scrollbar-color: #4facfe #f0f0f0;">
+                    <div id="questionDisplay" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border: none; border-radius: 20px; padding: 30px; margin-bottom: 25px; max-height: 60vh; overflow-y: auto; font-size: 16px; line-height: 1.8; box-shadow: 0 12px 40px rgba(0,0,0,0.15); scrollbar-width: thin; scrollbar-color: #4facfe #f0f0f0; position: relative;">
                         <!-- 题目内容将在这里动态加载 -->
                     </div>
                     
@@ -955,6 +981,8 @@ window.QuestionBankPractice = (function() {
         updateProgress: function() {
             const progressElement = document.getElementById('questionProgress');
             const progressBar = document.getElementById('progressBar');
+            const progressText = document.getElementById('progressText');
+            const questionCounter = document.getElementById('questionCounter');
             
             if (progressElement) {
                 progressElement.textContent = `${currentSession.currentIndex + 1} / ${currentSession.questions.length}`;
@@ -963,6 +991,15 @@ window.QuestionBankPractice = (function() {
             if (progressBar) {
                 const progress = ((currentSession.currentIndex + 1) / currentSession.questions.length) * 100;
                 progressBar.style.width = progress + '%';
+            }
+            
+            if (progressText) {
+                const progress = ((currentSession.currentIndex + 1) / currentSession.questions.length) * 100;
+                progressText.textContent = Math.round(progress) + '%';
+            }
+            
+            if (questionCounter) {
+                questionCounter.textContent = `题目 ${currentSession.currentIndex + 1} / ${currentSession.questions.length}`;
             }
         },
         
