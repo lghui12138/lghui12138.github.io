@@ -35,6 +35,7 @@ window.QuestionBankPractice = (function() {
         init: function() {
             console.log('初始化练习模块...');
             this.bindEvents();
+            this.bindEnhancedEvents();
             return this;
         },
         
@@ -185,7 +186,28 @@ window.QuestionBankPractice = (function() {
                             <span id="questionProgress">1 / ${currentSession.questions.length}</span>
                             <span style="margin-left: 20px;">时间: <span id="practiceTimer">00:00</span></span>
                         </div>
-                        <div>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <!-- 字体大小控制 -->
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <button id="zoomOutBtn" class="btn btn-outline-secondary btn-sm" onclick="QuestionBankPractice.zoomOut()" title="缩小字体">
+                                    <i class="fas fa-search-minus"></i>
+                                </button>
+                                <span id="fontSizeDisplay" style="font-size: 12px; min-width: 30px; text-align: center;">16px</span>
+                                <button id="zoomInBtn" class="btn btn-outline-secondary btn-sm" onclick="QuestionBankPractice.zoomIn()" title="放大字体">
+                                    <i class="fas fa-search-plus"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- 全屏按钮 -->
+                            <button id="fullscreenBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.toggleFullscreen()" title="全屏">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                            
+                            <!-- 显示答案按钮 -->
+                            <button id="showAnswerBtn" class="btn btn-outline-success btn-sm" onclick="QuestionBankPractice.toggleAnswer()" title="显示答案">
+                                <i class="fas fa-eye"></i> 答案
+                            </button>
+                            
                             <button id="pauseBtn" class="btn btn-warning btn-sm" onclick="QuestionBankPractice.togglePause()">⏸️ 暂停</button>
                             <button id="exitBtn" class="btn btn-danger btn-sm" onclick="QuestionBankPractice.exitPractice()">❌ 退出</button>
                         </div>
@@ -197,8 +219,15 @@ window.QuestionBankPractice = (function() {
                     </div>
                     
                     <!-- 题目显示区域 -->
-                    <div id="questionDisplay" style="background: white; border: 2px solid #4facfe; border-radius: 15px; padding: 25px; margin-bottom: 20px; min-height: 300px;">
+                    <div id="questionDisplay" style="background: white; border: 2px solid #4facfe; border-radius: 15px; padding: 25px; margin-bottom: 20px; min-height: 300px; font-size: 16px; line-height: 1.6;">
                         <!-- 题目内容将在这里动态加载 -->
+                    </div>
+                    
+                    <!-- 答案显示区域 -->
+                    <div id="answerDisplay" style="background: #f0f8ff; border: 2px solid #007bff; border-radius: 15px; padding: 25px; margin-bottom: 20px; display: none;">
+                        <h5 style="color: #007bff; margin-bottom: 15px;">📝 参考答案</h5>
+                        <div id="answerContent" style="font-size: 16px; line-height: 1.6;"></div>
+                        <div id="explanationContent" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #dee2e6; font-size: 14px; color: #666;"></div>
                     </div>
                     
                     <!-- 答题控制 -->
@@ -920,6 +949,189 @@ window.QuestionBankPractice = (function() {
                 totalQuestions: currentSession.questions.length,
                 sessionName: currentSession.sessionName
             };
+        },
+        
+        // 字体大小控制
+        zoomIn: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            const answerDisplay = document.getElementById('answerDisplay');
+            const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+            
+            if (questionDisplay) {
+                const currentSize = parseInt(window.getComputedStyle(questionDisplay).fontSize);
+                const newSize = Math.min(currentSize + 2, 24); // 最大24px
+                questionDisplay.style.fontSize = newSize + 'px';
+                if (answerDisplay) answerDisplay.style.fontSize = newSize + 'px';
+                if (fontSizeDisplay) fontSizeDisplay.textContent = newSize + 'px';
+            }
+        },
+        
+        zoomOut: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            const answerDisplay = document.getElementById('answerDisplay');
+            const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+            
+            if (questionDisplay) {
+                const currentSize = parseInt(window.getComputedStyle(questionDisplay).fontSize);
+                const newSize = Math.max(currentSize - 2, 12); // 最小12px
+                questionDisplay.style.fontSize = newSize + 'px';
+                if (answerDisplay) answerDisplay.style.fontSize = newSize + 'px';
+                if (fontSizeDisplay) fontSizeDisplay.textContent = newSize + 'px';
+            }
+        },
+        
+        // 全屏控制
+        toggleFullscreen: function() {
+            const container = document.getElementById('practiceContainer');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            
+            if (!container) return;
+            
+            if (!document.fullscreenElement) {
+                // 进入全屏
+                if (container.requestFullscreen) {
+                    container.requestFullscreen();
+                } else if (container.webkitRequestFullscreen) {
+                    container.webkitRequestFullscreen();
+                } else if (container.msRequestFullscreen) {
+                    container.msRequestFullscreen();
+                }
+                
+                if (fullscreenBtn) {
+                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                    fullscreenBtn.title = '退出全屏';
+                }
+            } else {
+                // 退出全屏
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+                
+                if (fullscreenBtn) {
+                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                    fullscreenBtn.title = '全屏';
+                }
+            }
+        },
+        
+        // 显示/隐藏答案
+        toggleAnswer: function() {
+            const answerDisplay = document.getElementById('answerDisplay');
+            const showAnswerBtn = document.getElementById('showAnswerBtn');
+            const currentQuestion = currentSession.questions[currentSession.currentIndex];
+            
+            if (!answerDisplay || !currentQuestion) return;
+            
+            if (answerDisplay.style.display === 'none') {
+                // 显示答案
+                const answerContent = document.getElementById('answerContent');
+                const explanationContent = document.getElementById('explanationContent');
+                
+                if (answerContent) {
+                    answerContent.innerHTML = `
+                        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin-bottom: 10px;">
+                            <strong>📝 答案:</strong><br>
+                            ${currentQuestion.answer || '暂无答案'}
+                        </div>
+                    `;
+                }
+                
+                if (explanationContent) {
+                    explanationContent.innerHTML = `
+                        <div style="background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 5px; padding: 15px;">
+                            <strong>💡 解释:</strong><br>
+                            ${currentQuestion.explanation || '暂无解释'}
+                        </div>
+                    `;
+                }
+                
+                answerDisplay.style.display = 'block';
+                if (showAnswerBtn) {
+                    showAnswerBtn.innerHTML = '<i class="fas fa-eye-slash"></i> 隐藏';
+                    showAnswerBtn.className = 'btn btn-outline-warning btn-sm';
+                }
+            } else {
+                // 隐藏答案
+                answerDisplay.style.display = 'none';
+                if (showAnswerBtn) {
+                    showAnswerBtn.innerHTML = '<i class="fas fa-eye"></i> 答案';
+                    showAnswerBtn.className = 'btn btn-outline-success btn-sm';
+                }
+            }
+        },
+        
+        // 键盘快捷键增强
+        bindEnhancedEvents: function() {
+            document.addEventListener('keydown', (e) => {
+                if (!practiceState.isActive) return;
+                
+                // 防止在输入框中触发快捷键
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                
+                switch(e.key) {
+                    case '=':
+                    case '+':
+                        if (e.ctrlKey) {
+                            e.preventDefault();
+                            this.zoomIn();
+                        }
+                        break;
+                    case '-':
+                        if (e.ctrlKey) {
+                            e.preventDefault();
+                            this.zoomOut();
+                        }
+                        break;
+                    case '0':
+                        if (e.ctrlKey) {
+                            e.preventDefault();
+                            this.resetZoom();
+                        }
+                        break;
+                    case 'F11':
+                        e.preventDefault();
+                        this.toggleFullscreen();
+                        break;
+                    case 'a':
+                    case 'A':
+                        if (e.ctrlKey) {
+                            e.preventDefault();
+                            this.toggleAnswer();
+                        }
+                        break;
+                }
+            });
+            
+            // 全屏状态变化监听
+            document.addEventListener('fullscreenchange', () => {
+                const fullscreenBtn = document.getElementById('fullscreenBtn');
+                if (fullscreenBtn) {
+                    if (document.fullscreenElement) {
+                        fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                        fullscreenBtn.title = '退出全屏';
+                    } else {
+                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                        fullscreenBtn.title = '全屏';
+                    }
+                }
+            });
+        },
+        
+        // 重置字体大小
+        resetZoom: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            const answerDisplay = document.getElementById('answerDisplay');
+            const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+            
+            if (questionDisplay) {
+                questionDisplay.style.fontSize = '16px';
+                if (answerDisplay) answerDisplay.style.fontSize = '16px';
+                if (fontSizeDisplay) fontSizeDisplay.textContent = '16px';
+            }
         }
     };
 })(); 
