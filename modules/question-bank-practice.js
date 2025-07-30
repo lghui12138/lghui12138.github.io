@@ -233,6 +233,21 @@ window.QuestionBankPractice = (function() {
                                 </button>
                             </div>
                             
+                            <!-- 主题切换 -->
+                            <button id="themeBtn" class="btn btn-outline-info btn-sm" onclick="QuestionBankPractice.toggleTheme()" title="切换主题" style="border-radius: 20px; padding: 8px 15px;">
+                                <i class="fas fa-palette"></i>
+                            </button>
+                            
+                            <!-- 快捷键帮助 -->
+                            <button id="helpBtn" class="btn btn-outline-secondary btn-sm" onclick="QuestionBankPractice.showKeyboardHelp()" title="快捷键帮助" style="border-radius: 20px; padding: 8px 15px;">
+                                <i class="fas fa-question"></i>
+                            </button>
+                            
+                            <!-- 统计面板 -->
+                            <button id="statsBtn" class="btn btn-outline-success btn-sm" onclick="QuestionBankPractice.showStatsPanel()" title="练习统计" style="border-radius: 20px; padding: 8px 15px;">
+                                <i class="fas fa-chart-bar"></i>
+                            </button>
+                            
                             <!-- 全屏按钮 -->
                             <button id="fullscreenBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.toggleFullscreen()" title="全屏" style="border-radius: 20px; padding: 8px 15px;">
                                 <i class="fas fa-expand"></i>
@@ -1515,6 +1530,56 @@ window.QuestionBankPractice = (function() {
                             this.toggleAnswer();
                         }
                         break;
+                    case 'ArrowLeft':
+                        e.preventDefault();
+                        this.previousQuestion();
+                        break;
+                    case 'ArrowRight':
+                        e.preventDefault();
+                        this.nextQuestion();
+                        break;
+                    case ' ':
+                        e.preventDefault();
+                        this.submitAnswer();
+                        break;
+                    case 't':
+                    case 'T':
+                        e.preventDefault();
+                        this.toggleTheme();
+                        break;
+                    case 'd':
+                    case 'D':
+                        e.preventDefault();
+                        this.deleteCurrentQuestion();
+                        break;
+                    case 'h':
+                    case 'H':
+                        e.preventDefault();
+                        this.showHint();
+                        break;
+                    case 's':
+                    case 'S':
+                        e.preventDefault();
+                        this.skipQuestion();
+                        break;
+                    case 'Escape':
+                        e.preventDefault();
+                        this.exitPractice();
+                        break;
+                    case 'p':
+                    case 'P':
+                        e.preventDefault();
+                        this.togglePause();
+                        break;
+                    case 'r':
+                    case 'R':
+                        e.preventDefault();
+                        this.practiceAgain();
+                        break;
+                    case '?':
+                        e.preventDefault();
+                        this.showKeyboardHelp();
+                        break;
                 }
             });
             
@@ -1544,6 +1609,183 @@ window.QuestionBankPractice = (function() {
                 if (answerDisplay) answerDisplay.style.fontSize = '16px';
                 if (fontSizeDisplay) fontSizeDisplay.textContent = '16px';
             }
+        },
+        
+        // 切换主题
+        toggleTheme: function() {
+            const container = document.getElementById('practiceContainer');
+            const themeBtn = document.getElementById('themeBtn');
+            
+            if (!container) return;
+            
+            const currentTheme = container.getAttribute('data-theme') || 'ocean';
+            const newTheme = currentTheme === 'ocean' ? 'sunset' : 'ocean';
+            
+            container.setAttribute('data-theme', newTheme);
+            
+            // 更新主题样式
+            if (newTheme === 'sunset') {
+                container.style.background = 'linear-gradient(135deg, #ff6b6b 0%, #feca57 100%)';
+                container.style.backgroundImage = `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="sunset1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:%23ff6b6b;stop-opacity:0.3"/><stop offset="100%" style="stop-color:%23feca57;stop-opacity:0.3"/></linearGradient></defs><path d="M0,600 Q300,500 600,600 T1200,600 L1200,800 L0,800 Z" fill="url(%23sunset1)"/></svg>')`;
+                if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-water"></i>';
+            } else {
+                container.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                container.style.backgroundImage = `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="wave1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:%234facfe;stop-opacity:0.3"/><stop offset="100%" style="stop-color:%2300f2fe;stop-opacity:0.3"/></linearGradient></defs><path d="M0,600 Q300,500 600,600 T1200,600 L1200,800 L0,800 Z" fill="url(%23wave1)"/></svg>')`;
+                if (themeBtn) themeBtn.innerHTML = '<i class="fas fa-palette"></i>';
+            }
+            
+            showNotification(`已切换到${newTheme === 'sunset' ? '日落' : '海洋'}主题`, 'info');
+        },
+        
+        // 显示快捷键帮助
+        showKeyboardHelp: function() {
+            const helpContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; max-width: 600px; margin: 20px auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">⌨️ 快捷键帮助</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                        <div style="background: rgba(79,172,254,0.1); padding: 15px; border-radius: 10px;">
+                            <h6 style="color: #4facfe; margin-bottom: 10px;">📝 答题控制</h6>
+                            <div><kbd>空格键</kbd> 提交答案</div>
+                            <div><kbd>H</kbd> 显示提示</div>
+                            <div><kbd>S</kbd> 跳过题目</div>
+                            <div><kbd>D</kbd> 删除题目</div>
+                        </div>
+                        <div style="background: rgba(255,193,7,0.1); padding: 15px; border-radius: 10px;">
+                            <h6 style="color: #ffc107; margin-bottom: 10px;">🎮 导航控制</h6>
+                            <div><kbd>←</kbd> 上一题</div>
+                            <div><kbd>→</kbd> 下一题</div>
+                            <div><kbd>Ctrl+A</kbd> 显示答案</div>
+                            <div><kbd>F11</kbd> 全屏切换</div>
+                        </div>
+                        <div style="background: rgba(40,167,69,0.1); padding: 15px; border-radius: 10px;">
+                            <h6 style="color: #28a745; margin-bottom: 10px;">🔍 显示控制</h6>
+                            <div><kbd>Ctrl+=</kbd> 放大字体</div>
+                            <div><kbd>Ctrl+-</kbd> 缩小字体</div>
+                            <div><kbd>Ctrl+0</kbd> 重置字体</div>
+                            <div><kbd>T</kbd> 切换主题</div>
+                        </div>
+                        <div style="background: rgba(220,53,69,0.1); padding: 15px; border-radius: 10px;">
+                            <h6 style="color: #dc3545; margin-bottom: 10px;">⚡ 快速操作</h6>
+                            <div><kbd>Esc</kbd> 退出练习</div>
+                            <div><kbd>P</kbd> 暂停/继续</div>
+                            <div><kbd>R</kbd> 重新开始</div>
+                            <div><kbd>?</kbd> 显示帮助</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
+                        提示：在输入框中不会触发快捷键
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '快捷键帮助',
+                    content: helpContent,
+                    size: 'medium',
+                    closable: true
+                });
+            } else {
+                alert('快捷键帮助：\n空格键 - 提交答案\n← → - 上一题/下一题\nCtrl+A - 显示答案\nCtrl+=/- - 放大/缩小字体\nT - 切换主题\nD - 删除题目\nH - 显示提示\nS - 跳过题目');
+            }
+        },
+        
+        // 显示统计面板
+        showStatsPanel: function() {
+            const stats = this.calculateCurrentStats();
+            const statsContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; max-width: 600px; margin: 20px auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">📊 练习统计</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; font-size: 14px;">
+                        <div style="background: rgba(79,172,254,0.1); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #4facfe;">${stats.totalQuestions}</div>
+                            <div style="color: #666; margin-top: 5px;">总题目数</div>
+                        </div>
+                        <div style="background: rgba(40,167,69,0.1); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #28a745;">${stats.currentIndex + 1}</div>
+                            <div style="color: #666; margin-top: 5px;">当前进度</div>
+                        </div>
+                        <div style="background: rgba(255,193,7,0.1); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #ffc107;">${stats.answeredCount}</div>
+                            <div style="color: #666; margin-top: 5px;">已答题数</div>
+                        </div>
+                        <div style="background: rgba(220,53,69,0.1); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #dc3545;">${stats.remainingCount}</div>
+                            <div style="color: #666; margin-top: 5px;">剩余题目</div>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; padding: 20px; background: rgba(248,249,250,0.8); border-radius: 15px;">
+                        <h6 style="color: #333; margin-bottom: 15px;">⏱️ 时间统计</h6>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>练习时长：</span>
+                            <span style="font-weight: bold; color: #4facfe;">${stats.elapsedTime}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                            <span>平均每题用时：</span>
+                            <span style="font-weight: bold; color: #28a745;">${stats.avgTimePerQuestion}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                            <span>预计剩余时间：</span>
+                            <span style="font-weight: bold; color: #ffc107;">${stats.estimatedRemainingTime}</span>
+                        </div>
+                    </div>
+                    <div style="margin-top: 20px; padding: 20px; background: rgba(248,249,250,0.8); border-radius: 15px;">
+                        <h6 style="color: #333; margin-bottom: 15px;">📈 进度分析</h6>
+                        <div style="background: rgba(79,172,254,0.2); border-radius: 10px; height: 20px; overflow: hidden; margin-bottom: 10px;">
+                            <div style="background: linear-gradient(90deg, #4facfe, #00f2fe); height: 100%; width: ${stats.progressPercentage}%; transition: width 0.3s ease;"></div>
+                        </div>
+                        <div style="text-align: center; color: #666; font-size: 12px;">
+                            完成进度：${stats.progressPercentage}%
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '练习统计',
+                    content: statsContent,
+                    size: 'medium',
+                    closable: true
+                });
+            } else {
+                alert(`练习统计：\n总题目：${stats.totalQuestions}\n当前进度：${stats.currentIndex + 1}\n已答题：${stats.answeredCount}\n剩余题目：${stats.remainingCount}\n练习时长：${stats.elapsedTime}`);
+            }
+        },
+        
+        // 计算当前统计
+        calculateCurrentStats: function() {
+            const totalQuestions = currentSession.questions.length;
+            const currentIndex = currentSession.currentIndex;
+            const answeredCount = currentSession.userAnswers.filter(answer => answer !== null).length;
+            const remainingCount = totalQuestions - (currentIndex + 1);
+            
+            // 计算时间
+            const elapsed = Math.floor((Date.now() - currentSession.startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            const elapsedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            // 平均每题用时
+            const avgTimePerQuestion = answeredCount > 0 ? Math.round(elapsed / answeredCount) : 0;
+            const avgTimeStr = avgTimePerQuestion > 0 ? `${Math.floor(avgTimePerQuestion / 60)}:${(avgTimePerQuestion % 60).toString().padStart(2, '0')}` : '0:00';
+            
+            // 预计剩余时间
+            const estimatedRemainingTime = remainingCount > 0 ? `${Math.floor((avgTimePerQuestion * remainingCount) / 60)}:${((avgTimePerQuestion * remainingCount) % 60).toString().padStart(2, '0')}` : '0:00';
+            
+            // 进度百分比
+            const progressPercentage = Math.round(((currentIndex + 1) / totalQuestions) * 100);
+            
+            return {
+                totalQuestions,
+                currentIndex,
+                answeredCount,
+                remainingCount,
+                elapsedTime,
+                avgTimePerQuestion: avgTimeStr,
+                estimatedRemainingTime,
+                progressPercentage
+            };
         },
         
         // 生成答案
