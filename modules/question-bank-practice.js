@@ -91,6 +91,31 @@ window.QuestionBankPractice = (function() {
                         break;
                 }
             });
+            
+            // 添加鼠标滚轮滑动功能
+            document.addEventListener('wheel', (e) => {
+                if (!practiceState.isActive) return;
+                
+                // 防止在输入框中触发滚轮事件
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+                
+                // 检查是否在全屏模式下
+                if (practiceState.isFullscreen) {
+                    // 在全屏模式下，滚轮可以正常滚动页面
+                    return;
+                }
+                
+                // 在非全屏模式下，滚轮可以切换题目
+                if (e.deltaY > 0) {
+                    // 向下滚动，下一题
+                    e.preventDefault();
+                    this.nextQuestion();
+                } else if (e.deltaY < 0) {
+                    // 向上滚动，上一题
+                    e.preventDefault();
+                    this.previousQuestion();
+                }
+            });
         },
         
         // 开始练习（从题库）
@@ -240,49 +265,54 @@ window.QuestionBankPractice = (function() {
                     
                     /* 全屏模式下的题目显示优化 - 最大化显示 */
                     .practice-fullscreen #questionDisplay {
-                        min-height: 85vh;
-                        max-height: 90vh;
-                        font-size: 24px;
-                        line-height: 2.0;
-                        padding: 50px;
-                        margin: 10px 0;
+                        min-height: 90vh;
+                        max-height: 95vh;
+                        font-size: 28px;
+                        line-height: 2.2;
+                        padding: 60px;
+                        margin: 5px 0;
                     }
                     
                     /* 全屏模式下题目内容字体更大 */
                     .practice-fullscreen #questionDisplay h4 {
-                        font-size: 28px !important;
-                        margin-bottom: 25px !important;
+                        font-size: 32px !important;
+                        margin-bottom: 30px !important;
                     }
                     
                     .practice-fullscreen #questionDisplay div[style*="font-size: 1.1em"] {
-                        font-size: 1.4em !important;
-                        line-height: 2.2 !important;
+                        font-size: 1.6em !important;
+                        line-height: 2.4 !important;
+                    }
+                    
+                    .practice-fullscreen #questionDisplay div[style*="font-size: 1.2em"] {
+                        font-size: 1.8em !important;
+                        line-height: 2.6 !important;
                     }
                     
                     /* 全屏模式下选项字体更大 */
                     .practice-fullscreen .option-item {
-                        font-size: 22px !important;
-                        padding: 20px !important;
-                        margin: 15px 0 !important;
+                        font-size: 26px !important;
+                        padding: 25px !important;
+                        margin: 20px 0 !important;
                     }
                     
                     .practice-fullscreen .option-item span {
-                        width: 40px !important;
-                        height: 40px !important;
-                        line-height: 40px !important;
-                        font-size: 18px !important;
+                        width: 45px !important;
+                        height: 45px !important;
+                        line-height: 45px !important;
+                        font-size: 20px !important;
                     }
                     
                     /* 全屏模式下输入框更大 */
                     .practice-fullscreen input[type="text"],
                     .practice-fullscreen textarea {
-                        font-size: 20px !important;
-                        padding: 25px !important;
-                        min-height: 60px !important;
+                        font-size: 24px !important;
+                        padding: 30px !important;
+                        min-height: 70px !important;
                     }
                     
                     .practice-fullscreen textarea {
-                        min-height: 200px !important;
+                        min-height: 250px !important;
                     }
                     
                     /* 全屏模式下按钮更大 */
@@ -404,11 +434,23 @@ window.QuestionBankPractice = (function() {
                         border-radius: 15px !important;
                     }
                     
-                    /* 全屏模式下答案显示区域更紧凑 */
+                    /* 全屏模式下答案显示区域更大 */
                     .practice-fullscreen #answerDisplay {
-                        max-height: 20vh !important;
-                        font-size: 18px !important;
-                        padding: 15px !important;
+                        max-height: 25vh !important;
+                        font-size: 22px !important;
+                        padding: 25px !important;
+                        line-height: 1.8 !important;
+                    }
+                    
+                    .practice-fullscreen #answerDisplay h5 {
+                        font-size: 26px !important;
+                        margin-bottom: 20px !important;
+                    }
+                    
+                    .practice-fullscreen #answerContent,
+                    .practice-fullscreen #explanationContent {
+                        font-size: 20px !important;
+                        line-height: 1.8 !important;
                     }
                     
                     /* 响应式设计 */
@@ -818,12 +860,8 @@ window.QuestionBankPractice = (function() {
                     </div>
                 `).join('');
             } else {
-                // 没有选项时，显示提示信息
-                optionsHTML = `
-                    <div style="margin-top: 25px; padding: 20px; background: rgba(255,193,7,0.1); border: 1px solid #ffc107; border-radius: 15px; color: #856404; font-size: 1.1em;">
-                        <i class="fas fa-info-circle"></i> 此题没有选项，请在下方输入框中输入您的答案。
-                    </div>
-                `;
+                // 没有选项时，不显示提示信息，直接显示输入框
+                optionsHTML = '';
             }
             
             // 根据题型生成不同的输入方式

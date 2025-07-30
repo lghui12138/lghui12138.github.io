@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>教师端管理面板 - 题库管理</title>
+    <title>教师端管理系统 - 流体力学题库</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="styles/teacher.css" rel="stylesheet">
     <style>
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -13,570 +14,286 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
-        .teacher-panel {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
-            margin: 20px;
-            padding: 30px;
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
         }
         
-        .header {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 20px;
-            border-radius: 15px;
+        .login-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .login-header {
+            text-align: center;
             margin-bottom: 30px;
         }
         
-        .stats-card {
-            background: linear-gradient(135deg, #4facfe, #00f2fe);
-            color: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-        
-        .question-card {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: transform 0.2s;
-        }
-        
-        .question-card:hover {
-            transform: translateY(-2px);
-        }
-        
-        .question-title {
+        .login-header h1 {
+            color: #4facfe;
             font-weight: bold;
-            color: #333;
             margin-bottom: 10px;
         }
         
-        .question-meta {
+        .login-header p {
             color: #666;
-            font-size: 14px;
-            margin-bottom: 10px;
+            font-size: 0.9em;
         }
         
-        .question-options {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-        
-        .question-answer {
-            background: #d4edda;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-        
-        .question-explanation {
-            background: #fff3cd;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-        
-        .filter-panel {
-            background: rgba(255,255,255,0.9);
-            border-radius: 15px;
-            padding: 20px;
+        .form-group {
             margin-bottom: 20px;
         }
         
-        .btn-action {
-            border-radius: 20px;
-            padding: 8px 15px;
-            margin: 2px;
-        }
-        
-        .pagination {
-            justify-content: center;
-            margin-top: 30px;
-        }
-        
-        .search-box {
-            border-radius: 25px;
+        .form-control {
+            border-radius: 15px;
+            padding: 15px;
             border: 2px solid #e9ecef;
-            padding: 10px 20px;
+            transition: all 0.3s ease;
         }
         
-        .search-box:focus {
-            border-color: #667eea;
-            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        .form-control:focus {
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79,172,254,0.1);
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(79,172,254,0.3);
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .back-link a {
+            color: #4facfe;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .teacher-dashboard {
+            display: none;
+            padding: 20px;
+        }
+        
+        .dashboard-header {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .dashboard-header h1 {
+            color: #4facfe;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .dashboard-header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .dashboard-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .dashboard-actions .btn {
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-actions .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
-    <div class="container-fluid">
-        <div class="teacher-panel">
-            <!-- 头部 -->
-            <div class="header text-center">
-                <h1><i class="fas fa-chalkboard-teacher"></i> 教师端管理面板</h1>
-                <p class="mb-0">题库管理与题目编辑</p>
+    <!-- 登录界面 -->
+    <div id="loginSection" class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <h1><i class="fas fa-chalkboard-teacher"></i> 教师端</h1>
+                <p>流体力学题库管理系统</p>
             </div>
             
-            <!-- 统计信息 -->
-            <div class="row">
-                <div class="col-md-3">
-                    <div class="stats-card text-center">
-                        <h3 id="totalQuestions">0</h3>
-                        <p>总题目数</p>
-                    </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">用户名</label>
+                    <input type="text" id="username" class="form-control" placeholder="请输入用户名" required>
                 </div>
-                <div class="col-md-3">
-                    <div class="stats-card text-center">
-                        <h3 id="totalBanks">0</h3>
-                        <p>题库数量</p>
-                    </div>
+                
+                <div class="form-group">
+                    <label for="password">密码</label>
+                    <input type="password" id="password" class="form-control" placeholder="请输入密码" required>
                 </div>
-                <div class="col-md-3">
-                    <div class="stats-card text-center">
-                        <h3 id="selectedQuestions">0</h3>
-                        <p>已选择</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="stats-card text-center">
-                        <h3 id="deletedQuestions">0</h3>
-                        <p>已删除</p>
-                    </div>
-                </div>
-            </div>
+                
+                <button type="submit" class="btn btn-login">
+                    <i class="fas fa-sign-in-alt"></i> 登录
+                </button>
+            </form>
             
-            <!-- 筛选面板 -->
-            <div class="filter-panel">
-                <div class="row">
-                    <div class="col-md-3">
-                        <label class="form-label">题库选择</label>
-                        <select id="bankSelect" class="form-select">
-                            <option value="">所有题库</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">题目类型</label>
-                        <select id="typeSelect" class="form-select">
-                            <option value="">所有类型</option>
-                            <option value="选择题">选择题</option>
-                            <option value="填空题">填空题</option>
-                            <option value="计算题">计算题</option>
-                            <option value="解答题">解答题</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">难度等级</label>
-                        <select id="difficultySelect" class="form-select">
-                            <option value="">所有难度</option>
-                            <option value="easy">简单</option>
-                            <option value="medium">中等</option>
-                            <option value="hard">困难</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label">搜索关键词</label>
-                        <input type="text" id="searchInput" class="form-control search-box" placeholder="搜索题目内容...">
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="col-12">
-                        <button class="btn btn-primary btn-action" onclick="TeacherPanel.loadQuestions()">
-                            <i class="fas fa-search"></i> 搜索
-                        </button>
-                        <button class="btn btn-success btn-action" onclick="TeacherPanel.selectAll()">
-                            <i class="fas fa-check-square"></i> 全选
-                        </button>
-                        <button class="btn btn-warning btn-action" onclick="TeacherPanel.selectNone()">
-                            <i class="fas fa-square"></i> 取消全选
-                        </button>
-                        <button class="btn btn-danger btn-action" onclick="TeacherPanel.batchDelete()">
-                            <i class="fas fa-trash"></i> 批量删除
-                        </button>
-                        <button class="btn btn-info btn-action" onclick="TeacherPanel.exportSelected()">
-                            <i class="fas fa-download"></i> 导出选中
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 题目列表 -->
-            <div id="questionsContainer">
-                <div class="text-center">
-                    <i class="fas fa-spinner fa-spin fa-3x text-muted"></i>
-                    <p class="mt-3 text-muted">正在加载题目...</p>
-                </div>
-            </div>
-            
-            <!-- 分页 -->
-            <nav>
-                <ul class="pagination" id="pagination">
-                </ul>
-            </nav>
-        </div>
-    </div>
-
-    <!-- 批量删除确认对话框 -->
-    <div class="modal fade" id="deleteModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">确认批量删除</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <p>确定要删除选中的 <span id="deleteCount">0</span> 道题目吗？</p>
-                    <p class="text-danger"><i class="fas fa-exclamation-triangle"></i> 此操作不可恢复！</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
-                    <button type="button" class="btn btn-danger" onclick="TeacherPanel.confirmDelete()">确认删除</button>
-                </div>
+            <div class="back-link">
+                <a href="index.html"><i class="fas fa-arrow-left"></i> 返回主页</a>
             </div>
         </div>
     </div>
-
+    
+    <!-- 教师仪表板 -->
+    <div id="dashboardSection" class="teacher-dashboard">
+        <div class="dashboard-header">
+            <h1><i class="fas fa-chalkboard-teacher"></i> 教师端管理系统</h1>
+            <p>欢迎回来，<span id="teacherName">教师</span>！</p>
+            
+            <div class="dashboard-actions">
+                <button class="btn btn-primary" onclick="TeacherManagement.showTeacherInterface()">
+                    <i class="fas fa-database"></i> 题库管理
+                </button>
+                <button class="btn btn-success" onclick="TeacherManagement.showStatistics()">
+                    <i class="fas fa-chart-bar"></i> 统计分析
+                </button>
+                <button class="btn btn-info" onclick="TeacherManagement.showSettings()">
+                    <i class="fas fa-cog"></i> 系统设置
+                </button>
+                <button class="btn btn-warning" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i> 退出登录
+                </button>
+            </div>
+        </div>
+        
+        <div class="dashboard-content">
+            <!-- 内容将通过JavaScript动态加载 -->
+        </div>
+    </div>
+    
+    <!-- 脚本 -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/core/utils.js"></script>
+    <script src="js/core/eventBus.js"></script>
+    <script src="js/components/aiAssistant.js"></script>
+    <script src="modules/question-bank-ui.js"></script>
+    <script src="modules/teacher-management.js"></script>
     <script>
-        const TeacherPanel = {
-            allQuestions: [],
-            filteredQuestions: [],
-            selectedQuestions: new Set(),
-            currentPage: 1,
-            questionsPerPage: 10,
-            banks: [],
-            
-            // 初始化
-            async init() {
-                await this.loadBanks();
-                await this.loadAllQuestions();
-                this.updateStats();
-                this.bindEvents();
-            },
-            
-            // 加载题库列表
-            async loadBanks() {
-                try {
-                    const response = await fetch('question-banks/index.json');
-                    const data = await response.json();
-                    this.banks = data.banks;
-                    
-                    const bankSelect = document.getElementById('bankSelect');
-                    this.banks.forEach(bank => {
-                        const option = document.createElement('option');
-                        option.value = bank.filename;
-                        option.textContent = `${bank.name} (${bank.questionCount}题)`;
-                        bankSelect.appendChild(option);
-                    });
-                } catch (error) {
-                    console.error('加载题库列表失败:', error);
-                }
-            },
-            
-            // 加载所有题目
-            async loadAllQuestions() {
-                this.allQuestions = [];
-                
-                for (const bank of this.banks) {
-                    try {
-                        const response = await fetch(`question-banks/${bank.filename}`);
-                        const questions = await response.json();
-                        
-                        // 为每个题目添加题库信息
-                        questions.forEach(q => {
-                            q.bankId = bank.id;
-                            q.bankName = bank.name;
-                            q.bankFilename = bank.filename;
-                        });
-                        
-                        this.allQuestions.push(...questions);
-                    } catch (error) {
-                        console.error(`加载题库 ${bank.name} 失败:`, error);
-                    }
-                }
-                
-                this.filterQuestions();
-            },
-            
-            // 筛选题目
-            filterQuestions() {
-                const bankFilter = document.getElementById('bankSelect').value;
-                const typeFilter = document.getElementById('typeSelect').value;
-                const difficultyFilter = document.getElementById('difficultySelect').value;
-                const searchFilter = document.getElementById('searchInput').value.toLowerCase();
-                
-                this.filteredQuestions = this.allQuestions.filter(q => {
-                    const bankMatch = !bankFilter || q.bankFilename === bankFilter;
-                    const typeMatch = !typeFilter || q.type === typeFilter;
-                    const difficultyMatch = !difficultyFilter || q.difficulty === difficultyFilter;
-                    const searchMatch = !searchFilter || 
-                        q.title.toLowerCase().includes(searchFilter) ||
-                        (q.explanation && q.explanation.toLowerCase().includes(searchFilter));
-                    
-                    return bankMatch && typeMatch && difficultyMatch && searchMatch;
-                });
-                
-                this.currentPage = 1;
-                this.displayQuestions();
-                this.updateStats();
-            },
-            
-            // 显示题目
-            displayQuestions() {
-                const container = document.getElementById('questionsContainer');
-                const startIndex = (this.currentPage - 1) * this.questionsPerPage;
-                const endIndex = startIndex + this.questionsPerPage;
-                const pageQuestions = this.filteredQuestions.slice(startIndex, endIndex);
-                
-                if (pageQuestions.length === 0) {
-                    container.innerHTML = `
-                        <div class="text-center">
-                            <i class="fas fa-search fa-3x text-muted"></i>
-                            <p class="mt-3 text-muted">没有找到匹配的题目</p>
-                        </div>
-                    `;
-                    return;
-                }
-                
-                let html = '';
-                pageQuestions.forEach((question, index) => {
-                    const globalIndex = startIndex + index;
-                    const isSelected = this.selectedQuestions.has(globalIndex);
-                    
-                    html += `
-                        <div class="question-card">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1">
-                                    <div class="question-title">
-                                        <input type="checkbox" class="form-check-input me-2" 
-                                               ${isSelected ? 'checked' : ''} 
-                                               onchange="TeacherPanel.toggleSelection(${globalIndex})">
-                                        ${question.title}
-                                    </div>
-                                    <div class="question-meta">
-                                        <span class="badge bg-primary">${question.bankName}</span>
-                                        <span class="badge bg-secondary">${question.type}</span>
-                                        <span class="badge bg-${this.getDifficultyColor(question.difficulty)}">${this.getDifficultyText(question.difficulty)}</span>
-                                        <span class="badge bg-info">ID: ${question.id}</span>
-                                    </div>
-                                    ${this.renderQuestionContent(question)}
-                                </div>
-                                <div class="ms-3">
-                                    <button class="btn btn-sm btn-outline-danger" onclick="TeacherPanel.deleteQuestion(${globalIndex})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                });
-                
-                container.innerHTML = html;
-                this.updatePagination();
-            },
-            
-            // 渲染题目内容
-            renderQuestionContent(question) {
-                let html = '';
-                
-                if (question.options && question.options.length > 0) {
-                    html += '<div class="question-options">';
-                    html += '<strong>选项：</strong><br>';
-                    question.options.forEach(option => {
-                        html += `<div>${option}</div>`;
-                    });
-                    html += '</div>';
-                }
-                
-                if (question.answer) {
-                    html += `<div class="question-answer"><strong>答案：</strong>${question.answer}</div>`;
-                }
-                
-                if (question.explanation) {
-                    html += `<div class="question-explanation"><strong>解析：</strong>${question.explanation}</div>`;
-                }
-                
-                return html;
-            },
-            
-            // 切换选择状态
-            toggleSelection(index) {
-                if (this.selectedQuestions.has(index)) {
-                    this.selectedQuestions.delete(index);
-                } else {
-                    this.selectedQuestions.add(index);
-                }
-                this.updateStats();
-            },
-            
-            // 全选
-            selectAll() {
-                this.filteredQuestions.forEach((_, index) => {
-                    this.selectedQuestions.add(index);
-                });
-                this.displayQuestions();
-                this.updateStats();
-            },
-            
-            // 取消全选
-            selectNone() {
-                this.selectedQuestions.clear();
-                this.displayQuestions();
-                this.updateStats();
-            },
-            
-            // 批量删除
-            batchDelete() {
-                if (this.selectedQuestions.size === 0) {
-                    alert('请先选择要删除的题目');
-                    return;
-                }
-                
-                document.getElementById('deleteCount').textContent = this.selectedQuestions.size;
-                new bootstrap.Modal(document.getElementById('deleteModal')).show();
-            },
-            
-            // 确认删除
-            confirmDelete() {
-                const selectedIndices = Array.from(this.selectedQuestions).sort((a, b) => b - a);
-                
-                // 从筛选结果中删除
-                selectedIndices.forEach(index => {
-                    this.filteredQuestions.splice(index, 1);
-                });
-                
-                // 从所有题目中删除
-                selectedIndices.forEach(index => {
-                    const globalIndex = this.filteredQuestions[index];
-                    if (globalIndex !== undefined) {
-                        this.allQuestions.splice(globalIndex, 1);
-                    }
-                });
-                
-                this.selectedQuestions.clear();
-                this.displayQuestions();
-                this.updateStats();
-                
-                bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
-                alert(`已删除 ${selectedIndices.length} 道题目`);
-            },
-            
-            // 删除单个题目
-            deleteQuestion(index) {
-                if (confirm('确定要删除这道题目吗？')) {
-                    this.filteredQuestions.splice(index, 1);
-                    this.displayQuestions();
-                    this.updateStats();
-                }
-            },
-            
-            // 导出选中的题目
-            exportSelected() {
-                if (this.selectedQuestions.size === 0) {
-                    alert('请先选择要导出的题目');
-                    return;
-                }
-                
-                const selectedQuestions = Array.from(this.selectedQuestions).map(index => 
-                    this.filteredQuestions[index]
-                );
-                
-                const dataStr = JSON.stringify(selectedQuestions, null, 2);
-                const dataBlob = new Blob([dataStr], {type: 'application/json'});
-                
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(dataBlob);
-                link.download = `selected_questions_${new Date().toISOString().slice(0,10)}.json`;
-                link.click();
-            },
-            
-            // 更新统计信息
-            updateStats() {
-                document.getElementById('totalQuestions').textContent = this.allQuestions.length;
-                document.getElementById('totalBanks').textContent = this.banks.length;
-                document.getElementById('selectedQuestions').textContent = this.selectedQuestions.size;
-            },
-            
-            // 更新分页
-            updatePagination() {
-                const totalPages = Math.ceil(this.filteredQuestions.length / this.questionsPerPage);
-                const pagination = document.getElementById('pagination');
-                
-                let html = '';
-                
-                // 上一页
-                html += `
-                    <li class="page-item ${this.currentPage === 1 ? 'disabled' : ''}">
-                        <a class="page-link" href="#" onclick="TeacherPanel.goToPage(${this.currentPage - 1})">上一页</a>
-                    </li>
-                `;
-                
-                // 页码
-                for (let i = 1; i <= totalPages; i++) {
-                    html += `
-                        <li class="page-item ${i === this.currentPage ? 'active' : ''}">
-                            <a class="page-link" href="#" onclick="TeacherPanel.goToPage(${i})">${i}</a>
-                        </li>
-                    `;
-                }
-                
-                // 下一页
-                html += `
-                    <li class="page-item ${this.currentPage === totalPages ? 'disabled' : ''}">
-                        <a class="page-link" href="#" onclick="TeacherPanel.goToPage(${this.currentPage + 1})">下一页</a>
-                    </li>
-                `;
-                
-                pagination.innerHTML = html;
-            },
-            
-            // 跳转到指定页
-            goToPage(page) {
-                const totalPages = Math.ceil(this.filteredQuestions.length / this.questionsPerPage);
-                if (page >= 1 && page <= totalPages) {
-                    this.currentPage = page;
-                    this.displayQuestions();
-                }
-            },
-            
-            // 获取难度颜色
-            getDifficultyColor(difficulty) {
-                const colors = {
-                    'easy': 'success',
-                    'medium': 'warning',
-                    'hard': 'danger'
-                };
-                return colors[difficulty] || 'secondary';
-            },
-            
-            // 获取难度文本
-            getDifficultyText(difficulty) {
-                const texts = {
-                    'easy': '简单',
-                    'medium': '中等',
-                    'hard': '困难'
-                };
-                return texts[difficulty] || '未知';
-            },
-            
-            // 绑定事件
-            bindEvents() {
-                document.getElementById('bankSelect').addEventListener('change', () => this.filterQuestions());
-                document.getElementById('typeSelect').addEventListener('change', () => this.filterQuestions());
-                document.getElementById('difficultySelect').addEventListener('change', () => this.filterQuestions());
-                document.getElementById('searchInput').addEventListener('input', () => this.filterQuestions());
-            }
+        // 简单的登录验证（实际应用中应该使用更安全的验证方式）
+        const TEACHER_CREDENTIALS = {
+            'teacher': 'password123',
+            'admin': 'admin123'
         };
         
-        // 页面加载完成后初始化
-        document.addEventListener('DOMContentLoaded', () => {
-            TeacherPanel.init();
+        // 登录表单处理
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            
+            if (TEACHER_CREDENTIALS[username] === password) {
+                // 登录成功
+                localStorage.setItem('teacherLoggedIn', 'true');
+                localStorage.setItem('teacherName', username);
+                showDashboard();
+                showNotification('登录成功！', 'success');
+            } else {
+                showNotification('用户名或密码错误', 'error');
+            }
         });
+        
+        // 显示仪表板
+        function showDashboard() {
+            document.getElementById('loginSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            
+            const teacherName = localStorage.getItem('teacherName') || '教师';
+            document.getElementById('teacherName').textContent = teacherName;
+            
+            // 初始化教师端管理系统
+            if (typeof TeacherManagement !== 'undefined') {
+                TeacherManagement.init();
+            }
+        }
+        
+        // 退出登录
+        function logout() {
+            localStorage.removeItem('teacherLoggedIn');
+            localStorage.removeItem('teacherName');
+            document.getElementById('loginSection').style.display = 'flex';
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('loginForm').reset();
+            showNotification('已退出登录', 'info');
+        }
+        
+        // 检查是否已登录
+        function checkLoginStatus() {
+            const isLoggedIn = localStorage.getItem('teacherLoggedIn') === 'true';
+            if (isLoggedIn) {
+                showDashboard();
+            }
+        }
+        
+        // 页面加载时检查登录状态
+        document.addEventListener('DOMContentLoaded', function() {
+            checkLoginStatus();
+        });
+        
+        // 通知函数
+        function showNotification(message, type = 'info') {
+            // 创建通知元素
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+            notification.style.position = 'fixed';
+            notification.style.top = '20px';
+            notification.style.right = '20px';
+            notification.style.zIndex = '9999';
+            notification.style.minWidth = '300px';
+            notification.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // 3秒后自动移除
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
     </script>
 </body>
 </html> 
