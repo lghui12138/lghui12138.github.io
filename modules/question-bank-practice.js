@@ -790,8 +790,23 @@ window.QuestionBankPractice = (function() {
                                     </button>
                                     
                                     <!-- 智能分析 -->
-                                    <button id="analysisBtn" class="btn btn-outline-primary btn-sm btn-hover-effect" onclick="QuestionBankPractice.showAnalysis()" title="智能分析" style="border-radius: 20px; padding: 8px 15px;">
+                                    <button id="analysisBtn" class="btn btn-outline-primary btn-sm btn-hover-effect" onclick="QuestionBankPractice.analyzeLearningProgress()" title="学习进度分析" style="border-radius: 20px; padding: 8px 15px;">
                                         <i class="fas fa-brain"></i>
+                                    </button>
+                                    
+                                    <!-- 智能提示 -->
+                                    <button id="hintBtn" class="btn btn-outline-warning btn-sm btn-hover-effect" onclick="QuestionBankPractice.showSmartHint()" title="智能提示" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-lightbulb"></i>
+                                    </button>
+                                    
+                                    <!-- 语音朗读 -->
+                                    <button id="speakBtn" class="btn btn-outline-info btn-sm btn-hover-effect" onclick="QuestionBankPractice.speakQuestion()" title="语音朗读题目" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-volume-up"></i>
+                                    </button>
+                                    
+                                    <!-- 停止朗读 -->
+                                    <button id="stopSpeakBtn" class="btn btn-outline-secondary btn-sm btn-hover-effect" onclick="QuestionBankPractice.stopSpeaking()" title="停止朗读" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-volume-mute"></i>
                                     </button>
                                     
                                     <!-- 学习进度 -->
@@ -1196,6 +1211,9 @@ window.QuestionBankPractice = (function() {
             
             // 显示结果
             this.showAnswerResult(isCorrect, question);
+            
+            // 自动收集错题
+            this.autoCollectWrongQuestions();
             
             // 如果答错了，添加到错题本
             if (!isCorrect && typeof QuestionBankUser !== 'undefined') {
@@ -2291,7 +2309,21 @@ window.QuestionBankPractice = (function() {
                     case 'h':
                     case 'H':
                         e.preventDefault();
-                        this.showHint();
+                        this.showSmartHint();
+                        break;
+                    case 's':
+                    case 'S':
+                        if (e.ctrlKey) {
+                            e.preventDefault();
+                            this.speakQuestion();
+                        }
+                        break;
+                    case 'm':
+                    case 'M':
+                        if (e.ctrlKey) {
+                            e.preventDefault();
+                            this.stopSpeaking();
+                        }
                         break;
                     case 's':
                     case 'S':
@@ -5054,6 +5086,317 @@ ${report.learningPath.milestones.map(m => `- ${m.title}: ${m.description} (目�
                     }
                 }
             }, { passive: true });
+        },
+        
+        // 智能答题提示系统
+        showSmartHint: function() {
+            const question = currentSession.questions[currentSession.currentIndex];
+            if (!question) return;
+            
+            // 分析题目类型和内容，提供智能提示
+            const hint = this.generateSmartHint(question);
+            
+            if (hint) {
+                this.displayHint(hint);
+            }
+        },
+        
+        // 生成智能提示
+        generateSmartHint: function(question) {
+            const questionText = question.question || question.title || '';
+            const questionType = question.type || '选择题';
+            
+            let hint = '';
+            
+            // 根据题目类型和关键词生成提示
+            if (questionType === '选择题') {
+                if (questionText.includes('流体') && questionText.includes('压力')) {
+                    hint = '💡 提示：注意流体的压力分布规律，考虑伯努利方程的应用。';
+                } else if (questionText.includes('雷诺数')) {
+                    hint = '💡 提示：雷诺数决定了流体的流动状态，注意层流和湍流的区别。';
+                } else if (questionText.includes('边界层')) {
+                    hint = '💡 提示：边界层内粘性力起主导作用，外部为势流。';
+                } else {
+                    hint = '💡 提示：仔细阅读题目，注意关键词，排除明显错误的选项。';
+                }
+            } else if (questionType === '填空题') {
+                hint = '💡 提示：注意单位的统一，检查计算过程的准确性。';
+            } else if (questionType === '计算题') {
+                hint = '💡 提示：列出已知条件，选择合适的公式，注意单位换算。';
+            }
+            
+            return hint;
+        },
+        
+        // 显示提示
+        displayHint: function(hint) {
+            const hintContainer = document.createElement('div');
+            hintContainer.id = 'smartHint';
+            hintContainer.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #ffc107; border-radius: 20px; padding: 25px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; max-width: 500px; text-align: center;">
+                    <h4 style="color: #333; margin-bottom: 15px;">🤖 智能提示</h4>
+                    <p style="color: #666; margin-bottom: 20px; line-height: 1.6; font-size: 16px;">
+                        ${hint}
+                    </p>
+                    <button onclick="QuestionBankPractice.closeHint()" 
+                            style="padding: 10px 20px; background: #ffc107; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 14px;">
+                        知道了
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(hintContainer);
+        },
+        
+        // 关闭提示
+        closeHint: function() {
+            const hint = document.getElementById('smartHint');
+            if (hint && hint.parentNode) {
+                hint.parentNode.removeChild(hint);
+            }
+        },
+        
+        // 语音朗读功能
+        speakQuestion: function() {
+            const question = currentSession.questions[currentSession.currentIndex];
+            if (!question) return;
+            
+            const questionText = question.question || question.title || '';
+            
+            // 检查浏览器是否支持语音合成
+            if ('speechSynthesis' in window) {
+                // 停止当前朗读
+                window.speechSynthesis.cancel();
+                
+                // 创建语音合成对象
+                const utterance = new SpeechSynthesisUtterance(questionText);
+                utterance.lang = 'zh-CN';
+                utterance.rate = 0.8;
+                utterance.pitch = 1.0;
+                utterance.volume = 0.8;
+                
+                // 开始朗读
+                window.speechSynthesis.speak(utterance);
+                
+                showNotification('正在朗读题目...', 'info');
+            } else {
+                showNotification('您的浏览器不支持语音朗读功能', 'warning');
+            }
+        },
+        
+        // 停止语音朗读
+        stopSpeaking: function() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                showNotification('已停止朗读', 'info');
+            }
+        },
+        
+        // 学习进度分析
+        analyzeLearningProgress: function() {
+            const totalQuestions = currentSession.questions.length;
+            const answeredQuestions = currentSession.userAnswers.filter(answer => answer !== null).length;
+            const correctAnswers = currentSession.userAnswers.filter((answer, index) => {
+                const question = currentSession.questions[index];
+                return answer !== null && this.isAnswerCorrect(answer, question);
+            }).length;
+            
+            const progress = {
+                total: totalQuestions,
+                answered: answeredQuestions,
+                correct: correctAnswers,
+                accuracy: answeredQuestions > 0 ? (correctAnswers / answeredQuestions * 100).toFixed(1) : 0,
+                remaining: totalQuestions - answeredQuestions
+            };
+            
+            this.displayProgressAnalysis(progress);
+        },
+        
+        // 显示进度分析
+        displayProgressAnalysis: function(progress) {
+            const analysisContainer = document.createElement('div');
+            analysisContainer.id = 'progressAnalysis';
+            analysisContainer.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #4facfe; border-radius: 20px; padding: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; max-width: 600px; text-align: center;">
+                    <h4 style="color: #333; margin-bottom: 20px;">📊 学习进度分析</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 25px;">
+                        <div style="background: #e3f2fd; padding: 15px; border-radius: 15px;">
+                            <div style="font-size: 24px; font-weight: bold; color: #4facfe;">${progress.answered}</div>
+                            <div style="color: #666; font-size: 14px;">已答题数</div>
+                        </div>
+                        <div style="background: #e8f5e8; padding: 15px; border-radius: 15px;">
+                            <div style="font-size: 24px; font-weight: bold; color: #28a745;">${progress.correct}</div>
+                            <div style="color: #666; font-size: 14px;">正确题数</div>
+                        </div>
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 15px;">
+                            <div style="font-size: 24px; font-weight: bold; color: #ffc107;">${progress.accuracy}%</div>
+                            <div style="color: #666; font-size: 14px;">正确率</div>
+                        </div>
+                        <div style="background: #f8d7da; padding: 15px; border-radius: 15px;">
+                            <div style="font-size: 24px; font-weight: bold; color: #dc3545;">${progress.remaining}</div>
+                            <div style="color: #666; font-size: 14px;">剩余题数</div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <div style="background: #f8f9fa; border-radius: 10px; padding: 15px; text-align: left;">
+                            <h5 style="color: #333; margin-bottom: 10px;">📈 学习建议</h5>
+                            <ul style="color: #666; line-height: 1.6; margin: 0; padding-left: 20px;">
+                                ${this.generateLearningAdvice(progress)}
+                            </ul>
+                        </div>
+                    </div>
+                    <button onclick="QuestionBankPractice.closeProgressAnalysis()" 
+                            style="padding: 12px 25px; background: #4facfe; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px;">
+                        关闭
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(analysisContainer);
+        },
+        
+        // 生成学习建议
+        generateLearningAdvice: function(progress) {
+            let advice = [];
+            
+            if (progress.accuracy < 60) {
+                advice.push('建议复习基础知识，巩固概念理解');
+            } else if (progress.accuracy < 80) {
+                advice.push('继续练习，注意细节和计算准确性');
+            } else {
+                advice.push('表现优秀，可以挑战更高难度的题目');
+            }
+            
+            if (progress.remaining > 0) {
+                advice.push(`还有 ${progress.remaining} 道题目待完成，建议合理安排时间`);
+            }
+            
+            if (progress.answered > 0) {
+                advice.push('建议查看错题本，重点复习做错的题目');
+            }
+            
+            return advice.map(item => `<li>${item}</li>`).join('');
+        },
+        
+        // 关闭进度分析
+        closeProgressAnalysis: function() {
+            const analysis = document.getElementById('progressAnalysis');
+            if (analysis && analysis.parentNode) {
+                analysis.parentNode.removeChild(analysis);
+            }
+        },
+        
+        // 自动收集错题
+        autoCollectWrongQuestions: function() {
+            const userAnswer = currentSession.userAnswers[currentSession.currentIndex];
+            const question = currentSession.questions[currentSession.currentIndex];
+            
+            if (userAnswer !== null && !this.isAnswerCorrect(userAnswer, question)) {
+                this.addToWrongBook(question);
+            }
+        },
+        
+        // 添加到错题本
+        addToWrongBook: function(question) {
+            // 获取现有错题
+            let wrongQuestions = JSON.parse(localStorage.getItem('wrongQuestions') || '[]');
+            
+            // 检查是否已经存在
+            const exists = wrongQuestions.some(q => 
+                q.question === question.question && q.title === question.title
+            );
+            
+            if (!exists) {
+                // 添加错题信息
+                const wrongQuestion = {
+                    ...question,
+                    addedTime: new Date().toISOString(),
+                    sessionName: currentSession.sessionName,
+                    userAnswer: currentSession.userAnswers[currentSession.currentIndex]
+                };
+                
+                wrongQuestions.push(wrongQuestion);
+                localStorage.setItem('wrongQuestions', JSON.stringify(wrongQuestions));
+                
+                showNotification('已自动添加到错题本', 'info');
+            }
+        },
+        
+        // 显示帮助信息
+        showHelp: function() {
+            const helpContainer = document.createElement('div');
+            helpContainer.id = 'helpModal';
+            helpContainer.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #4facfe; border-radius: 20px; padding: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; max-width: 700px; max-height: 80vh; overflow-y: auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">🎯 题库练习帮助</h4>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 25px;">
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 15px;">
+                            <h5 style="color: #333; margin-bottom: 10px;">⌨️ 键盘快捷键</h5>
+                            <ul style="color: #666; line-height: 1.6; margin: 0; padding-left: 20px; font-size: 14px;">
+                                <li><kbd>←</kbd> <kbd>→</kbd> 上一题/下一题</li>
+                                <li><kbd>空格</kbd> 暂停/继续</li>
+                                <li><kbd>1-4</kbd> 选择选项</li>
+                                <li><kbd>Enter</kbd> 提交答案</li>
+                                <li><kbd>Ctrl+F</kbd> 全屏切换</li>
+                                <li><kbd>Ctrl+R</kbd> 阅读模式</li>
+                                <li><kbd>Ctrl+±</kbd> 字体大小</li>
+                                <li><kbd>H</kbd> 智能提示</li>
+                                <li><kbd>Ctrl+S</kbd> 语音朗读</li>
+                                <li><kbd>Ctrl+M</kbd> 停止朗读</li>
+                                <li><kbd>ESC</kbd> 退出练习</li>
+                            </ul>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 15px;">
+                            <h5 style="color: #333; margin-bottom: 10px;">🖱️ 鼠标操作</h5>
+                            <ul style="color: #666; line-height: 1.6; margin: 0; padding-left: 20px; font-size: 14px;">
+                                <li>滚轮滚动题目内容</li>
+                                <li>滚轮在顶部/底部切换题目</li>
+                                <li>点击选项选择答案</li>
+                                <li>触摸设备支持滑动切换</li>
+                                <li>双击题目区域全屏</li>
+                            </ul>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 15px;">
+                            <h5 style="color: #333; margin-bottom: 10px;">🤖 智能功能</h5>
+                            <ul style="color: #666; line-height: 1.6; margin: 0; padding-left: 20px; font-size: 14px;">
+                                <li>智能答题提示</li>
+                                <li>自动错题收集</li>
+                                <li>学习进度分析</li>
+                                <li>语音朗读题目</li>
+                                <li>字体大小自适应</li>
+                                <li>阅读模式优化</li>
+                            </ul>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 15px;">
+                            <h5 style="color: #333; margin-bottom: 10px;">📊 学习统计</h5>
+                            <ul style="color: #666; line-height: 1.6; margin: 0; padding-left: 20px; font-size: 14px;">
+                                <li>实时答题进度</li>
+                                <li>正确率统计</li>
+                                <li>答题时间分析</li>
+                                <li>错题本管理</li>
+                                <li>学习建议生成</li>
+                                <li>数据导出功能</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div style="text-align: center;">
+                        <button onclick="QuestionBankPractice.closeHelp()" 
+                                style="padding: 12px 25px; background: #4facfe; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 16px;">
+                            知道了
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(helpContainer);
+        },
+        
+        // 关闭帮助
+        closeHelp: function() {
+            const help = document.getElementById('helpModal');
+            if (help && help.parentNode) {
+                help.parentNode.removeChild(help);
+            }
         }
     };
 })(); 
