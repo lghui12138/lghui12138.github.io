@@ -1,5 +1,5 @@
 /**
- * 题库练习功能模块
+ * 题库练习功能模块 - 全面优化版本
  * 负责题目练习、答题逻辑、计时等功能
  */
 window.QuestionBankPractice = (function() {
@@ -18,7 +18,8 @@ window.QuestionBankPractice = (function() {
         isActive: false,
         isPaused: false,
         timer: null,
-        questionTimer: null
+        questionTimer: null,
+        isFullscreen: false
     };
     
     // 配置
@@ -26,7 +27,9 @@ window.QuestionBankPractice = (function() {
         defaultTimeLimit: 0, // 0 表示无时间限制
         showExplanation: true,
         shuffleQuestions: false,
-        shuffleOptions: false
+        shuffleOptions: false,
+        autoSave: true,
+        autoSaveInterval: 30000 // 30秒自动保存
     };
     
     // 公有方法
@@ -44,6 +47,9 @@ window.QuestionBankPractice = (function() {
             // 键盘快捷键
             document.addEventListener('keydown', (e) => {
                 if (!practiceState.isActive) return;
+                
+                // 防止在输入框中触发快捷键
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
                 
                 switch(e.key) {
                     case '1':
@@ -70,7 +76,18 @@ window.QuestionBankPractice = (function() {
                         this.togglePause();
                         break;
                     case 'Escape':
-                        this.exitPractice();
+                        if (practiceState.isFullscreen) {
+                            this.toggleFullscreen();
+                        } else {
+                            this.exitPractice();
+                        }
+                        break;
+                    case 'f':
+                    case 'F':
+                        if (e.ctrlKey) {
+                            e.preventDefault();
+                            this.toggleFullscreen();
+                        }
                         break;
                 }
             });
@@ -131,7 +148,8 @@ window.QuestionBankPractice = (function() {
                 isActive: true,
                 isPaused: false,
                 timer: null,
-                questionTimer: Date.now()
+                questionTimer: Date.now(),
+                isFullscreen: false
             };
             
             // 打乱题目顺序（如果需要）
@@ -159,7 +177,7 @@ window.QuestionBankPractice = (function() {
                 QuestionBankUI.createModal({
                     title: currentSession.sessionName,
                     content: content,
-                    size: 'large',
+                    size: 'fullscreen',
                     closable: true,
                     backdrop: false,
                     onHide: () => this.exitPractice()
@@ -174,296 +192,378 @@ window.QuestionBankPractice = (function() {
             
             this.displayCurrentQuestion();
             this.startTimer();
+            this.setupFullscreenListener();
         },
         
-        // 生成练习界面HTML
+        // 生成练习界面HTML - 全面优化版本
         generatePracticeHTML: function() {
             return `
                 <style>
-                    /* 自定义滚动条样式 */
-                    #questionDisplay::-webkit-scrollbar,
-                    #answerDisplay::-webkit-scrollbar {
-                        width: 8px;
+                    /* 全屏样式优化 */
+                    .practice-fullscreen {
+                        position: fixed !important;
+                        top: 0 !important;
+                        left: 0 !important;
+                        width: 100vw !important;
+                        height: 100vh !important;
+                        z-index: 9999 !important;
+                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                        overflow-y: auto;
+                        padding: 20px;
+                        box-sizing: border-box;
                     }
                     
+                    .practice-fullscreen .practice-container {
+                        max-width: 1200px;
+                        margin: 0 auto;
+                        height: 100%;
+                        display: flex;
+                        flex-direction: column;
+                    }
+                    
+                    /* 自定义滚动条样式 */
+                    .practice-fullscreen::-webkit-scrollbar,
+                    #questionDisplay::-webkit-scrollbar,
+                    #answerDisplay::-webkit-scrollbar {
+                        width: 10px;
+                    }
+                    
+                    .practice-fullscreen::-webkit-scrollbar-track,
                     #questionDisplay::-webkit-scrollbar-track,
                     #answerDisplay::-webkit-scrollbar-track {
-                        background: rgba(240,248,255,0.5);
+                        background: rgba(255,255,255,0.1);
                         border-radius: 10px;
                     }
                     
+                    .practice-fullscreen::-webkit-scrollbar-thumb,
                     #questionDisplay::-webkit-scrollbar-thumb,
                     #answerDisplay::-webkit-scrollbar-thumb {
                         background: linear-gradient(180deg, #4facfe, #00f2fe);
                         border-radius: 10px;
-                        border: 1px solid rgba(255,255,255,0.3);
+                        border: 2px solid rgba(255,255,255,0.3);
                     }
                     
+                    .practice-fullscreen::-webkit-scrollbar-thumb:hover,
                     #questionDisplay::-webkit-scrollbar-thumb:hover,
                     #answerDisplay::-webkit-scrollbar-thumb:hover {
-                        background: linear-gradient(180deg, #3a8bfe, #00d4fe);
+                        background: linear-gradient(180deg, #00f2fe, #4facfe);
                     }
                     
-                    /* 平滑滚动 */
-                    #questionDisplay,
-                    #answerDisplay {
-                        scroll-behavior: smooth;
+                    /* 响应式设计 */
+                    @media (max-width: 768px) {
+                        .practice-fullscreen {
+                            padding: 10px;
+                        }
+                        
+                        .control-panel {
+                            flex-direction: column;
+                            gap: 10px;
+                        }
+                        
+                        .control-panel > div {
+                            flex-wrap: wrap;
+                            justify-content: center;
+                        }
+                    }
+                    
+                    /* 动画效果 */
+                    .fade-in {
+                        animation: fadeIn 0.5s ease-in;
+                    }
+                    
+                    @keyframes fadeIn {
+                        from { opacity: 0; transform: translateY(20px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                    
+                    .slide-in {
+                        animation: slideIn 0.3s ease-out;
+                    }
+                    
+                    @keyframes slideIn {
+                        from { transform: translateX(-100%); }
+                        to { transform: translateX(0); }
+                    }
+                    
+                    /* 按钮悬停效果 */
+                    .btn-hover-effect {
+                        transition: all 0.3s ease;
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    
+                    .btn-hover-effect:hover {
+                        transform: translateY(-2px);
+                        box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+                    }
+                    
+                    .btn-hover-effect::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: -100%;
+                        width: 100%;
+                        height: 100%;
+                        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+                        transition: left 0.5s;
+                    }
+                    
+                    .btn-hover-effect:hover::before {
+                        left: 100%;
+                    }
+                    
+                    /* 进度条动画 */
+                    .progress-animation {
+                        transition: width 0.5s ease-in-out;
+                    }
+                    
+                    /* 题目卡片样式 */
+                    .question-card {
+                        background: rgba(255,255,255,0.95);
+                        backdrop-filter: blur(20px);
+                        border-radius: 25px;
+                        padding: 30px;
+                        margin-bottom: 25px;
+                        box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+                        border: 1px solid rgba(255,255,255,0.2);
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .question-card:hover {
+                        transform: translateY(-5px);
+                        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+                    }
+                    
+                    /* 选项样式优化 */
+                    .option-item {
+                        background: rgba(255,255,255,0.8);
+                        border: 2px solid rgba(79,172,254,0.3);
+                        border-radius: 15px;
+                        padding: 15px 20px;
+                        margin: 10px 0;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    
+                    .option-item:hover {
+                        background: rgba(79,172,254,0.1);
+                        border-color: #4facfe;
+                        transform: translateX(5px);
+                    }
+                    
+                    .option-item.selected {
+                        background: linear-gradient(135deg, #4facfe, #00f2fe);
+                        color: white;
+                        border-color: #4facfe;
+                        box-shadow: 0 5px 15px rgba(79,172,254,0.4);
+                    }
+                    
+                    .option-item.correct {
+                        background: linear-gradient(135deg, #28a745, #20c997);
+                        color: white;
+                        border-color: #28a745;
+                    }
+                    
+                    .option-item.incorrect {
+                        background: linear-gradient(135deg, #dc3545, #fd7e14);
+                        color: white;
+                        border-color: #dc3545;
+                    }
+                    
+                    /* 输入框样式 */
+                    .answer-input {
+                        width: 100%;
+                        min-height: 120px;
+                        padding: 20px;
+                        border: 2px solid rgba(79,172,254,0.3);
+                        border-radius: 15px;
+                        font-size: 16px;
+                        line-height: 1.6;
+                        resize: vertical;
+                        background: rgba(255,255,255,0.9);
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .answer-input:focus {
+                        outline: none;
+                        border-color: #4facfe;
+                        box-shadow: 0 0 20px rgba(79,172,254,0.3);
+                        background: rgba(255,255,255,1);
                     }
                 </style>
-                <div id="practiceContainer" style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="wave1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:%234facfe;stop-opacity:0.3"/><stop offset="100%" style="stop-color:%2300f2fe;stop-opacity:0.3"/></linearGradient><linearGradient id="wave2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:%23667eea;stop-opacity:0.2"/><stop offset="100%" style="stop-color:%23764ba2;stop-opacity:0.2"/></linearGradient></defs><path d="M0,600 Q300,500 600,600 T1200,600 L1200,800 L0,800 Z" fill="url(%23wave1)"/><path d="M0,650 Q300,550 600,650 T1200,650 L1200,800 L0,800 Z" fill="url(%23wave2)"/><path d="M0,700 Q300,600 600,700 T1200,700 L1200,800 L0,800 Z" fill="%234facfe" opacity="0.1"/></svg>'); background-size: cover; background-position: center; padding: 20px;">
-                    <!-- 练习头部信息 -->
-                    <div id="practiceHeader" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px; border-radius: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-                        <div style="display: flex; align-items: center; gap: 20px;">
-                            <div style="font-size: 1.2em; font-weight: bold; color: #333;">
-                                <span id="questionProgress">1 / ${currentSession.questions.length}</span>
-                            </div>
-                            <div style="color: #666; font-size: 1.1em;">
-                                时间: <span id="practiceTimer">00:00</span>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 15px; align-items: center;">
-                            <!-- 字体大小控制 -->
-                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.05); padding: 8px 12px; border-radius: 20px;">
-                                <button id="zoomOutBtn" class="btn btn-outline-secondary btn-sm" onclick="QuestionBankPractice.zoomOut()" title="缩小字体" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">
-                                    <i class="fas fa-search-minus"></i>
-                                </button>
-                                <span id="fontSizeDisplay" style="font-size: 12px; min-width: 40px; text-align: center; font-weight: bold;">16px</span>
-                                <button id="zoomInBtn" class="btn btn-outline-secondary btn-sm" onclick="QuestionBankPractice.zoomIn()" title="放大字体" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">
-                                    <i class="fas fa-search-plus"></i>
-                                </button>
-                            </div>
-                            
-                            <!-- 主题切换 -->
-                            <button id="themeBtn" class="btn btn-outline-info btn-sm" onclick="QuestionBankPractice.toggleTheme()" title="切换主题" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-palette"></i>
-                            </button>
-                            
-                            <!-- 快捷键帮助 -->
-                            <button id="helpBtn" class="btn btn-outline-secondary btn-sm" onclick="QuestionBankPractice.showKeyboardHelp()" title="快捷键帮助" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-question"></i>
-                            </button>
-                            
-                            <!-- 统计面板 -->
-                            <button id="statsBtn" class="btn btn-outline-success btn-sm" onclick="QuestionBankPractice.showStatsPanel()" title="练习统计" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-chart-bar"></i>
-                            </button>
-                            
-                            <!-- 笔记功能 -->
-                            <button id="noteBtn" class="btn btn-outline-warning btn-sm" onclick="QuestionBankPractice.toggleNotePanel()" title="添加笔记" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-sticky-note"></i>
-                            </button>
-                            
-                            <!-- 智能提示 -->
-                            <button id="aiHintBtn" class="btn btn-outline-info btn-sm" onclick="QuestionBankPractice.showAIHint()" title="AI智能提示" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-robot"></i>
-                            </button>
-                            
-                            <!-- 学习模式 -->
-                            <button id="modeBtn" class="btn btn-outline-dark btn-sm" onclick="QuestionBankPractice.toggleLearningMode()" title="切换学习模式" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-graduation-cap"></i>
-                            </button>
-                            
-                            <!-- 智能分析 -->
-                            <button id="analysisBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.showAnalysis()" title="智能分析" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-brain"></i>
-                            </button>
-                            
-                            <!-- 学习进度 -->
-                            <button id="progressBtn" class="btn btn-outline-success btn-sm" onclick="QuestionBankPractice.showLearningProgress()" title="学习进度" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-chart-line"></i>
-                            </button>
-                            
-                            <!-- 错题本 -->
-                            <button id="wrongBookBtn" class="btn btn-outline-danger btn-sm" onclick="QuestionBankPractice.showWrongBook()" title="错题本" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-book"></i>
-                            </button>
-                            
-                            <!-- 学习策略 -->
-                            <button id="strategyBtn" class="btn btn-outline-info btn-sm" onclick="QuestionBankPractice.showLearningStrategy()" title="学习策略" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-cog"></i>
-                            </button>
-                            
-                            <!-- 全屏按钮 -->
-                            <button id="fullscreenBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.toggleFullscreen()" title="全屏" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-expand"></i>
-                            </button>
-                            
-                            <!-- 显示答案按钮 -->
-                            <button id="showAnswerBtn" class="btn btn-outline-success btn-sm" onclick="QuestionBankPractice.toggleAnswer()" title="显示答案" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-eye"></i> 答案
-                            </button>
-                            
-                            <!-- 删除题目按钮 -->
-                            <button id="deleteBtn" class="btn btn-outline-danger btn-sm" onclick="QuestionBankPractice.deleteCurrentQuestion()" title="删除此题" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-trash"></i> 删除
-                            </button>
-                            
-                            <!-- 批量删除按钮 -->
-                            <button id="batchDeleteBtn" class="btn btn-outline-warning btn-sm" onclick="QuestionBankPractice.showBatchDeleteDialog()" title="批量删除" style="border-radius: 20px; padding: 8px 15px;">
-                                <i class="fas fa-trash-alt"></i> 批量
-                            </button>
-                            
-                            <button id="pauseBtn" class="btn btn-warning btn-sm" onclick="QuestionBankPractice.togglePause()" style="border-radius: 20px; padding: 8px 15px;">⏸️ 暂停</button>
-                            <button id="exitBtn" class="btn btn-danger btn-sm" onclick="QuestionBankPractice.exitPractice()" style="border-radius: 20px; padding: 8px 15px;">❌ 退出</button>
-                        </div>
-                    </div>
-                    
-                    <!-- 进度条和导航 -->
-                    <div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 25px; margin-bottom: 25px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
-                        <!-- 进度滑块 -->
-                        <div style="margin-bottom: 20px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                                <span style="font-weight: bold; color: #333; font-size: 16px;">练习进度</span>
-                                <span id="progressText" style="font-weight: bold; color: #4facfe; font-size: 14px;">0%</span>
-                            </div>
-                            <div style="background: rgba(79,172,254,0.2); border-radius: 15px; height: 12px; position: relative; overflow: hidden;">
-                                <div id="progressBar" style="background: linear-gradient(90deg, #4facfe, #00f2fe); height: 100%; border-radius: 15px; transition: width 0.3s ease; width: 0%; box-shadow: 0 2px 8px rgba(79,172,254,0.3);"></div>
-                            </div>
-                        </div>
-                        
-                        <!-- 题目导航 -->
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
-                            <div style="display: flex; align-items: center; gap: 15px;">
-                                <span id="questionCounter" style="font-size: 16px; color: #333; font-weight: bold;">题目 1 / ${currentSession.questions.length}</span>
-                                <span style="color: #666; font-size: 14px;">|</span>
-                                <span style="color: #666; font-size: 14px;">剩余 ${currentSession.questions.length - 1} 题</span>
-                            </div>
-                            <div style="display: flex; gap: 10px;">
-                                <button id="prevBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.previousQuestion()" disabled style="border-radius: 15px; padding: 8px 15px; font-size: 14px; transition: all 0.3s ease;">
-                                    <i class="fas fa-chevron-left"></i> 上一题
-                                </button>
-                                <button id="nextBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.nextQuestion()" style="border-radius: 15px; padding: 8px 15px; font-size: 14px; transition: all 0.3s ease;">
-                                    下一题 <i class="fas fa-chevron-right"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 题目显示区域 -->
-                    <div id="questionDisplay" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border: none; border-radius: 20px; padding: 30px; margin-bottom: 25px; max-height: 60vh; overflow-y: auto; font-size: 16px; line-height: 1.8; box-shadow: 0 12px 40px rgba(0,0,0,0.15); scrollbar-width: thin; scrollbar-color: #4facfe #f0f0f0; position: relative;">
-                        <!-- 题目内容将在这里动态加载 -->
-                    </div>
-                    
-                    <!-- 答案显示区域 -->
-                    <div id="answerDisplay" style="background: rgba(240,248,255,0.95); backdrop-filter: blur(10px); border: 2px solid #007bff; border-radius: 20px; padding: 30px; margin-bottom: 25px; display: none; box-shadow: 0 8px 32px rgba(0,123,255,0.2); max-height: 50vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #007bff #f0f8ff;">
-                        <h5 style="color: #007bff; margin-bottom: 20px; font-size: 1.3em;">📝 参考答案</h5>
-                        <div id="answerContent" style="font-size: 16px; line-height: 1.8;"></div>
-                        <div id="explanationContent" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #dee2e6; font-size: 15px; color: #666;"></div>
-                    </div>
-                    
-                    <!-- 答题控制 -->
-                    <div id="answerControls" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); position: sticky; bottom: 20px; z-index: 100;">
-                        <button id="prevBtn" class="btn btn-secondary" onclick="QuestionBankPractice.previousQuestion()" disabled style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
-                            ← 上一题
-                        </button>
-                        
-                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                            <button id="submitBtn" class="btn btn-primary" onclick="QuestionBankPractice.submitAnswer()" style="border-radius: 25px; padding: 12px 30px; font-weight: bold; box-shadow: 0 4px 15px rgba(79,172,254,0.3);">
-                                提交答案
-                            </button>
-                            <button id="skipBtn" class="btn btn-info" onclick="QuestionBankPractice.skipQuestion()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
-                                跳过
-                            </button>
-                            <button id="hintBtn" class="btn btn-warning" onclick="QuestionBankPractice.showHint()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
-                                💡 提示
-                            </button>
-                        </div>
-                        
-                        <button id="nextBtn" class="btn btn-secondary" onclick="QuestionBankPractice.nextQuestion()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
-                            下一题 →
-                        </button>
-                    </div>
-                    
-                    <!-- 答案解释区域 -->
-                    <div id="explanationArea" style="background: rgba(232,245,232,0.95); backdrop-filter: blur(10px); border: 2px solid #28a745; border-radius: 20px; padding: 25px; margin-top: 25px; display: none; box-shadow: 0 8px 32px rgba(40,167,69,0.2);">
-                        <h5 style="color: #28a745; margin-bottom: 20px; font-size: 1.3em;">📝 答案解释</h5>
-                        <div id="explanationContent"></div>
-                        <button class="btn btn-success btn-sm" onclick="QuestionBankPractice.continueToNext()" style="margin-top: 15px; border-radius: 20px; padding: 10px 20px; font-weight: bold;">
-                            继续下一题
-                        </button>
-                    </div>
-                    
-                    <!-- 练习完成界面 -->
-                    <div id="completionArea" style="display: none; text-align: center; padding: 40px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.15);">
-                        <h3 style="color: #333; margin-bottom: 30px;">🎉 练习完成！</h3>
-                        <div id="finalStats" style="background: rgba(248,249,250,0.8); border-radius: 15px; padding: 25px; margin: 25px 0;"></div>
-                        <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-                            <button class="btn btn-primary" onclick="QuestionBankPractice.reviewAnswers()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
-                                📋 查看答案
-                            </button>
-                            <button class="btn btn-success" onclick="QuestionBankPractice.practiceAgain()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
-                                🔄 再次练习
-                            </button>
-                            <button class="btn btn-info" onclick="QuestionBankPractice.saveResults()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
-                                💾 保存结果
-                            </button>
-                            <button class="btn btn-secondary" onclick="QuestionBankPractice.exitPractice()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
-                                🏠 返回主页
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <!-- 批量删除对话框 -->
-                    <div id="batchDeleteDialog" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; backdrop-filter: blur(5px);">
-                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
-                            <h4 style="color: #dc3545; margin-bottom: 20px; text-align: center;">🗑️ 批量删除题目</h4>
-                            <div style="margin-bottom: 20px;">
-                                <p style="color: #666; margin-bottom: 15px;">选择要删除的题目类型：</p>
-                                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
-                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                                        <input type="checkbox" id="deleteNoOptions" checked> 无选项题目
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                                        <input type="checkbox" id="deleteShortQuestions"> 短题目（少于50字）
-                                    </label>
-                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
-                                        <input type="checkbox" id="deleteSystemQuestions"> 系统题目（包含"科目代码"等）
-                                    </label>
+                
+                <div id="practiceContainer" class="practice-fullscreen fade-in">
+                    <div class="practice-container">
+                        <!-- 顶部控制面板 -->
+                        <div class="question-card control-panel" style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                                <!-- 左侧：时间显示 -->
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <span id="timerDisplay" style="font-size: 18px; font-weight: bold; color: #333; background: rgba(255,255,255,0.8); padding: 8px 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                        <i class="fas fa-clock"></i> 时间: 00:00
+                                    </span>
+                                    <span id="questionTimer" style="font-size: 16px; color: #666; background: rgba(255,255,255,0.6); padding: 6px 12px; border-radius: 15px;">
+                                        <i class="fas fa-stopwatch"></i> 本题: 00:00
+                                    </span>
                                 </div>
-                                <div style="background: rgba(255,193,7,0.1); border: 1px solid #ffc107; border-radius: 10px; padding: 15px; color: #856404;">
-                                    <i class="fas fa-exclamation-triangle"></i> 删除后无法恢复，请谨慎操作！
-                                </div>
-                            </div>
-                            <div id="deletePreview" style="background: rgba(248,249,250,0.8); border-radius: 10px; padding: 15px; margin-bottom: 20px; max-height: 200px; overflow-y: auto;">
-                                <p style="color: #666; text-align: center;">点击"预览"查看将要删除的题目</p>
-                            </div>
-                            <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-                                <button class="btn btn-info" onclick="QuestionBankPractice.previewBatchDelete()" style="border-radius: 20px; padding: 10px 20px;">
-                                    👁️ 预览
-                                </button>
-                                <button class="btn btn-danger" onclick="QuestionBankPractice.executeBatchDelete()" style="border-radius: 20px; padding: 10px 20px;">
-                                    🗑️ 确认删除
-                                </button>
-                                <button class="btn btn-secondary" onclick="QuestionBankPractice.closeBatchDeleteDialog()" style="border-radius: 20px; padding: 10px 20px;">
-                                    ❌ 取消
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- 笔记面板 -->
-                    <div id="notePanel" style="display: none; position: fixed; top: 0; right: 0; width: 350px; height: 100%; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-left: 2px solid #ffc107; box-shadow: -5px 0 20px rgba(0,0,0,0.1); z-index: 999; overflow-y: auto;">
-                        <div style="padding: 20px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                                <h5 style="color: #333; margin: 0;">📝 学习笔记</h5>
-                                <button onclick="QuestionBankPractice.toggleNotePanel()" style="background: none; border: none; font-size: 20px; color: #666; cursor: pointer;">×</button>
-                            </div>
-                            <div style="margin-bottom: 20px;">
-                                <label style="display: block; margin-bottom: 8px; color: #333; font-weight: bold;">当前题目笔记：</label>
-                                <textarea id="currentNote" placeholder="在这里记录你的学习心得、解题思路或重要知识点..." style="width: 100%; height: 120px; padding: 12px; border: 2px solid #ffc107; border-radius: 10px; resize: vertical; font-size: 14px; line-height: 1.5;"></textarea>
-                                <div style="display: flex; gap: 10px; margin-top: 10px;">
-                                    <button onclick="QuestionBankPractice.saveNote()" class="btn btn-warning btn-sm" style="border-radius: 15px; padding: 8px 15px;">
-                                        💾 保存笔记
+                                
+                                <!-- 右侧：控制按钮组 -->
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <!-- 字体控制 -->
+                                    <div style="display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.8); padding: 8px 15px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                                        <button class="btn btn-outline-secondary btn-sm btn-hover-effect" onclick="QuestionBankPractice.changeFontSize(-1)" title="缩小字体" style="border-radius: 50%; width: 35px; height: 35px; padding: 0;">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <span id="fontSizeDisplay" style="font-weight: bold; color: #333; min-width: 40px; text-align: center;">16px</span>
+                                        <button class="btn btn-outline-secondary btn-sm btn-hover-effect" onclick="QuestionBankPractice.changeFontSize(1)" title="放大字体" style="border-radius: 50%; width: 35px; height: 35px; padding: 0;">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- 主题切换 -->
+                                    <button id="themeBtn" class="btn btn-outline-primary btn-sm btn-hover-effect" onclick="QuestionBankPractice.toggleTheme()" title="切换主题" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-palette"></i>
                                     </button>
-                                    <button onclick="QuestionBankPractice.clearNote()" class="btn btn-outline-secondary btn-sm" style="border-radius: 15px; padding: 8px 15px;">
-                                        🗑️ 清空
+                                    
+                                    <!-- 帮助按钮 -->
+                                    <button id="helpBtn" class="btn btn-outline-info btn-sm btn-hover-effect" onclick="QuestionBankPractice.showHelp()" title="快捷键帮助" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-question-circle"></i>
+                                    </button>
+                                    
+                                    <!-- 菜单按钮 -->
+                                    <button id="menuBtn" class="btn btn-outline-secondary btn-sm btn-hover-effect" onclick="QuestionBankPractice.toggleMenu()" title="更多功能" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-bars"></i>
+                                    </button>
+                                    
+                                    <!-- 收藏按钮 -->
+                                    <button id="bookmarkBtn" class="btn btn-outline-warning btn-sm btn-hover-effect" onclick="QuestionBankPractice.toggleBookmark()" title="收藏此题" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-bookmark"></i>
+                                    </button>
+                                    
+                                    <!-- AI助手 -->
+                                    <button id="aiBtn" class="btn btn-outline-success btn-sm btn-hover-effect" onclick="QuestionBankPractice.showAIAssistant()" title="AI智能助手" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-robot"></i>
+                                    </button>
+                                    
+                                    <!-- 学习模式 -->
+                                    <button id="modeBtn" class="btn btn-outline-dark btn-sm btn-hover-effect" onclick="QuestionBankPractice.toggleLearningMode()" title="切换学习模式" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-graduation-cap"></i>
+                                    </button>
+                                    
+                                    <!-- 智能分析 -->
+                                    <button id="analysisBtn" class="btn btn-outline-primary btn-sm btn-hover-effect" onclick="QuestionBankPractice.showAnalysis()" title="智能分析" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-brain"></i>
+                                    </button>
+                                    
+                                    <!-- 学习进度 -->
+                                    <button id="progressBtn" class="btn btn-outline-success btn-sm btn-hover-effect" onclick="QuestionBankPractice.showLearningProgress()" title="学习进度" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-chart-line"></i>
+                                    </button>
+                                    
+                                    <!-- 错题本 -->
+                                    <button id="wrongBookBtn" class="btn btn-outline-danger btn-sm btn-hover-effect" onclick="QuestionBankPractice.showWrongBook()" title="错题本" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-book"></i>
+                                    </button>
+                                    
+                                    <!-- 学习策略 -->
+                                    <button id="strategyBtn" class="btn btn-outline-info btn-sm btn-hover-effect" onclick="QuestionBankPractice.showLearningStrategy()" title="学习策略" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-cog"></i>
+                                    </button>
+                                    
+                                    <!-- 全屏按钮 -->
+                                    <button id="fullscreenBtn" class="btn btn-outline-primary btn-sm btn-hover-effect" onclick="QuestionBankPractice.toggleFullscreen()" title="全屏 (Ctrl+F)" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-expand"></i>
+                                    </button>
+                                    
+                                    <!-- 显示答案按钮 -->
+                                    <button id="showAnswerBtn" class="btn btn-outline-success btn-sm btn-hover-effect" onclick="QuestionBankPractice.toggleAnswer()" title="显示答案" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-eye"></i> 答案
+                                    </button>
+                                    
+                                    <!-- 暂停按钮 -->
+                                    <button id="pauseBtn" class="btn btn-warning btn-sm btn-hover-effect" onclick="QuestionBankPractice.togglePause()" title="暂停/继续 (空格)" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-pause"></i> 暂停
+                                    </button>
+                                    
+                                    <!-- 退出按钮 -->
+                                    <button id="exitBtn" class="btn btn-danger btn-sm btn-hover-effect" onclick="QuestionBankPractice.exitPractice()" title="退出练习 (ESC)" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-times"></i> 退出
                                     </button>
                                 </div>
                             </div>
-                            <div style="border-top: 1px solid #dee2e6; padding-top: 20px;">
-                                <h6 style="color: #333; margin-bottom: 15px;">📚 笔记历史</h6>
-                                <div id="noteHistory" style="max-height: 300px; overflow-y: auto;">
-                                    <p style="color: #666; text-align: center; font-size: 14px;">暂无笔记历史</p>
+                        </div>
+                        
+                        <!-- 进度条和导航 -->
+                        <div class="question-card" style="margin-bottom: 20px;">
+                            <!-- 进度滑块 -->
+                            <div style="margin-bottom: 20px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <span style="font-weight: bold; color: #333; font-size: 16px;">
+                                        <i class="fas fa-tasks"></i> 练习进度
+                                    </span>
+                                    <span id="progressText" style="font-weight: bold; color: #4facfe; font-size: 14px;">0%</span>
+                                </div>
+                                <div style="background: rgba(79,172,254,0.2); border-radius: 15px; height: 12px; position: relative; overflow: hidden;">
+                                    <div id="progressBar" class="progress-animation" style="background: linear-gradient(90deg, #4facfe, #00f2fe); height: 100%; border-radius: 15px; transition: width 0.3s ease; width: 0%; box-shadow: 0 2px 8px rgba(79,172,254,0.3);"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- 题目导航 -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <span id="questionCounter" style="font-size: 16px; color: #333; font-weight: bold;">
+                                        <i class="fas fa-question-circle"></i> 题目 1 / ${currentSession.questions.length}
+                                    </span>
+                                    <span style="color: #666; font-size: 14px;">|</span>
+                                    <span style="color: #666; font-size: 14px;">
+                                        <i class="fas fa-clock"></i> 剩余 ${currentSession.questions.length - 1} 题
+                                    </span>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button id="prevBtn" class="btn btn-outline-primary btn-sm btn-hover-effect" onclick="QuestionBankPractice.previousQuestion()" disabled style="border-radius: 15px; padding: 8px 15px; font-size: 14px; transition: all 0.3s ease;">
+                                        <i class="fas fa-chevron-left"></i> 上一题
+                                    </button>
+                                    <button id="nextBtn" class="btn btn-outline-primary btn-sm btn-hover-effect" onclick="QuestionBankPractice.nextQuestion()" style="border-radius: 15px; padding: 8px 15px; font-size: 14px; transition: all 0.3s ease;">
+                                        下一题 <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 题目显示区域 -->
+                        <div id="questionDisplay" class="question-card slide-in" style="flex: 1; max-height: 50vh; overflow-y: auto; font-size: 16px; line-height: 1.8; position: relative;">
+                            <!-- 题目内容将在这里动态加载 -->
+                        </div>
+                        
+                        <!-- 答案显示区域 -->
+                        <div id="answerDisplay" class="question-card" style="background: rgba(240,248,255,0.95); border: 2px solid #007bff; display: none; max-height: 40vh; overflow-y: auto;">
+                            <h5 style="color: #007bff; margin-bottom: 20px; font-size: 1.3em;">
+                                <i class="fas fa-lightbulb"></i> 参考答案
+                            </h5>
+                            <div id="answerContent" style="font-size: 16px; line-height: 1.8;"></div>
+                            <div id="explanationContent" style="font-size: 16px; line-height: 1.8; margin-top: 20px;"></div>
+                        </div>
+                        
+                        <!-- 底部操作区域 -->
+                        <div class="question-card" style="margin-top: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                    <button id="submitBtn" class="btn btn-success btn-hover-effect" onclick="QuestionBankPractice.submitAnswer()" style="border-radius: 20px; padding: 10px 20px; font-size: 16px;">
+                                        <i class="fas fa-check"></i> 提交答案
+                                    </button>
+                                    <button id="skipBtn" class="btn btn-outline-secondary btn-hover-effect" onclick="QuestionBankPractice.skipQuestion()" style="border-radius: 20px; padding: 10px 20px; font-size: 16px;">
+                                        <i class="fas fa-forward"></i> 跳过此题
+                                    </button>
+                                </div>
+                                <div style="display: flex; gap: 10px;">
+                                    <button id="saveBtn" class="btn btn-outline-primary btn-hover-effect" onclick="QuestionBankPractice.saveProgress()" style="border-radius: 20px; padding: 10px 20px; font-size: 16px;">
+                                        <i class="fas fa-save"></i> 保存进度
+                                    </button>
+                                    <button id="reportBtn" class="btn btn-outline-warning btn-hover-effect" onclick="QuestionBankPractice.reportQuestion()" style="border-radius: 20px; padding: 10px 20px; font-size: 16px;">
+                                        <i class="fas fa-flag"></i> 报告问题
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -841,6 +941,34 @@ window.QuestionBankPractice = (function() {
             const questionTime = (Date.now() - practiceState.questionTimer) / 1000;
             currentSession.questionTimes[currentSession.currentIndex] = questionTime;
             this.nextQuestion();
+        },
+        
+        // 导出结果
+        exportResults: function() {
+            const results = {
+                sessionName: currentSession.sessionName,
+                totalQuestions: currentSession.questions.length,
+                completedQuestions: currentSession.currentIndex + 1,
+                userAnswers: currentSession.userAnswers,
+                questionTimes: currentSession.questionTimes,
+                startTime: currentSession.startTime,
+                endTime: new Date().toISOString(),
+                accuracy: this.calculateAccuracy(),
+                averageTime: this.calculateAverageTime()
+            };
+            
+            const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `practice-results-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('练习结果已导出', 'success');
         },
         
         // 上一题
@@ -1442,70 +1570,121 @@ window.QuestionBankPractice = (function() {
         },
         
         // 字体大小控制
-        zoomIn: function() {
+        changeFontSize: function(delta) {
             const questionDisplay = document.getElementById('questionDisplay');
             const answerDisplay = document.getElementById('answerDisplay');
             const fontSizeDisplay = document.getElementById('fontSizeDisplay');
             
             if (questionDisplay) {
                 const currentSize = parseInt(window.getComputedStyle(questionDisplay).fontSize);
-                const newSize = Math.min(currentSize + 2, 24); // 最大24px
+                const newSize = Math.max(12, Math.min(24, currentSize + delta));
                 questionDisplay.style.fontSize = newSize + 'px';
                 if (answerDisplay) answerDisplay.style.fontSize = newSize + 'px';
                 if (fontSizeDisplay) fontSizeDisplay.textContent = newSize + 'px';
             }
         },
         
-        zoomOut: function() {
-            const questionDisplay = document.getElementById('questionDisplay');
-            const answerDisplay = document.getElementById('answerDisplay');
-            const fontSizeDisplay = document.getElementById('fontSizeDisplay');
-            
-            if (questionDisplay) {
-                const currentSize = parseInt(window.getComputedStyle(questionDisplay).fontSize);
-                const newSize = Math.max(currentSize - 2, 12); // 最小12px
-                questionDisplay.style.fontSize = newSize + 'px';
-                if (answerDisplay) answerDisplay.style.fontSize = newSize + 'px';
-                if (fontSizeDisplay) fontSizeDisplay.textContent = newSize + 'px';
-            }
-        },
-        
-        // 全屏控制
+        // 全屏控制 - 优化版本
         toggleFullscreen: function() {
             const container = document.getElementById('practiceContainer');
             const fullscreenBtn = document.getElementById('fullscreenBtn');
             
-            if (!container) return;
-            
-            if (!document.fullscreenElement) {
-                // 进入全屏
-                if (container.requestFullscreen) {
-                    container.requestFullscreen();
-                } else if (container.webkitRequestFullscreen) {
-                    container.webkitRequestFullscreen();
-                } else if (container.msRequestFullscreen) {
-                    container.msRequestFullscreen();
-                }
-                
-                if (fullscreenBtn) {
-                    fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
-                    fullscreenBtn.title = '退出全屏';
-                }
-            } else {
-                // 退出全屏
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-                
-                if (fullscreenBtn) {
-                    fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                    fullscreenBtn.title = '全屏';
-                }
+            if (!container) {
+                console.error('找不到练习容器');
+                return;
             }
+            
+            try {
+                if (!document.fullscreenElement) {
+                    // 进入全屏
+                    if (container.requestFullscreen) {
+                        container.requestFullscreen();
+                    } else if (container.webkitRequestFullscreen) {
+                        container.webkitRequestFullscreen();
+                    } else if (container.msRequestFullscreen) {
+                        container.msRequestFullscreen();
+                    } else if (container.mozRequestFullScreen) {
+                        container.mozRequestFullScreen();
+                    } else {
+                        showNotification('您的浏览器不支持全屏功能', 'warning');
+                        return;
+                    }
+                    
+                    practiceState.isFullscreen = true;
+                    
+                    if (fullscreenBtn) {
+                        fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                        fullscreenBtn.title = '退出全屏 (ESC)';
+                        fullscreenBtn.className = 'btn btn-primary btn-sm btn-hover-effect';
+                    }
+                    
+                    // 添加全屏样式
+                    container.classList.add('practice-fullscreen');
+                    showNotification('已进入全屏模式', 'success');
+                } else {
+                    // 退出全屏
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    } else if (document.mozCancelFullScreen) {
+                        document.mozCancelFullScreen();
+                    }
+                    
+                    practiceState.isFullscreen = false;
+                    
+                    if (fullscreenBtn) {
+                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                        fullscreenBtn.title = '全屏 (Ctrl+F)';
+                        fullscreenBtn.className = 'btn btn-outline-primary btn-sm btn-hover-effect';
+                    }
+                    
+                    // 移除全屏样式
+                    container.classList.remove('practice-fullscreen');
+                    showNotification('已退出全屏模式', 'info');
+                }
+            } catch (error) {
+                console.error('全屏切换失败:', error);
+                showNotification('全屏切换失败，请重试', 'error');
+            }
+        },
+        
+        // 设置全屏监听器
+        setupFullscreenListener: function() {
+            document.addEventListener('fullscreenchange', () => {
+                const fullscreenBtn = document.getElementById('fullscreenBtn');
+                const container = document.getElementById('practiceContainer');
+                
+                if (fullscreenBtn) {
+                    if (document.fullscreenElement) {
+                        fullscreenBtn.innerHTML = '<i class="fas fa-compress"></i>';
+                        fullscreenBtn.title = '退出全屏 (ESC)';
+                        fullscreenBtn.className = 'btn btn-primary btn-sm btn-hover-effect';
+                        practiceState.isFullscreen = true;
+                        
+                        if (container) {
+                            container.classList.add('practice-fullscreen');
+                        }
+                    } else {
+                        fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
+                        fullscreenBtn.title = '全屏 (Ctrl+F)';
+                        fullscreenBtn.className = 'btn btn-outline-primary btn-sm btn-hover-effect';
+                        practiceState.isFullscreen = false;
+                        
+                        if (container) {
+                            container.classList.remove('practice-fullscreen');
+                        }
+                    }
+                }
+            });
+            
+            // 监听全屏错误
+            document.addEventListener('fullscreenerror', (e) => {
+                console.error('全屏错误:', e);
+                showNotification('全屏功能出现错误', 'error');
+            });
         },
         
         // 显示/隐藏答案
@@ -1567,19 +1746,19 @@ window.QuestionBankPractice = (function() {
                     case '+':
                         if (e.ctrlKey) {
                             e.preventDefault();
-                            this.zoomIn();
+                            this.changeFontSize(1);
                         }
                         break;
                     case '-':
                         if (e.ctrlKey) {
                             e.preventDefault();
-                            this.zoomOut();
+                            this.changeFontSize(-1);
                         }
                         break;
                     case '0':
                         if (e.ctrlKey) {
                             e.preventDefault();
-                            this.resetZoom();
+                            this.resetFontSize();
                         }
                         break;
                     case 'F11':
@@ -1697,7 +1876,7 @@ window.QuestionBankPractice = (function() {
         },
         
         // 重置字体大小
-        resetZoom: function() {
+        resetFontSize: function() {
             const questionDisplay = document.getElementById('questionDisplay');
             const answerDisplay = document.getElementById('answerDisplay');
             const fontSizeDisplay = document.getElementById('fontSizeDisplay');
@@ -1706,6 +1885,503 @@ window.QuestionBankPractice = (function() {
                 questionDisplay.style.fontSize = '16px';
                 if (answerDisplay) answerDisplay.style.fontSize = '16px';
                 if (fontSizeDisplay) fontSizeDisplay.textContent = '16px';
+            }
+        },
+        
+        // 切换主题
+        toggleTheme: function() {
+            const container = document.getElementById('practiceContainer');
+            const themeBtn = document.getElementById('themeBtn');
+            
+            if (!container) return;
+            
+            const currentTheme = container.getAttribute('data-theme') || 'default';
+            const newTheme = currentTheme === 'default' ? 'dark' : 'default';
+            
+            container.setAttribute('data-theme', newTheme);
+            
+            if (themeBtn) {
+                if (newTheme === 'dark') {
+                    themeBtn.innerHTML = '<i class="fas fa-sun"></i>';
+                    themeBtn.title = '切换到浅色主题';
+                    container.style.background = 'linear-gradient(135deg, #2c3e50 0%, #34495e 100%)';
+                } else {
+                    themeBtn.innerHTML = '<i class="fas fa-moon"></i>';
+                    themeBtn.title = '切换到深色主题';
+                    container.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                }
+            }
+            
+            showNotification(`已切换到${newTheme === 'dark' ? '深色' : '浅色'}主题`, 'success');
+        },
+        
+        // 显示帮助
+        showHelp: function() {
+            const helpContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; max-width: 600px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">
+                        <i class="fas fa-question-circle"></i> 快捷键帮助
+                    </h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="background: rgba(79,172,254,0.1); padding: 15px; border-radius: 10px;">
+                            <strong>导航控制</strong><br>
+                            ← → 上一题/下一题<br>
+                            空格 暂停/继续<br>
+                            ESC 退出练习
+                        </div>
+                        <div style="background: rgba(79,172,254,0.1); padding: 15px; border-radius: 10px;">
+                            <strong>答题控制</strong><br>
+                            1-4 选择选项<br>
+                            Enter 提交答案<br>
+                            Ctrl+F 全屏切换
+                        </div>
+                        <div style="background: rgba(79,172,254,0.1); padding: 15px; border-radius: 10px;">
+                            <strong>字体控制</strong><br>
+                            Ctrl + + 放大字体<br>
+                            Ctrl + - 缩小字体<br>
+                            Ctrl + 0 重置字体
+                        </div>
+                        <div style="background: rgba(79,172,254,0.1); padding: 15px; border-radius: 10px;">
+                            <strong>其他功能</strong><br>
+                            A 显示答案<br>
+                            P 学习进度<br>
+                            W 错题本<br>
+                            S 学习策略
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '快捷键帮助',
+                    content: helpContent,
+                    size: 'medium'
+                });
+            } else {
+                alert('快捷键帮助：\n\n导航：← → 上一题/下一题\n暂停：空格\n退出：ESC\n答题：1-4选择，Enter提交\n全屏：Ctrl+F\n字体：Ctrl +/- 调整');
+            }
+        },
+        
+        // 切换菜单
+        toggleMenu: function() {
+            const menuContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">
+                        <i class="fas fa-bars"></i> 更多功能
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <button class="btn btn-outline-primary btn-hover-effect" onclick="QuestionBankPractice.showAnalysis()" style="border-radius: 15px; padding: 15px; text-align: left;">
+                            <i class="fas fa-brain"></i><br><strong>智能分析</strong><br><small>AI分析答题情况</small>
+                        </button>
+                        <button class="btn btn-outline-success btn-hover-effect" onclick="QuestionBankPractice.showLearningProgress()" style="border-radius: 15px; padding: 15px; text-align: left;">
+                            <i class="fas fa-chart-line"></i><br><strong>学习进度</strong><br><small>查看学习统计</small>
+                        </button>
+                        <button class="btn btn-outline-danger btn-hover-effect" onclick="QuestionBankPractice.showWrongBook()" style="border-radius: 15px; padding: 15px; text-align: left;">
+                            <i class="fas fa-book"></i><br><strong>错题本</strong><br><small>管理错题记录</small>
+                        </button>
+                        <button class="btn btn-outline-info btn-hover-effect" onclick="QuestionBankPractice.showLearningStrategy()" style="border-radius: 15px; padding: 15px; text-align: left;">
+                            <i class="fas fa-cog"></i><br><strong>学习策略</strong><br><small>个性化学习建议</small>
+                        </button>
+                        <button class="btn btn-outline-warning btn-hover-effect" onclick="QuestionBankPractice.saveProgress()" style="border-radius: 15px; padding: 15px; text-align: left;">
+                            <i class="fas fa-save"></i><br><strong>保存进度</strong><br><small>保存当前练习状态</small>
+                        </button>
+                        <button class="btn btn-outline-secondary btn-hover-effect" onclick="QuestionBankPractice.exportResults()" style="border-radius: 15px; padding: 15px; text-align: left;">
+                            <i class="fas fa-download"></i><br><strong>导出结果</strong><br><small>下载练习报告</small>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '更多功能',
+                    content: menuContent,
+                    size: 'large'
+                });
+            }
+        },
+        
+        // 切换收藏
+        toggleBookmark: function() {
+            const currentQuestion = currentSession.questions[currentSession.currentIndex];
+            if (!currentQuestion) return;
+            
+            const bookmarkBtn = document.getElementById('bookmarkBtn');
+            const isBookmarked = currentQuestion.bookmarked || false;
+            
+            currentQuestion.bookmarked = !isBookmarked;
+            
+            if (bookmarkBtn) {
+                if (currentQuestion.bookmarked) {
+                    bookmarkBtn.innerHTML = '<i class="fas fa-bookmark"></i>';
+                    bookmarkBtn.className = 'btn btn-warning btn-sm btn-hover-effect';
+                    bookmarkBtn.title = '取消收藏';
+                    showNotification('已添加到收藏', 'success');
+                } else {
+                    bookmarkBtn.innerHTML = '<i class="far fa-bookmark"></i>';
+                    bookmarkBtn.className = 'btn btn-outline-warning btn-sm btn-hover-effect';
+                    bookmarkBtn.title = '收藏此题';
+                    showNotification('已取消收藏', 'info');
+                }
+            }
+        },
+        
+        // 显示AI助手
+        showAIAssistant: function() {
+            const currentQuestion = currentSession.questions[currentSession.currentIndex];
+            if (!currentQuestion) return;
+            
+            const aiContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">
+                        <i class="fas fa-robot"></i> AI智能助手
+                    </h4>
+                    <div style="background: rgba(79,172,254,0.1); border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                        <h5 style="color: #4facfe; margin-bottom: 15px;">当前题目分析</h5>
+                        <p style="color: #666; line-height: 1.6;">
+                            题目类型：${currentQuestion.type || '未知'}<br>
+                            难度等级：${currentQuestion.difficulty || '未知'}<br>
+                            知识点：${currentQuestion.knowledge || '未知'}
+                        </p>
+                    </div>
+                    <div style="background: rgba(40,167,69,0.1); border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                        <h5 style="color: #28a745; margin-bottom: 15px;">学习建议</h5>
+                        <p style="color: #666; line-height: 1.6;">
+                            • 仔细阅读题目要求<br>
+                            • 注意关键词和条件<br>
+                            • 检查计算过程<br>
+                            • 验证答案合理性
+                        </p>
+                    </div>
+                    <div style="background: rgba(255,193,7,0.1); border-radius: 15px; padding: 20px;">
+                        <h5 style="color: #ffc107; margin-bottom: 15px;">解题技巧</h5>
+                        <p style="color: #666; line-height: 1.6;">
+                            • 先理解题目核心概念<br>
+                            • 列出已知条件和求解目标<br>
+                            • 选择合适的解题方法<br>
+                            • 逐步推导，避免跳跃
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: 'AI智能助手',
+                    content: aiContent,
+                    size: 'medium'
+                });
+            }
+        },
+        
+        // 切换学习模式
+        toggleLearningMode: function() {
+            const modeBtn = document.getElementById('modeBtn');
+            const currentMode = practiceState.learningMode || 'practice';
+            const newMode = currentMode === 'practice' ? 'study' : 'practice';
+            
+            practiceState.learningMode = newMode;
+            
+            if (modeBtn) {
+                if (newMode === 'study') {
+                    modeBtn.innerHTML = '<i class="fas fa-graduation-cap"></i>';
+                    modeBtn.title = '切换到练习模式';
+                    modeBtn.className = 'btn btn-dark btn-sm btn-hover-effect';
+                    showNotification('已切换到学习模式', 'success');
+                } else {
+                    modeBtn.innerHTML = '<i class="fas fa-play"></i>';
+                    modeBtn.title = '切换到学习模式';
+                    modeBtn.className = 'btn btn-outline-dark btn-sm btn-hover-effect';
+                    showNotification('已切换到练习模式', 'success');
+                }
+            }
+        },
+        
+        // 显示智能分析
+        showAnalysis: function() {
+            const analysisContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">
+                        <i class="fas fa-brain"></i> 智能分析报告
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                        <div style="background: rgba(79,172,254,0.1); border-radius: 15px; padding: 20px;">
+                            <h5 style="color: #4facfe; margin-bottom: 15px;">答题统计</h5>
+                            <p style="color: #666; line-height: 1.6;">
+                                已完成：${currentSession.currentIndex + 1} / ${currentSession.questions.length}<br>
+                                正确率：${this.calculateAccuracy()}%<br>
+                                平均用时：${this.calculateAverageTime()}秒
+                            </p>
+                        </div>
+                        <div style="background: rgba(40,167,69,0.1); border-radius: 15px; padding: 20px;">
+                            <h5 style="color: #28a745; margin-bottom: 15px;">学习建议</h5>
+                            <p style="color: #666; line-height: 1.6;">
+                                • 重点关注错题<br>
+                                • 加强薄弱知识点<br>
+                                • 提高答题速度<br>
+                                • 定期复习巩固
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '智能分析',
+                    content: analysisContent,
+                    size: 'medium'
+                });
+            }
+        },
+        
+        // 显示学习进度
+        showLearningProgress: function() {
+            const progressContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">
+                        <i class="fas fa-chart-line"></i> 学习进度
+                    </h4>
+                    <div style="background: rgba(79,172,254,0.1); border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                        <h5 style="color: #4facfe; margin-bottom: 15px;">当前进度</h5>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span>完成进度</span>
+                            <span>${Math.round((currentSession.currentIndex + 1) / currentSession.questions.length * 100)}%</span>
+                        </div>
+                        <div style="background: rgba(79,172,254,0.2); border-radius: 10px; height: 10px;">
+                            <div style="background: linear-gradient(90deg, #4facfe, #00f2fe); height: 100%; border-radius: 10px; width: ${(currentSession.currentIndex + 1) / currentSession.questions.length * 100}%;"></div>
+                        </div>
+                    </div>
+                    <div style="background: rgba(40,167,69,0.1); border-radius: 15px; padding: 20px;">
+                        <h5 style="color: #28a745; margin-bottom: 15px;">学习统计</h5>
+                        <p style="color: #666; line-height: 1.6;">
+                            总题目数：${currentSession.questions.length}<br>
+                            已完成：${currentSession.currentIndex + 1}<br>
+                            剩余：${currentSession.questions.length - currentSession.currentIndex - 1}<br>
+                            预计完成时间：${this.estimateCompletionTime()}
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '学习进度',
+                    content: progressContent,
+                    size: 'medium'
+                });
+            }
+        },
+        
+        // 显示错题本
+        showWrongBook: function() {
+            const wrongQuestions = currentSession.questions.filter(q => q.answered && !q.correct);
+            
+            const wrongBookContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">
+                        <i class="fas fa-book"></i> 错题本
+                    </h4>
+                    <div style="background: rgba(220,53,69,0.1); border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                        <h5 style="color: #dc3545; margin-bottom: 15px;">错题统计</h5>
+                        <p style="color: #666; line-height: 1.6;">
+                            错题数量：${wrongQuestions.length}<br>
+                            错题率：${wrongQuestions.length > 0 ? Math.round(wrongQuestions.length / (currentSession.currentIndex + 1) * 100) : 0}%<br>
+                            需要重点复习的题目
+                        </p>
+                    </div>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        ${wrongQuestions.length > 0 ? 
+                            wrongQuestions.map((q, index) => `
+                                <div style="background: rgba(255,255,255,0.8); border-radius: 10px; padding: 15px; margin-bottom: 10px; border-left: 4px solid #dc3545;">
+                                    <strong>错题 ${index + 1}</strong><br>
+                                    <small style="color: #666;">${q.question ? q.question.substring(0, 100) + '...' : '题目内容'}</small>
+                                </div>
+                            `).join('') : 
+                            '<p style="text-align: center; color: #666;">暂无错题记录</p>'
+                        }
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '错题本',
+                    content: wrongBookContent,
+                    size: 'medium'
+                });
+            }
+        },
+        
+        // 显示学习策略
+        showLearningStrategy: function() {
+            const strategyContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">
+                        <i class="fas fa-cog"></i> 学习策略建议
+                    </h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                        <div style="background: rgba(79,172,254,0.1); border-radius: 15px; padding: 20px;">
+                            <h5 style="color: #4facfe; margin-bottom: 15px;">时间管理</h5>
+                            <p style="color: #666; line-height: 1.6;">
+                                • 合理分配答题时间<br>
+                                • 先易后难，循序渐进<br>
+                                • 定期休息，保持专注<br>
+                                • 设置学习目标
+                            </p>
+                        </div>
+                        <div style="background: rgba(40,167,69,0.1); border-radius: 15px; padding: 20px;">
+                            <h5 style="color: #28a745; margin-bottom: 15px;">学习方法</h5>
+                            <p style="color: #666; line-height: 1.6;">
+                                • 理解概念，不要死记硬背<br>
+                                • 多做练习，巩固知识点<br>
+                                • 总结错题，查漏补缺<br>
+                                • 定期复习，温故知新
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '学习策略',
+                    content: strategyContent,
+                    size: 'medium'
+                });
+            }
+        },
+        
+        // 保存进度
+        saveProgress: function() {
+            const progressData = {
+                sessionName: currentSession.sessionName,
+                currentIndex: currentSession.currentIndex,
+                userAnswers: currentSession.userAnswers,
+                startTime: currentSession.startTime,
+                questionTimes: currentSession.questionTimes,
+                bankId: currentSession.bankId,
+                timestamp: new Date().toISOString()
+            };
+            
+            try {
+                localStorage.setItem('questionBankProgress', JSON.stringify(progressData));
+                showNotification('进度已保存', 'success');
+            } catch (error) {
+                console.error('保存进度失败:', error);
+                showNotification('保存进度失败', 'error');
+            }
+        },
+        
+        // 报告问题
+        reportQuestion: function() {
+            const currentQuestion = currentSession.questions[currentSession.currentIndex];
+            if (!currentQuestion) return;
+            
+            const reportContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">
+                        <i class="fas fa-flag"></i> 报告问题
+                    </h4>
+                    <div style="background: rgba(255,193,7,0.1); border-radius: 15px; padding: 20px; margin-bottom: 20px;">
+                        <h5 style="color: #ffc107; margin-bottom: 15px;">当前题目</h5>
+                        <p style="color: #666; line-height: 1.6;">
+                            ${currentQuestion.question ? currentQuestion.question.substring(0, 200) + '...' : '题目内容'}
+                        </p>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 10px; color: #333; font-weight: bold;">问题类型：</label>
+                        <select id="reportType" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 10px;">
+                            <option value="error">题目错误</option>
+                            <option value="unclear">题目不清晰</option>
+                            <option value="duplicate">重复题目</option>
+                            <option value="other">其他问题</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 10px; color: #333; font-weight: bold;">详细描述：</label>
+                        <textarea id="reportDescription" placeholder="请详细描述您遇到的问题..." style="width: 100%; height: 120px; padding: 15px; border: 2px solid #ddd; border-radius: 10px; resize: vertical;"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button class="btn btn-warning btn-hover-effect" onclick="QuestionBankPractice.submitReport()" style="border-radius: 15px; padding: 10px 20px;">
+                            <i class="fas fa-paper-plane"></i> 提交报告
+                        </button>
+                        <button class="btn btn-secondary btn-hover-effect" onclick="QuestionBankUI.closeAllModals()" style="border-radius: 15px; padding: 10px 20px;">
+                            <i class="fas fa-times"></i> 取消
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '报告问题',
+                    content: reportContent,
+                    size: 'medium'
+                });
+            }
+        },
+        
+        // 提交报告
+        submitReport: function() {
+            const reportType = document.getElementById('reportType')?.value;
+            const reportDescription = document.getElementById('reportDescription')?.value;
+            
+            if (!reportDescription || reportDescription.trim() === '') {
+                showNotification('请填写详细描述', 'warning');
+                return;
+            }
+            
+            const report = {
+                type: reportType,
+                description: reportDescription,
+                questionIndex: currentSession.currentIndex,
+                timestamp: new Date().toISOString()
+            };
+            
+            // 这里可以发送到服务器或保存到本地
+            console.log('问题报告:', report);
+            showNotification('问题报告已提交，感谢您的反馈！', 'success');
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.closeAllModals();
+            }
+        },
+        
+        // 计算正确率
+        calculateAccuracy: function() {
+            const answeredQuestions = currentSession.userAnswers.filter(answer => answer !== null);
+            if (answeredQuestions.length === 0) return 0;
+            
+            const correctAnswers = answeredQuestions.filter((answer, index) => {
+                const question = currentSession.questions[index];
+                return question && answer === question.correct;
+            }).length;
+            
+            return Math.round((correctAnswers / answeredQuestions.length) * 100);
+        },
+        
+        // 计算平均用时
+        calculateAverageTime: function() {
+            if (currentSession.questionTimes.length === 0) return 0;
+            
+            const totalTime = currentSession.questionTimes.reduce((sum, time) => sum + time, 0);
+            return Math.round(totalTime / currentSession.questionTimes.length);
+        },
+        
+        // 估算完成时间
+        estimateCompletionTime: function() {
+            const remainingQuestions = currentSession.questions.length - currentSession.currentIndex - 1;
+            const averageTime = this.calculateAverageTime();
+            const estimatedSeconds = remainingQuestions * averageTime;
+            
+            if (estimatedSeconds < 60) {
+                return `${estimatedSeconds}秒`;
+            } else if (estimatedSeconds < 3600) {
+                return `${Math.round(estimatedSeconds / 60)}分钟`;
+            } else {
+                return `${Math.round(estimatedSeconds / 3600)}小时`;
             }
         },
         
