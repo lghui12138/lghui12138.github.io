@@ -2514,7 +2514,7 @@
             
             const moduleUrls = {
                 // 通用模块
-                'question-bank': 'modules/question-bank-module.html',
+                'question-bank': 'modules/question-bank.html',
                 'video': 'modules/video-module.html',
                 'ai-assistant': 'modules/ai-assistant-module.html',
                 'review': 'modules/review-module.html',
@@ -2537,27 +2537,68 @@
             if (url) {
                 showNotification(`正在打开${moduleName}模块...`, 'info');
                 
-                // 检查文件是否存在
-                fetch(url, { method: 'HEAD' })
-                    .then(response => {
-                        if (response.ok) {
-                            // 在移动端使用新窗口打开
-                            if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
-                                window.location.href = url;
-                            } else {
-                                window.open(url, '_blank');
-                            }
-                        } else {
-                            showNotification('模块文件不存在，正在创建...', 'warning');
-                            // 可以在这里创建默认模块页面
-                        }
-                    })
-                    .catch(error => {
-                        console.error('模块访问错误:', error);
-                        showNotification('模块访问失败，请检查网络连接', 'error');
+                // 特殊处理题库模块
+                if (moduleName === 'question-bank') {
+                    preloadQuestionBankData().then(() => {
+                        openModuleWindow(url);
+                    }).catch(error => {
+                        console.warn('题库数据预加载失败，直接打开模块:', error);
+                        openModuleWindow(url);
                     });
+                } else {
+                    openModuleWindow(url);
+                }
             } else {
-                showNotification('模块正在开发中...', 'info');
+                showNotification(`找不到${moduleName}模块`, 'error');
+            }
+        }
+        
+        // 打开模块窗口
+        function openModuleWindow(url) {
+            // 检查文件是否存在
+            fetch(url, { method: 'HEAD' })
+                .then(response => {
+                    if (response.ok) {
+                        // 在移动端使用新窗口打开
+                        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                            window.location.href = url;
+                        } else {
+                            window.open(url, '_blank');
+                        }
+                    } else {
+                        showNotification('模块文件不存在，正在创建...', 'warning');
+                        // 可以在这里创建默认模块页面
+                    }
+                })
+                .catch(error => {
+                    console.error('模块访问错误:', error);
+                    showNotification('模块访问失败，请检查网络连接', 'error');
+                });
+        }
+        
+        // 题库数据预加载函数
+        async function preloadQuestionBankData() {
+            try {
+                console.log('开始预加载题库数据...');
+                
+                // 检查题库索引文件
+                const indexResponse = await fetch('question-banks/index.json');
+                if (!indexResponse.ok) {
+                    throw new Error('题库索引文件不存在');
+                }
+                
+                const indexData = await indexResponse.json();
+                console.log('题库索引数据:', indexData);
+                
+                // 将数据缓存到 localStorage
+                localStorage.setItem('questionBankIndex', JSON.stringify(indexData));
+                
+                showNotification('题库数据预加载完成', 'success', 2000);
+                return indexData;
+                
+            } catch (error) {
+                console.error('题库数据预加载失败:', error);
+                throw error;
             }
         }
         
@@ -3619,7 +3660,7 @@
             if (!statusContainer) return;
             
             const modules = [
-                { name: '题库模块', url: 'modules/question-bank-module.html', status: 'checking' },
+                { name: '题库模块', url: 'modules/question-bank.html', status: 'checking' },
                 { name: '视频模块', url: 'modules/video-module.html', status: 'checking' },
                 { name: 'AI助手', url: 'modules/ai-assistant-module.html', status: 'checking' },
                 { name: '复习计划', url: 'modules/review-module.html', status: 'checking' },

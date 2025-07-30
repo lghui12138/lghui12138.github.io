@@ -1,0 +1,925 @@
+/**
+ * 题库练习功能模块
+ * 负责题目练习、答题逻辑、计时等功能
+ */
+window.QuestionBankPractice = (function() {
+    // 私有变量
+    let currentSession = {
+        questions: [],
+        currentIndex: 0,
+        userAnswers: [],
+        startTime: null,
+        questionTimes: [],
+        bankId: null,
+        sessionName: ''
+    };
+    
+    let practiceState = {
+        isActive: false,
+        isPaused: false,
+        timer: null,
+        questionTimer: null
+    };
+    
+    // 配置
+    const config = {
+        defaultTimeLimit: 0, // 0 表示无时间限制
+        showExplanation: true,
+        shuffleQuestions: false,
+        shuffleOptions: false
+    };
+    
+    // 公有方法
+    return {
+        // 初始化模块
+        init: function() {
+            console.log('初始化练习模块...');
+            this.bindEvents();
+            return this;
+        },
+        
+        // 绑定事件
+        bindEvents: function() {
+            // 键盘快捷键
+            document.addEventListener('keydown', (e) => {
+                if (!practiceState.isActive) return;
+                
+                switch(e.key) {
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                        if (!practiceState.isPaused) {
+                            this.selectOption(parseInt(e.key) - 1);
+                        }
+                        break;
+                    case 'Enter':
+                        if (!practiceState.isPaused) {
+                            this.submitAnswer();
+                        }
+                        break;
+                    case 'ArrowLeft':
+                        this.previousQuestion();
+                        break;
+                    case 'ArrowRight':
+                        this.nextQuestion();
+                        break;
+                    case ' ':
+                        e.preventDefault();
+                        this.togglePause();
+                        break;
+                    case 'Escape':
+                        this.exitPractice();
+                        break;
+                }
+            });
+        },
+        
+        // 开始练习（从题库）
+        startPractice: function(bank) {
+            if (!bank || !bank.questions || bank.questions.length === 0) {
+                showNotification('该题库没有可用的题目', 'warning');
+                return;
+            }
+            
+            this.initSession({
+                questions: [...bank.questions],
+                bankId: bank.id,
+                sessionName: `练习: ${bank.name}`
+            });
+            
+            this.showPracticeInterface();
+            showNotification(`开始练习 ${bank.name}`, 'success');
+        },
+        
+        // 开始自定义练习
+        startCustomPractice: function(questions, sessionName = '自定义练习') {
+            if (!questions || questions.length === 0) {
+                showNotification('没有可用的题目', 'warning');
+                return;
+            }
+            
+            this.initSession({
+                questions: [...questions],
+                bankId: 'custom',
+                sessionName: sessionName
+            });
+            
+            this.showPracticeInterface();
+            showNotification(`开始${sessionName}`, 'success');
+        },
+        
+        // 开始单题练习
+        startSingleQuestion: function(question) {
+            this.startCustomPractice([question], '单题练习');
+        },
+        
+        // 初始化练习会话
+        initSession: function(options) {
+            currentSession = {
+                questions: options.questions,
+                currentIndex: 0,
+                userAnswers: new Array(options.questions.length).fill(null),
+                startTime: new Date(),
+                questionTimes: [],
+                bankId: options.bankId,
+                sessionName: options.sessionName
+            };
+            
+            practiceState = {
+                isActive: true,
+                isPaused: false,
+                timer: null,
+                questionTimer: Date.now()
+            };
+            
+            // 打乱题目顺序（如果需要）
+            if (config.shuffleQuestions) {
+                this.shuffleArray(currentSession.questions);
+            }
+            
+            // 打乱选项顺序（如果需要）
+            if (config.shuffleOptions) {
+                currentSession.questions.forEach(question => {
+                    if (question.options && question.options.length > 0) {
+                        const correctAnswer = question.options[question.correct];
+                        this.shuffleArray(question.options);
+                        question.correct = question.options.indexOf(correctAnswer);
+                    }
+                });
+            }
+        },
+        
+        // 显示练习界面
+        showPracticeInterface: function() {
+            const content = this.generatePracticeHTML();
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: currentSession.sessionName,
+                    content: content,
+                    size: 'large',
+                    closable: true,
+                    backdrop: false,
+                    onHide: () => this.exitPractice()
+                });
+            } else {
+                // 降级方案：直接在页面中显示
+                const container = document.getElementById('questionBanksList');
+                if (container) {
+                    container.innerHTML = content;
+                }
+            }
+            
+            this.displayCurrentQuestion();
+            this.startTimer();
+        },
+        
+        // 生成练习界面HTML
+        generatePracticeHTML: function() {
+            return `
+                <div id="practiceContainer" style="min-height: 500px;">
+                    <!-- 练习头部信息 -->
+                    <div id="practiceHeader" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <span id="questionProgress">1 / ${currentSession.questions.length}</span>
+                            <span style="margin-left: 20px;">时间: <span id="practiceTimer">00:00</span></span>
+                        </div>
+                        <div>
+                            <button id="pauseBtn" class="btn btn-warning btn-sm" onclick="QuestionBankPractice.togglePause()">⏸️ 暂停</button>
+                            <button id="exitBtn" class="btn btn-danger btn-sm" onclick="QuestionBankPractice.exitPractice()">❌ 退出</button>
+                        </div>
+                    </div>
+                    
+                    <!-- 进度条 -->
+                    <div style="background: #e9ecef; border-radius: 10px; height: 8px; margin-bottom: 20px;">
+                        <div id="progressBar" style="background: linear-gradient(90deg, #4facfe, #00f2fe); height: 100%; border-radius: 10px; width: 0%; transition: width 0.3s ease;"></div>
+                    </div>
+                    
+                    <!-- 题目显示区域 -->
+                    <div id="questionDisplay" style="background: white; border: 2px solid #4facfe; border-radius: 15px; padding: 25px; margin-bottom: 20px; min-height: 300px;">
+                        <!-- 题目内容将在这里动态加载 -->
+                    </div>
+                    
+                    <!-- 答题控制 -->
+                    <div id="answerControls" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                        <button id="prevBtn" class="btn btn-secondary" onclick="QuestionBankPractice.previousQuestion()" disabled>
+                            ← 上一题
+                        </button>
+                        
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button id="submitBtn" class="btn btn-primary" onclick="QuestionBankPractice.submitAnswer()">
+                                提交答案
+                            </button>
+                            <button id="skipBtn" class="btn btn-info" onclick="QuestionBankPractice.skipQuestion()">
+                                跳过
+                            </button>
+                            <button id="hintBtn" class="btn btn-warning" onclick="QuestionBankPractice.showHint()">
+                                💡 提示
+                            </button>
+                        </div>
+                        
+                        <button id="nextBtn" class="btn btn-secondary" onclick="QuestionBankPractice.nextQuestion()">
+                            下一题 →
+                        </button>
+                    </div>
+                    
+                    <!-- 答案解释区域 -->
+                    <div id="explanationArea" style="background: #e8f5e8; border: 1px solid #28a745; border-radius: 10px; padding: 20px; margin-top: 20px; display: none;">
+                        <h5>📝 答案解释</h5>
+                        <div id="explanationContent"></div>
+                        <button class="btn btn-success btn-sm" onclick="QuestionBankPractice.continueToNext()" style="margin-top: 10px;">
+                            继续下一题
+                        </button>
+                    </div>
+                    
+                    <!-- 练习完成界面 -->
+                    <div id="completionArea" style="display: none; text-align: center; padding: 30px;">
+                        <h3>🎉 练习完成！</h3>
+                        <div id="finalStats" style="background: #f8f9fa; border-radius: 10px; padding: 20px; margin: 20px 0;"></div>
+                        <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="QuestionBankPractice.reviewAnswers()">
+                                📋 查看答案
+                            </button>
+                            <button class="btn btn-success" onclick="QuestionBankPractice.practiceAgain()">
+                                🔄 再次练习
+                            </button>
+                            <button class="btn btn-info" onclick="QuestionBankPractice.saveResults()">
+                                💾 保存结果
+                            </button>
+                            <button class="btn btn-secondary" onclick="QuestionBankPractice.exitPractice()">
+                                🏠 返回主页
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        },
+        
+        // 显示当前题目
+        displayCurrentQuestion: function() {
+            const question = currentSession.questions[currentSession.currentIndex];
+            if (!question) return;
+            
+            const questionDisplay = document.getElementById('questionDisplay');
+            if (!questionDisplay) return;
+            
+            // 记录题目开始时间
+            practiceState.questionTimer = Date.now();
+            
+            // 生成题目HTML
+            const questionHTML = this.generateQuestionHTML(question, currentSession.currentIndex);
+            questionDisplay.innerHTML = questionHTML;
+            
+            // 更新进度信息
+            this.updateProgress();
+            
+            // 更新按钮状态
+            this.updateButtonStates();
+            
+            // 如果已经答过这题，显示之前的答案
+            const userAnswer = currentSession.userAnswers[currentSession.currentIndex];
+            if (userAnswer !== null) {
+                this.highlightAnswer(userAnswer);
+            }
+        },
+        
+        // 生成题目HTML
+        generateQuestionHTML: function(question, index) {
+            const questionNumber = index + 1;
+            
+            let optionsHTML = '';
+            if (question.options && question.options.length > 0) {
+                optionsHTML = question.options.map((option, optIndex) => `
+                    <div class="option-item" onclick="QuestionBankPractice.selectOption(${optIndex})" 
+                         style="background: white; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px; margin: 10px 0; cursor: pointer; transition: all 0.3s ease;"
+                         data-option-index="${optIndex}">
+                        <span style="display: inline-block; width: 30px; height: 30px; border-radius: 50%; background: #4facfe; color: white; text-align: center; line-height: 30px; margin-right: 15px; font-weight: bold;">
+                            ${String.fromCharCode(65 + optIndex)}
+                        </span>
+                        ${option}
+                    </div>
+                `).join('');
+            }
+            
+            return `
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h4 style="color: #333; margin: 0;">题目 ${questionNumber}</h4>
+                        <div style="font-size: 0.9em; color: #666;">
+                            <span style="background: #4facfe; color: white; padding: 4px 12px; border-radius: 15px; margin-right: 10px;">
+                                ${question.difficulty || '中等'}
+                            </span>
+                            ${question.category ? `<span style="background: #f8f9fa; color: #666; padding: 4px 12px; border-radius: 15px;">${question.category}</span>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div style="font-size: 1.1em; line-height: 1.6; margin-bottom: 25px; color: #333;">
+                        ${question.question || question.title || '题目内容'}
+                    </div>
+                    
+                    ${question.image ? `<img src="${question.image}" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 20px;" alt="题目图片">` : ''}
+                    
+                    <div id="optionsContainer">
+                        ${optionsHTML}
+                    </div>
+                    
+                    ${question.type === 'fill' ? `
+                        <div style="margin-top: 20px;">
+                            <input type="text" id="fillAnswer" placeholder="请输入答案..." 
+                                   style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1em;"
+                                   onchange="QuestionBankPractice.handleFillAnswer(this.value)">
+                        </div>
+                    ` : ''}
+                    
+                    ${question.type === 'judge' ? `
+                        <div style="margin-top: 20px; display: flex; gap: 20px; justify-content: center;">
+                            <button class="judge-btn" onclick="QuestionBankPractice.selectJudgeAnswer(true)" 
+                                    style="padding: 15px 30px; font-size: 1.1em; border: 2px solid #28a745; background: white; color: #28a745; border-radius: 10px; cursor: pointer;">
+                                ✓ 正确
+                            </button>
+                            <button class="judge-btn" onclick="QuestionBankPractice.selectJudgeAnswer(false)"
+                                    style="padding: 15px 30px; font-size: 1.1em; border: 2px solid #dc3545; background: white; color: #dc3545; border-radius: 10px; cursor: pointer;">
+                                ✗ 错误
+                            </button>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        },
+        
+        // 选择选项
+        selectOption: function(optionIndex) {
+            if (!practiceState.isActive || practiceState.isPaused) return;
+            
+            // 清除之前的选择
+            document.querySelectorAll('.option-item').forEach(item => {
+                item.style.background = 'white';
+                item.style.borderColor = '#e9ecef';
+            });
+            
+            // 高亮当前选择
+            const selectedOption = document.querySelector(`[data-option-index="${optionIndex}"]`);
+            if (selectedOption) {
+                selectedOption.style.background = '#e3f2fd';
+                selectedOption.style.borderColor = '#4facfe';
+            }
+            
+            // 记录答案
+            currentSession.userAnswers[currentSession.currentIndex] = optionIndex;
+        },
+        
+        // 高亮答案
+        highlightAnswer: function(answerIndex) {
+            const option = document.querySelector(`[data-option-index="${answerIndex}"]`);
+            if (option) {
+                option.style.background = '#e3f2fd';
+                option.style.borderColor = '#4facfe';
+            }
+        },
+        
+        // 处理填空题答案
+        handleFillAnswer: function(answer) {
+            currentSession.userAnswers[currentSession.currentIndex] = answer.trim();
+        },
+        
+        // 选择判断题答案
+        selectJudgeAnswer: function(answer) {
+            document.querySelectorAll('.judge-btn').forEach(btn => {
+                btn.style.background = 'white';
+            });
+            
+            event.target.style.background = answer ? '#28a745' : '#dc3545';
+            event.target.style.color = 'white';
+            
+            currentSession.userAnswers[currentSession.currentIndex] = answer;
+        },
+        
+        // 提交答案
+        submitAnswer: function() {
+            const currentAnswer = currentSession.userAnswers[currentSession.currentIndex];
+            if (currentAnswer === null || currentAnswer === undefined) {
+                showNotification('请先选择答案', 'warning');
+                return;
+            }
+            
+            // 记录答题时间
+            const questionTime = (Date.now() - practiceState.questionTimer) / 1000;
+            currentSession.questionTimes[currentSession.currentIndex] = questionTime;
+            
+            // 检查答案并显示解释
+            this.checkAnswer();
+        },
+        
+        // 检查答案
+        checkAnswer: function() {
+            const question = currentSession.questions[currentSession.currentIndex];
+            const userAnswer = currentSession.userAnswers[currentSession.currentIndex];
+            const correctAnswer = question.correct;
+            
+            let isCorrect = false;
+            
+            // 根据题型检查答案
+            switch(question.type) {
+                case 'fill':
+                    isCorrect = this.checkFillAnswer(userAnswer, correctAnswer);
+                    break;
+                case 'judge':
+                    isCorrect = userAnswer === correctAnswer;
+                    break;
+                default: // 选择题
+                    isCorrect = userAnswer === correctAnswer;
+            }
+            
+            // 显示结果
+            this.showAnswerResult(isCorrect, question);
+            
+            // 如果答错了，添加到错题本
+            if (!isCorrect && typeof QuestionBankUser !== 'undefined') {
+                QuestionBankUser.addWrongQuestion(question, currentSession.bankId);
+            }
+        },
+        
+        // 检查填空题答案
+        checkFillAnswer: function(userAnswer, correctAnswer) {
+            if (!userAnswer || !correctAnswer) return false;
+            
+            // 如果正确答案是数组，检查是否匹配任一答案
+            if (Array.isArray(correctAnswer)) {
+                return correctAnswer.some(ans => 
+                    userAnswer.toLowerCase().trim() === ans.toLowerCase().trim()
+                );
+            }
+            
+            return userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim();
+        },
+        
+        // 显示答案结果
+        showAnswerResult: function(isCorrect, question) {
+            const explanationArea = document.getElementById('explanationArea');
+            const explanationContent = document.getElementById('explanationContent');
+            
+            if (!explanationArea || !explanationContent) return;
+            
+            const resultIcon = isCorrect ? '✅' : '❌';
+            const resultText = isCorrect ? '回答正确！' : '回答错误';
+            const resultColor = isCorrect ? '#28a745' : '#dc3545';
+            
+            explanationContent.innerHTML = `
+                <div style="color: ${resultColor}; font-weight: bold; font-size: 1.1em; margin-bottom: 15px;">
+                    ${resultIcon} ${resultText}
+                </div>
+                
+                ${question.explanation ? `
+                    <div style="margin-bottom: 15px;">
+                        <strong>解释：</strong>${question.explanation}
+                    </div>
+                ` : ''}
+                
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
+                    <strong>正确答案：</strong>
+                    ${this.formatCorrectAnswer(question)}
+                </div>
+            `;
+            
+            explanationArea.style.display = 'block';
+            
+            // 禁用答题控制
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('optionsContainer').style.pointerEvents = 'none';
+        },
+        
+        // 格式化正确答案显示
+        formatCorrectAnswer: function(question) {
+            switch(question.type) {
+                case 'fill':
+                    return Array.isArray(question.correct) 
+                        ? question.correct.join(' 或 ')
+                        : question.correct;
+                case 'judge':
+                    return question.correct ? '正确' : '错误';
+                default:
+                    return question.options 
+                        ? `${String.fromCharCode(65 + question.correct)}. ${question.options[question.correct]}`
+                        : question.correct;
+            }
+        },
+        
+        // 继续下一题
+        continueToNext: function() {
+            document.getElementById('explanationArea').style.display = 'none';
+            this.nextQuestion();
+        },
+        
+        // 跳过题目
+        skipQuestion: function() {
+            const questionTime = (Date.now() - practiceState.questionTimer) / 1000;
+            currentSession.questionTimes[currentSession.currentIndex] = questionTime;
+            this.nextQuestion();
+        },
+        
+        // 上一题
+        previousQuestion: function() {
+            if (currentSession.currentIndex > 0) {
+                currentSession.currentIndex--;
+                this.displayCurrentQuestion();
+            }
+        },
+        
+        // 下一题
+        nextQuestion: function() {
+            if (currentSession.currentIndex < currentSession.questions.length - 1) {
+                currentSession.currentIndex++;
+                this.displayCurrentQuestion();
+            } else {
+                // 练习完成
+                this.completePractice();
+            }
+        },
+        
+        // 显示提示
+        showHint: function() {
+            const question = currentSession.questions[currentSession.currentIndex];
+            if (question.hint) {
+                showNotification(`💡 提示：${question.hint}`, 'info', 5000);
+            } else {
+                showNotification('该题目没有提示', 'info');
+            }
+        },
+        
+        // 更新进度
+        updateProgress: function() {
+            const progressElement = document.getElementById('questionProgress');
+            const progressBar = document.getElementById('progressBar');
+            
+            if (progressElement) {
+                progressElement.textContent = `${currentSession.currentIndex + 1} / ${currentSession.questions.length}`;
+            }
+            
+            if (progressBar) {
+                const progress = ((currentSession.currentIndex + 1) / currentSession.questions.length) * 100;
+                progressBar.style.width = progress + '%';
+            }
+        },
+        
+        // 更新按钮状态
+        updateButtonStates: function() {
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            
+            if (prevBtn) {
+                prevBtn.disabled = currentSession.currentIndex === 0;
+            }
+            
+            if (nextBtn) {
+                nextBtn.textContent = currentSession.currentIndex === currentSession.questions.length - 1 
+                    ? '完成练习' : '下一题 →';
+            }
+            
+            if (submitBtn) {
+                submitBtn.disabled = false;
+            }
+        },
+        
+        // 开始计时
+        startTimer: function() {
+            practiceState.timer = setInterval(() => {
+                if (!practiceState.isPaused) {
+                    this.updateTimer();
+                }
+            }, 1000);
+        },
+        
+        // 更新计时显示
+        updateTimer: function() {
+            const timerElement = document.getElementById('practiceTimer');
+            if (!timerElement) return;
+            
+            const elapsed = Math.floor((Date.now() - currentSession.startTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            
+            timerElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        },
+        
+        // 暂停/继续
+        togglePause: function() {
+            practiceState.isPaused = !practiceState.isPaused;
+            
+            const pauseBtn = document.getElementById('pauseBtn');
+            if (pauseBtn) {
+                pauseBtn.innerHTML = practiceState.isPaused ? '▶️ 继续' : '⏸️ 暂停';
+            }
+            
+            const practiceContainer = document.getElementById('practiceContainer');
+            if (practiceContainer) {
+                practiceContainer.style.opacity = practiceState.isPaused ? '0.5' : '1';
+                practiceContainer.style.pointerEvents = practiceState.isPaused ? 'none' : 'auto';
+            }
+            
+            if (practiceState.isPaused) {
+                showNotification('练习已暂停', 'info');
+            } else {
+                showNotification('练习已继续', 'info');
+                // 重新开始当前题目计时
+                practiceState.questionTimer = Date.now();
+            }
+        },
+        
+        // 完成练习
+        completePractice: function() {
+            practiceState.isActive = false;
+            
+            if (practiceState.timer) {
+                clearInterval(practiceState.timer);
+            }
+            
+            // 计算总结果
+            const results = this.calculateResults();
+            
+            // 显示完成界面
+            this.showCompletionInterface(results);
+            
+            // 记录学习会话
+            if (typeof QuestionBankUser !== 'undefined') {
+                QuestionBankUser.recordStudySession({
+                    bankId: currentSession.bankId,
+                    startTime: currentSession.startTime.toISOString(),
+                    endTime: new Date().toISOString(),
+                    questionsAnswered: results.answered,
+                    correctAnswers: results.correct,
+                    duration: results.totalTime
+                });
+            }
+        },
+        
+        // 计算结果
+        calculateResults: function() {
+            const answered = currentSession.userAnswers.filter(answer => answer !== null && answer !== undefined).length;
+            const correct = currentSession.userAnswers.filter((answer, index) => {
+                if (answer === null || answer === undefined) return false;
+                const question = currentSession.questions[index];
+                
+                switch(question.type) {
+                    case 'fill':
+                        return this.checkFillAnswer(answer, question.correct);
+                    case 'judge':
+                        return answer === question.correct;
+                    default:
+                        return answer === question.correct;
+                }
+            }).length;
+            
+            const totalTime = Math.floor((Date.now() - currentSession.startTime) / 1000);
+            const averageTime = currentSession.questionTimes.length > 0 
+                ? currentSession.questionTimes.reduce((sum, time) => sum + time, 0) / currentSession.questionTimes.length
+                : 0;
+            
+            return {
+                total: currentSession.questions.length,
+                answered: answered,
+                correct: correct,
+                incorrect: answered - correct,
+                unanswered: currentSession.questions.length - answered,
+                accuracy: answered > 0 ? Math.round((correct / answered) * 100) : 0,
+                totalTime: totalTime,
+                averageTime: Math.round(averageTime)
+            };
+        },
+        
+        // 显示完成界面
+        showCompletionInterface: function(results) {
+            const finalStats = document.getElementById('finalStats');
+            const completionArea = document.getElementById('completionArea');
+            const questionDisplay = document.getElementById('questionDisplay');
+            const answerControls = document.getElementById('answerControls');
+            
+            if (finalStats) {
+                finalStats.innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; text-align: center;">
+                        <div>
+                            <div style="font-size: 2em; font-weight: bold; color: #4facfe;">${results.total}</div>
+                            <div style="font-size: 0.9em; color: #666;">总题数</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 2em; font-weight: bold; color: #28a745;">${results.correct}</div>
+                            <div style="font-size: 0.9em; color: #666;">答对</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 2em; font-weight: bold; color: #dc3545;">${results.incorrect}</div>
+                            <div style="font-size: 0.9em; color: #666;">答错</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 2em; font-weight: bold; color: #ffc107;">${results.unanswered}</div>
+                            <div style="font-size: 0.9em; color: #666;">未答</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 2em; font-weight: bold; color: #17a2b8;">${results.accuracy}%</div>
+                            <div style="font-size: 0.9em; color: #666;">正确率</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 2em; font-weight: bold; color: #6f42c1;">${Math.floor(results.totalTime / 60)}m</div>
+                            <div style="font-size: 0.9em; color: #666;">总用时</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (questionDisplay) questionDisplay.style.display = 'none';
+            if (answerControls) answerControls.style.display = 'none';
+            if (completionArea) completionArea.style.display = 'block';
+        },
+        
+        // 查看答案
+        reviewAnswers: function() {
+            const content = this.generateReviewHTML();
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '答案回顾',
+                    content: content,
+                    size: 'large'
+                });
+            }
+        },
+        
+        // 生成回顾HTML
+        generateReviewHTML: function() {
+            return `
+                <div style="max-height: 500px; overflow-y: auto;">
+                    ${currentSession.questions.map((question, index) => {
+                        const userAnswer = currentSession.userAnswers[index];
+                        const isCorrect = this.isAnswerCorrect(question, userAnswer);
+                        const statusIcon = userAnswer === null ? '⏭️' : (isCorrect ? '✅' : '❌');
+                        const statusColor = userAnswer === null ? '#ffc107' : (isCorrect ? '#28a745' : '#dc3545');
+                        
+                        return `
+                            <div style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 10px;">
+                                    <h6 style="margin: 0; color: #333;">题目 ${index + 1}</h6>
+                                    <span style="color: ${statusColor}; font-weight: bold;">${statusIcon}</span>
+                                </div>
+                                <div style="margin-bottom: 10px; color: #666;">
+                                    ${question.question || question.title || '题目内容'}
+                                </div>
+                                <div style="font-size: 0.9em;">
+                                    <div><strong>您的答案：</strong>${this.formatUserAnswer(question, userAnswer)}</div>
+                                    <div><strong>正确答案：</strong>${this.formatCorrectAnswer(question)}</div>
+                                    ${question.explanation ? `<div style="margin-top: 8px; color: #666;"><strong>解释：</strong>${question.explanation}</div>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        },
+        
+        // 格式化用户答案
+        formatUserAnswer: function(question, userAnswer) {
+            if (userAnswer === null || userAnswer === undefined) {
+                return '<span style="color: #ffc107;">未作答</span>';
+            }
+            
+            switch(question.type) {
+                case 'judge':
+                    return userAnswer ? '正确' : '错误';
+                case 'fill':
+                    return userAnswer;
+                default:
+                    return question.options 
+                        ? `${String.fromCharCode(65 + userAnswer)}. ${question.options[userAnswer]}`
+                        : userAnswer;
+            }
+        },
+        
+        // 判断答案是否正确
+        isAnswerCorrect: function(question, userAnswer) {
+            if (userAnswer === null || userAnswer === undefined) return false;
+            
+            switch(question.type) {
+                case 'fill':
+                    return this.checkFillAnswer(userAnswer, question.correct);
+                case 'judge':
+                    return userAnswer === question.correct;
+                default:
+                    return userAnswer === question.correct;
+            }
+        },
+        
+        // 再次练习
+        practiceAgain: function() {
+            this.initSession({
+                questions: [...currentSession.questions],
+                bankId: currentSession.bankId,
+                sessionName: currentSession.sessionName
+            });
+            
+            // 重新显示练习界面
+            const completionArea = document.getElementById('completionArea');
+            const questionDisplay = document.getElementById('questionDisplay');
+            const answerControls = document.getElementById('answerControls');
+            
+            if (completionArea) completionArea.style.display = 'none';
+            if (questionDisplay) questionDisplay.style.display = 'block';
+            if (answerControls) answerControls.style.display = 'flex';
+            
+            this.displayCurrentQuestion();
+            this.startTimer();
+        },
+        
+        // 保存结果
+        saveResults: function() {
+            const results = this.calculateResults();
+            const exportData = {
+                sessionName: currentSession.sessionName,
+                bankId: currentSession.bankId,
+                startTime: currentSession.startTime.toISOString(),
+                endTime: new Date().toISOString(),
+                results: results,
+                answers: currentSession.userAnswers,
+                questions: currentSession.questions.map(q => ({
+                    question: q.question || q.title,
+                    correct: q.correct,
+                    explanation: q.explanation
+                }))
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { 
+                type: 'application/json' 
+            });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `practice-results-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('练习结果已保存', 'success');
+        },
+        
+        // 退出练习
+        exitPractice: function() {
+            if (practiceState.isActive) {
+                if (typeof QuestionBankUI !== 'undefined') {
+                    QuestionBankUI.confirm('确定要退出当前练习吗？进度将不会保存。', '确认退出')
+                        .then(confirmed => {
+                            if (confirmed) {
+                                this.cleanup();
+                            }
+                        });
+                } else {
+                    this.cleanup();
+                }
+            } else {
+                this.cleanup();
+            }
+        },
+        
+        // 清理资源
+        cleanup: function() {
+            practiceState.isActive = false;
+            practiceState.isPaused = false;
+            
+            if (practiceState.timer) {
+                clearInterval(practiceState.timer);
+                practiceState.timer = null;
+            }
+            
+            // 关闭模态框或清空容器
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.closeAllModals();
+            } else {
+                const container = document.getElementById('questionBanksList');
+                if (container) {
+                    container.innerHTML = '<div style="text-align: center; padding: 40px; color: white;">练习已结束</div>';
+                }
+            }
+            
+            showNotification('练习已退出', 'info');
+        },
+        
+        // 工具方法：数组洗牌
+        shuffleArray: function(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        },
+        
+        // 获取当前练习状态
+        getPracticeState: function() {
+            return {
+                isActive: practiceState.isActive,
+                isPaused: practiceState.isPaused,
+                currentIndex: currentSession.currentIndex,
+                totalQuestions: currentSession.questions.length,
+                sessionName: currentSession.sessionName
+            };
+        }
+    };
+})(); 

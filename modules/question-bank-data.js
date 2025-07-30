@@ -1,0 +1,747 @@
+/**
+ * 题库数据管理模块
+ * 负责题库数据的加载、筛选、搜索等功能
+ */
+window.QuestionBankData = (function() {
+    // 私有变量
+    let questionBanks = [];
+    let filteredBanks = [];
+    let currentFilters = {
+        search: '',
+        difficulty: '',
+        tag: '',
+        count: '',
+        sort: 'default'
+    };
+    let currentPage = 1;
+    let itemsPerPage = 6;
+    
+    // 题库数据源配置
+    const DATA_SOURCES = {
+        local: '../question-banks/',
+        index: '../question-banks/index.json'
+    };
+    
+    // 默认题库数据（作为备用）
+    const DEFAULT_QUESTION_BANKS = [
+        {
+            id: 'fluid-basics',
+            name: '流体力学基础',
+            description: '流体的基本性质和概念',
+            difficulty: 'easy',
+            tags: ['基础', '概念'],
+            questionCount: 25,
+            color: '#4facfe',
+            lastUpdated: '2024-01-15'
+        },
+        {
+            id: 'momentum-equation',
+            name: '动量方程',
+            description: '流体动量方程的应用',
+            difficulty: 'medium',
+            tags: ['动量', '方程'],
+            questionCount: 30,
+            color: '#ff6b6b',
+            lastUpdated: '2024-01-10'
+        },
+        {
+            id: 'viscous-flow',
+            name: '粘性流动',
+            description: '粘性流体的运动规律',
+            difficulty: 'hard',
+            tags: ['粘性', '流动'],
+            questionCount: 20,
+            color: '#4ecdc4',
+            lastUpdated: '2024-01-12'
+        }
+    ];
+    
+    // 公有方法
+    return {
+        // 初始化模块
+        init: function() {
+            console.log('初始化题库数据模块...');
+            this.loadQuestionBanks();
+            this.bindEvents();
+            return this;
+        },
+        
+        // 加载题库数据
+        loadQuestionBanks: async function() {
+            try {
+                console.log('开始加载题库数据...');
+                
+                // 首先尝试从 localStorage 获取预加载的数据
+                const cachedIndex = localStorage.getItem('questionBankIndex');
+                if (cachedIndex) {
+                    try {
+                        const indexData = JSON.parse(cachedIndex);
+                        if (indexData.questionBanks && indexData.questionBanks.length > 0) {
+                            questionBanks = indexData.questionBanks;
+                            console.log(`从缓存加载了 ${questionBanks.length} 个题库`);
+                        }
+                    } catch (e) {
+                        console.warn('缓存数据解析失败:', e);
+                    }
+                }
+                
+                // 如果缓存中没有数据，尝试加载索引文件
+                if (questionBanks.length === 0) {
+                    const indexData = await this.loadFromIndex();
+                    if (indexData && indexData.questionBanks && indexData.questionBanks.length > 0) {
+                        questionBanks = indexData.questionBanks;
+                        console.log(`从索引文件加载了 ${questionBanks.length} 个题库`);
+                    } else {
+                        // 如果索引文件加载失败，尝试加载本地文件
+                        const localData = await this.loadFromLocal();
+                        if (localData && localData.length > 0) {
+                            questionBanks = localData;
+                            console.log(`从本地文件加载了 ${questionBanks.length} 个题库`);
+                        } else {
+                            // 如果都失败了，使用默认数据
+                            questionBanks = DEFAULT_QUESTION_BANKS;
+                            console.log('使用默认题库数据');
+                        }
+                    }
+                }
+                
+                // 处理数据并更新界面
+                this.processQuestionBanks();
+                this.updateTagFilter();
+                this.applyFilters();
+                this.updateStats();
+                
+            } catch (error) {
+                console.error('加载题库数据失败:', error);
+                questionBanks = DEFAULT_QUESTION_BANKS;
+                this.processQuestionBanks();
+                this.applyFilters();
+                showNotification('题库数据加载失败，使用默认数据', 'warning');
+            }
+        },
+        
+        // 从索引文件加载
+        loadFromIndex: async function() {
+            try {
+                const response = await fetch(DATA_SOURCES.index);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const data = await response.json();
+                console.log('索引文件数据:', data);
+                
+                // 检查新格式的索引文件
+                if (data.questionBanks && Array.isArray(data.questionBanks)) {
+                    return data;
+                }
+                
+                // 兼容旧格式
+                if (Array.isArray(data)) {
+                    return { questionBanks: data };
+                }
+                
+                // 兼容其他格式
+                if (data.real || data.chapter) {
+                    const banks = [];
+                    if (data.real) {
+                        data.real.forEach(item => {
+                            banks.push({
+                                id: item.file.replace('.json', ''),
+                                name: item.intro.split('，')[0],
+                                description: item.intro,
+                                difficulty: 'medium',
+                                tags: ['真题', '考试'],
+                                questionCount: 50,
+                                color: '#4facfe',
+                                lastUpdated: new Date().toISOString().split('T')[0]
+                            });
+                        });
+                    }
+                    if (data.chapter) {
+                        data.chapter.forEach(item => {
+                            banks.push({
+                                id: item.file.replace('.json', ''),
+                                name: item.intro.split('专题')[0] + '专题',
+                                description: item.intro,
+                                difficulty: 'medium',
+                                tags: ['专题', '分类'],
+                                questionCount: 30,
+                                color: this.getRandomColor(),
+                                lastUpdated: new Date().toISOString().split('T')[0]
+                            });
+                        });
+                    }
+                    return { questionBanks: banks };
+                }
+                
+                return null;
+            } catch (error) {
+                console.log('索引文件加载失败:', error.message);
+                return null;
+            }
+        },
+        
+        // 从本地文件加载
+        loadFromLocal: async function() {
+            const bankFiles = [
+                '分类_流体力学基础.json',
+                '分类_动量方程.json',
+                '分类_粘性.json',
+                '分类_压力.json',
+                '分类_能量方程.json',
+                '真题_中国海洋大学_2000-2021_cleaned.json'
+            ];
+            
+            const banks = [];
+            for (const file of bankFiles) {
+                try {
+                    const response = await fetch(DATA_SOURCES.local + file);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const bankInfo = this.extractBankInfo(file, data);
+                        if (bankInfo) {
+                            banks.push(bankInfo);
+                        }
+                    }
+                } catch (error) {
+                    console.log(`加载文件 ${file} 失败:`, error.message);
+                }
+            }
+            return banks;
+        },
+        
+        // 提取题库信息
+        extractBankInfo: function(filename, data) {
+            try {
+                const questions = Array.isArray(data) ? data : data.questions || [];
+                if (questions.length === 0) return null;
+                
+                const nameMatch = filename.match(/分类_(.+)\.json|真题_(.+)\.json/);
+                const name = nameMatch ? (nameMatch[1] || nameMatch[2]) : filename;
+                
+                // 分析题目难度
+                const difficulties = questions.map(q => q.difficulty || 'medium');
+                const difficultyCount = difficulties.reduce((acc, d) => {
+                    acc[d] = (acc[d] || 0) + 1;
+                    return acc;
+                }, {});
+                
+                const majorityDifficulty = Object.keys(difficultyCount)
+                    .reduce((a, b) => difficultyCount[a] > difficultyCount[b] ? a : b);
+                
+                // 提取标签
+                const tags = [...new Set(questions.flatMap(q => 
+                    q.tags || q.category ? [q.category] : ['流体力学']
+                ))];
+                
+                return {
+                    id: filename.replace('.json', ''),
+                    name: name,
+                    description: `包含 ${questions.length} 道题目的题库`,
+                    difficulty: majorityDifficulty,
+                    tags: tags.slice(0, 3),
+                    questionCount: questions.length,
+                    color: this.getRandomColor(),
+                    lastUpdated: new Date().toISOString().split('T')[0],
+                    filename: filename,
+                    questions: questions
+                };
+            } catch (error) {
+                console.error('提取题库信息失败:', error);
+                return null;
+            }
+        },
+        
+        // 处理题库数据
+        processQuestionBanks: function() {
+            questionBanks.forEach(bank => {
+                // 确保必要的属性存在
+                bank.id = bank.id || bank.name.replace(/\s+/g, '-').toLowerCase();
+                bank.difficulty = bank.difficulty || 'medium';
+                bank.tags = bank.tags || ['流体力学'];
+                bank.questionCount = bank.questionCount || (bank.questions ? bank.questions.length : 0);
+                bank.color = bank.color || this.getRandomColor();
+                bank.lastUpdated = bank.lastUpdated || new Date().toISOString().split('T')[0];
+            });
+            
+            filteredBanks = [...questionBanks];
+        },
+        
+        // 获取随机颜色
+        getRandomColor: function() {
+            const colors = ['#4facfe', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        },
+        
+        // 绑定事件
+        bindEvents: function() {
+            // 搜索框事件
+            const searchInput = document.getElementById('questionBankSearch');
+            if (searchInput) {
+                searchInput.addEventListener('input', (e) => {
+                    currentFilters.search = e.target.value;
+                    this.applyFilters();
+                });
+            }
+            
+            // 筛选器事件
+            ['difficultyFilter', 'tagFilter', 'countFilter'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', () => {
+                        this.updateFiltersFromUI();
+                        this.applyFilters();
+                    });
+                }
+            });
+            
+            // 清除筛选按钮
+            const clearButton = document.getElementById('clearFilters');
+            if (clearButton) {
+                clearButton.addEventListener('click', () => {
+                    this.clearFilters();
+                });
+            }
+            
+            // 功能按钮
+            this.bindFunctionButtons();
+        },
+        
+        // 绑定功能按钮事件
+        bindFunctionButtons: function() {
+            const buttons = {
+                'showAll': () => this.showAllBanks(),
+                'showFavorites': () => this.showFavorites(),
+                'showWrongQuestions': () => this.showWrongQuestions(),
+                'manageFavorites': () => this.manageFavorites(),
+                'showHelp': () => this.showHelp()
+            };
+            
+            Object.entries(buttons).forEach(([id, handler]) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('click', handler);
+                }
+            });
+        },
+        
+        // 更新筛选器状态
+        updateFiltersFromUI: function() {
+            const elements = {
+                'difficultyFilter': 'difficulty',
+                'tagFilter': 'tag',
+                'countFilter': 'count'
+            };
+            
+            Object.entries(elements).forEach(([elementId, filterKey]) => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    currentFilters[filterKey] = element.value;
+                }
+            });
+        },
+        
+        // 更新标签筛选器
+        updateTagFilter: function() {
+            const tagFilter = document.getElementById('tagFilter');
+            if (!tagFilter) return;
+            
+            // 收集所有标签
+            const allTags = new Set();
+            questionBanks.forEach(bank => {
+                bank.tags.forEach(tag => allTags.add(tag));
+            });
+            
+            // 清空并重新填充选项
+            tagFilter.innerHTML = '<option value="">全部分类</option>';
+            [...allTags].sort().forEach(tag => {
+                const option = document.createElement('option');
+                option.value = tag;
+                option.textContent = tag;
+                tagFilter.appendChild(option);
+            });
+        },
+        
+        // 应用筛选
+        applyFilters: function() {
+            filteredBanks = questionBanks.filter(bank => {
+                // 搜索筛选
+                if (currentFilters.search) {
+                    const searchTerm = currentFilters.search.toLowerCase();
+                    const searchable = `${bank.name} ${bank.description} ${bank.tags.join(' ')}`.toLowerCase();
+                    if (!searchable.includes(searchTerm)) {
+                        return false;
+                    }
+                }
+                
+                // 难度筛选
+                if (currentFilters.difficulty && bank.difficulty !== currentFilters.difficulty) {
+                    return false;
+                }
+                
+                // 标签筛选
+                if (currentFilters.tag && !bank.tags.includes(currentFilters.tag)) {
+                    return false;
+                }
+                
+                // 题目数量筛选
+                if (currentFilters.count) {
+                    const count = bank.questionCount;
+                    switch (currentFilters.count) {
+                        case '1-10':
+                            if (count < 1 || count > 10) return false;
+                            break;
+                        case '11-50':
+                            if (count < 11 || count > 50) return false;
+                            break;
+                        case '51-100':
+                            if (count < 51 || count > 100) return false;
+                            break;
+                        case '100+':
+                            if (count <= 100) return false;
+                            break;
+                    }
+                }
+                
+                return true;
+            });
+            
+            // 重置到第一页
+            currentPage = 1;
+            
+            // 更新显示
+            this.renderQuestionBanks();
+            this.updatePagination();
+        },
+        
+        // 清除筛选
+        clearFilters: function() {
+            currentFilters = {
+                search: '',
+                difficulty: '',
+                tag: '',
+                count: '',
+                sort: 'default'
+            };
+            
+            // 清空UI
+            ['questionBankSearch', 'difficultyFilter', 'tagFilter', 'countFilter'].forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.value = '';
+                }
+            });
+            
+            this.applyFilters();
+            showNotification('已清除所有筛选条件', 'info');
+        },
+        
+        // 渲染题库列表
+        renderQuestionBanks: function() {
+            const container = document.getElementById('questionBanksList');
+            if (!container) return;
+            
+            if (filteredBanks.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; color: white; padding: 40px;">
+                        <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                        <h3>没有找到匹配的题库</h3>
+                        <p style="margin-top: 10px;">请尝试调整筛选条件或搜索关键词</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // 分页计算
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredBanks.slice(startIndex, endIndex);
+            
+            // 生成HTML
+            const banksHTML = pageData.map(bank => this.generateBankCard(bank)).join('');
+            
+            container.innerHTML = `
+                <div class="qb-group">
+                    ${banksHTML}
+                </div>
+            `;
+        },
+        
+        // 生成题库卡片HTML
+        generateBankCard: function(bank) {
+            const difficultyText = {
+                'easy': '简单',
+                'medium': '中等',
+                'hard': '困难'
+            };
+            
+            const difficultyColor = {
+                'easy': '#28a745',
+                'medium': '#ffc107',
+                'hard': '#dc3545'
+            };
+            
+            const isFavorite = this.isFavorite(bank.id);
+            const favoriteIcon = isFavorite ? 'fas fa-heart' : 'far fa-heart';
+            const favoriteColor = isFavorite ? '#ff6b6b' : '#ccc';
+            
+            return `
+                <div class="qb-card" data-bank-id="${bank.id}">
+                    <div class="qb-card-header" style="background: linear-gradient(135deg, ${bank.color}, ${this.adjustColor(bank.color, -20)});">
+                        ${bank.name}
+                        <i class="${favoriteIcon}" 
+                           style="position: absolute; top: 15px; right: 15px; color: ${favoriteColor}; cursor: pointer;"
+                           onclick="QuestionBankData.toggleFavorite('${bank.id}')"
+                           title="${isFavorite ? '取消收藏' : '添加收藏'}"></i>
+                    </div>
+                    <div class="qb-card-content">
+                        <div class="qb-card-meta">
+                            <span style="color: ${difficultyColor[bank.difficulty]}; font-weight: bold;">
+                                ${difficultyText[bank.difficulty] || bank.difficulty}
+                            </span>
+                            <span>${bank.questionCount} 题</span>
+                        </div>
+                        <p style="margin-bottom: 15px; line-height: 1.4;">${bank.description}</p>
+                        <div style="margin-bottom: 15px;">
+                            ${bank.tags.map(tag => 
+                                `<span style="background: #e9ecef; color: #495057; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 5px;">${tag}</span>`
+                            ).join('')}
+                        </div>
+                        <div class="qb-card-actions">
+                            <button class="btn btn-primary" onclick="QuestionBankData.startPractice('${bank.id}')">
+                                <i class="fas fa-play"></i> 开始练习
+                            </button>
+                            <button class="btn btn-info" onclick="QuestionBankData.previewBank('${bank.id}')">
+                                <i class="fas fa-eye"></i> 预览
+                            </button>
+                            <button class="btn btn-success" onclick="QuestionBankData.quickTest('${bank.id}')">
+                                <i class="fas fa-rocket"></i> 快速测试
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        },
+        
+        // 调整颜色亮度
+        adjustColor: function(color, amount) {
+            const usePound = color[0] === '#';
+            const col = usePound ? color.slice(1) : color;
+            const num = parseInt(col, 16);
+            let r = (num >> 16) + amount;
+            let g = (num >> 8 & 0x00FF) + amount;
+            let b = (num & 0x0000FF) + amount;
+            
+            r = r > 255 ? 255 : r < 0 ? 0 : r;
+            g = g > 255 ? 255 : g < 0 ? 0 : g;
+            b = b > 255 ? 255 : b < 0 ? 0 : b;
+            
+            return (usePound ? '#' : '') + (r << 16 | g << 8 | b).toString(16).padStart(6, '0');
+        },
+        
+        // 更新分页
+        updatePagination: function() {
+            const container = document.getElementById('paginationControls');
+            if (!container) return;
+            
+            const totalPages = Math.ceil(filteredBanks.length / itemsPerPage);
+            
+            if (totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            let paginationHTML = '';
+            
+            // 上一页
+            if (currentPage > 1) {
+                paginationHTML += `
+                    <button class="btn btn-info" onclick="QuestionBankData.goToPage(${currentPage - 1})" style="margin: 0 5px;">
+                        <i class="fas fa-chevron-left"></i> 上一页
+                    </button>
+                `;
+            }
+            
+            // 页码
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === currentPage) {
+                    paginationHTML += `
+                        <button class="btn btn-primary" style="margin: 0 2px;">${i}</button>
+                    `;
+                } else {
+                    paginationHTML += `
+                        <button class="btn btn-info" onclick="QuestionBankData.goToPage(${i})" style="margin: 0 2px;">${i}</button>
+                    `;
+                }
+            }
+            
+            // 下一页
+            if (currentPage < totalPages) {
+                paginationHTML += `
+                    <button class="btn btn-info" onclick="QuestionBankData.goToPage(${currentPage + 1})" style="margin: 0 5px;">
+                        下一页 <i class="fas fa-chevron-right"></i>
+                    </button>
+                `;
+            }
+            
+            container.innerHTML = paginationHTML;
+        },
+        
+        // 跳转页面
+        goToPage: function(page) {
+            currentPage = page;
+            this.renderQuestionBanks();
+            this.updatePagination();
+        },
+        
+        // 更新统计信息
+        updateStats: function() {
+            const totalQuestions = questionBanks.reduce((sum, bank) => sum + bank.questionCount, 0);
+            const totalBanks = questionBanks.length;
+            
+            const statsElements = {
+                'totalQuestions': totalQuestions,
+                'totalBanks': totalBanks,
+                'favoriteCount': this.getFavoriteCount()
+            };
+            
+            Object.entries(statsElements).forEach(([id, value]) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value;
+                }
+            });
+        },
+        
+        // 功能方法
+        showAllBanks: function() {
+            this.clearFilters();
+            showNotification('显示全部题库', 'info');
+        },
+        
+        showFavorites: function() {
+            // 这里应该调用用户模块的收藏功能
+            if (typeof QuestionBankUser !== 'undefined') {
+                QuestionBankUser.showFavorites();
+            } else {
+                showNotification('收藏功能模块未加载', 'warning');
+            }
+        },
+        
+        showWrongQuestions: function() {
+            // 这里应该调用用户模块的错题功能
+            if (typeof QuestionBankUser !== 'undefined') {
+                QuestionBankUser.showWrongQuestions();
+            } else {
+                showNotification('错题本功能模块未加载', 'warning');
+            }
+        },
+        
+        manageFavorites: function() {
+            showNotification('收藏管理功能开发中...', 'info');
+        },
+        
+        showHelp: function() {
+            const helpContent = `
+                <div style="text-align: left;">
+                    <h4>🔍 搜索功能</h4>
+                    <p>• 支持题库名称、描述、标签搜索</p>
+                    <p>• 支持模糊匹配</p>
+                    
+                    <h4>⚙️ 筛选功能</h4>
+                    <p>• 按难度筛选：简单、中等、困难</p>
+                    <p>• 按分类筛选：不同知识点分类</p>
+                    <p>• 按题目数量筛选</p>
+                    
+                    <h4>⭐ 收藏功能</h4>
+                    <p>• 点击心形图标收藏题库</p>
+                    <p>• 查看我的收藏列表</p>
+                    
+                    <h4>🎯 练习模式</h4>
+                    <p>• 开始练习：完整练习模式</p>
+                    <p>• 预览：查看题库详情</p>
+                    <p>• 快速测试：随机选题测试</p>
+                </div>
+            `;
+            
+            showNotification(helpContent, 'info', 8000);
+        },
+        
+        // 收藏相关方法
+        isFavorite: function(bankId) {
+            const favorites = JSON.parse(localStorage.getItem('favoriteBanks') || '[]');
+            return favorites.includes(bankId);
+        },
+        
+        toggleFavorite: function(bankId) {
+            const favorites = JSON.parse(localStorage.getItem('favoriteBanks') || '[]');
+            const index = favorites.indexOf(bankId);
+            
+            if (index > -1) {
+                favorites.splice(index, 1);
+                showNotification('已取消收藏', 'info');
+            } else {
+                favorites.push(bankId);
+                showNotification('已添加收藏', 'success');
+            }
+            
+            localStorage.setItem('favoriteBanks', JSON.stringify(favorites));
+            this.renderQuestionBanks(); // 重新渲染以更新心形图标
+            this.updateStats();
+        },
+        
+        getFavoriteCount: function() {
+            const favorites = JSON.parse(localStorage.getItem('favoriteBanks') || '[]');
+            return favorites.length;
+        },
+        
+        // 题库操作方法
+        startPractice: function(bankId) {
+            const bank = questionBanks.find(b => b.id === bankId);
+            if (!bank) {
+                showNotification('题库不存在', 'error');
+                return;
+            }
+            
+            // 这里应该调用练习模块
+            if (typeof QuestionBankPractice !== 'undefined') {
+                QuestionBankPractice.startPractice(bank);
+            } else {
+                showNotification('练习模块未加载', 'warning');
+            }
+        },
+        
+        previewBank: function(bankId) {
+            const bank = questionBanks.find(b => b.id === bankId);
+            if (!bank) {
+                showNotification('题库不存在', 'error');
+                return;
+            }
+            
+            showNotification(`预览题库: ${bank.name} (${bank.questionCount}题)`, 'info');
+        },
+        
+        quickTest: function(bankId) {
+            const bank = questionBanks.find(b => b.id === bankId);
+            if (!bank) {
+                showNotification('题库不存在', 'error');
+                return;
+            }
+            
+            showNotification(`开始快速测试: ${bank.name}`, 'info');
+        },
+        
+        // 获取题库数据
+        getBankById: function(bankId) {
+            return questionBanks.find(b => b.id === bankId);
+        },
+        
+        getAllBanks: function() {
+            return [...questionBanks];
+        },
+        
+        getFilteredBanks: function() {
+            return [...filteredBanks];
+        }
+    };
+})(); 

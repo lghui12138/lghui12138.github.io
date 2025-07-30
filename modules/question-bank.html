@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>❓ 题库练习 - 流体力学海洋</title>
+    
+    <!-- Font Awesome -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- 模块化样式 -->
+    <link rel="stylesheet" href="question-bank-styles.css">
+</head>
+<body>
+    <!-- 海洋背景 -->
+    <div class="ocean-bg">
+        <div class="wave"></div>
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="#" class="nav-brand">
+                <i class="fas fa-question-circle"></i>
+                题库练习
+            </a>
+            <a href="../index-modular.html" class="btn-back">
+                <i class="fas fa-arrow-left"></i>
+                返回主页
+            </a>
+        </div>
+    </nav>
+
+    <!-- 主要内容 -->
+    <div class="main-content">
+        <!-- 统计面板 -->
+        <div id="questionBankStats" class="stats-panel" style="text-align:center;">
+            <h2>🎯 学习统计</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalQuestions">0</div>
+                    <div class="stat-label">总题数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="completedQuestions">0</div>
+                    <div class="stat-label">已完成</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="correctRate">0%</div>
+                    <div class="stat-label">正确率</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="favoriteCount">0</div>
+                    <div class="stat-label">收藏题库</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 搜索和筛选控制 -->
+        <div style="text-align: center; margin: 20px 0;">
+            <div style="margin-bottom: 15px;">
+                <input id="questionBankSearch" type="text" placeholder="🔍 搜索题库名称/简介/标签" 
+                       style="width:320px;padding:8px 16px;border-radius:8px;border:1px solid #ccc;font-size:1.1em;">
+            </div>
+            
+            <div class="filter-buttons">
+                <select id="difficultyFilter" style="margin-right:10px;padding:6px 12px;border-radius:6px;border:1px solid #ccc;">
+                    <option value="">全部难度</option>
+                    <option value="easy">简单</option>
+                    <option value="medium">中等</option>
+                    <option value="hard">困难</option>
+                </select>
+                
+                <select id="tagFilter" style="margin-right:10px;padding:6px 12px;border-radius:6px;border:1px solid #ccc;">
+                    <option value="">全部分类</option>
+                </select>
+                
+                <select id="countFilter" style="margin-right:10px;padding:6px 12px;border-radius:6px;border:1px solid #ccc;">
+                    <option value="">题目数量</option>
+                    <option value="1-10">1-10题</option>
+                    <option value="11-50">11-50题</option>
+                    <option value="51-100">51-100题</option>
+                    <option value="100+">100题以上</option>
+                </select>
+                
+                <button id="clearFilters" class="btn btn-info">清除筛选</button>
+            </div>
+            
+            <div class="filter-buttons">
+                <button id="showFavorites" class="btn btn-danger">⭐ 我的收藏</button>
+                <button id="showAll" class="btn btn-primary">📚 全部题库</button>
+                <button id="showWrongQuestions" class="btn btn-warning">❌ 错题本</button>
+                <button id="manageFavorites" class="btn btn-warning">📋 收藏管理</button>
+                <button id="showHelp" class="btn btn-info" title="快捷键帮助">❓ 帮助</button>
+            </div>
+        </div>
+
+        <!-- 增强功能卡片 -->
+        <div class="enhanced-features">
+            <h3 style="text-align: center; margin-bottom: 20px;">🚀 智能学习功能</h3>
+            <div class="feature-grid">
+                <div class="feature-card" onclick="showSmartSearch()">
+                    <div class="feature-icon">🔍</div>
+                    <div class="feature-title">智能搜索</div>
+                    <div class="feature-desc">AI驱动的智能搜索，支持模糊匹配和语义搜索</div>
+                </div>
+                <div class="feature-card" onclick="showAdvancedFilters()">
+                    <div class="feature-icon">⚙️</div>
+                    <div class="feature-title">高级筛选</div>
+                    <div class="feature-desc">多维度筛选，精确找到需要的题库</div>
+                </div>
+                <div class="feature-card" onclick="showStatsPanel()">
+                    <div class="feature-icon">📊</div>
+                    <div class="feature-title">学习统计</div>
+                    <div class="feature-desc">详细的学习数据统计和分析</div>
+                </div>
+                <div class="feature-card" onclick="showRecommendationPanel()">
+                    <div class="feature-icon">🎯</div>
+                    <div class="feature-title">智能推荐</div>
+                    <div class="feature-desc">基于学习进度智能推荐题库</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 智能搜索区域 -->
+        <div id="smartSearchArea" class="smart-search" style="display: none;">
+            <h4>🔍 智能搜索</h4>
+            <input type="text" id="smartSearchInput" placeholder="输入关键词进行智能搜索..." 
+                   style="width: 100%; padding: 12px; border: 2px solid var(--ocean-light); border-radius: 8px; font-size: 1em;">
+            <div id="searchSuggestions" class="search-suggestions"></div>
+        </div>
+
+        <!-- 高级筛选区域 -->
+        <div id="advancedFiltersArea" class="advanced-filters" style="display: none;">
+            <h4>⚙️ 高级筛选</h4>
+            <div class="filter-group">
+                <div class="filter-item">
+                    <label class="filter-label">难度等级</label>
+                    <select id="advancedDifficultyFilter" class="filter-select">
+                        <option value="">全部难度</option>
+                        <option value="easy">简单</option>
+                        <option value="medium">中等</option>
+                        <option value="hard">困难</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label class="filter-label">题目类型</label>
+                    <select id="advancedTypeFilter" class="filter-select">
+                        <option value="">全部类型</option>
+                        <option value="choice">选择题</option>
+                        <option value="fill">填空题</option>
+                        <option value="judge">判断题</option>
+                    </select>
+                </div>
+                <div class="filter-item">
+                    <label class="filter-label">完成状态</label>
+                    <select id="advancedStatusFilter" class="filter-select">
+                        <option value="">全部状态</option>
+                        <option value="completed">已完成</option>
+                        <option value="incomplete">未完成</option>
+                        <option value="favorite">已收藏</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习统计面板 -->
+        <div id="statsPanel" class="stats-panel" style="display: none;">
+            <h4>📊 详细统计</h4>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalQuestions">0</div>
+                    <div class="stat-label">总题数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="completedQuestions">0</div>
+                    <div class="stat-label">已完成</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="correctRate">0%</div>
+                    <div class="stat-label">正确率</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="studyTime">0h</div>
+                    <div class="stat-label">学习时长</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 智能推荐面板 -->
+        <div id="recommendationPanel" class="recommendation-panel" style="display: none;">
+            <h4>🎯 智能推荐</h4>
+            <div id="recommendationContent">
+                <p>正在分析您的学习数据，为您推荐合适的题库...</p>
+            </div>
+        </div>
+
+        <!-- 题库显示区域 -->
+        <div id="questionBanksList">
+            <div style="text-align: center; color: white; padding: 40px;">
+                <div class="loading"></div>
+                <p style="margin-top: 20px;">正在加载题库数据...</p>
+            </div>
+        </div>
+
+        <!-- 分页控制 -->
+        <div id="paginationControls" style="text-align: center; margin: 30px 0;"></div>
+    </div>
+
+    <!-- 通知容器 -->
+    <div id="notification-container" style="position: fixed; top: 20px; right: 20px; z-index: 1000;"></div>
+
+    <!-- 模块化JavaScript -->
+    <script src="question-bank-data.js"></script>
+    <script src="question-bank-ui.js"></script>
+    <script src="question-bank-user.js"></script>
+    <script src="question-bank-stats.js"></script>
+    <script src="question-bank-practice.js"></script>
+    <script src="question-bank-ai.js"></script>
+    
+    <!-- 主初始化脚本 -->
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                // 初始化各个模块
+                if (typeof QuestionBankData !== 'undefined') {
+                    QuestionBankData.init();
+                }
+                if (typeof QuestionBankUI !== 'undefined') {
+                    QuestionBankUI.init();
+                }
+                if (typeof QuestionBankUser !== 'undefined') {
+                    QuestionBankUser.init();
+                }
+                if (typeof QuestionBankStats !== 'undefined') {
+                    QuestionBankStats.init();
+                }
+                
+                console.log('题库模块初始化完成');
+            } catch (error) {
+                console.error('题库模块初始化失败:', error);
+                showNotification('题库加载失败，请刷新页面重试', 'error');
+            }
+        });
+        
+        // 基础函数
+        function showNotification(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('notification-container');
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            container.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, duration);
+        }
+        
+        // 功能面板显示/隐藏
+        function showSmartSearch() {
+            const area = document.getElementById('smartSearchArea');
+            area.style.display = area.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function showAdvancedFilters() {
+            const area = document.getElementById('advancedFiltersArea');
+            area.style.display = area.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function showStatsPanel() {
+            const panel = document.getElementById('statsPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            if (panel.style.display === 'block' && typeof QuestionBankStats !== 'undefined') {
+                QuestionBankStats.updateStats();
+            }
+        }
+        
+        function showRecommendationPanel() {
+            const panel = document.getElementById('recommendationPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html> 
