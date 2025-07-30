@@ -243,6 +243,16 @@ window.QuestionBankPractice = (function() {
                                 <i class="fas fa-eye"></i> 答案
                             </button>
                             
+                            <!-- 删除题目按钮 -->
+                            <button id="deleteBtn" class="btn btn-outline-danger btn-sm" onclick="QuestionBankPractice.deleteCurrentQuestion()" title="删除此题" style="border-radius: 20px; padding: 8px 15px;">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                            
+                            <!-- 批量删除按钮 -->
+                            <button id="batchDeleteBtn" class="btn btn-outline-warning btn-sm" onclick="QuestionBankPractice.showBatchDeleteDialog()" title="批量删除" style="border-radius: 20px; padding: 8px 15px;">
+                                <i class="fas fa-trash-alt"></i> 批量
+                            </button>
+                            
                             <button id="pauseBtn" class="btn btn-warning btn-sm" onclick="QuestionBankPractice.togglePause()" style="border-radius: 20px; padding: 8px 15px;">⏸️ 暂停</button>
                             <button id="exitBtn" class="btn btn-danger btn-sm" onclick="QuestionBankPractice.exitPractice()" style="border-radius: 20px; padding: 8px 15px;">❌ 退出</button>
                         </div>
@@ -314,6 +324,44 @@ window.QuestionBankPractice = (function() {
                             <button class="btn btn-secondary" onclick="QuestionBankPractice.exitPractice()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
                                 🏠 返回主页
                             </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 批量删除对话框 -->
+                    <div id="batchDeleteDialog" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; backdrop-filter: blur(5px);">
+                        <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                            <h4 style="color: #dc3545; margin-bottom: 20px; text-align: center;">🗑️ 批量删除题目</h4>
+                            <div style="margin-bottom: 20px;">
+                                <p style="color: #666; margin-bottom: 15px;">选择要删除的题目类型：</p>
+                                <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                        <input type="checkbox" id="deleteNoOptions" checked> 无选项题目
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                        <input type="checkbox" id="deleteShortQuestions"> 短题目（少于50字）
+                                    </label>
+                                    <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                        <input type="checkbox" id="deleteSystemQuestions"> 系统题目（包含"科目代码"等）
+                                    </label>
+                                </div>
+                                <div style="background: rgba(255,193,7,0.1); border: 1px solid #ffc107; border-radius: 10px; padding: 15px; color: #856404;">
+                                    <i class="fas fa-exclamation-triangle"></i> 删除后无法恢复，请谨慎操作！
+                                </div>
+                            </div>
+                            <div id="deletePreview" style="background: rgba(248,249,250,0.8); border-radius: 10px; padding: 15px; margin-bottom: 20px; max-height: 200px; overflow-y: auto;">
+                                <p style="color: #666; text-align: center;">点击"预览"查看将要删除的题目</p>
+                            </div>
+                            <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                                <button class="btn btn-info" onclick="QuestionBankPractice.previewBatchDelete()" style="border-radius: 20px; padding: 10px 20px;">
+                                    👁️ 预览
+                                </button>
+                                <button class="btn btn-danger" onclick="QuestionBankPractice.executeBatchDelete()" style="border-radius: 20px; padding: 10px 20px;">
+                                    🗑️ 确认删除
+                                </button>
+                                <button class="btn btn-secondary" onclick="QuestionBankPractice.closeBatchDeleteDialog()" style="border-radius: 20px; padding: 10px 20px;">
+                                    ❌ 取消
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -719,6 +767,177 @@ window.QuestionBankPractice = (function() {
             } else {
                 // 练习完成
                 this.completePractice();
+            }
+        },
+        
+        // 删除当前题目
+        deleteCurrentQuestion: function() {
+            const currentIndex = currentSession.currentIndex;
+            const question = currentSession.questions[currentIndex];
+            
+            if (confirm(`确定要删除这道题目吗？\n\n题目：${question.title.substring(0, 100)}${question.title.length > 100 ? '...' : ''}\n\n删除后无法恢复！`)) {
+                // 从题目列表中删除
+                currentSession.questions.splice(currentIndex, 1);
+                
+                // 从用户答案中删除
+                if (currentSession.userAnswers) {
+                    currentSession.userAnswers.splice(currentIndex, 1);
+                }
+                
+                // 如果删除的是最后一题，且不是第一题，则回到上一题
+                if (currentIndex >= currentSession.questions.length && currentIndex > 0) {
+                    currentSession.currentIndex = currentIndex - 1;
+                }
+                
+                // 如果删除后没有题目了，结束练习
+                if (currentSession.questions.length === 0) {
+                    showNotification('所有题目已删除，练习结束', 'warning');
+                    this.exitPractice();
+                    return;
+                }
+                
+                // 显示当前题目
+                this.displayCurrentQuestion();
+                this.updateProgress();
+                this.updateButtonStates();
+                
+                showNotification(`题目已删除，剩余 ${currentSession.questions.length} 题`, 'success');
+            }
+        },
+        
+        // 显示批量删除对话框
+        showBatchDeleteDialog: function() {
+            const dialog = document.getElementById('batchDeleteDialog');
+            if (dialog) {
+                dialog.style.display = 'block';
+            }
+        },
+        
+        // 关闭批量删除对话框
+        closeBatchDeleteDialog: function() {
+            const dialog = document.getElementById('batchDeleteDialog');
+            if (dialog) {
+                dialog.style.display = 'none';
+            }
+        },
+        
+        // 预览批量删除
+        previewBatchDelete: function() {
+            const deleteNoOptions = document.getElementById('deleteNoOptions').checked;
+            const deleteShortQuestions = document.getElementById('deleteShortQuestions').checked;
+            const deleteSystemQuestions = document.getElementById('deleteSystemQuestions').checked;
+            
+            const toDelete = [];
+            
+            currentSession.questions.forEach((question, index) => {
+                let shouldDelete = false;
+                
+                if (deleteNoOptions && (!question.options || question.options.length === 0)) {
+                    shouldDelete = true;
+                }
+                
+                if (deleteShortQuestions && question.title.length < 50) {
+                    shouldDelete = true;
+                }
+                
+                if (deleteSystemQuestions && (
+                    question.title.includes('科目代码') || 
+                    question.title.includes('科目名称') ||
+                    question.title.includes('考试时间') ||
+                    question.title.includes('试卷编号')
+                )) {
+                    shouldDelete = true;
+                }
+                
+                if (shouldDelete) {
+                    toDelete.push({ index, question });
+                }
+            });
+            
+            const previewDiv = document.getElementById('deletePreview');
+            if (previewDiv) {
+                if (toDelete.length === 0) {
+                    previewDiv.innerHTML = '<p style="color: #28a745; text-align: center;">✅ 没有符合条件的题目需要删除</p>';
+                } else {
+                    let html = `<p style="color: #dc3545; margin-bottom: 10px;">将要删除 ${toDelete.length} 道题目：</p>`;
+                    toDelete.forEach(({ index, question }) => {
+                        html += `<div style="margin-bottom: 8px; padding: 8px; background: rgba(220,53,69,0.1); border-radius: 5px; font-size: 14px;">
+                            <strong>第${index + 1}题：</strong>${question.title.substring(0, 80)}${question.title.length > 80 ? '...' : ''}
+                        </div>`;
+                    });
+                    previewDiv.innerHTML = html;
+                }
+            }
+        },
+        
+        // 执行批量删除
+        executeBatchDelete: function() {
+            const deleteNoOptions = document.getElementById('deleteNoOptions').checked;
+            const deleteShortQuestions = document.getElementById('deleteShortQuestions').checked;
+            const deleteSystemQuestions = document.getElementById('deleteSystemQuestions').checked;
+            
+            const toDelete = [];
+            
+            currentSession.questions.forEach((question, index) => {
+                let shouldDelete = false;
+                
+                if (deleteNoOptions && (!question.options || question.options.length === 0)) {
+                    shouldDelete = true;
+                }
+                
+                if (deleteShortQuestions && question.title.length < 50) {
+                    shouldDelete = true;
+                }
+                
+                if (deleteSystemQuestions && (
+                    question.title.includes('科目代码') || 
+                    question.title.includes('科目名称') ||
+                    question.title.includes('考试时间') ||
+                    question.title.includes('试卷编号')
+                )) {
+                    shouldDelete = true;
+                }
+                
+                if (shouldDelete) {
+                    toDelete.push(index);
+                }
+            });
+            
+            if (toDelete.length === 0) {
+                showNotification('没有符合条件的题目需要删除', 'info');
+                this.closeBatchDeleteDialog();
+                return;
+            }
+            
+            if (confirm(`确定要删除 ${toDelete.length} 道题目吗？\n\n删除后无法恢复！`)) {
+                // 从后往前删除，避免索引变化
+                toDelete.reverse().forEach(index => {
+                    currentSession.questions.splice(index, 1);
+                    if (currentSession.userAnswers) {
+                        currentSession.userAnswers.splice(index, 1);
+                    }
+                });
+                
+                // 调整当前题目索引
+                if (currentSession.currentIndex >= currentSession.questions.length) {
+                    currentSession.currentIndex = Math.max(0, currentSession.questions.length - 1);
+                }
+                
+                // 如果删除后没有题目了，结束练习
+                if (currentSession.questions.length === 0) {
+                    showNotification('所有题目已删除，练习结束', 'warning');
+                    this.closeBatchDeleteDialog();
+                    this.exitPractice();
+                    return;
+                }
+                
+                // 显示当前题目
+                this.displayCurrentQuestion();
+                this.updateProgress();
+                this.updateButtonStates();
+                
+                showNotification(`批量删除了 ${toDelete.length} 道题目，剩余 ${currentSession.questions.length} 题`, 'success');
+                this.closeBatchDeleteDialog();
             }
         },
         
