@@ -96,7 +96,7 @@ window.QuestionBankPractice = (function() {
             this.setupWheelEvents();
         },
         
-        // 设置滚轮事件 - 新增方法
+        // 设置滚轮事件 - 修复版本
         setupWheelEvents: function() {
             // 监听整个文档的滚轮事件
             document.addEventListener('wheel', (e) => {
@@ -111,10 +111,50 @@ window.QuestionBankPractice = (function() {
                 const questionDisplay = document.getElementById('questionDisplay');
                 if (!questionDisplay) return;
                 
+                // 检查是否在全屏模式
+                const isFullscreen = practiceState.isFullscreen;
+                
                 // 检查容器是否有滚动条
                 const hasScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
                 
-                // 如果容器有滚动条且不在顶部或底部，允许正常滚动
+                // 非全屏模式下，优先允许正常滚动
+                if (!isFullscreen) {
+                    // 检查是否在题目显示区域内
+                    const rect = questionDisplay.getBoundingClientRect();
+                    const isInQuestionArea = e.clientY >= rect.top && e.clientY <= rect.bottom;
+                    
+                    // 如果容器有滚动条，优先允许正常滚动
+                    if (hasScrollbar) {
+                        const isAtTop = questionDisplay.scrollTop === 0;
+                        const isAtBottom = questionDisplay.scrollTop + questionDisplay.clientHeight >= questionDisplay.scrollHeight;
+                        
+                        // 只有在题目区域内且滚动到顶部/底部时才切换题目
+                        if (isInQuestionArea && ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0))) {
+                            e.preventDefault();
+                            if (e.deltaY > 0) {
+                                this.nextQuestion();
+                            } else {
+                                this.previousQuestion();
+                            }
+                        }
+                        // 其他情况允许正常滚动
+                        return;
+                    }
+                    
+                    // 如果容器没有滚动条且在题目区域内，允许切换题目
+                    if (isInQuestionArea) {
+                        e.preventDefault();
+                        if (e.deltaY > 0) {
+                            this.nextQuestion();
+                        } else {
+                            this.previousQuestion();
+                        }
+                    }
+                    // 不在题目区域内，允许正常滚动
+                    return;
+                }
+                
+                // 全屏模式下的处理逻辑
                 if (hasScrollbar) {
                     const isAtTop = questionDisplay.scrollTop === 0;
                     const isAtBottom = questionDisplay.scrollTop + questionDisplay.clientHeight >= questionDisplay.scrollHeight;
@@ -132,7 +172,7 @@ window.QuestionBankPractice = (function() {
                     return;
                 }
                 
-                // 如果容器没有滚动条，直接切换题目
+                // 全屏模式且没有滚动条，直接切换题目
                 e.preventDefault();
                 if (e.deltaY > 0) {
                     this.nextQuestion();
