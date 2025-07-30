@@ -96,10 +96,13 @@ window.QuestionBankPractice = (function() {
             this.setupWheelEvents();
         },
         
-        // 设置滚轮事件 - 完全重写版本
+        // 设置滚轮事件 - 最终优化版本
         setupWheelEvents: function() {
-            // 监听整个文档的滚轮事件
-            document.addEventListener('wheel', (e) => {
+            // 只在练习界面内设置滚轮事件
+            const practiceContainer = document.getElementById('practiceContainer');
+            if (!practiceContainer) return;
+            
+            practiceContainer.addEventListener('wheel', (e) => {
                 if (!practiceState.isActive) return;
                 
                 // 如果目标元素是输入框或文本域，允许正常滚动
@@ -114,29 +117,16 @@ window.QuestionBankPractice = (function() {
                 // 检查是否在全屏模式
                 const isFullscreen = practiceState.isFullscreen;
                 
-                // 非全屏模式下，完全允许正常滚动，不阻止任何滚动事件
-                if (!isFullscreen) {
-                    // 在非全屏模式下，只在特定条件下才切换题目
-                    const rect = questionDisplay.getBoundingClientRect();
-                    const isInQuestionArea = e.clientY >= rect.top && e.clientY <= rect.bottom;
-                    
-                    // 只有在题目区域内且容器没有滚动条时才切换题目
-                    const hasScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
-                    
-                    if (isInQuestionArea && !hasScrollbar) {
-                        // 只有在题目区域内且没有滚动条时才切换题目
-                        e.preventDefault();
-                        if (e.deltaY > 0) {
-                            this.nextQuestion();
-                        } else {
-                            this.previousQuestion();
-                        }
-                    }
-                    // 其他所有情况都允许正常滚动
+                // 检查是否在题目显示区域内
+                const rect = questionDisplay.getBoundingClientRect();
+                const isInQuestionArea = e.clientY >= rect.top && e.clientY <= rect.bottom;
+                
+                // 如果不在题目区域内，不处理滚轮事件
+                if (!isInQuestionArea) {
                     return;
                 }
                 
-                // 全屏模式下的处理逻辑
+                // 检查容器是否有滚动条
                 const hasScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
                 
                 if (hasScrollbar) {
@@ -154,14 +144,17 @@ window.QuestionBankPractice = (function() {
                     }
                     // 其他情况允许正常滚动
                     return;
-                }
-                
-                // 全屏模式且没有滚动条，直接切换题目
-                e.preventDefault();
-                if (e.deltaY > 0) {
-                    this.nextQuestion();
                 } else {
-                    this.previousQuestion();
+                    // 没有滚动条时，在全屏模式或特定条件下才切换题目
+                    if (isFullscreen) {
+                        e.preventDefault();
+                        if (e.deltaY > 0) {
+                            this.nextQuestion();
+                        } else {
+                            this.previousQuestion();
+                        }
+                    }
+                    // 非全屏模式下有滚动条就正常滚动，没有滚动条也不切换题目
                 }
             }, { passive: false });
         },
@@ -303,15 +296,15 @@ window.QuestionBankPractice = (function() {
                     /* 题目显示区域优化 - 占据更大空间 */
                     #questionDisplay {
                         flex: 1;
-                        min-height: 70vh;
-                        max-height: 80vh;
+                        min-height: 75vh;
+                        max-height: 85vh;
                         overflow-y: auto;
-                        font-size: 22px;
-                        line-height: 2.0;
+                        font-size: 26px;
+                        line-height: 2.2;
                         position: relative;
                         background: rgba(255,255,255,0.98);
                         border-radius: 20px;
-                        padding: 40px;
+                        padding: 50px;
                         margin: 20px 0;
                         box-shadow: 0 15px 50px rgba(0,0,0,0.1);
                         border: 2px solid rgba(79,172,254,0.2);
@@ -997,9 +990,9 @@ window.QuestionBankPractice = (function() {
             if (question.options && Array.isArray(question.options) && question.options.length > 0) {
                 optionsHTML = question.options.map((option, optIndex) => `
                     <div class="option-item" onclick="QuestionBankPractice.selectOption(${optIndex})" 
-                         style="background: white; border: 2px solid #e9ecef; border-radius: 15px; padding: 25px; margin: 18px 0; cursor: pointer; transition: all 0.3s ease; font-size: 1.3em; line-height: 1.8;"
+                         style="background: white; border: 2px solid #e9ecef; border-radius: 15px; padding: 30px; margin: 20px 0; cursor: pointer; transition: all 0.3s ease; font-size: 1.5em; line-height: 2.0;"
                          data-option-index="${optIndex}">
-                        <span style="display: inline-block; width: 40px; height: 40px; border-radius: 50%; background: #4facfe; color: white; text-align: center; line-height: 40px; margin-right: 25px; font-weight: bold; font-size: 1.2em;">
+                        <span style="display: inline-block; width: 45px; height: 45px; border-radius: 50%; background: #4facfe; color: white; text-align: center; line-height: 45px; margin-right: 30px; font-weight: bold; font-size: 1.3em;">
                             ${String.fromCharCode(65 + optIndex)}
                         </span>
                         ${option}
@@ -1097,7 +1090,7 @@ window.QuestionBankPractice = (function() {
                         </div>
                     </div>
                     
-                    <div style="font-size: 1.4em; line-height: 2.2; margin-bottom: 35px; color: #333; text-align: justify; font-weight: 500;">
+                    <div style="font-size: 1.6em; line-height: 2.4; margin-bottom: 40px; color: #333; text-align: justify; font-weight: 500;">
                         ${question.question || question.title || '题目内容'}
                     </div>
                     
@@ -1120,6 +1113,7 @@ window.QuestionBankPractice = (function() {
             document.querySelectorAll('.option-item').forEach(item => {
                 item.style.background = 'white';
                 item.style.borderColor = '#e9ecef';
+                item.classList.remove('selected');
             });
             
             // 高亮当前选择
@@ -1127,10 +1121,14 @@ window.QuestionBankPractice = (function() {
             if (selectedOption) {
                 selectedOption.style.background = '#e3f2fd';
                 selectedOption.style.borderColor = '#4facfe';
+                selectedOption.classList.add('selected');
             }
             
             // 记录答案
             currentSession.userAnswers[currentSession.currentIndex] = optionIndex;
+            
+            // 显示通知
+            showNotification(`已选择选项 ${String.fromCharCode(65 + optionIndex)}`, 'info', 1000);
         },
         
         // 高亮答案
@@ -1191,23 +1189,29 @@ window.QuestionBankPractice = (function() {
                     currentAnswer = essayInput.value.trim();
                     currentSession.userAnswers[currentSession.currentIndex] = currentAnswer;
                 }
+            } else if (questionType === '判断题') {
+                // 判断题已在 selectJudgeAnswer 中设置答案
             } else if (questionType === '选择题') {
-                // 检查是否有自定义答案
+                // 检查是否已选择选项或输入自定义答案
                 const customInput = document.getElementById('customAnswer');
                 if (customInput && customInput.value.trim()) {
                     currentAnswer = customInput.value.trim();
                     currentSession.userAnswers[currentSession.currentIndex] = currentAnswer;
                 }
+                // 如果已选择选项，currentAnswer 应该已经被设置
             }
             
             if (currentAnswer === null || currentAnswer === undefined || currentAnswer === '') {
-                showNotification('请先输入答案', 'warning');
+                showNotification('请先选择或输入答案', 'warning');
                 return;
             }
             
             // 记录答题时间
             const questionTime = (Date.now() - practiceState.questionTimer) / 1000;
             currentSession.questionTimes[currentSession.currentIndex] = questionTime;
+            
+            // 显示提交成功通知
+            showNotification('答案已提交', 'success');
             
             // 检查答案并显示解释
             this.checkAnswer();
@@ -5981,7 +5985,7 @@ ${report.learningPath.milestones.map(m => `- ${m.title}: ${m.description} (目�
             return related;
         },
         
-        // 显示知识点分析
+                // 显示知识点分析
         showKnowledgeAnalysis: function(points, related) {
             const analysis = document.createElement('div');
             analysis.id = 'knowledgeAnalysis';
@@ -6012,12 +6016,1517 @@ ${report.learningPath.milestones.map(m => `- ${m.title}: ${m.description} (目�
                     <div style="text-align: center; margin-top: 20px;">
                         <button onclick="this.parentElement.parentElement.remove()" 
                                 style="padding: 10px 20px; background: #6f42c1; color: white; border: none; border-radius: 10px; cursor: pointer;">
-                            关闭
+                        关闭
                         </button>
                     </div>
                 </div>
             `;
             
             document.body.appendChild(analysis);
+        },
+
+        // 高级功能：语音朗读
+        toggleVoiceReading: function() {
+            if ('speechSynthesis' in window) {
+                const question = currentSession.questions[currentSession.currentIndex];
+                const text = question.question || question.title || '';
+                
+                if (speechSynthesis.speaking) {
+                    speechSynthesis.cancel();
+                    showNotification('已停止朗读', 'info');
+                } else {
+                    const utterance = new SpeechSynthesisUtterance(text);
+                    utterance.lang = 'zh-CN';
+                    utterance.rate = 0.8;
+                    utterance.pitch = 1;
+                    speechSynthesis.speak(utterance);
+                    showNotification('正在朗读题目', 'success');
+                }
+            } else {
+                showNotification('您的浏览器不支持语音朗读功能', 'warning');
+            }
+        },
+
+        // 高级功能：题目收藏
+        toggleFavorite: function() {
+            const question = currentSession.questions[currentSession.currentIndex];
+            const favorites = JSON.parse(localStorage.getItem('questionFavorites') || '[]');
+            
+            const existingIndex = favorites.findIndex(fav => 
+                fav.questionId === question.id || 
+                fav.question === question.question
+            );
+            
+            if (existingIndex >= 0) {
+                favorites.splice(existingIndex, 1);
+                showNotification('已取消收藏', 'info');
+            } else {
+                favorites.push({
+                    questionId: question.id,
+                    question: question.question || question.title,
+                    answer: question.answer,
+                    explanation: question.explanation,
+                    timestamp: new Date().toISOString(),
+                    bankId: currentSession.bankId
+                });
+                showNotification('已添加到收藏', 'success');
+            }
+            
+            localStorage.setItem('questionFavorites', JSON.stringify(favorites));
+        },
+
+        // 高级功能：题目分享
+        shareQuestion: function() {
+            const question = currentSession.questions[currentSession.currentIndex];
+            const shareText = `题目：${question.question || question.title}\n答案：${question.answer}\n解释：${question.explanation}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: '流体力学题目分享',
+                    text: shareText,
+                    url: window.location.href
+                }).catch(err => {
+                    this.copyToClipboard(shareText);
+                });
+            } else {
+                this.copyToClipboard(shareText);
+            }
+        },
+
+        // 复制到剪贴板
+        copyToClipboard: function(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showNotification('已复制到剪贴板', 'success');
+                }).catch(() => {
+                    this.fallbackCopyToClipboard(text);
+                });
+            } else {
+                this.fallbackCopyToClipboard(text);
+            }
+        },
+
+        // 备用复制方法
+        fallbackCopyToClipboard: function(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                showNotification('已复制到剪贴板', 'success');
+            } catch (err) {
+                showNotification('复制失败', 'error');
+            }
+            document.body.removeChild(textArea);
+        },
+
+        // 高级功能：学习模式切换
+        toggleLearningMode: function() {
+            const modes = ['normal', 'exam', 'review', 'speed'];
+            const currentMode = localStorage.getItem('learningMode') || 'normal';
+            const currentIndex = modes.indexOf(currentMode);
+            const nextMode = modes[(currentIndex + 1) % modes.length];
+            
+            localStorage.setItem('learningMode', nextMode);
+            
+            const modeNames = {
+                normal: '普通模式',
+                exam: '考试模式',
+                review: '复习模式',
+                speed: '速答模式'
+            };
+            
+            showNotification(`已切换到${modeNames[nextMode]}`, 'success');
+            this.applyLearningMode(nextMode);
+        },
+
+        // 应用学习模式
+        applyLearningMode: function(mode) {
+            switch(mode) {
+                case 'exam':
+                    // 考试模式：隐藏答案，计时，不能返回
+                    this.hideAnswerDisplay();
+                    this.startExamTimer();
+                    break;
+                case 'review':
+                    // 复习模式：显示答案，重点标记
+                    this.showAnswerDisplay();
+                    this.highlightKeyPoints();
+                    break;
+                case 'speed':
+                    // 速答模式：简化界面，快速答题
+                    this.simplifyInterface();
+                    this.enableSpeedMode();
+                    break;
+                default:
+                    // 普通模式：正常功能
+                    this.resetToNormalMode();
+                    break;
+            }
+        },
+
+        // 隐藏答案显示
+        hideAnswerDisplay: function() {
+            const answerDisplay = document.getElementById('answerDisplay');
+            if (answerDisplay) {
+                answerDisplay.style.display = 'none';
+            }
+        },
+
+        // 显示答案显示
+        showAnswerDisplay: function() {
+            const answerDisplay = document.getElementById('answerDisplay');
+            if (answerDisplay) {
+                answerDisplay.style.display = 'block';
+            }
+        },
+
+        // 开始考试计时
+        startExamTimer: function() {
+            const examTime = 120; // 2小时
+            let remainingTime = examTime * 60;
+            
+            const timer = setInterval(() => {
+                remainingTime--;
+                const hours = Math.floor(remainingTime / 3600);
+                const minutes = Math.floor((remainingTime % 3600) / 60);
+                const seconds = remainingTime % 60;
+                
+                const timeDisplay = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                // 更新计时器显示
+                const timerElement = document.getElementById('examTimer');
+                if (timerElement) {
+                    timerElement.textContent = `考试时间：${timeDisplay}`;
+                }
+                
+                if (remainingTime <= 0) {
+                    clearInterval(timer);
+                    this.finishExam();
+                }
+            }, 1000);
+        },
+
+        // 完成考试
+        finishExam: function() {
+            showNotification('考试时间到！', 'warning');
+            this.showExamResults();
+        },
+
+        // 显示考试结果
+        showExamResults: function() {
+            const results = this.calculateExamResults();
+            const resultsModal = document.createElement('div');
+            resultsModal.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #dc3545; border-radius: 20px; padding: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; max-width: 500px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">📊 考试结果</h4>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="font-size: 48px; font-weight: bold; color: #dc3545;">${results.score}分</div>
+                        <div style="color: #666; margin-top: 10px;">正确率：${results.accuracy}%</div>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>总题数：</span>
+                            <span style="font-weight: bold;">${results.totalQuestions}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>正确题数：</span>
+                            <span style="font-weight: bold; color: #28a745;">${results.correctAnswers}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                            <span>错误题数：</span>
+                            <span style="font-weight: bold; color: #dc3545;">${results.wrongAnswers}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>用时：</span>
+                            <span style="font-weight: bold;">${results.timeUsed}</span>
+                        </div>
+                    </div>
+                    <div style="text-align: center;">
+                        <button onclick="this.parentElement.parentElement.remove(); QuestionBankPractice.exitPractice()" 
+                                style="padding: 12px 25px; background: #dc3545; color: white; border: none; border-radius: 10px; cursor: pointer;">
+                        退出考试
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(resultsModal);
+        },
+
+        // 计算考试结果
+        calculateExamResults: function() {
+            const totalQuestions = currentSession.questions.length;
+            const answeredQuestions = currentSession.userAnswers.filter(answer => answer !== null);
+            const correctAnswers = answeredQuestions.filter((answer, index) => {
+                const question = currentSession.questions[index];
+                return this.isAnswerCorrect(answer, question);
+            });
+            
+            const score = Math.round((correctAnswers.length / totalQuestions) * 100);
+            const accuracy = Math.round((correctAnswers.length / answeredQuestions.length) * 100);
+            
+            const timeUsed = this.formatTime(Date.now() - currentSession.startTime);
+            
+            return {
+                score,
+                accuracy,
+                totalQuestions,
+                correctAnswers: correctAnswers.length,
+                wrongAnswers: answeredQuestions.length - correctAnswers.length,
+                timeUsed
+            };
+        },
+
+        // 格式化时间
+        formatTime: function(milliseconds) {
+            const seconds = Math.floor(milliseconds / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            
+            if (hours > 0) {
+                return `${hours}小时${minutes % 60}分钟`;
+            } else if (minutes > 0) {
+                return `${minutes}分钟${seconds % 60}秒`;
+            } else {
+                return `${seconds}秒`;
+            }
+        },
+
+        // 高亮重点
+        highlightKeyPoints: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            if (!questionDisplay) return;
+            
+            const text = questionDisplay.innerHTML;
+            const highlightedText = text.replace(
+                /(伯努利|雷诺数|边界层|粘性|势流|湍流|层流|压力|速度|动量|能量)/g,
+                '<mark style="background: #ffeb3b; padding: 2px 4px; border-radius: 3px;">$1</mark>'
+            );
+            
+            questionDisplay.innerHTML = highlightedText;
+        },
+
+        // 简化界面
+        simplifyInterface: function() {
+            const elementsToHide = [
+                'notePanel',
+                'helpBtn',
+                'themeBtn',
+                'statsBtn'
+            ];
+            
+            elementsToHide.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.style.display = 'none';
+                }
+            });
+        },
+
+        // 启用速答模式
+        enableSpeedMode: function() {
+            // 自动提交答案
+            this.autoSubmitOnSelect = true;
+            
+            // 简化选项显示
+            const optionItems = document.querySelectorAll('.option-item');
+            optionItems.forEach(item => {
+                item.style.padding = '8px 12px';
+                item.style.margin = '5px 0';
+            });
+        },
+
+        // 重置为普通模式
+        resetToNormalMode: function() {
+            this.autoSubmitOnSelect = false;
+            
+            const elementsToShow = [
+                'notePanel',
+                'helpBtn',
+                'themeBtn',
+                'statsBtn'
+            ];
+            
+            elementsToShow.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.style.display = 'block';
+                }
+            });
+        },
+
+        // 高级功能：题目难度自适应
+        adaptiveDifficulty: function() {
+            const recentAnswers = currentSession.userAnswers.slice(-5).filter(answer => answer !== null);
+            const correctCount = recentAnswers.filter((answer, index) => {
+                const questionIndex = currentSession.currentIndex - recentAnswers.length + index;
+                const question = currentSession.questions[questionIndex];
+                return this.isAnswerCorrect(answer, question);
+            }).length;
+            
+            const accuracy = recentAnswers.length > 0 ? correctCount / recentAnswers.length : 0.5;
+            
+            // 根据正确率调整下一题难度
+            if (accuracy > 0.8) {
+                this.suggestHarderQuestion();
+            } else if (accuracy < 0.4) {
+                this.suggestEasierQuestion();
+            }
+        },
+
+        // 建议更难的题目
+        suggestHarderQuestion: function() {
+            const harderQuestions = currentSession.questions.filter(q => q.difficulty === 'hard');
+            if (harderQuestions.length > 0) {
+                const randomHard = harderQuestions[Math.floor(Math.random() * harderQuestions.length)];
+                const index = currentSession.questions.indexOf(randomHard);
+                this.jumpToQuestion(index);
+            }
+        },
+
+        // 建议更简单的题目
+        suggestEasierQuestion: function() {
+            const easierQuestions = currentSession.questions.filter(q => q.difficulty === 'easy');
+            if (easierQuestions.length > 0) {
+                const randomEasy = easierQuestions[Math.floor(Math.random() * easierQuestions.length)];
+                const index = currentSession.questions.indexOf(randomEasy);
+                this.jumpToQuestion(index);
+            }
+        },
+
+        // 高级功能：学习进度可视化
+        showProgressVisualization: function() {
+            const progress = this.calculateProgressData();
+            const chart = this.createProgressChart(progress);
+            
+            const modal = document.createElement('div');
+            modal.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #17a2b8; border-radius: 20px; padding: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; max-width: 700px; max-height: 80vh; overflow-y: auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">📈 学习进度可视化</h4>
+                    <div id="progressChart" style="margin-bottom: 20px;"></div>
+                    <div style="text-align: center;">
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                style="padding: 10px 20px; background: #17a2b8; color: white; border: none; border-radius: 10px; cursor: pointer;">
+                        关闭
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            
+            // 渲染图表
+            const chartContainer = modal.querySelector('#progressChart');
+            chartContainer.innerHTML = chart;
+        },
+
+        // 计算进度数据
+        calculateProgressData: function() {
+            const totalQuestions = currentSession.questions.length;
+            const answeredQuestions = currentSession.userAnswers.filter(answer => answer !== null);
+            const correctAnswers = answeredQuestions.filter((answer, index) => {
+                const question = currentSession.questions[index];
+                return this.isAnswerCorrect(answer, question);
+            });
+            
+            const progress = [];
+            let correctCount = 0;
+            
+            for (let i = 0; i < answeredQuestions.length; i++) {
+                const question = currentSession.questions[i];
+                const isCorrect = this.isAnswerCorrect(answeredQuestions[i], question);
+                if (isCorrect) correctCount++;
+                
+                progress.push({
+                    question: i + 1,
+                    accuracy: (correctCount / (i + 1)) * 100,
+                    time: currentSession.questionTimes[i] || 0
+                });
+            }
+            
+            return progress;
+        },
+
+        // 创建进度图表
+        createProgressChart: function(progress) {
+            if (progress.length === 0) {
+                return '<p style="text-align: center; color: #666;">暂无进度数据</p>';
+            }
+            
+            const maxAccuracy = Math.max(...progress.map(p => p.accuracy));
+            const chartHeight = 200;
+            
+            let chartHTML = '<div style="position: relative; height: 200px; border-bottom: 2px solid #ddd; border-left: 2px solid #ddd;">';
+            
+            progress.forEach((point, index) => {
+                const x = (index / (progress.length - 1)) * 100;
+                const y = (point.accuracy / maxAccuracy) * 100;
+                
+                chartHTML += `
+                    <div style="position: absolute; left: ${x}%; bottom: ${y}%; width: 8px; height: 8px; background: #17a2b8; border-radius: 50%; transform: translate(-50%, 50%);"></div>
+                `;
+                
+                if (index > 0) {
+                    const prevPoint = progress[index - 1];
+                    const prevX = ((index - 1) / (progress.length - 1)) * 100;
+                    const prevY = (prevPoint.accuracy / maxAccuracy) * 100;
+                    
+                    chartHTML += `
+                        <svg style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;">
+                            <line x1="${prevX}%" y1="${100 - prevY}%" x2="${x}%" y2="${100 - y}%" stroke="#17a2b8" stroke-width="2"/>
+                        </svg>
+                    `;
+                }
+            });
+            
+            chartHTML += '</div>';
+            
+            return chartHTML;
+        },
+
+        // 高级功能：无障碍模式
+        toggleAccessibilityMode: function() {
+            const isAccessible = localStorage.getItem('accessibilityMode') === 'true';
+            const newMode = !isAccessible;
+            
+            localStorage.setItem('accessibilityMode', newMode);
+            
+            if (newMode) {
+                this.enableAccessibilityFeatures();
+                showNotification('已开启无障碍模式', 'success');
+            } else {
+                this.disableAccessibilityFeatures();
+                showNotification('已关闭无障碍模式', 'info');
+            }
+        },
+
+        // 启用无障碍功能
+        enableAccessibilityFeatures: function() {
+            document.body.style.fontSize = '18px';
+            document.body.style.lineHeight = '1.8';
+            document.body.style.filter = 'contrast(1.2)';
+            
+            const style = document.createElement('style');
+            style.id = 'accessibility-style';
+            style.textContent = `
+                *:focus {
+                    outline: 3px solid #ff6b6b !important;
+                    outline-offset: 2px !important;
+                }
+                .option-item:hover {
+                    background-color: #e3f2fd !important;
+                    transform: scale(1.02) !important;
+                }
+                button:hover {
+                    transform: scale(1.05) !important;
+                }
+            `;
+            document.head.appendChild(style);
+        },
+
+        // 禁用无障碍功能
+        disableAccessibilityFeatures: function() {
+            document.body.style.fontSize = '';
+            document.body.style.lineHeight = '';
+            document.body.style.filter = '';
+            
+            const style = document.getElementById('accessibility-style');
+            if (style) {
+                style.remove();
+            }
+        },
+
+        // 高级功能：夜间模式
+        toggleNightMode: function() {
+            const isNightMode = localStorage.getItem('nightMode') === 'true';
+            const newMode = !isNightMode;
+            
+            localStorage.setItem('nightMode', newMode);
+            
+            if (newMode) {
+                this.enableNightMode();
+                showNotification('已开启夜间模式', 'success');
+            } else {
+                this.disableNightMode();
+                showNotification('已关闭夜间模式', 'info');
+            }
+        },
+
+        // 启用夜间模式
+        enableNightMode: function() {
+            const style = document.createElement('style');
+            style.id = 'night-mode-style';
+            style.textContent = `
+                body {
+                    background-color: #1a1a1a !important;
+                    color: #e0e0e0 !important;
+                }
+                .modal-content, .practice-container {
+                    background-color: #2d2d2d !important;
+                    color: #e0e0e0 !important;
+                    border-color: #444 !important;
+                }
+                .option-item {
+                    background-color: #3d3d3d !important;
+                    color: #e0e0e0 !important;
+                    border-color: #555 !important;
+                }
+                .option-item:hover {
+                    background-color: #4d4d4d !important;
+                }
+                input, textarea {
+                    background-color: #3d3d3d !important;
+                    color: #e0e0e0 !important;
+                    border-color: #555 !important;
+                }
+                button {
+                    background-color: #4d4d4d !important;
+                    color: #e0e0e0 !important;
+                    border-color: #555 !important;
+                }
+                button:hover {
+                    background-color: #5d5d5d !important;
+                }
+            `;
+            document.head.appendChild(style);
+        },
+
+        // 禁用夜间模式
+        disableNightMode: function() {
+            const style = document.getElementById('night-mode-style');
+            if (style) {
+                style.remove();
+            }
+        },
+
+        // 高级功能：学习成就系统
+        checkAchievements: function() {
+            const achievements = this.calculateAchievements();
+            const newAchievements = achievements.filter(achievement => 
+                !JSON.parse(localStorage.getItem('unlockedAchievements') || '[]').includes(achievement.id)
+            );
+            
+            if (newAchievements.length > 0) {
+                this.showAchievements(newAchievements);
+                this.unlockAchievements(newAchievements);
+            }
+        },
+
+        // 计算成就
+        calculateAchievements: function() {
+            const achievements = [];
+            const answeredQuestions = currentSession.userAnswers.filter(answer => answer !== null);
+            const correctAnswers = answeredQuestions.filter((answer, index) => {
+                const question = currentSession.questions[index];
+                return this.isAnswerCorrect(answer, question);
+            });
+            
+            const accuracy = answeredQuestions.length > 0 ? (correctAnswers.length / answeredQuestions.length) * 100 : 0;
+            
+            if (answeredQuestions.length >= 10) {
+                achievements.push({ id: 'first_10', name: '初出茅庐', description: '完成10道题目', icon: '🎯' });
+            }
+            if (answeredQuestions.length >= 50) {
+                achievements.push({ id: 'first_50', name: '勤奋学习', description: '完成50道题目', icon: '📚' });
+            }
+            if (accuracy >= 80) {
+                achievements.push({ id: 'high_accuracy', name: '学霸', description: '正确率达到80%', icon: '⭐' });
+            }
+            
+            return achievements;
+        },
+
+        // 显示成就
+        showAchievements: function(achievements) {
+            const modal = document.createElement('div');
+            modal.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #ffc107; border-radius: 20px; padding: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; max-width: 500px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">🏆 获得新成就！</h4>
+                    <div style="text-align: center;">
+                        ${achievements.map(achievement => `
+                            <div style="background: linear-gradient(135deg, #ffc107, #ff9800); color: white; padding: 20px; border-radius: 15px; margin-bottom: 15px;">
+                                <div style="font-size: 48px; margin-bottom: 10px;">${achievement.icon}</div>
+                                <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">${achievement.name}</div>
+                                <div style="font-size: 14px; opacity: 0.9;">${achievement.description}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="text-align: center;">
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                style="padding: 12px 25px; background: #ffc107; color: white; border: none; border-radius: 10px; cursor: pointer;">
+                        太棒了！
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        },
+
+        // 解锁成就
+        unlockAchievements: function(achievements) {
+            const unlocked = JSON.parse(localStorage.getItem('unlockedAchievements') || '[]');
+            achievements.forEach(achievement => {
+                if (!unlocked.includes(achievement.id)) {
+                    unlocked.push(achievement.id);
+                }
+            });
+            localStorage.setItem('unlockedAchievements', JSON.stringify(unlocked));
+        },
+
+        // 高级功能：学习报告生成
+        generateLearningReport: function() {
+            const report = this.calculateLearningReport();
+            this.showLearningReport(report);
+        },
+
+        // 计算学习报告
+        calculateLearningReport: function() {
+            const totalQuestions = currentSession.questions.length;
+            const answeredQuestions = currentSession.userAnswers.filter(answer => answer !== null);
+            const correctAnswers = answeredQuestions.filter((answer, index) => {
+                const question = currentSession.questions[index];
+                return this.isAnswerCorrect(answer, question);
+            });
+            
+            const accuracy = answeredQuestions.length > 0 ? (correctAnswers.length / answeredQuestions.length) * 100 : 0;
+            const completionRate = (answeredQuestions.length / totalQuestions) * 100;
+            const avgTime = this.calculateAverageTime();
+            
+            const knowledgePoints = this.analyzeKnowledgePointMastery();
+            const suggestions = this.generateLearningSuggestions(accuracy, knowledgePoints);
+            
+            return {
+                totalQuestions,
+                answeredQuestions: answeredQuestions.length,
+                correctAnswers: correctAnswers.length,
+                accuracy: Math.round(accuracy),
+                completionRate: Math.round(completionRate),
+                avgTime: this.formatTime(avgTime * 1000),
+                knowledgePoints,
+                suggestions,
+                timestamp: new Date().toISOString()
+            };
+        },
+
+        // 分析知识点掌握情况
+        analyzeKnowledgePointMastery: function() {
+            const knowledgeMap = {
+                '伯努利': { correct: 0, total: 0, name: '伯努利方程' },
+                '雷诺数': { correct: 0, total: 0, name: '雷诺数' },
+                '边界层': { correct: 0, total: 0, name: '边界层理论' },
+                '粘性': { correct: 0, total: 0, name: '粘性流体' },
+                '势流': { correct: 0, total: 0, name: '势流理论' },
+                '湍流': { correct: 0, total: 0, name: '湍流' },
+                '层流': { correct: 0, total: 0, name: '层流' },
+                '压力': { correct: 0, total: 0, name: '压力分布' },
+                '速度': { correct: 0, total: 0, name: '速度场' },
+                '动量': { correct: 0, total: 0, name: '动量方程' },
+                '能量': { correct: 0, total: 0, name: '能量方程' }
+            };
+            
+            currentSession.questions.forEach((question, index) => {
+                const userAnswer = currentSession.userAnswers[index];
+                if (userAnswer !== null) {
+                    const text = question.question || question.title || '';
+                    const isCorrect = this.isAnswerCorrect(userAnswer, question);
+                    
+                    Object.keys(knowledgeMap).forEach(keyword => {
+                        if (text.includes(keyword)) {
+                            knowledgeMap[keyword].total++;
+                            if (isCorrect) {
+                                knowledgeMap[keyword].correct++;
+                            }
+                        }
+                    });
+                }
+            });
+            
+            Object.keys(knowledgeMap).forEach(key => {
+                const point = knowledgeMap[key];
+                point.mastery = point.total > 0 ? Math.round((point.correct / point.total) * 100) : 0;
+            });
+            
+            return knowledgeMap;
+        },
+
+        // 生成学习建议
+        generateLearningSuggestions: function(accuracy, knowledgePoints) {
+            const suggestions = [];
+            
+            if (accuracy < 60) {
+                suggestions.push('建议重点复习基础知识，巩固基本概念');
+            } else if (accuracy < 80) {
+                suggestions.push('继续练习，注意细节和计算准确性');
+            } else {
+                suggestions.push('表现优秀，可以挑战更高难度的题目');
+            }
+            
+            const weakPoints = Object.values(knowledgePoints).filter(point => point.mastery < 60);
+            if (weakPoints.length > 0) {
+                const weakPointNames = weakPoints.map(point => point.name).join('、');
+                suggestions.push(`建议重点复习：${weakPointNames}`);
+            }
+            
+            return suggestions;
+        },
+
+        // 显示学习报告
+        showLearningReport: function(report) {
+            const modal = document.createElement('div');
+            modal.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #28a745; border-radius: 20px; padding: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; max-width: 800px; max-height: 80vh; overflow-y: auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">📊 学习报告</h4>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 25px;">
+                        <div style="background: rgba(40,167,69,0.1); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #28a745;">${report.accuracy}%</div>
+                            <div style="color: #666; margin-top: 5px;">正确率</div>
+                        </div>
+                        <div style="background: rgba(79,172,254,0.1); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #4facfe;">${report.completionRate}%</div>
+                            <div style="color: #666; margin-top: 5px;">完成率</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                        <h5 style="color: #333; margin-bottom: 15px;">📚 知识点掌握情况</h5>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                            ${Object.values(report.knowledgePoints).filter(point => point.total > 0).map(point => `
+                                <div style="background: white; padding: 10px; border-radius: 8px; border-left: 4px solid ${point.mastery >= 80 ? '#28a745' : point.mastery >= 60 ? '#ffc107' : '#dc3545'};">
+                                    <div style="font-weight: bold; color: #333;">${point.name}</div>
+                                    <div style="color: #666; font-size: 12px;">${point.correct}/${point.total} 正确</div>
+                                    <div style="color: ${point.mastery >= 80 ? '#28a745' : point.mastery >= 60 ? '#ffc107' : '#dc3545'}; font-weight: bold;">${point.mastery}%</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                        <h5 style="color: #333; margin-bottom: 15px;">💡 学习建议</h5>
+                        <ul style="color: #666; line-height: 1.6; margin: 0; padding-left: 20px;">
+                            ${report.suggestions.map(suggestion => `<li>${suggestion}</li>`).join('')}
+                        </ul>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button onclick="QuestionBankPractice.exportReport(${JSON.stringify(report).replace(/"/g, '&quot;')})" 
+                                style="padding: 12px 25px; background: #17a2b8; color: white; border: none; border-radius: 10px; cursor: pointer; margin-right: 10px;">
+                        导出报告
+                        </button>
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                style="padding: 12px 25px; background: #6c757d; color: white; border: none; border-radius: 10px; cursor: pointer;">
+                        关闭
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        },
+
+        // 导出学习报告
+        exportReport: function(report) {
+            const reportText = `
+学习报告
+生成时间：${new Date(report.timestamp).toLocaleString()}
+
+总体统计：
+- 总题数：${report.totalQuestions}
+- 已答题数：${report.answeredQuestions}
+- 正确题数：${report.correctAnswers}
+- 正确率：${report.accuracy}%
+- 完成率：${report.completionRate}%
+- 平均用时：${report.avgTime}
+
+知识点掌握情况：
+${Object.values(report.knowledgePoints).filter(point => point.total > 0).map(point => 
+    `- ${point.name}：${point.correct}/${point.total} 正确 (${point.mastery}%)`
+).join('\n')}
+
+学习建议：
+${report.suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
+            `;
+            
+            const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `学习报告_${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showNotification('报告已导出', 'success');
+        },
+
+        // 高级功能：智能复习
+        startSmartReview: function() {
+            const wrongQuestions = this.getWrongQuestions();
+            if (wrongQuestions.length === 0) {
+                showNotification('暂无错题需要复习', 'info');
+                return;
+            }
+            
+            const reviewSession = {
+                questions: wrongQuestions,
+                currentIndex: 0,
+                userAnswers: new Array(wrongQuestions.length).fill(null),
+                startTime: Date.now(),
+                questionTimes: [],
+                bankId: 'review',
+                sessionName: '智能复习'
+            };
+            
+            const originalSession = { ...currentSession };
+            currentSession = reviewSession;
+            
+            this.displayCurrentQuestion();
+            showNotification(`开始复习 ${wrongQuestions.length} 道错题`, 'success');
+        },
+
+        // 获取错题
+        getWrongQuestions: function() {
+            const wrongQuestions = JSON.parse(localStorage.getItem('wrongQuestions') || '[]');
+            return wrongQuestions.slice(-20);
+        },
+
+        // 高级功能：学习提醒
+        setupLearningReminder: function() {
+            const reminderTime = localStorage.getItem('learningReminderTime');
+            if (reminderTime) {
+                this.scheduleReminder(reminderTime);
+            }
+        },
+
+        // 设置学习提醒
+        setLearningReminder: function() {
+            const time = prompt('请输入提醒时间（格式：HH:MM，如 20:30）：');
+            if (time && /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/.test(time)) {
+                localStorage.setItem('learningReminderTime', time);
+                this.scheduleReminder(time);
+                showNotification(`已设置学习提醒：${time}`, 'success');
+            } else {
+                showNotification('时间格式不正确', 'error');
+            }
+        },
+
+        // 安排提醒
+        scheduleReminder: function(time) {
+            const [hours, minutes] = time.split(':').map(Number);
+            const now = new Date();
+            const reminderTime = new Date();
+            reminderTime.setHours(hours, minutes, 0, 0);
+            
+            if (reminderTime <= now) {
+                reminderTime.setDate(reminderTime.getDate() + 1);
+            }
+            
+            const timeUntilReminder = reminderTime.getTime() - now.getTime();
+            
+            setTimeout(() => {
+                this.showLearningReminder();
+                this.scheduleReminder(time);
+            }, timeUntilReminder);
+        },
+
+        // 显示学习提醒
+        showLearningReminder: function() {
+            if (Notification.permission === 'granted') {
+                new Notification('学习提醒', {
+                    body: '该学习了！打开题库练习一下吧',
+                    icon: '/favicon.ico'
+                });
+            } else {
+                this.showReminderModal();
+            }
+        },
+
+        // 显示提醒模态框
+        showReminderModal: function() {
+            const modal = document.createElement('div');
+            modal.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #ff6b6b; border-radius: 20px; padding: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; max-width: 400px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">⏰ 学习提醒</h4>
+                    <p style="color: #666; text-align: center; margin-bottom: 20px;">该学习了！打开题库练习一下吧</p>
+                    <div style="text-align: center;">
+                        <button onclick="this.parentElement.parentElement.remove(); window.open('/question-bank.html', '_blank')" 
+                                style="padding: 12px 25px; background: #ff6b6b; color: white; border: none; border-radius: 10px; cursor: pointer; margin-right: 10px;">
+                        开始学习
+                        </button>
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                style="padding: 12px 25px; background: #6c757d; color: white; border: none; border-radius: 10px; cursor: pointer;">
+                        稍后再说
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        },
+
+        // 高级功能：学习计划生成器
+        generateLearningPlan: function() {
+            const plan = this.createPersonalizedLearningPlan();
+            this.showLearningPlan(plan);
+        },
+
+        // 创建个性化学习计划
+        createPersonalizedLearningPlan: function() {
+            const answeredQuestions = currentSession.userAnswers.filter(answer => answer !== null);
+            const correctAnswers = answeredQuestions.filter((answer, index) => {
+                const question = currentSession.questions[index];
+                return this.isAnswerCorrect(answer, question);
+            });
+            
+            const accuracy = answeredQuestions.length > 0 ? (correctAnswers.length / answeredQuestions.length) * 100 : 0;
+            const weakPoints = this.identifyWeakPoints();
+            
+            const plan = {
+                dailyGoal: this.calculateDailyGoal(accuracy),
+                weeklyTarget: this.calculateWeeklyTarget(accuracy),
+                focusAreas: weakPoints,
+                recommendedTime: this.calculateRecommendedTime(accuracy),
+                studySchedule: this.createStudySchedule(),
+                milestones: this.createMilestones(accuracy)
+            };
+            
+            return plan;
+        },
+
+        // 识别薄弱点
+        identifyWeakPoints: function() {
+            const knowledgePoints = this.analyzeKnowledgePointMastery();
+            const weakPoints = Object.values(knowledgePoints)
+                .filter(point => point.mastery < 60)
+                .sort((a, b) => a.mastery - b.mastery)
+                .slice(0, 3);
+            
+            return weakPoints.map(point => ({
+                name: point.name,
+                mastery: point.mastery,
+                target: Math.min(100, point.mastery + 20),
+                exercises: this.findExercisesForPoint(point.name)
+            }));
+        },
+
+        // 查找知识点相关练习
+        findExercisesForPoint: function(pointName) {
+            const exercises = currentSession.questions.filter(q => {
+                const text = q.question || q.title || '';
+                return text.includes(pointName.replace('方程', '').replace('理论', '').replace('流体', ''));
+            });
+            
+            return exercises.slice(0, 5);
+        },
+
+        // 计算每日目标
+        calculateDailyGoal: function(accuracy) {
+            if (accuracy < 60) return 20;
+            if (accuracy < 80) return 30;
+            return 40;
+        },
+
+        // 计算每周目标
+        calculateWeeklyTarget: function(accuracy) {
+            return this.calculateDailyGoal(accuracy) * 5;
+        },
+
+        // 计算推荐学习时间
+        calculateRecommendedTime: function(accuracy) {
+            if (accuracy < 60) return 60; // 60分钟
+            if (accuracy < 80) return 45; // 45分钟
+            return 30; // 30分钟
+        },
+
+        // 创建学习时间表
+        createStudySchedule: function() {
+            return [
+                { day: '周一', time: '20:00-21:00', focus: '基础概念复习' },
+                { day: '周二', time: '20:00-21:00', focus: '公式应用练习' },
+                { day: '周三', time: '20:00-21:00', focus: '综合题目练习' },
+                { day: '周四', time: '20:00-21:00', focus: '错题复习' },
+                { day: '周五', time: '20:00-21:00', focus: '模拟测试' },
+                { day: '周六', time: '14:00-15:00', focus: '知识点总结' },
+                { day: '周日', time: '14:00-15:00', focus: '休息和回顾' }
+            ];
+        },
+
+        // 创建学习里程碑
+        createMilestones: function(accuracy) {
+            const milestones = [];
+            const currentLevel = this.getCurrentLevel(accuracy);
+            
+            for (let i = currentLevel; i <= 5; i++) {
+                milestones.push({
+                    level: i,
+                    name: this.getLevelName(i),
+                    target: this.getLevelTarget(i),
+                    reward: this.getLevelReward(i),
+                    completed: i < currentLevel
+                });
+            }
+            
+            return milestones;
+        },
+
+        // 获取当前等级
+        getCurrentLevel: function(accuracy) {
+            if (accuracy < 40) return 1;
+            if (accuracy < 60) return 2;
+            if (accuracy < 80) return 3;
+            if (accuracy < 90) return 4;
+            return 5;
+        },
+
+        // 获取等级名称
+        getLevelName: function(level) {
+            const names = ['初学者', '进阶者', '熟练者', '专家', '大师'];
+            return names[level - 1] || '未知';
+        },
+
+        // 获取等级目标
+        getLevelTarget: function(level) {
+            const targets = ['正确率40%', '正确率60%', '正确率80%', '正确率90%', '正确率95%'];
+            return targets[level - 1] || '未知';
+        },
+
+        // 获取等级奖励
+        getLevelReward: function(level) {
+            const rewards = ['基础徽章', '进阶徽章', '熟练徽章', '专家徽章', '大师徽章'];
+            return rewards[level - 1] || '未知';
+        },
+
+        // 显示学习计划
+        showLearningPlan: function(plan) {
+            const modal = document.createElement('div');
+            modal.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #28a745; border-radius: 20px; padding: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; max-width: 800px; max-height: 80vh; overflow-y: auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">📋 个性化学习计划</h4>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 25px;">
+                        <div style="background: rgba(40,167,69,0.1); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #28a745;">${plan.dailyGoal}</div>
+                            <div style="color: #666; margin-top: 5px;">每日目标题目</div>
+                        </div>
+                        <div style="background: rgba(79,172,254,0.1); padding: 20px; border-radius: 15px; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold; color: #4facfe;">${plan.recommendedTime}分钟</div>
+                            <div style="color: #666; margin-top: 5px;">推荐学习时间</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                        <h5 style="color: #333; margin-bottom: 15px;">🎯 重点学习领域</h5>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                            ${plan.focusAreas.map(area => `
+                                <div style="background: white; padding: 15px; border-radius: 10px; border-left: 4px solid #ffc107;">
+                                    <div style="font-weight: bold; color: #333;">${area.name}</div>
+                                    <div style="color: #666; font-size: 12px; margin: 5px 0;">当前掌握度：${area.mastery}%</div>
+                                    <div style="color: #28a745; font-size: 12px;">目标：${area.target}%</div>
+                                    <div style="color: #666; font-size: 11px; margin-top: 5px;">推荐练习：${area.exercises.length}题</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                        <h5 style="color: #333; margin-bottom: 15px;">📅 学习时间表</h5>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                            ${plan.studySchedule.map(schedule => `
+                                <div style="background: white; padding: 10px; border-radius: 8px; text-align: center;">
+                                    <div style="font-weight: bold; color: #333; font-size: 14px;">${schedule.day}</div>
+                                    <div style="color: #666; font-size: 12px; margin: 5px 0;">${schedule.time}</div>
+                                    <div style="color: #4facfe; font-size: 11px;">${schedule.focus}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                        <h5 style="color: #333; margin-bottom: 15px;">🏆 学习里程碑</h5>
+                        <div style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;">
+                            ${plan.milestones.map(milestone => `
+                                <div style="background: white; padding: 15px; border-radius: 10px; min-width: 120px; text-align: center; border: 2px solid ${milestone.completed ? '#28a745' : '#e9ecef'};">
+                                    <div style="font-size: 24px; margin-bottom: 5px;">${milestone.completed ? '✅' : '🎯'}</div>
+                                    <div style="font-weight: bold; color: #333; font-size: 12px;">${milestone.name}</div>
+                                    <div style="color: #666; font-size: 10px; margin: 5px 0;">${milestone.target}</div>
+                                    <div style="color: #ffc107; font-size: 10px;">${milestone.reward}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button onclick="QuestionBankPractice.startLearningPlan()" 
+                                style="padding: 12px 25px; background: #28a745; color: white; border: none; border-radius: 10px; cursor: pointer; margin-right: 10px;">
+                        开始执行计划
+                        </button>
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                style="padding: 12px 25px; background: #6c757d; color: white; border: none; border-radius: 10px; cursor: pointer;">
+                        关闭
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        },
+
+        // 开始执行学习计划
+        startLearningPlan: function() {
+            showNotification('学习计划已启动，开始今日学习！', 'success');
+            this.trackLearningProgress();
+        },
+
+        // 跟踪学习进度
+        trackLearningProgress: function() {
+            const today = new Date().toISOString().split('T')[0];
+            const progress = {
+                date: today,
+                questionsAnswered: 0,
+                correctAnswers: 0,
+                studyTime: 0,
+                startTime: Date.now()
+            };
+            
+            localStorage.setItem('learningProgress_' + today, JSON.stringify(progress));
+            
+            // 启动进度跟踪
+            this.startProgressTracking();
+        },
+
+        // 启动进度跟踪
+        startProgressTracking: function() {
+            const progressInterval = setInterval(() => {
+                const today = new Date().toISOString().split('T')[0];
+                const progress = JSON.parse(localStorage.getItem('learningProgress_' + today) || '{}');
+                
+                if (progress.startTime) {
+                    progress.studyTime = Math.floor((Date.now() - progress.startTime) / 1000);
+                    localStorage.setItem('learningProgress_' + today, JSON.stringify(progress));
+                }
+            }, 60000); // 每分钟更新一次
+            
+            // 保存定时器ID以便清理
+            this.progressTrackingInterval = progressInterval;
+        },
+
+        // 高级功能：学习数据分析
+        analyzeLearningData: function() {
+            const data = this.collectLearningData();
+            const analysis = this.performDataAnalysis(data);
+            this.showDataAnalysis(analysis);
+        },
+
+        // 收集学习数据
+        collectLearningData: function() {
+            const data = {
+                totalSessions: 0,
+                totalQuestions: 0,
+                totalCorrect: 0,
+                averageAccuracy: 0,
+                studyTime: 0,
+                learningStreak: 0,
+                weakPoints: [],
+                strongPoints: [],
+                improvementTrend: []
+            };
+            
+            // 收集会话数据
+            const sessions = JSON.parse(localStorage.getItem('practiceSessions') || '[]');
+            data.totalSessions = sessions.length;
+            
+            sessions.forEach(session => {
+                data.totalQuestions += session.questionsAnswered || 0;
+                data.totalCorrect += session.correctAnswers || 0;
+                data.studyTime += session.studyTime || 0;
+            });
+            
+            data.averageAccuracy = data.totalQuestions > 0 ? (data.totalCorrect / data.totalQuestions) * 100 : 0;
+            
+            // 计算学习连续天数
+            data.learningStreak = this.calculateLearningStreak();
+            
+            // 分析强弱项
+            const knowledgePoints = this.analyzeKnowledgePointMastery();
+            data.weakPoints = Object.values(knowledgePoints).filter(p => p.mastery < 60);
+            data.strongPoints = Object.values(knowledgePoints).filter(p => p.mastery >= 80);
+            
+            // 分析进步趋势
+            data.improvementTrend = this.calculateImprovementTrend();
+            
+            return data;
+        },
+
+        // 计算学习连续天数
+        calculateLearningStreak: function() {
+            const today = new Date();
+            let streak = 0;
+            
+            for (let i = 0; i < 30; i++) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                const progress = localStorage.getItem('learningProgress_' + dateStr);
+                
+                if (progress) {
+                    const progressData = JSON.parse(progress);
+                    if (progressData.questionsAnswered > 0) {
+                        streak++;
+                    } else {
+                        break;
+                    }
+                } else {
+                    break;
+                }
+            }
+            
+            return streak;
+        },
+
+        // 计算进步趋势
+        calculateImprovementTrend: function() {
+            const trend = [];
+            const today = new Date();
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                const progress = localStorage.getItem('learningProgress_' + dateStr);
+                
+                if (progress) {
+                    const progressData = JSON.parse(progress);
+                    const accuracy = progressData.questionsAnswered > 0 ? 
+                        (progressData.correctAnswers / progressData.questionsAnswered) * 100 : 0;
+                    trend.push({
+                        date: dateStr,
+                        accuracy: accuracy,
+                        questions: progressData.questionsAnswered || 0
+                    });
+                } else {
+                    trend.push({
+                        date: dateStr,
+                        accuracy: 0,
+                        questions: 0
+                    });
+                }
+            }
+            
+            return trend;
+        },
+
+        // 执行数据分析
+        performDataAnalysis: function(data) {
+            const analysis = {
+                overallPerformance: this.analyzeOverallPerformance(data),
+                learningPatterns: this.analyzeLearningPatterns(data),
+                recommendations: this.generateRecommendations(data),
+                predictions: this.makePredictions(data)
+            };
+            
+            return analysis;
+        },
+
+        // 分析整体表现
+        analyzeOverallPerformance: function(data) {
+            const performance = {
+                level: this.getPerformanceLevel(data.averageAccuracy),
+                strength: this.getPerformanceStrength(data),
+                areas: this.getPerformanceAreas(data)
+            };
+            
+            return performance;
+        },
+
+        // 获取表现等级
+        getPerformanceLevel: function(accuracy) {
+            if (accuracy >= 90) return '优秀';
+            if (accuracy >= 80) return '良好';
+            if (accuracy >= 70) return '中等';
+            if (accuracy >= 60) return '及格';
+            return '需要改进';
+        },
+
+        // 获取表现优势
+        getPerformanceStrength: function(data) {
+            const strengths = [];
+            
+            if (data.averageAccuracy >= 80) strengths.push('高正确率');
+            if (data.learningStreak >= 7) strengths.push('学习持续性');
+            if (data.studyTime >= 3600) strengths.push('学习投入度');
+            if (data.strongPoints.length >= 3) strengths.push('知识面广');
+            
+            return strengths;
+        },
+
+        // 获取表现领域
+        getPerformanceAreas: function(data) {
+            return {
+                accuracy: data.averageAccuracy,
+                consistency: this.calculateConsistency(data),
+                efficiency: this.calculateEfficiency(data),
+                engagement: this.calculateEngagement(data)
+            };
+        },
+
+        // 计算一致性
+        calculateConsistency: function(data) {
+            if (data.improvementTrend.length < 2) return 0;
+            
+            const accuracies = data.improvementTrend.map(t => t.accuracy);
+            const mean = accuracies.reduce((a, b) => a + b, 0) / accuracies.length;
+            const variance = accuracies.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / accuracies.length;
+            
+            return Math.max(0, 100 - Math.sqrt(variance));
+        },
+
+        // 计算效率
+        calculateEfficiency: function(data) {
+            if (data.studyTime === 0) return 0;
+            return Math.min(100, (data.totalCorrect / (data.studyTime / 3600)) * 10);
+        },
+
+        // 计算参与度
+        calculateEngagement: function(data) {
+            return Math.min(100, (data.learningStreak / 30) * 100);
+        },
+
+        // 分析学习模式
+        analyzeLearningPatterns: function(data) {
+            return {
+                studyHabits: this.analyzeStudyHabits(data),
+                timePatterns: this.analyzeTimePatterns(data),
+                difficultyPreference: this.analyzeDifficultyPreference(data)
+            };
+        },
+
+        // 分析学习习惯
+        analyzeStudyHabits: function(data) {
+            const habits = [];
+            
+            if (data.learningStreak >= 7) habits.push('学习习惯良好');
+            if (data.averageAccuracy >= 80) habits.push('学习效果优秀');
+            if (data.studyTime >= 3600) habits.push('学习投入充足');
+            
+            return habits;
+        },
+
+        // 分析时间模式
+        analyzeTimePatterns: function(data) {
+            // 这里可以添加更复杂的时间模式分析
+            return ['建议保持规律学习时间'];
+        },
+
+        // 分析难度偏好
+        analyzeDifficultyPreference: function(data) {
+            if (data.averageAccuracy >= 85) return '可以挑战更高难度';
+            if (data.averageAccuracy >= 70) return '当前难度适中';
+            return '建议降低难度';
+        },
+
+        // 生成建议
+        generateRecommendations: function(data) {
+            const recommendations = [];
+            
+            if (data.averageAccuracy < 70) {
+                recommendations.push('建议重点复习基础知识');
+            }
+            
+            if (data.learningStreak < 3) {
+                recommendations.push('建议增加学习频率');
+            }
+            
+            if (data.weakPoints.length > 0) {
+                recommendations.push(`重点复习：${data.weakPoints.map(p => p.name).join('、')}`);
+            }
+            
+            if (data.studyTime < 1800) {
+                recommendations.push('建议增加学习时间');
+            }
+            
+            return recommendations;
+        },
+
+        // 做出预测
+        makePredictions: function(data) {
+            const predictions = [];
+            
+            if (data.improvementTrend.length >= 3) {
+                const recentTrend = data.improvementTrend.slice(-3);
+                const avgAccuracy = recentTrend.reduce((a, b) => a + b.accuracy, 0) / 3;
+                
+                if (avgAccuracy > data.averageAccuracy) {
+                    predictions.push('学习效果呈上升趋势');
+                } else if (avgAccuracy < data.averageAccuracy) {
+                    predictions.push('学习效果需要关注');
+                }
+            }
+            
+            if (data.learningStreak >= 5) {
+                predictions.push('有望保持良好学习状态');
+            }
+            
+            return predictions;
+        },
+
+        // 显示数据分析
+        showDataAnalysis: function(analysis) {
+            const modal = document.createElement('div');
+            modal.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #17a2b8; border-radius: 20px; padding: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; max-width: 900px; max-height: 80vh; overflow-y: auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">📊 学习数据分析</h4>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                        <h5 style="color: #333; margin-bottom: 15px;">🎯 整体表现评估</h5>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                            <div style="background: white; padding: 15px; border-radius: 10px;">
+                                <div style="font-weight: bold; color: #333; margin-bottom: 10px;">表现等级</div>
+                                <div style="font-size: 24px; color: #17a2b8; font-weight: bold;">${analysis.overallPerformance.level}</div>
+                            </div>
+                            <div style="background: white; padding: 15px; border-radius: 10px;">
+                                <div style="font-weight: bold; color: #333; margin-bottom: 10px;">主要优势</div>
+                                <div style="color: #666; font-size: 14px;">
+                                    ${analysis.overallPerformance.strength.map(s => `<div>• ${s}</div>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                        <h5 style="color: #333; margin-bottom: 15px;">📈 学习建议</h5>
+                        <div style="background: white; padding: 15px; border-radius: 10px;">
+                            ${analysis.recommendations.map(rec => `
+                                <div style="color: #666; margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 5px;">
+                                    💡 ${rec}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
+                        <h5 style="color: #333; margin-bottom: 15px;">🔮 学习预测</h5>
+                        <div style="background: white; padding: 15px; border-radius: 10px;">
+                            ${analysis.predictions.map(pred => `
+                                <div style="color: #666; margin-bottom: 8px; padding: 8px; background: #f8f9fa; border-radius: 5px;">
+                                    🔮 ${pred}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                style="padding: 12px 25px; background: #17a2b8; color: white; border: none; border-radius: 10px; cursor: pointer;">
+                        关闭
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
         }
     };
+})();
