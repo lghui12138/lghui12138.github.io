@@ -179,6 +179,37 @@ window.QuestionBankPractice = (function() {
         // 生成练习界面HTML
         generatePracticeHTML: function() {
             return `
+                <style>
+                    /* 自定义滚动条样式 */
+                    #questionDisplay::-webkit-scrollbar,
+                    #answerDisplay::-webkit-scrollbar {
+                        width: 8px;
+                    }
+                    
+                    #questionDisplay::-webkit-scrollbar-track,
+                    #answerDisplay::-webkit-scrollbar-track {
+                        background: rgba(240,248,255,0.5);
+                        border-radius: 10px;
+                    }
+                    
+                    #questionDisplay::-webkit-scrollbar-thumb,
+                    #answerDisplay::-webkit-scrollbar-thumb {
+                        background: linear-gradient(180deg, #4facfe, #00f2fe);
+                        border-radius: 10px;
+                        border: 1px solid rgba(255,255,255,0.3);
+                    }
+                    
+                    #questionDisplay::-webkit-scrollbar-thumb:hover,
+                    #answerDisplay::-webkit-scrollbar-thumb:hover {
+                        background: linear-gradient(180deg, #3a8bfe, #00d4fe);
+                    }
+                    
+                    /* 平滑滚动 */
+                    #questionDisplay,
+                    #answerDisplay {
+                        scroll-behavior: smooth;
+                    }
+                </style>
                 <div id="practiceContainer" style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="wave1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:%234facfe;stop-opacity:0.3"/><stop offset="100%" style="stop-color:%2300f2fe;stop-opacity:0.3"/></linearGradient><linearGradient id="wave2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:%23667eea;stop-opacity:0.2"/><stop offset="100%" style="stop-color:%23764ba2;stop-opacity:0.2"/></linearGradient></defs><path d="M0,600 Q300,500 600,600 T1200,600 L1200,800 L0,800 Z" fill="url(%23wave1)"/><path d="M0,650 Q300,550 600,650 T1200,650 L1200,800 L0,800 Z" fill="url(%23wave2)"/><path d="M0,700 Q300,600 600,700 T1200,700 L1200,800 L0,800 Z" fill="%234facfe" opacity="0.1"/></svg>'); background-size: cover; background-position: center; padding: 20px;">
                     <!-- 练习头部信息 -->
                     <div id="practiceHeader" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px; border-radius: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
@@ -223,19 +254,19 @@ window.QuestionBankPractice = (function() {
                     </div>
                     
                     <!-- 题目显示区域 -->
-                    <div id="questionDisplay" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border: none; border-radius: 20px; padding: 30px; margin-bottom: 25px; min-height: 400px; font-size: 16px; line-height: 1.8; box-shadow: 0 12px 40px rgba(0,0,0,0.15);">
+                    <div id="questionDisplay" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border: none; border-radius: 20px; padding: 30px; margin-bottom: 25px; max-height: 60vh; overflow-y: auto; font-size: 16px; line-height: 1.8; box-shadow: 0 12px 40px rgba(0,0,0,0.15); scrollbar-width: thin; scrollbar-color: #4facfe #f0f0f0;">
                         <!-- 题目内容将在这里动态加载 -->
                     </div>
                     
                     <!-- 答案显示区域 -->
-                    <div id="answerDisplay" style="background: rgba(240,248,255,0.95); backdrop-filter: blur(10px); border: 2px solid #007bff; border-radius: 20px; padding: 30px; margin-bottom: 25px; display: none; box-shadow: 0 8px 32px rgba(0,123,255,0.2);">
+                    <div id="answerDisplay" style="background: rgba(240,248,255,0.95); backdrop-filter: blur(10px); border: 2px solid #007bff; border-radius: 20px; padding: 30px; margin-bottom: 25px; display: none; box-shadow: 0 8px 32px rgba(0,123,255,0.2); max-height: 50vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #007bff #f0f8ff;">
                         <h5 style="color: #007bff; margin-bottom: 20px; font-size: 1.3em;">📝 参考答案</h5>
                         <div id="answerContent" style="font-size: 16px; line-height: 1.8;"></div>
                         <div id="explanationContent" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #dee2e6; font-size: 15px; color: #666;"></div>
                     </div>
                     
                     <!-- 答题控制 -->
-                    <div id="answerControls" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+                    <div id="answerControls" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1); position: sticky; bottom: 20px; z-index: 100;">
                         <button id="prevBtn" class="btn btn-secondary" onclick="QuestionBankPractice.previousQuestion()" disabled style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
                             ← 上一题
                         </button>
@@ -665,6 +696,12 @@ window.QuestionBankPractice = (function() {
             if (currentSession.currentIndex > 0) {
                 currentSession.currentIndex--;
                 this.displayCurrentQuestion();
+                
+                // 滚动到题目顶部
+                const questionDisplay = document.getElementById('questionDisplay');
+                if (questionDisplay) {
+                    questionDisplay.scrollTop = 0;
+                }
             }
         },
         
@@ -673,6 +710,12 @@ window.QuestionBankPractice = (function() {
             if (currentSession.currentIndex < currentSession.questions.length - 1) {
                 currentSession.currentIndex++;
                 this.displayCurrentQuestion();
+                
+                // 滚动到题目顶部
+                const questionDisplay = document.getElementById('questionDisplay');
+                if (questionDisplay) {
+                    questionDisplay.scrollTop = 0;
+                }
             } else {
                 // 练习完成
                 this.completePractice();
