@@ -273,6 +273,16 @@ window.QuestionBankPractice = (function() {
                                 <i class="fas fa-chart-line"></i>
                             </button>
                             
+                            <!-- 错题本 -->
+                            <button id="wrongBookBtn" class="btn btn-outline-danger btn-sm" onclick="QuestionBankPractice.showWrongBook()" title="错题本" style="border-radius: 20px; padding: 8px 15px;">
+                                <i class="fas fa-book"></i>
+                            </button>
+                            
+                            <!-- 学习策略 -->
+                            <button id="strategyBtn" class="btn btn-outline-info btn-sm" onclick="QuestionBankPractice.showLearningStrategy()" title="学习策略" style="border-radius: 20px; padding: 8px 15px;">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            
                             <!-- 全屏按钮 -->
                             <button id="fullscreenBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.toggleFullscreen()" title="全屏" style="border-radius: 20px; padding: 8px 15px;">
                                 <i class="fas fa-expand"></i>
@@ -1658,6 +1668,16 @@ window.QuestionBankPractice = (function() {
                         e.preventDefault();
                         this.showLearningProgress();
                         break;
+                    case 'w':
+                    case 'W':
+                        e.preventDefault();
+                        this.showWrongBook();
+                        break;
+                    case 's':
+                    case 'S':
+                        e.preventDefault();
+                        this.showLearningStrategy();
+                        break;
                 }
             });
             
@@ -1753,6 +1773,8 @@ window.QuestionBankPractice = (function() {
                             <div><kbd>M</kbd> 切换学习模式</div>
                             <div><kbd>A</kbd> 智能分析</div>
                             <div><kbd>P</kbd> 学习进度</div>
+                            <div><kbd>W</kbd> 错题本</div>
+                            <div><kbd>S</kbd> 学习策略</div>
                         </div>
                     </div>
                     <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
@@ -2483,6 +2505,390 @@ window.QuestionBankPractice = (function() {
             const userAns = userAnswer.toString().toUpperCase();
             
             return correctAnswer === userAns;
+        },
+        
+        // 显示错题本
+        showWrongBook: function() {
+            const wrongQuestions = this.getWrongQuestions();
+            
+            if (wrongQuestions.length === 0) {
+                showNotification('暂无错题记录', 'info');
+                return;
+            }
+            
+            const wrongBookContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; max-width: 800px; margin: 20px auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">📚 错题本 (${wrongQuestions.length}题)</h4>
+                    
+                    <div style="max-height: 500px; overflow-y: auto;">
+                        ${wrongQuestions.map((item, index) => `
+                            <div style="background: rgba(220,53,69,0.1); border-radius: 15px; padding: 20px; margin-bottom: 15px;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                                    <span style="font-weight: bold; color: #dc3545;">错题 ${index + 1}</span>
+                                    <div style="display: flex; gap: 5px;">
+                                        <button onclick="QuestionBankPractice.practiceWrongQuestion(${item.index})" class="btn btn-sm btn-primary" style="border-radius: 15px; padding: 5px 10px;">
+                                            <i class="fas fa-play"></i> 练习
+                                        </button>
+                                        <button onclick="QuestionBankPractice.removeFromWrongBook(${item.index})" class="btn btn-sm btn-outline-danger" style="border-radius: 15px; padding: 5px 10px;">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div style="color: #333; margin-bottom: 10px; font-weight: bold;">
+                                    ${item.question.title}
+                                </div>
+                                <div style="color: #666; font-size: 14px; margin-bottom: 8px;">
+                                    <span class="badge bg-secondary">${item.question.type}</span>
+                                    <span class="badge bg-danger">你的答案: ${item.userAnswer}</span>
+                                    <span class="badge bg-success">正确答案: ${item.question.answer}</span>
+                                </div>
+                                ${item.question.explanation ? `
+                                    <div style="background: rgba(255,193,7,0.1); border-radius: 10px; padding: 15px; margin-top: 10px;">
+                                        <strong style="color: #ffc107;">解析：</strong>
+                                        <div style="color: #333; font-size: 14px; line-height: 1.5;">
+                                            ${item.question.explanation}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="display: flex; justify-content: center; gap: 15px; margin-top: 20px;">
+                        <button onclick="QuestionBankPractice.practiceAllWrongQuestions()" class="btn btn-primary" style="border-radius: 20px; padding: 10px 20px;">
+                            <i class="fas fa-play"></i> 练习全部错题
+                        </button>
+                        <button onclick="QuestionBankPractice.clearWrongBook()" class="btn btn-outline-danger" style="border-radius: 20px; padding: 10px 20px;">
+                            <i class="fas fa-trash"></i> 清空错题本
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '错题本',
+                    content: wrongBookContent,
+                    size: 'large',
+                    closable: true
+                });
+            } else {
+                alert(`错题本：共${wrongQuestions.length}道错题`);
+            }
+        },
+        
+        // 获取错题列表
+        getWrongQuestions: function() {
+            const wrongQuestions = [];
+            
+            if (currentSession.userAnswers) {
+                currentSession.userAnswers.forEach((answer, index) => {
+                    if (answer !== null && answer !== '') {
+                        const question = currentSession.questions[index];
+                        const isCorrect = this.checkAnswer(answer, question);
+                        
+                        if (!isCorrect) {
+                            wrongQuestions.push({
+                                index,
+                                question,
+                                userAnswer: answer,
+                                correctAnswer: question.answer
+                            });
+                        }
+                    }
+                });
+            }
+            
+            return wrongQuestions;
+        },
+        
+        // 练习单个错题
+        practiceWrongQuestion: function(index) {
+            if (index >= 0 && index < currentSession.questions.length) {
+                currentSession.currentIndex = index;
+                this.displayCurrentQuestion();
+                this.updateProgress();
+                this.updateButtonStates();
+                
+                if (typeof QuestionBankUI !== 'undefined') {
+                    QuestionBankUI.closeModal();
+                }
+                
+                showNotification('已跳转到错题，请重新作答', 'info');
+            }
+        },
+        
+        // 练习全部错题
+        practiceAllWrongQuestions: function() {
+            const wrongQuestions = this.getWrongQuestions();
+            
+            if (wrongQuestions.length === 0) {
+                showNotification('暂无错题', 'info');
+                return;
+            }
+            
+            // 创建错题练习会话
+            const wrongQuestionSession = {
+                questions: wrongQuestions.map(item => item.question),
+                currentIndex: 0,
+                userAnswers: new Array(wrongQuestions.length).fill(null),
+                startTime: Date.now(),
+                bankId: 'wrong-questions',
+                learningMode: currentSession.learningMode || 'practice'
+            };
+            
+            // 保存当前会话
+            localStorage.setItem('previousSession', JSON.stringify(currentSession));
+            
+            // 切换到错题练习
+            currentSession = wrongQuestionSession;
+            this.displayCurrentQuestion();
+            this.updateProgress();
+            this.updateButtonStates();
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.closeModal();
+            }
+            
+            showNotification(`开始练习${wrongQuestions.length}道错题`, 'success');
+        },
+        
+        // 从错题本中移除
+        removeFromWrongBook: function(index) {
+            if (confirm('确定要从错题本中移除这道题吗？')) {
+                // 标记为已掌握
+                if (currentSession.userAnswers && currentSession.userAnswers[index] !== null) {
+                    currentSession.userAnswers[index] = 'MASTERED';
+                }
+                
+                showNotification('已从错题本中移除', 'success');
+                this.showWrongBook(); // 刷新错题本
+            }
+        },
+        
+        // 清空错题本
+        clearWrongBook: function() {
+            if (confirm('确定要清空错题本吗？这将清除所有错题记录！')) {
+                if (currentSession.userAnswers) {
+                    currentSession.userAnswers.forEach((answer, index) => {
+                        if (answer !== null && answer !== '') {
+                            const question = currentSession.questions[index];
+                            const isCorrect = this.checkAnswer(answer, question);
+                            if (!isCorrect) {
+                                currentSession.userAnswers[index] = 'MASTERED';
+                            }
+                        }
+                    });
+                }
+                
+                showNotification('错题本已清空', 'success');
+                this.showWrongBook(); // 刷新错题本
+            }
+        },
+        
+        // 显示学习策略
+        showLearningStrategy: function() {
+            const currentStrategy = currentSession.learningStrategy || 'adaptive';
+            const strategies = {
+                'adaptive': {
+                    name: '自适应学习',
+                    description: '根据答题情况自动调整题目难度和顺序',
+                    icon: 'fas fa-brain',
+                    color: '#667eea'
+                },
+                'spaced': {
+                    name: '间隔重复',
+                    description: '按照艾宾浩斯遗忘曲线安排复习',
+                    icon: 'fas fa-clock',
+                    color: '#28a745'
+                },
+                'focused': {
+                    name: '专注模式',
+                    description: '专注于当前知识点，减少干扰',
+                    icon: 'fas fa-bullseye',
+                    color: '#dc3545'
+                },
+                'random': {
+                    name: '随机练习',
+                    description: '随机选择题目，提高适应性',
+                    icon: 'fas fa-random',
+                    color: '#ffc107'
+                }
+            };
+            
+            const strategyContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; max-width: 600px; margin: 20px auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">🎯 学习策略选择</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        ${Object.entries(strategies).map(([key, strategy]) => `
+                            <div onclick="QuestionBankPractice.selectLearningStrategy('${key}')" 
+                                 style="background: ${currentStrategy === key ? strategy.color + '20' : 'rgba(248,249,250,0.8)'}; 
+                                        border: 2px solid ${currentStrategy === key ? strategy.color : '#dee2e6'}; 
+                                        border-radius: 15px; padding: 20px; cursor: pointer; transition: all 0.3s;">
+                                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                                    <i class="${strategy.icon}" style="color: ${strategy.color}; font-size: 20px;"></i>
+                                    <h6 style="color: #333; margin: 0; font-weight: bold;">${strategy.name}</h6>
+                                </div>
+                                <div style="color: #666; font-size: 14px; line-height: 1.4;">
+                                    ${strategy.description}
+                                </div>
+                                ${currentStrategy === key ? '<div style="color: #28a745; font-size: 12px; margin-top: 8px;">✓ 当前策略</div>' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="background: rgba(255,193,7,0.1); border-radius: 15px; padding: 20px; margin-top: 20px;">
+                        <h6 style="color: #ffc107; margin-bottom: 15px;">💡 策略说明</h6>
+                        <div style="color: #333; line-height: 1.6; font-size: 14px;">
+                            <strong>自适应学习：</strong>系统会根据你的答题情况，自动调整题目难度和出现频率。<br>
+                            <strong>间隔重复：</strong>按照科学的遗忘曲线，在最佳时间点安排复习。<br>
+                            <strong>专注模式：</strong>集中练习同一知识点的题目，加深理解。<br>
+                            <strong>随机练习：</strong>随机选择题目，提高应对不同题型的能力。
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '学习策略',
+                    content: strategyContent,
+                    size: 'medium',
+                    closable: true
+                });
+            } else {
+                alert('学习策略功能需要UI模块支持');
+            }
+        },
+        
+        // 选择学习策略
+        selectLearningStrategy: function(strategy) {
+            currentSession.learningStrategy = strategy;
+            
+            // 根据策略调整题目顺序
+            this.applyLearningStrategy(strategy);
+            
+            showNotification(`已切换到${this.getStrategyName(strategy)}策略`, 'success');
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.closeModal();
+            }
+        },
+        
+        // 获取策略名称
+        getStrategyName: function(strategy) {
+            const names = {
+                'adaptive': '自适应学习',
+                'spaced': '间隔重复',
+                'focused': '专注模式',
+                'random': '随机练习'
+            };
+            return names[strategy] || '未知策略';
+        },
+        
+        // 应用学习策略
+        applyLearningStrategy: function(strategy) {
+            const originalQuestions = [...currentSession.questions];
+            
+            switch (strategy) {
+                case 'adaptive':
+                    // 自适应：根据答题情况调整顺序
+                    this.applyAdaptiveStrategy(originalQuestions);
+                    break;
+                case 'spaced':
+                    // 间隔重复：按照遗忘曲线安排
+                    this.applySpacedStrategy(originalQuestions);
+                    break;
+                case 'focused':
+                    // 专注模式：按知识点分组
+                    this.applyFocusedStrategy(originalQuestions);
+                    break;
+                case 'random':
+                    // 随机练习：随机打乱
+                    this.applyRandomStrategy(originalQuestions);
+                    break;
+            }
+            
+            currentSession.currentIndex = 0;
+            this.displayCurrentQuestion();
+            this.updateProgress();
+        },
+        
+        // 自适应策略
+        applyAdaptiveStrategy: function(questions) {
+            // 根据答题情况调整题目顺序
+            const answeredQuestions = [];
+            const unansweredQuestions = [];
+            
+            if (currentSession.userAnswers) {
+                questions.forEach((question, index) => {
+                    if (currentSession.userAnswers[index] !== null && currentSession.userAnswers[index] !== '') {
+                        answeredQuestions.push(question);
+                    } else {
+                        unansweredQuestions.push(question);
+                    }
+                });
+            } else {
+                unansweredQuestions.push(...questions);
+            }
+            
+            // 将未答题目放在前面
+            currentSession.questions = [...unansweredQuestions, ...answeredQuestions];
+        },
+        
+        // 间隔重复策略
+        applySpacedStrategy: function(questions) {
+            // 简单的间隔重复：每3题重复一次
+            const spacedQuestions = [];
+            const interval = 3;
+            
+            for (let i = 0; i < questions.length; i += interval) {
+                const group = questions.slice(i, i + interval);
+                spacedQuestions.push(...group);
+                
+                // 在每组后添加重复题目
+                if (i > 0 && i < questions.length - interval) {
+                    const repeatGroup = questions.slice(Math.max(0, i - interval), i);
+                    spacedQuestions.push(...repeatGroup);
+                }
+            }
+            
+            currentSession.questions = spacedQuestions;
+        },
+        
+        // 专注模式策略
+        applyFocusedStrategy: function(questions) {
+            // 按知识点分组
+            const groupedQuestions = {};
+            
+            questions.forEach(question => {
+                const topic = this.getMainTopic(question.title || question.question || '');
+                if (!groupedQuestions[topic]) {
+                    groupedQuestions[topic] = [];
+                }
+                groupedQuestions[topic].push(question);
+            });
+            
+            // 按组重新排列
+            const focusedQuestions = [];
+            Object.values(groupedQuestions).forEach(group => {
+                focusedQuestions.push(...group);
+            });
+            
+            currentSession.questions = focusedQuestions;
+        },
+        
+        // 随机策略
+        applyRandomStrategy: function(questions) {
+            // 随机打乱题目顺序
+            const shuffled = [...questions];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            
+            currentSession.questions = shuffled;
         },
         
         // 生成答案
