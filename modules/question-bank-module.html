@@ -6428,14 +6428,14 @@
           }
         });
 
-        // 检查是否已收藏
-        function isFavorite(bankId) {
+        // 全局函数定义
+        window.isFavorite = function(bankId) {
           const favorites = JSON.parse(localStorage.getItem('favorite_banks') || '{}');
           return favorites[bankId] !== undefined;
-        }
+        };
 
         // 切换收藏状态
-        function toggleFavorite(bankId, bankName) {
+        window.toggleFavorite = function(bankId, bankName) {
           const favorites = JSON.parse(localStorage.getItem('favorite_banks') || '{}');
           
           if (favorites[bankId]) {
@@ -6450,10 +6450,10 @@
           }
           
           localStorage.setItem('favorite_banks', JSON.stringify(favorites));
-        }
+        };
 
         // 渲染收藏的题库
-        async function renderFavoriteBanks() {
+        window.renderFavoriteBanks = async function() {
           const favorites = JSON.parse(localStorage.getItem('favorite_banks') || '{}');
           const favoriteIds = Object.keys(favorites);
           
@@ -6491,11 +6491,103 @@
             console.log("题库加载失败", err);
             showNotification("收藏题库加载失败，请重试", "error");
           }
-        }
+        };
         
         // 显示帮助模态框
-        function showHelpModal() {
+        window.showHelpModal = function() {
           const modal = document.createElement('div');
+          modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          `;
+          
+          modal.innerHTML = `
+            <div style="
+              background: white;
+              border-radius: 15px;
+              padding: 30px;
+              max-width: 500px;
+              max-height: 80vh;
+              overflow-y: auto;
+              position: relative;
+            ">
+              <button onclick="this.parentElement.parentElement.remove()" style="
+                position: absolute;
+                top: 10px;
+                right: 15px;
+                background: none;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                color: #666;
+              ">&times;</button>
+              
+              <h2 style="color: #333; margin-bottom: 20px;">📚 题库分组使用帮助</h2>
+              
+              <div style="margin-bottom: 20px;">
+                <h3 style="color: #4facfe; margin-bottom: 10px;">🎯 基本功能</h3>
+                <ul style="list-style: none; padding: 0;">
+                  <li style="margin: 5px 0;">• <strong>全部题库</strong>: 显示所有可用的题库</li>
+                  <li style="margin: 5px 0;">• <strong>我的收藏</strong>: 显示已收藏的题库</li>
+                  <li style="margin: 5px 0;">• <strong>错题本</strong>: 查看做错的题目</li>
+                  <li style="margin: 5px 0;">• <strong>收藏管理</strong>: 管理收藏的题库</li>
+                </ul>
+              </div>
+              
+              <div style="margin-bottom: 20px;">
+                <h3 style="color: #4facfe; margin-bottom: 10px;">⌨️ 快捷键</h3>
+                <ul style="list-style: none; padding: 0;">
+                  <li style="margin: 5px 0;">• <strong>Ctrl/Cmd + F</strong>: 聚焦搜索框</li>
+                  <li style="margin: 5px 0;">• <strong>Ctrl/Cmd + 1</strong>: 显示全部题库</li>
+                  <li style="margin: 5px 0;">• <strong>Ctrl/Cmd + 2</strong>: 显示收藏题库</li>
+                  <li style="margin: 5px 0;">• <strong>Ctrl/Cmd + 3</strong>: 显示错题本</li>
+                </ul>
+              </div>
+              
+              <div style="text-align: center; margin-top: 30px;">
+                <button onclick="this.parentElement.parentElement.remove()" style="
+                  background: #4facfe;
+                  color: white;
+                  border: none;
+                  padding: 10px 20px;
+                  border-radius: 8px;
+                  cursor: pointer;
+                ">知道了</button>
+              </div>
+            </div>
+          `;
+          
+          document.body.appendChild(modal);
+                };
+
+        // 显示收藏视图
+        window.showFavoritesView = function() {
+          console.log('显示收藏视图');
+          // 这里可以添加收藏视图的逻辑
+          showNotification('收藏功能开发中...', 'info');
+        };
+
+        // 显示错题本视图
+        window.showWrongQuestionsView = function() {
+          console.log('显示错题本视图');
+          // 这里可以添加错题本视图的逻辑
+          showNotification('错题本功能开发中...', 'info');
+        };
+
+        // 显示收藏管理视图
+        window.showFavoriteManagementView = function() {
+          console.log('显示收藏管理视图');
+          // 这里可以添加收藏管理视图的逻辑
+          showNotification('收藏管理功能开发中...', 'info');
+        };
           modal.style.cssText = `
             position: fixed;
             top: 0;
