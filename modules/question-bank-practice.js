@@ -179,104 +179,108 @@ window.QuestionBankPractice = (function() {
         // 生成练习界面HTML
         generatePracticeHTML: function() {
             return `
-                <div id="practiceContainer" style="min-height: 500px;">
+                <div id="practiceContainer" style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px;">
                     <!-- 练习头部信息 -->
-                    <div id="practiceHeader" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <span id="questionProgress">1 / ${currentSession.questions.length}</span>
-                            <span style="margin-left: 20px;">时间: <span id="practiceTimer">00:00</span></span>
+                    <div id="practiceHeader" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px; border-radius: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+                        <div style="display: flex; align-items: center; gap: 20px;">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #333;">
+                                <span id="questionProgress">1 / ${currentSession.questions.length}</span>
+                            </div>
+                            <div style="color: #666; font-size: 1.1em;">
+                                时间: <span id="practiceTimer">00:00</span>
+                            </div>
                         </div>
-                        <div style="display: flex; gap: 10px; align-items: center;">
+                        <div style="display: flex; gap: 15px; align-items: center;">
                             <!-- 字体大小控制 -->
-                            <div style="display: flex; align-items: center; gap: 5px;">
-                                <button id="zoomOutBtn" class="btn btn-outline-secondary btn-sm" onclick="QuestionBankPractice.zoomOut()" title="缩小字体">
+                            <div style="display: flex; align-items: center; gap: 8px; background: rgba(0,0,0,0.05); padding: 8px 12px; border-radius: 20px;">
+                                <button id="zoomOutBtn" class="btn btn-outline-secondary btn-sm" onclick="QuestionBankPractice.zoomOut()" title="缩小字体" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">
                                     <i class="fas fa-search-minus"></i>
                                 </button>
-                                <span id="fontSizeDisplay" style="font-size: 12px; min-width: 30px; text-align: center;">16px</span>
-                                <button id="zoomInBtn" class="btn btn-outline-secondary btn-sm" onclick="QuestionBankPractice.zoomIn()" title="放大字体">
+                                <span id="fontSizeDisplay" style="font-size: 12px; min-width: 40px; text-align: center; font-weight: bold;">16px</span>
+                                <button id="zoomInBtn" class="btn btn-outline-secondary btn-sm" onclick="QuestionBankPractice.zoomIn()" title="放大字体" style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">
                                     <i class="fas fa-search-plus"></i>
                                 </button>
                             </div>
                             
                             <!-- 全屏按钮 -->
-                            <button id="fullscreenBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.toggleFullscreen()" title="全屏">
+                            <button id="fullscreenBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.toggleFullscreen()" title="全屏" style="border-radius: 20px; padding: 8px 15px;">
                                 <i class="fas fa-expand"></i>
                             </button>
                             
                             <!-- 显示答案按钮 -->
-                            <button id="showAnswerBtn" class="btn btn-outline-success btn-sm" onclick="QuestionBankPractice.toggleAnswer()" title="显示答案">
+                            <button id="showAnswerBtn" class="btn btn-outline-success btn-sm" onclick="QuestionBankPractice.toggleAnswer()" title="显示答案" style="border-radius: 20px; padding: 8px 15px;">
                                 <i class="fas fa-eye"></i> 答案
                             </button>
                             
-                            <button id="pauseBtn" class="btn btn-warning btn-sm" onclick="QuestionBankPractice.togglePause()">⏸️ 暂停</button>
-                            <button id="exitBtn" class="btn btn-danger btn-sm" onclick="QuestionBankPractice.exitPractice()">❌ 退出</button>
+                            <button id="pauseBtn" class="btn btn-warning btn-sm" onclick="QuestionBankPractice.togglePause()" style="border-radius: 20px; padding: 8px 15px;">⏸️ 暂停</button>
+                            <button id="exitBtn" class="btn btn-danger btn-sm" onclick="QuestionBankPractice.exitPractice()" style="border-radius: 20px; padding: 8px 15px;">❌ 退出</button>
                         </div>
                     </div>
                     
                     <!-- 进度条 -->
-                    <div style="background: #e9ecef; border-radius: 10px; height: 8px; margin-bottom: 20px;">
-                        <div id="progressBar" style="background: linear-gradient(90deg, #4facfe, #00f2fe); height: 100%; border-radius: 10px; width: 0%; transition: width 0.3s ease;"></div>
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 15px; height: 12px; margin-bottom: 25px; overflow: hidden;">
+                        <div id="progressBar" style="background: linear-gradient(90deg, #4facfe, #00f2fe); height: 100%; border-radius: 15px; width: 0%; transition: width 0.3s ease; box-shadow: 0 2px 8px rgba(79,172,254,0.3);"></div>
                     </div>
                     
                     <!-- 题目显示区域 -->
-                    <div id="questionDisplay" style="background: white; border: 2px solid #4facfe; border-radius: 15px; padding: 25px; margin-bottom: 20px; min-height: 300px; font-size: 16px; line-height: 1.6;">
+                    <div id="questionDisplay" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border: none; border-radius: 20px; padding: 30px; margin-bottom: 25px; min-height: 400px; font-size: 16px; line-height: 1.8; box-shadow: 0 12px 40px rgba(0,0,0,0.15);">
                         <!-- 题目内容将在这里动态加载 -->
                     </div>
                     
                     <!-- 答案显示区域 -->
-                    <div id="answerDisplay" style="background: #f0f8ff; border: 2px solid #007bff; border-radius: 15px; padding: 25px; margin-bottom: 20px; display: none;">
-                        <h5 style="color: #007bff; margin-bottom: 15px;">📝 参考答案</h5>
-                        <div id="answerContent" style="font-size: 16px; line-height: 1.6;"></div>
-                        <div id="explanationContent" style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #dee2e6; font-size: 14px; color: #666;"></div>
+                    <div id="answerDisplay" style="background: rgba(240,248,255,0.95); backdrop-filter: blur(10px); border: 2px solid #007bff; border-radius: 20px; padding: 30px; margin-bottom: 25px; display: none; box-shadow: 0 8px 32px rgba(0,123,255,0.2);">
+                        <h5 style="color: #007bff; margin-bottom: 20px; font-size: 1.3em;">📝 参考答案</h5>
+                        <div id="answerContent" style="font-size: 16px; line-height: 1.8;"></div>
+                        <div id="explanationContent" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #dee2e6; font-size: 15px; color: #666;"></div>
                     </div>
                     
                     <!-- 答题控制 -->
-                    <div id="answerControls" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                        <button id="prevBtn" class="btn btn-secondary" onclick="QuestionBankPractice.previousQuestion()" disabled>
+                    <div id="answerControls" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
+                        <button id="prevBtn" class="btn btn-secondary" onclick="QuestionBankPractice.previousQuestion()" disabled style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
                             ← 上一题
                         </button>
                         
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button id="submitBtn" class="btn btn-primary" onclick="QuestionBankPractice.submitAnswer()">
+                        <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <button id="submitBtn" class="btn btn-primary" onclick="QuestionBankPractice.submitAnswer()" style="border-radius: 25px; padding: 12px 30px; font-weight: bold; box-shadow: 0 4px 15px rgba(79,172,254,0.3);">
                                 提交答案
                             </button>
-                            <button id="skipBtn" class="btn btn-info" onclick="QuestionBankPractice.skipQuestion()">
+                            <button id="skipBtn" class="btn btn-info" onclick="QuestionBankPractice.skipQuestion()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
                                 跳过
                             </button>
-                            <button id="hintBtn" class="btn btn-warning" onclick="QuestionBankPractice.showHint()">
+                            <button id="hintBtn" class="btn btn-warning" onclick="QuestionBankPractice.showHint()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
                                 💡 提示
                             </button>
                         </div>
                         
-                        <button id="nextBtn" class="btn btn-secondary" onclick="QuestionBankPractice.nextQuestion()">
+                        <button id="nextBtn" class="btn btn-secondary" onclick="QuestionBankPractice.nextQuestion()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
                             下一题 →
                         </button>
                     </div>
                     
                     <!-- 答案解释区域 -->
-                    <div id="explanationArea" style="background: #e8f5e8; border: 1px solid #28a745; border-radius: 10px; padding: 20px; margin-top: 20px; display: none;">
-                        <h5>📝 答案解释</h5>
+                    <div id="explanationArea" style="background: rgba(232,245,232,0.95); backdrop-filter: blur(10px); border: 2px solid #28a745; border-radius: 20px; padding: 25px; margin-top: 25px; display: none; box-shadow: 0 8px 32px rgba(40,167,69,0.2);">
+                        <h5 style="color: #28a745; margin-bottom: 20px; font-size: 1.3em;">📝 答案解释</h5>
                         <div id="explanationContent"></div>
-                        <button class="btn btn-success btn-sm" onclick="QuestionBankPractice.continueToNext()" style="margin-top: 10px;">
+                        <button class="btn btn-success btn-sm" onclick="QuestionBankPractice.continueToNext()" style="margin-top: 15px; border-radius: 20px; padding: 10px 20px; font-weight: bold;">
                             继续下一题
                         </button>
                     </div>
                     
                     <!-- 练习完成界面 -->
-                    <div id="completionArea" style="display: none; text-align: center; padding: 30px;">
-                        <h3>🎉 练习完成！</h3>
-                        <div id="finalStats" style="background: #f8f9fa; border-radius: 10px; padding: 20px; margin: 20px 0;"></div>
-                        <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-                            <button class="btn btn-primary" onclick="QuestionBankPractice.reviewAnswers()">
+                    <div id="completionArea" style="display: none; text-align: center; padding: 40px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.15);">
+                        <h3 style="color: #333; margin-bottom: 30px;">🎉 练习完成！</h3>
+                        <div id="finalStats" style="background: rgba(248,249,250,0.8); border-radius: 15px; padding: 25px; margin: 25px 0;"></div>
+                        <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+                            <button class="btn btn-primary" onclick="QuestionBankPractice.reviewAnswers()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
                                 📋 查看答案
                             </button>
-                            <button class="btn btn-success" onclick="QuestionBankPractice.practiceAgain()">
+                            <button class="btn btn-success" onclick="QuestionBankPractice.practiceAgain()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
                                 🔄 再次练习
                             </button>
-                            <button class="btn btn-info" onclick="QuestionBankPractice.saveResults()">
+                            <button class="btn btn-info" onclick="QuestionBankPractice.saveResults()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
                                 💾 保存结果
                             </button>
-                            <button class="btn btn-secondary" onclick="QuestionBankPractice.exitPractice()">
+                            <button class="btn btn-secondary" onclick="QuestionBankPractice.exitPractice()" style="border-radius: 25px; padding: 12px 25px; font-weight: bold;">
                                 🏠 返回主页
                             </button>
                         </div>
@@ -336,33 +340,46 @@ window.QuestionBankPractice = (function() {
             let inputHTML = '';
             if (questionType === '填空题') {
                 inputHTML = `
-                    <div style="margin-top: 20px;">
-                        <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #333;">请输入答案：</label>
+                    <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px;">
+                        <label style="display: block; margin-bottom: 15px; font-weight: bold; color: #333; font-size: 1.1em;">📝 请输入答案：</label>
                         <input type="text" id="fillAnswer" placeholder="请输入答案..." 
-                               style="width: 100%; padding: 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1.1em; box-sizing: border-box;"
-                               onchange="QuestionBankPractice.handleFillAnswer(this.value)">
+                               style="width: 100%; padding: 18px; border: 2px solid #e9ecef; border-radius: 12px; font-size: 1.1em; box-sizing: border-box; transition: all 0.3s ease;"
+                               onchange="QuestionBankPractice.handleFillAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
                     </div>
                 `;
             } else if (questionType === '解答题' || questionType === '计算题') {
                 inputHTML = `
-                    <div style="margin-top: 20px;">
-                        <label style="display: block; margin-bottom: 10px; font-weight: bold; color: #333;">请输入答案：</label>
+                    <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px;">
+                        <label style="display: block; margin-bottom: 15px; font-weight: bold; color: #333; font-size: 1.1em;">📝 请输入详细答案：</label>
                         <textarea id="essayAnswer" placeholder="请输入详细答案..." 
-                                  style="width: 100%; min-height: 120px; padding: 15px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1.1em; box-sizing: border-box; resize: vertical;"
-                                  onchange="QuestionBankPractice.handleEssayAnswer(this.value)"></textarea>
+                                  style="width: 100%; min-height: 150px; padding: 18px; border: 2px solid #e9ecef; border-radius: 12px; font-size: 1.1em; box-sizing: border-box; resize: vertical; transition: all 0.3s ease; line-height: 1.6;"
+                                  onchange="QuestionBankPractice.handleEssayAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'"></textarea>
                     </div>
                 `;
             } else if (questionType === '判断题') {
                 inputHTML = `
-                    <div style="margin-top: 20px; display: flex; gap: 20px; justify-content: center;">
-                        <button class="judge-btn" onclick="QuestionBankPractice.selectJudgeAnswer(true)" 
-                                style="padding: 15px 30px; font-size: 1.1em; border: 2px solid #28a745; background: white; color: #28a745; border-radius: 10px; cursor: pointer; transition: all 0.3s ease;">
-                            ✓ 正确
-                        </button>
-                        <button class="judge-btn" onclick="QuestionBankPractice.selectJudgeAnswer(false)"
-                                style="padding: 15px 30px; font-size: 1.1em; border: 2px solid #dc3545; background: white; color: #dc3545; border-radius: 10px; cursor: pointer; transition: all 0.3s ease;">
-                            ✗ 错误
-                        </button>
+                    <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px; text-align: center;">
+                        <label style="display: block; margin-bottom: 15px; font-weight: bold; color: #333; font-size: 1.1em;">📝 请选择答案：</label>
+                        <div style="display: flex; gap: 30px; justify-content: center;">
+                            <button class="judge-btn" onclick="QuestionBankPractice.selectJudgeAnswer(true)" 
+                                    style="padding: 18px 40px; font-size: 1.2em; border: 2px solid #28a745; background: white; color: #28a745; border-radius: 15px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; min-width: 120px;">
+                                ✓ 正确
+                            </button>
+                            <button class="judge-btn" onclick="QuestionBankPractice.selectJudgeAnswer(false)"
+                                    style="padding: 18px 40px; font-size: 1.2em; border: 2px solid #dc3545; background: white; color: #dc3545; border-radius: 15px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; min-width: 120px;">
+                                ✗ 错误
+                            </button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 选择题也添加输入框，用于自由回答
+                inputHTML = `
+                    <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px;">
+                        <label style="display: block; margin-bottom: 15px; font-weight: bold; color: #333; font-size: 1.1em;">💭 或者输入您的答案：</label>
+                        <input type="text" id="customAnswer" placeholder="请输入您的答案（可选）..." 
+                               style="width: 100%; padding: 18px; border: 2px solid #e9ecef; border-radius: 12px; font-size: 1.1em; box-sizing: border-box; transition: all 0.3s ease;"
+                               onchange="QuestionBankPractice.handleCustomAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
                     </div>
                 `;
             }
@@ -437,6 +454,13 @@ window.QuestionBankPractice = (function() {
             currentSession.userAnswers[currentSession.currentIndex] = answer.trim();
         },
         
+        // 处理自定义答案
+        handleCustomAnswer: function(answer) {
+            if (answer.trim()) {
+                currentSession.userAnswers[currentSession.currentIndex] = answer.trim();
+            }
+        },
+        
         // 选择判断题答案
         selectJudgeAnswer: function(answer) {
             document.querySelectorAll('.judge-btn').forEach(btn => {
@@ -467,6 +491,13 @@ window.QuestionBankPractice = (function() {
                 const essayInput = document.getElementById('essayAnswer');
                 if (essayInput && essayInput.value.trim()) {
                     currentAnswer = essayInput.value.trim();
+                    currentSession.userAnswers[currentSession.currentIndex] = currentAnswer;
+                }
+            } else if (questionType === '选择题') {
+                // 检查是否有自定义答案
+                const customInput = document.getElementById('customAnswer');
+                if (customInput && customInput.value.trim()) {
+                    currentAnswer = customInput.value.trim();
                     currentSession.userAnswers[currentSession.currentIndex] = currentAnswer;
                 }
             }
