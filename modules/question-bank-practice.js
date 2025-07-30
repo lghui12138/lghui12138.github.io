@@ -263,6 +263,16 @@ window.QuestionBankPractice = (function() {
                                 <i class="fas fa-graduation-cap"></i>
                             </button>
                             
+                            <!-- 智能分析 -->
+                            <button id="analysisBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.showAnalysis()" title="智能分析" style="border-radius: 20px; padding: 8px 15px;">
+                                <i class="fas fa-brain"></i>
+                            </button>
+                            
+                            <!-- 学习进度 -->
+                            <button id="progressBtn" class="btn btn-outline-success btn-sm" onclick="QuestionBankPractice.showLearningProgress()" title="学习进度" style="border-radius: 20px; padding: 8px 15px;">
+                                <i class="fas fa-chart-line"></i>
+                            </button>
+                            
                             <!-- 全屏按钮 -->
                             <button id="fullscreenBtn" class="btn btn-outline-primary btn-sm" onclick="QuestionBankPractice.toggleFullscreen()" title="全屏" style="border-radius: 20px; padding: 8px 15px;">
                                 <i class="fas fa-expand"></i>
@@ -1638,6 +1648,16 @@ window.QuestionBankPractice = (function() {
                         e.preventDefault();
                         this.toggleLearningMode();
                         break;
+                    case 'a':
+                    case 'A':
+                        e.preventDefault();
+                        this.showAnalysis();
+                        break;
+                    case 'p':
+                    case 'P':
+                        e.preventDefault();
+                        this.showLearningProgress();
+                        break;
                 }
             });
             
@@ -1731,6 +1751,8 @@ window.QuestionBankPractice = (function() {
                             <div><kbd>N</kbd> 笔记面板</div>
                             <div><kbd>I</kbd> AI智能提示</div>
                             <div><kbd>M</kbd> 切换学习模式</div>
+                            <div><kbd>A</kbd> 智能分析</div>
+                            <div><kbd>P</kbd> 学习进度</div>
                         </div>
                     </div>
                     <div style="text-align: center; margin-top: 20px; color: #666; font-size: 12px;">
@@ -2095,6 +2117,372 @@ window.QuestionBankPractice = (function() {
             
             // 重新显示当前题目以应用新模式
             this.displayCurrentQuestion();
+        },
+        
+        // 显示智能分析
+        showAnalysis: function() {
+            const question = currentSession.questions[currentSession.currentIndex];
+            const questionText = question.title || question.question || '';
+            const questionType = question.type || '选择题';
+            const userAnswer = currentSession.userAnswers ? currentSession.userAnswers[currentSession.currentIndex] : null;
+            
+            // 生成智能分析
+            const analysis = this.generateAnalysis(question, userAnswer, questionType);
+            
+            const analysisContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; max-width: 700px; margin: 20px auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">🧠 智能分析报告</h4>
+                    
+                    <div style="background: rgba(102,126,234,0.1); border-left: 4px solid #667eea; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <h6 style="color: #667eea; margin-bottom: 15px;">📊 题目分析</h6>
+                        <div style="color: #333; line-height: 1.6; font-size: 14px;">
+                            ${analysis.questionAnalysis}
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(40,167,69,0.1); border-left: 4px solid #28a745; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <h6 style="color: #28a745; margin-bottom: 15px;">🎯 答题建议</h6>
+                        <div style="color: #333; line-height: 1.6; font-size: 14px;">
+                            ${analysis.answerAdvice}
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255,193,7,0.1); border-left: 4px solid #ffc107; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+                        <h6 style="color: #ffc107; margin-bottom: 15px;">📚 知识点关联</h6>
+                        <div style="color: #333; line-height: 1.6; font-size: 14px;">
+                            ${analysis.knowledgeConnections}
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(220,53,69,0.1); border-left: 4px solid #dc3545; padding: 20px; border-radius: 10px;">
+                        <h6 style="color: #dc3545; margin-bottom: 15px;">⚠️ 易错点提醒</h6>
+                        <div style="color: #333; line-height: 1.6; font-size: 14px;">
+                            ${analysis.errorWarnings}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '智能分析报告',
+                    content: analysisContent,
+                    size: 'large',
+                    closable: true
+                });
+            } else {
+                alert(`智能分析：\n\n题目分析：${analysis.questionAnalysis}\n\n答题建议：${analysis.answerAdvice}\n\n知识点关联：${analysis.knowledgeConnections}\n\n易错点提醒：${analysis.errorWarnings}`);
+            }
+        },
+        
+        // 生成智能分析
+        generateAnalysis: function(question, userAnswer, questionType) {
+            const questionText = question.title || question.question || '';
+            const correctAnswer = question.answer || '';
+            const explanation = question.explanation || '';
+            
+            // 分析题目难度和类型
+            let questionAnalysis = '';
+            if (question.difficulty === 'hard') {
+                questionAnalysis = '这是一道高难度题目，涉及复杂的概念和计算。';
+            } else if (question.difficulty === 'medium') {
+                questionAnalysis = '这是一道中等难度题目，需要理解基本概念和简单计算。';
+            } else {
+                questionAnalysis = '这是一道基础题目，主要考察基本概念。';
+            }
+            
+            questionAnalysis += `题目类型为${questionType}，主要考察${this.getMainTopic(questionText)}相关知识点。`;
+            
+            // 生成答题建议
+            let answerAdvice = '';
+            if (questionType === '选择题') {
+                answerAdvice = '仔细分析各选项的差异，注意关键词和限定条件。可以先排除明显错误的选项。';
+            } else if (questionType === '填空题') {
+                answerAdvice = '注意答案的格式和单位，确保填写完整。可以检查答案的合理性。';
+            } else if (questionType === '计算题') {
+                answerAdvice = '注意计算步骤的准确性，检查最终结果的合理性。注意单位的统一。';
+            } else {
+                answerAdvice = '仔细分析题目要求，注意答题的完整性和准确性。';
+            }
+            
+            // 生成知识点关联
+            let knowledgeConnections = this.getKnowledgeConnections(questionText);
+            
+            // 生成易错点提醒
+            let errorWarnings = this.getErrorWarnings(questionText, questionType);
+            
+            return {
+                questionAnalysis,
+                answerAdvice,
+                knowledgeConnections,
+                errorWarnings
+            };
+        },
+        
+        // 获取主要知识点
+        getMainTopic: function(questionText) {
+            const topics = {
+                '边界层': '边界层理论',
+                '雷诺数': '雷诺数和流动状态',
+                '伯努利': '伯努利方程',
+                '势流': '势流理论',
+                '动量': '动量方程',
+                '连续性': '连续性方程',
+                '涡度': '涡度理论',
+                '湍流': '湍流理论',
+                '层流': '层流理论',
+                '粘性': '粘性流动',
+                '压力': '压力分布',
+                '速度': '速度场',
+                '流线': '流线理论',
+                '涡旋': '涡旋运动',
+                '波浪': '波浪理论'
+            };
+            
+            for (const [key, topic] of Object.entries(topics)) {
+                if (questionText.includes(key)) {
+                    return topic;
+                }
+            }
+            
+            return '流体力学基础';
+        },
+        
+        // 获取知识点关联
+        getKnowledgeConnections: function(questionText) {
+            const connections = [];
+            
+            if (questionText.includes('边界层')) {
+                connections.push('边界层理论 → 雷诺数 → 流动状态判别');
+            }
+            if (questionText.includes('雷诺数')) {
+                connections.push('雷诺数 → 层流湍流判别 → 阻力系数');
+            }
+            if (questionText.includes('伯努利')) {
+                connections.push('伯努利方程 → 能量守恒 → 压力速度关系');
+            }
+            if (questionText.includes('势流')) {
+                connections.push('势流理论 → 势函数 → 流函数 → 复势');
+            }
+            if (questionText.includes('动量')) {
+                connections.push('动量方程 → 牛顿第二定律 → 力与加速度');
+            }
+            
+            if (connections.length === 0) {
+                connections.push('流体力学基础 → 连续介质假设 → 本构关系');
+            }
+            
+            return connections.join('；') + '。';
+        },
+        
+        // 获取易错点提醒
+        getErrorWarnings: function(questionText, questionType) {
+            const warnings = [];
+            
+            if (questionText.includes('边界层')) {
+                warnings.push('注意边界层内外流动特性的差异');
+            }
+            if (questionText.includes('雷诺数')) {
+                warnings.push('注意雷诺数的物理意义和应用条件');
+            }
+            if (questionText.includes('伯努利')) {
+                warnings.push('注意伯努利方程的适用条件');
+            }
+            if (questionText.includes('势流')) {
+                warnings.push('注意势流理论的应用范围');
+            }
+            if (questionText.includes('动量')) {
+                warnings.push('注意动量方程各项的物理意义');
+            }
+            
+            if (questionType === '选择题') {
+                warnings.push('仔细分析各选项的差异，排除明显错误选项');
+            } else if (questionType === '填空题') {
+                warnings.push('注意答案格式和单位，确保填写完整');
+            } else if (questionType === '计算题') {
+                warnings.push('注意计算步骤和单位统一，检查结果合理性');
+            }
+            
+            return warnings.join('；') + '。';
+        },
+        
+        // 显示学习进度
+        showLearningProgress: function() {
+            const progress = this.calculateLearningProgress();
+            
+            const progressContent = `
+                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; max-width: 600px; margin: 20px auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">📈 学习进度报告</h4>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                        <div style="background: rgba(102,126,234,0.1); border-radius: 15px; padding: 20px; text-align: center;">
+                            <h5 style="color: #667eea; margin-bottom: 10px;">总题目数</h5>
+                            <div style="font-size: 24px; font-weight: bold; color: #667eea;">${progress.totalQuestions}</div>
+                        </div>
+                        <div style="background: rgba(40,167,69,0.1); border-radius: 15px; padding: 20px; text-align: center;">
+                            <h5 style="color: #28a745; margin-bottom: 10px;">已完成</h5>
+                            <div style="font-size: 24px; font-weight: bold; color: #28a745;">${progress.completedQuestions}</div>
+                        </div>
+                        <div style="background: rgba(255,193,7,0.1); border-radius: 15px; padding: 20px; text-align: center;">
+                            <h5 style="color: #ffc107; margin-bottom: 10px;">正确率</h5>
+                            <div style="font-size: 24px; font-weight: bold; color: #ffc107;">${progress.accuracy}%</div>
+                        </div>
+                        <div style="background: rgba(220,53,69,0.1); border-radius: 15px; padding: 20px; text-align: center;">
+                            <h5 style="color: #dc3545; margin-bottom: 10px;">学习时间</h5>
+                            <div style="font-size: 24px; font-weight: bold; color: #dc3545;">${progress.studyTime}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px;">
+                        <h6 style="color: #333; margin-bottom: 15px;">📊 详细统计</h6>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+                            <div>选择题正确率: ${progress.choiceAccuracy}%</div>
+                            <div>填空题正确率: ${progress.fillAccuracy}%</div>
+                            <div>计算题正确率: ${progress.calcAccuracy}%</div>
+                            <div>平均答题时间: ${progress.avgTime}秒</div>
+                            <div>连续答对: ${progress.streak}题</div>
+                            <div>错题数量: ${progress.wrongCount}题</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: rgba(255,193,7,0.1); border-radius: 15px; padding: 20px; margin-top: 20px;">
+                        <h6 style="color: #ffc107; margin-bottom: 15px;">🎯 学习建议</h6>
+                        <div style="color: #333; line-height: 1.6; font-size: 14px;">
+                            ${progress.suggestions}
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            if (typeof QuestionBankUI !== 'undefined') {
+                QuestionBankUI.createModal({
+                    title: '学习进度报告',
+                    content: progressContent,
+                    size: 'medium',
+                    closable: true
+                });
+            } else {
+                alert(`学习进度：\n\n总题目：${progress.totalQuestions}\n已完成：${progress.completedQuestions}\n正确率：${progress.accuracy}%\n学习时间：${progress.studyTime}`);
+            }
+        },
+        
+        // 计算学习进度
+        calculateLearningProgress: function() {
+            const totalQuestions = currentSession.questions.length;
+            const completedQuestions = currentSession.currentIndex + 1;
+            const answeredQuestions = currentSession.userAnswers ? currentSession.userAnswers.filter(a => a !== null && a !== '').length : 0;
+            
+            // 计算正确率
+            let correctCount = 0;
+            let choiceCorrect = 0, choiceTotal = 0;
+            let fillCorrect = 0, fillTotal = 0;
+            let calcCorrect = 0, calcTotal = 0;
+            
+            if (currentSession.userAnswers) {
+                currentSession.userAnswers.forEach((answer, index) => {
+                    if (answer !== null && answer !== '') {
+                        const question = currentSession.questions[index];
+                        const isCorrect = this.checkAnswer(answer, question);
+                        
+                        if (isCorrect) {
+                            correctCount++;
+                        }
+                        
+                        // 按题型统计
+                        if (question.type === '选择题') {
+                            choiceTotal++;
+                            if (isCorrect) choiceCorrect++;
+                        } else if (question.type === '填空题') {
+                            fillTotal++;
+                            if (isCorrect) fillCorrect++;
+                        } else if (question.type === '计算题') {
+                            calcTotal++;
+                            if (isCorrect) calcCorrect++;
+                        }
+                    }
+                });
+            }
+            
+            const accuracy = totalQuestions > 0 ? Math.round((correctCount / answeredQuestions) * 100) : 0;
+            const choiceAccuracy = choiceTotal > 0 ? Math.round((choiceCorrect / choiceTotal) * 100) : 0;
+            const fillAccuracy = fillTotal > 0 ? Math.round((fillCorrect / fillTotal) * 100) : 0;
+            const calcAccuracy = calcTotal > 0 ? Math.round((calcCorrect / calcTotal) * 100) : 0;
+            
+            // 计算学习时间
+            const startTime = currentSession.startTime || Date.now();
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            const studyTime = this.formatTime(elapsedTime);
+            
+            // 计算平均答题时间
+            const avgTime = answeredQuestions > 0 ? Math.round(elapsedTime / answeredQuestions) : 0;
+            
+            // 计算连续答对
+            let streak = 0;
+            if (currentSession.userAnswers) {
+                for (let i = currentSession.userAnswers.length - 1; i >= 0; i--) {
+                    if (currentSession.userAnswers[i] !== null && currentSession.userAnswers[i] !== '') {
+                        const question = currentSession.questions[i];
+                        if (this.checkAnswer(currentSession.userAnswers[i], question)) {
+                            streak++;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // 生成学习建议
+            let suggestions = '';
+            if (accuracy < 60) {
+                suggestions = '建议多复习基础概念，重点关注易错知识点。';
+            } else if (accuracy < 80) {
+                suggestions = '学习效果良好，可以适当挑战更高难度的题目。';
+            } else {
+                suggestions = '学习效果优秀，建议尝试综合性和应用性题目。';
+            }
+            
+            if (choiceAccuracy < fillAccuracy) {
+                suggestions += '选择题正确率偏低，建议加强选项分析能力。';
+            }
+            
+            return {
+                totalQuestions,
+                completedQuestions,
+                accuracy,
+                choiceAccuracy,
+                fillAccuracy,
+                calcAccuracy,
+                studyTime,
+                avgTime,
+                streak,
+                wrongCount: answeredQuestions - correctCount,
+                suggestions
+            };
+        },
+        
+        // 格式化时间
+        formatTime: function(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            
+            if (hours > 0) {
+                return `${hours}时${minutes}分`;
+            } else if (minutes > 0) {
+                return `${minutes}分${secs}秒`;
+            } else {
+                return `${secs}秒`;
+            }
+        },
+        
+        // 检查答案
+        checkAnswer: function(userAnswer, question) {
+            if (!userAnswer || !question.answer) return false;
+            
+            const correctAnswer = question.answer.toString().toUpperCase();
+            const userAns = userAnswer.toString().toUpperCase();
+            
+            return correctAnswer === userAns;
         },
         
         // 生成答案
