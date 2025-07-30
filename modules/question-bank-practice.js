@@ -179,7 +179,7 @@ window.QuestionBankPractice = (function() {
         // 生成练习界面HTML
         generatePracticeHTML: function() {
             return `
-                <div id="practiceContainer" style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px;">
+                <div id="practiceContainer" style="min-height: 100vh; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><linearGradient id="wave1" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:%234facfe;stop-opacity:0.3"/><stop offset="100%" style="stop-color:%2300f2fe;stop-opacity:0.3"/></linearGradient><linearGradient id="wave2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:%23667eea;stop-opacity:0.2"/><stop offset="100%" style="stop-color:%23764ba2;stop-opacity:0.2"/></linearGradient></defs><path d="M0,600 Q300,500 600,600 T1200,600 L1200,800 L0,800 Z" fill="url(%23wave1)"/><path d="M0,650 Q300,550 600,650 T1200,650 L1200,800 L0,800 Z" fill="url(%23wave2)"/><path d="M0,700 Q300,600 600,700 T1200,700 L1200,800 L0,800 Z" fill="%234facfe" opacity="0.1"/></svg>'); background-size: cover; background-position: center; padding: 20px;">
                     <!-- 练习头部信息 -->
                     <div id="practiceHeader" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 20px; border-radius: 15px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 8px 32px rgba(0,0,0,0.1);">
                         <div style="display: flex; align-items: center; gap: 20px;">
@@ -323,7 +323,7 @@ window.QuestionBankPractice = (function() {
             const questionType = question.type || '选择题';
             
             let optionsHTML = '';
-            if (question.options && question.options.length > 0) {
+            if (question.options && Array.isArray(question.options) && question.options.length > 0) {
                 optionsHTML = question.options.map((option, optIndex) => `
                     <div class="option-item" onclick="QuestionBankPractice.selectOption(${optIndex})" 
                          style="background: white; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px; margin: 10px 0; cursor: pointer; transition: all 0.3s ease;"
@@ -334,10 +334,21 @@ window.QuestionBankPractice = (function() {
                         ${option}
                     </div>
                 `).join('');
+            } else {
+                // 没有选项时，显示提示信息
+                optionsHTML = `
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(255,193,7,0.1); border: 1px solid #ffc107; border-radius: 10px; color: #856404;">
+                        <i class="fas fa-info-circle"></i> 此题没有选项，请在下方输入框中输入您的答案。
+                    </div>
+                `;
             }
             
             // 根据题型生成不同的输入方式
             let inputHTML = '';
+            
+            // 检查是否有选项
+            const hasOptions = question.options && Array.isArray(question.options) && question.options.length > 0;
+            
             if (questionType === '填空题') {
                 inputHTML = `
                     <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px;">
@@ -372,12 +383,32 @@ window.QuestionBankPractice = (function() {
                         </div>
                     </div>
                 `;
-            } else {
-                // 选择题也添加输入框，用于自由回答
+            } else if (questionType === '选择题' && !hasOptions) {
+                // 选择题但没有选项，显示输入框
+                inputHTML = `
+                    <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px;">
+                        <label style="display: block; margin-bottom: 15px; font-weight: bold; color: #333; font-size: 1.1em;">📝 请输入答案：</label>
+                        <input type="text" id="customAnswer" placeholder="请输入您的答案..." 
+                               style="width: 100%; padding: 18px; border: 2px solid #e9ecef; border-radius: 12px; font-size: 1.1em; box-sizing: border-box; transition: all 0.3s ease;"
+                               onchange="QuestionBankPractice.handleCustomAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
+                    </div>
+                `;
+            } else if (questionType === '选择题' && hasOptions) {
+                // 选择题有选项，添加额外的输入框
                 inputHTML = `
                     <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px;">
                         <label style="display: block; margin-bottom: 15px; font-weight: bold; color: #333; font-size: 1.1em;">💭 或者输入您的答案：</label>
                         <input type="text" id="customAnswer" placeholder="请输入您的答案（可选）..." 
+                               style="width: 100%; padding: 18px; border: 2px solid #e9ecef; border-radius: 12px; font-size: 1.1em; box-sizing: border-box; transition: all 0.3s ease;"
+                               onchange="QuestionBankPractice.handleCustomAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
+                    </div>
+                `;
+            } else {
+                // 其他题型或没有明确题型的，都显示输入框
+                inputHTML = `
+                    <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px;">
+                        <label style="display: block; margin-bottom: 15px; font-weight: bold; color: #333; font-size: 1.1em;">📝 请输入答案：</label>
+                        <input type="text" id="customAnswer" placeholder="请输入您的答案..." 
                                style="width: 100%; padding: 18px; border: 2px solid #e9ecef; border-radius: 12px; font-size: 1.1em; box-sizing: border-box; transition: all 0.3s ease;"
                                onchange="QuestionBankPractice.handleCustomAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
                     </div>
