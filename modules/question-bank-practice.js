@@ -238,12 +238,94 @@ window.QuestionBankPractice = (function() {
                         border: 2px solid rgba(79,172,254,0.2);
                     }
                     
-                    /* 全屏模式下的题目显示优化 */
+                    /* 全屏模式下的题目显示优化 - 最大化显示 */
                     .practice-fullscreen #questionDisplay {
-                        min-height: 75vh;
-                        max-height: 80vh;
-                        font-size: 20px;
-                        padding: 40px;
+                        min-height: 85vh;
+                        max-height: 90vh;
+                        font-size: 24px;
+                        line-height: 2.0;
+                        padding: 50px;
+                        margin: 10px 0;
+                    }
+                    
+                    /* 全屏模式下题目内容字体更大 */
+                    .practice-fullscreen #questionDisplay h4 {
+                        font-size: 28px !important;
+                        margin-bottom: 25px !important;
+                    }
+                    
+                    .practice-fullscreen #questionDisplay div[style*="font-size: 1.1em"] {
+                        font-size: 1.4em !important;
+                        line-height: 2.2 !important;
+                    }
+                    
+                    /* 全屏模式下选项字体更大 */
+                    .practice-fullscreen .option-item {
+                        font-size: 22px !important;
+                        padding: 20px !important;
+                        margin: 15px 0 !important;
+                    }
+                    
+                    .practice-fullscreen .option-item span {
+                        width: 40px !important;
+                        height: 40px !important;
+                        line-height: 40px !important;
+                        font-size: 18px !important;
+                    }
+                    
+                    /* 全屏模式下输入框更大 */
+                    .practice-fullscreen input[type="text"],
+                    .practice-fullscreen textarea {
+                        font-size: 20px !important;
+                        padding: 25px !important;
+                        min-height: 60px !important;
+                    }
+                    
+                    .practice-fullscreen textarea {
+                        min-height: 200px !important;
+                    }
+                    
+                    /* 全屏模式下按钮更大 */
+                    .practice-fullscreen .judge-btn {
+                        font-size: 24px !important;
+                        padding: 25px 50px !important;
+                        min-width: 150px !important;
+                    }
+                    
+                    /* 字体大小调节按钮 */
+                    .font-size-controls {
+                        position: fixed;
+                        top: 20px;
+                        right: 20px;
+                        z-index: 10000;
+                        display: flex;
+                        gap: 10px;
+                        background: rgba(255,255,255,0.95);
+                        padding: 10px;
+                        border-radius: 15px;
+                        box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+                    }
+                    
+                    .font-size-controls button {
+                        width: 40px;
+                        height: 40px;
+                        border: none;
+                        border-radius: 50%;
+                        background: #4facfe;
+                        color: white;
+                        font-size: 18px;
+                        cursor: pointer;
+                        transition: all 0.3s ease;
+                    }
+                    
+                    .font-size-controls button:hover {
+                        background: #00f2fe;
+                        transform: scale(1.1);
+                    }
+                    
+                    .font-size-controls button:disabled {
+                        background: #ccc;
+                        cursor: not-allowed;
                     }
                     
                     /* 控制面板优化 - 更紧凑 */
@@ -256,6 +338,17 @@ window.QuestionBankPractice = (function() {
                         border: 1px solid rgba(79,172,254,0.2);
                     }
                     
+                    /* 全屏模式下控制面板更紧凑 */
+                    .practice-fullscreen .control-panel {
+                        padding: 10px 15px;
+                        margin-bottom: 10px;
+                    }
+                    
+                    .practice-fullscreen .control-panel button {
+                        font-size: 14px !important;
+                        padding: 6px 12px !important;
+                    }
+                    
                     /* 进度条优化 */
                     .progress-section {
                         background: rgba(255,255,255,0.9);
@@ -263,6 +356,12 @@ window.QuestionBankPractice = (function() {
                         padding: 15px 20px;
                         margin-bottom: 15px;
                         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+                    }
+                    
+                    /* 全屏模式下进度条更紧凑 */
+                    .practice-fullscreen .progress-section {
+                        padding: 10px 15px;
+                        margin-bottom: 10px;
                     }
                     
                     /* 自定义滚动条样式 */
@@ -291,6 +390,25 @@ window.QuestionBankPractice = (function() {
                     #questionDisplay::-webkit-scrollbar-thumb:hover,
                     #answerDisplay::-webkit-scrollbar-thumb:hover {
                         background: linear-gradient(180deg, #00f2fe, #4facfe);
+                    }
+                    
+                    /* 全屏模式下底部操作区域更紧凑 */
+                    .practice-fullscreen .question-card[style*="margin-top: 20px"] {
+                        margin-top: 10px !important;
+                        padding: 10px 15px !important;
+                    }
+                    
+                    .practice-fullscreen .question-card[style*="margin-top: 20px"] button {
+                        font-size: 14px !important;
+                        padding: 8px 15px !important;
+                        border-radius: 15px !important;
+                    }
+                    
+                    /* 全屏模式下答案显示区域更紧凑 */
+                    .practice-fullscreen #answerDisplay {
+                        max-height: 20vh !important;
+                        font-size: 18px !important;
+                        padding: 15px !important;
                     }
                     
                     /* 响应式设计 */
@@ -691,9 +809,9 @@ window.QuestionBankPractice = (function() {
             if (question.options && Array.isArray(question.options) && question.options.length > 0) {
                 optionsHTML = question.options.map((option, optIndex) => `
                     <div class="option-item" onclick="QuestionBankPractice.selectOption(${optIndex})" 
-                         style="background: white; border: 2px solid #e9ecef; border-radius: 10px; padding: 15px; margin: 10px 0; cursor: pointer; transition: all 0.3s ease;"
+                         style="background: white; border: 2px solid #e9ecef; border-radius: 15px; padding: 20px; margin: 15px 0; cursor: pointer; transition: all 0.3s ease; font-size: 1.1em; line-height: 1.6;"
                          data-option-index="${optIndex}">
-                        <span style="display: inline-block; width: 30px; height: 30px; border-radius: 50%; background: #4facfe; color: white; text-align: center; line-height: 30px; margin-right: 15px; font-weight: bold;">
+                        <span style="display: inline-block; width: 35px; height: 35px; border-radius: 50%; background: #4facfe; color: white; text-align: center; line-height: 35px; margin-right: 20px; font-weight: bold; font-size: 1.1em;">
                             ${String.fromCharCode(65 + optIndex)}
                         </span>
                         ${option}
@@ -702,7 +820,7 @@ window.QuestionBankPractice = (function() {
             } else {
                 // 没有选项时，显示提示信息
                 optionsHTML = `
-                    <div style="margin-top: 20px; padding: 15px; background: rgba(255,193,7,0.1); border: 1px solid #ffc107; border-radius: 10px; color: #856404;">
+                    <div style="margin-top: 25px; padding: 20px; background: rgba(255,193,7,0.1); border: 1px solid #ffc107; border-radius: 15px; color: #856404; font-size: 1.1em;">
                         <i class="fas fa-info-circle"></i> 此题没有选项，请在下方输入框中输入您的答案。
                     </div>
                 `;
@@ -716,33 +834,33 @@ window.QuestionBankPractice = (function() {
             
             if (questionType === '填空题') {
                 inputHTML = `
-                    <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px;">
-                        <label style="display: block; margin-bottom: 15px; font-weight: bold; color: #333; font-size: 1.1em;">📝 请输入答案：</label>
+                    <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px;">
+                        <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">📝 请输入答案：</label>
                         <input type="text" id="fillAnswer" placeholder="请输入答案..." 
-                               style="width: 100%; padding: 18px; border: 2px solid #e9ecef; border-radius: 12px; font-size: 1.1em; box-sizing: border-box; transition: all 0.3s ease;"
+                               style="width: 100%; padding: 22px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.2em; box-sizing: border-box; transition: all 0.3s ease;"
                                onchange="QuestionBankPractice.handleFillAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
                     </div>
                 `;
             } else if (questionType === '解答题' || questionType === '计算题') {
                 inputHTML = `
-                    <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px;">
-                        <label style="display: block; margin-bottom: 15px; font-weight: bold; color: #333; font-size: 1.1em;">📝 请输入详细答案：</label>
+                    <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px;">
+                        <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">📝 请输入详细答案：</label>
                         <textarea id="essayAnswer" placeholder="请输入详细答案..." 
-                                  style="width: 100%; min-height: 150px; padding: 18px; border: 2px solid #e9ecef; border-radius: 12px; font-size: 1.1em; box-sizing: border-box; resize: vertical; transition: all 0.3s ease; line-height: 1.6;"
+                                  style="width: 100%; min-height: 180px; padding: 22px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.2em; box-sizing: border-box; resize: vertical; transition: all 0.3s ease; line-height: 1.8;"
                                   onchange="QuestionBankPractice.handleEssayAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'"></textarea>
                     </div>
                 `;
             } else if (questionType === '判断题') {
                 inputHTML = `
-                    <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px; text-align: center;">
-                        <label style="display: block; margin-bottom: 15px; font-weight: bold; color: #333; font-size: 1.1em;">📝 请选择答案：</label>
-                        <div style="display: flex; gap: 30px; justify-content: center;">
+                    <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px; text-align: center;">
+                        <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">📝 请选择答案：</label>
+                        <div style="display: flex; gap: 40px; justify-content: center;">
                             <button class="judge-btn" onclick="QuestionBankPractice.selectJudgeAnswer(true)" 
-                                    style="padding: 18px 40px; font-size: 1.2em; border: 2px solid #28a745; background: white; color: #28a745; border-radius: 15px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; min-width: 120px;">
+                                    style="padding: 22px 50px; font-size: 1.3em; border: 2px solid #28a745; background: white; color: #28a745; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; min-width: 140px;">
                                 ✓ 正确
                             </button>
                             <button class="judge-btn" onclick="QuestionBankPractice.selectJudgeAnswer(false)"
-                                    style="padding: 18px 40px; font-size: 1.2em; border: 2px solid #dc3545; background: white; color: #dc3545; border-radius: 15px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; min-width: 120px;">
+                                    style="padding: 22px 50px; font-size: 1.3em; border: 2px solid #dc3545; background: white; color: #dc3545; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; min-width: 140px;">
                                 ✗ 错误
                             </button>
                         </div>
@@ -751,30 +869,30 @@ window.QuestionBankPractice = (function() {
             } else if (questionType === '选择题' && !hasOptions) {
                 // 选择题但没有选项，显示输入框
                 inputHTML = `
-                    <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px;">
-                        <label style="display: block; margin-bottom: 15px; font-weight: bold; color: #333; font-size: 1.1em;">📝 请输入答案：</label>
+                    <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px;">
+                        <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">📝 请输入答案：</label>
                         <input type="text" id="customAnswer" placeholder="请输入您的答案..." 
-                               style="width: 100%; padding: 18px; border: 2px solid #e9ecef; border-radius: 12px; font-size: 1.1em; box-sizing: border-box; transition: all 0.3s ease;"
+                               style="width: 100%; padding: 22px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.2em; box-sizing: border-box; transition: all 0.3s ease;"
                                onchange="QuestionBankPractice.handleCustomAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
                     </div>
                 `;
             } else if (questionType === '选择题' && hasOptions) {
                 // 选择题有选项，添加额外的输入框
                 inputHTML = `
-                    <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px;">
-                        <label style="display: block; margin-bottom: 15px; font-weight: bold; color: #333; font-size: 1.1em;">💭 或者输入您的答案：</label>
+                    <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px;">
+                        <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">💭 或者输入您的答案：</label>
                         <input type="text" id="customAnswer" placeholder="请输入您的答案（可选）..." 
-                               style="width: 100%; padding: 18px; border: 2px solid #e9ecef; border-radius: 12px; font-size: 1.1em; box-sizing: border-box; transition: all 0.3s ease;"
+                               style="width: 100%; padding: 22px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.2em; box-sizing: border-box; transition: all 0.3s ease;"
                                onchange="QuestionBankPractice.handleCustomAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
                     </div>
                 `;
             } else {
                 // 其他题型或没有明确题型的，都显示输入框
                 inputHTML = `
-                    <div style="margin-top: 25px; background: rgba(248,249,250,0.8); border-radius: 15px; padding: 20px;">
-                        <label style="display: block; margin-bottom: 15px; font-weight: bold; color: #333; font-size: 1.1em;">📝 请输入答案：</label>
+                    <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px;">
+                        <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">📝 请输入答案：</label>
                         <input type="text" id="customAnswer" placeholder="请输入您的答案..." 
-                               style="width: 100%; padding: 18px; border: 2px solid #e9ecef; border-radius: 12px; font-size: 1.1em; box-sizing: border-box; transition: all 0.3s ease;"
+                               style="width: 100%; padding: 22px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.2em; box-sizing: border-box; transition: all 0.3s ease;"
                                onchange="QuestionBankPractice.handleCustomAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
                     </div>
                 `;
@@ -782,24 +900,24 @@ window.QuestionBankPractice = (function() {
             
             return `
                 <div>
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                        <h4 style="color: #333; margin: 0;">题目 ${questionNumber}</h4>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                        <h4 style="color: #333; margin: 0; font-size: 1.4em; font-weight: bold;">题目 ${questionNumber}</h4>
                         <div style="font-size: 0.9em; color: #666;">
-                            <span style="background: #4facfe; color: white; padding: 4px 12px; border-radius: 15px; margin-right: 10px;">
+                            <span style="background: #4facfe; color: white; padding: 6px 15px; border-radius: 20px; margin-right: 12px; font-size: 0.9em;">
                                 ${question.difficulty || '中等'}
                             </span>
-                            <span style="background: #f8f9fa; color: #666; padding: 4px 12px; border-radius: 15px; margin-right: 10px;">
+                            <span style="background: #f8f9fa; color: #666; padding: 6px 15px; border-radius: 20px; margin-right: 12px; font-size: 0.9em;">
                                 ${questionType}
                             </span>
-                            ${question.category ? `<span style="background: #f8f9fa; color: #666; padding: 4px 12px; border-radius: 15px;">${question.category}</span>` : ''}
+                            ${question.category ? `<span style="background: #f8f9fa; color: #666; padding: 6px 15px; border-radius: 20px; font-size: 0.9em;">${question.category}</span>` : ''}
                         </div>
                     </div>
                     
-                    <div style="font-size: 1.1em; line-height: 1.6; margin-bottom: 25px; color: #333;">
+                    <div style="font-size: 1.2em; line-height: 1.8; margin-bottom: 30px; color: #333; text-align: justify;">
                         ${question.question || question.title || '题目内容'}
                     </div>
                     
-                    ${question.image ? `<img src="${question.image}" style="max-width: 100%; height: auto; border-radius: 8px; margin-bottom: 20px;" alt="题目图片">` : ''}
+                    ${question.image ? `<img src="${question.image}" style="max-width: 100%; height: auto; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" alt="题目图片">` : ''}
                     
                     <div id="optionsContainer">
                         ${optionsHTML}
@@ -1655,14 +1773,25 @@ window.QuestionBankPractice = (function() {
         changeFontSize: function(delta) {
             const questionDisplay = document.getElementById('questionDisplay');
             const answerDisplay = document.getElementById('answerDisplay');
-            const fontSizeDisplay = document.getElementById('fontSizeDisplay');
             
             if (questionDisplay) {
                 const currentSize = parseInt(window.getComputedStyle(questionDisplay).fontSize);
-                const newSize = Math.max(12, Math.min(24, currentSize + delta));
+                const newSize = Math.max(16, Math.min(32, currentSize + delta));
                 questionDisplay.style.fontSize = newSize + 'px';
                 if (answerDisplay) answerDisplay.style.fontSize = newSize + 'px';
-                if (fontSizeDisplay) fontSizeDisplay.textContent = newSize + 'px';
+                
+                // 同时调整选项和输入框的字体大小
+                const optionItems = questionDisplay.querySelectorAll('.option-item');
+                optionItems.forEach(item => {
+                    item.style.fontSize = (newSize - 2) + 'px';
+                });
+                
+                const inputs = questionDisplay.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    input.style.fontSize = (newSize - 2) + 'px';
+                });
+                
+                showNotification(`字体大小已调整为 ${newSize}px`, 'info');
             }
         },
         
@@ -1702,6 +1831,10 @@ window.QuestionBankPractice = (function() {
                     
                     // 添加模态窗口全屏样式
                     modalContainer.classList.add('modal-fullscreen');
+                    
+                    // 添加字体大小调节控件
+                    this.addFontSizeControls();
+                    
                     showNotification('已进入全屏模式', 'success');
                 } else {
                     // 退出全屏
@@ -1725,11 +1858,63 @@ window.QuestionBankPractice = (function() {
                     
                     // 移除模态窗口全屏样式
                     modalContainer.classList.remove('modal-fullscreen');
+                    
+                    // 移除字体大小调节控件
+                    this.removeFontSizeControls();
+                    
                     showNotification('已退出全屏模式', 'info');
                 }
             } catch (error) {
                 console.error('全屏切换失败:', error);
                 showNotification('全屏切换失败，请重试', 'error');
+            }
+        },
+        
+        // 添加字体大小调节控件
+        addFontSizeControls: function() {
+            // 移除已存在的控件
+            this.removeFontSizeControls();
+            
+            const controls = document.createElement('div');
+            controls.className = 'font-size-controls';
+            controls.innerHTML = `
+                <button onclick="QuestionBankPractice.changeFontSize(-2)" title="减小字体">A-</button>
+                <button onclick="QuestionBankPractice.changeFontSize(2)" title="增大字体">A+</button>
+                <button onclick="QuestionBankPractice.resetFontSize()" title="重置字体">A</button>
+            `;
+            
+            document.body.appendChild(controls);
+        },
+        
+        // 移除字体大小调节控件
+        removeFontSizeControls: function() {
+            const existingControls = document.querySelector('.font-size-controls');
+            if (existingControls) {
+                existingControls.remove();
+            }
+        },
+        
+        // 重置字体大小
+        resetFontSize: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            const answerDisplay = document.getElementById('answerDisplay');
+            
+            if (questionDisplay) {
+                questionDisplay.style.fontSize = '';
+                if (answerDisplay) answerDisplay.style.fontSize = '';
+                
+                // 重置选项和输入框的字体大小
+                const optionItems = questionDisplay.querySelectorAll('.option-item');
+                optionItems.forEach(item => {
+                    item.style.fontSize = '';
+                });
+                
+                const inputs = questionDisplay.querySelectorAll('input, textarea');
+                inputs.forEach(input => {
+                    input.style.fontSize = '';
+                });
+                
+                showNotification('字体大小已重置为默认值', 'info');
             }
         },
         
@@ -1749,6 +1934,9 @@ window.QuestionBankPractice = (function() {
                         if (container) {
                             container.classList.add('practice-fullscreen');
                         }
+                        
+                        // 添加字体大小调节控件
+                        this.addFontSizeControls();
                     } else {
                         fullscreenBtn.innerHTML = '<i class="fas fa-expand"></i>';
                         fullscreenBtn.title = '全屏 (Ctrl+F)';
@@ -1758,6 +1946,9 @@ window.QuestionBankPractice = (function() {
                         if (container) {
                             container.classList.remove('practice-fullscreen');
                         }
+                        
+                        // 移除字体大小调节控件
+                        this.removeFontSizeControls();
                     }
                 }
             });
