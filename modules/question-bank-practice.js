@@ -239,6 +239,12 @@ window.QuestionBankPractice = (function() {
                 }
             }
             
+            // 应用阅读模式样式
+            this.applyReadingModeStyles();
+            
+            // 恢复阅读模式状态
+            this.restoreReadingMode();
+            
             this.displayCurrentQuestion();
             this.startTimer();
             this.setupFullscreenListener();
@@ -560,6 +566,25 @@ window.QuestionBankPractice = (function() {
                         to { transform: translateX(0); }
                     }
                     
+                    /* 滚动提示动画 */
+                    @keyframes fadeInOut {
+                        0% { opacity: 0; transform: translateY(20px); }
+                        20% { opacity: 1; transform: translateY(0); }
+                        80% { opacity: 1; transform: translateY(0); }
+                        100% { opacity: 0; transform: translateY(-20px); }
+                    }
+                    
+                    /* 滚动指示器动画 */
+                    @keyframes bounce {
+                        0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
+                        40% { transform: translateX(-50%) translateY(-10px); }
+                        60% { transform: translateX(-50%) translateY(-5px); }
+                    }
+                    
+                    #scrollIndicator {
+                        animation: bounce 2s infinite;
+                    }
+                    
                     /* 按钮悬停效果 */
                     .btn-hover-effect {
                         transition: all 0.3s ease;
@@ -729,6 +754,11 @@ window.QuestionBankPractice = (function() {
                                         </button>
                                     </div>
                                     
+                                    <!-- 阅读模式 -->
+                                    <button id="readingModeBtn" class="btn btn-outline-primary btn-sm btn-hover-effect" onclick="QuestionBankPractice.toggleReadingMode()" title="开启阅读模式" style="border-radius: 20px; padding: 8px 15px;">
+                                        <i class="fas fa-book-open"></i> 阅读模式
+                                    </button>
+                                    
                                     <!-- 主题切换 -->
                                     <button id="themeBtn" class="btn btn-outline-primary btn-sm btn-hover-effect" onclick="QuestionBankPractice.toggleTheme()" title="切换主题" style="border-radius: 20px; padding: 8px 15px;">
                                         <i class="fas fa-palette"></i>
@@ -896,6 +926,15 @@ window.QuestionBankPractice = (function() {
             
             // 恢复保存的字体大小
             this.restoreFontSize();
+            
+            // 内容自适应调整
+            this.adjustContentLayout();
+            
+            // 设置触摸手势支持
+            this.setupTouchGestures();
+            
+            // 显示滚动提示（如果需要）
+            setTimeout(() => this.showScrollHint(), 1000);
             
             // 更新进度信息
             this.updateProgress();
@@ -2236,6 +2275,13 @@ window.QuestionBankPractice = (function() {
                     case 'T':
                         e.preventDefault();
                         this.toggleTheme();
+                        break;
+                    case 'r':
+                    case 'R':
+                        if (e.ctrlKey) {
+                            e.preventDefault();
+                            this.toggleReadingMode();
+                        }
                         break;
                     case 'd':
                     case 'D':
@@ -4677,6 +4723,337 @@ ${report.learningPath.milestones.map(m => `- ${m.title}: ${m.description} (目�
             URL.revokeObjectURL(url);
             
             showNotification('学习报告已导出', 'success');
+        },
+        
+        // 智能滚动提示
+        showScrollHint: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            if (!questionDisplay) return;
+            
+            const hasScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
+            if (hasScrollbar) {
+                // 创建滚动提示
+                const hint = document.createElement('div');
+                hint.id = 'scrollHint';
+                hint.innerHTML = `
+                    <div style="position: absolute; bottom: 20px; right: 20px; background: rgba(79,172,254,0.9); color: white; padding: 10px 15px; border-radius: 20px; font-size: 14px; z-index: 1000; animation: fadeInOut 3s ease-in-out;">
+                        <i class="fas fa-mouse"></i> 使用鼠标滚轮滚动内容
+                    </div>
+                `;
+                questionDisplay.appendChild(hint);
+                
+                // 3秒后自动移除
+                setTimeout(() => {
+                    if (hint.parentNode) {
+                        hint.parentNode.removeChild(hint);
+                    }
+                }, 3000);
+            }
+        },
+        
+        // 内容自适应调整
+        adjustContentLayout: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            if (!questionDisplay) return;
+            
+            // 检查内容是否溢出
+            const isOverflowing = questionDisplay.scrollHeight > questionDisplay.clientHeight;
+            
+            if (isOverflowing) {
+                // 添加滚动指示器
+                this.addScrollIndicator();
+                
+                // 调整内边距以优化滚动体验
+                questionDisplay.style.paddingBottom = '60px';
+                
+                // 智能调整字体大小以适应内容
+                this.autoAdjustFontSize();
+            } else {
+                // 移除滚动指示器
+                this.removeScrollIndicator();
+                
+                // 恢复正常内边距
+                questionDisplay.style.paddingBottom = '40px';
+            }
+        },
+        
+        // 智能调整字体大小
+        autoAdjustFontSize: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+            
+            if (!questionDisplay || !fontSizeDisplay) return;
+            
+            // 获取当前字体大小
+            let currentSize = parseInt(fontSizeDisplay.textContent) || 22;
+            
+            // 检查内容长度
+            const contentLength = questionDisplay.textContent.length;
+            
+            // 根据内容长度智能调整字体大小
+            let suggestedSize = currentSize;
+            
+            if (contentLength > 1000) {
+                suggestedSize = Math.min(currentSize, 20);
+            } else if (contentLength > 500) {
+                suggestedSize = Math.min(currentSize, 22);
+            } else if (contentLength < 200) {
+                suggestedSize = Math.max(currentSize, 24);
+            }
+            
+            // 如果建议的字体大小与当前不同，询问用户是否调整
+            if (suggestedSize !== currentSize) {
+                this.suggestFontSizeAdjustment(suggestedSize);
+            }
+        },
+        
+        // 建议字体大小调整
+        suggestFontSizeAdjustment: function(suggestedSize) {
+            const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+            if (!fontSizeDisplay) return;
+            
+            const currentSize = parseInt(fontSizeDisplay.textContent) || 22;
+            
+            // 创建建议提示
+            const suggestion = document.createElement('div');
+            suggestion.id = 'fontSizeSuggestion';
+            suggestion.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #4facfe; border-radius: 20px; padding: 25px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; text-align: center; max-width: 400px;">
+                    <h4 style="color: #333; margin-bottom: 15px;">💡 智能建议</h4>
+                    <p style="color: #666; margin-bottom: 20px; line-height: 1.6;">
+                        检测到题目内容较长，建议将字体大小从 ${currentSize}px 调整为 ${suggestedSize}px 以获得更好的阅读体验。
+                    </p>
+                    <div style="display: flex; gap: 15px; justify-content: center;">
+                        <button onclick="QuestionBankPractice.acceptFontSizeSuggestion(${suggestedSize})" 
+                                style="padding: 10px 20px; background: #4facfe; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 14px;">
+                            接受建议
+                        </button>
+                        <button onclick="QuestionBankPractice.dismissFontSizeSuggestion()" 
+                                style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 14px;">
+                            保持当前
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(suggestion);
+            
+            // 5秒后自动移除
+            setTimeout(() => {
+                if (suggestion.parentNode) {
+                    suggestion.parentNode.removeChild(suggestion);
+                }
+            }, 5000);
+        },
+        
+        // 接受字体大小建议
+        acceptFontSizeSuggestion: function(suggestedSize) {
+            this.changeFontSize((suggestedSize - 22) / 2);
+            this.dismissFontSizeSuggestion();
+            showNotification('字体大小已根据内容智能调整', 'success');
+        },
+        
+        // 忽略字体大小建议
+        dismissFontSizeSuggestion: function() {
+            const suggestion = document.getElementById('fontSizeSuggestion');
+            if (suggestion && suggestion.parentNode) {
+                suggestion.parentNode.removeChild(suggestion);
+            }
+        },
+        
+        // 阅读模式切换
+        toggleReadingMode: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            const readingModeBtn = document.getElementById('readingModeBtn');
+            
+            if (!questionDisplay) return;
+            
+            const isReadingMode = questionDisplay.classList.contains('reading-mode');
+            
+            if (isReadingMode) {
+                // 退出阅读模式
+                questionDisplay.classList.remove('reading-mode');
+                if (readingModeBtn) {
+                    readingModeBtn.innerHTML = '<i class="fas fa-book-open"></i> 阅读模式';
+                    readingModeBtn.title = '开启阅读模式';
+                }
+                showNotification('已退出阅读模式', 'info');
+            } else {
+                // 进入阅读模式
+                questionDisplay.classList.add('reading-mode');
+                if (readingModeBtn) {
+                    readingModeBtn.innerHTML = '<i class="fas fa-times"></i> 退出阅读';
+                    readingModeBtn.title = '退出阅读模式';
+                }
+                showNotification('已开启阅读模式', 'success');
+            }
+            
+            // 保存阅读模式状态
+            localStorage.setItem('questionBankReadingMode', !isReadingMode);
+        },
+        
+        // 恢复阅读模式状态
+        restoreReadingMode: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            const readingModeBtn = document.getElementById('readingModeBtn');
+            
+            if (!questionDisplay) return;
+            
+            // 从本地存储获取阅读模式状态
+            const isReadingMode = localStorage.getItem('questionBankReadingMode') === 'true';
+            
+            if (isReadingMode) {
+                questionDisplay.classList.add('reading-mode');
+                if (readingModeBtn) {
+                    readingModeBtn.innerHTML = '<i class="fas fa-times"></i> 退出阅读';
+                    readingModeBtn.title = '退出阅读模式';
+                }
+            }
+        },
+        
+        // 应用阅读模式样式
+        applyReadingModeStyles: function() {
+            const style = document.createElement('style');
+            style.id = 'readingModeStyles';
+            style.textContent = `
+                .reading-mode {
+                    background: #f8f9fa !important;
+                    color: #2c3e50 !important;
+                    font-family: 'Georgia', 'Times New Roman', serif !important;
+                    line-height: 1.8 !important;
+                    max-width: 800px !important;
+                    margin: 0 auto !important;
+                    padding: 40px !important;
+                    border-radius: 0 !important;
+                    box-shadow: none !important;
+                    border: none !important;
+                }
+                
+                .reading-mode h4 {
+                    font-size: 28px !important;
+                    color: #1a252f !important;
+                    margin-bottom: 30px !important;
+                    text-align: center !important;
+                    font-weight: 300 !important;
+                }
+                
+                .reading-mode div[style*="font-size: 1.4em"] {
+                    font-size: 20px !important;
+                    line-height: 2.0 !important;
+                    text-align: justify !important;
+                    color: #34495e !important;
+                    font-weight: 400 !important;
+                }
+                
+                .reading-mode .option-item {
+                    background: #ffffff !important;
+                    border: 1px solid #e9ecef !important;
+                    border-radius: 8px !important;
+                    padding: 20px !important;
+                    margin: 15px 0 !important;
+                    font-size: 18px !important;
+                    line-height: 1.6 !important;
+                    color: #495057 !important;
+                }
+                
+                .reading-mode .option-item:hover {
+                    background: #f8f9fa !important;
+                    border-color: #4facfe !important;
+                }
+                
+                .reading-mode input[type="text"],
+                .reading-mode textarea {
+                    background: #ffffff !important;
+                    border: 1px solid #dee2e6 !important;
+                    border-radius: 8px !important;
+                    font-size: 18px !important;
+                    color: #495057 !important;
+                }
+                
+                .reading-mode input[type="text"]:focus,
+                .reading-mode textarea:focus {
+                    border-color: #4facfe !important;
+                    box-shadow: 0 0 0 3px rgba(79,172,254,0.1) !important;
+                }
+            `;
+            
+            // 移除已存在的样式
+            const existingStyle = document.getElementById('readingModeStyles');
+            if (existingStyle) {
+                existingStyle.remove();
+            }
+            
+            document.head.appendChild(style);
+        },
+        
+        // 添加滚动指示器
+        addScrollIndicator: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            if (!questionDisplay || document.getElementById('scrollIndicator')) return;
+            
+            const indicator = document.createElement('div');
+            indicator.id = 'scrollIndicator';
+            indicator.innerHTML = `
+                <div style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(79,172,254,0.8); color: white; padding: 8px 16px; border-radius: 15px; font-size: 12px; z-index: 1000;">
+                    <i class="fas fa-chevron-down"></i> 向下滚动查看更多内容
+                </div>
+            `;
+            questionDisplay.appendChild(indicator);
+        },
+        
+        // 移除滚动指示器
+        removeScrollIndicator: function() {
+            const indicator = document.getElementById('scrollIndicator');
+            if (indicator && indicator.parentNode) {
+                indicator.parentNode.removeChild(indicator);
+            }
+        },
+        
+        // 触摸手势支持
+        setupTouchGestures: function() {
+            const questionDisplay = document.getElementById('questionDisplay');
+            if (!questionDisplay) return;
+            
+            let startY = 0;
+            let startX = 0;
+            let isScrolling = false;
+            
+            // 触摸开始
+            questionDisplay.addEventListener('touchstart', (e) => {
+                startY = e.touches[0].clientY;
+                startX = e.touches[0].clientX;
+                isScrolling = false;
+            }, { passive: true });
+            
+            // 触摸移动
+            questionDisplay.addEventListener('touchmove', (e) => {
+                if (!isScrolling) {
+                    const deltaY = Math.abs(e.touches[0].clientY - startY);
+                    const deltaX = Math.abs(e.touches[0].clientX - startX);
+                    
+                    // 如果垂直移动距离大于水平移动距离，认为是滚动
+                    if (deltaY > deltaX && deltaY > 10) {
+                        isScrolling = true;
+                    }
+                }
+            }, { passive: true });
+            
+            // 触摸结束
+            questionDisplay.addEventListener('touchend', (e) => {
+                if (!isScrolling) {
+                    const deltaY = e.changedTouches[0].clientY - startY;
+                    const deltaX = e.changedTouches[0].clientX - startX;
+                    
+                    // 检查是否为滑动切换题目
+                    if (Math.abs(deltaY) < 50 && Math.abs(deltaX) > 100) {
+                        if (deltaX > 0) {
+                            this.previousQuestion();
+                        } else {
+                            this.nextQuestion();
+                        }
+                    }
+                }
+            }, { passive: true });
         }
     };
 })(); 
