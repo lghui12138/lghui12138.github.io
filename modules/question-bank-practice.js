@@ -5421,6 +5421,603 @@ ${report.learningPath.milestones.map(m => `- ${m.title}: ${m.description} (目�
             if (help && help.parentNode) {
                 help.parentNode.removeChild(help);
             }
+        },
+        
+        // 激活智能学习模式
+        activateSmartLearning: function() {
+            showNotification('智能学习模式已激活', 'success');
+        },
+        
+        // 停用智能学习模式
+        deactivateSmartLearning: function() {
+            showNotification('智能学习模式已停用', 'info');
+        },
+        
+        // 实时笔记功能
+        toggleNotePanel: function() {
+            const notePanel = document.getElementById('notePanel');
+            
+            if (notePanel) {
+                notePanel.remove();
+            } else {
+                this.createNotePanel();
+            }
+        },
+        
+        // 创建笔记面板
+        createNotePanel: function() {
+            const notePanel = document.createElement('div');
+            notePanel.id = 'notePanel';
+            notePanel.innerHTML = `
+                <div style="position: fixed; right: 20px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.95); border: 2px solid #ffc107; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 10000; width: 300px; max-height: 80vh;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h5 style="color: #333; margin: 0;">📝 学习笔记</h5>
+                        <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: #666; cursor: pointer; font-size: 18px;">×</button>
+                    </div>
+                    <textarea id="noteContent" placeholder="在这里记录学习笔记..." style="width: 100%; height: 200px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; resize: vertical; font-size: 14px;"></textarea>
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <button onclick="QuestionBankPractice.saveNote()" style="padding: 8px 15px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">保存</button>
+                        <button onclick="QuestionBankPractice.loadNote()" style="padding: 8px 15px; background: #17a2b8; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">加载</button>
+                        <button onclick="QuestionBankPractice.clearNote()" style="padding: 8px 15px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">清空</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(notePanel);
+        },
+        
+        // 保存笔记
+        saveNote: function() {
+            const noteContent = document.getElementById('noteContent');
+            if (!noteContent) return;
+            
+            const content = noteContent.value.trim();
+            if (!content) {
+                showNotification('请输入笔记内容', 'warning');
+                return;
+            }
+            
+            const note = {
+                id: Date.now(),
+                content: content,
+                questionIndex: currentSession.currentIndex,
+                timestamp: new Date().toISOString(),
+                questionTitle: currentSession.questions[currentSession.currentIndex]?.title || `题目 ${currentSession.currentIndex + 1}`
+            };
+            
+            // 保存到本地存储
+            let notes = JSON.parse(localStorage.getItem('questionNotes') || '[]');
+            notes.push(note);
+            localStorage.setItem('questionNotes', JSON.stringify(notes));
+            
+            showNotification('笔记已保存', 'success');
+        },
+        
+        // 加载笔记
+        loadNote: function() {
+            const noteContent = document.getElementById('noteContent');
+            if (!noteContent) return;
+            
+            const notes = JSON.parse(localStorage.getItem('questionNotes') || '[]');
+            const currentNote = notes.find(note => note.questionIndex === currentSession.currentIndex);
+            
+            if (currentNote) {
+                noteContent.value = currentNote.content;
+                showNotification('已加载当前题目的笔记', 'info');
+            } else {
+                noteContent.value = '';
+                showNotification('当前题目暂无笔记', 'info');
+            }
+        },
+        
+        // 清空笔记
+        clearNote: function() {
+            const noteContent = document.getElementById('noteContent');
+            if (!noteContent) return;
+            
+            if (confirm('确定要清空当前笔记吗？')) {
+                noteContent.value = '';
+                showNotification('笔记已清空', 'info');
+            }
+        },
+        
+        // 学习路径推荐
+        showLearningPath: function() {
+            const path = this.generateLearningPath();
+            this.displayLearningPath(path);
+        },
+        
+        // 生成学习路径
+        generateLearningPath: function() {
+            const answeredQuestions = currentSession.userAnswers.filter(answer => answer !== null);
+            const correctAnswers = answeredQuestions.filter((answer, index) => {
+                const question = currentSession.questions[index];
+                return this.isAnswerCorrect(answer, question);
+            });
+            
+            const accuracy = answeredQuestions.length > 0 ? (correctAnswers.length / answeredQuestions.length) * 100 : 0;
+            
+            let path = [];
+            
+            if (accuracy < 60) {
+                path = [
+                    { step: 1, title: '基础概念复习', description: '重点复习流体力学基本概念', difficulty: 'easy' },
+                    { step: 2, title: '公式理解', description: '深入理解伯努利方程等核心公式', difficulty: 'medium' },
+                    { step: 3, title: '应用练习', description: '通过实际题目练习应用', difficulty: 'medium' }
+                ];
+            } else if (accuracy < 80) {
+                path = [
+                    { step: 1, title: '查漏补缺', description: '针对错题进行专项练习', difficulty: 'medium' },
+                    { step: 2, title: '综合应用', description: '练习综合性题目', difficulty: 'medium' },
+                    { step: 3, title: '进阶挑战', description: '尝试高难度题目', difficulty: 'hard' }
+                ];
+            } else {
+                path = [
+                    { step: 1, title: '知识巩固', description: '巩固已掌握的知识点', difficulty: 'medium' },
+                    { step: 2, title: '深度拓展', description: '学习更深层次的内容', difficulty: 'hard' },
+                    { step: 3, title: '创新应用', description: '尝试创新性题目', difficulty: 'hard' }
+                ];
+            }
+            
+            return path;
+        },
+        
+        // 显示学习路径
+        displayLearningPath: function(path) {
+            const pathContainer = document.createElement('div');
+            pathContainer.id = 'learningPath';
+            pathContainer.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #20c997; border-radius: 20px; padding: 25px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; max-width: 500px;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">🎯 推荐学习路径</h4>
+                    <div style="margin-bottom: 20px;">
+                        ${path.map(item => `
+                            <div style="display: flex; align-items: center; margin-bottom: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                                <div style="width: 30px; height: 30px; background: #20c997; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 15px;">
+                                    ${item.step}
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: bold; color: #333; margin-bottom: 5px;">${item.title}</div>
+                                    <div style="color: #666; font-size: 14px;">${item.description}</div>
+                                    <span style="background: #20c997; color: white; padding: 2px 8px; border-radius: 10px; font-size: 11px; margin-top: 5px; display: inline-block;">${item.difficulty}</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="text-align: center;">
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                style="padding: 10px 20px; background: #20c997; color: white; border: none; border-radius: 10px; cursor: pointer;">
+                            开始学习
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(pathContainer);
+        },
+        
+        // 智能学习模式
+        toggleSmartLearningMode: function() {
+            const isSmartMode = localStorage.getItem('smartLearningMode') === 'true';
+            const newMode = !isSmartMode;
+            
+            localStorage.setItem('smartLearningMode', newMode);
+            
+            if (newMode) {
+                showNotification('已开启智能学习模式', 'success');
+                this.activateSmartLearning();
+            } else {
+                showNotification('已关闭智能学习模式', 'info');
+                this.deactivateSmartLearning();
+            }
+        },
+        
+        // 激活智能学习模式
+        activateSmartLearning: function() {
+            // 智能学习模式功能
+            this.analyzeUserPerformance();
+            this.suggestNextQuestion();
+            this.showLearningTips();
+        },
+        
+        // 停用智能学习模式
+        deactivateSmartLearning: function() {
+            // 清理智能学习相关元素
+            const smartElements = document.querySelectorAll('.smart-learning-element');
+            smartElements.forEach(el => el.remove());
+        },
+        
+        // 分析用户表现
+        analyzeUserPerformance: function() {
+            const answeredQuestions = currentSession.userAnswers.filter(answer => answer !== null);
+            const correctAnswers = answeredQuestions.filter((answer, index) => {
+                const question = currentSession.questions[index];
+                return this.isAnswerCorrect(answer, question);
+            });
+            
+            const accuracy = answeredQuestions.length > 0 ? (correctAnswers.length / answeredQuestions.length) * 100 : 0;
+            const avgTime = this.calculateAverageTime();
+            
+            // 根据表现调整学习策略
+            this.adjustLearningStrategy(accuracy, avgTime);
+        },
+        
+        // 计算平均答题时间
+        calculateAverageTime: function() {
+            const times = currentSession.questionTimes.filter(time => time > 0);
+            if (times.length === 0) return 0;
+            
+            return times.reduce((sum, time) => sum + time, 0) / times.length;
+        },
+        
+        // 调整学习策略
+        adjustLearningStrategy: function(accuracy, avgTime) {
+            let strategy = '';
+            
+            if (accuracy < 60) {
+                strategy = '建议复习基础知识，重点关注概念理解';
+            } else if (accuracy < 80) {
+                strategy = '继续练习，注意细节和计算准确性';
+            } else {
+                strategy = '表现优秀，可以挑战更高难度的题目';
+            }
+            
+            if (avgTime > 120) {
+                strategy += '，建议提高答题速度';
+            }
+            
+            this.showLearningStrategy(strategy);
+        },
+        
+        // 建议下一题
+        suggestNextQuestion: function() {
+            const currentQuestion = currentSession.questions[currentSession.currentIndex];
+            const userAnswer = currentSession.userAnswers[currentSession.currentIndex];
+            
+            if (userAnswer !== null) {
+                const isCorrect = this.isAnswerCorrect(userAnswer, currentQuestion);
+                
+                // 根据答题情况推荐下一题
+                if (!isCorrect) {
+                    // 答错了，推荐相关的基础题目
+                    this.recommendRelatedQuestions(currentQuestion);
+                } else {
+                    // 答对了，推荐进阶题目
+                    this.recommendAdvancedQuestions(currentQuestion);
+                }
+            }
+        },
+        
+        // 推荐相关题目
+        recommendRelatedQuestions: function(question) {
+            const relatedQuestions = this.findRelatedQuestions(question);
+            if (relatedQuestions.length > 0) {
+                this.showRecommendation('建议复习相关题目', relatedQuestions);
+            }
+        },
+        
+        // 推荐进阶题目
+        recommendAdvancedQuestions: function(question) {
+            const advancedQuestions = this.findAdvancedQuestions(question);
+            if (advancedQuestions.length > 0) {
+                this.showRecommendation('可以挑战进阶题目', advancedQuestions);
+            }
+        },
+        
+        // 查找相关题目
+        findRelatedQuestions: function(question) {
+            // 基于知识点和难度查找相关题目
+            const keywords = this.extractKeywords(question.question || question.title || '');
+            const related = currentSession.questions.filter(q => {
+                const qKeywords = this.extractKeywords(q.question || q.title || '');
+                const commonKeywords = keywords.filter(k => qKeywords.includes(k));
+                return commonKeywords.length > 0 && q.difficulty === 'easy';
+            });
+            
+            return related.slice(0, 3); // 返回前3个相关题目
+        },
+        
+        // 查找进阶题目
+        findAdvancedQuestions: function(question) {
+            const keywords = this.extractKeywords(question.question || question.title || '');
+            const advanced = currentSession.questions.filter(q => {
+                const qKeywords = this.extractKeywords(q.question || q.title || '');
+                const commonKeywords = keywords.filter(k => qKeywords.includes(k));
+                return commonKeywords.length > 0 && q.difficulty === 'hard';
+            });
+            
+            return advanced.slice(0, 3);
+        },
+        
+        // 提取关键词
+        extractKeywords: function(text) {
+            const keywords = ['流体', '压力', '速度', '雷诺数', '边界层', '粘性', '势流', '湍流', '层流', '伯努利', '动量', '能量'];
+            return keywords.filter(keyword => text.includes(keyword));
+        },
+        
+        // 显示推荐
+        showRecommendation: function(title, questions) {
+            const recommendation = document.createElement('div');
+            recommendation.className = 'smart-learning-element';
+            recommendation.innerHTML = `
+                <div style="position: fixed; top: 20px; left: 20px; background: rgba(255,255,255,0.95); border: 2px solid #4facfe; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 10000; max-width: 400px;">
+                    <h5 style="color: #333; margin-bottom: 15px;">🤖 ${title}</h5>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        ${questions.map((q, index) => `
+                            <div style="background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 8px; cursor: pointer;" onclick="QuestionBankPractice.jumpToQuestion(${currentSession.questions.indexOf(q)})">
+                                <div style="font-weight: bold; color: #4facfe;">题目 ${currentSession.questions.indexOf(q) + 1}</div>
+                                <div style="font-size: 12px; color: #666; margin-top: 5px;">${(q.question || q.title || '').substring(0, 50)}...</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <button onclick="this.parentElement.remove()" style="margin-top: 10px; padding: 5px 15px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">关闭</button>
+                </div>
+            `;
+            
+            document.body.appendChild(recommendation);
+            
+            // 5秒后自动消失
+            setTimeout(() => {
+                if (recommendation.parentNode) {
+                    recommendation.parentNode.removeChild(recommendation);
+                }
+            }, 5000);
+        },
+        
+        // 跳转到指定题目
+        jumpToQuestion: function(index) {
+            if (index >= 0 && index < currentSession.questions.length) {
+                currentSession.currentIndex = index;
+                this.displayCurrentQuestion();
+                showNotification(`已跳转到题目 ${index + 1}`, 'info');
+            }
+        },
+        
+        // 显示学习策略
+        showLearningStrategy: function(strategy) {
+            const strategyElement = document.createElement('div');
+            strategyElement.className = 'smart-learning-element';
+            strategyElement.innerHTML = `
+                <div style="position: fixed; bottom: 20px; right: 20px; background: rgba(255,255,255,0.95); border: 2px solid #28a745; border-radius: 15px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 10000; max-width: 300px;">
+                    <h6 style="color: #333; margin-bottom: 10px;">📈 学习建议</h6>
+                    <p style="color: #666; font-size: 14px; line-height: 1.4; margin: 0;">${strategy}</p>
+                    <button onclick="this.parentElement.remove()" style="margin-top: 10px; padding: 3px 10px; background: #6c757d; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 12px;">知道了</button>
+                </div>
+            `;
+            
+            document.body.appendChild(strategyElement);
+            
+            // 8秒后自动消失
+            setTimeout(() => {
+                if (strategyElement.parentNode) {
+                    strategyElement.parentNode.removeChild(strategyElement);
+                }
+            }, 8000);
+        },
+        
+        // 实时笔记功能
+        toggleNotePanel: function() {
+            const notePanel = document.getElementById('notePanel');
+            
+            if (notePanel) {
+                notePanel.remove();
+            } else {
+                this.createNotePanel();
+            }
+        },
+        
+        // 创建笔记面板
+        createNotePanel: function() {
+            const notePanel = document.createElement('div');
+            notePanel.id = 'notePanel';
+            notePanel.innerHTML = `
+                <div style="position: fixed; right: 20px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.95); border: 2px solid #ffc107; border-radius: 15px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 10000; width: 300px; max-height: 80vh;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h5 style="color: #333; margin: 0;">📝 学习笔记</h5>
+                        <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: #666; cursor: pointer; font-size: 18px;">×</button>
+                    </div>
+                    <textarea id="noteContent" placeholder="在这里记录学习笔记..." style="width: 100%; height: 200px; padding: 10px; border: 1px solid #ddd; border-radius: 8px; resize: vertical; font-size: 14px;"></textarea>
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <button onclick="QuestionBankPractice.saveNote()" style="padding: 8px 15px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">保存</button>
+                        <button onclick="QuestionBankPractice.loadNote()" style="padding: 8px 15px; background: #17a2b8; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">加载</button>
+                        <button onclick="QuestionBankPractice.clearNote()" style="padding: 8px 15px; background: #dc3545; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 12px;">清空</button>
+                    </div>
+                    <div id="noteHistory" style="margin-top: 15px; max-height: 150px; overflow-y: auto;">
+                        <h6 style="color: #333; margin-bottom: 10px;">📚 笔记历史</h6>
+                        <div id="noteList"></div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(notePanel);
+            this.loadNoteHistory();
+        },
+        
+        // 保存笔记
+        saveNote: function() {
+            const noteContent = document.getElementById('noteContent');
+            if (!noteContent) return;
+            
+            const content = noteContent.value.trim();
+            if (!content) {
+                showNotification('请输入笔记内容', 'warning');
+                return;
+            }
+            
+            const note = {
+                id: Date.now(),
+                content: content,
+                questionIndex: currentSession.currentIndex,
+                timestamp: new Date().toISOString(),
+                questionTitle: currentSession.questions[currentSession.currentIndex]?.title || `题目 ${currentSession.currentIndex + 1}`
+            };
+            
+            // 保存到本地存储
+            let notes = JSON.parse(localStorage.getItem('questionNotes') || '[]');
+            notes.push(note);
+            localStorage.setItem('questionNotes', JSON.stringify(notes));
+            
+            showNotification('笔记已保存', 'success');
+            this.loadNoteHistory();
+        },
+        
+        // 加载笔记
+        loadNote: function() {
+            const noteContent = document.getElementById('noteContent');
+            if (!noteContent) return;
+            
+            const notes = JSON.parse(localStorage.getItem('questionNotes') || '[]');
+            const currentNote = notes.find(note => note.questionIndex === currentSession.currentIndex);
+            
+            if (currentNote) {
+                noteContent.value = currentNote.content;
+                showNotification('已加载当前题目的笔记', 'info');
+            } else {
+                noteContent.value = '';
+                showNotification('当前题目暂无笔记', 'info');
+            }
+        },
+        
+        // 清空笔记
+        clearNote: function() {
+            const noteContent = document.getElementById('noteContent');
+            if (!noteContent) return;
+            
+            if (confirm('确定要清空当前笔记吗？')) {
+                noteContent.value = '';
+                showNotification('笔记已清空', 'info');
+            }
+        },
+        
+        // 加载笔记历史
+        loadNoteHistory: function() {
+            const noteList = document.getElementById('noteList');
+            if (!noteList) return;
+            
+            const notes = JSON.parse(localStorage.getItem('questionNotes') || '[]');
+            
+            noteList.innerHTML = notes.slice(-5).reverse().map(note => `
+                <div style="background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 8px; cursor: pointer;" onclick="QuestionBankPractice.loadNoteById(${note.id})">
+                    <div style="font-weight: bold; color: #333; font-size: 12px;">${note.questionTitle}</div>
+                    <div style="color: #666; font-size: 11px; margin-top: 3px;">${new Date(note.timestamp).toLocaleString()}</div>
+                    <div style="color: #333; font-size: 11px; margin-top: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${note.content.substring(0, 50)}...</div>
+                </div>
+            `).join('');
+        },
+        
+        // 根据ID加载笔记
+        loadNoteById: function(noteId) {
+            const notes = JSON.parse(localStorage.getItem('questionNotes') || '[]');
+            const note = notes.find(n => n.id === noteId);
+            
+            if (note) {
+                const noteContent = document.getElementById('noteContent');
+                if (noteContent) {
+                    noteContent.value = note.content;
+                    showNotification('已加载笔记', 'info');
+                }
+            }
+        },
+        
+        // 知识点关联分析
+        analyzeKnowledgePoints: function() {
+            const question = currentSession.questions[currentSession.currentIndex];
+            if (!question) return;
+            
+            const knowledgePoints = this.extractKnowledgePoints(question);
+            const relatedPoints = this.findRelatedKnowledgePoints(knowledgePoints);
+            
+            this.showKnowledgeAnalysis(knowledgePoints, relatedPoints);
+        },
+        
+        // 提取知识点
+        extractKnowledgePoints: function(question) {
+            const text = question.question || question.title || '';
+            const points = [];
+            
+            // 流体力学知识点映射
+            const knowledgeMap = {
+                '伯努利': '伯努利方程',
+                '雷诺数': '雷诺数',
+                '边界层': '边界层理论',
+                '粘性': '粘性流体',
+                '势流': '势流理论',
+                '湍流': '湍流',
+                '层流': '层流',
+                '压力': '压力分布',
+                '速度': '速度场',
+                '动量': '动量方程',
+                '能量': '能量方程'
+            };
+            
+            Object.keys(knowledgeMap).forEach(keyword => {
+                if (text.includes(keyword)) {
+                    points.push(knowledgeMap[keyword]);
+                }
+            });
+            
+            return points;
+        },
+        
+        // 查找相关知识点
+        findRelatedKnowledgePoints: function(points) {
+            const related = {};
+            
+            points.forEach(point => {
+                switch(point) {
+                    case '伯努利方程':
+                        related[point] = ['压力分布', '速度场', '能量守恒'];
+                        break;
+                    case '雷诺数':
+                        related[point] = ['层流', '湍流', '粘性流体'];
+                        break;
+                    case '边界层理论':
+                        related[point] = ['粘性流体', '势流理论', '压力分布'];
+                        break;
+                    default:
+                        related[point] = ['相关概念'];
+                }
+            });
+            
+            return related;
+        },
+        
+        // 显示知识点分析
+        showKnowledgeAnalysis: function(points, related) {
+            const analysis = document.createElement('div');
+            analysis.id = 'knowledgeAnalysis';
+            analysis.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #6f42c1; border-radius: 20px; padding: 25px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">🧠 知识点分析</h4>
+                    <div style="margin-bottom: 20px;">
+                        <h5 style="color: #333; margin-bottom: 10px;">📚 本题涉及知识点</h5>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                            ${points.map(point => `
+                                <span style="background: #6f42c1; color: white; padding: 5px 12px; border-radius: 15px; font-size: 12px;">${point}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div>
+                        <h5 style="color: #333; margin-bottom: 10px;">🔗 相关知识点</h5>
+                        ${Object.entries(related).map(([point, relatedPoints]) => `
+                            <div style="margin-bottom: 15px;">
+                                <div style="font-weight: bold; color: #6f42c1; margin-bottom: 5px;">${point}:</div>
+                                <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                                    ${relatedPoints.map(rp => `
+                                        <span style="background: #e9ecef; color: #495057; padding: 3px 8px; border-radius: 10px; font-size: 11px;">${rp}</span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div style="text-align: center; margin-top: 20px;">
+                        <button onclick="this.parentElement.parentElement.remove()" 
+                                style="padding: 10px 20px; background: #6f42c1; color: white; border: none; border-radius: 10px; cursor: pointer;">
+                            关闭
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(analysis);
         }
     };
-})(); 
