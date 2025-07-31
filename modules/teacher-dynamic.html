@@ -443,6 +443,36 @@
                             </div>
                         </div>
 
+                        <!-- 题库筛选和搜索 -->
+                        <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
+                            <select v-model="selectedBank" @change="filterQuestions" class="form-input" style="flex: 1; min-width: 200px;">
+                                <option value="">全部题库</option>
+                                <option v-for="bank in allQuestionBanks" :key="bank.id" :value="bank.id">
+                                    {{ bank.name }} ({{ bank.questionCount }}道)
+                                </option>
+                            </select>
+                            
+                            <select v-model="selectedDifficulty" @change="filterQuestions" class="form-input" style="flex: 1; min-width: 150px;">
+                                <option value="">全部难度</option>
+                                <option value="easy">简单</option>
+                                <option value="medium">中等</option>
+                                <option value="hard">困难</option>
+                            </select>
+                            
+                            <input v-model="searchKeyword" @input="filterQuestions" 
+                                   placeholder="搜索题目内容..." 
+                                   class="form-input" 
+                                   style="flex: 2; min-width: 250px;">
+                        </div>
+
+                        <!-- 显示结果统计 -->
+                        <div style="margin-bottom: 15px; color: #666; font-size: 14px;">
+                            显示 {{ Math.min(currentPage * pageSize, filteredQuestions.length) }} / {{ filteredQuestions.length }} 道题目
+                            <span v-if="searchKeyword || selectedBank || selectedDifficulty">
+                                (已筛选，共{{ questionBank.length }}道)
+                            </span>
+                        </div>
+
                         <div v-if="showAddQuestion" class="alert alert-success">
                             <h4>添加新题目</h4>
                             <div class="form-group">
@@ -496,7 +526,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr v-for="question in questionBank" :key="question.id">
+                                    <tr v-for="question in pagedQuestions" :key="question.id">
                                         <td>{{ question.id }}</td>
                                         <td>{{ question.title.substring(0, 50) }}...</td>
                                         <td>
@@ -517,6 +547,32 @@
                                     </tr>
                                 </tbody>
                             </table>
+                        </div>
+
+                        <!-- 分页控件 -->
+                        <div v-if="totalPages > 1" style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px;">
+                            <button @click="currentPage = Math.max(1, currentPage - 1)" 
+                                    :disabled="currentPage === 1"
+                                    class="btn-secondary">
+                                <i class="fas fa-chevron-left"></i> 上一页
+                            </button>
+                            
+                            <span style="color: #666;">
+                                第 {{ currentPage }} 页，共 {{ totalPages }} 页
+                            </span>
+                            
+                            <button @click="currentPage = Math.min(totalPages, currentPage + 1)" 
+                                    :disabled="currentPage === totalPages"
+                                    class="btn-secondary">
+                                下一页 <i class="fas fa-chevron-right"></i>
+                            </button>
+                            
+                            <select v-model="pageSize" @change="currentPage = 1" class="form-input" style="width: 100px;">
+                                <option value="10">10条/页</option>
+                                <option value="20">20条/页</option>
+                                <option value="50">50条/页</option>
+                                <option value="100">100条/页</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -837,7 +893,13 @@
                         dailyQuestionLimit: 100,
                         examTimeLimit: 120,
                         passingScore: 60
-                    }
+                    },
+                    // 新增的题库筛选和搜索相关数据
+                    selectedBank: '',
+                    selectedDifficulty: '',
+                    searchKeyword: '',
+                    pageSize: 10, // 每页显示的题目数量
+                    currentPage: 1 // 当前页码
                 }
             },
             methods: {
@@ -1088,34 +1150,50 @@
                         this.questionBankStats.totalBanks = this.allQuestionBanks.length;
                         this.questionBankStats.totalQuestions = indexData.statistics?.totalQuestions || 0;
                         
-                        // 加载部分题库的详细内容作为预览
-                        const previewBanks = ['易错题集.json', '真题_中国海洋大学_2000-2021_cleaned.json'];
+                        // 加载所有题库的全部题目
+                        let totalLoadedQuestions = 0;
                         
-                        for (const bankInfo of this.allQuestionBanks.slice(0, 5)) {
+                        for (const bankInfo of this.allQuestionBanks) {
                             try {
+                                this.showNotification(`正在加载 ${bankInfo.name}...`, 'info');
+                                
                                 const response = await fetch(`../question-banks/${bankInfo.filename}`);
                                 const questions = await response.json();
                                 
                                 if (Array.isArray(questions)) {
-                                    // 添加前3道题到展示列表
-                                    questions.slice(0, 3).forEach(q => {
+                                    // 加载所有题目，不只是预览
+                                    questions.forEach(q => {
                                         this.questionBank.push({
                                             id: q.id,
                                             title: q.title || q.question || '题目内容',
                                             bank: bankInfo.name,
+                                            bankId: bankInfo.id,
                                             difficulty: this.getDifficultyFromTags(q.tags),
                                             correctRate: Math.floor(Math.random() * 30) + 60, // 模拟正确率
                                             createdAt: q.year ? `${q.year}-01-01` : '2024-01-01',
                                             category: q.category || bankInfo.category,
                                             tags: q.tags || [],
-                                            type: q.type || '计算题'
+                                            type: q.type || '计算题',
+                                            year: q.year || null,
+                                            school: q.school || '中国海洋大学',
+                                            score: q.score || 10,
+                                            options: q.options || [],
+                                            answer: q.answer || '',
+                                            explanation: q.explanation || ''
                                         });
                                     });
+                                    
+                                    totalLoadedQuestions += questions.length;
+                                    console.log(`✅ 已加载 ${bankInfo.name}: ${questions.length} 道题目`);
                                 }
                             } catch (error) {
-                                console.warn(`加载题库 ${bankInfo.filename} 失败:`, error);
+                                console.error(`❌ 加载题库 ${bankInfo.filename} 失败:`, error);
+                                this.showNotification(`加载 ${bankInfo.name} 失败`, 'error');
                             }
                         }
+                        
+                        console.log(`🎉 总共加载了 ${totalLoadedQuestions} 道题目`);
+                        this.showNotification(`成功加载 ${totalLoadedQuestions} 道题目！`, 'success');
                         
                         // 更新统计信息
                         this.questionBankStats.difficultQuestions = this.questionBank.filter(q => q.difficulty === 'hard').length;
@@ -1127,9 +1205,8 @@
                         }).length;
                         
                         // 更新显示的总题目数
-                        this.totalQuestions = this.questionBankStats.totalQuestions;
-                        
-                        this.showNotification(`成功加载 ${this.allQuestionBanks.length} 个题库，共 ${this.totalQuestions} 道题目`, 'success');
+                        this.totalQuestions = totalLoadedQuestions;
+                        this.questionBankStats.totalQuestions = totalLoadedQuestions;
                         
                     } catch (error) {
                         console.error('加载题库数据失败:', error);
@@ -1251,6 +1328,60 @@
                     if (Object.keys(saved).length > 0) {
                         this.settings = { ...this.settings, ...saved };
                     }
+                },
+
+                // 题库筛选和搜索方法
+                filterQuestions() {
+                    this.currentPage = 1; // 每次筛选时重置到第一页
+                    this.questionBank = this.allQuestionBanks.flatMap(bank => {
+                        const questions = bank.questions || []; // 假设题库数据中包含questions数组
+                        return questions.filter(q => {
+                            const matchesBank = this.selectedBank ? q.bankId === this.selectedBank : true;
+                            const matchesDifficulty = this.selectedDifficulty ? q.difficulty === this.selectedDifficulty : true;
+                            const matchesKeyword = this.searchKeyword ? 
+                                q.title.toLowerCase().includes(this.searchKeyword.toLowerCase()) ||
+                                q.explanation.toLowerCase().includes(this.searchKeyword.toLowerCase()) : true;
+                            return matchesBank && matchesDifficulty && matchesKeyword;
+                        });
+                    });
+                }
+            },
+
+            computed: {
+                // 过滤后的题目列表
+                filteredQuestions() {
+                    let filtered = this.questionBank;
+                    
+                    if (this.selectedBank) {
+                        filtered = filtered.filter(q => q.bankId === this.selectedBank);
+                    }
+                    
+                    if (this.selectedDifficulty) {
+                        filtered = filtered.filter(q => q.difficulty === this.selectedDifficulty);
+                    }
+                    
+                    if (this.searchKeyword) {
+                        const keyword = this.searchKeyword.toLowerCase();
+                        filtered = filtered.filter(q => 
+                            q.title.toLowerCase().includes(keyword) ||
+                            (q.explanation && q.explanation.toLowerCase().includes(keyword)) ||
+                            (q.tags && q.tags.some(tag => tag.toLowerCase().includes(keyword)))
+                        );
+                    }
+                    
+                    return filtered;
+                },
+                
+                // 当前页显示的题目
+                pagedQuestions() {
+                    const start = (this.currentPage - 1) * this.pageSize;
+                    const end = start + this.pageSize;
+                    return this.filteredQuestions.slice(start, end);
+                },
+                
+                // 总页数
+                totalPages() {
+                    return Math.ceil(this.filteredQuestions.length / this.pageSize);
                 }
             },
             
