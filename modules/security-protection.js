@@ -930,8 +930,21 @@ window.SecurityProtection = {
         localStorage.setItem('currentUsername', 'guest');
         sessionStorage.setItem('currentUsername', 'guest');
         
+        // 移除登录提示
+        const loginPrompt = document.querySelector('[style*="z-index: 99999"]');
+        if (loginPrompt) {
+            loginPrompt.remove();
+        }
+        
+        // 恢复页面滚动
+        document.body.style.overflow = '';
+        
         this.removeUserIdentification();
         this.showGuestWelcome();
+        
+        // 重新初始化安全保护
+        this.init();
+        
         console.log('👥 访客模式已启用');
     },
     
@@ -1040,19 +1053,29 @@ window.SecurityProtection = {
                 <h2 style="margin-bottom: 20px; color: #333;">移动端访问</h2>
                 <p style="margin-bottom: 30px; color: #666; line-height: 1.6;">
                     移动设备需要先登录才能访问网站。<br>
-                    请使用桌面浏览器或登录账号后访问。
+                    请选择登录方式继续访问。
                 </p>
-                <div style="display: flex; gap: 15px; justify-content: center;">
-                    <button onclick="window.location.reload()" style="
+                <div style="display: flex; flex-direction: column; gap: 15px; justify-content: center;">
+                    <button onclick="window.SecurityProtection.showLoginForm()" style="
                         background: #007bff;
+                        color: white;
+                        border: none;
+                        padding: 15px 24px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-size: 1em;
+                        font-weight: bold;
+                    ">登录账号</button>
+                    <button onclick="window.SecurityProtection.guestAccess()" style="
+                        background: #28a745;
                         color: white;
                         border: none;
                         padding: 12px 24px;
                         border-radius: 10px;
                         cursor: pointer;
                         font-size: 1em;
-                    ">刷新页面</button>
-                    <button onclick="history.back()" style="
+                    ">访客模式</button>
+                    <button onclick="window.location.reload()" style="
                         background: #6c757d;
                         color: white;
                         border: none;
@@ -1060,7 +1083,7 @@ window.SecurityProtection = {
                         border-radius: 10px;
                         cursor: pointer;
                         font-size: 1em;
-                    ">返回上页</button>
+                    ">刷新页面</button>
                 </div>
             </div>
         `;
@@ -1104,6 +1127,137 @@ window.SecurityProtection = {
         setTimeout(() => {
             welcome.remove();
         }, 4000);
+    },
+    
+    // 显示登录表单
+    showLoginForm() {
+        // 移除现有的登录提示
+        const existingPrompt = document.querySelector('[style*="z-index: 99999"]');
+        if (existingPrompt) {
+            existingPrompt.remove();
+        }
+        
+        const loginForm = document.createElement('div');
+        loginForm.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        `;
+        
+        loginForm.innerHTML = `
+            <div style="
+                background: white;
+                padding: 30px;
+                border-radius: 20px;
+                text-align: center;
+                max-width: 90%;
+                width: 400px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            ">
+                <div style="font-size: 3em; margin-bottom: 20px;">🔐</div>
+                <h2 style="margin-bottom: 20px; color: #333;">登录账号</h2>
+                <form id="mobileLoginForm" style="text-align: left;">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #333; font-weight: bold;">用户名</label>
+                        <input type="text" id="mobileUsername" placeholder="请输入用户名" style="
+                            width: 100%;
+                            padding: 12px;
+                            border: 2px solid #ddd;
+                            border-radius: 8px;
+                            font-size: 1em;
+                            box-sizing: border-box;
+                        " required>
+                    </div>
+                    <div style="margin-bottom: 30px;">
+                        <label style="display: block; margin-bottom: 8px; color: #333; font-weight: bold;">密码</label>
+                        <input type="password" id="mobilePassword" placeholder="请输入密码" style="
+                            width: 100%;
+                            padding: 12px;
+                            border: 2px solid #ddd;
+                            border-radius: 8px;
+                            font-size: 1em;
+                            box-sizing: border-box;
+                        " required>
+                    </div>
+                    <div style="display: flex; gap: 15px; justify-content: center;">
+                        <button type="submit" style="
+                            background: #007bff;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 10px;
+                            cursor: pointer;
+                            font-size: 1em;
+                            font-weight: bold;
+                        ">登录</button>
+                        <button type="button" onclick="window.SecurityProtection.showMobileLoginPrompt()" style="
+                            background: #6c757d;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 10px;
+                            cursor: pointer;
+                            font-size: 1em;
+                        ">返回</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        
+        document.body.appendChild(loginForm);
+        
+        // 添加表单提交事件
+        document.getElementById('mobileLoginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleMobileLogin();
+        });
+        
+        console.log('📱 移动端登录表单已显示');
+    },
+    
+    // 处理移动端登录
+    handleMobileLogin() {
+        const username = document.getElementById('mobileUsername').value;
+        const password = document.getElementById('mobilePassword').value;
+        
+        // 简单的登录验证
+        if (username === 'liuguanghui6330156' && password === '123456') {
+            // 登录成功
+            this.currentUser = username;
+            this.userLevel = 'teacher';
+            
+            // 保存到localStorage
+            localStorage.setItem('currentUsername', username);
+            localStorage.setItem('userInfo', JSON.stringify({
+                username: username,
+                role: 'teacher'
+            }));
+            
+            // 移除登录表单
+            const loginForm = document.querySelector('[style*="z-index: 99999"]');
+            if (loginForm) {
+                loginForm.remove();
+            }
+            
+            // 恢复页面滚动
+            document.body.style.overflow = '';
+            
+            // 重新初始化安全保护
+            this.init();
+            
+            console.log('✅ 移动端登录成功');
+        } else {
+            // 登录失败
+            alert('用户名或密码错误，请重试');
+        }
     },
     
     // 静默设置访客模式
