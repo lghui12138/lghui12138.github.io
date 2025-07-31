@@ -2692,57 +2692,66 @@ input:focus, select:focus, textarea:focus {
             renderQuestion();
         }
         
-        // 全局提交函数 - 确保可以被onclick调用
-        window.submitAnswer = function() {
-            console.log('🔥🔥🔥 全局提交函数被调用!', {selected, answered});
+        // 终极简化提交函数
+        function submitAnswer() {
+            alert('submitAnswer函数被调用了！selected=' + selected + ', answered=' + answered);
+            console.log('🔥 SUBMIT FUNCTION CALLED!', 'selected:', selected, 'answered:', answered);
             
             if (answered) {
                 alert('您已经提交过答案了！');
-                return;
+                return false;
             }
             
             if (selected === null || selected === undefined) {
                 alert('请先选择一个答案选项！');
-                return;
+                return false;
             }
             
-            console.log('✅ 开始提交流程...');
+            alert('开始提交流程...');
+            console.log('✅ 开始提交...');
             
-            // 立即更新状态
-            answered = true;
-            
-            // 记录答题时间
-            const questionTime = Math.floor((Date.now() - questionStartTime) / 1000);
-            questionTimes.push(questionTime);
-            
-            // 记录用户选择的答案
-            const q = questions[current];
-            q.userSelected = selected;
-            
-            // 重新渲染显示结果
-            renderQuestion();
-            
-            if (selected !== q.answer) {
-                addToWrongBook(q, selected);
-                showSmartHint('答错了，正在为您生成详细分析...');
-            } else {
-                showSmartHint('答对了！正在为您生成学习建议...');
+            // 直接复制submitCurrentAnswer的逻辑，避免调用问题
+            try {
+                answered = true;
+                const questionTime = Math.floor((Date.now() - questionStartTime) / 1000);
+                questionTimes.push(questionTime);
+                
+                const q = questions[current];
+                q.userSelected = selected;
+                
+                renderQuestion();
+                
+                if (selected !== q.answer) {
+                    addToWrongBook(q, selected);
+                    if (typeof showSmartHint === 'function') {
+                        showSmartHint('答错了，正在为您生成详细分析...');
+                    }
+                } else {
+                    if (typeof showSmartHint === 'function') {
+                        showSmartHint('答对了！正在为您生成学习建议...');
+                    }
+                }
+                
+                // 立即显示批改结果
+                setTimeout(() => {
+                    if (typeof toggleExplanation === 'function') {
+                        toggleExplanation(true);
+                    }
+                }, 200);
+                
+                console.log('✅ 提交完成');
+                alert('提交成功！');
+                
+            } catch (e) {
+                console.error('提交出错:', e);
+                alert('提交出错: ' + e.message);
             }
             
-            // 立即显示批改结果 - 确保用户能看到
-            console.log('⏰ 200ms后显示批改结果');
-            setTimeout(() => {
-                console.log('🚀 显示批改结果和AI分析');
-                toggleExplanation(true);
-            }, 200);
-            
-            saveProgress();
-            updateStats();
-            updateLearningProgress();
-            updateAdaptiveDifficulty();
-            updateEfficiencyMonitor();
-            checkSmartReminders();
-        };
+            return false;
+        }
+        
+        // 确保全局可访问
+        window.submitAnswer = submitAnswer;
         
         // 简化版 - 直接使用onclick内联事件
         function createActionButtonsHTML() {
@@ -2769,7 +2778,7 @@ input:focus, select:focus, textarea:focus {
                         z-index: 2;
                     ">
                         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                            <button onclick="window.submitAnswer()" 
+                            <button onclick="alert('测试按钮被点击了！selected=' + selected + ', answered=' + answered); if(${canSubmit}) { submitAnswer(); } return false;" 
                                     style="
                                         background: ${canSubmit ? 'linear-gradient(135deg, #28a745, #20c997)' : 'linear-gradient(135deg, #6c757d, #5a6268)'};
                                         color: white;
@@ -2778,18 +2787,17 @@ input:focus, select:focus, textarea:focus {
                                         border-radius: 10px;
                                         font-size: 16px;
                                         font-weight: 600;
-                                        cursor: ${canSubmit ? 'pointer' : 'not-allowed'};
+                                        cursor: pointer;
                                         box-shadow: ${canSubmit ? '0 4px 15px rgba(40, 167, 69, 0.3)' : '0 2px 8px rgba(108, 117, 125, 0.2)'};
                                         transition: all 0.3s ease;
                                         min-width: 150px;
                                         opacity: ${canSubmit ? '1' : '0.7'};
                                     " 
-                                    ${!canSubmit ? 'disabled' : ''}
-                                    onmouseover="if(!this.disabled) { this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(40, 167, 69, 0.4)'; }" 
-                                    onmouseout="if(!this.disabled) { this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(40, 167, 69, 0.3)'; }">
-                                <i class="fas fa-paper-plane"></i> 提交答案
+                                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(40, 167, 69, 0.4)';" 
+                                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(40, 167, 69, 0.3)';">
+                                <i class="fas fa-paper-plane"></i> 提交答案 (测试版)
                             </button>
-                            <button onclick="window.saveProgress()" 
+                            <button onclick="saveCurrentProgress(); this.innerHTML='<i class=\\'fas fa-check\\'></i> 已保存'; setTimeout(()=>{this.innerHTML='<i class=\\'fas fa-bookmark\\'></i> 保存进度'}, 2000); return false;" 
                                     style="
                                         background: linear-gradient(135deg, #007bff, #0056b3);
                                         color: white;
@@ -2846,51 +2854,27 @@ input:focus, select:focus, textarea:focus {
             `;
         }
 
-        // 全局保存进度函数
-        window.saveProgress = function() {
-            console.log('💾 保存进度被调用');
-            const originalSaveProgress = saveProgress;
-            
-            // 显示保存反馈
-            const event = { target: null };
-            const allSaveBtns = document.querySelectorAll('button[onclick="window.saveProgress()"]');
-            if (allSaveBtns.length > 0) {
-                const saveBtn = allSaveBtns[0];
-                const originalText = saveBtn.innerHTML;
-                
-                saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
-                saveBtn.disabled = true;
-                
-                setTimeout(() => {
-                    try {
-                        // 调用原始保存函数
-                        if (typeof saveProgress !== 'undefined' && saveProgress !== window.saveProgress) {
-                            saveProgress();
-                        } else {
-                            // 手动保存逻辑
-                            localStorage.setItem('fullscreen_progress', JSON.stringify({
-                                current: current,
-                                selected: selected,
-                                answered: answered,
-                                questionTimes: questionTimes,
-                                timestamp: Date.now()
-                            }));
-                        }
-                        
-                        saveBtn.innerHTML = '<i class="fas fa-check"></i> 已保存';
-                        
-                        setTimeout(() => {
-                            saveBtn.innerHTML = originalText;
-                            saveBtn.disabled = false;
-                        }, 1500);
-                    } catch (e) {
-                        console.error('保存失败:', e);
-                        saveBtn.innerHTML = originalText;
-                        saveBtn.disabled = false;
-                    }
-                }, 500);
+        // 简化保存函数
+        function saveCurrentProgress() {
+            console.log('💾 保存进度');
+            try {
+                localStorage.setItem('fullscreen_progress', JSON.stringify({
+                    current: current,
+                    selected: selected,
+                    answered: answered,
+                    questionTimes: questionTimes,
+                    timestamp: Date.now()
+                }));
+                console.log('✅ 保存成功');
+                return true;
+            } catch (e) {
+                console.error('❌ 保存失败:', e);
+                return false;
             }
-        };
+        }
+        
+        // 确保全局可访问
+        window.saveCurrentProgress = saveCurrentProgress;
         
         // 新增：提交当前答案 - 修复逻辑确保立即显示结果
         function submitCurrentAnswer() {
