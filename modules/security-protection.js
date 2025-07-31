@@ -28,6 +28,11 @@ window.SecurityProtection = {
             return;
         }
         
+        // 移动端教师权限检查
+        if (isMobile && this.currentUser === this.ownerAccount) {
+            console.log('📱 移动端教师权限已确认');
+        }
+        
         // 根据用户级别启用不同的保护措施
         if (this.userLevel === 'owner') {
             // 网站所有者：完全访问权限

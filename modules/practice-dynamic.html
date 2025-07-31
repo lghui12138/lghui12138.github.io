@@ -50,6 +50,9 @@
             --wave-speed: 20s;
             --bubble-speed: 15s;
             --fish-speed: 25s;
+            
+            /* 字号缩放 */
+            --font-scale: 1;
         }
 
         * {
@@ -72,6 +75,7 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             position: relative;
+            font-size: calc(16px * var(--font-scale));
         }
 
         /* Safari安全区域适配 */
@@ -318,6 +322,31 @@
             background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
             border-color: var(--accent-color);
         }
+        
+        /* 字号调节按钮 */
+        .font-size-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        
+        .font-size-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
 
         /* 移动端全屏控制优化 */
         .mobile-controls {
@@ -327,7 +356,8 @@
         }
 
         .mobile-controls .fullscreen-btn,
-        .mobile-controls .exit-btn {
+        .mobile-controls .exit-btn,
+        .mobile-controls .font-size-btn {
             padding: 10px 16px;
             font-size: 0.8em;
             border-radius: 20px;
@@ -348,11 +378,27 @@
         /* 移动端全屏模式优化 */
         @media (max-width: 768px) {
             .is-fullscreen .practice-container {
-                padding: 60px 15px 20px;
+                padding: 0;
+                margin: 0;
+                width: 100vw;
+                height: 100vh;
+                overflow: hidden;
+            }
+            
+            .is-fullscreen .question-card {
+                margin: 0;
+                border-radius: 0;
+                height: 100vh;
+                overflow-y: auto;
+                padding: 60px 20px 20px;
             }
             
             .fullscreen-controls {
                 opacity: 1;
+                position: fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 10001;
             }
         }
 
@@ -1831,6 +1877,10 @@
                 <i :class="isFullscreen ? 'fas fa-compress' : 'fas fa-expand'"></i>
                 <span class="btn-text">{{ isFullscreen ? '退出全屏' : '全屏模式' }}</span>
             </button>
+            <button @click="changeFontSize" class="font-size-btn" :title="'字号调节: ' + fontSize">
+                <i class="fas fa-text-height"></i>
+                <span class="btn-text">{{ fontSize === 'small' ? '小' : fontSize === 'large' ? '大' : '中' }}</span>
+            </button>
             <button @click="backToSelector" class="exit-btn" title="返回题库选择 [ESC]">
                 <i class="fas fa-arrow-left"></i> 
                 <span class="btn-text">返回题库</span>
@@ -1884,75 +1934,6 @@
                     <div class="stat-card">
                         <div class="stat-number">{{ correctRate }}%</div>
                         <div class="stat-label">正确率</div>
-                    </div>
-                </div>
-
-                <!-- 筛选区域 -->
-                <div class="filter-section">
-                    <div class="filter-header">
-                        <i class="fas fa-filter"></i>
-                        筛选条件
-                    </div>
-                    <div class="filter-controls">
-                        <div class="filter-group">
-                            <label class="filter-label">题库类型</label>
-                            <select v-model="filters.category" class="filter-select">
-                                <option value="">全部类型</option>
-                                <option v-if="isRealExamMode" value="历年真题">历年真题</option>
-                                <option v-if="isRealExamMode" value="易错题集">易错题集</option>
-                                <option v-if="isRealExamMode" value="计算题集">计算题集</option>
-                                <option v-if="isRealExamMode" value="综合题集">综合题集</option>
-                                <option v-if="!isRealExamMode" value="真题">历年真题</option>
-                                <option v-if="!isRealExamMode" value="分类">分类练习</option>
-                                <option v-if="!isRealExamMode" value="易错">易错题集</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label class="filter-label">年份</label>
-                            <select v-model="filters.year" class="filter-select">
-                                <option value="">全部年份</option>
-                                <option v-if="isRealExamMode" value="all">所有历年真题</option>
-                                <option v-if="isRealExamMode" value="error-prone">易错题集</option>
-                                <option v-if="isRealExamMode" value="calculation">计算题集</option>
-                                <option v-if="isRealExamMode" value="comprehensive">综合题集</option>
-                                <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年真题</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label class="filter-label">难度</label>
-                            <select v-model="filters.difficulty" class="filter-select">
-                                <option value="">全部难度</option>
-                                <option value="easy">简单</option>
-                                <option value="medium">中等</option>
-                                <option value="hard">困难</option>
-                            </select>
-                        </div>
-                        <div class="filter-group">
-                            <label class="filter-label">搜索关键词</label>
-                            <input v-model="filters.keyword" class="filter-input" placeholder="搜索题库名称或内容...">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 智能练习按钮 -->
-                <div v-if="canStartPractice" class="smart-practice-section" style="margin: 20px 0; padding: 20px; background: rgba(102, 126, 234, 0.1); border-radius: 15px; border: 2px solid var(--primary-color);">
-                    <h3 style="color: var(--primary-color); margin-bottom: 15px;">
-                        <i class="fas fa-magic"></i> 智能练习
-                    </h3>
-                    <p style="margin-bottom: 15px; color: #666;">
-                        已选择: <strong>{{ getSelectedFilterText() }}</strong>
-                        <span v-if="loadedQuestionsCount > 0"> | 已加载: {{ loadedQuestionsCount }}题</span>
-                    </p>
-                    <div class="action-buttons" style="margin: 0;">
-                        <button @click="startSmartPractice('normal')" class="action-btn btn-success">
-                            <i class="fas fa-play"></i> 开始练习
-                        </button>
-                        <button @click="startSmartPractice('random')" class="action-btn btn-primary">
-                            <i class="fas fa-random"></i> 随机练习
-                        </button>
-                        <button @click="previewLoadedQuestions" class="action-btn">
-                            <i class="fas fa-eye"></i> 预览题目
-                        </button>
                     </div>
                 </div>
 
@@ -2039,6 +2020,75 @@
                                 {{ category.name }}
                             </button>
                         </div>
+                    </div>
+                </div>
+
+                <!-- 筛选区域 -->
+                <div class="filter-section">
+                    <div class="filter-header">
+                        <i class="fas fa-filter"></i>
+                        筛选条件
+                    </div>
+                    <div class="filter-controls">
+                        <div class="filter-group">
+                            <label class="filter-label">题库类型</label>
+                            <select v-model="filters.category" class="filter-select">
+                                <option value="">全部类型</option>
+                                <option v-if="isRealExamMode" value="历年真题">历年真题</option>
+                                <option v-if="isRealExamMode" value="易错题集">易错题集</option>
+                                <option v-if="isRealExamMode" value="计算题集">计算题集</option>
+                                <option v-if="isRealExamMode" value="综合题集">综合题集</option>
+                                <option v-if="!isRealExamMode" value="真题">历年真题</option>
+                                <option v-if="!isRealExamMode" value="分类">分类练习</option>
+                                <option v-if="!isRealExamMode" value="易错">易错题集</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">年份</label>
+                            <select v-model="filters.year" class="filter-select">
+                                <option value="">全部年份</option>
+                                <option v-if="isRealExamMode" value="all">所有历年真题</option>
+                                <option v-if="isRealExamMode" value="error-prone">易错题集</option>
+                                <option v-if="isRealExamMode" value="calculation">计算题集</option>
+                                <option v-if="isRealExamMode" value="comprehensive">综合题集</option>
+                                <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年真题</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">难度</label>
+                            <select v-model="filters.difficulty" class="filter-select">
+                                <option value="">全部难度</option>
+                                <option value="easy">简单</option>
+                                <option value="medium">中等</option>
+                                <option value="hard">困难</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label class="filter-label">搜索关键词</label>
+                            <input v-model="filters.keyword" class="filter-input" placeholder="搜索题库名称或内容...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 智能练习按钮 -->
+                <div v-if="canStartPractice" class="smart-practice-section" style="margin: 20px 0; padding: 20px; background: rgba(102, 126, 234, 0.1); border-radius: 15px; border: 2px solid var(--primary-color);">
+                    <h3 style="color: var(--primary-color); margin-bottom: 15px;">
+                        <i class="fas fa-magic"></i> 智能练习
+                    </h3>
+                    <p style="margin-bottom: 15px; color: #666;">
+                        已选择: <strong>{{ getSelectedFilterText() }}</strong>
+                        <span v-if="loadedQuestionsCount > 0"> | 已加载: {{ loadedQuestionsCount }}题</span>
+                    </p>
+                    <div class="action-buttons" style="margin: 0;">
+                        <button @click="startSmartPractice('normal')" class="action-btn btn-success">
+                            <i class="fas fa-play"></i> 开始练习
+                        </button>
+                        <button @click="startSmartPractice('random')" class="action-btn btn-primary">
+                            <i class="fas fa-random"></i> 随机练习
+                        </button>
+                        <button @click="previewLoadedQuestions" class="action-btn">
+                            <i class="fas fa-eye"></i> 预览题目
+                        </button>
                     </div>
                 </div>
 
@@ -2458,7 +2508,15 @@
                     totalTime: 0,
                     
                     // 移动端检测
-                    isMobile: false
+                    isMobile: false,
+                    
+                    // 字号控制
+                    fontSize: 'medium', // small, medium, large
+                    fontSizeLevels: {
+                        small: 0.8,
+                        medium: 1,
+                        large: 1.2
+                    }
                 }
             },
             
@@ -3325,7 +3383,9 @@
                     }
 
                     // 检查答案是否正确
-                    this.isCorrect = this.selectedAnswer === this.currentQuestion.answer;
+                    // 将数字索引转换为字母选项进行比较
+                    const selectedOption = String.fromCharCode(65 + this.selectedAnswer); // 0->A, 1->B, 2->C, 3->D
+                    this.isCorrect = selectedOption === this.currentQuestion.answer;
                     this.showResult = true;
                     
                     if (this.isCorrect) {
@@ -3679,6 +3739,28 @@
                     this.isMobile = mobileKeywords.some(keyword => userAgent.includes(keyword));
                     console.log(`📱 移动设备检测: ${this.isMobile ? '是' : '否'}`);
                 },
+                
+                // 字号调节
+                changeFontSize() {
+                    const levels = ['small', 'medium', 'large'];
+                    const currentIndex = levels.indexOf(this.fontSize);
+                    const nextIndex = (currentIndex + 1) % levels.length;
+                    this.fontSize = levels[nextIndex];
+                    
+                    // 应用字号
+                    this.applyFontSize();
+                    
+                    this.showNotification(`字号已调整为: ${this.fontSize === 'small' ? '小' : this.fontSize === 'large' ? '大' : '中'}`, 'success');
+                },
+                
+                // 应用字号
+                applyFontSize() {
+                    const scale = this.fontSizeLevels[this.fontSize];
+                    document.documentElement.style.setProperty('--font-scale', scale);
+                    
+                    // 保存到localStorage
+                    localStorage.setItem('fontSize', this.fontSize);
+                },
 
                 // 显示真题选择器
                 showRealExamSelector() {
@@ -3823,6 +3905,13 @@
                 
                 // 检测移动设备
                 this.detectMobileDevice();
+                
+                // 加载字号设置
+                const savedFontSize = localStorage.getItem('fontSize');
+                if (savedFontSize && this.fontSizeLevels[savedFontSize]) {
+                    this.fontSize = savedFontSize;
+                    this.applyFontSize();
+                }
                 
                 // 检查URL参数，处理真题模式
                 this.handleUrlParameters();
