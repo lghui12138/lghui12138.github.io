@@ -1420,6 +1420,12 @@
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
+/* 新增：AI分析加载动画 */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 /* 新增：学习成就系统 */
 .achievement-system {
   position: fixed;
@@ -2576,14 +2582,18 @@ input:focus, select:focus, textarea:focus {
             
             selected = i;
             answered = true;
+            
+            // 记录用户选择的答案
+            const q = questions[current];
+            q.userSelected = i;
+            
             renderQuestion();
             
-            const q = questions[current];
             if (i !== q.answer) {
                 addToWrongBook(q, i);
-                showSmartHint('答错了，正确答案已标记');
+                showSmartHint('答错了，正在为您生成详细分析...');
             } else {
-                showSmartHint('答对了！');
+                showSmartHint('答对了！正在为您生成学习建议...');
             }
             
             // 根据模式决定是否显示解析
@@ -2646,8 +2656,70 @@ input:focus, select:focus, textarea:focus {
             const section = document.getElementById('explanationSection');
             if (!answered) return;
             if (forceShow || !section.classList.contains('active')) {
-                section.innerHTML = `<b>答案：</b> ${String.fromCharCode(65+q.answer)}<br><b>解析：</b> ${q.explanation || '暂无解析'}`;
+                // 大幅优化答案显示样式
+                const isCorrect = selected === q.answer;
+                const resultIcon = isCorrect ? '✅' : '❌';
+                const resultText = isCorrect ? '回答正确！' : '回答错误';
+                const resultColor = isCorrect ? '#28a745' : '#dc3545';
+                
+                section.innerHTML = `
+                    <div style="
+                        background: rgba(240,248,255,0.98); 
+                        border: 3px solid #007bff; 
+                        border-radius: 20px; 
+                        padding: 45px; 
+                        margin: 30px 0; 
+                        min-height: 70vh; 
+                        max-height: 85vh; 
+                        overflow-y: auto;
+                        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+                        backdrop-filter: blur(15px);
+                    ">
+                        <div style="color: #007bff; margin-bottom: 35px; font-size: 2.5em; font-weight: bold; text-align: center;">
+                            <i class="fas fa-lightbulb"></i> 🎯 批改结果
+                        </div>
+                        
+                        <div style="color: ${resultColor}; font-weight: bold; font-size: 2.8em; margin-bottom: 40px; text-align: center; padding: 35px; background: ${isCorrect ? '#d4edda' : '#f8d7da'}; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);">
+                            ${resultIcon} ${resultText}
+                        </div>
+                        
+                        <div style="background: #fff3cd; border: 4px solid #ffeaa7; border-radius: 20px; padding: 40px; margin-bottom: 40px; font-size: 1.8em; line-height: 2.0;">
+                            <strong style="font-size: 1.6em; color: #856404;">📝 参考答案：</strong><br><br>
+                            <div style="background: white; padding: 35px; border-radius: 15px; border-left: 6px solid #ffc107; font-size: 1.7em; line-height: 2.2; color: #333; font-weight: 500;">
+                                ${String.fromCharCode(65+q.answer)}
+                            </div>
+                        </div>
+                        
+                        <div style="background: #e7f3ff; border: 4px solid #b3d9ff; border-radius: 20px; padding: 40px; margin-bottom: 40px;">
+                            <strong style="font-size: 1.8em; color: #0056b3;">💡 详细解释：</strong><br><br>
+                            <div style="font-size: 1.6em; line-height: 2.2; color: #333;">${q.explanation || '暂无解析'}</div>
+                        </div>
+                        
+                        <div id="aiAnalysisSection" style="margin-top: 30px;"></div>
+                        
+                        <div style="text-align: center; margin-top: 50px;">
+                            <button onclick="nextQuestion()" style="
+                                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                                color: white;
+                                border: none;
+                                padding: 22px 45px;
+                                border-radius: 30px;
+                                font-size: 1.6em;
+                                cursor: pointer;
+                                box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+                                transition: all 0.3s ease;
+                                font-weight: bold;
+                            " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(79, 172, 254, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(79, 172, 254, 0.4)'">
+                                继续下一题 →
+                            </button>
+                        </div>
+                    </div>
+                `;
                 section.classList.add('active');
+                
+                // 添加AI智能分析
+                generateAIAnalysis(q, isCorrect);
+                
                 if (window.MathJax) MathJax.typesetPromise([section]);
             } else {
                 section.classList.remove('active');
@@ -2657,6 +2729,78 @@ input:focus, select:focus, textarea:focus {
         function toggleFav() {
             const q = questions[current];
             if (isFaved(q)) removeFromFavBook(q); else addToFavBook(q);
+        }
+        
+        // AI智能分析功能
+        function generateAIAnalysis(question, isCorrect) {
+            setTimeout(async () => {
+                try {
+                    const aiSection = document.getElementById('aiAnalysisSection');
+                    if (!aiSection) return;
+                    
+                    // 显示加载动画
+                    aiSection.innerHTML = `
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px; padding: 40px; margin-top: 40px; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);">
+                            <strong style="font-size: 1.8em;">🤖 AI智能分析：</strong><br><br>
+                            <div style="text-align: center; padding: 30px;">
+                                <div style="border: 3px solid rgba(255,255,255,0.3); border-top: 3px solid white; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                                <div style="font-size: 1.2em;">正在分析中...</div>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // 模拟AI分析延迟
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    const analysis = await simulateAIAnalysis(question, isCorrect);
+                    
+                    aiSection.innerHTML = `
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 20px; padding: 40px; margin-top: 40px; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);">
+                            <strong style="font-size: 1.8em;">🤖 AI智能分析：</strong><br><br>
+                            <div style="font-size: 1.6em; line-height: 2.0; background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; backdrop-filter: blur(10px);">
+                                ${analysis}
+                            </div>
+                        </div>
+                    `;
+                } catch (error) {
+                    console.warn('AI分析功能暂时不可用:', error);
+                }
+            }, 500);
+        }
+        
+        // 模拟AI分析（实际项目中替换为真实AI API调用）
+        function simulateAIAnalysis(question, isCorrect) {
+            return new Promise((resolve) => {
+                if (isCorrect) {
+                    resolve(`
+                        ✅ <strong>答题思路分析：</strong><br>
+                        您的答题思路清晰正确，很好地掌握了相关知识点！这道题考查的是流体力学的基础概念，您能正确识别并选择答案。<br><br>
+                        
+                        📚 <strong>知识点掌握：</strong><br>
+                        对这个知识点理解准确，体现了扎实的理论基础。建议继续保持这种学习状态，可以尝试做一些拓展练习。<br><br>
+                        
+                        🎯 <strong>学习建议：</strong><br>
+                        您在这类题目上表现优秀，可以挑战更高难度的题目，或者尝试相关的综合应用题！ 💪<br><br>
+                        
+                        🌟 <strong>继续加油：</strong><br>
+                        保持这种认真的学习态度，您一定能在考试中取得好成绩！ 😊
+                    `);
+                } else {
+                    resolve(`
+                        📝 <strong>答题思路分析：</strong><br>
+                        这道题考查的是流体力学的核心概念，需要仔细理解题意和选项含义。您可能在某个关键知识点上有所混淆。<br><br>
+                        
+                        💡 <strong>改进建议：</strong><br>
+                        建议复习相关理论基础，特别是要注意题目中的关键信息和专业术语。可以重新阅读教材相关章节。<br><br>
+                        
+                        📖 <strong>知识点拓展：</strong><br>
+                        这类题目经常在考试中出现，建议多做类似的练习题，加强对核心概念的理解和记忆。<br><br>
+                        
+                        🌟 <strong>鼓励话语：</strong><br>
+                        别气馁！错题是最好的学习机会，通过分析错误可以更深入地理解知识点。继续加油，您一定会进步的！ 😊
+                    `);
+                }
+            });
         }
         function saveProgress() {
             localStorage.setItem('fullscreen_questions', JSON.stringify(questions));
