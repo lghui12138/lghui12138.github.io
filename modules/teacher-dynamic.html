@@ -261,6 +261,35 @@
             gap: 4px;
         }
 
+        .bank-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .difficulty-badge {
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .difficulty-badge.easy {
+            background: #4caf50;
+        }
+
+        .difficulty-badge.medium {
+            background: #ff9800;
+        }
+
+        .difficulty-badge.hard {
+            background: #f44336;
+        }
+
         .alert {
             padding: 20px;
             border-radius: 8px;
@@ -386,6 +415,32 @@
                             <button class="submit-btn" @click="showAddQuestion = !showAddQuestion">
                                 <i class="fas fa-plus"></i> 添加新题目
                             </button>
+                            <button class="submit-btn" style="margin-left: 10px;" @click="refreshQuestionBank">
+                                <i class="fas fa-sync"></i> 刷新题库
+                            </button>
+                            <button class="submit-btn" style="margin-left: 10px;" @click="exportQuestionBank">
+                                <i class="fas fa-download"></i> 导出数据
+                            </button>
+                        </div>
+
+                        <!-- 题库统计 -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+                            <div class="stat-card">
+                                <div class="stat-number">{{ questionBankStats.totalBanks }}</div>
+                                <div class="stat-label">题库总数</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">{{ questionBankStats.totalQuestions }}</div>
+                                <div class="stat-label">题目总数</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">{{ questionBankStats.difficultQuestions }}</div>
+                                <div class="stat-label">困难题目</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-number">{{ allQuestionBanks.length }}</div>
+                                <div class="stat-label">已加载题库</div>
+                            </div>
                         </div>
 
                         <div v-if="showAddQuestion" class="alert alert-success">
@@ -683,29 +738,14 @@
                             lastActive: '2024-01-15'
                         }
                     ],
-                    questionBank: [
-                        {
-                            id: 1,
-                            title: '流体静力学中，静止流体内部任意一点的压强大小',
-                            difficulty: 'easy',
-                            correctRate: 78,
-                            createdAt: '2024-01-10'
-                        },
-                        {
-                            id: 2,
-                            title: '理想流体的特征包括',
-                            difficulty: 'medium',
-                            correctRate: 65,
-                            createdAt: '2024-01-11'
-                        },
-                        {
-                            id: 3,
-                            title: '雷诺数的物理意义是表示',
-                            difficulty: 'hard',
-                            correctRate: 52,
-                            createdAt: '2024-01-12'
-                        }
-                    ],
+                    questionBank: [],
+                    allQuestionBanks: [],
+                    questionBankStats: {
+                        totalQuestions: 0,
+                        totalBanks: 0,
+                        difficultQuestions: 0,
+                        recentQuestions: 0
+                    },
                     videos: [
                         {
                             id: 1,
@@ -964,10 +1004,184 @@
                     };
                     return names[platform] || '其他';
                 },
+
+                // 题库管理辅助方法
+                getDifficultyText(difficulty) {
+                    const texts = {
+                        'easy': '简单',
+                        'medium': '中等',
+                        'hard': '困难'
+                    };
+                    return texts[difficulty] || '中等';
+                },
+
+                viewQuestion(question) {
+                    const modal = document.createElement('div');
+                    modal.style.cssText = `
+                        position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+                        background: rgba(0,0,0,0.7); z-index: 10020; 
+                        display: flex; align-items: center; justify-content: center;
+                        padding: 20px;
+                    `;
+                    
+                    modal.innerHTML = `
+                        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 80%; max-height: 80%; overflow-y: auto;">
+                            <h3 style="margin-bottom: 20px; color: #333;">
+                                <i class="fas fa-question-circle"></i> 题目详情
+                            </h3>
+                            <div style="margin-bottom: 15px;">
+                                <strong>题目ID:</strong> ${question.id}
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <strong>题目内容:</strong><br/>
+                                <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-top: 5px;">
+                                    ${question.title}
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <strong>所属题库:</strong> ${question.bank}
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <strong>分类:</strong> ${question.category}
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <strong>类型:</strong> ${question.type}
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <strong>难度:</strong> <span class="difficulty-badge ${question.difficulty}">${this.getDifficultyText(question.difficulty)}</span>
+                            </div>
+                            <div style="margin-bottom: 15px;">
+                                <strong>正确率:</strong> ${question.correctRate}%
+                            </div>
+                            ${question.tags && question.tags.length > 0 ? `
+                                <div style="margin-bottom: 15px;">
+                                    <strong>标签:</strong> ${question.tags.map(tag => `<span style="background: #e0e0e0; padding: 2px 6px; border-radius: 4px; margin-right: 5px; font-size: 12px;">${tag}</span>`).join('')}
+                                </div>
+                            ` : ''}
+                            <div style="text-align: center; margin-top: 20px;">
+                                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
+                                    background: #007bff; color: white; border: none; padding: 10px 20px; 
+                                    border-radius: 6px; cursor: pointer;
+                                ">关闭</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                },
                 
                 initCharts() {
                     this.initScoreChart();
                     this.initActivityChart();
+                },
+
+                // 加载真实题库数据
+                async loadRealQuestionBanks() {
+                    try {
+                        this.showNotification('正在加载题库数据...', 'info');
+                        
+                        // 加载题库索引
+                        const indexResponse = await fetch('../question-banks/index.json');
+                        const indexData = await indexResponse.json();
+                        
+                        this.allQuestionBanks = indexData.questionBanks || [];
+                        this.questionBankStats.totalBanks = this.allQuestionBanks.length;
+                        this.questionBankStats.totalQuestions = indexData.statistics?.totalQuestions || 0;
+                        
+                        // 加载部分题库的详细内容作为预览
+                        const previewBanks = ['易错题集.json', '真题_中国海洋大学_2000-2021_cleaned.json'];
+                        
+                        for (const bankInfo of this.allQuestionBanks.slice(0, 5)) {
+                            try {
+                                const response = await fetch(`../question-banks/${bankInfo.filename}`);
+                                const questions = await response.json();
+                                
+                                if (Array.isArray(questions)) {
+                                    // 添加前3道题到展示列表
+                                    questions.slice(0, 3).forEach(q => {
+                                        this.questionBank.push({
+                                            id: q.id,
+                                            title: q.title || q.question || '题目内容',
+                                            bank: bankInfo.name,
+                                            difficulty: this.getDifficultyFromTags(q.tags),
+                                            correctRate: Math.floor(Math.random() * 30) + 60, // 模拟正确率
+                                            createdAt: q.year ? `${q.year}-01-01` : '2024-01-01',
+                                            category: q.category || bankInfo.category,
+                                            tags: q.tags || [],
+                                            type: q.type || '计算题'
+                                        });
+                                    });
+                                }
+                            } catch (error) {
+                                console.warn(`加载题库 ${bankInfo.filename} 失败:`, error);
+                            }
+                        }
+                        
+                        // 更新统计信息
+                        this.questionBankStats.difficultQuestions = this.questionBank.filter(q => q.difficulty === 'hard').length;
+                        this.questionBankStats.recentQuestions = this.questionBank.filter(q => {
+                            const date = new Date(q.createdAt);
+                            const oneWeekAgo = new Date();
+                            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+                            return date >= oneWeekAgo;
+                        }).length;
+                        
+                        // 更新显示的总题目数
+                        this.totalQuestions = this.questionBankStats.totalQuestions;
+                        
+                        this.showNotification(`成功加载 ${this.allQuestionBanks.length} 个题库，共 ${this.totalQuestions} 道题目`, 'success');
+                        
+                    } catch (error) {
+                        console.error('加载题库数据失败:', error);
+                        this.showNotification('加载题库数据失败，请检查网络连接', 'error');
+                    }
+                },
+
+                // 根据标签判断难度
+                getDifficultyFromTags(tags) {
+                    if (!tags || !Array.isArray(tags)) return 'medium';
+                    
+                    const tagString = tags.join(' ').toLowerCase();
+                    if (tagString.includes('易错') || tagString.includes('高级') || tagString.includes('难')) {
+                        return 'hard';
+                    } else if (tagString.includes('基础') || tagString.includes('简单')) {
+                        return 'easy';
+                    }
+                    return 'medium';
+                },
+
+                // 刷新题库数据
+                refreshQuestionBank() {
+                    this.questionBank = [];
+                    this.allQuestionBanks = [];
+                    this.loadRealQuestionBanks();
+                },
+
+                // 导出题库数据
+                exportQuestionBank() {
+                    const data = {
+                        exportTime: new Date().toISOString(),
+                        totalBanks: this.allQuestionBanks.length,
+                        totalQuestions: this.totalQuestions,
+                        banks: this.allQuestionBanks.map(bank => ({
+                            name: bank.name,
+                            filename: bank.filename,
+                            questionCount: bank.questionCount,
+                            category: bank.category,
+                            difficulty: bank.difficulty
+                        })),
+                        sampleQuestions: this.questionBank
+                    };
+                    
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `题库数据导出_${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    this.showNotification('题库数据导出成功！', 'success');
                 },
                 
                 initScoreChart() {
@@ -1054,8 +1268,10 @@
                 
                 this.setLoading(true);
                 
-                setTimeout(() => {
+                setTimeout(async () => {
                     this.loadSettings();
+                    // 加载真实题库数据
+                    await this.loadRealQuestionBanks();
                     this.setLoading(false);
                     this.showNotification('教师面板加载完成！', 'success');
                 }, 1500);
