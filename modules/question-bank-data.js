@@ -50,7 +50,7 @@ window.QuestionBankData = (function() {
             description: '粘性流体的运动规律',
             difficulty: 'hard',
             tags: ['粘性', '流动'],
-            questionCount: 20,
+            questionCount: 33,
             color: '#4ecdc4',
             lastUpdated: '2024-01-12'
         }
@@ -151,7 +151,7 @@ window.QuestionBankData = (function() {
                                 description: item.intro,
                                 difficulty: 'medium',
                                 tags: ['真题', '考试'],
-                                questionCount: 120,
+                                questionCount: 329,
                                 color: '#4facfe',
                                 lastUpdated: new Date().toISOString().split('T')[0]
                             });
