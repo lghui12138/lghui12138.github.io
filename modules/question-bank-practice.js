@@ -932,12 +932,12 @@ window.QuestionBankPractice = (function() {
                         </div>
                         
                         <!-- 答案显示区域 -->
-                        <div id="answerDisplay" class="question-card" style="background: rgba(240,248,255,0.95); border: 2px solid #007bff; display: none; max-height: 35vh; overflow-y: auto;">
-                            <h5 style="color: #007bff; margin-bottom: 25px; font-size: 1.6em; font-weight: bold;">
-                                <i class="fas fa-lightbulb"></i> 参考答案
+                        <div id="answerDisplay" class="question-card" style="background: rgba(240,248,255,0.98); border: 3px solid #007bff; display: none; min-height: 60vh; max-height: 80vh; overflow-y: auto; padding: 40px; margin: 30px 0;">
+                            <h5 style="color: #007bff; margin-bottom: 30px; font-size: 2.2em; font-weight: bold; text-align: center;">
+                                <i class="fas fa-lightbulb"></i> 🎯 批改结果
                             </h5>
-                            <div id="answerContent" style="font-size: 20px; line-height: 1.8; font-weight: 500;"></div>
-                            <div id="explanationContent" style="font-size: 18px; line-height: 1.8; margin-top: 25px; color: #555;"></div>
+                            <div id="answerContent" style="font-size: 24px; line-height: 2.0; font-weight: 500; margin-bottom: 30px;"></div>
+                            <div id="explanationContent" style="font-size: 20px; line-height: 2.0; margin-top: 30px; color: #333;"></div>
                         </div>
                         
                         <!-- 底部操作区域 -->
@@ -1340,12 +1340,12 @@ window.QuestionBankPractice = (function() {
             
             // 更新答案内容 - 使用更大的字体和更清晰的布局
             answerContent.innerHTML = `
-                <div style="color: ${resultColor}; font-weight: bold; font-size: 2.2em; margin-bottom: 30px; text-align: center; padding: 25px; background: ${isCorrect ? '#d4edda' : '#f8d7da'}; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                <div style="color: ${resultColor}; font-weight: bold; font-size: 3.0em; margin-bottom: 40px; text-align: center; padding: 35px; background: ${isCorrect ? '#d4edda' : '#f8d7da'}; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);">
                     ${resultIcon} ${resultText}
                 </div>
-                <div style="background: #fff3cd; border: 3px solid #ffeaa7; border-radius: 15px; padding: 30px; margin-bottom: 30px; font-size: 1.6em; line-height: 1.8;">
-                    <strong style="font-size: 1.4em; color: #856404;">📝 参考答案：</strong><br><br>
-                    <div style="background: white; padding: 25px; border-radius: 10px; border-left: 5px solid #ffc107; font-size: 1.5em; line-height: 2; color: #333; font-weight: 500;">
+                <div style="background: #fff3cd; border: 4px solid #ffeaa7; border-radius: 20px; padding: 40px; margin-bottom: 40px; font-size: 1.8em; line-height: 2.0;">
+                    <strong style="font-size: 1.6em; color: #856404;">📝 参考答案：</strong><br><br>
+                    <div style="background: white; padding: 35px; border-radius: 15px; border-left: 6px solid #ffc107; font-size: 1.7em; line-height: 2.2; color: #333; font-weight: 500;">
                         ${answer}
                     </div>
                 </div>
@@ -1355,32 +1355,32 @@ window.QuestionBankPractice = (function() {
             if (explanationContent) {
                 explanationContent.innerHTML = `
                     ${question.explanation ? `
-                        <div style="margin-bottom: 30px; background: #e7f3ff; border: 3px solid #b3d9ff; border-radius: 15px; padding: 30px;">
-                            <strong style="font-size: 1.5em; color: #0056b3;">💡 详细解释：</strong><br><br>
-                            <div style="font-size: 1.4em; line-height: 2; color: #333;">${question.explanation}</div>
+                        <div style="margin-bottom: 40px; background: #e7f3ff; border: 4px solid #b3d9ff; border-radius: 20px; padding: 40px;">
+                            <strong style="font-size: 1.8em; color: #0056b3;">💡 详细解释：</strong><br><br>
+                            <div style="font-size: 1.6em; line-height: 2.2; color: #333;">${question.explanation}</div>
                         </div>
                     ` : ''}
                     
-                    <div style="background: #f8f9fa; border: 3px solid #dee2e6; padding: 30px; border-radius: 15px; font-size: 1.5em;">
-                        <strong style="color: #495057; font-size: 1.4em;">✓ 标准答案：</strong><br><br>
-                        <div style="background: white; padding: 20px; border-radius: 10px; border-left: 5px solid #28a745; font-size: 1.4em; line-height: 1.8;">
+                    <div style="background: #f8f9fa; border: 4px solid #dee2e6; padding: 40px; border-radius: 20px; font-size: 1.7em;">
+                        <strong style="color: #495057; font-size: 1.6em;">✓ 标准答案：</strong><br><br>
+                        <div style="background: white; padding: 30px; border-radius: 15px; border-left: 6px solid #28a745; font-size: 1.6em; line-height: 2.0;">
                             ${this.formatCorrectAnswer(question)}
                         </div>
                     </div>
                     
-                    <div style="text-align: center; margin-top: 40px;">
+                    <div style="text-align: center; margin-top: 50px;">
                         <button onclick="QuestionBankPractice.continueToNext()" style="
                             background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
                             color: white;
                             border: none;
-                            padding: 18px 35px;
-                            border-radius: 25px;
-                            font-size: 1.4em;
+                            padding: 22px 45px;
+                            border-radius: 30px;
+                            font-size: 1.6em;
                             cursor: pointer;
-                            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.3);
+                            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
                             transition: all 0.3s ease;
                             font-weight: bold;
-                        " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(79, 172, 254, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(79, 172, 254, 0.3)'">
+                        " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(79, 172, 254, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(79, 172, 254, 0.4)'">
                             继续下一题 →
                         </button>
                     </div>
@@ -1391,13 +1391,15 @@ window.QuestionBankPractice = (function() {
             answerDisplay.style.display = 'block';
             
             // 优化答案显示区域的样式
-            answerDisplay.style.minHeight = '50vh';
-            answerDisplay.style.maxHeight = '80vh';
-            answerDisplay.style.fontSize = '18px';
-            answerDisplay.style.padding = '40px';
+            answerDisplay.style.minHeight = '65vh';
+            answerDisplay.style.maxHeight = '85vh';
+            answerDisplay.style.fontSize = '22px';
+            answerDisplay.style.padding = '50px';
             answerDisplay.style.background = 'rgba(240,248,255,0.98)';
-            answerDisplay.style.backdropFilter = 'blur(10px)';
-            answerDisplay.style.boxShadow = '0 15px 50px rgba(0,0,0,0.15)';
+            answerDisplay.style.backdropFilter = 'blur(15px)';
+            answerDisplay.style.boxShadow = '0 20px 60px rgba(0,0,0,0.2)';
+            answerDisplay.style.border = '4px solid #007bff';
+            answerDisplay.style.borderRadius = '20px';
             
             // 滚动到答案显示区域
             setTimeout(() => {
