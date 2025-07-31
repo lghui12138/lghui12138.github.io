@@ -394,8 +394,28 @@
             border-radius: 20px;
             padding: 30px;
             margin-bottom: 30px;
-            max-height: 400px;
+            max-height: 600px;
             overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) #f0f0f0;
+        }
+
+        .question-bank-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .question-bank-list::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 4px;
+        }
+
+        .question-bank-list::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        .question-bank-list::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
         }
 
         .bank-item {
@@ -1340,6 +1360,18 @@
                 },
                 
                 availableYears() {
+                    // 如果URL参数包含真题类型，强制从真题数据中提取年份
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('type') === 'real') {
+                        // 如果真题数据已加载，直接使用
+                        if (this.allQuestions.length > 0) {
+                            const years = [...new Set(this.allQuestions.map(q => q.year))].sort((a, b) => b - a);
+                            return years;
+                        }
+                        // 如果还没加载，返回预期的年份范围
+                        return [2023, 2021, 2020, 2019, 2018, 2016, 2015, 2014, 2013, 2011, 2010, 2009, 2006, 2004, 2003, 2002, 2001];
+                    }
+                    
                     // 如果是真题模式，使用真题年份
                     if (this.isRealExamMode && this.realExamYears.length > 0) {
                         return this.realExamYears.map(y => y.year);
@@ -1347,13 +1379,6 @@
                     
                     // 如果真题数据已加载但realExamYears还没设置，从allQuestions中提取
                     if (this.isRealExamMode && this.allQuestions.length > 0) {
-                        const years = [...new Set(this.allQuestions.map(q => q.year))].sort((a, b) => b - a);
-                        return years;
-                    }
-                    
-                    // 如果URL参数包含真题类型，强制从真题数据中提取年份
-                    const urlParams = new URLSearchParams(window.location.search);
-                    if (urlParams.get('type') === 'real' && this.allQuestions.length > 0) {
                         const years = [...new Set(this.allQuestions.map(q => q.year))].sort((a, b) => b - a);
                         return years;
                     }
