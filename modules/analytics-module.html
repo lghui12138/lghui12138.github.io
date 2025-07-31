@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
     <title>📈 数据分析 - 流体力学学习平台</title>
@@ -348,15 +348,19 @@
             border: 2px dashed var(--ocean-light);
         }
         
-        .chart-placeholder {
-            text-align: center;
-            color: var(--ocean-blue);
+        .chart-container {
+            padding: 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
-        .chart-placeholder i {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            opacity: 0.5;
+        #scoreChart {
+            max-width: 100%;
+            max-height: 100%;
         }
         
         /* ===== 数据表格 ===== */
@@ -606,10 +610,8 @@
                     </div>
                 </div>
                 <div class="chart-box">
-                    <div class="chart-placeholder">
-                        <i class="fas fa-chart-line"></i>
-                        <p>分数线趋势图表</p>
-                        <p style="font-size: 0.9rem; opacity: 0.7;">点击年份筛选器查看详细数据</p>
+                    <div class="chart-container">
+                        <canvas id="scoreChart" width="400" height="200"></canvas>
                     </div>
                 </div>
             </div>
@@ -921,6 +923,57 @@
                 '实验': ['风洞实验', '水槽实验', '压力测量']
             },
 
+            getQuestionsData() {
+                // 尝试从localStorage获取题库数据
+                try {
+                    const savedQuestions = localStorage.getItem('practiceQuestions');
+                    if (savedQuestions) {
+                        return JSON.parse(savedQuestions);
+                    }
+                } catch (error) {
+                    console.warn('无法从localStorage获取题库数据:', error);
+                }
+                
+                // 返回模拟数据
+                return [
+                    {
+                        title: '流体静力学基础',
+                        content: '流体在静止状态下的压力分布规律',
+                        category: '流体静力学',
+                        difficulty: 'easy',
+                        explanation: '根据流体静力学基本方程，静止流体中的压力随深度线性增加'
+                    },
+                    {
+                        title: '伯努利方程应用',
+                        content: '理想流体的能量守恒定律',
+                        category: '流体动力学',
+                        difficulty: 'medium',
+                        explanation: '伯努利方程是流体力学中最重要的基本方程之一'
+                    },
+                    {
+                        title: '湍流特性分析',
+                        content: '湍流的基本特征和数学描述',
+                        category: '湍流理论',
+                        difficulty: 'hard',
+                        explanation: '湍流是一种复杂的流动现象，具有随机性和耗散性'
+                    },
+                    {
+                        title: '边界层理论',
+                        content: '粘性流体边界层的形成和发展',
+                        category: '边界层',
+                        difficulty: 'hard',
+                        explanation: '边界层理论是研究粘性流体运动的重要理论基础'
+                    },
+                    {
+                        title: '流体粘性',
+                        content: '流体粘性的物理意义和数学表达',
+                        category: '流体性质',
+                        difficulty: 'medium',
+                        explanation: '粘性是流体的重要物理性质，决定了流体的内摩擦阻力'
+                    }
+                ];
+            },
+
             init() {
                 this.buildSearchIndex();
                 this.loadSearchHistory();
@@ -929,14 +982,15 @@
             },
 
             buildSearchIndex() {
-                // 索引题库数据
+                // 索引题库数据 - 使用模拟数据或从localStorage获取
+                const questionsData = this.getQuestionsData();
                 questionsData.forEach((question, index) => {
                     this.indexDocument('question', index, {
-                        title: question.text,
-                        content: question.explanation || '',
-                        category: question.category,
-                        difficulty: question.difficulty,
-                        tags: [question.category, question.difficulty]
+                        title: question.title || question.text || `题目${index + 1}`,
+                        content: question.explanation || question.content || '',
+                        category: question.category || '未分类',
+                        difficulty: question.difficulty || 'medium',
+                        tags: [question.category || '未分类', question.difficulty || 'medium']
                     });
                 });
 
@@ -2168,6 +2222,159 @@
             }, 2000);
         }
         
+        // 图表实例
+        let scoreChart = null;
+        
+        // 初始化图表
+        function initChart() {
+            updateChart('all');
+        }
+        
+        function updateChart(year) {
+            console.log('更新图表数据:', year);
+            
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            
+            // 销毁现有图表
+            if (scoreChart) {
+                scoreChart.destroy();
+            }
+            
+            if (year === 'all') {
+                // 显示全部年份的趋势图
+                scoreChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: scoreData.years,
+                        datasets: [{
+                            label: '复试线',
+                            data: scoreData.reexamScores,
+                            borderColor: '#ff6b6b',
+                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }, {
+                            label: '国家线',
+                            data: scoreData.nationalScores,
+                            borderColor: '#4ecdc4',
+                            backgroundColor: 'rgba(78, 205, 196, 0.1)',
+                            tension: 0.3,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: '分数线趋势图表 (2020-2025)',
+                                color: 'white',
+                                font: {
+                                    size: 16
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: 'white'
+                                },
+                                grid: {
+                                    color: 'rgba(255,255,255,0.2)'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: 'white'
+                                },
+                                grid: {
+                                    color: 'rgba(255,255,255,0.2)'
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                // 显示单年度的详细数据
+                const yearData = getScoreData(year);
+                scoreChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['国家线', '复试线'],
+                        datasets: [{
+                            label: `${year}年分数`,
+                            data: [yearData.national, yearData.reexam],
+                            backgroundColor: [
+                                'rgba(78, 205, 196, 0.7)',
+                                'rgba(255, 107, 107, 0.7)'
+                            ],
+                            borderColor: [
+                                '#4ecdc4',
+                                '#ff6b6b'
+                            ],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                labels: {
+                                    color: 'white'
+                                }
+                            },
+                            title: {
+                                display: true,
+                                text: `${year}年分数线数据`,
+                                color: 'white',
+                                font: {
+                                    size: 16
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: {
+                                    color: 'white'
+                                },
+                                grid: {
+                                    color: 'rgba(255,255,255,0.2)'
+                                }
+                            },
+                            y: {
+                                ticks: {
+                                    color: 'white'
+                                },
+                                grid: {
+                                    color: 'rgba(255,255,255,0.2)'
+                                },
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        // 页面加载完成后初始化图表
+        document.addEventListener('DOMContentLoaded', function() {
+            // 延迟初始化图表，确保Chart.js已加载
+            setTimeout(() => {
+                if (typeof Chart !== 'undefined') {
+                    initChart();
+                } else {
+                    console.error('Chart.js未加载');
+                }
+            }, 500);
+        });
+
         console.log('📈 数据分析模块已加载');
     </script>
 </body>
