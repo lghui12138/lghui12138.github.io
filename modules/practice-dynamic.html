@@ -498,6 +498,71 @@
             font-weight: 600;
             font-size: 1em;
             cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* 解析相关样式 */
+        .explanation-toggle {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .analysis-btn {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .analysis-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(23, 162, 184, 0.3);
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #495057);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
+        }
+
+        /* 原有的action-btn样式 */
+        .action-btn {
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-decoration: none;
             display: inline-flex;
@@ -1952,13 +2017,34 @@
                     <div>
                         <i :class="['result-icon', isCorrect ? 'fas fa-check-circle' : 'fas fa-times-circle']"></i>
                         <strong>{{ isCorrect ? '回答正确！' : '回答错误！' }}</strong>
-                            <span v-if="!isCorrect && currentQuestion.options">
-                                正确答案是：{{ String.fromCharCode(65 + currentQuestion.answer) }}. {{ currentQuestion.options[currentQuestion.answer] }}
-                            </span>
+                        <span v-if="!isCorrect && currentQuestion.options">
+                            正确答案是：{{ String.fromCharCode(65 + currentQuestion.answer) }}. {{ currentQuestion.options[currentQuestion.answer] }}
+                        </span>
                     </div>
-                    <div v-if="currentQuestion.explanation" class="explanation">
+                    
+                    <!-- 错误答案时自动显示解析 -->
+                    <div v-if="!isCorrect && currentQuestion.explanation" class="explanation">
+                        <strong>📖 解析：</strong>{{ currentQuestion.explanation }}
+                    </div>
+                    
+                    <!-- 正确答案时显示解析按钮（移动端友好） -->
+                    <div v-if="isCorrect && currentQuestion.explanation" class="explanation-toggle">
+                        <button @click="showAnalysis = !showAnalysis" class="analysis-btn">
+                            <i class="fas fa-eye"></i> {{ showAnalysis ? '隐藏解析' : '查看解析' }}
+                        </button>
+                        <div v-if="showAnalysis" class="explanation">
                             <strong>📖 解析：</strong>{{ currentQuestion.explanation }}
+                        </div>
                     </div>
+                    
+                    <!-- 操作按钮 -->
+                    <div class="result-actions">
+                        <button v-if="!isCorrect" @click="nextQuestion" class="action-btn btn-primary">
+                            <i class="fas fa-arrow-right"></i> 下一题
+                        </button>
+                        <button v-if="!isCorrect" @click="previousQuestion" class="action-btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> 上一题
+                        </button>
                     </div>
                 </div>
 
@@ -2051,7 +2137,9 @@
                     selectedAnswer: null,
                     showResult: false,
                     isCorrect: false,
+                    showAnalysis: false,
                     correctAnswers: 0,
+                    incorrectAnswers: 0,
                     answeredQuestions: 0,
                     startTime: null,
                     totalTime: 0
@@ -2892,6 +2980,7 @@
                     this.selectedAnswer = null;
                     this.showResult = false;
                     this.isCorrect = false;
+                    this.showAnalysis = false;
                     this.userTextAnswer = '';
                     this.showAnswer = false;
                     this.answerSimilarity = 0;
@@ -2919,14 +3008,28 @@
                         return;
                     }
 
+                    // 检查答案是否正确
                     this.isCorrect = this.selectedAnswer === this.currentQuestion.answer;
                     this.showResult = true;
                     
                     if (this.isCorrect) {
                         this.correctAnswers++;
                         this.showNotification('回答正确！', 'success');
+                        
+                        // 正确答案：2秒后自动跳转到下一题
+                        setTimeout(() => {
+                            if (this.currentQuestionIndex < this.questions.length - 1) {
+                                this.nextQuestion();
+                            } else {
+                                this.showNotification('练习完成！', 'success');
+                            }
+                        }, 2000);
                     } else {
+                        this.incorrectAnswers++;
                         this.showNotification('回答错误，请查看解析', 'error');
+                        
+                        // 错误答案：显示解析，不自动跳转，等待用户手动操作
+                        this.showAnalysis = true;
                     }
                     
                     this.answeredQuestions++;
@@ -2938,13 +3041,6 @@
                     }
                     
                     this.saveProgress();
-                    
-                    // 3秒后自动跳转到下一题
-                    setTimeout(() => {
-                        if (this.showResult && this.currentQuestionIndex < this.questions.length - 1) {
-                            this.nextQuestion();
-                        }
-                    }, 3000);
                 },
 
                 nextQuestion() {
@@ -2967,6 +3063,7 @@
                     this.selectedAnswer = null;
                     this.showResult = false;
                     this.isCorrect = false;
+                    this.showAnalysis = false;
                     this.startTime = Date.now();
                 },
 
