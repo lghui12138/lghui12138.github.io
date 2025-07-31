@@ -20,10 +20,34 @@
             color: white;
         }
 
+        .exit-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(220, 53, 69, 0.9);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            font-size: 0.95em;
+        }
+
+        .exit-btn:hover {
+            background: rgba(220, 53, 69, 1);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            color: white;
+        }
+
         .practice-container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            padding-top: 80px; /* 为退出按钮留出空间 */
         }
 
         .practice-header {
@@ -31,6 +55,34 @@
             padding: 40px 0;
             border-bottom: 1px solid rgba(255,255,255,0.2);
             margin-bottom: 30px;
+        }
+
+        .practice-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            min-width: 100px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: rgba(255,255,255,0.8);
         }
 
         .question-panel {
@@ -52,10 +104,15 @@
         }
 
         .question-title {
-            font-size: 1.4em;
-            line-height: 1.6;
-            margin-bottom: 30px;
+            font-size: 1.5em;
+            line-height: 1.8;
+            margin: 20px 0 30px 0;
             color: #2c3e50;
+            font-weight: 500;
+            padding: 20px;
+            background: #f8f9fa;
+            border-left: 5px solid #007bff;
+            border-radius: 0 10px 10px 0;
         }
 
         .options-container {
@@ -193,12 +250,54 @@
 
         .action-buttons {
             display: flex;
+            flex-direction: column;
             gap: 15px;
             margin: 25px 0;
             padding: 20px;
             background: #f8f9fa;
             border-radius: 12px;
             border-top: 3px solid #4facfe;
+        }
+
+        .main-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .navigation-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: space-between;
+            padding-top: 15px;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            border: 2px solid #6c757d;
+            background: white;
+            color: #6c757d;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 120px;
+            justify-content: center;
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            background: #6c757d;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
         }
 
         .submit-btn, .save-btn {
@@ -434,6 +533,11 @@
     </style>
 </head>
 <body>
+    <!-- 固定退出按钮 -->
+    <a href="../index-modular-dynamic.html" class="exit-btn">
+        <i class="fas fa-times"></i> 退出练习
+    </a>
+
     <div id="practiceApp">
         <!-- 海洋背景 -->
         <ocean-background></ocean-background>
@@ -444,11 +548,15 @@
         <!-- 加载动画 -->
         <loading-spinner :show="loading" text="正在加载题目..."></loading-spinner>
 
-        <div class="practice-container" v-if="!loading">
+        <div class="practice-container" v-if="!loading" style="padding-top: 80px;">
             <!-- 页面头部 -->
             <header class="practice-header">
                 <h1><i class="fas fa-brain"></i> 智能题库练习</h1>
                 <p>AI驱动的自适应学习系统</p>
+                <div class="quick-exit-hint">
+                    <i class="fas fa-info-circle"></i>
+                    随时点击右上角退出按钮返回主页
+                </div>
             </header>
 
             <!-- 统计信息 -->
