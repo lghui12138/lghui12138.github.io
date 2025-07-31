@@ -5436,9 +5436,6 @@ async function syncToGitHub(dataType, data) {
         console.error('❌ GitHub同步失败:', error);
     }
 }
-    
-    showModal(detail);
-}
 
 // ====== 题库加载模块 - 确保100%加载真题和分类题库 ======
 
@@ -5542,6 +5539,47 @@ window.QuestionBankLoader = {
         
         try {
             console.log(`📖 正在加载题库: ${bank.filename}`);
+            
+            // 优先从GitHub存储加载
+            if (window.GitHubStorage && window.GitHubStorage.isConnected) {
+                try {
+                    console.log(`🌐 尝试从GitHub加载题库: ${bank.filename}`);
+                    const githubData = await window.GitHubStorage.loadData(`question-banks/${bank.filename}`);
+                    
+                    if (githubData && Array.isArray(githubData)) {
+                        const bankData = {
+                            ...bank,
+                            questions: githubData,
+                            questionCount: githubData.length,
+                            loadedAt: new Date().toISOString()
+                        };
+                        
+                        // 缓存数据
+                        this.cache.set(cacheKey, bankData);
+                        
+                        console.log(`✅ 从GitHub成功加载题库: ${bank.filename}, 题目数量: ${githubData.length}`);
+                        return bankData;
+                    } else if (githubData && githubData.questions && Array.isArray(githubData.questions)) {
+                        const bankData = {
+                            ...bank,
+                            questions: githubData.questions,
+                            questionCount: githubData.questions.length,
+                            loadedAt: new Date().toISOString()
+                        };
+                        
+                        // 缓存数据
+                        this.cache.set(cacheKey, bankData);
+                        
+                        console.log(`✅ 从GitHub成功加载题库: ${bank.filename}, 题目数量: ${githubData.questions.length}`);
+                        return bankData;
+                    }
+                } catch (githubError) {
+                    console.warn(`⚠️ 从GitHub加载题库失败: ${bank.filename}`, githubError.message);
+                }
+            }
+            
+            // 如果GitHub加载失败，从本地文件系统加载
+            console.log(`📁 从本地文件系统加载题库: ${bank.filename}`);
             const response = await fetch(`/question-banks/${bank.filename}`);
             
             if (!response.ok) {

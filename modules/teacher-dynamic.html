@@ -1122,30 +1122,55 @@
                             try {
                                 console.log(`📖 加载第${i+1}个: ${file}`);
                                 
-                                const res = await fetch(`../question-banks/${file}`);
-                                if (res.ok) {
-                                    const data = await res.json();
-                                    if (Array.isArray(data)) {
-                                        data.forEach((item, idx) => {
-                                            this.questionBank.push({
-                                                id: `q_${totalLoaded + idx + 1}`,
-                                                title: (item.title || item.question || '题目').substring(0, 100),
-                                                bank: file.replace('.json', ''),
-                                                bankId: file,
-                                                difficulty: 'medium',
-                                                correctRate: 75,
-                                                createdAt: '2024-01-01',
-                                                category: item.category || '流体力学',
-                                                tags: item.tags || [],
-                                                type: item.type || '题目',
-                                                year: item.year,
-                                                school: item.school || '中国海洋大学',
-                                                score: item.score || 10
-                                            });
-                                        });
-                                        totalLoaded += data.length;
-                                        console.log(`✅ ${file}: +${data.length}题, 累计: ${totalLoaded}`);
+                                let data = null;
+                                
+                                // 优先从GitHub存储加载
+                                if (window.GitHubStorage && window.GitHubStorage.isConnected) {
+                                    try {
+                                        console.log(`🌐 尝试从GitHub加载: ${file}`);
+                                        const githubData = await window.GitHubStorage.loadData(`question-banks/${file}`);
+                                        
+                                        if (githubData && Array.isArray(githubData)) {
+                                            data = githubData;
+                                            console.log(`✅ 从GitHub成功加载: ${file}, 题目数量: ${data.length}`);
+                                        } else if (githubData && githubData.questions && Array.isArray(githubData.questions)) {
+                                            data = githubData.questions;
+                                            console.log(`✅ 从GitHub成功加载: ${file}, 题目数量: ${data.length}`);
+                                        }
+                                    } catch (githubError) {
+                                        console.warn(`⚠️ 从GitHub加载失败: ${file}`, githubError.message);
                                     }
+                                }
+                                
+                                // 如果GitHub加载失败，从本地文件系统加载
+                                if (!data) {
+                                    console.log(`📁 从本地文件系统加载: ${file}`);
+                                    const res = await fetch(`../question-banks/${file}`);
+                                    if (res.ok) {
+                                        data = await res.json();
+                                    }
+                                }
+                                
+                                if (data && Array.isArray(data)) {
+                                    data.forEach((item, idx) => {
+                                        this.questionBank.push({
+                                            id: `q_${totalLoaded + idx + 1}`,
+                                            title: (item.title || item.question || '题目').substring(0, 100),
+                                            bank: file.replace('.json', ''),
+                                            bankId: file,
+                                            difficulty: 'medium',
+                                            correctRate: 75,
+                                            createdAt: '2024-01-01',
+                                            category: item.category || '流体力学',
+                                            tags: item.tags || [],
+                                            type: item.type || '题目',
+                                            year: item.year,
+                                            school: item.school || '中国海洋大学',
+                                            score: item.score || 10
+                                        });
+                                    });
+                                    totalLoaded += data.length;
+                                    console.log(`✅ ${file}: +${data.length}题, 累计: ${totalLoaded}`);
                                 }
                             } catch (e) {
                                 console.log(`❌ ${file}: 跳过`);
@@ -1187,31 +1212,56 @@
                     // 并行加载所有文件
                     const promises = allFiles.map(async (filename, index) => {
                         try {
-                            const response = await fetch(`../question-banks/${filename}`);
-                            if (response.ok) {
-                                const data = await response.json();
-                                if (Array.isArray(data) && data.length > 0) {
-                                    console.log(`📚 ${filename}: ${data.length} 道题`);
-                                    return data.map((q, i) => ({
-                                        id: `super_${index}_${i}`,
-                                        title: (q.title || q.question || '题目内容').slice(0, 200),
-                                        bank: filename.replace('.json', ''),
-                                        bankId: filename,
-                                        difficulty: 'medium',
-                                        correctRate: 75,
-                                        createdAt: '2024-01-01',
-                                        category: q.category || '流体力学',
-                                        tags: q.tags || [],
-                                        type: q.type || '计算题',
-                                        year: q.year,
-                                        school: q.school || '中国海洋大学',
-                                        score: q.score || 10,
-                                        fullTitle: q.title || q.question,
-                                        options: q.options || [],
-                                        answer: q.answer || '',
-                                        explanation: q.explanation || ''
-                                    }));
+                            let data = null;
+                            
+                            // 优先从GitHub存储加载
+                            if (window.GitHubStorage && window.GitHubStorage.isConnected) {
+                                try {
+                                    console.log(`🌐 尝试从GitHub加载: ${filename}`);
+                                    const githubData = await window.GitHubStorage.loadData(`question-banks/${filename}`);
+                                    
+                                    if (githubData && Array.isArray(githubData)) {
+                                        data = githubData;
+                                        console.log(`✅ 从GitHub成功加载: ${filename}, 题目数量: ${data.length}`);
+                                    } else if (githubData && githubData.questions && Array.isArray(githubData.questions)) {
+                                        data = githubData.questions;
+                                        console.log(`✅ 从GitHub成功加载: ${filename}, 题目数量: ${data.length}`);
+                                    }
+                                } catch (githubError) {
+                                    console.warn(`⚠️ 从GitHub加载失败: ${filename}`, githubError.message);
                                 }
+                            }
+                            
+                            // 如果GitHub加载失败，从本地文件系统加载
+                            if (!data) {
+                                console.log(`📁 从本地文件系统加载: ${filename}`);
+                                const response = await fetch(`../question-banks/${filename}`);
+                                if (response.ok) {
+                                    data = await response.json();
+                                }
+                            }
+                            
+                            if (data && Array.isArray(data) && data.length > 0) {
+                                console.log(`📚 ${filename}: ${data.length} 道题`);
+                                return data.map((q, i) => ({
+                                    id: `super_${index}_${i}`,
+                                    title: (q.title || q.question || '题目内容').slice(0, 200),
+                                    bank: filename.replace('.json', ''),
+                                    bankId: filename,
+                                    difficulty: 'medium',
+                                    correctRate: 75,
+                                    createdAt: '2024-01-01',
+                                    category: q.category || '流体力学',
+                                    tags: q.tags || [],
+                                    type: q.type || '计算题',
+                                    year: q.year,
+                                    school: q.school || '中国海洋大学',
+                                    score: q.score || 10,
+                                    fullTitle: q.title || q.question,
+                                    options: q.options || [],
+                                    answer: q.answer || '',
+                                    explanation: q.explanation || ''
+                                }));
                             }
                             return [];
                         } catch (error) {

@@ -1018,24 +1018,44 @@
                 // 显示加载状态
                 document.getElementById('questionList').innerHTML = '<div class="loading">正在加载题目...</div>';
                 
-                // 优先从本地存储加载题库内容
-                const storageKey = `bank_${bank.filename}`;
-                const storedData = localStorage.getItem(storageKey);
-                
                 let questions = [];
                 
-                if (storedData) {
-                    // 如果有本地存储的数据，使用本地数据
+                // 优先从GitHub存储加载
+                if (window.GitHubStorage && window.GitHubStorage.isConnected) {
                     try {
-                        questions = JSON.parse(storedData);
-                        console.log(`📦 从本地存储加载题库: ${bank.filename}, 题目数量: ${questions.length}`);
-                    } catch (error) {
-                        console.error('解析本地存储数据失败:', error);
+                        console.log(`🌐 尝试从GitHub加载题库: ${bank.filename}`);
+                        const githubData = await window.GitHubStorage.loadData(`question-banks/${bank.filename}`);
+                        
+                        if (githubData && Array.isArray(githubData)) {
+                            questions = githubData;
+                            console.log(`✅ 从GitHub成功加载题库: ${bank.filename}, 题目数量: ${questions.length}`);
+                        } else if (githubData && githubData.questions && Array.isArray(githubData.questions)) {
+                            questions = githubData.questions;
+                            console.log(`✅ 从GitHub成功加载题库: ${bank.filename}, 题目数量: ${questions.length}`);
+                        }
+                    } catch (githubError) {
+                        console.warn(`⚠️ 从GitHub加载题库失败: ${bank.filename}`, githubError.message);
                     }
                 }
                 
+                // 如果GitHub加载失败，从本地存储加载
                 if (!questions || questions.length === 0) {
-                    // 如果本地存储没有数据，从服务器加载
+                    const storageKey = `bank_${bank.filename}`;
+                    const storedData = localStorage.getItem(storageKey);
+                    
+                    if (storedData) {
+                        // 如果有本地存储的数据，使用本地数据
+                        try {
+                            questions = JSON.parse(storedData);
+                            console.log(`📦 从本地存储加载题库: ${bank.filename}, 题目数量: ${questions.length}`);
+                        } catch (error) {
+                            console.error('解析本地存储数据失败:', error);
+                        }
+                    }
+                }
+                
+                // 如果本地存储也没有数据，从服务器加载
+                if (!questions || questions.length === 0) {
                     console.log(`🌐 从服务器加载题库: ${bank.filename}`);
                     const response = await fetch(`../question-banks/${bank.filename}`);
                     if (!response.ok) {
@@ -1046,6 +1066,7 @@
                     questions = Array.isArray(serverData) ? serverData : [];
                     
                     // 保存到本地存储
+                    const storageKey = `bank_${bank.filename}`;
                     localStorage.setItem(storageKey, JSON.stringify(questions));
                     console.log(`💾 题库数据已保存到本地存储: ${bank.filename}`);
                 }

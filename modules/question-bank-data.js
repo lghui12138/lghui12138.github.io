@@ -904,7 +904,26 @@ window.QuestionBankData = (function() {
             }
             
             try {
-                // 尝试多种路径
+                // 优先从GitHub存储加载
+                if (window.GitHubStorage && window.GitHubStorage.isConnected) {
+                    try {
+                        console.log(`🌐 尝试从GitHub加载题库: ${bank.filename}`);
+                        const githubData = await window.GitHubStorage.loadData(`question-banks/${bank.filename}`);
+                        
+                        if (githubData && Array.isArray(githubData)) {
+                            console.log(`✅ 从GitHub成功加载题库: ${bank.name}, 题目数量: ${githubData.length}`);
+                            return githubData;
+                        } else if (githubData && githubData.questions && Array.isArray(githubData.questions)) {
+                            console.log(`✅ 从GitHub成功加载题库: ${bank.name}, 题目数量: ${githubData.questions.length}`);
+                            return githubData.questions;
+                        }
+                    } catch (githubError) {
+                        console.warn(`⚠️ 从GitHub加载题库失败: ${bank.filename}`, githubError.message);
+                    }
+                }
+                
+                // 如果GitHub加载失败，尝试从本地文件系统加载
+                console.log(`📁 从本地文件系统加载题库: ${bank.filename}`);
                 let response;
                 const paths = [
                     `../question-banks/${bank.filename}`,
@@ -917,7 +936,7 @@ window.QuestionBankData = (function() {
                     try {
                         response = await fetch(path);
                         if (response.ok) {
-                            console.log(`成功从路径加载: ${path}`);
+                            console.log(`✅ 成功从路径加载: ${path}`);
                             break;
                         }
                     } catch (e) {

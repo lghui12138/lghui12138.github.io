@@ -503,14 +503,40 @@
                                 for (const file of realExamFiles) {
                                     try {
                                         console.log(`📖 正在加载真题文件: ${file.filename}`);
-                                        const response = await fetch(`/question-banks/${file.filename}`);
                                         
-                                        if (!response.ok) {
-                                            console.error(`❌ 真题文件加载失败: ${file.filename}, 状态: ${response.status}`);
-                                            continue;
+                                        let data = null;
+                                        
+                                        // 优先从GitHub存储加载
+                                        if (window.GitHubStorage && window.GitHubStorage.isConnected) {
+                                            try {
+                                                console.log(`🌐 尝试从GitHub加载真题: ${file.filename}`);
+                                                const githubData = await window.GitHubStorage.loadData(`question-banks/${file.filename}`);
+                                                
+                                                if (githubData && Array.isArray(githubData)) {
+                                                    data = githubData;
+                                                    console.log(`✅ 从GitHub成功加载真题: ${file.filename}, 题目数量: ${data.length}`);
+                                                } else if (githubData && githubData.questions && Array.isArray(githubData.questions)) {
+                                                    data = githubData.questions;
+                                                    console.log(`✅ 从GitHub成功加载真题: ${file.filename}, 题目数量: ${data.length}`);
+                                                }
+                                            } catch (githubError) {
+                                                console.warn(`⚠️ 从GitHub加载真题失败: ${file.filename}`, githubError.message);
+                                            }
                                         }
                                         
-                                        const data = await response.json();
+                                        // 如果GitHub加载失败，从本地文件系统加载
+                                        if (!data) {
+                                            console.log(`📁 从本地文件系统加载真题: ${file.filename}`);
+                                            const response = await fetch(`/question-banks/${file.filename}`);
+                                            
+                                            if (!response.ok) {
+                                                console.error(`❌ 真题文件加载失败: ${file.filename}, 状态: ${response.status}`);
+                                                continue;
+                                            }
+                                            
+                                            data = await response.json();
+                                        }
+                                        
                                         const questions = Array.isArray(data) ? data : (data.questions || data.data || []);
                                         
                                         console.log(`✅ 真题文件加载成功: ${file.filename}, 题目数量: ${questions.length}`);
