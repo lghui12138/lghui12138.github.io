@@ -56,6 +56,49 @@
             z-index: -1;
             overflow: hidden;
         }
+
+        /* 湍流可视化样式 */
+        .turbulence-visualization {
+            position: absolute;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .turbulence-visualization:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+        }
+
+        .flow-pattern-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        #turbulenceCanvas {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .flow-legend {
+            background: rgba(248,249,250,0.8);
+            border-radius: 8px;
+            padding: 8px;
+        }
+
+        .flow-legend > div {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500;
+        }
         
         .wave {
             position: absolute;
@@ -1230,6 +1273,33 @@
             observationWindow.style.top = '30%';
             observationWindow.innerHTML = '👁️';
             canvas.appendChild(observationWindow);
+
+            // 湍流可视化区域
+            const turbulenceViz = document.createElement('div');
+            turbulenceViz.id = 'turbulenceVisualization';
+            turbulenceViz.className = 'turbulence-visualization';
+            turbulenceViz.style.left = '10%';
+            turbulenceViz.style.top = '70%';
+            turbulenceViz.style.width = '80%';
+            turbulenceViz.style.height = '200px';
+            turbulenceViz.style.background = 'rgba(255,255,255,0.9)';
+            turbulenceViz.style.borderRadius = '15px';
+            turbulenceViz.style.border = '2px solid var(--ocean-light)';
+            turbulenceViz.style.padding = '20px';
+            turbulenceViz.innerHTML = `
+                <h3 style="color: var(--ocean-deep); margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-chart-line"></i> 湍流速度分布示意图
+                </h3>
+                <div id="flowPattern" class="flow-pattern-container">
+                    <canvas id="turbulenceCanvas" width="600" height="120"></canvas>
+                </div>
+                <div class="flow-legend" style="margin-top: 10px; display: flex; justify-content: space-around; font-size: 12px; color: var(--ocean-deep);">
+                    <div><span style="color: #2196F3;">■</span> 层流区</div>
+                    <div><span style="color: #FF9800;">■</span> 过渡区</div>
+                    <div><span style="color: #F44336;">■</span> 湍流区</div>
+                </div>
+            `;
+            canvas.appendChild(turbulenceViz);
         }
         
         // 更新参数
@@ -1264,6 +1334,373 @@
             document.getElementById('flowState').textContent = flowState;
             document.getElementById('kineticEnergy').textContent = kineticEnergy;
             document.getElementById('potentialEnergy').textContent = potentialEnergy;
+            
+            // 绘制湍流可视化图表
+            drawTurbulenceVisualization(reynoldsNumber, flowState);
+            
+            // 启动动画（仅对湍流和过渡流）
+            if (flowState === '湍流' || flowState === '过渡流') {
+                startTurbulenceAnimation();
+            } else {
+                stopTurbulenceAnimation();
+            }
+        }
+
+        // 绘制湍流可视化
+        function drawTurbulenceVisualization(reynoldsNumber, flowState) {
+            const canvas = document.getElementById('turbulenceCanvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 清空画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制管道轮廓
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, 20);
+            ctx.lineTo(width, 20);
+            ctx.moveTo(0, height - 20);
+            ctx.lineTo(width, height - 20);
+            ctx.stroke();
+            
+            // 根据雷诺数绘制不同的流动模式
+            if (reynoldsNumber < 2300) {
+                // 层流：平滑的流线
+                drawLaminarFlow(ctx, width, height);
+            } else if (reynoldsNumber > 4000) {
+                // 湍流：混乱的涡流
+                drawTurbulentFlow(ctx, width, height);
+            } else {
+                // 过渡流：部分混乱
+                drawTransitionFlow(ctx, width, height);
+            }
+            
+            // 绘制流动状态标签
+            ctx.fillStyle = flowState === '层流' ? '#2196F3' : flowState === '湍流' ? '#F44336' : '#FF9800';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText(`${flowState} (Re = ${reynoldsNumber})`, 10, height - 5);
+        }
+
+        // 绘制层流
+        function drawLaminarFlow(ctx, width, height) {
+            ctx.strokeStyle = '#2196F3';
+            ctx.lineWidth = 2;
+            
+            const centerY = height / 2;
+            const numLines = 7;
+            
+            for (let i = 0; i < numLines; i++) {
+                const y = 30 + (i * (height - 60) / (numLines - 1));
+                const velocityRatio = 1 - Math.pow((y - centerY) / (centerY - 30), 2);
+                const maxLength = width * 0.8 * velocityRatio;
+                
+                ctx.beginPath();
+                ctx.moveTo(50, y);
+                
+                // 绘制平滑的流线
+                for (let x = 50; x < 50 + maxLength; x += 5) {
+                    const waveY = y + Math.sin(x * 0.01) * 2 * velocityRatio;
+                    ctx.lineTo(x, waveY);
+                }
+                
+                ctx.stroke();
+                
+                // 添加箭头
+                if (maxLength > 100) {
+                    const arrowX = 50 + maxLength - 20;
+                    drawArrow(ctx, arrowX, y, 5, '#2196F3');
+                }
+            }
+        }
+
+        // 绘制湍流
+        function drawTurbulentFlow(ctx, width, height) {
+            ctx.strokeStyle = '#F44336';
+            ctx.lineWidth = 1.5;
+            
+            // 绘制混乱的涡流模式
+            const numVortices = 8;
+            const time = Date.now() * 0.002;
+            
+            for (let i = 0; i < numVortices; i++) {
+                const x = (i + 0.5) * width / numVortices;
+                const y = 40 + Math.random() * (height - 80);
+                const radius = 15 + Math.random() * 20;
+                const phase = i * Math.PI / 4 + time;
+                
+                // 绘制涡流
+                ctx.beginPath();
+                for (let angle = 0; angle < Math.PI * 2; angle += 0.1) {
+                    const r = radius * (1 + 0.3 * Math.sin(angle * 3 + phase));
+                    const px = x + r * Math.cos(angle);
+                    const py = y + r * Math.sin(angle);
+                    
+                    if (angle === 0) {
+                        ctx.moveTo(px, py);
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
+                }
+                ctx.stroke();
+                
+                // 添加速度矢量
+                for (let j = 0; j < 4; j++) {
+                    const angle = j * Math.PI / 2 + phase;
+                    const vx = x + radius * 0.7 * Math.cos(angle);
+                    const vy = y + radius * 0.7 * Math.sin(angle);
+                    drawArrow(ctx, vx, vy, 3, '#F44336');
+                }
+            }
+            
+            // 绘制不规则流线
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                let y = 35 + i * (height - 70) / 4;
+                ctx.moveTo(20, y);
+                
+                for (let x = 20; x < width - 20; x += 10) {
+                    y += (Math.random() - 0.5) * 20;
+                    y = Math.max(30, Math.min(height - 30, y));
+                    ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+        }
+
+        // 绘制过渡流
+        function drawTransitionFlow(ctx, width, height) {
+            ctx.strokeStyle = '#FF9800';
+            ctx.lineWidth = 2;
+            
+            const centerY = height / 2;
+            const numLines = 6;
+            
+            for (let i = 0; i < numLines; i++) {
+                const y = 35 + (i * (height - 70) / (numLines - 1));
+                ctx.beginPath();
+                ctx.moveTo(30, y);
+                
+                let currentY = y;
+                for (let x = 30; x < width - 30; x += 8) {
+                    // 在某些区域添加扰动
+                    if (x > width * 0.4 && x < width * 0.8) {
+                        currentY += (Math.random() - 0.5) * 8;
+                        currentY = Math.max(30, Math.min(height - 30, currentY));
+                    } else {
+                        // 保持相对平稳
+                        currentY += (Math.random() - 0.5) * 2;
+                    }
+                    ctx.lineTo(x, currentY);
+                }
+                ctx.stroke();
+                
+                // 在扰动区域添加小涡流
+                if (i === 2 || i === 3) {
+                    for (let vx = width * 0.5; vx < width * 0.7; vx += 40) {
+                        drawSmallVortex(ctx, vx, currentY, 8, '#FF9800');
+                    }
+                }
+            }
+        }
+
+        // 绘制箭头
+        function drawArrow(ctx, x, y, size, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(x - size, y - size/2);
+            ctx.lineTo(x - size, y + size/2);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // 绘制小涡流
+        function drawSmallVortex(ctx, x, y, radius, color) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // 添加旋转指示
+            ctx.beginPath();
+            ctx.arc(x, y, radius * 0.6, 0, Math.PI * 1.5);
+            ctx.stroke();
+        }
+
+        // 动画控制变量
+        let turbulenceAnimationId = null;
+        let animationTime = 0;
+
+        // 启动湍流动画
+        function startTurbulenceAnimation() {
+            if (turbulenceAnimationId) return; // 防止重复启动
+            
+            function animate() {
+                animationTime += 0.1;
+                
+                // 重新绘制湍流可视化
+                const reynoldsNumber = parseInt(document.getElementById('reynoldsNumber').textContent);
+                const flowState = document.getElementById('flowState').textContent;
+                
+                drawTurbulenceVisualizationAnimated(reynoldsNumber, flowState, animationTime);
+                
+                turbulenceAnimationId = requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+
+        // 停止湍流动画
+        function stopTurbulenceAnimation() {
+            if (turbulenceAnimationId) {
+                cancelAnimationFrame(turbulenceAnimationId);
+                turbulenceAnimationId = null;
+            }
+        }
+
+        // 带动画的湍流可视化绘制
+        function drawTurbulenceVisualizationAnimated(reynoldsNumber, flowState, time) {
+            const canvas = document.getElementById('turbulenceCanvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // 清空画布
+            ctx.clearRect(0, 0, width, height);
+            
+            // 绘制管道轮廓
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, 20);
+            ctx.lineTo(width, 20);
+            ctx.moveTo(0, height - 20);
+            ctx.lineTo(width, height - 20);
+            ctx.stroke();
+            
+            // 根据流动状态绘制动画
+            if (flowState === '湍流') {
+                drawAnimatedTurbulentFlow(ctx, width, height, time);
+            } else if (flowState === '过渡流') {
+                drawAnimatedTransitionFlow(ctx, width, height, time);
+            }
+            
+            // 绘制流动状态标签
+            ctx.fillStyle = flowState === '湍流' ? '#F44336' : '#FF9800';
+            ctx.font = 'bold 16px Arial';
+            ctx.fillText(`${flowState} (Re = ${reynoldsNumber})`, 10, height - 5);
+        }
+
+        // 绘制动态湍流
+        function drawAnimatedTurbulentFlow(ctx, width, height, time) {
+            ctx.strokeStyle = '#F44336';
+            ctx.lineWidth = 1.5;
+            
+            // 绘制动态涡流
+            const numVortices = 8;
+            
+            for (let i = 0; i < numVortices; i++) {
+                const baseX = (i + 0.5) * width / numVortices;
+                const x = baseX + Math.sin(time * 0.5 + i) * 10;
+                const y = 40 + Math.sin(time * 0.3 + i * 1.5) * (height - 80) * 0.3 + (height - 80) * 0.5;
+                const radius = 15 + Math.sin(time * 0.4 + i * 0.8) * 8;
+                const phase = i * Math.PI / 4 + time * 2;
+                
+                // 绘制旋转涡流
+                ctx.beginPath();
+                for (let angle = 0; angle < Math.PI * 2; angle += 0.2) {
+                    const r = radius * (1 + 0.3 * Math.sin(angle * 3 + phase));
+                    const px = x + r * Math.cos(angle);
+                    const py = y + r * Math.sin(angle);
+                    
+                    if (angle === 0) {
+                        ctx.moveTo(px, py);
+                    } else {
+                        ctx.lineTo(px, py);
+                    }
+                }
+                ctx.stroke();
+                
+                // 动态速度矢量
+                for (let j = 0; j < 3; j++) {
+                    const angle = j * Math.PI * 2 / 3 + phase;
+                    const vx = x + radius * 0.8 * Math.cos(angle);
+                    const vy = y + radius * 0.8 * Math.sin(angle);
+                    drawArrow(ctx, vx, vy, 4, '#F44336');
+                }
+            }
+            
+            // 绘制动态不规则流线
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                let y = 35 + i * (height - 70) / 4;
+                ctx.moveTo(20, y);
+                
+                for (let x = 20; x < width - 20; x += 8) {
+                    const chaos = Math.sin(x * 0.05 + time + i) * Math.sin(time * 0.3 + i * 2);
+                    y += chaos * 8;
+                    y = Math.max(30, Math.min(height - 30, y));
+                    ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+        }
+
+        // 绘制动态过渡流
+        function drawAnimatedTransitionFlow(ctx, width, height, time) {
+            ctx.strokeStyle = '#FF9800';
+            ctx.lineWidth = 2;
+            
+            for (let i = 0; i < 6; i++) {
+                const y = 35 + (i * (height - 70) / 5);
+                ctx.beginPath();
+                ctx.moveTo(30, y);
+                
+                let currentY = y;
+                for (let x = 30; x < width - 30; x += 10) {
+                    // 在过渡区域添加动态扰动
+                    if (x > width * 0.4 && x < width * 0.8) {
+                        const disturbance = Math.sin(x * 0.1 + time * 2 + i) * 6;
+                        currentY += disturbance * 0.2;
+                        currentY = Math.max(30, Math.min(height - 30, currentY));
+                    }
+                    ctx.lineTo(x, currentY);
+                }
+                ctx.stroke();
+                
+                // 动态小涡流
+                if (i === 2 || i === 3) {
+                    for (let vx = width * 0.5; vx < width * 0.7; vx += 50) {
+                        const vortexRadius = 8 + Math.sin(time + vx * 0.01) * 3;
+                        drawAnimatedSmallVortex(ctx, vx, currentY, vortexRadius, '#FF9800', time);
+                    }
+                }
+            }
+        }
+
+        // 绘制动态小涡流
+        function drawAnimatedSmallVortex(ctx, x, y, radius, color, time) {
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 1;
+            
+            // 旋转的涡流
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, Math.PI * 2);
+            ctx.stroke();
+            
+            // 旋转指示线
+            const rotation = time * 3;
+            ctx.beginPath();
+            ctx.arc(x, y, radius * 0.7, rotation, rotation + Math.PI);
+            ctx.stroke();
         }
         
         // 重置实验
