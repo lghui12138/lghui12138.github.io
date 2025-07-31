@@ -2620,16 +2620,14 @@ input:focus, select:focus, textarea:focus {
                 return `<button class="${cls}" onclick="selectOption(${i})">${String.fromCharCode(65+i)}. ${opt}</button>`;
             }).join('');
             
-            // 答题操作按钮 - 集成到题目框内
-            const canSubmit = !answered && (selected !== null && selected !== undefined);
-            const submitStatus = answered ? '已提交答案' : (canSubmit ? '点击提交答案' : '请先选择选项');
+            // 答题操作按钮 - 动态状态管理版本
             const actionButtons = `
                 <div class="question-actions-integrated" style="
                     margin-top: 20px; 
                     padding: 20px;
                     background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(0, 123, 255, 0.05));
                     border-radius: 12px; 
-                    border: 2px solid ${canSubmit ? '#28a745' : '#dee2e6'};
+                    border: 2px solid #dee2e6;
                     transition: all 0.3s ease;
                     position: relative;
                     overflow: hidden;
@@ -2644,28 +2642,28 @@ input:focus, select:focus, textarea:focus {
                         z-index: 2;
                     ">
                         <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                            <button id="submitAnswerBtn" onclick="submitCurrentAnswer()" 
+                            <button id="submitAnswerBtn" onclick="handleSubmitClick()" 
                                     style="
-                                        background: ${canSubmit ? 'linear-gradient(135deg, #28a745, #20c997)' : 'linear-gradient(135deg, #6c757d, #5a6268)'};
+                                        background: linear-gradient(135deg, #6c757d, #5a6268);
                                         color: white;
                                         border: none;
                                         padding: 16px 32px;
                                         border-radius: 10px;
                                         font-size: 16px;
                                         font-weight: 600;
-                                        cursor: ${canSubmit ? 'pointer' : 'not-allowed'};
-                                        box-shadow: ${canSubmit ? '0 4px 15px rgba(40, 167, 69, 0.3)' : '0 2px 8px rgba(108, 117, 125, 0.2)'};
+                                        cursor: not-allowed;
+                                        box-shadow: 0 2px 8px rgba(108, 117, 125, 0.2);
                                         transition: all 0.3s ease;
                                         min-width: 150px;
                                         position: relative;
                                         overflow: hidden;
                                     " 
-                                    ${!canSubmit ? 'disabled' : ''}
+                                    disabled
                                     onmouseover="if(!this.disabled) { this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 25px rgba(40, 167, 69, 0.4)'; }" 
                                     onmouseout="if(!this.disabled) { this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(40, 167, 69, 0.3)'; }">
                                 <i class="fas fa-paper-plane"></i> 提交答案
                             </button>
-                            <button onclick="saveProgress()" 
+                            <button onclick="handleSaveProgress()" 
                                     style="
                                         background: linear-gradient(135deg, #007bff, #0056b3);
                                         color: white;
@@ -2703,7 +2701,7 @@ input:focus, select:focus, textarea:focus {
                             </button>
                         </div>
                     </div>
-                    <div style="
+                    <div class="question-status-indicator" style="
                         margin-top: 15px; 
                         text-align: center;
                         padding: 10px;
@@ -2711,11 +2709,11 @@ input:focus, select:focus, textarea:focus {
                         border-radius: 8px;
                         font-size: 14px; 
                         font-weight: 500;
-                        color: ${answered ? '#28a745' : (canSubmit ? '#007bff' : '#6c757d')};
-                        border-left: 4px solid ${answered ? '#28a745' : (canSubmit ? '#007bff' : '#6c757d')};
+                        color: #6c757d;
+                        border-left: 4px solid #6c757d;
+                        transition: all 0.3s ease;
                     ">
-                        <i class="fas ${answered ? 'fa-check-circle' : (canSubmit ? 'fa-hand-pointer' : 'fa-info-circle')}"></i>
-                        ${submitStatus}
+                        <i class="fas fa-info-circle"></i> 请先选择选项
                     </div>
                 </div>
             `;
@@ -2758,7 +2756,52 @@ input:focus, select:focus, textarea:focus {
             
             selected = i;
             console.log('选择选项:', i, 'selected=', selected);
-            renderQuestion(); // 重新渲染以更新按钮状态
+            
+            // 动态更新按钮状态，不需要重新渲染整个题目
+            updateSubmitButtonState();
+            renderQuestion(); // 重新渲染选项状态
+        }
+        
+        // 新增：动态更新提交按钮状态
+        function updateSubmitButtonState() {
+            const submitBtn = document.getElementById('submitAnswerBtn');
+            const statusDiv = document.querySelector('.question-status-indicator');
+            
+            if (!submitBtn) return;
+            
+            const canSubmit = !answered && (selected !== null && selected !== undefined);
+            
+            // 更新按钮样式和状态
+            submitBtn.disabled = !canSubmit;
+            submitBtn.style.background = canSubmit ? 
+                'linear-gradient(135deg, #28a745, #20c997)' : 
+                'linear-gradient(135deg, #6c757d, #5a6268)';
+            submitBtn.style.cursor = canSubmit ? 'pointer' : 'not-allowed';
+            submitBtn.style.boxShadow = canSubmit ? 
+                '0 4px 15px rgba(40, 167, 69, 0.3)' : 
+                '0 2px 8px rgba(108, 117, 125, 0.2)';
+            
+            // 更新状态指示
+            if (statusDiv) {
+                const statusText = answered ? '✓ 已提交答案' : 
+                                 (canSubmit ? '点击提交答案' : '请先选择选项');
+                const statusColor = answered ? '#28a745' : 
+                                   (canSubmit ? '#007bff' : '#6c757d');
+                const statusIcon = answered ? 'fa-check-circle' : 
+                                  (canSubmit ? 'fa-hand-pointer' : 'fa-info-circle');
+                
+                statusDiv.innerHTML = `<i class="fas ${statusIcon}"></i> ${statusText}`;
+                statusDiv.style.color = statusColor;
+                statusDiv.style.borderLeftColor = statusColor;
+            }
+            
+            // 更新外框边框颜色
+            const actionContainer = document.querySelector('.question-actions-integrated');
+            if (actionContainer) {
+                actionContainer.style.borderColor = canSubmit ? '#28a745' : '#dee2e6';
+            }
+            
+            console.log('按钮状态更新: canSubmit=', canSubmit, 'selected=', selected, 'answered=', answered);
         }
         
         // 新增：提交当前答案 - 修复逻辑确保立即显示结果
@@ -2786,6 +2829,9 @@ input:focus, select:focus, textarea:focus {
             // 记录用户选择的答案
             const q = questions[current];
             q.userSelected = selected;
+            
+            // 更新按钮状态为已提交
+            updateSubmitButtonState();
             
             renderQuestion();
             
