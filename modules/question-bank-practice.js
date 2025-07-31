@@ -96,13 +96,10 @@ window.QuestionBankPractice = (function() {
             this.setupWheelEvents();
         },
         
-        // 设置滚轮事件 - 最终优化版本
+        // 设置滚轮事件 - 完全修复版本
         setupWheelEvents: function() {
-            // 只在练习界面内设置滚轮事件
-            const practiceContainer = document.getElementById('practiceContainer');
-            if (!practiceContainer) return;
-            
-            practiceContainer.addEventListener('wheel', (e) => {
+            // 监听整个文档的滚轮事件
+            document.addEventListener('wheel', (e) => {
                 if (!practiceState.isActive) return;
                 
                 // 如果目标元素是输入框或文本域，允许正常滚动
@@ -117,23 +114,97 @@ window.QuestionBankPractice = (function() {
                 // 检查是否在全屏模式
                 const isFullscreen = practiceState.isFullscreen;
                 
-                // 检查是否在题目显示区域内
-                const rect = questionDisplay.getBoundingClientRect();
-                const isInQuestionArea = e.clientY >= rect.top && e.clientY <= rect.bottom;
-                
-                // 如果不在题目区域内，不处理滚轮事件
-                if (!isInQuestionArea) {
-                    return;
+                // 非全屏模式下，优先处理页面滚动
+                if (!isFullscreen) {
+                    // 检查页面是否可以滚动
+                    const canScrollPage = document.body.scrollHeight > window.innerHeight;
+                    
+                    if (canScrollPage) {
+                        // 检查是否在页面顶部或底部
+                        const isAtPageTop = window.scrollY <= 10;
+                        const isAtPageBottom = (window.scrollY + window.innerHeight) >= document.body.scrollHeight - 10;
+                        
+                        // 检查是否在题目显示区域内
+                        const rect = questionDisplay.getBoundingClientRect();
+                        const isInQuestionArea = e.clientY >= rect.top && e.clientY <= rect.bottom;
+                        
+                        // 如果在题目区域内且页面滚动到边界，才考虑切换题目
+                        if (isInQuestionArea) {
+                            const hasScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
+                            
+                            if (hasScrollbar) {
+                                // 题目区域有滚动条，优先处理题目内滚动
+                                const isAtTop = questionDisplay.scrollTop === 0;
+                                const isAtBottom = questionDisplay.scrollTop + questionDisplay.clientHeight >= questionDisplay.scrollHeight;
+                                
+                                if ((isAtTop && e.deltaY < 0 && isAtPageTop) || 
+                                    (isAtBottom && e.deltaY > 0 && isAtPageBottom)) {
+                                    e.preventDefault();
+                                    if (e.deltaY > 0) {
+                                        this.nextQuestion();
+                                    } else {
+                                        this.previousQuestion();
+                                    }
+                                }
+                                return;
+                            } else {
+                                // 题目区域无滚动条，在页面边界时切换题目
+                                if ((e.deltaY < 0 && isAtPageTop) || (e.deltaY > 0 && isAtPageBottom)) {
+                                    e.preventDefault();
+                                    if (e.deltaY > 0) {
+                                        this.nextQuestion();
+                                    } else {
+                                        this.previousQuestion();
+                                    }
+                                }
+                                return;
+                            }
+                        }
+                        // 不在题目区域内，允许正常页面滚动
+                        return;
+                    } else {
+                        // 页面无法滚动，检查题目区域
+                        const rect = questionDisplay.getBoundingClientRect();
+                        const isInQuestionArea = e.clientY >= rect.top && e.clientY <= rect.bottom;
+                        
+                        if (isInQuestionArea) {
+                            const hasScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
+                            
+                            if (hasScrollbar) {
+                                const isAtTop = questionDisplay.scrollTop === 0;
+                                const isAtBottom = questionDisplay.scrollTop + questionDisplay.clientHeight >= questionDisplay.scrollHeight;
+                                
+                                if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
+                                    e.preventDefault();
+                                    if (e.deltaY > 0) {
+                                        this.nextQuestion();
+                                    } else {
+                                        this.previousQuestion();
+                                    }
+                                }
+                                return;
+                            } else {
+                                // 题目区域无滚动条，直接切换题目
+                                e.preventDefault();
+                                if (e.deltaY > 0) {
+                                    this.nextQuestion();
+                                } else {
+                                    this.previousQuestion();
+                                }
+                                return;
+                            }
+                        }
+                        return;
+                    }
                 }
                 
-                // 检查容器是否有滚动条
+                // 全屏模式下的处理逻辑（保持原有逻辑）
                 const hasScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
                 
                 if (hasScrollbar) {
                     const isAtTop = questionDisplay.scrollTop === 0;
                     const isAtBottom = questionDisplay.scrollTop + questionDisplay.clientHeight >= questionDisplay.scrollHeight;
                     
-                    // 只有在顶部向上滚动或底部向下滚动时才切换题目
                     if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
                         e.preventDefault();
                         if (e.deltaY > 0) {
@@ -142,19 +213,14 @@ window.QuestionBankPractice = (function() {
                             this.previousQuestion();
                         }
                     }
-                    // 其他情况允许正常滚动
                     return;
                 } else {
-                    // 没有滚动条时，在全屏模式或特定条件下才切换题目
-                    if (isFullscreen) {
-                        e.preventDefault();
-                        if (e.deltaY > 0) {
-                            this.nextQuestion();
-                        } else {
-                            this.previousQuestion();
-                        }
+                    e.preventDefault();
+                    if (e.deltaY > 0) {
+                        this.nextQuestion();
+                    } else {
+                        this.previousQuestion();
                     }
-                    // 非全屏模式下有滚动条就正常滚动，没有滚动条也不切换题目
                 }
             }, { passive: false });
         },
