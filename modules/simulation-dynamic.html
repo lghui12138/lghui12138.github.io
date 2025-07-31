@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 仿真实验 - 流体力学学习平台</title>
+    
+    <!-- 外部依赖 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- 共享组件库 -->
+    <script src="../js/shared-components.js"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            font-family: 'SF Pro Display', sans-serif;
+            color: white;
+        }
+
+        .simulation-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .experiment-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .experiment-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            color: #333;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .experiment-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        }
+
+        .experiment-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .experiment-icon {
+            font-size: 2.5em;
+            margin-right: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .experiment-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .experiment-description {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .experiment-features {
+            margin-bottom: 25px;
+        }
+
+        .feature-tag {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            margin: 3px;
+        }
+
+        .experiment-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-btn.primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .action-btn.secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #dee2e6;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .simulation-canvas {
+            width: 100%;
+            height: 400px;
+            background: #000;
+            border-radius: 15px;
+            margin: 20px 0;
+            position: relative;
+        }
+
+        .canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            border-radius: 15px;
+            font-size: 1.2em;
+        }
+
+        .controls-panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #333;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .control-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .slider-container {
+            margin: 10px 0;
+        }
+
+        .slider {
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        .slider-value {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 10px;
+        }
+
+        .results-panel {
+            background: linear-gradient(135deg, #e8f5e8, #c8e6c9);
+            border: 3px solid #4caf50;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #2e7d32;
+        }
+
+        .ar-controls, .vr-controls {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            border: 3px solid #ff9800;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #e65100;
+        }
+
+        @media (max-width: 768px) {
+            .experiment-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .simulation-container {
+                padding: 10px;
+            }
+        }
+
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            padding: 12px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .back-btn:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+    </style>
+</head>
+<body>
+    <a href="../index-modular-dynamic.html" class="back-btn">
+        <i class="fas fa-arrow-left"></i> 返回主页
+    </a>
+
+    <div id="simulationApp" class="simulation-container">
+        <ocean-background></ocean-background>
+        <loading-spinner v-if="loading"></loading-spinner>
+        <notification-component :show="notification.show" :message="notification.message" :type="notification.type"></notification-component>
+
+        <header class="page-header">
+            <h1><i class="fas fa-flask"></i> 仿真实验平台</h1>
+            <p>沉浸式流体力学实验体验</p>
+        </header>
+
+        <!-- 实验选择界面 -->
+        <div v-if="currentView === 'experiments'" class="experiment-grid">
+            <div v-for="experiment in experiments" :key="experiment.id" class="experiment-card">
+                <div class="experiment-header">
+                    <div class="experiment-icon">{{ experiment.icon }}</div>
+                    <div class="experiment-title">{{ experiment.title }}</div>
+                </div>
+                <div class="experiment-description">{{ experiment.description }}</div>
+                <div class="experiment-features">
+                    <span v-for="feature in experiment.features" :key="feature" class="feature-tag">
+                        {{ feature }}
+                    </span>
+                </div>
+                <div class="experiment-actions">
+                    <button class="action-btn primary" @click="startExperiment(experiment)">
+                        <i class="fas fa-play"></i> 开始实验
+                    </button>
+                    <button v-if="experiment.hasAR" class="action-btn secondary" @click="startAR(experiment)">
+                        <i class="fas fa-cube"></i> AR模式
+                    </button>
+                    <button v-if="experiment.hasVR" class="action-btn secondary" @click="startVR(experiment)">
+                        <i class="fas fa-vr-cardboard"></i> VR模式
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实验执行界面 -->
+        <div v-if="currentView === 'simulation'" class="experiment-execution">
+            <div class="controls-panel">
+                <h3><i class="fas fa-sliders-h"></i> 实验参数控制</h3>
+                
+                <div v-for="param in currentExperiment.parameters" :key="param.name" class="control-group">
+                    <label class="control-label">{{ param.label }}</label>
+                    <div class="slider-container">
+                        <input 
+                            type="range" 
+                            class="slider"
+                            :min="param.min" 
+                            :max="param.max" 
+                            :step="param.step"
+                            v-model="experimentParams[param.name]"
+                            @input="updateSimulation"
+                        >
+                        <span class="slider-value">{{ experimentParams[param.name] }} {{ param.unit }}</span>
+                    </div>
+                </div>
+
+                <div class="experiment-actions">
+                    <button class="action-btn primary" @click="runSimulation">
+                        <i class="fas fa-play"></i> 运行仿真
+                    </button>
+                    <button class="action-btn secondary" @click="resetSimulation">
+                        <i class="fas fa-redo"></i> 重置
+                    </button>
+                    <button class="action-btn secondary" @click="backToExperiments">
+                        <i class="fas fa-arrow-left"></i> 返回
+                    </button>
+                </div>
+            </div>
+
+            <div class="simulation-canvas" ref="simulationCanvas">
+                <div v-if="!simulationRunning" class="canvas-overlay">
+                    <div>
+                        <i class="fas fa-play-circle" style="font-size: 3em; margin-bottom: 10px;"></i>
+                        <div>点击"运行仿真"开始实验</div>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="simulationResults" class="results-panel">
+                <h4><i class="fas fa-chart-line"></i> 实验结果</h4>
+                <div v-for="result in simulationResults" :key="result.name" class="result-item">
+                    <strong>{{ result.label }}:</strong> {{ result.value }} {{ result.unit }}
+                </div>
+            </div>
+        </div>
+
+        <!-- AR控制界面 -->
+        <div v-if="currentView === 'ar'" class="ar-controls">
+            <h3><i class="fas fa-cube"></i> 增强现实实验</h3>
+            <p>请将摄像头对准实验区域，系统将在现实场景中叠加流体流动效果。</p>
+            
+            <div class="experiment-actions">
+                <button class="action-btn primary" @click="initAR">
+                    <i class="fas fa-camera"></i> 启动AR摄像头
+                </button>
+                <button class="action-btn secondary" @click="backToExperiments">
+                    <i class="fas fa-arrow-left"></i> 返回
+                </button>
+            </div>
+        </div>
+
+        <!-- VR控制界面 -->
+        <div v-if="currentView === 'vr'" class="vr-controls">
+            <h3><i class="fas fa-vr-cardboard"></i> 虚拟现实实验</h3>
+            <p>戴上VR设备，体验沉浸式流体力学实验环境。</p>
+            
+            <div class="experiment-actions">
+                <button class="action-btn primary" @click="initVR">
+                    <i class="fas fa-headset"></i> 进入VR环境
+                </button>
+                <button class="action-btn secondary" @click="backToExperiments">
+                    <i class="fas fa-arrow-left"></i> 返回
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            mixins: [window.SharedMixin],
+            components: {
+                'ocean-background': window.OceanBackground,
+                'notification-component': window.NotificationComponent,
+                'loading-spinner': window.LoadingSpinner
+            },
+            
+            data() {
+                return {
+                    currentView: 'experiments', // experiments, simulation, ar, vr
+                    currentExperiment: null,
+                    simulationRunning: false,
+                    simulationResults: null,
+                    experimentParams: {},
+                    
+                    experiments: [
+                        {
+                            id: 'bernoulli',
+                            title: '伯努利方程验证',
+                            icon: '💨',
+                            description: '通过变截面管道流动验证伯努利方程，观察压强、速度和高度的关系',
+                            features: ['压强测量', '流速计算', '能量守恒', '3D可视化'],
+                            hasAR: true,
+                            hasVR: true,
+                            parameters: [
+                                { name: 'velocity1', label: '入口流速', min: 0.5, max: 5, step: 0.1, unit: 'm/s' },
+                                { name: 'area1', label: '入口面积', min: 0.01, max: 0.1, step: 0.001, unit: 'm²' },
+                                { name: 'area2', label: '出口面积', min: 0.005, max: 0.05, step: 0.001, unit: 'm²' },
+                                { name: 'height', label: '高度差', min: 0, max: 2, step: 0.1, unit: 'm' }
+                            ]
+                        },
+                        {
+                            id: 'reynolds',
+                            title: '雷诺数流态观测',
+                            icon: '🌪️',
+                            description: '观察不同雷诺数下的流动状态转换，理解层流与湍流的区别',
+                            features: ['流态可视化', '雷诺数计算', '临界状态', '粒子追踪'],
+                            hasAR: true,
+                            hasVR: false,
+                            parameters: [
+                                { name: 'velocity', label: '流体速度', min: 0.1, max: 3, step: 0.1, unit: 'm/s' },
+                                { name: 'diameter', label: '管道直径', min: 0.01, max: 0.1, step: 0.001, unit: 'm' },
+                                { name: 'viscosity', label: '动力粘度', min: 1e-6, max: 1e-3, step: 1e-6, unit: 'Pa·s' },
+                                { name: 'density', label: '流体密度', min: 800, max: 1200, step: 10, unit: 'kg/m³' }
+                            ]
+                        },
+                        {
+                            id: 'boundary',
+                            title: '边界层发展',
+                            icon: '📏',
+                            description: '观察平板边界层的形成和发展过程，理解粘性效应',
+                            features: ['边界层厚度', '速度分布', '阻力系数', '分离现象'],
+                            hasAR: false,
+                            hasVR: true,
+                            parameters: [
+                                { name: 'freeVelocity', label: '自由流速度', min: 1, max: 10, step: 0.5, unit: 'm/s' },
+                                { name: 'plateLength', label: '平板长度', min: 0.5, max: 2, step: 0.1, unit: 'm' },
+                                { name: 'fluidViscosity', label: '运动粘度', min: 1e-6, max: 1e-4, step: 1e-6, unit: 'm²/s' }
+                            ]
+                        },
+                        {
+                            id: 'pressure',
+                            title: '静压强分布',
+                            icon: '⚖️',
+                            description: '测量静止流体中的压强分布，验证静力学基本方程',
+                            features: ['压强测量', '等压面', '浮力计算', '液柱高度'],
+                            hasAR: true,
+                            hasVR: false,
+                            parameters: [
+                                { name: 'depth', label: '液体深度', min: 0.1, max: 2, step: 0.1, unit: 'm' },
+                                { name: 'density', label: '液体密度', min: 800, max: 1200, step: 10, unit: 'kg/m³' },
+                                { name: 'objectVolume', label: '物体体积', min: 0.001, max: 0.01, step: 0.0001, unit: 'm³' }
+                            ]
+                        }
+                    ]
+                }
+            },
+            
+            methods: {
+                startExperiment(experiment) {
+                    this.currentExperiment = experiment;
+                    this.currentView = 'simulation';
+                    
+                    // 初始化实验参数
+                    this.experimentParams = {};
+                    experiment.parameters.forEach(param => {
+                        this.experimentParams[param.name] = (param.min + param.max) / 2;
+                    });
+                    
+                    this.showNotification(`开始${experiment.title}实验`, 'info');
+                },
+                
+                startAR(experiment) {
+                    this.currentExperiment = experiment;
+                    this.currentView = 'ar';
+                    this.showNotification(`启动${experiment.title} AR模式`, 'info');
+                },
+                
+                startVR(experiment) {
+                    this.currentExperiment = experiment;
+                    this.currentView = 'vr';
+                    this.showNotification(`启动${experiment.title} VR模式`, 'info');
+                },
+                
+                runSimulation() {
+                    this.simulationRunning = true;
+                    this.showNotification('正在运行仿真...', 'info');
+                    
+                    // 模拟仿真计算
+                    setTimeout(() => {
+                        this.calculateResults();
+                        this.simulationRunning = false;
+                        this.showNotification('仿真完成！', 'success');
+                    }, 2000);
+                },
+                
+                calculateResults() {
+                    const expId = this.currentExperiment.id;
+                    
+                    switch(expId) {
+                        case 'bernoulli':
+                            this.simulationResults = this.calculateBernoulliResults();
+                            break;
+                        case 'reynolds':
+                            this.simulationResults = this.calculateReynoldsResults();
+                            break;
+                        case 'boundary':
+                            this.simulationResults = this.calculateBoundaryResults();
+                            break;
+                        case 'pressure':
+                            this.simulationResults = this.calculatePressureResults();
+                            break;
+                    }
+                },
+                
+                calculateBernoulliResults() {
+                    const { velocity1, area1, area2, height } = this.experimentParams;
+                    const velocity2 = velocity1 * area1 / area2; // 连续性方程
+                    const rho = 1000; // 水的密度
+                    const g = 9.8;
+                    
+                    const pressure1 = 101325; // 标准大气压
+                    const pressure2 = pressure1 + 0.5 * rho * (velocity1*velocity1 - velocity2*velocity2) - rho * g * height;
+                    
+                    return [
+                        { name: 'velocity2', label: '出口流速', value: velocity2.toFixed(2), unit: 'm/s' },
+                        { name: 'pressure2', label: '出口压强', value: (pressure2/1000).toFixed(1), unit: 'kPa' },
+                        { name: 'energy', label: '总机械能', value: ((pressure1 + 0.5*rho*velocity1*velocity1)/1000).toFixed(1), unit: 'kJ/m³' }
+                    ];
+                },
+                
+                calculateReynoldsResults() {
+                    const { velocity, diameter, viscosity, density } = this.experimentParams;
+                    const reynolds = (density * velocity * diameter) / viscosity;
+                    const flowType = reynolds < 2300 ? '层流' : reynolds > 4000 ? '湍流' : '过渡流';
+                    
+                    return [
+                        { name: 'reynolds', label: '雷诺数', value: Math.round(reynolds), unit: '' },
+                        { name: 'flowType', label: '流动状态', value: flowType, unit: '' },
+                        { name: 'criticalVel', label: '临界速度', value: (2300 * viscosity / (density * diameter)).toFixed(3), unit: 'm/s' }
+                    ];
+                },
+                
+                calculateBoundaryResults() {
+                    const { freeVelocity, plateLength, fluidViscosity } = this.experimentParams;
+                    const reynolds = freeVelocity * plateLength / fluidViscosity;
+                    const deltaThickness = 5 * plateLength / Math.sqrt(reynolds);
+                    const dragCoeff = 1.328 / Math.sqrt(reynolds);
+                    
+                    return [
+                        { name: 'reynolds', label: '平板雷诺数', value: Math.round(reynolds), unit: '' },
+                        { name: 'thickness', label: '边界层厚度', value: (deltaThickness * 1000).toFixed(2), unit: 'mm' },
+                        { name: 'dragCoeff', label: '阻力系数', value: dragCoeff.toFixed(4), unit: '' }
+                    ];
+                },
+                
+                calculatePressureResults() {
+                    const { depth, density, objectVolume } = this.experimentParams;
+                    const g = 9.8;
+                    const pressure = 101325 + density * g * depth;
+                    const buoyantForce = density * g * objectVolume;
+                    
+                    return [
+                        { name: 'pressure', label: '绝对压强', value: (pressure/1000).toFixed(1), unit: 'kPa' },
+                        { name: 'gauge', label: '表压强', value: ((pressure-101325)/1000).toFixed(1), unit: 'kPa' },
+                        { name: 'buoyant', label: '浮力', value: buoyantForce.toFixed(3), unit: 'N' }
+                    ];
+                },
+                
+                updateSimulation() {
+                    if (this.simulationRunning) {
+                        this.calculateResults();
+                    }
+                },
+                
+                resetSimulation() {
+                    this.simulationRunning = false;
+                    this.simulationResults = null;
+                    
+                    // 重置参数到默认值
+                    this.currentExperiment.parameters.forEach(param => {
+                        this.experimentParams[param.name] = (param.min + param.max) / 2;
+                    });
+                    
+                    this.showNotification('实验已重置', 'info');
+                },
+                
+                backToExperiments() {
+                    this.currentView = 'experiments';
+                    this.currentExperiment = null;
+                    this.simulationRunning = false;
+                    this.simulationResults = null;
+                },
+                
+                initAR() {
+                    this.showNotification('AR功能需要摄像头权限，请允许访问', 'info');
+                    // 这里可以实现实际的AR功能
+                    setTimeout(() => {
+                        this.showNotification('AR环境初始化完成！使用手机扫描实验区域', 'success');
+                    }, 1500);
+                },
+                
+                initVR() {
+                    this.showNotification('正在初始化VR环境...', 'info');
+                    // 这里可以实现实际的VR功能
+                    setTimeout(() => {
+                        this.showNotification('VR环境已就绪！请戴上VR设备', 'success');
+                    }, 2000);
+                }
+            },
+            
+            mounted() {
+                console.log('🧪 仿真实验平台启动！');
+                this.setLoading(true);
+                
+                setTimeout(() => {
+                    this.setLoading(false);
+                    this.showNotification('仿真实验平台加载完成！', 'success');
+                }, 1200);
+            }
+        }).mount('#simulationApp');
+    </script>
+</body>
+</html> 
