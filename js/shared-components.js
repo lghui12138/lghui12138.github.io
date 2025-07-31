@@ -72,6 +72,57 @@ window.SharedMixin = {
                 console.error('读取失败:', e);
                 return defaultValue;
             }
+        },
+        
+        // 严格检查是否是指定教师账号
+        isAuthorizedTeacher() {
+            const currentUser = this.loadFromStorage('currentUser', {});
+            return currentUser.username === 'liuguanghui6330156' && currentUser.authorized === true;
+        },
+        
+        // 检查是否是教师账号（兼容旧方法）
+        isTeacher() {
+            return this.isAuthorizedTeacher();
+        },
+        
+        // 验证教师权限并显示错误信息
+        requireTeacherAccess(moduleName = '此功能') {
+            if (!this.isAuthorizedTeacher()) {
+                this.showNotification(`${moduleName}仅限指定教师账号 liuguanghui6330156 访问`, 'error');
+                return false;
+            }
+            return true;
+        },
+        
+        // 登录方法（强化权限控制）
+        login(username, password) {
+            // 指定教师账号验证
+            if (username === 'liuguanghui6330156') {
+                const user = {
+                    username: username,
+                    role: 'teacher',
+                    displayName: '刘老师',
+                    loginTime: new Date().toISOString(),
+                    authorized: true
+                };
+                this.saveToStorage('currentUser', user);
+                return { success: true, user };
+            }
+            
+            // 学生账号 (简单验证，无教师权限)
+            if (username && password) {
+                const user = {
+                    username: username,
+                    role: 'student', 
+                    displayName: username,
+                    loginTime: new Date().toISOString(),
+                    authorized: false
+                };
+                this.saveToStorage('currentUser', user);
+                return { success: true, user };
+            }
+            
+            return { success: false, message: '用户名或密码错误' };
         }
     }
 };
