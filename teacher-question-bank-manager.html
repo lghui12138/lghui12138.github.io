@@ -1319,35 +1319,52 @@
         
         // 编辑题目
         function editQuestion(index) {
-            if (!currentBank || !currentBank.questions) return;
-            
-            const question = currentBank.questions[index];
-            currentQuestionId = index;
-            
-            document.getElementById('questionModalTitle').textContent = '编辑题目';
-            document.getElementById('questionTitle').value = question.title || question.question || '';
-            document.getElementById('questionType').value = question.type || '选择题';
-            document.getElementById('questionDifficulty').value = question.difficulty || 'medium';
-            document.getElementById('questionAnswer').value = question.answer || question.correct || '';
-            document.getElementById('questionExplanation').value = question.explanation || '';
-            document.getElementById('questionTags').value = question.tags ? question.tags.join(',') : '';
-            
-            // 填充选项
-            if (question.options) {
-                document.getElementById('optionA').value = question.options[0] || '';
-                document.getElementById('optionB').value = question.options[1] || '';
-                document.getElementById('optionC').value = question.options[2] || '';
-                document.getElementById('optionD').value = question.options[3] || '';
-            } else {
-                // 清空选项
-                document.getElementById('optionA').value = '';
-                document.getElementById('optionB').value = '';
-                document.getElementById('optionC').value = '';
-                document.getElementById('optionD').value = '';
+            if (!currentBank || !currentBank.questions) {
+                showNotification('请先选择题库', 'warning');
+                return;
             }
             
-            updateQuestionForm();
-            document.getElementById('questionModal').style.display = 'block';
+            const question = currentBank.questions[index];
+            if (!question) {
+                showNotification('题目数据不存在', 'error');
+                return;
+            }
+            
+            currentQuestionId = index;
+            
+            try {
+                document.getElementById('questionModalTitle').textContent = '编辑题目';
+                document.getElementById('questionTitle').value = question.title || question.question || '';
+                document.getElementById('questionType').value = question.type || '选择题';
+                document.getElementById('questionDifficulty').value = question.difficulty || 'medium';
+                document.getElementById('questionAnswer').value = question.answer || question.correct || '';
+                document.getElementById('questionExplanation').value = question.explanation || '';
+                document.getElementById('questionTags').value = question.tags ? question.tags.join(',') : '';
+                
+                // 填充选项
+                if (question.options && Array.isArray(question.options)) {
+                    document.getElementById('optionA').value = question.options[0] || '';
+                    document.getElementById('optionB').value = question.options[1] || '';
+                    document.getElementById('optionC').value = question.options[2] || '';
+                    document.getElementById('optionD').value = question.options[3] || '';
+                } else {
+                    // 清空选项
+                    document.getElementById('optionA').value = '';
+                    document.getElementById('optionB').value = '';
+                    document.getElementById('optionC').value = '';
+                    document.getElementById('optionD').value = '';
+                }
+                
+                updateQuestionForm();
+                document.getElementById('questionModal').style.display = 'block';
+                
+                // 显示编辑成功提示
+                showNotification(`正在编辑题目: ${question.title || question.question || '无标题'}`, 'info');
+                
+            } catch (error) {
+                console.error('编辑题目时出错:', error);
+                showNotification('编辑题目时出错: ' + error.message, 'error');
+            }
         }
 
         // 更新题目表单
@@ -1377,25 +1394,31 @@
         }
 
         // 保存题目
-        function saveQuestion(event) {
+        async function saveQuestion(event) {
             event.preventDefault();
             
-            if (!currentBank) {
-                showNotification('请先选择题库', 'warning');
-                return;
-            }
+            try {
+                if (!currentBank) {
+                    showNotification('请先选择题库', 'warning');
+                    return;
+                }
 
-            const title = document.getElementById('questionTitle').value.trim();
-            const type = document.getElementById('questionType').value;
-            const difficulty = document.getElementById('questionDifficulty').value;
-            const answer = document.getElementById('questionAnswer').value.trim();
-            const explanation = document.getElementById('questionExplanation').value.trim();
-            const tags = document.getElementById('questionTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+                const title = document.getElementById('questionTitle').value.trim();
+                const type = document.getElementById('questionType').value;
+                const difficulty = document.getElementById('questionDifficulty').value;
+                const answer = document.getElementById('questionAnswer').value.trim();
+                const explanation = document.getElementById('questionExplanation').value.trim();
+                const tags = document.getElementById('questionTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
 
-            if (!title || !answer) {
-                showNotification('请填写题目内容和正确答案', 'warning');
-                return;
-            }
+                if (!title) {
+                    showNotification('请填写题目内容', 'warning');
+                    return;
+                }
+
+                if (!answer) {
+                    showNotification('请填写正确答案', 'warning');
+                    return;
+                }
 
             const questionData = {
                 id: currentQuestionId !== null ? currentBank.questions[currentQuestionId].id : 'q_' + Date.now(),
@@ -1441,23 +1464,28 @@
                 currentBank.questions.push(questionData);
             }
 
-            // 更新题库文件
-            saveBankQuestions(currentBank, currentBank.questions);
-            
-            // 更新题库的题目数量
-            const bankIndex = questionBanks.findIndex(b => b.id === currentBank.id);
-            if (bankIndex !== -1) {
-                questionBanks[bankIndex].questionCount = currentBank.questions.length;
-                questionBanks[bankIndex].updateTime = new Date().toISOString();
+                // 更新题库文件
+                await saveBankQuestions(currentBank, currentBank.questions);
+                
+                // 更新题库的题目数量
+                const bankIndex = questionBanks.findIndex(b => b.id === currentBank.id);
+                if (bankIndex !== -1) {
+                    questionBanks[bankIndex].questionCount = currentBank.questions.length;
+                    questionBanks[bankIndex].updateTime = new Date().toISOString();
+                }
+                
+                updateBankIndex();
+                displayQuestions(currentBank.questions);
+                updateStats(currentBank.questions);
+                displayBankList();
+                closeQuestionModal();
+                
+                showNotification(currentQuestionId !== null ? '题目更新成功' : '题目添加成功', 'success');
+                
+            } catch (error) {
+                console.error('保存题目时出错:', error);
+                showNotification('保存题目时出错: ' + error.message, 'error');
             }
-            
-            updateBankIndex();
-            displayQuestions(currentBank.questions);
-            updateStats(currentBank.questions);
-            displayBankList();
-            closeQuestionModal();
-            
-            showNotification(currentQuestionId !== null ? '题目更新成功' : '题目添加成功', 'success');
         }
 
         // 关闭题目模态框
