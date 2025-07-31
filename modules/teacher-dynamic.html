@@ -418,6 +418,9 @@
                             <button class="submit-btn" style="margin-left: 10px;" @click="refreshQuestionBank">
                                 <i class="fas fa-sync"></i> 刷新题库
                             </button>
+                            <button class="submit-btn" style="margin-left: 10px; background: #dc3545;" @click="superLoadQuestions">
+                                <i class="fas fa-bolt"></i> 超级加载
+                            </button>
                             <button class="submit-btn" style="margin-left: 10px;" @click="exportQuestionBank">
                                 <i class="fas fa-download"></i> 导出数据
                             </button>
@@ -595,6 +598,9 @@
                             </button>
                             <button class="submit-btn" style="margin-left: 10px;" @click="syncVideos">
                                 <i class="fas fa-sync"></i> 同步到GitHub
+                            </button>
+                            <button class="submit-btn" style="margin-left: 10px; background: #dc3545;" @click="superLoadVideos">
+                                <i class="fas fa-bolt"></i> 超级加载视频
                             </button>
                         </div>
 
@@ -1158,6 +1164,141 @@
                         console.error('❌ 暴力加载失败:', error);
                         this.showNotification('加载失败', 'error');
                     }
+                },
+
+                // 超级暴力加载 - 备用方案
+                async superLoadQuestions() {
+                    console.log('🔥 启动超级暴力加载模式...');
+                    this.questionBank = [];
+                    
+                    // 最直接的方式：逐个尝试所有可能的文件
+                    const allFiles = [
+                        '易错题集.json', '真题_中国海洋大学_2000-2021_cleaned.json', 
+                        '真题_中国海洋大学_2000-2021.json', '分类_动量方程.json',
+                        '分类_势流.json', '分类_压力.json', '分类_实验与量纲.json',
+                        '分类_流体力学基础.json', '分类_流体性质.json', '分类_流线轨迹.json',
+                        '分类_涡度.json', '分类_湍流.json', '分类_管道流动.json',
+                        '分类_粘性.json', '分类_能量方程.json', '分类_自由面.json',
+                        '分类_边界层.json', '分类_雷诺数.json'
+                    ];
+                    
+                    let loadCount = 0;
+                    
+                    // 并行加载所有文件
+                    const promises = allFiles.map(async (filename, index) => {
+                        try {
+                            const response = await fetch(`../question-banks/${filename}`);
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (Array.isArray(data) && data.length > 0) {
+                                    console.log(`📚 ${filename}: ${data.length} 道题`);
+                                    return data.map((q, i) => ({
+                                        id: `super_${index}_${i}`,
+                                        title: (q.title || q.question || '题目内容').slice(0, 200),
+                                        bank: filename.replace('.json', ''),
+                                        bankId: filename,
+                                        difficulty: 'medium',
+                                        correctRate: 75,
+                                        createdAt: '2024-01-01',
+                                        category: q.category || '流体力学',
+                                        tags: q.tags || [],
+                                        type: q.type || '计算题',
+                                        year: q.year,
+                                        school: q.school || '中国海洋大学',
+                                        score: q.score || 10,
+                                        fullTitle: q.title || q.question,
+                                        options: q.options || [],
+                                        answer: q.answer || '',
+                                        explanation: q.explanation || ''
+                                    }));
+                                }
+                            }
+                            return [];
+                        } catch (error) {
+                            console.log(`❌ ${filename} 加载失败`);
+                            return [];
+                        }
+                    });
+                    
+                    const results = await Promise.all(promises);
+                    
+                    // 合并所有结果
+                    results.forEach(questions => {
+                        if (questions && questions.length > 0) {
+                            this.questionBank.push(...questions);
+                            loadCount += questions.length;
+                        }
+                    });
+                    
+                    // 更新统计
+                    this.totalQuestions = this.questionBank.length;
+                    this.questionBankStats.totalQuestions = this.questionBank.length;
+                    this.questionBankStats.totalBanks = allFiles.length;
+                    
+                    console.log(`🚀 超级加载完成！总共加载: ${this.questionBank.length} 道题目`);
+                    this.showNotification(`🚀 超级加载完成！${this.questionBank.length} 道题目`, 'success');
+                    
+                    return this.questionBank.length;
+                },
+
+                // 超级视频加载
+                async superLoadVideos() {
+                    console.log('🎥 启动超级视频加载...');
+                    this.showNotification('正在超级加载视频...', 'info');
+                    
+                    this.videos = [];
+                    
+                    // 直接从多个数据源加载
+                    const videoSources = [
+                        '../data/videos.json',
+                        '../question-banks/videos.json' // 备用位置
+                    ];
+                    
+                    let totalVideos = 0;
+                    
+                    for (const source of videoSources) {
+                        try {
+                            const response = await fetch(source);
+                            if (response.ok) {
+                                const data = await response.json();
+                                if (Array.isArray(data) && data.length > 0) {
+                                    data.forEach((video, index) => {
+                                        this.videos.push({
+                                            id: totalVideos + index + 1,
+                                            title: video.title || '视频标题',
+                                            description: video.description || '暂无描述',
+                                            platform: video.sourceType === 'douyin' ? 'douyin' : 
+                                                     video.sourceType === 'bilibili' ? 'bilibili' : 'other',
+                                            url: video.source || video.url || '',
+                                            category: video.category || '基础理论',
+                                            duration: video.duration || '未知',
+                                            featured: video.featured || false,
+                                            createdAt: video.uploadDate || '2024-01-01',
+                                            views: video.views || '0',
+                                            tags: video.tags || [],
+                                            quality: video.quality || []
+                                        });
+                                    });
+                                    totalVideos += data.length;
+                                    console.log(`✅ 从 ${source} 加载了 ${data.length} 个视频`);
+                                    break; // 成功加载一个源就退出
+                                }
+                            }
+                        } catch (e) {
+                            console.log(`❌ ${source} 加载失败，尝试下一个`);
+                        }
+                    }
+                    
+                    // 如果都没加载到，使用内置数据
+                    if (this.videos.length === 0) {
+                        console.log('📱 使用内置视频数据');
+                        this.loadBuiltInVideos();
+                    }
+                    
+                    console.log(`🎥 超级视频加载完成！${this.videos.length} 个视频`);
+                    this.showNotification(`🎥 超级加载完成！${this.videos.length} 个视频`, 'success');
+                    
+                    return this.videos.length;
                 },
 
                 // 从videos.json加载真实视频数据
