@@ -1427,52 +1427,59 @@
 }
 
 /* 新增：题目内操作按钮样式优化 */
-.question-actions {
-  margin-top: 30px !important;
-  padding: 25px !important;
-  background: rgba(248, 249, 250, 0.9) !important;
-  backdrop-filter: blur(10px) !important;
-  border-radius: 15px !important;
-  border: 2px solid #e9ecef !important;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+.question-actions-inline {
+  margin-top: 25px !important;
+  animation: slideUp 0.3s ease-out;
 }
 
-.action-btn {
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.question-actions-inline button {
   font-family: inherit !important;
-  letter-spacing: 0.5px !important;
-  text-decoration: none !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 8px !important;
+  letter-spacing: 0.3px !important;
+  position: relative;
+  overflow: hidden;
 }
 
-.action-btn:disabled {
-  opacity: 0.5 !important;
-  cursor: not-allowed !important;
-  transform: none !important;
+.question-actions-inline button:before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255,255,255,0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.3s, height 0.3s;
 }
 
-.action-btn:disabled:hover {
-  transform: none !important;
-  box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3) !important;
+.question-actions-inline button:active:before {
+  width: 100px;
+  height: 100px;
+}
+
+.question-actions-inline button:disabled {
+  pointer-events: none;
 }
 
 /* 移动端适配 */
 @media (max-width: 768px) {
-  .question-actions {
+  .question-actions-inline {
+    padding: 18px !important;
+  }
+  
+  .question-actions-inline > div {
     flex-direction: column !important;
-    gap: 20px !important;
+    gap: 12px !important;
   }
   
-  .question-actions > div {
+  .question-actions-inline button {
     width: 100% !important;
-    justify-content: center !important;
-  }
-  
-  .action-btn {
-    width: 100% !important;
-    justify-content: center !important;
-    padding: 15px 20px !important;
+    padding: 16px 24px !important;
     font-size: 16px !important;
   }
 }
@@ -2592,96 +2599,96 @@ input:focus, select:focus, textarea:focus {
                 return `<button class="${cls}" onclick="selectOption(${i})">${String.fromCharCode(65+i)}. ${opt}</button>`;
             }).join('');
             
-            // 添加答题操作按钮区域
+            // 答题操作按钮 - 精简版，只保留核心功能
+            const isSubmitDisabled = (selected === null || selected === undefined || answered);
             const actionButtons = `
-                <div class="question-actions" style="
-                    margin-top: 30px; 
-                    padding: 25px; 
-                    background: rgba(248, 249, 250, 0.8); 
-                    border-radius: 15px; 
-                    border: 2px solid #e9ecef;
-                    display: flex; 
-                    justify-content: space-between; 
-                    align-items: center; 
-                    flex-wrap: wrap; 
-                    gap: 15px;
+                <div class="question-actions-inline" style="
+                    margin-top: 25px; 
+                    padding: 20px;
+                    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+                    border-radius: 12px; 
+                    border: 1px solid #dee2e6;
+                    text-align: center;
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
                 ">
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <button id="submitAnswerBtn" class="action-btn submit-btn" onclick="submitCurrentAnswer()" 
+                    <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-bottom: 15px;">
+                        <button id="submitAnswerBtn" onclick="submitCurrentAnswer()" 
                                 style="
-                                    background: linear-gradient(135deg, #28a745, #20c997);
+                                    background: ${isSubmitDisabled ? '#6c757d' : 'linear-gradient(135deg, #28a745, #20c997)'};
                                     color: white;
                                     border: none;
-                                    padding: 12px 25px;
-                                    border-radius: 12px;
+                                    padding: 14px 28px;
+                                    border-radius: 10px;
                                     font-size: 16px;
                                     font-weight: 600;
-                                    cursor: pointer;
-                                    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+                                    cursor: ${isSubmitDisabled ? 'not-allowed' : 'pointer'};
+                                    opacity: ${isSubmitDisabled ? '0.6' : '1'};
+                                    box-shadow: 0 3px 12px rgba(40, 167, 69, 0.3);
                                     transition: all 0.3s ease;
-                                    min-width: 120px;
+                                    min-width: 140px;
                                 " 
-                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(40, 167, 69, 0.4)'" 
-                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(40, 167, 69, 0.3)'"
-                                ${(selected === null || selected === undefined) ? 'disabled' : ''}>
-                            <i class="fas fa-check"></i> 提交答案
+                                ${isSubmitDisabled ? 'disabled' : ''}
+                                onmouseover="if(!this.disabled) { this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 20px rgba(40, 167, 69, 0.4)'; }" 
+                                onmouseout="if(!this.disabled) { this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 12px rgba(40, 167, 69, 0.3)'; }">
+                            <i class="fas fa-check-circle"></i> 提交答案
                         </button>
-                        <button class="action-btn skip-btn" onclick="skipCurrentQuestion()" 
-                                style="
-                                    background: linear-gradient(135deg, #6c757d, #5a6268);
-                                    color: white;
-                                    border: none;
-                                    padding: 12px 25px;
-                                    border-radius: 12px;
-                                    font-size: 16px;
-                                    font-weight: 600;
-                                    cursor: pointer;
-                                    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
-                                    transition: all 0.3s ease;
-                                    min-width: 120px;
-                                " 
-                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(108, 117, 125, 0.4)'" 
-                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(108, 117, 125, 0.3)'">
-                            <i class="fas fa-forward"></i> 跳过此题
-                        </button>
-                    </div>
-                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                        <button class="action-btn save-btn" onclick="saveProgress()" 
+                        <button onclick="saveProgress()" 
                                 style="
                                     background: linear-gradient(135deg, #007bff, #0056b3);
                                     color: white;
                                     border: none;
-                                    padding: 12px 25px;
-                                    border-radius: 12px;
+                                    padding: 14px 28px;
+                                    border-radius: 10px;
                                     font-size: 16px;
                                     font-weight: 600;
                                     cursor: pointer;
-                                    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+                                    box-shadow: 0 3px 12px rgba(0, 123, 255, 0.3);
                                     transition: all 0.3s ease;
-                                    min-width: 120px;
+                                    min-width: 140px;
                                 " 
-                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0, 123, 255, 0.4)'" 
-                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 123, 255, 0.3)'">
+                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 20px rgba(0, 123, 255, 0.4)'" 
+                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 3px 12px rgba(0, 123, 255, 0.3)'">
                             <i class="fas fa-save"></i> 保存进度
                         </button>
-                        <button class="action-btn report-btn" onclick="reportCurrentQuestion()" 
+                    </div>
+                    <div style="display: flex; justify-content: center; gap: 12px; flex-wrap: wrap;">
+                        <button onclick="skipCurrentQuestion()" 
                                 style="
-                                    background: linear-gradient(135deg, #ffc107, #e0a800);
+                                    background: #6c757d;
+                                    color: white;
+                                    border: none;
+                                    padding: 10px 20px;
+                                    border-radius: 8px;
+                                    font-size: 14px;
+                                    font-weight: 500;
+                                    cursor: pointer;
+                                    transition: all 0.3s ease;
+                                    min-width: 100px;
+                                " 
+                                onmouseover="this.style.background='#5a6268'" 
+                                onmouseout="this.style.background='#6c757d'">
+                            <i class="fas fa-forward"></i> 跳过
+                        </button>
+                        <button onclick="reportCurrentQuestion()" 
+                                style="
+                                    background: #ffc107;
                                     color: #333;
                                     border: none;
-                                    padding: 12px 25px;
-                                    border-radius: 12px;
-                                    font-size: 16px;
-                                    font-weight: 600;
+                                    padding: 10px 20px;
+                                    border-radius: 8px;
+                                    font-size: 14px;
+                                    font-weight: 500;
                                     cursor: pointer;
-                                    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
                                     transition: all 0.3s ease;
-                                    min-width: 120px;
+                                    min-width: 100px;
                                 " 
-                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255, 193, 7, 0.4)'" 
-                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 193, 7, 0.3)'">
-                            <i class="fas fa-flag"></i> 报告问题
+                                onmouseover="this.style.background='#e0a800'" 
+                                onmouseout="this.style.background='#ffc107'">
+                            <i class="fas fa-flag"></i> 反馈
                         </button>
+                    </div>
+                    <div style="margin-top: 12px; font-size: 13px; color: #6c757d;">
+                        ${answered ? '✓ 已提交答案' : selected !== null ? '请点击"提交答案"确认选择' : '请先选择一个选项'}
                     </div>
                 </div>
             `;
@@ -2723,12 +2730,16 @@ input:focus, select:focus, textarea:focus {
             if (answered) return;
             
             selected = i;
+            console.log('选择选项:', i, 'selected=', selected);
             renderQuestion(); // 重新渲染以更新按钮状态
         }
         
         // 新增：提交当前答案
         function submitCurrentAnswer() {
-            if (answered || (selected !== 0 && !selected)) return;
+            if (answered || selected === null || selected === undefined) {
+                console.log('提交失败: answered=', answered, 'selected=', selected);
+                return;
+            }
             
             // 记录答题时间
             const questionTime = Math.floor((Date.now() - questionStartTime) / 1000);
@@ -2989,6 +3000,7 @@ input:focus, select:focus, textarea:focus {
         function saveProgress() {
             localStorage.setItem('fullscreen_questions', JSON.stringify(questions));
             localStorage.setItem('fullscreen_progress', JSON.stringify({current, selected, answered}));
+            showSmartHint('进度已保存 ✓');
         }
         function loadProgress() {
             const p = JSON.parse(localStorage.getItem('fullscreen_progress') || '{}');
