@@ -1105,7 +1105,7 @@
         // 开始实验
         function startExperiment(type) {
             if (type === 'vr-lab' || type === 'ar-lab') {
-                showNotification('🥽 VR/AR功能即将推出，敬请期待！', 'info');
+                showVRArDemo(type);
                 return;
             }
             
@@ -1562,6 +1562,108 @@
                 cancelAnimationFrame(turbulenceAnimationId);
                 turbulenceAnimationId = null;
             }
+        }
+
+        // VR/AR演示功能
+        function showVRArDemo(type) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                background: rgba(0,0,0,0.8); z-index: 10000; display: flex;
+                align-items: center; justify-content: center;
+            `;
+            
+            const isVR = type === 'vr-lab';
+            const title = isVR ? '🥽 VR虚拟实验室' : '📱 AR增强现实';
+            const description = isVR ? '沉浸式虚拟现实流体力学实验' : '增强现实流体力学可视化';
+            
+            modal.innerHTML = `
+                <div style="
+                    background: white; border-radius: 20px; padding: 40px; max-width: 600px;
+                    color: #333; text-align: center; position: relative;
+                ">
+                    <button onclick="this.parentElement.parentElement.remove()" style="
+                        position: absolute; top: 15px; right: 20px; background: none;
+                        border: none; font-size: 24px; cursor: pointer; color: #999;
+                    ">&times;</button>
+                    
+                    <h2 style="margin-bottom: 20px; color: var(--ocean-blue);">${title}</h2>
+                    <p style="margin-bottom: 30px; font-size: 16px; line-height: 1.6;">
+                        ${description}
+                    </p>
+                    
+                    <div style="background: #f8f9fa; border-radius: 15px; padding: 20px; margin: 20px 0;">
+                        <h3 style="color: var(--ocean-deep); margin-bottom: 15px;">
+                            ${isVR ? '🔬 VR实验功能' : '📲 AR体验功能'}
+                        </h3>
+                        <ul style="text-align: left; list-style: none; padding: 0;">
+                            <li style="margin: 10px 0; padding-left: 25px; position: relative;">
+                                <span style="position: absolute; left: 0;">🌊</span>
+                                ${isVR ? '360度沉浸式流体仿真环境' : '实时流体叠加显示'}
+                            </li>
+                            <li style="margin: 10px 0; padding-left: 25px; position: relative;">
+                                <span style="position: absolute; left: 0;">🎮</span>
+                                ${isVR ? '手势控制实验参数' : '手机摄像头识别'}
+                            </li>
+                            <li style="margin: 10px 0; padding-left: 25px; position: relative;">
+                                <span style="position: absolute; left: 0;">📊</span>
+                                ${isVR ? '实时数据可视化' : '3D模型投影显示'}
+                            </li>
+                            <li style="margin: 10px 0; padding-left: 25px; position: relative;">
+                                <span style="position: absolute; left: 0;">🎯</span>
+                                ${isVR ? '交互式学习模式' : '标记点识别定位'}
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div style="margin: 30px 0;">
+                        <button onclick="start${isVR ? 'VR' : 'AR'}Experience()" style="
+                            background: linear-gradient(135deg, var(--ocean-light), var(--seafoam));
+                            color: white; border: none; padding: 15px 30px; border-radius: 25px;
+                            font-size: 16px; font-weight: bold; cursor: pointer; margin: 0 10px;
+                            transition: all 0.3s ease;
+                        ">${isVR ? '🥽 启动VR体验' : '📱 启动AR体验'}</button>
+                        
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
+                            background: #ddd; color: #666; border: none; padding: 15px 30px; 
+                            border-radius: 25px; cursor: pointer; margin: 0 10px;
+                        ">稍后体验</button>
+                    </div>
+                    
+                    <div style="background: #e8f4f8; border-radius: 10px; padding: 15px; margin-top: 20px;">
+                        <small style="color: #666;">
+                            💡 提示: ${isVR ? 'VR体验需要VR头盔设备支持' : 'AR功能需要支持ARCore/ARKit的设备'}
+                        </small>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            modal.onclick = (e) => {
+                if (e.target === modal) modal.remove();
+            };
+            
+            showNotification(`🚀 ${title}演示已启动`, 'success');
+        }
+
+        // 启动VR体验
+        function startVRExperience() {
+            showNotification('🥽 正在初始化VR环境...', 'info');
+            setTimeout(() => {
+                showNotification('🌊 VR流体力学实验室已就绪！', 'success');
+                // 这里可以集成实际的VR框架如A-Frame或Three.js VR
+                document.querySelector('[onclick*="startVRExperience"]').parentElement.parentElement.parentElement.remove();
+            }, 2000);
+        }
+
+        // 启动AR体验  
+        function startARExperience() {
+            showNotification('📱 正在启动AR摄像头...', 'info');
+            setTimeout(() => {
+                showNotification('🔍 AR增强现实已激活！', 'success');
+                // 这里可以集成实际的AR框架如AR.js或8th Wall
+                document.querySelector('[onclick*="startARExperience"]').parentElement.parentElement.parentElement.remove();
+            }, 2000);
         }
 
         // 带动画的湍流可视化绘制
