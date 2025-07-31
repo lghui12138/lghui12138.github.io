@@ -1117,19 +1117,13 @@
                             '分类_雷诺数.json'
                         ];
                         
-                        // 尝试自动连接GitHub（如果未连接）
-                        if (window.GitHubStorage && !window.GitHubStorage.isConnected) {
-                            try {
-                                const token = localStorage.getItem('github_token');
-                                if (token) {
-                                    console.log('🔗 尝试自动连接GitHub...');
-                                    await window.GitHubStorage.connect(token);
-                                    console.log('✅ GitHub自动连接成功');
-                                }
-                            } catch (connectError) {
-                                console.warn('⚠️ GitHub自动连接失败:', connectError.message);
-                            }
-                        }
+                        // 使用已有的GitHub配置直接访问题目文件
+                        const GITHUB_CONFIG = {
+                            owner: 'lghui12138',
+                            repo: 'lghui12138.github.io',
+                            branch: 'main',
+                            baseUrl: 'https://raw.githubusercontent.com/lghui12138/lghui12138.github.io/main'
+                        };
                         
                         for (let i = 0; i < files.length; i++) {
                             const file = files[i];
@@ -1138,8 +1132,7 @@
                                 
                                 let data = null;
                                 
-                                // 优先从GitHub存储加载
-                                if (window.GitHubStorage && window.GitHubStorage.isConnected) {
+                                // 优先从GitHub直接访问
                                     try {
                                         console.log(`🌐 尝试从GitHub加载: ${file}`);
                                         const githubData = await window.GitHubStorage.loadData(`question-banks/${file}`);
@@ -1228,22 +1221,26 @@
                         try {
                             let data = null;
                             
-                            // 优先从GitHub存储加载
-                            if (window.GitHubStorage && window.GitHubStorage.isConnected) {
-                                try {
-                                    console.log(`🌐 尝试从GitHub加载: ${filename}`);
-                                    const githubData = await window.GitHubStorage.loadData(`question-banks/${filename}`);
-                                    
-                                    if (githubData && Array.isArray(githubData)) {
+                            // 优先从GitHub直接访问
+                            try {
+                                console.log(`🌐 尝试从GitHub加载: ${filename}`);
+                                const url = `${GITHUB_CONFIG.baseUrl}/question-banks/${filename}`;
+                                const response = await fetch(url);
+                                
+                                if (response.ok) {
+                                    const githubData = await response.json();
+                                    if (Array.isArray(githubData)) {
                                         data = githubData;
                                         console.log(`✅ 从GitHub成功加载: ${filename}, 题目数量: ${data.length}`);
-                                    } else if (githubData && githubData.questions && Array.isArray(githubData.questions)) {
+                                    } else if (githubData.questions && Array.isArray(githubData.questions)) {
                                         data = githubData.questions;
                                         console.log(`✅ 从GitHub成功加载: ${filename}, 题目数量: ${data.length}`);
                                     }
-                                } catch (githubError) {
-                                    console.warn(`⚠️ 从GitHub加载失败: ${filename}`, githubError.message);
+                                } else {
+                                    console.warn(`⚠️ GitHub文件不存在: ${filename}`);
                                 }
+                            } catch (githubError) {
+                                console.warn(`⚠️ 从GitHub加载失败: ${filename}`, githubError.message);
                             }
                             
                             // 如果GitHub加载失败，从本地文件系统加载
