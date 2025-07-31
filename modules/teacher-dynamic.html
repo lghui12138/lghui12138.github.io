@@ -445,24 +445,28 @@
 
                         <!-- 题库筛选和搜索 -->
                         <div style="display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap;">
-                            <select v-model="selectedBank" @change="filterQuestions" class="form-input" style="flex: 1; min-width: 200px;">
+                            <select v-model="selectedBank" @change="currentPage = 1" class="form-input" style="flex: 1; min-width: 200px;">
                                 <option value="">全部题库</option>
                                 <option v-for="bank in allQuestionBanks" :key="bank.id" :value="bank.id">
                                     {{ bank.name }} ({{ bank.questionCount }}道)
                                 </option>
                             </select>
                             
-                            <select v-model="selectedDifficulty" @change="filterQuestions" class="form-input" style="flex: 1; min-width: 150px;">
+                            <select v-model="selectedDifficulty" @change="currentPage = 1" class="form-input" style="flex: 1; min-width: 150px;">
                                 <option value="">全部难度</option>
                                 <option value="easy">简单</option>
                                 <option value="medium">中等</option>
                                 <option value="hard">困难</option>
                             </select>
                             
-                            <input v-model="searchKeyword" @input="filterQuestions" 
+                            <input v-model="searchKeyword" @input="currentPage = 1" 
                                    placeholder="搜索题目内容..." 
                                    class="form-input" 
                                    style="flex: 2; min-width: 250px;">
+                            
+                            <button @click="resetFilters" class="btn-secondary" style="min-width: 100px;">
+                                <i class="fas fa-refresh"></i> 重置
+                            </button>
                         </div>
 
                         <!-- 显示结果统计 -->
@@ -802,74 +806,7 @@
                         difficultQuestions: 0,
                         recentQuestions: 0
                     },
-                    videos: [
-                        {
-                            id: 1,
-                            title: '动量输运、牛顿内摩擦定律、欧拉坐标',
-                            description: '详细讲解流体力学中的动量输运原理、牛顿内摩擦定律的物理意义和数学表达，以及欧拉坐标系统在流体运动描述中的应用。',
-                            platform: 'douyin',
-                            url: 'https://v.douyin.com/7vrVT-4KmbI/',
-                            category: '基础理论',
-                            duration: '抖音视频',
-                            featured: true,
-                            createdAt: '2024-12-01'
-                        },
-                        {
-                            id: 2,
-                            title: '欧拉、拉格朗日坐标系统',
-                            description: '全面对比欧拉坐标和拉格朗日坐标两种描述流体运动的方法，详解流线和迹线的概念与区别。',
-                            platform: 'douyin',
-                            url: 'https://v.douyin.com/X-ud2xkwvII/',
-                            category: '基础理论',
-                            duration: '抖音视频',
-                            featured: true,
-                            createdAt: '2024-11-25'
-                        },
-                        {
-                            id: 3,
-                            title: '流体力学之美，太美了',
-                            description: '探索流体世界的奇妙现象与科学原理，揭示自然界的流动艺术。',
-                            platform: 'bilibili',
-                            url: 'BV16T421D7k4',
-                            category: '基础理论',
-                            duration: '18:45',
-                            featured: true,
-                            createdAt: '2024-12-01'
-                        },
-                        {
-                            id: 4,
-                            title: '流体力学基础 - 连续性方程',
-                            description: '系统讲解流体力学中的连续性方程，从质量守恒定律出发推导方程形式。',
-                            platform: 'bilibili',
-                            url: 'BV1ax411c7mV',
-                            category: '基础理论',
-                            duration: '25:30',
-                            featured: false,
-                            createdAt: '2024-11-20'
-                        },
-                        {
-                            id: 5,
-                            title: '流体静力学与压强',
-                            description: '详细介绍流体静力学的基本概念，压强的产生机理和分布规律。',
-                            platform: 'bilibili',
-                            url: 'BV1bx411c7mW',
-                            category: '流体静力学',
-                            duration: '32:15',
-                            featured: false,
-                            createdAt: '2024-11-18'
-                        },
-                        {
-                            id: 6,
-                            title: '伯努利方程推导与应用',
-                            description: '从动量定理出发推导伯努利方程，并通过实例展示其工程应用。',
-                            platform: 'bilibili',
-                            url: 'BV1cx411c7mX',
-                            category: '流体动力学',
-                            duration: '28:45',
-                            featured: false,
-                            createdAt: '2024-11-15'
-                        }
-                    ],
+                    videos: [],
                     newQuestion: {
                         title: '',
                         optionA: '',
@@ -1150,28 +1087,58 @@
                         this.questionBankStats.totalBanks = this.allQuestionBanks.length;
                         this.questionBankStats.totalQuestions = indexData.statistics?.totalQuestions || 0;
                         
-                        // 加载所有题库的全部题目
+                        // 强制清空现有题目，重新加载所有题库的全部题目
+                        this.questionBank = [];
                         let totalLoadedQuestions = 0;
+                        let loadedBanks = 0;
                         
-                        for (const bankInfo of this.allQuestionBanks) {
+                        // 获取所有JSON文件，不依赖index.json
+                        const allBankFiles = [
+                            '易错题集.json',
+                            '真题_中国海洋大学_2000-2021_cleaned.json', 
+                            '真题_中国海洋大学_2000-2021.json',
+                            '分类_动量方程.json',
+                            '分类_势流.json', 
+                            '分类_压力.json',
+                            '分类_实验与量纲.json',
+                            '分类_流体力学基础.json',
+                            '分类_流体性质.json',
+                            '分类_流线轨迹.json',
+                            '分类_涡度.json',
+                            '分类_湍流.json',
+                            '分类_管道流动.json',
+                            '分类_粘性.json',
+                            '分类_能量方程.json',
+                            '分类_自由面.json',
+                            '分类_边界层.json',
+                            '分类_雷诺数.json'
+                        ];
+                        
+                        for (const filename of allBankFiles) {
                             try {
-                                this.showNotification(`正在加载 ${bankInfo.name}...`, 'info');
+                                console.log(`🔄 正在加载: ${filename}`);
+                                this.showNotification(`正在加载 ${filename}...`, 'info');
                                 
-                                const response = await fetch(`../question-banks/${bankInfo.filename}`);
+                                const response = await fetch(`../question-banks/${filename}`);
+                                if (!response.ok) {
+                                    console.warn(`⚠️ 文件 ${filename} 不存在或无法访问`);
+                                    continue;
+                                }
+                                
                                 const questions = await response.json();
                                 
-                                if (Array.isArray(questions)) {
-                                    // 加载所有题目，不只是预览
-                                    questions.forEach(q => {
+                                if (Array.isArray(questions) && questions.length > 0) {
+                                    // 加载所有题目
+                                    questions.forEach((q, index) => {
                                         this.questionBank.push({
-                                            id: q.id,
+                                            id: q.id || `${filename.replace('.json', '')}-${index}`,
                                             title: q.title || q.question || '题目内容',
-                                            bank: bankInfo.name,
-                                            bankId: bankInfo.id,
+                                            bank: filename.replace('.json', '').replace('分类_', '').replace('真题_', ''),
+                                            bankId: filename.replace('.json', ''),
                                             difficulty: this.getDifficultyFromTags(q.tags),
-                                            correctRate: Math.floor(Math.random() * 30) + 60, // 模拟正确率
+                                            correctRate: Math.floor(Math.random() * 30) + 60,
                                             createdAt: q.year ? `${q.year}-01-01` : '2024-01-01',
-                                            category: q.category || bankInfo.category,
+                                            category: q.category || '流体力学',
                                             tags: q.tags || [],
                                             type: q.type || '计算题',
                                             year: q.year || null,
@@ -1179,21 +1146,24 @@
                                             score: q.score || 10,
                                             options: q.options || [],
                                             answer: q.answer || '',
-                                            explanation: q.explanation || ''
+                                            explanation: q.explanation || '',
+                                            originalData: q // 保留原始数据
                                         });
                                     });
                                     
                                     totalLoadedQuestions += questions.length;
-                                    console.log(`✅ 已加载 ${bankInfo.name}: ${questions.length} 道题目`);
+                                    loadedBanks++;
+                                    console.log(`✅ 成功加载 ${filename}: ${questions.length} 道题目`);
+                                } else {
+                                    console.warn(`⚠️ ${filename} 中没有有效题目数据`);
                                 }
                             } catch (error) {
-                                console.error(`❌ 加载题库 ${bankInfo.filename} 失败:`, error);
-                                this.showNotification(`加载 ${bankInfo.name} 失败`, 'error');
+                                console.error(`❌ 加载 ${filename} 失败:`, error);
                             }
                         }
                         
-                        console.log(`🎉 总共加载了 ${totalLoadedQuestions} 道题目`);
-                        this.showNotification(`成功加载 ${totalLoadedQuestions} 道题目！`, 'success');
+                        console.log(`🎉 加载完成！总共加载了 ${totalLoadedQuestions} 道题目，来自 ${loadedBanks} 个题库`);
+                        this.showNotification(`🎉 成功加载 ${totalLoadedQuestions} 道题目！来自 ${loadedBanks} 个题库`, 'success');
                         
                         // 更新统计信息
                         this.questionBankStats.difficultQuestions = this.questionBank.filter(q => q.difficulty === 'hard').length;
@@ -1214,113 +1184,143 @@
                     }
                 },
 
-                // 根据标签判断难度
-                getDifficultyFromTags(tags) {
-                    if (!tags || !Array.isArray(tags)) return 'medium';
-                    
-                    const tagString = tags.join(' ').toLowerCase();
-                    if (tagString.includes('易错') || tagString.includes('高级') || tagString.includes('难')) {
-                        return 'hard';
-                    } else if (tagString.includes('基础') || tagString.includes('简单')) {
-                        return 'easy';
+                // 从videos.json加载真实视频数据
+                async loadRealVideos() {
+                    try {
+                        console.log('🎥 开始加载视频数据...');
+                        this.showNotification('正在加载视频数据...', 'info');
+                        
+                        // 尝试加载data/videos.json
+                        const response = await fetch('../data/videos.json');
+                        if (!response.ok) {
+                            console.warn('⚠️ videos.json不存在，使用内置视频数据');
+                            this.loadBuiltInVideos();
+                            return;
+                        }
+                        
+                        const videosData = await response.json();
+                        
+                        if (Array.isArray(videosData) && videosData.length > 0) {
+                            this.videos = videosData.map((video, index) => ({
+                                id: index + 1,
+                                title: video.title || '未知标题',
+                                description: video.description || '暂无描述',
+                                platform: video.sourceType === 'douyin' ? 'douyin' : 
+                                         video.sourceType === 'bilibili' ? 'bilibili' : 'other',
+                                url: video.source || video.url || '',
+                                category: video.category || '基础理论',
+                                duration: video.duration || '未知时长',
+                                featured: video.featured || false,
+                                createdAt: video.uploadDate || '2024-01-01',
+                                views: video.views || '0',
+                                tags: video.tags || [],
+                                quality: video.quality || []
+                            }));
+                            
+                            console.log(`✅ 成功加载 ${this.videos.length} 个视频`);
+                            this.showNotification(`成功加载 ${this.videos.length} 个视频！`, 'success');
+                        } else {
+                            console.warn('⚠️ videos.json中没有有效数据');
+                            this.loadBuiltInVideos();
+                        }
+                        
+                    } catch (error) {
+                        console.error('❌ 加载视频数据失败:', error);
+                        this.loadBuiltInVideos();
                     }
-                    return 'medium';
                 },
 
-                // 刷新题库数据
-                refreshQuestionBank() {
-                    this.questionBank = [];
-                    this.allQuestionBanks = [];
-                    this.loadRealQuestionBanks();
-                },
-
-                // 导出题库数据
-                exportQuestionBank() {
-                    const data = {
-                        exportTime: new Date().toISOString(),
-                        totalBanks: this.allQuestionBanks.length,
-                        totalQuestions: this.totalQuestions,
-                        banks: this.allQuestionBanks.map(bank => ({
-                            name: bank.name,
-                            filename: bank.filename,
-                            questionCount: bank.questionCount,
-                            category: bank.category,
-                            difficulty: bank.difficulty
-                        })),
-                        sampleQuestions: this.questionBank
-                    };
-                    
-                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `题库数据导出_${new Date().toISOString().split('T')[0]}.json`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    
-                    this.showNotification('题库数据导出成功！', 'success');
-                },
-                
-                initScoreChart() {
-                    const ctx = this.$refs.scoreChart?.getContext('2d');
-                    if (!ctx) return;
-                    
-                    new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['0-60', '60-70', '70-80', '80-90', '90-100'],
-                            datasets: [{
-                                label: '学生人数',
-                                data: [12, 28, 45, 38, 33],
-                                backgroundColor: [
-                                    '#dc3545',
-                                    '#ffc107',
-                                    '#007bff',
-                                    '#28a745',
-                                    '#17a2b8'
-                                ]
-                            }]
+                // 加载内置视频数据（备用）
+                loadBuiltInVideos() {
+                    this.videos = [
+                        {
+                            id: 1,
+                            title: '动量输运、牛顿内摩擦定律、欧拉坐标',
+                            description: '详细讲解流体力学中的动量输运原理、牛顿内摩擦定律的物理意义和数学表达，以及欧拉坐标系统在流体运动描述中的应用。',
+                            platform: 'douyin',
+                            url: 'https://v.douyin.com/7vrVT-4KmbI/',
+                            category: '基础理论',
+                            duration: '抖音视频',
+                            featured: true,
+                            createdAt: '2024-12-01',
+                            views: '教师原创',
+                            tags: ['动量输运', '牛顿内摩擦定律', '欧拉坐标'],
+                            quality: ['精品内容']
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: '成绩分布统计'
-                                }
-                            }
-                        }
-                    });
-                },
-                
-                initActivityChart() {
-                    const ctx = this.$refs.activityChart?.getContext('2d');
-                    if (!ctx) return;
-                    
-                    new Chart(ctx, {
-                        type: 'line',
-                        data: {
-                            labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
-                            datasets: [{
-                                label: '活跃用户数',
-                                data: [65, 78, 90, 81, 56, 45, 38],
-                                borderColor: '#667eea',
-                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                                tension: 0.4
-                            }]
+                        {
+                            id: 2,
+                            title: '欧拉、拉格朗日坐标系统',
+                            description: '全面对比欧拉坐标和拉格朗日坐标两种描述流体运动的方法，详解流线和迹线的概念与区别。',
+                            platform: 'douyin',
+                            url: 'https://v.douyin.com/X-ud2xkwvII/',
+                            category: '基础理论',
+                            duration: '抖音视频',
+                            featured: true,
+                            createdAt: '2024-11-25',
+                            views: '教师原创',
+                            tags: ['欧拉坐标', '拉格朗日坐标', '流线', '迹线'],
+                            quality: ['精品内容']
                         },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                title: {
-                                    display: true,
-                                    text: '本周学习活跃度'
-                                }
-                            }
+                        {
+                            id: 3,
+                            title: '流体力学之美，太美了',
+                            description: '探索流体世界的奇妙现象与科学原理，揭示自然界的流动艺术。',
+                            platform: 'bilibili',
+                            url: 'BV16T421D7k4',
+                            category: '基础理论',
+                            duration: '18:45',
+                            featured: true,
+                            createdAt: '2024-12-01',
+                            views: '32,458',
+                            tags: ['流体力学', '基础理论', '可视化'],
+                            quality: ['720p', '1080p']
+                        },
+                        {
+                            id: 4,
+                            title: '流体力学基础 - 连续性方程',
+                            description: '系统讲解流体力学中的连续性方程，从质量守恒定律出发推导方程形式。',
+                            platform: 'bilibili',
+                            url: 'BV1ax411c7mV',
+                            category: '基础理论',
+                            duration: '25:30',
+                            featured: false,
+                            createdAt: '2024-11-20',
+                            views: '8,562',
+                            tags: ['连续性方程', '质量守恒', '基础理论'],
+                            quality: ['720p']
+                        },
+                        {
+                            id: 5,
+                            title: '流体静力学与压强',
+                            description: '详细介绍流体静力学的基本概念，压强的产生机理和分布规律。',
+                            platform: 'bilibili',
+                            url: 'BV1bx411c7mW',
+                            category: '流体静力学',
+                            duration: '32:15',
+                            featured: false,
+                            createdAt: '2024-11-18',
+                            views: '12,348',
+                            tags: ['静力学', '压强', '流体性质'],
+                            quality: ['720p']
+                        },
+                        {
+                            id: 6,
+                            title: '伯努利方程推导与应用',
+                            description: '从动量定理出发推导伯努利方程，并通过实例展示其工程应用。',
+                            platform: 'bilibili',
+                            url: 'BV1cx411c7mX',
+                            category: '流体动力学',
+                            duration: '28:45',
+                            featured: false,
+                            createdAt: '2024-11-15',
+                            views: '15,672',
+                            tags: ['伯努利方程', '动量定理', '工程应用'],
+                            quality: ['720p']
                         }
-                    });
+                    ];
+                    
+                    console.log(`📱 使用内置视频数据: ${this.videos.length} 个视频`);
+                    this.showNotification(`加载内置视频数据: ${this.videos.length} 个视频`, 'info');
                 },
                 
                 loadSettings() {
@@ -1328,22 +1328,14 @@
                     if (Object.keys(saved).length > 0) {
                         this.settings = { ...this.settings, ...saved };
                     }
-                },
-
-                // 题库筛选和搜索方法
-                filterQuestions() {
-                    this.currentPage = 1; // 每次筛选时重置到第一页
-                    this.questionBank = this.allQuestionBanks.flatMap(bank => {
-                        const questions = bank.questions || []; // 假设题库数据中包含questions数组
-                        return questions.filter(q => {
-                            const matchesBank = this.selectedBank ? q.bankId === this.selectedBank : true;
-                            const matchesDifficulty = this.selectedDifficulty ? q.difficulty === this.selectedDifficulty : true;
-                            const matchesKeyword = this.searchKeyword ? 
-                                q.title.toLowerCase().includes(this.searchKeyword.toLowerCase()) ||
-                                q.explanation.toLowerCase().includes(this.searchKeyword.toLowerCase()) : true;
-                            return matchesBank && matchesDifficulty && matchesKeyword;
-                        });
-                    });
+                                },
+                
+                // 重置筛选条件
+                resetFilters() {
+                    this.selectedBank = '';
+                    this.selectedDifficulty = '';
+                    this.searchKeyword = '';
+                    this.currentPage = 1;
                 }
             },
 
@@ -1403,6 +1395,8 @@
                     this.loadSettings();
                     // 加载真实题库数据
                     await this.loadRealQuestionBanks();
+                    // 加载真实视频数据
+                    await this.loadRealVideos();
                     this.setLoading(false);
                     this.showNotification('教师面板加载完成！', 'success');
                 }, 1500);
