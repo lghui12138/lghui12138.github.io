@@ -207,17 +207,70 @@
             cursor: pointer;
             width: 100%;
         }
-
-        .alert {
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
+        
+        .form-actions {
+            margin-top: 20px;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
         }
 
-        .alert-success {
+        .platform-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .platform-badge.bilibili {
+            background: #00a1d6;
+        }
+        
+        .platform-badge.douyin {
+            background: #fe2c55;
+        }
+        
+        .platform-badge.other {
+            background: #6c757d;
+        }
+        
+        .featured-badge {
+            background: linear-gradient(45deg, #ffd700, #ffed4a);
+            color: #333;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .alert {
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .alert.alert-success {
             background: #d4edda;
-            color: #155724;
             border: 1px solid #c3e6cb;
+            color: #155724;
         }
 
         .alert-warning {
@@ -413,6 +466,119 @@
                     </div>
                 </div>
 
+                <!-- 视频管理 -->
+                <div class="tab-content" :class="{ active: activeTab === 'videos' }">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-video"></i> 视频管理</h3>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <button class="submit-btn" @click="showAddVideo = !showAddVideo">
+                                <i class="fas fa-plus"></i> 添加新视频
+                            </button>
+                            <button class="submit-btn" style="margin-left: 10px;" @click="syncVideos">
+                                <i class="fas fa-sync"></i> 同步到GitHub
+                            </button>
+                        </div>
+
+                        <div v-if="showAddVideo" class="alert alert-success">
+                            <h4><i class="fas fa-plus"></i> 添加新视频</h4>
+                            <form @submit.prevent="addVideo">
+                                <div class="form-group">
+                                    <label>视频标题：</label>
+                                    <input v-model="newVideo.title" class="form-input" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>视频描述：</label>
+                                    <textarea v-model="newVideo.description" class="form-input" rows="3"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>视频类型：</label>
+                                    <select v-model="newVideo.platform" class="form-input">
+                                        <option value="bilibili">B站视频</option>
+                                        <option value="douyin">抖音视频</option>
+                                        <option value="other">其他平台</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>视频链接/BV号：</label>
+                                    <input v-model="newVideo.url" class="form-input" required 
+                                           placeholder="如：BV1234567890 或 https://v.douyin.com/...">
+                                </div>
+                                <div class="form-group">
+                                    <label>视频分类：</label>
+                                    <select v-model="newVideo.category" class="form-input">
+                                        <option value="基础理论">基础理论</option>
+                                        <option value="流体静力学">流体静力学</option>
+                                        <option value="流体动力学">流体动力学</option>
+                                        <option value="工程应用">工程应用</option>
+                                        <option value="实验演示">实验演示</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>视频时长：</label>
+                                    <input v-model="newVideo.duration" class="form-input" placeholder="如：18:45">
+                                </div>
+                                <div class="form-group">
+                                    <label>是否推荐：</label>
+                                    <input type="checkbox" v-model="newVideo.featured"> 推荐视频
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" class="submit-btn">
+                                        <i class="fas fa-save"></i> 保存视频
+                                    </button>
+                                    <button type="button" class="btn-secondary" @click="showAddVideo = false">
+                                        <i class="fas fa-times"></i> 取消
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>标题</th>
+                                        <th>平台</th>
+                                        <th>分类</th>
+                                        <th>时长</th>
+                                        <th>推荐</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="video in videos" :key="video.id">
+                                        <td>{{ video.title }}</td>
+                                        <td>
+                                            <span class="platform-badge" :class="video.platform">
+                                                <i :class="getPlatformIcon(video.platform)"></i>
+                                                {{ getPlatformName(video.platform) }}
+                                            </span>
+                                        </td>
+                                        <td>{{ video.category }}</td>
+                                        <td>{{ video.duration }}</td>
+                                        <td>
+                                            <span v-if="video.featured" class="featured-badge">
+                                                <i class="fas fa-star"></i> 推荐
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="action-btn btn-view" @click="previewVideo(video)">
+                                                <i class="fas fa-play"></i> 预览
+                                            </button>
+                                            <button class="action-btn btn-edit" @click="editVideo(video)">
+                                                <i class="fas fa-edit"></i> 编辑
+                                            </button>
+                                            <button class="action-btn btn-delete" @click="deleteVideo(video)">
+                                                <i class="fas fa-trash"></i> 删除
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 数据分析 -->
                 <div class="tab-content" :class="{ active: activeTab === 'analytics' }">
                     <div class="dashboard-card">
@@ -480,9 +646,11 @@
                     averageScore: 78,
                     activeToday: 23,
                     showAddQuestion: false,
+                    showAddVideo: false,
                     tabs: [
                         { id: 'students', name: '学生管理', icon: 'fas fa-users' },
                         { id: 'questions', name: '题库管理', icon: 'fas fa-question-circle' },
+                        { id: 'videos', name: '视频管理', icon: 'fas fa-video' },
                         { id: 'analytics', name: '数据分析', icon: 'fas fa-chart-bar' },
                         { id: 'settings', name: '系统设置', icon: 'fas fa-cog' }
                     ],
@@ -538,6 +706,74 @@
                             createdAt: '2024-01-12'
                         }
                     ],
+                    videos: [
+                        {
+                            id: 1,
+                            title: '动量输运、牛顿内摩擦定律、欧拉坐标',
+                            description: '详细讲解流体力学中的动量输运原理、牛顿内摩擦定律的物理意义和数学表达，以及欧拉坐标系统在流体运动描述中的应用。',
+                            platform: 'douyin',
+                            url: 'https://v.douyin.com/7vrVT-4KmbI/',
+                            category: '基础理论',
+                            duration: '抖音视频',
+                            featured: true,
+                            createdAt: '2024-12-01'
+                        },
+                        {
+                            id: 2,
+                            title: '欧拉、拉格朗日坐标系统',
+                            description: '全面对比欧拉坐标和拉格朗日坐标两种描述流体运动的方法，详解流线和迹线的概念与区别。',
+                            platform: 'douyin',
+                            url: 'https://v.douyin.com/X-ud2xkwvII/',
+                            category: '基础理论',
+                            duration: '抖音视频',
+                            featured: true,
+                            createdAt: '2024-11-25'
+                        },
+                        {
+                            id: 3,
+                            title: '流体力学之美，太美了',
+                            description: '探索流体世界的奇妙现象与科学原理，揭示自然界的流动艺术。',
+                            platform: 'bilibili',
+                            url: 'BV16T421D7k4',
+                            category: '基础理论',
+                            duration: '18:45',
+                            featured: true,
+                            createdAt: '2024-12-01'
+                        },
+                        {
+                            id: 4,
+                            title: '流体力学基础 - 连续性方程',
+                            description: '系统讲解流体力学中的连续性方程，从质量守恒定律出发推导方程形式。',
+                            platform: 'bilibili',
+                            url: 'BV1ax411c7mV',
+                            category: '基础理论',
+                            duration: '25:30',
+                            featured: false,
+                            createdAt: '2024-11-20'
+                        },
+                        {
+                            id: 5,
+                            title: '流体静力学与压强',
+                            description: '详细介绍流体静力学的基本概念，压强的产生机理和分布规律。',
+                            platform: 'bilibili',
+                            url: 'BV1bx411c7mW',
+                            category: '流体静力学',
+                            duration: '32:15',
+                            featured: false,
+                            createdAt: '2024-11-18'
+                        },
+                        {
+                            id: 6,
+                            title: '伯努利方程推导与应用',
+                            description: '从动量定理出发推导伯努利方程，并通过实例展示其工程应用。',
+                            platform: 'bilibili',
+                            url: 'BV1cx411c7mX',
+                            category: '流体动力学',
+                            duration: '28:45',
+                            featured: false,
+                            createdAt: '2024-11-15'
+                        }
+                    ],
                     newQuestion: {
                         title: '',
                         optionA: '',
@@ -546,6 +782,15 @@
                         optionD: '',
                         answer: 0,
                         explanation: ''
+                    },
+                    newVideo: {
+                        title: '',
+                        description: '',
+                        platform: 'bilibili',
+                        url: '',
+                        category: '基础理论',
+                        duration: '',
+                        featured: false
                     },
                     settings: {
                         platformName: '流体力学学习平台',
@@ -634,9 +879,90 @@
                     }
                 },
                 
+                addVideo() {
+                    if (!this.newVideo.title) {
+                        this.showNotification('请填写视频标题', 'warning');
+                        return;
+                    }
+                    if (!this.newVideo.url) {
+                        this.showNotification('请填写视频链接或BV号', 'warning');
+                        return;
+                    }
+
+                    const video = {
+                        id: this.videos.length + 1,
+                        title: this.newVideo.title,
+                        description: this.newVideo.description,
+                        platform: this.newVideo.platform,
+                        url: this.newVideo.url,
+                        category: this.newVideo.category,
+                        duration: this.newVideo.duration,
+                        featured: this.newVideo.featured,
+                        createdAt: new Date().toISOString().split('T')[0]
+                    };
+
+                    this.videos.unshift(video);
+                    this.showNotification('视频添加成功！', 'success');
+                    this.showAddVideo = false;
+                    this.resetNewVideo();
+                },
+
+                resetNewVideo() {
+                    this.newVideo = {
+                        title: '',
+                        description: '',
+                        platform: 'bilibili',
+                        url: '',
+                        category: '基础理论',
+                        duration: '',
+                        featured: false
+                    };
+                },
+
+                editVideo(video) {
+                    this.showNotification(`编辑视频：${video.title}`, 'info');
+                },
+
+                deleteVideo(video) {
+                    if (confirm(`确定删除视频 ${video.title} 吗？`)) {
+                        const index = this.videos.findIndex(v => v.id === video.id);
+                        if (index > -1) {
+                            this.videos.splice(index, 1);
+                            this.showNotification('视频删除成功！', 'success');
+                        }
+                    }
+                },
+
+                previewVideo(video) {
+                    this.showNotification(`预览视频：${video.title}`, 'info');
+                },
+
+                syncVideos() {
+                    this.showNotification('视频同步功能待实现', 'info');
+                },
+                
                 saveSettings() {
                     this.saveToStorage('teacherSettings', this.settings);
                     this.showNotification('设置保存成功！', 'success');
+                },
+
+                // 视频管理辅助方法
+                getPlatformIcon(platform) {
+                    const icons = {
+                        'bilibili': 'fab fa-bilibili',
+                        'douyin': 'fab fa-tiktok',
+                        'other': 'fas fa-video'
+                    };
+                    return icons[platform] || 'fas fa-video';
+                },
+
+                getPlatformName(platform) {
+                    const names = {
+                        'bilibili': 'B站',
+                        'douyin': '抖音',
+                        'other': '其他'
+                    };
+                    return names[platform] || '其他';
                 },
                 
                 initCharts() {
