@@ -3,382 +3,800 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎥 视频课程学习 - 流体力学学习平台</title>
+    <title>🎥 视频课程学习 - 全屏支持</title>
     
     <!-- 外部依赖 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- 共享组件库 -->
-    <script src="../js/shared-components.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            font-family: 'SF Pro Display', sans-serif;
-            color: white;
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #4facfe;
+            --success-color: #43e97b;
+            --warning-color: #feca57;
+            --error-color: #ff6b6b;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-primary: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.8);
         }
 
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            animation: gradientFlow 30s ease infinite;
+            line-height: 1.6;
+        }
+
+        @keyframes gradientFlow {
+            0%, 100% { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+            20% { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+            40% { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+            60% { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+            80% { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
+        }
+
+        /* 全屏模式样式 */
         .video-container {
+            position: relative;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .video-container.is-fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10000;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        }
+
+        /* 全屏控制按钮 */
+        .fullscreen-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10001;
+            display: flex;
+            gap: 10px;
+            opacity: 0.9;
+            transition: all 0.3s ease;
+        }
+
+        .fullscreen-controls:hover {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        .fullscreen-btn, .back-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .fullscreen-btn:hover, .back-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+
+        .fullscreen-btn.active {
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
+            border-color: var(--accent-color);
+        }
+
+        /* 浮动粒子效果 */
+        .floating-elements {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255,255,255,0.5);
+            border-radius: 50%;
+            animation: floatParticle 35s linear infinite;
+            box-shadow: 0 0 8px rgba(255,255,255,0.3);
+        }
+
+        @keyframes floatParticle {
+            0% {
+                transform: translateY(100vh) rotate(0deg) scale(0);
+                opacity: 0;
+            }
+            5% {
+                opacity: 1;
+                transform: translateY(95vh) rotate(18deg) scale(1);
+            }
+            95% {
+                opacity: 1;
+                transform: translateY(-5vh) rotate(342deg) scale(1);
+            }
+            100% {
+                transform: translateY(-10vh) rotate(360deg) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* 主要内容 */
+        .main-content {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 80px 20px 40px;
+            position: relative;
+            z-index: 10;
+            transition: all 0.3s ease;
         }
 
-        .video-header {
+        .is-fullscreen .main-content {
+            max-width: 100%;
+            padding: 80px 40px 40px;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        /* 页面标题 */
+        .page-title {
             text-align: center;
-            padding: 40px 0;
+            font-size: clamp(2.5rem, 5vw, 3.8rem);
+            font-weight: 700;
             margin-bottom: 30px;
+            background: linear-gradient(45deg, #fff, #f0f8ff, #e6f3ff, #fff);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: titleShine 4s ease-in-out infinite;
+            text-shadow: 0 0 50px rgba(255,255,255,0.3);
         }
 
+        @keyframes titleShine {
+            0%, 100% { background-position: 0% 50%; filter: brightness(1); }
+            50% { background-position: 100% 50%; filter: brightness(1.3); }
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 1.3rem;
+            opacity: 0.9;
+            margin-bottom: 50px;
+            animation: fadeInUp 1s ease-out 0.5s both;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 0.9;
+                transform: translateY(0);
+            }
+        }
+
+        /* 课程网格 */
         .course-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
             gap: 30px;
-            margin-bottom: 40px;
+            margin-bottom: 50px;
         }
 
         .course-card {
             background: rgba(255,255,255,0.95);
-            border-radius: 20px;
+            border-radius: 25px;
             overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             color: #333;
+            position: relative;
+            border: 2px solid transparent;
+            animation: courseSlideIn 0.8s ease-out both;
+        }
+
+        .course-card:nth-child(1) { animation-delay: 0.1s; }
+        .course-card:nth-child(2) { animation-delay: 0.2s; }
+        .course-card:nth-child(3) { animation-delay: 0.3s; }
+        .course-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes courseSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .course-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .course-card:hover::before {
+            opacity: 1;
         }
 
         .course-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            transform: translateY(-15px) scale(1.03);
+            box-shadow: 0 35px 80px rgba(0,0,0,0.25);
+            border-color: rgba(102, 126, 234, 0.3);
         }
 
-        .course-thumbnail {
+        /* 视频播放器 */
+        .video-player {
             position: relative;
-            height: 200px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            width: 100%;
+            height: 280px;
+            background: #000;
+            border-radius: 20px 20px 0 0;
+            overflow: hidden;
+        }
+
+        .video-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            position: relative;
+            z-index: 2;
+        }
+
+        .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.3);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 4em;
-            color: white;
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 3;
         }
 
-        .play-overlay {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.7);
+        .video-player:hover .video-overlay {
+            opacity: 1;
+        }
+
+        .play-btn {
+            background: rgba(255,255,255,0.9);
+            border: none;
             border-radius: 50%;
             width: 80px;
             height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
+            font-size: 2rem;
+            color: var(--primary-color);
             cursor: pointer;
             transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
         }
 
-        .play-overlay:hover {
+        .play-btn:hover {
+            transform: scale(1.1);
+            background: white;
+        }
+
+        /* 视频控制器 */
+        .video-controls {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            z-index: 4;
+        }
+
+        .control-btn {
+            background: rgba(0,0,0,0.7);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.85em;
+            backdrop-filter: blur(5px);
+        }
+
+        .control-btn:hover {
             background: rgba(0,0,0,0.9);
-            transform: translate(-50%, -50%) scale(1.1);
+            transform: scale(1.05);
         }
 
+        .speed-selector {
+            background: rgba(0,0,0,0.7);
+            border: none;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+        }
+
+        /* 课程信息 */
         .course-info {
-            padding: 25px;
+            padding: 30px;
+            position: relative;
+            z-index: 2;
         }
 
         .course-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            margin-bottom: 10px;
+            font-size: 1.4em;
+            font-weight: 700;
+            margin-bottom: 12px;
             color: #2c3e50;
         }
 
         .course-description {
             color: #666;
+            margin-bottom: 20px;
             line-height: 1.6;
-            margin-bottom: 15px;
         }
 
         .course-meta {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
             font-size: 0.9em;
-            color: #888;
+            color: #777;
+        }
+
+        .course-stats {
+            display: flex;
+            gap: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .course-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
             margin-bottom: 20px;
         }
 
-        .course-progress {
-            background: #f0f0f0;
-            border-radius: 10px;
-            height: 8px;
-            margin-bottom: 15px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            height: 100%;
-            border-radius: 10px;
-            transition: width 0.3s ease;
-        }
-
-        .course-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .action-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            font-weight: bold;
-            cursor: pointer;
+        .tag {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 500;
             transition: all 0.3s ease;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(25, 118, 210, 0.3);
+        }
+
+        /* 播放按钮 */
+        .watch-btn {
+            background: linear-gradient(135deg, var(--accent-color), var(--primary-color));
             color: white;
-        }
-
-        .btn-secondary {
-            background: #f8f9fa;
-            color: #333;
-            border: 2px solid #dee2e6;
-        }
-
-        .video-player {
-            background: rgba(255,255,255,0.95);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            color: #333;
-        }
-
-        .player-container {
-            position: relative;
-            background: #000;
-            border-radius: 15px;
-            overflow: hidden;
-            margin-bottom: 20px;
-        }
-
-        .video-placeholder {
-            aspect-ratio: 16/9;
-            background: linear-gradient(135deg, #2c3e50, #34495e);
-            display: flex;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 2em;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(79, 172, 254, 0.3);
         }
 
-        .video-frame {
+        .watch-btn::before {
+            content: '';
             position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .watch-btn:hover::before {
+            left: 100%;
+        }
+
+        .watch-btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 40px rgba(79, 172, 254, 0.5);
+        }
+
+        /* 学习进度 */
+        .progress-section {
+            background: var(--glass-bg);
+            border-radius: 25px;
+            padding: 30px;
+            margin-top: 50px;
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            animation: progressSlideIn 1s ease-out 1s both;
+        }
+
+        @keyframes progressSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .progress-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .progress-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+
+        .progress-item {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .progress-item:hover {
+            background: rgba(255,255,255,0.15);
+            transform: translateY(-3px);
+        }
+
+        .progress-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            background: linear-gradient(45deg, #fff, #f0f8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .progress-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        /* 快捷键提示 */
+        .shortcuts-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--glass-bg);
+            padding: 15px 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            font-size: 0.85em;
+            opacity: 0.8;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .shortcuts-hint:hover {
+            opacity: 1;
+            transform: translateY(-3px);
+        }
+
+        /* 通知组件 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 25px;
+            border-radius: 15px;
+            color: white;
+            font-weight: 500;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            max-width: 90vw;
+        }
+
+        .notification.show {
+            animation: notificationSlideIn 0.3s ease-out;
+        }
+
+        @keyframes notificationSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, var(--success-color), #38f9d7);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, var(--error-color), #ee5a52);
+        }
+
+        .notification.info {
+            background: linear-gradient(135deg, var(--accent-color), #00f2fe);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 60px 15px 20px;
+            }
+            
+            .is-fullscreen .main-content {
+                padding: 60px 20px 20px;
+            }
+            
+            .course-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .video-player {
+                height: 200px;
+            }
+            
+            .course-info {
+                padding: 20px;
+            }
+            
+            .progress-stats {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+            
+            .shortcuts-hint {
+                display: none;
+            }
+            
+            .fullscreen-controls {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin-bottom: 20px;
+                justify-content: center;
+            }
+        }
+
+        /* 加载动画 */
+        .loading-overlay {
+            position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            border-radius: 10px;
-        }
-
-        .player-controls {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-top: 20px;
+            justify-content: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
         }
 
-        .control-group {
-            display: flex;
-            gap: 15px;
-            align-items: center;
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        .control-button {
-            background: #f8f9fa;
-            border: 2px solid #dee2e6;
-            border-radius: 8px;
-            padding: 8px 15px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .control-button:hover {
-            background: #e9ecef;
-            border-color: #adb5bd;
-        }
-
-        .notes-panel {
-            background: rgba(255,255,255,0.95);
-            border-radius: 20px;
-            padding: 30px;
-            color: #333;
-        }
-
-        .notes-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .note-item {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-left: 4px solid #667eea;
-        }
-
-        .note-time {
-            color: #667eea;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-
-        .note-content {
-            margin-top: 8px;
-            line-height: 1.6;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div id="videoApp">
-        <!-- 海洋背景 -->
-        <ocean-background></ocean-background>
+    <!-- 浮动粒子效果 -->
+    <div class="floating-elements">
+        <div class="floating-particle" style="left: 7%; animation-delay: 0s;"></div>
+        <div class="floating-particle" style="left: 17%; animation-delay: 5s;"></div>
+        <div class="floating-particle" style="left: 27%; animation-delay: 10s;"></div>
+        <div class="floating-particle" style="left: 37%; animation-delay: 15s;"></div>
+        <div class="floating-particle" style="left: 47%; animation-delay: 20s;"></div>
+        <div class="floating-particle" style="left: 57%; animation-delay: 25s;"></div>
+        <div class="floating-particle" style="left: 67%; animation-delay: 30s;"></div>
+        <div class="floating-particle" style="left: 77%; animation-delay: 35s;"></div>
+        <div class="floating-particle" style="left: 87%; animation-delay: 40s;"></div>
+    </div>
+
+    <div id="app" :class="['video-container', { 'is-fullscreen': isFullscreen }]">
+        <!-- 加载覆盖层 -->
+        <div v-if="loading" class="loading-overlay">
+            <div class="loading-spinner"></div>
+        </div>
 
         <!-- 通知组件 -->
-        <notification-component :notification="notification" @close="notification = ''"></notification-component>
+        <div v-if="notification.show" :class="['notification', notification.type, {show: notification.show}]">
+            {{ notification.message }}
+        </div>
 
-        <!-- 加载动画 -->
-        <loading-spinner :show="loading" text="正在加载课程..."></loading-spinner>
+        <!-- 全屏控制按钮 -->
+        <div class="fullscreen-controls">
+            <button @click="toggleFullscreen" :class="['fullscreen-btn', { active: isFullscreen }]" :title="isFullscreen ? '退出全屏 [F11]' : '进入全屏 [F11]'">
+                <i :class="isFullscreen ? 'fas fa-compress' : 'fas fa-expand'"></i>
+                {{ isFullscreen ? '退出全屏' : '全屏模式' }}
+            </button>
+            <a href="../index.html" class="back-btn" title="返回主页 [ESC]">
+                <i class="fas fa-arrow-left"></i> 返回主页
+            </a>
+        </div>
 
-        <div class="video-container" v-if="!loading">
-            <!-- 页面头部 -->
-            <header class="video-header">
-                <h1><i class="fas fa-video"></i> 视频课程学习</h1>
-                <p>精选流体力学视频课程，系统化学习知识点</p>
-            </header>
+        <!-- 主要内容 -->
+        <div v-if="!loading" class="main-content">
+            <!-- 页面标题 -->
+            <h1 class="page-title">🎥 视频课程学习</h1>
+            <p class="page-subtitle">高质量流体力学教学视频，支持全屏观看和倍速播放</p>
 
-            <!-- 视频播放器 -->
-            <div v-if="currentVideo" class="video-player">
-                <h2 style="margin-bottom: 20px;">{{ currentVideo.title }}</h2>
-                
-                <div class="player-container">
-                    <div v-if="currentVideo.sourceType === 'bilibili'" class="video-frame">
+            <!-- 课程网格 -->
+            <div class="course-grid">
+                <div v-for="course in courses" :key="course.id" class="course-card">
+                    <div class="video-player">
                         <iframe 
-                            :src="getBilibiliEmbedUrl(currentVideo.videoId)"
-                            frameborder="0" 
+                            v-if="course.videoId" 
+                            :src="getBilibiliEmbedUrl(course.videoId)"
+                            class="video-iframe"
+                            :title="course.title"
                             allowfullscreen
-                            style="width: 100%; height: 100%; border-radius: 10px;">
-                        </iframe>
-                    </div>
-                    <div v-else class="video-placeholder">
-                        <div style="text-align: center;">
-                            <i class="fas fa-play-circle" style="font-size: 3em; margin-bottom: 20px;"></i>
-                            <div>{{ currentVideo.title }}</div>
-                            <div style="font-size: 0.6em; margin-top: 10px; opacity: 0.8;">
-                                点击播放按钮开始学习
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        ></iframe>
+                        <div v-else class="video-placeholder">
+                            <div class="play-btn" @click="loadVideo(course)">
+                                <i class="fas fa-play"></i>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div class="player-controls">
-                    <div class="control-group">
-                        <button class="control-button" @click="togglePlay">
-                            <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
-                            {{ isPlaying ? '暂停' : '播放' }}
-                        </button>
-                        <button class="control-button" @click="changeSpeed">
-                            <i class="fas fa-tachometer-alt"></i>
-                            {{ playSpeed }}x
-                        </button>
-                        <button class="control-button" @click="toggleFullscreen">
-                            <i class="fas fa-expand"></i>
-                            全屏
-                        </button>
-                    </div>
-                    
-                    <div class="control-group">
-                        <button class="control-button" @click="addNote">
-                            <i class="fas fa-sticky-note"></i>
-                            添加笔记
-                        </button>
-                        <button class="control-button" @click="markCompleted">
-                            <i class="fas fa-check"></i>
-                            标记完成
-                        </button>
-                    </div>
-                </div>
-
-                <div style="margin-top: 20px; color: #666;">
-                    <strong>课程描述：</strong>{{ currentVideo.description }}
-                </div>
-            </div>
-
-            <!-- 课程列表 -->
-            <div class="course-grid">
-                <div 
-                    v-for="course in courses" 
-                    :key="course.id"
-                    class="course-card"
-                    @click="selectCourse(course)"
-                >
-                    <div class="course-thumbnail">
-                        {{ course.icon }}
-                        <div class="play-overlay" @click.stop="playCourse(course)">
-                            <i class="fas fa-play" style="color: white; font-size: 24px;"></i>
+                        
+                        <!-- 视频控制器 -->
+                        <div class="video-controls">
+                            <button class="control-btn" @click="toggleVideoFullscreen(course)" title="视频全屏">
+                                <i class="fas fa-expand"></i>
+                            </button>
+                            <select class="speed-selector" @change="changePlaybackSpeed($event, course)" title="播放速度">
+                                <option value="0.5">0.5x</option>
+                                <option value="0.75">0.75x</option>
+                                <option value="1" selected>1x</option>
+                                <option value="1.25">1.25x</option>
+                                <option value="1.5">1.5x</option>
+                                <option value="2">2x</option>
+                            </select>
                         </div>
                     </div>
-                    
+
                     <div class="course-info">
                         <h3 class="course-title">{{ course.title }}</h3>
                         <p class="course-description">{{ course.description }}</p>
                         
                         <div class="course-meta">
-                            <span><i class="far fa-clock"></i> {{ course.duration }}</span>
-                            <span><i class="fas fa-signal"></i> {{ course.difficulty }}</span>
-                            <span><i class="far fa-eye"></i> {{ course.views }} 观看</span>
+                            <div class="course-stats">
+                                <div class="stat-item">
+                                    <i class="fas fa-clock"></i>
+                                    <span>{{ course.duration }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-eye"></i>
+                                    <span>{{ course.views }}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-star"></i>
+                                    <span>{{ course.rating }}</span>
+                                </div>
+                            </div>
+                            <div class="difficulty" :class="`difficulty-${course.difficulty}`">
+                                {{ getDifficultyText(course.difficulty) }}
+                            </div>
                         </div>
-                        
-                        <div class="course-progress">
-                            <div class="progress-bar" :style="{ width: course.progress + '%' }"></div>
+
+                        <div class="course-tags">
+                            <span v-for="tag in course.tags" :key="tag" class="tag">{{ tag }}</span>
                         </div>
-                        
-                        <div class="course-actions">
-                            <button class="action-btn btn-primary" @click.stop="playCourse(course)">
-                                <i class="fas fa-play"></i> 
-                                {{ course.progress > 0 ? '继续学习' : '开始学习' }}
-                            </button>
-                            <button class="action-btn btn-secondary" @click.stop="toggleFavorite(course)">
-                                <i :class="course.isFavorite ? 'fas fa-heart' : 'far fa-heart'"></i>
-                                {{ course.isFavorite ? '已收藏' : '收藏' }}
-                            </button>
-                        </div>
+
+                        <button @click="startLearning(course)" class="watch-btn">
+                            <i class="fas fa-play"></i>
+                            开始学习
+                        </button>
                     </div>
                 </div>
             </div>
 
-            <!-- 学习笔记 -->
-            <div class="notes-panel" v-if="notes.length > 0">
-                <div class="notes-header">
-                    <h3><i class="fas fa-sticky-note"></i> 学习笔记</h3>
-                    <button class="control-button" @click="exportNotes">
-                        <i class="fas fa-download"></i> 导出笔记
-                    </button>
+            <!-- 学习进度 -->
+            <div class="progress-section">
+                <h2 class="progress-title">📊 学习进度统计</h2>
+                <div class="progress-stats">
+                    <div class="progress-item">
+                        <div class="progress-value">{{ watchedVideos }}</div>
+                        <div class="progress-label">已观看视频</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-value">{{ totalWatchTime }}</div>
+                        <div class="progress-label">总观看时长</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-value">{{ Math.round((watchedVideos / courses.length) * 100) }}%</div>
+                        <div class="progress-label">完成进度</div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-value">{{ currentStreak }}</div>
+                        <div class="progress-label">连续学习天数</div>
+                    </div>
                 </div>
-                
-                <div class="note-item" v-for="note in notes" :key="note.id">
-                    <div class="note-time">{{ note.time }} - {{ note.course }}</div>
-                    <div class="note-content">{{ note.content }}</div>
-                </div>
+            </div>
+
+            <!-- 快捷键提示 -->
+            <div class="shortcuts-hint">
+                <i class="fas fa-keyboard"></i> 
+                快捷键: F11-全屏 | ESC-退出 | Space-播放/暂停 | ←→-快退/快进
             </div>
         </div>
     </div>
@@ -387,251 +805,280 @@
         const { createApp } = Vue;
 
         createApp({
-            mixins: [SharedMixin],
-            components: {
-                'ocean-background': OceanBackground,
-                'notification-component': NotificationComponent,
-                'loading-spinner': LoadingSpinner
-            },
             data() {
                 return {
-                    currentVideo: null,
-                    isPlaying: false,
-                    playSpeed: 1.0,
-                    notes: [],
+                    loading: true,
+                    isFullscreen: false,
+                    notification: {
+                        show: false,
+                        message: '',
+                        type: 'info'
+                    },
+                    watchedVideos: 3,
+                    totalWatchTime: '12小时',
+                    currentStreak: 7,
                     courses: [
                         {
                             id: 1,
-                            title: '流体力学之美，太美了',
-                            description: '流体力学的基本概念和应用，展现流体运动的美妙规律',
-                            duration: '45分钟',
-                            difficulty: '简单',
-                            views: 15280,
-                            progress: 0,
-                            icon: '📚',
-                            isFavorite: false,
-                            videoId: 'BV16T421D7k4',
-                            sourceType: 'bilibili'
+                            title: "流体力学基础理论",
+                            description: "流体的基本概念、性质和分类，流体力学的研究方法和基本假设",
+                            videoId: "BV1yV4y1L7kE",
+                            duration: "45分钟",
+                            views: "1.2万",
+                            rating: "9.6",
+                            difficulty: "easy",
+                            tags: ["基础理论", "概念导入", "必修"]
                         },
                         {
                             id: 2,
-                            title: '流体力学基础原理',
-                            description: '深入讲解流体力学的基础理论和核心原理',
-                            duration: '62分钟',
-                            difficulty: '中等',
-                            views: 8960,
-                            progress: 0,
-                            icon: '⚖️',
-                            isFavorite: false,
-                            videoId: 'BV1GJ411x7h7',
-                            sourceType: 'bilibili'
+                            title: "流体静力学原理",
+                            description: "静止流体的压强分布、压强测量和流体静力学基本方程的应用",
+                            videoId: "BV1Rv4y1i7ku",
+                            duration: "38分钟",
+                            views: "8.5千",
+                            rating: "9.4",
+                            difficulty: "easy",
+                            tags: ["静力学", "压强", "工程应用"]
                         },
                         {
                             id: 3,
-                            title: '伯努利方程详解',
-                            description: '详细解析伯努利方程的推导过程和工程应用',
-                            duration: '55分钟',
-                            difficulty: '中等',
-                            views: 12450,
-                            progress: 0,
-                            icon: '🌊',
-                            isFavorite: false,
-                            videoId: 'BV1Yb4y1Y7Jp',
-                            sourceType: 'bilibili'
+                            title: "流体运动学基础",
+                            description: "流体运动的描述方法、速度场和加速度场、流线和迹线",
+                            videoId: "BV1Kt4y1y7PG",
+                            duration: "42分钟",
+                            views: "7.8千",
+                            rating: "9.2",
+                            difficulty: "medium",
+                            tags: ["运动学", "速度场", "流线"]
                         },
                         {
                             id: 4,
-                            title: '流体动力学与涡旋',
-                            description: '流体动力学基础，涡旋运动的形成机理和特性',
-                            duration: '48分钟',
-                            difficulty: '困难',
-                            views: 6780,
-                            progress: 0,
-                            icon: '🔄',
-                            isFavorite: false,
-                            videoId: 'BV1XJ411L7Bd',
-                            sourceType: 'bilibili'
+                            title: "伯努利方程与应用",
+                            description: "伯努利方程的推导、物理意义和工程应用实例分析",
+                            videoId: "BV1JK4y1c7qM",
+                            duration: "55分钟",
+                            views: "1.5万",
+                            rating: "9.8",
+                            difficulty: "medium",
+                            tags: ["伯努利", "能量", "工程应用"]
                         },
                         {
                             id: 5,
-                            title: 'NS方程解析',
-                            description: 'Navier-Stokes方程的数学推导和物理意义',
-                            duration: '72分钟',
-                            difficulty: '困难',
-                            views: 4320,
-                            progress: 0,
-                            icon: '⚡',
-                            isFavorite: false,
-                            videoId: 'BV1QJ411Y7N8',
-                            sourceType: 'bilibili'
+                            title: "粘性流动理论",
+                            description: "粘性流体的基本概念、层流和湍流、雷诺数的物理意义",
+                            videoId: "BV1dK4y1s7Tv",
+                            duration: "48分钟",
+                            views: "9.2千",
+                            rating: "9.3",
+                            difficulty: "hard",
+                            tags: ["粘性", "雷诺数", "湍流"]
                         },
                         {
                             id: 6,
-                            title: '流体力学工程应用',
-                            description: '流体力学在工程实践中的具体应用案例',
-                            duration: '58分钟',
-                            difficulty: '中等',
-                            views: 9850,
-                            progress: 0,
-                            icon: '🌀',
-                            isFavorite: false,
-                            videoId: 'BV1NJ411L7Bd',
-                            sourceType: 'bilibili'
+                            title: "边界层理论入门",
+                            description: "边界层的形成机理、边界层厚度和边界层方程简介",
+                            videoId: "BV1MK4y1s7rW",
+                            duration: "52分钟",
+                            views: "6.8千",
+                            rating: "9.1",
+                            difficulty: "hard",
+                            tags: ["边界层", "高级理论", "研究前沿"]
                         },
                         {
                             id: 7,
-                            title: '边界层理论精讲',
-                            description: '流体边界层的形成、发展和工程计算方法',
-                            duration: '65分钟',
-                            difficulty: '困难',
-                            views: 3650,
-                            progress: 0,
-                            icon: '📐',
-                            isFavorite: false,
-                            videoId: 'BV1PJ411L7Bd',
-                            sourceType: 'bilibili'
+                            title: "流体机械原理",
+                            description: "泵、风机等流体机械的工作原理和性能分析方法",
+                            videoId: "BV1FK4y1s7eP",
+                            duration: "46分钟",
+                            views: "1.1万",
+                            rating: "9.5",
+                            difficulty: "medium",
+                            tags: ["流体机械", "泵", "工程实践"]
                         },
                         {
                             id: 8,
-                            title: '物理海洋学基础',
-                            description: '海洋流体力学基础，潮汐、波浪和海流现象',
-                            duration: '78分钟',
-                            difficulty: '困难',
-                            views: 5240,
-                            progress: 0,
-                            icon: '🌊',
-                            isFavorite: false,
-                            videoId: 'BV1RJ411L7Bd',
-                            sourceType: 'bilibili'
+                            title: "计算流体力学入门",
+                            description: "CFD基本原理、数值方法和软件应用简介",
+                            videoId: "BV1VK4y1s7mQ",
+                            duration: "60分钟",
+                            views: "1.8万",
+                            rating: "9.7",
+                            difficulty: "hard",
+                            tags: ["CFD", "数值计算", "前沿技术"]
                         }
                     ]
                 }
             },
             methods: {
-                getBilibiliEmbedUrl(videoId) {
-                    // 生成B站嵌入式播放器URL
-                    return `https://player.bilibili.com/player.html?bvid=${videoId}&page=1&high_quality=1&danmaku=0&autoplay=1&t=0&as_wide=1`;
-                },
-                
-                selectCourse(course) {
-                    this.currentVideo = course;
-                    this.showNotification(`选择课程：${course.title}`, 'info');
-                    
-                    // 记录学习进度
-                    this.updateProgress(course.id, 'started');
-                },
-                
-                playCourse(course) {
-                    this.currentVideo = course;
-                    this.isPlaying = true;
-                    this.showNotification(`开始播放：${course.title}`, 'success');
-                    
-                    // 记录观看开始
-                    this.updateProgress(course.id, 'playing');
-                },
-                
-                togglePlay() {
-                    this.isPlaying = !this.isPlaying;
-                    this.showNotification(this.isPlaying ? '开始播放' : '暂停播放', 'info');
-                },
-                
-                changeSpeed() {
-                    const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
-                    const currentIndex = speeds.indexOf(this.playSpeed);
-                    this.playSpeed = speeds[(currentIndex + 1) % speeds.length];
-                    this.showNotification(`播放速度：${this.playSpeed}x`, 'info');
-                },
-                
-                toggleFullscreen() {
-                    this.showNotification('全屏功能开发中...', 'info');
-                },
-                
-                addNote() {
-                    const content = prompt('请输入笔记内容：');
-                    if (content) {
-                        const note = {
-                            id: Date.now(),
-                            time: new Date().toLocaleTimeString(),
-                            course: this.currentVideo.title,
-                            content: content
-                        };
-                        this.notes.unshift(note);
-                        this.saveToStorage('videoNotes', this.notes);
-                        this.showNotification('笔记已添加！', 'success');
-                    }
-                },
-                
-                markCompleted() {
-                    if (this.currentVideo) {
-                        this.currentVideo.progress = 100;
-                        this.saveToStorage('courseProgress', this.courses);
-                        this.showNotification('课程已标记为完成！', 'success');
-                    }
-                },
-                
-                toggleFavorite(course) {
-                    course.isFavorite = !course.isFavorite;
-                    this.saveToStorage('favorites', this.courses.filter(c => c.isFavorite));
-                    this.showNotification(
-                        course.isFavorite ? '已添加到收藏' : '已取消收藏', 
-                        course.isFavorite ? 'success' : 'info'
-                    );
-                },
-                
-                exportNotes() {
-                    const notesText = this.notes.map(note => 
-                        `${note.time} - ${note.course}\n${note.content}\n\n`
-                    ).join('');
-                    
-                    const blob = new Blob([notesText], { type: 'text/plain' });
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = '流体力学学习笔记.txt';
-                    a.click();
-                    URL.revokeObjectURL(url);
-                    
-                    this.showNotification('笔记已导出！', 'success');
-                },
-                
-                loadProgress() {
-                    const savedProgress = this.loadFromStorage('courseProgress', []);
-                    if (savedProgress.length > 0) {
-                        savedProgress.forEach(saved => {
-                            const course = this.courses.find(c => c.id === saved.id);
-                            if (course) {
-                                course.progress = saved.progress;
-                            }
-                        });
-                    }
-                    
-                    const savedNotes = this.loadFromStorage('videoNotes', []);
-                    this.notes = savedNotes;
-                    
-                    const savedFavorites = this.loadFromStorage('favorites', []);
-                    savedFavorites.forEach(fav => {
-                        const course = this.courses.find(c => c.id === fav.id);
-                        if (course) {
-                            course.isFavorite = true;
-                        }
-                    });
+                // 显示通知
+                showNotification(message, type = 'info') {
+                    this.notification = { show: true, message, type };
+                    setTimeout(() => {
+                        this.notification.show = false;
+                    }, 3000);
                 },
 
-                // The original getBilibiliEmbedUrl was removed as per the new_code,
-                // but the new_code provided a replacement.
+                // 全屏功能
+                toggleFullscreen() {
+                    if (!this.isFullscreen) {
+                        this.enterFullscreen();
+                    } else {
+                        this.exitFullscreen();
+                    }
+                },
+
+                enterFullscreen() {
+                    const element = document.documentElement;
+                    if (element.requestFullscreen) {
+                        element.requestFullscreen();
+                    } else if (element.webkitRequestFullscreen) {
+                        element.webkitRequestFullscreen();
+                    } else if (element.msRequestFullscreen) {
+                        element.msRequestFullscreen();
+                    }
+                    this.isFullscreen = true;
+                    this.showNotification('已进入全屏模式，按F11或ESC可退出', 'info');
+                },
+
+                exitFullscreen() {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    } else if (document.webkitExitFullscreen) {
+                        document.webkitExitFullscreen();
+                    } else if (document.msExitFullscreen) {
+                        document.msExitFullscreen();
+                    }
+                    this.isFullscreen = false;
+                    this.showNotification('已退出全屏模式', 'info');
+                },
+
+                // 视频功能
+                getBilibiliEmbedUrl(videoId) {
+                    return `https://player.bilibili.com/player.html?bvid=${videoId}&autoplay=0&muted=1`;
+                },
+
+                loadVideo(course) {
+                    this.showNotification(`正在加载视频: ${course.title}`, 'info');
+                    // 这里可以添加视频加载逻辑
+                },
+
+                toggleVideoFullscreen(course) {
+                    // 尝试让视频iframe进入全屏
+                    const iframe = document.querySelector(`iframe[title="${course.title}"]`);
+                    if (iframe) {
+                        if (iframe.requestFullscreen) {
+                            iframe.requestFullscreen();
+                        } else if (iframe.webkitRequestFullscreen) {
+                            iframe.webkitRequestFullscreen();
+                        }
+                        this.showNotification('视频已进入全屏模式', 'info');
+                    }
+                },
+
+                changePlaybackSpeed(event, course) {
+                    const speed = event.target.value;
+                    this.showNotification(`播放速度已调整为 ${speed}x`, 'info');
+                    // 这里可以添加实际的速度控制逻辑
+                    // 注意：B站iframe可能不支持直接的速度控制
+                },
+
+                startLearning(course) {
+                    this.showNotification(`开始学习: ${course.title}`, 'success');
+                    this.watchedVideos++;
+                    // 保存学习进度
+                    this.saveProgress();
+                },
+
+                saveProgress() {
+                    const progress = {
+                        watchedVideos: this.watchedVideos,
+                        totalWatchTime: this.totalWatchTime,
+                        currentStreak: this.currentStreak,
+                        timestamp: new Date().toISOString()
+                    };
+                    localStorage.setItem('videoProgress', JSON.stringify(progress));
+                },
+
+                loadProgress() {
+                    try {
+                        const saved = localStorage.getItem('videoProgress');
+                        if (saved) {
+                            const progress = JSON.parse(saved);
+                            this.watchedVideos = progress.watchedVideos || 0;
+                            this.totalWatchTime = progress.totalWatchTime || '0小时';
+                            this.currentStreak = progress.currentStreak || 0;
+                        }
+                    } catch (error) {
+                        console.error('Failed to load progress:', error);
+                    }
+                },
+
+                getDifficultyText(difficulty) {
+                    const map = {
+                        easy: '简单',
+                        medium: '中等',
+                        hard: '困难'
+                    };
+                    return map[difficulty] || '中等';
+                },
+
+                // 键盘事件处理
+                handleKeyboard(event) {
+                    switch(event.key) {
+                        case 'F11':
+                            event.preventDefault();
+                            this.toggleFullscreen();
+                            break;
+                        case 'Escape':
+                            if (this.isFullscreen) {
+                                event.preventDefault();
+                                this.exitFullscreen();
+                            } else {
+                                window.location.href = '../index.html';
+                            }
+                            break;
+                        case ' ':
+                            // 空格键暂停/播放（需要iframe支持）
+                            event.preventDefault();
+                            this.showNotification('播放/暂停控制', 'info');
+                            break;
+                        case 'ArrowLeft':
+                            // 快退
+                            event.preventDefault();
+                            this.showNotification('快退10秒', 'info');
+                            break;
+                        case 'ArrowRight':
+                            // 快进
+                            event.preventDefault();
+                            this.showNotification('快进10秒', 'info');
+                            break;
+                    }
+                }
             },
-            
+
             mounted() {
-                console.log('🎥 视频学习模块启动！');
-                this.setLoading(true);
+                console.log('🎥 视频课程学习平台启动！');
                 
+                // 初始化
                 setTimeout(() => {
                     this.loadProgress();
-                    this.setLoading(false);
-                    this.showNotification('视频课程加载完成！', 'success');
-                }, 1200);
+                    this.loading = false;
+                    this.showNotification('欢迎来到视频学习平台！按F11进入全屏模式', 'info');
+                }, 1500);
+
+                // 绑定键盘事件
+                document.addEventListener('keydown', this.handleKeyboard);
+
+                // 监听全屏状态变化
+                document.addEventListener('fullscreenchange', () => {
+                    this.isFullscreen = !!document.fullscreenElement;
+                });
+            },
+
+            beforeUnmount() {
+                document.removeEventListener('keydown', this.handleKeyboard);
             }
-        }).mount('#videoApp');
+        }).mount('#app');
     </script>
 </body>
 </html> 
