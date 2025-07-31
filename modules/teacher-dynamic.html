@@ -471,9 +471,12 @@
 
                         <!-- 显示结果统计 -->
                         <div style="margin-bottom: 15px; color: #666; font-size: 14px;">
-                            显示 {{ Math.min(currentPage * pageSize, filteredQuestions.length) }} / {{ filteredQuestions.length }} 道题目
+                            <strong style="color: #007bff;">当前显示：{{ Math.min(currentPage * pageSize, filteredQuestions.length) }} / {{ filteredQuestions.length }} 道题目</strong>
+                            <span style="margin-left: 20px; color: #28a745;">
+                                总题库：{{ questionBank.length }} 道题目
+                            </span>
                             <span v-if="searchKeyword || selectedBank || selectedDifficulty">
-                                (已筛选，共{{ questionBank.length }}道)
+                                <span style="color: #ffc107; margin-left: 10px;">已筛选</span>
                             </span>
                         </div>
 
@@ -1074,31 +1077,25 @@
                     this.initActivityChart();
                 },
 
-                // 加载真实题库数据
+                // 极简版：直接加载所有题目
                 async loadRealQuestionBanks() {
                     try {
-                        this.showNotification('正在加载题库数据...', 'info');
+                        console.log('🚀 开始暴力加载所有题库...');
+                        this.showNotification('正在暴力加载所有题库...', 'info');
                         
-                        // 加载题库索引
-                        const indexResponse = await fetch('../question-banks/index.json');
-                        const indexData = await indexResponse.json();
-                        
-                        this.allQuestionBanks = indexData.questionBanks || [];
-                        this.questionBankStats.totalBanks = this.allQuestionBanks.length;
-                        this.questionBankStats.totalQuestions = indexData.statistics?.totalQuestions || 0;
-                        
-                        // 强制清空现有题目，重新加载所有题库的全部题目
+                        // 彻底清空
                         this.questionBank = [];
-                        let totalLoadedQuestions = 0;
-                        let loadedBanks = 0;
+                        this.allQuestionBanks = [];
                         
-                        // 获取所有JSON文件，不依赖index.json
-                        const allBankFiles = [
+                        let totalLoaded = 0;
+                        
+                        // 直接尝试加载所有可能的文件
+                        const files = [
                             '易错题集.json',
-                            '真题_中国海洋大学_2000-2021_cleaned.json', 
+                            '真题_中国海洋大学_2000-2021_cleaned.json',
                             '真题_中国海洋大学_2000-2021.json',
                             '分类_动量方程.json',
-                            '分类_势流.json', 
+                            '分类_势流.json',
                             '分类_压力.json',
                             '分类_实验与量纲.json',
                             '分类_流体力学基础.json',
@@ -1114,73 +1111,52 @@
                             '分类_雷诺数.json'
                         ];
                         
-                        for (const filename of allBankFiles) {
+                        for (let i = 0; i < files.length; i++) {
+                            const file = files[i];
                             try {
-                                console.log(`🔄 正在加载: ${filename}`);
-                                this.showNotification(`正在加载 ${filename}...`, 'info');
+                                console.log(`📖 加载第${i+1}个: ${file}`);
                                 
-                                const response = await fetch(`../question-banks/${filename}`);
-                                if (!response.ok) {
-                                    console.warn(`⚠️ 文件 ${filename} 不存在或无法访问`);
-                                    continue;
-                                }
-                                
-                                const questions = await response.json();
-                                
-                                if (Array.isArray(questions) && questions.length > 0) {
-                                    // 加载所有题目
-                                    questions.forEach((q, index) => {
-                                        this.questionBank.push({
-                                            id: q.id || `${filename.replace('.json', '')}-${index}`,
-                                            title: q.title || q.question || '题目内容',
-                                            bank: filename.replace('.json', '').replace('分类_', '').replace('真题_', ''),
-                                            bankId: filename.replace('.json', ''),
-                                            difficulty: this.getDifficultyFromTags(q.tags),
-                                            correctRate: Math.floor(Math.random() * 30) + 60,
-                                            createdAt: q.year ? `${q.year}-01-01` : '2024-01-01',
-                                            category: q.category || '流体力学',
-                                            tags: q.tags || [],
-                                            type: q.type || '计算题',
-                                            year: q.year || null,
-                                            school: q.school || '中国海洋大学',
-                                            score: q.score || 10,
-                                            options: q.options || [],
-                                            answer: q.answer || '',
-                                            explanation: q.explanation || '',
-                                            originalData: q // 保留原始数据
+                                const res = await fetch(`../question-banks/${file}`);
+                                if (res.ok) {
+                                    const data = await res.json();
+                                    if (Array.isArray(data)) {
+                                        data.forEach((item, idx) => {
+                                            this.questionBank.push({
+                                                id: `q_${totalLoaded + idx + 1}`,
+                                                title: (item.title || item.question || '题目').substring(0, 100),
+                                                bank: file.replace('.json', ''),
+                                                bankId: file,
+                                                difficulty: 'medium',
+                                                correctRate: 75,
+                                                createdAt: '2024-01-01',
+                                                category: item.category || '流体力学',
+                                                tags: item.tags || [],
+                                                type: item.type || '题目',
+                                                year: item.year,
+                                                school: item.school || '中国海洋大学',
+                                                score: item.score || 10
+                                            });
                                         });
-                                    });
-                                    
-                                    totalLoadedQuestions += questions.length;
-                                    loadedBanks++;
-                                    console.log(`✅ 成功加载 ${filename}: ${questions.length} 道题目`);
-                                } else {
-                                    console.warn(`⚠️ ${filename} 中没有有效题目数据`);
+                                        totalLoaded += data.length;
+                                        console.log(`✅ ${file}: +${data.length}题, 累计: ${totalLoaded}`);
+                                    }
                                 }
-                            } catch (error) {
-                                console.error(`❌ 加载 ${filename} 失败:`, error);
+                            } catch (e) {
+                                console.log(`❌ ${file}: 跳过`);
                             }
                         }
                         
-                        console.log(`🎉 加载完成！总共加载了 ${totalLoadedQuestions} 道题目，来自 ${loadedBanks} 个题库`);
-                        this.showNotification(`🎉 成功加载 ${totalLoadedQuestions} 道题目！来自 ${loadedBanks} 个题库`, 'success');
+                        // 强制更新所有统计
+                        this.totalQuestions = totalLoaded;
+                        this.questionBankStats.totalQuestions = totalLoaded;
+                        this.questionBankStats.totalBanks = files.length;
                         
-                        // 更新统计信息
-                        this.questionBankStats.difficultQuestions = this.questionBank.filter(q => q.difficulty === 'hard').length;
-                        this.questionBankStats.recentQuestions = this.questionBank.filter(q => {
-                            const date = new Date(q.createdAt);
-                            const oneWeekAgo = new Date();
-                            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-                            return date >= oneWeekAgo;
-                        }).length;
-                        
-                        // 更新显示的总题目数
-                        this.totalQuestions = totalLoadedQuestions;
-                        this.questionBankStats.totalQuestions = totalLoadedQuestions;
+                        console.log(`🎉 暴力加载完成！总共: ${totalLoaded} 道题目`);
+                        this.showNotification(`🎉 暴力加载完成！${totalLoaded} 道题目`, 'success');
                         
                     } catch (error) {
-                        console.error('加载题库数据失败:', error);
-                        this.showNotification('加载题库数据失败，请检查网络连接', 'error');
+                        console.error('❌ 暴力加载失败:', error);
+                        this.showNotification('加载失败', 'error');
                     }
                 },
 
@@ -1336,6 +1312,46 @@
                     this.selectedDifficulty = '';
                     this.searchKeyword = '';
                     this.currentPage = 1;
+                },
+
+                // 根据标签判断难度
+                getDifficultyFromTags(tags) {
+                    if (!tags || !Array.isArray(tags)) return 'medium';
+                    
+                    const tagString = tags.join(' ').toLowerCase();
+                    if (tagString.includes('易错') || tagString.includes('高级') || tagString.includes('难')) {
+                        return 'hard';
+                    } else if (tagString.includes('基础') || tagString.includes('简单')) {
+                        return 'easy';
+                    }
+                    return 'medium';
+                },
+
+                // 刷新题库数据
+                refreshQuestionBank() {
+                    console.log('🔄 手动刷新题库...');
+                    this.questionBank = [];
+                    this.allQuestionBanks = [];
+                    this.loadRealQuestionBanks();
+                },
+
+                // 导出题库数据
+                exportQuestionBank() {
+                    const data = {
+                        exportTime: new Date().toISOString(),
+                        totalQuestions: this.questionBank.length,
+                        questions: this.questionBank
+                    };
+                    
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `题库数据导出_${new Date().toISOString().split('T')[0]}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    this.showNotification('题库数据导出成功！', 'success');
                 }
             },
 
