@@ -1087,6 +1087,73 @@
                 </div>
             </div>
 
+            <!-- 真题选择器 -->
+            <div v-if="currentView === 'realExamSelector'" class="selector-container">
+                <div class="selector-header">
+                    <h1 class="selector-title">🏆 历年真题选择</h1>
+                    <p class="selector-subtitle">选择要练习的真题年份或分类</p>
+                </div>
+
+                <!-- 统计面板 -->
+                <div class="stats-panel">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ totalQuestions }}</div>
+                        <div class="stat-label">总题数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ availableBanks.length }}</div>
+                        <div class="stat-label">可用题库</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ realExamYears.length }}</div>
+                        <div class="stat-label">年份数量</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ answeredQuestions }}</div>
+                        <div class="stat-label">已答题</div>
+                    </div>
+                </div>
+
+                <!-- 真题题库列表 -->
+                <div class="question-bank-list">
+                    <div 
+                        v-for="bank in availableBanks" 
+                        :key="bank.id"
+                        class="bank-item"
+                        @click="startYearPractice(bank.year, 'normal')"
+                    >
+                        <div class="bank-info">
+                            <div class="bank-name">{{ bank.name }}</div>
+                            <div class="bank-meta">
+                                <span><i class="fas fa-question-circle"></i> {{ bank.questionCount || 0 }} 题</span>
+                                <span><i class="fas fa-tag"></i> {{ bank.category || '历年真题' }}</span>
+                                <span v-if="bank.year && bank.year !== 'all'"><i class="fas fa-calendar"></i> {{ bank.year }}年</span>
+                                <span><i class="fas fa-signal"></i> {{ getDifficultyText(bank.difficulty) }}</span>
+                            </div>
+                            <div class="bank-description">{{ bank.description }}</div>
+                        </div>
+                        <div class="bank-actions" @click.stop>
+                            <button @click="startYearPractice(bank.year, 'normal')" class="bank-btn primary">
+                                <i class="fas fa-play"></i> 顺序练习
+                            </button>
+                            <button @click="startYearPractice(bank.year, 'random')" class="bank-btn secondary">
+                                <i class="fas fa-random"></i> 随机练习
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 返回按钮 -->
+                <div class="action-buttons" style="margin-top: 30px;">
+                    <button @click="backToSelector" class="action-btn">
+                        <i class="fas fa-arrow-left"></i> 返回题库选择
+                    </button>
+                    <button @click="startYearPractice('all', 'random')" class="action-btn btn-success">
+                        <i class="fas fa-random"></i> 随机所有真题
+                    </button>
+                </div>
+            </div>
+
             <!-- 练习界面 -->
             <div v-if="currentView === 'practice'">
             <!-- 练习统计 -->
