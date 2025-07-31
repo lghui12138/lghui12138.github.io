@@ -2659,128 +2659,63 @@ input:focus, select:focus, textarea:focus {
                 return `<button class="${cls}" onclick="selectOption(${i})">${String.fromCharCode(65+i)}. ${opt}</button>`;
             }).join('');
             
-            // 最简单的按钮 - 直接插入HTML + 延迟事件绑定
-            const simpleButtons = `
-                <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 12px; border: 2px solid #dee2e6;">
-                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                        <button id="simpleSubmitBtn" style="
-                            background: #28a745; 
+            // 💡 最简单可靠的按钮 - 放在题目框内，使用onclick直接调用
+            const actionButtons = `
+                <div style="
+                    margin-top: 25px; 
+                    padding: 25px; 
+                    background: linear-gradient(135deg, #f8f9fa, #e3f2fd); 
+                    border-radius: 15px; 
+                    border: 3px solid #2196F3;
+                    box-shadow: 0 4px 12px rgba(33, 150, 243, 0.2);
+                ">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div style="color: #1976d2; font-weight: bold; font-size: 18px; margin-bottom: 10px;">
+                            📝 操作面板
+                        </div>
+                        <div style="color: #666; font-size: 14px;">
+                            ${answered ? '已提交答案，查看下方解析' : '选择答案后点击提交按钮'}
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+                        <button onclick="directSubmitAnswer()" style="
+                            background: ${answered ? '#6c757d' : 'linear-gradient(135deg, #28a745, #20c997)'}; 
                             color: white; 
                             border: none; 
-                            padding: 16px 32px; 
-                            border-radius: 10px; 
-                            font-size: 16px; 
-                            font-weight: 600; 
-                            cursor: pointer; 
-                            min-width: 150px;
-                        ">
-                            🚀 提交答案
+                            padding: 18px 40px; 
+                            border-radius: 12px; 
+                            font-size: 18px; 
+                            font-weight: bold; 
+                            cursor: ${answered ? 'not-allowed' : 'pointer'}; 
+                            min-width: 180px;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+                        " ${answered ? 'disabled' : ''}>
+                            ${answered ? '✅ 已提交' : '🚀 提交答案'}
                         </button>
-                        <button id="simpleSaveBtn" style="
-                            background: #007bff; 
+                        
+                        <button onclick="directSaveProgress()" style="
+                            background: linear-gradient(135deg, #007bff, #0056b3); 
                             color: white; 
                             border: none; 
-                            padding: 16px 32px; 
-                            border-radius: 10px; 
-                            font-size: 16px; 
-                            font-weight: 600; 
+                            padding: 18px 40px; 
+                            border-radius: 12px; 
+                            font-size: 18px; 
+                            font-weight: bold; 
                             cursor: pointer; 
-                            min-width: 150px;
+                            min-width: 180px;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
                         ">
                             💾 保存进度
                         </button>
                     </div>
-                    <div style="text-align: center; margin-top: 15px; font-size: 14px; color: #666;">
-                        选择选项后点击提交按钮
-                    </div>
                 </div>
             `;
             
-            document.getElementById('questionOptions').innerHTML = opts + simpleButtons;
+            document.getElementById('questionOptions').innerHTML = opts + actionButtons;
             document.getElementById('questionProgress').innerHTML = `第${current+1}题 / 共${questions.length}题`;
-            
-            // 延迟绑定事件，确保DOM已渲染
-            setTimeout(() => {
-                console.log('🔧 开始绑定简单按钮事件...');
-                
-                const submitBtn = document.getElementById('simpleSubmitBtn');
-                const saveBtn = document.getElementById('simpleSaveBtn');
-                
-                console.log('找到按钮:', {submitBtn: !!submitBtn, saveBtn: !!saveBtn});
-                
-                if (submitBtn) {
-                    // 移除所有现有监听器
-                    submitBtn.replaceWith(submitBtn.cloneNode(true));
-                    const newSubmitBtn = document.getElementById('simpleSubmitBtn');
-                    
-                    newSubmitBtn.addEventListener('click', function() {
-                        alert('🔥 提交按钮被点击了！selected=' + selected + ', answered=' + answered);
-                        console.log('🔥 按钮点击事件触发');
-                        
-                        if (answered) {
-                            alert('您已经提交过答案了！');
-                            return;
-                        }
-                        
-                        if (selected === null || selected === undefined) {
-                            alert('请先选择一个答案选项！');
-                            return;
-                        }
-                        
-                                                 alert('开始提交答案...');
-                         
-                         // 立即处理提交逻辑
-                         answered = true;
-                         const q = questions[current];
-                         q.userSelected = selected;
-                         
-                         // 判断对错并显示结果
-                         const isCorrect = selected === q.answer;
-                         const resultText = isCorrect ? '✅ 回答正确！' : '❌ 回答错误！';
-                         
-                         // 立即显示答案和解析
-                         const answerHtml = `
-                             <div style="margin-top: 30px; padding: 25px; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 15px; border-left: 5px solid ${isCorrect ? '#28a745' : '#dc3545'};">
-                                 <div style="font-size: 20px; font-weight: bold; color: ${isCorrect ? '#28a745' : '#dc3545'}; margin-bottom: 15px;">
-                                     ${resultText}
-                                 </div>
-                                 <div style="font-size: 16px; color: #333; margin-bottom: 10px;">
-                                     <strong>正确答案：</strong>${String.fromCharCode(65 + q.answer)}. ${q.options[q.answer]}
-                                 </div>
-                                 <div style="font-size: 15px; color: #666; line-height: 1.6;">
-                                     <strong>解析：</strong>${q.explanation}
-                                 </div>
-                             </div>
-                         `;
-                         
-                         // 重新渲染题目，然后添加答案解析
-                         renderQuestion();
-                         
-                         // 在按钮区域下方添加解析
-                         setTimeout(() => {
-                             const optionsContainer = document.getElementById('questionOptions');
-                             optionsContainer.innerHTML += answerHtml;
-                             
-                             alert('✅ 提交完成！答案和解析已显示在下方。');
-                         }, 300);
-                    });
-                    
-                    console.log('✅ 提交按钮事件已绑定');
-                }
-                
-                if (saveBtn) {
-                    saveBtn.addEventListener('click', function() {
-                        alert('💾 保存按钮被点击了！');
-                        this.innerHTML = '✅ 已保存';
-                        setTimeout(() => {
-                            this.innerHTML = '💾 保存进度';
-                        }, 2000);
-                    });
-                    
-                    console.log('✅ 保存按钮事件已绑定');
-                }
-                
-            }, 300);
             
             // 收藏状态
             const favButton = document.getElementById('favBtn');
@@ -4764,6 +4699,129 @@ input:focus, select:focus, textarea:focus {
             
             console.log('✅ 内置测试题目加载成功，题目数量:', questions.length);
             renderQuestion();
+        }
+
+        // 💎 直接提交答案函数 - 确保100%可点击
+        function directSubmitAnswer() {
+            console.log('🔥 直接提交函数被调用！selected=', selected, 'answered=', answered);
+            
+            if (answered) {
+                alert('您已经提交过答案了！请查看下方的详细解析。');
+                return;
+            }
+            
+            if (selected === null || selected === undefined) {
+                alert('⚠️ 请先选择一个答案选项！');
+                return;
+            }
+            
+            // 立即处理提交
+            answered = true;
+            const q = questions[current];
+            q.userSelected = selected;
+            
+            // 判断对错
+            const isCorrect = selected === q.answer;
+            const resultIcon = isCorrect ? '✅' : '❌';
+            const resultText = isCorrect ? '回答正确！' : '回答错误！';
+            const resultColor = isCorrect ? '#28a745' : '#dc3545';
+            
+            // 立即显示批改结果 - 添加到题目下方
+            const resultHtml = `
+                <div id="submitResult" style="
+                    margin-top: 30px; 
+                    padding: 30px; 
+                    background: linear-gradient(135deg, ${isCorrect ? '#d4edda' : '#f8d7da'}, #fff); 
+                    border-radius: 20px; 
+                    border: 4px solid ${resultColor};
+                    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+                    animation: slideIn 0.5s ease-out;
+                ">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <div style="font-size: 32px; margin-bottom: 10px;">${resultIcon}</div>
+                        <div style="color: ${resultColor}; font-weight: bold; font-size: 24px;">
+                            ${resultText}
+                        </div>
+                    </div>
+                    
+                    <div style="background: #fff; padding: 25px; border-radius: 15px; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                        <div style="font-size: 18px; color: #333; margin-bottom: 15px;">
+                            <strong>🎯 正确答案：</strong>
+                            <span style="background: #ffc107; padding: 5px 15px; border-radius: 8px; color: #000; font-weight: bold;">
+                                ${String.fromCharCode(65 + q.answer)}
+                            </span>
+                        </div>
+                        <div style="font-size: 16px; color: #666; line-height: 1.8;">
+                            ${q.options[q.answer]}
+                        </div>
+                    </div>
+                    
+                    <div style="background: #e7f3ff; padding: 25px; border-radius: 15px; border-left: 6px solid #007bff;">
+                        <div style="font-size: 18px; color: #0056b3; font-weight: bold; margin-bottom: 15px;">
+                            💡 详细解析：
+                        </div>
+                        <div style="font-size: 16px; color: #333; line-height: 1.8;">
+                            ${q.explanation}
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 25px;">
+                        <button onclick="nextQuestion()" style="
+                            background: linear-gradient(135deg, #4facfe, #00f2fe);
+                            color: white;
+                            border: none;
+                            padding: 15px 40px;
+                            border-radius: 25px;
+                            font-size: 18px;
+                            font-weight: bold;
+                            cursor: pointer;
+                            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+                            transition: transform 0.2s ease;
+                        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            继续下一题 →
+                        </button>
+                    </div>
+                </div>
+                
+                <style>
+                @keyframes slideIn {
+                    from { opacity: 0; transform: translateY(20px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                </style>
+            `;
+            
+            // 重新渲染题目（更新按钮状态）
+            renderQuestion();
+            
+            // 添加结果显示
+            document.getElementById('questionOptions').innerHTML += resultHtml;
+            
+            // 滚动到结果区域
+            setTimeout(() => {
+                document.getElementById('submitResult').scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+            
+            console.log('✅ 提交完成，结果已显示！');
+        }
+
+        // 💾 直接保存进度函数
+        function directSaveProgress() {
+            console.log('💾 保存进度被调用');
+            
+            // 保存当前状态到localStorage
+            const progressData = {
+                currentQuestion: current,
+                selectedAnswers: questions.map(q => q.userSelected || null),
+                timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem('practiceProgress', JSON.stringify(progressData));
+            
+            // 给用户反馈
+            alert('💾 进度已保存！\n' + 
+                  '当前题目：第' + (current + 1) + '题\n' + 
+                  '保存时间：' + new Date().toLocaleString());
         }
         
         // 页面初始化

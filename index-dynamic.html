@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流体力学学习平台 - 动态版</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .header p {
+            font-size: 1.4em;
+            opacity: 0.9;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .stats-panel {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 40px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            animation: fadeIn 1s ease-out 0.4s both;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+
+        .stat-item {
+            color: white;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .module-card {
+            background: white;
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .module-card:hover::before {
+            left: 100%;
+        }
+
+        .module-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .module-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .module-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .module-desc {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .module-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #888;
+        }
+
+        .start-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .start-button:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a4190);
+            transform: scale(1.05);
+        }
+
+        .teacher-panel {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: pulse 2s infinite;
+        }
+
+        .teacher-button {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0 10px;
+        }
+
+        .teacher-button:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            transform: scale(1.05);
+        }
+
+        .footer {
+            text-align: center;
+            color: rgba(255,255,255,0.8);
+            padding: 30px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        .floating-action {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .floating-action:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="app-container">
+            <!-- 头部 -->
+            <div class="header">
+                <h1><i class="fas fa-flask"></i> 流体力学学习平台</h1>
+                <p>动态智能学习系统 - 现代化教学体验</p>
+            </div>
+
+            <!-- 统计面板 -->
+            <div class="stats-panel">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">{{ totalQuestions }}</div>
+                        <div class="stat-label">总题目数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ completedSessions }}</div>
+                        <div class="stat-label">完成练习</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ averageScore }}%</div>
+                        <div class="stat-label">平均分数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">{{ studyTime }}</div>
+                        <div class="stat-label">学习时长(分钟)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 教师面板 -->
+            <div class="teacher-panel" v-if="showTeacherPanel">
+                <h2 style="margin-bottom: 20px;"><i class="fas fa-chalkboard-teacher"></i> 教师端入口</h2>
+                <p style="margin-bottom: 25px;">管理题库、查看学生进度、生成学习报告</p>
+                <button class="teacher-button" @click="openTeacherDashboard">
+                    <i class="fas fa-tachometer-alt"></i> 教师控制台
+                </button>
+                <button class="teacher-button" @click="openQuestionBank">
+                    <i class="fas fa-database"></i> 题库管理
+                </button>
+                <button class="teacher-button" @click="openAnalytics">
+                    <i class="fas fa-chart-line"></i> 学习分析
+                </button>
+            </div>
+
+            <!-- 学习模块 -->
+            <div class="modules-grid">
+                <div 
+                    v-for="module in learningModules" 
+                    :key="module.id" 
+                    class="module-card"
+                    @click="openModule(module)"
+                >
+                    <div class="module-icon">
+                        <i :class="module.icon"></i>
+                    </div>
+                    <div class="module-title">{{ module.title }}</div>
+                    <div class="module-desc">{{ module.description }}</div>
+                    <div class="module-stats">
+                        <span><i class="far fa-file-alt"></i> {{ module.questionCount }}题</span>
+                        <span><i class="far fa-clock"></i> {{ module.estimatedTime }}分钟</span>
+                        <span :style="{ color: getDifficultyColor(module.difficulty) }">
+                            {{ getDifficultyText(module.difficulty) }}
+                        </span>
+                    </div>
+                    <button class="start-button" @click.stop="startPractice(module)">
+                        <i class="fas fa-play"></i> 开始练习
+                    </button>
+                </div>
+            </div>
+
+            <!-- 底部 -->
+            <div class="footer">
+                <p>&copy; 2024 流体力学智能学习平台 | 动态响应式版本</p>
+                <p>基于 Vue.js 3.0 构建 | 现代化学习体验</p>
+            </div>
+        </div>
+
+        <!-- 浮动操作按钮 -->
+        <button class="floating-action" @click="toggleTeacherPanel" :title="showTeacherPanel ? '隐藏教师面板' : '显示教师面板'">
+            <i :class="showTeacherPanel ? 'fas fa-eye-slash' : 'fas fa-user-tie'"></i>
+        </button>
+
+        <!-- 通知 -->
+        <div v-if="notification" class="notification">
+            {{ notification }}
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    showTeacherPanel: false,
+                    notification: '',
+                    totalQuestions: 728,
+                    completedSessions: 0,
+                    averageScore: 0,
+                    studyTime: 0,
+                    learningModules: [
+                        {
+                            id: 'basic-concepts',
+                            title: '基础概念练习',
+                            description: '流体力学基本概念、定义和原理',
+                            icon: 'fas fa-graduation-cap',
+                            questionCount: 105,
+                            estimatedTime: 120,
+                            difficulty: 'easy',
+                            url: 'practice-dynamic.html?type=concepts'
+                        },
+                        {
+                            id: 'fluid-statics',
+                            title: '流体静力学',
+                            description: '静止流体的压强分布和浮力计算',
+                            icon: 'fas fa-balance-scale',
+                            questionCount: 78,
+                            estimatedTime: 90,
+                            difficulty: 'medium',
+                            url: 'practice-dynamic.html?type=statics'
+                        },
+                        {
+                            id: 'fluid-dynamics',
+                            title: '流体动力学',
+                            description: '流体运动规律和动力学方程',
+                            icon: 'fas fa-rocket',
+                            questionCount: 92,
+                            estimatedTime: 110,
+                            difficulty: 'hard',
+                            url: 'practice-dynamic.html?type=dynamics'
+                        },
+                        {
+                            id: 'viscous-flow',
+                            title: '粘性流动',
+                            description: '粘性流体的运动特性和计算',
+                            icon: 'fas fa-water',
+                            questionCount: 33,
+                            estimatedTime: 45,
+                            difficulty: 'hard',
+                            url: 'practice-dynamic.html?type=viscous'
+                        },
+                        {
+                            id: 'exam-practice',
+                            title: '考试模式',
+                            description: '模拟真实考试环境的综合练习',
+                            icon: 'fas fa-clipboard-check',
+                            questionCount: 50,
+                            estimatedTime: 60,
+                            difficulty: 'medium',
+                            url: 'practice-dynamic.html?type=exam'
+                        },
+                        {
+                            id: 'real-exams',
+                            title: '历年真题',
+                            description: '中国海洋大学真题集(2000-2021)',
+                            icon: 'fas fa-medal',
+                            questionCount: 329,
+                            estimatedTime: 200,
+                            difficulty: 'hard',
+                            url: 'practice-dynamic.html?type=real-exams'
+                        }
+                    ]
+                }
+            },
+            methods: {
+                openModule(module) {
+                    this.showNotification(`正在进入 ${module.title}...`);
+                    // 可以添加模块详情显示逻辑
+                },
+                startPractice(module) {
+                    this.showNotification(`开始 ${module.title} 练习！`);
+                    setTimeout(() => {
+                        window.location.href = module.url;
+                    }, 1000);
+                },
+                toggleTeacherPanel() {
+                    this.showTeacherPanel = !this.showTeacherPanel;
+                    this.showNotification(this.showTeacherPanel ? '教师面板已打开' : '教师面板已关闭');
+                },
+                openTeacherDashboard() {
+                    this.showNotification('正在打开教师控制台...');
+                    // 这里可以跳转到教师管理页面
+                },
+                openQuestionBank() {
+                    this.showNotification('正在打开题库管理...');
+                    // 这里可以跳转到题库管理页面
+                },
+                openAnalytics() {
+                    this.showNotification('正在打开学习分析...');
+                    // 这里可以跳转到分析页面
+                },
+                getDifficultyColor(difficulty) {
+                    const colors = {
+                        'easy': '#28a745',
+                        'medium': '#ffc107', 
+                        'hard': '#dc3545'
+                    };
+                    return colors[difficulty] || '#6c757d';
+                },
+                getDifficultyText(difficulty) {
+                    const texts = {
+                        'easy': '简单',
+                        'medium': '中等',
+                        'hard': '困难'
+                    };
+                    return texts[difficulty] || '未知';
+                },
+                loadStats() {
+                    // 从localStorage加载统计数据
+                    const stats = localStorage.getItem('learningStats');
+                    if (stats) {
+                        try {
+                            const data = JSON.parse(stats);
+                            this.completedSessions = data.completedSessions || 0;
+                            this.averageScore = data.averageScore || 0;
+                            this.studyTime = data.studyTime || 0;
+                        } catch (e) {
+                            console.error('加载统计数据失败:', e);
+                        }
+                    }
+                },
+                updateStats() {
+                    // 定期更新统计数据
+                    const stats = {
+                        completedSessions: this.completedSessions,
+                        averageScore: this.averageScore,
+                        studyTime: this.studyTime,
+                        lastUpdated: new Date().toISOString()
+                    };
+                    localStorage.setItem('learningStats', JSON.stringify(stats));
+                },
+                showNotification(message) {
+                    this.notification = message;
+                    setTimeout(() => {
+                        this.notification = '';
+                    }, 3000);
+                }
+            },
+            mounted() {
+                console.log('🚀 流体力学学习平台动态版启动成功！');
+                this.loadStats();
+                
+                // 动态更新统计数据
+                setInterval(() => {
+                    this.studyTime += 1; // 每分钟增加1分钟学习时长
+                    this.updateStats();
+                }, 60000);
+                
+                // 检查是否是教师身份
+                const isTeacher = localStorage.getItem('userRole') === 'teacher';
+                if (isTeacher) {
+                    this.showTeacherPanel = true;
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html> 
