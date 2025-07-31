@@ -1345,6 +1345,12 @@
                         return this.realExamYears.map(y => y.year);
                     }
                     
+                    // 如果真题数据已加载但realExamYears还没设置，从allQuestions中提取
+                    if (this.isRealExamMode && this.allQuestions.length > 0) {
+                        const years = [...new Set(this.allQuestions.map(q => q.year))].sort((a, b) => b - a);
+                        return years;
+                    }
+                    
                     // 否则从题库中提取年份
                     const years = new Set();
                     this.availableBanks.forEach(bank => {
@@ -1791,6 +1797,9 @@
                 // 真题练习处理
                 async handleRealExamPractice(examId, examYear, examMode = 'all') {
                     console.log('📚 处理真题练习请求:', { examId, examYear, examMode });
+                    
+                    // 立即设置真题模式
+                    this.isRealExamMode = true;
                     
                     this.loading = true;
                     this.loadingText = '正在加载真题数据...';
