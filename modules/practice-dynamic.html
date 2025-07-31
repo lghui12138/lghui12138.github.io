@@ -392,7 +392,27 @@
                     const type = urlParams.get('type') || 'default';
                     
                     // 根据类型加载不同题库
-                    this.questions = this.getQuestionsByType(type);
+                    let questionPool = this.getQuestionsByType(type);
+                    
+                    // 随机选择题目（如果题库较大）
+                    if (questionPool.length > 20) {
+                        // 随机打乱题目顺序
+                        for (let i = questionPool.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [questionPool[i], questionPool[j]] = [questionPool[j], questionPool[i]];
+                        }
+                        // 选择前20题进行练习
+                        this.questions = questionPool.slice(0, 20);
+                    } else {
+                        this.questions = questionPool;
+                    }
+                    
+                    // 为每道题添加ID
+                    this.questions.forEach((q, index) => {
+                        q.id = index + 1;
+                    });
+                    
+                    console.log(`📚 加载${type}题库完成，共${this.questions.length}道题目`);
                     this.shuffleQuestions();
                 },
                 
@@ -471,13 +491,182 @@
                             answer: 2,
                             explanation: "雷诺数Re = ρVL/μ，表示惯性力与粘性力的比值，是判断流动状态（层流或湍流）的重要无量纲参数。",
                             difficulty: 'hard'
+                        },
+                        {
+                            title: "流体的粘性是指",
+                            options: [
+                                "流体抵抗剪切变形的性质",
+                                "流体的密度特性",
+                                "流体的压缩性",
+                                "流体的表面张力"
+                            ],
+                            answer: 0,
+                            explanation: "流体粘性是指流体在受到剪切力作用时抵抗剪切变形的性质，是流体的重要物理特性。",
+                            difficulty: 'easy'
+                        },
+                        {
+                            title: "帕斯卡定律的内容是",
+                            options: [
+                                "流体压强随高度变化",
+                                "静止流体中压强各向相等",
+                                "流体速度影响压强",
+                                "流体密度决定压强"
+                            ],
+                            answer: 1,
+                            explanation: "帕斯卡定律指出：在静止流体中，任意一点的压强在各个方向上都相等。",
+                            difficulty: 'easy'
+                        },
+                        {
+                            title: "流线与迹线的区别在于",
+                            options: [
+                                "流线是瞬时概念，迹线是历史轨迹",
+                                "流线是历史轨迹，迹线是瞬时概念",
+                                "两者完全相同",
+                                "两者都是假想线"
+                            ],
+                            answer: 0,
+                            explanation: "流线是某一瞬时流场中的切线族，迹线是流体质点在一段时间内的运动轨迹。",
+                            difficulty: 'medium'
+                        },
+                        {
+                            title: "流体力学中，马赫数的定义是",
+                            options: [
+                                "流速与重力加速度的比值",
+                                "流速与声速的比值",
+                                "密度与压强的比值",
+                                "粘度与密度的比值"
+                            ],
+                            answer: 1,
+                            explanation: "马赫数Ma=V/c，是流体速度V与当地声速c的比值，用于判断流动的可压缩性。",
+                            difficulty: 'medium'
+                        },
+                        {
+                            title: "在圆管层流中，管中心处的速度与平均速度的关系是",
+                            options: [
+                                "中心速度等于平均速度",
+                                "中心速度是平均速度的1.5倍",
+                                "中心速度是平均速度的2倍",
+                                "中心速度是平均速度的2.5倍"
+                            ],
+                            answer: 2,
+                            explanation: "在圆管层流（泊肃叶流动）中，速度分布为抛物线型，管中心速度是平均速度的2倍。",
+                            difficulty: 'hard'
                         }
                     ];
                 },
                 
                 getStaticsQuestions() {
-                    // 流体静力学专题题目
-                    return this.getDefaultQuestions().filter(q => q.title.includes('静力学') || q.title.includes('压强'));
+                    return [
+                        {
+                            title: "液体静压强的特点是",
+                            options: [
+                                "只存在于液体表面",
+                                "仅沿垂直方向作用",
+                                "垂直作用于接触面",
+                                "大小随液体温度变化"
+                            ],
+                            answer: 2,
+                            explanation: "液体静压强总是垂直作用于所接触的壁面，这是静压强的基本特性。",
+                            difficulty: 'easy'
+                        },
+                        {
+                            title: "阿基米德原理表明，浮力的大小等于",
+                            options: [
+                                "物体的重量",
+                                "物体排开流体的重量",
+                                "物体与流体重量之差",
+                                "物体在流体中的体积"
+                            ],
+                            answer: 1,
+                            explanation: "阿基米德原理：浮力大小等于物体所排开流体的重量。",
+                            difficulty: 'easy'
+                        }
+                    ];
+                },
+                
+                getDynamicsQuestions() {
+                    return [
+                        {
+                            title: "流体动力学中，加速度包括",
+                            options: [
+                                "仅有当地加速度",
+                                "仅有迁移加速度",
+                                "当地加速度和迁移加速度",
+                                "重力加速度"
+                            ],
+                            answer: 2,
+                            explanation: "流体质点的加速度包括当地加速度（∂V/∂t）和迁移加速度（(V·∇)V）两部分。",
+                            difficulty: 'medium'
+                        }
+                    ];
+                },
+                
+                getViscousQuestions() {
+                    return [
+                        {
+                            title: "牛顿内摩擦定律的表达式是",
+                            options: [
+                                "τ = μ(du/dy)",
+                                "τ = ρ(du/dy)",
+                                "τ = μ(dp/dy)",
+                                "τ = ρ(dp/dy)"
+                            ],
+                            answer: 0,
+                            explanation: "牛顿内摩擦定律：τ = μ(du/dy)，其中τ是剪应力，μ是动力粘度，du/dy是速度梯度。",
+                            difficulty: 'medium'
+                        }
+                    ];
+                },
+                
+                getExamQuestions() {
+                    return [
+                        {
+                            title: "在水力学中，临界雷诺数Rec的数值约为",
+                            options: [
+                                "1000",
+                                "2300", 
+                                "4000",
+                                "10000"
+                            ],
+                            answer: 1,
+                            explanation: "在圆管流动中，临界雷诺数Rec≈2300，是判断层流向湍流转变的重要参数。",
+                            difficulty: 'medium'
+                        }
+                    ];
+                },
+                
+                getRealExamQuestions() {
+                    return [
+                        {
+                            title: "【2023年真题】理想流体伯努利方程沿流线的积分形式为",
+                            options: [
+                                "p + ρgh + ρV²/2 = 常数",
+                                "p + ρgh - ρV²/2 = 常数",
+                                "p - ρgh + ρV²/2 = 常数",
+                                "p/ρ + gh + V²/2 = 常数"
+                            ],
+                            answer: 0,
+                            explanation: "理想流体伯努利方程：p + ρgh + ρV²/2 = 常数，体现了流动过程中机械能守恒。",
+                            difficulty: 'medium'
+                        }
+                    ];
+                },
+                
+                getErrorProneQuestions() {
+                    return [
+                        {
+                            title: "【易错题】流体微团的角变形是由什么引起的？",
+                            options: [
+                                "剪切变形率",
+                                "体积变形率",
+                                "角速度",
+                                "涡量"
+                            ],
+                            answer: 0,
+                            explanation: "流体微团的角变形是由剪切变形率引起的，这是流体运动学的重要概念。",
+                            difficulty: 'hard'
+                        }
+                    ];
                 },
                 
                 getDifficultyText(difficulty) {
