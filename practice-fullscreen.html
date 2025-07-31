@@ -4490,75 +4490,202 @@ input:focus, select:focus, textarea:focus {
             lastTapTime = currentTime;
         }
 
-        // 内置测试题目 - 确保按钮功能可测试
-        function loadQuestions() {
-            console.log('🔧 开始加载内置测试题目...');
+        // 加载题目函数 - 从GitHub加载真实题目
+        async function loadQuestions() {
+            console.log('🔧 开始从GitHub加载真实题目...');
             
-            // 直接创建测试题目数据
-            questions = [
-                {
-                    title: "流体静力学中，静止流体内部任意一点的压强大小",
-                    options: [
-                        "与该点所在深度成正比",
-                        "与该点所在深度成反比", 
-                        "与流体密度无关",
-                        "只取决于大气压强"
-                    ],
-                    answer: 0,
-                    explanation: "根据流体静力学基本方程，静止流体内部压强随深度线性增加，p = p0 + ρgh，因此压强与深度成正比。"
-                },
-                {
-                    title: "理想流体的特征包括",
-                    options: [
-                        "有粘性、不可压缩",
-                        "无粘性、可压缩",
-                        "无粘性、不可压缩", 
-                        "有粘性、可压缩"
-                    ],
-                    answer: 2,
-                    explanation: "理想流体是一种理论假设的流体，具有无粘性和不可压缩两个主要特征。"
-                },
-                {
-                    title: "连续性方程的物理意义是",
-                    options: [
-                        "能量守恒",
-                        "动量守恒",
-                        "质量守恒",
-                        "角动量守恒"
-                    ],
-                    answer: 2,
-                    explanation: "连续性方程反映了流体流动过程中质量守恒的基本原理，即单位时间内流入和流出控制体的质量相等。"
-                },
-                {
-                    title: "伯努利方程适用于",
-                    options: [
-                        "任意流体的流动",
-                        "理想流体的定常流动",
-                        "粘性流体的非定常流动",
-                        "可压缩流体的流动"
-                    ],
-                    answer: 1,
-                    explanation: "伯努利方程基于理想流体、定常流动、沿流线等假设条件，反映了流动过程中机械能守恒。"
-                },
-                {
-                    title: "雷诺数的物理意义是表示",
-                    options: [
-                        "流体的密度",
-                        "流体的粘度", 
-                        "惯性力与粘性力的比值",
-                        "压力与速度的关系"
-                    ],
-                    answer: 2,
-                    explanation: "雷诺数Re = ρVL/μ，表示惯性力与粘性力的比值，是判断流动状态（层流或湍流）的重要无量纲参数。"
+            try {
+                // 获取保存的GitHub配置
+                const savedConfig = localStorage.getItem('github_api_config');
+                const GITHUB_CONFIG = savedConfig ? JSON.parse(savedConfig) : {
+                    owner: 'lghui12138',
+                    repo: 'lghui12138.github.io',
+                    branch: 'main',
+                    rawBaseUrl: 'https://raw.githubusercontent.com/lghui12138/lghui12138.github.io/main'
+                };
+                
+                // 尝试从GitHub加载题目
+                const testFiles = [
+                    '易错题集.json',
+                    '真题_中国海洋大学_2000-2021_cleaned.json',
+                    '分类_流体力学基础.json',
+                    '分类_压力.json',
+                    '分类_动量方程.json'
+                ];
+                
+                let loadedQuestions = [];
+                
+                for (const file of testFiles) {
+                    try {
+                        console.log(`🌐 尝试从GitHub加载: ${file}`);
+                        const url = `${GITHUB_CONFIG.rawBaseUrl}/question-banks/${file}`;
+                        const response = await fetch(url);
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            const fileQuestions = Array.isArray(data) ? data : (data.questions ? data.questions : []);
+                            
+                            if (fileQuestions.length > 0) {
+                                // 转换题目格式
+                                const convertedQuestions = fileQuestions.map((q, index) => ({
+                                    title: q.title || q.question || `题目${index + 1}`,
+                                    options: q.options || ['A', 'B', 'C', 'D'],
+                                    answer: q.answer || 0,
+                                    explanation: q.explanation || '暂无解析',
+                                    category: q.category || '流体力学',
+                                    difficulty: q.difficulty || 'medium',
+                                    year: q.year || null,
+                                    school: q.school || '中国海洋大学'
+                                }));
+                                
+                                loadedQuestions = loadedQuestions.concat(convertedQuestions);
+                                console.log(`✅ 成功加载 ${file}: ${convertedQuestions.length} 道题目`);
+                            }
+                        } else {
+                            console.warn(`⚠️ GitHub文件不存在: ${file}`);
+                        }
+                    } catch (error) {
+                        console.warn(`⚠️ 加载 ${file} 失败:`, error.message);
+                    }
                 }
-            ];
-            
-            current = 0;
-            selected = null;
-            answered = false;
-            
-            console.log('✅ 内置测试题目加载成功，题目数量:', questions.length);
-            renderQuestion();
+                
+                if (loadedQuestions.length > 0) {
+                    questions = loadedQuestions;
+                    console.log(`✅ 从GitHub成功加载 ${questions.length} 道真实题目`);
+                } else {
+                    // 如果GitHub加载失败，使用默认测试题目
+                    console.log('⚠️ GitHub加载失败，使用默认测试题目');
+                    questions = [
+                        {
+                            title: "流体静力学中，静止流体内部任意一点的压强大小",
+                            options: [
+                                "与该点所在深度成正比",
+                                "与该点所在深度成反比", 
+                                "与流体密度无关",
+                                "只取决于大气压强"
+                            ],
+                            answer: 0,
+                            explanation: "根据流体静力学基本方程，静止流体内部压强随深度线性增加，p = p0 + ρgh，因此压强与深度成正比。"
+                        },
+                        {
+                            title: "理想流体的特征包括",
+                            options: [
+                                "有粘性、不可压缩",
+                                "无粘性、可压缩",
+                                "无粘性、不可压缩", 
+                                "有粘性、可压缩"
+                            ],
+                            answer: 2,
+                            explanation: "理想流体是一种理论假设的流体，具有无粘性和不可压缩两个主要特征。"
+                        },
+                        {
+                            title: "连续性方程的物理意义是",
+                            options: [
+                                "能量守恒",
+                                "动量守恒",
+                                "质量守恒",
+                                "角动量守恒"
+                            ],
+                            answer: 2,
+                            explanation: "连续性方程反映了流体流动过程中质量守恒的基本原理，即单位时间内流入和流出控制体的质量相等。"
+                        },
+                        {
+                            title: "伯努利方程适用于",
+                            options: [
+                                "任意流体的流动",
+                                "理想流体的定常流动",
+                                "粘性流体的非定常流动",
+                                "可压缩流体的流动"
+                            ],
+                            answer: 1,
+                            explanation: "伯努利方程基于理想流体、定常流动、沿流线等假设条件，反映了流动过程中机械能守恒。"
+                        },
+                        {
+                            title: "雷诺数的物理意义是表示",
+                            options: [
+                                "流体的密度",
+                                "流体的粘度", 
+                                "惯性力与粘性力的比值",
+                                "压力与速度的关系"
+                            ],
+                            answer: 2,
+                            explanation: "雷诺数Re = ρVL/μ，表示惯性力与粘性力的比值，是判断流动状态（层流或湍流）的重要无量纲参数。"
+                        }
+                    ];
+                }
+                
+                current = 0;
+                selected = null;
+                answered = false;
+                
+                console.log('✅ 题目加载完成，题目数量:', questions.length);
+                renderQuestion();
+                
+            } catch (error) {
+                console.error('❌ 题目加载失败:', error);
+                // 使用默认测试题目作为备用
+                questions = [
+                    {
+                        title: "流体静力学中，静止流体内部任意一点的压强大小",
+                        options: [
+                            "与该点所在深度成正比",
+                            "与该点所在深度成反比", 
+                            "与流体密度无关",
+                            "只取决于大气压强"
+                        ],
+                        answer: 0,
+                        explanation: "根据流体静力学基本方程，静止流体内部压强随深度线性增加，p = p0 + ρgh，因此压强与深度成正比。"
+                    },
+                    {
+                        title: "理想流体的特征包括",
+                        options: [
+                            "有粘性、不可压缩",
+                            "无粘性、可压缩",
+                            "无粘性、不可压缩", 
+                            "有粘性、可压缩"
+                        ],
+                        answer: 2,
+                        explanation: "理想流体是一种理论假设的流体，具有无粘性和不可压缩两个主要特征。"
+                    },
+                    {
+                        title: "连续性方程的物理意义是",
+                        options: [
+                            "能量守恒",
+                            "动量守恒",
+                            "质量守恒",
+                            "角动量守恒"
+                        ],
+                        answer: 2,
+                        explanation: "连续性方程反映了流体流动过程中质量守恒的基本原理，即单位时间内流入和流出控制体的质量相等。"
+                    },
+                    {
+                        title: "伯努利方程适用于",
+                        options: [
+                            "任意流体的流动",
+                            "理想流体的定常流动",
+                            "粘性流体的非定常流动",
+                            "可压缩流体的流动"
+                        ],
+                        answer: 1,
+                        explanation: "伯努利方程基于理想流体、定常流动、沿流线等假设条件，反映了流动过程中机械能守恒。"
+                    },
+                    {
+                        title: "雷诺数的物理意义是表示",
+                        options: [
+                            "流体的密度",
+                            "流体的粘度", 
+                            "惯性力与粘性力的比值",
+                            "压力与速度的关系"
+                        ],
+                        answer: 2,
+                        explanation: "雷诺数Re = ρVL/μ，表示惯性力与粘性力的比值，是判断流动状态（层流或湍流）的重要无量纲参数。"
+                    }
+                ];
+                current = 0;
+                selected = null;
+                answered = false;
+                renderQuestion();
+            }
         }
 
         // 💎 直接提交答案函数 - 确保100%可点击
@@ -4691,13 +4818,13 @@ input:focus, select:focus, textarea:focus {
             try {
                 await renderQBSelect();
                 loadProgress();
-                loadQuestions(); // 现在是同步函数，直接调用
+                await loadQuestions(); // 现在是异步函数，需要等待
                 
                 console.log('✅ 页面初始化完成');
             } catch (error) {
                 console.error('❌ 页面初始化失败:', error);
                 // 备用方案：直接加载内置题目
-                loadQuestions();
+                await loadQuestions();
             }
             if (isTeacher()) {
                 document.getElementById('qbManageBtn').style.display = 'inline-block';
@@ -5552,7 +5679,7 @@ window.QuestionBankLoader = {
             // 优先从GitHub直接访问
             try {
                 console.log(`🌐 尝试从GitHub直接访问题库: ${bank.filename}`);
-                                    const url = `${GITHUB_CONFIG.rawBaseUrl}/question-banks/${bank.filename}`;
+                const url = `${GITHUB_CONFIG.rawBaseUrl}/question-banks/${bank.filename}`;
                 const response = await fetch(url);
                 
                 if (response.ok) {
