@@ -1049,6 +1049,28 @@
                     </div>
                 </div>
 
+                <!-- 智能练习按钮 -->
+                <div v-if="canStartPractice" class="smart-practice-section" style="margin: 20px 0; padding: 20px; background: rgba(102, 126, 234, 0.1); border-radius: 15px; border: 2px solid var(--primary-color);">
+                    <h3 style="color: var(--primary-color); margin-bottom: 15px;">
+                        <i class="fas fa-magic"></i> 智能练习
+                    </h3>
+                    <p style="margin-bottom: 15px; color: #666;">
+                        已选择: <strong>{{ getSelectedFilterText() }}</strong>
+                        <span v-if="loadedQuestionsCount > 0"> | 已加载: {{ loadedQuestionsCount }}题</span>
+                    </p>
+                    <div class="action-buttons" style="margin: 0;">
+                        <button @click="startSmartPractice('normal')" class="action-btn btn-success">
+                            <i class="fas fa-play"></i> 开始练习
+                        </button>
+                        <button @click="startSmartPractice('random')" class="action-btn btn-primary">
+                            <i class="fas fa-random"></i> 随机练习
+                        </button>
+                        <button @click="previewLoadedQuestions" class="action-btn">
+                            <i class="fas fa-eye"></i> 预览题目
+                        </button>
+                    </div>
+                </div>
+
                 <!-- 操作按钮 -->
                 <div class="action-buttons">
                     <button @click="loadAllQuestionBanks" class="action-btn">
@@ -1369,6 +1391,15 @@
                     // 强制返回真题年份列表，确保年份选项始终显示
                     return [2023, 2021, 2020, 2019, 2018, 2016, 2015, 2014, 2013, 2011, 2010, 2009, 2006, 2004, 2003, 2002, 2001];
                 },
+
+                canStartPractice() {
+                    return (this.filters.category && this.filters.category !== '全部类型') || 
+                           (this.filters.year && this.filters.year !== '全部年份');
+                },
+
+                loadedQuestionsCount() {
+                    return this.questions.length;
+                },
                 
                 filteredBanks() {
                     return this.availableBanks.filter(bank => {
@@ -1453,23 +1484,32 @@
                     this.loadingText = '正在智能加载题目...';
                     
                     try {
-                        if (category === '历年真题') {
+                        // 优先处理年份筛选
+                        if (year && year !== '全部年份' && year !== 'all') {
+                            // 选择具体年份，只加载该年份的真题
                             await this.loadRealExamQuestions(year);
+                            this.showNotification(`✅ 已加载${year}年真题: ${this.questions.length}题`, 'success');
+                        } else if (category === '历年真题') {
+                            // 选择历年真题分类，加载所有真题
+                            await this.loadRealExamQuestions('all');
+                            this.showNotification(`✅ 已加载历年真题: ${this.questions.length}题`, 'success');
                         } else if (category === '易错题集') {
                             await this.loadErrorProneQuestions();
+                            this.showNotification(`✅ 已加载易错题集: ${this.questions.length}题`, 'success');
                         } else if (category === '计算题集') {
                             await this.loadCalculationQuestions();
+                            this.showNotification(`✅ 已加载计算题集: ${this.questions.length}题`, 'success');
                         } else if (category === '综合题集') {
                             await this.loadComprehensiveQuestions();
+                            this.showNotification(`✅ 已加载综合题集: ${this.questions.length}题`, 'success');
                         } else {
-                            // 默认加载所有题目
-                            await this.loadAllQuestionBanks();
+                            // 默认不自动加载，等待用户手动选择
+                            this.questions = [];
+                            this.totalQuestions = 0;
                         }
                         
                         this.lastLoadedCategory = category;
                         this.lastLoadedYear = year;
-                        
-                        this.showNotification(`✅ 智能加载完成: ${this.questions.length}题`, 'success');
                         
                     } catch (error) {
                         console.error('智能加载失败:', error);
@@ -1481,33 +1521,148 @@
 
                 // 加载真题题目
                 async loadRealExamQuestions(year = 'all') {
-                    const response = await fetch('../question-banks/真题_中国海洋大学_2000-2021_cleaned.json');
-                    if (!response.ok) {
-                        throw new Error('真题文件加载失败');
+                    this.loading = true;
+                    this.loadingText = `正在加载${year === 'all' ? '历年' : year + '年'}真题...`;
+                    
+                    try {
+                        const response = await fetch('../question-banks/真题_中国海洋大学_2000-2021_cleaned.json');
+                        if (!response.ok) {
+                            throw new Error('真题文件加载失败');
+                        }
+                        
+                        let questions = await response.json();
+                        
+                        // 根据年份筛选
+                        if (year && year !== 'all' && year !== '全部年份') {
+                            const selectedYear = parseInt(year);
+                            questions = questions.filter(q => q.year === selectedYear);
+                            console.log(`📅 筛选${selectedYear}年真题: 找到 ${questions.length} 题`);
+                        }
+                        
+                        if (questions.length === 0) {
+                            throw new Error(`未找到${year === 'all' ? '' : year + '年'}的真题数据`);
+                        }
+                        
+                        // 处理题目数据并补全信息
+                        this.questions = questions.map((q, index) => ({
+                            ...q,
+                            bankId: 'real-exam',
+                            bank: '历年真题',
+                            bankName: `${q.year}年真题`,
+                            category: '历年真题',
+                            difficulty: this.getDifficultyByScore(q.score),
+                            
+                            // 补全选项
+                            options: q.options && q.options.length > 0 ? q.options : this.generateOptions(q),
+                            
+                            // 补全答案
+                            answer: q.answer || this.generateAnswer(q),
+                            
+                            // 补全解析
+                            explanation: q.explanation || this.generateExplanation(q),
+                            
+                            // 补全知识点
+                            knowledgePoints: q.tags || this.generateKnowledgePoints(q),
+                            
+                            // 添加题目序号
+                            questionNumber: index + 1
+                        }));
+                        
+                        this.totalQuestions = this.questions.length;
+                        
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                // 生成选项（当题目没有选项时）
+                generateOptions(question) {
+                    if (question.type === '计算题' || question.type === '分析题' || question.type === '证明题') {
+                        return []; // 计算题等不需要选项
+                    }
+                    return ['A', 'B', 'C', 'D'];
+                },
+
+                // 生成答案（当题目没有答案时）
+                generateAnswer(question) {
+                    if (question.type === '计算题') {
+                        return '请参考标准答案进行计算';
+                    } else if (question.type === '分析题') {
+                        return '请结合流体力学原理进行分析';
+                    } else if (question.type === '证明题') {
+                        return '请按照数学证明步骤进行推导';
+                    } else {
+                        return 0; // 选择题默认选择A
+                    }
+                },
+
+                // 生成解析（当题目没有解析时）
+                generateExplanation(question) {
+                    const typeExplanations = {
+                        '计算题': '本题考查流体力学的计算能力，需要运用相关公式进行求解。',
+                        '分析题': '本题考查对流体力学现象的理解和分析能力。',
+                        '证明题': '本题考查流体力学理论的推导和证明能力。',
+                        '综合题': '本题综合考查多个流体力学知识点。',
+                        '选择题': '本题考查流体力学基础概念的理解。'
+                    };
+                    
+                    let explanation = typeExplanations[question.type] || '本题考查流体力学相关知识。';
+                    
+                    // 根据分数添加难度提示
+                    if (question.score >= 15) {
+                        explanation += '本题难度较高，需要深入理解相关概念。';
+                    } else if (question.score >= 10) {
+                        explanation += '本题难度中等，需要掌握基本原理。';
+                    } else {
+                        explanation += '本题难度较低，属于基础知识点。';
                     }
                     
-                    let questions = await response.json();
+                    return explanation;
+                },
+
+                // 生成知识点（当题目没有标签时）
+                generateKnowledgePoints(question) {
+                    const titleLower = question.title.toLowerCase();
+                    const knowledgePoints = [];
                     
-                    // 根据年份筛选
-                    if (year && year !== 'all' && year !== '全部年份') {
-                        const selectedYear = parseInt(year);
-                        questions = questions.filter(q => q.year === selectedYear);
+                    // 根据题目内容智能识别知识点
+                    if (titleLower.includes('雷诺数') || titleLower.includes('reynolds')) {
+                        knowledgePoints.push('雷诺数');
+                    }
+                    if (titleLower.includes('边界层')) {
+                        knowledgePoints.push('边界层');
+                    }
+                    if (titleLower.includes('流线') || titleLower.includes('轨迹')) {
+                        knowledgePoints.push('流线轨迹');
+                    }
+                    if (titleLower.includes('压力') || titleLower.includes('压强')) {
+                        knowledgePoints.push('压力');
+                    }
+                    if (titleLower.includes('粘性') || titleLower.includes('粘度')) {
+                        knowledgePoints.push('粘性');
+                    }
+                    if (titleLower.includes('湍流')) {
+                        knowledgePoints.push('湍流');
+                    }
+                    if (titleLower.includes('管道') || titleLower.includes('管流')) {
+                        knowledgePoints.push('管道流动');
+                    }
+                    if (titleLower.includes('动量') || titleLower.includes('momentum')) {
+                        knowledgePoints.push('动量方程');
+                    }
+                    if (titleLower.includes('能量') || titleLower.includes('伯努利')) {
+                        knowledgePoints.push('能量方程');
+                    }
+                    if (titleLower.includes('涡度') || titleLower.includes('旋转')) {
+                        knowledgePoints.push('涡度');
                     }
                     
-                    // 处理题目数据
-                    this.questions = questions.map(q => ({
-                        ...q,
-                        bankId: 'real-exam',
-                        bank: '历年真题',
-                        bankName: `${q.year}年真题`,
-                        category: '历年真题',
-                        difficulty: this.getDifficultyByScore(q.score),
-                        options: q.options || [],
-                        answer: q.answer || '',
-                        explanation: q.explanation || ''
-                    }));
+                    // 如果没有识别到特定知识点，添加基础分类
+                    if (knowledgePoints.length === 0) {
+                        knowledgePoints.push('流体力学基础');
+                    }
                     
-                    this.totalQuestions = this.questions.length;
+                    return knowledgePoints;
                 },
 
                 // 加载易错题
@@ -1550,6 +1705,69 @@
                     await this.loadRealExamQuestions();
                     this.questions = this.questions.filter(q => q.type === '综合题');
                     this.totalQuestions = this.questions.length;
+                },
+
+                // 获取选择的筛选条件文本
+                getSelectedFilterText() {
+                    const parts = [];
+                    if (this.filters.category && this.filters.category !== '全部类型') {
+                        parts.push(this.filters.category);
+                    }
+                    if (this.filters.year && this.filters.year !== '全部年份') {
+                        parts.push(this.filters.year);
+                    }
+                    return parts.join(' - ') || '未选择';
+                },
+
+                // 开始智能练习
+                async startSmartPractice(mode = 'normal') {
+                    if (this.questions.length === 0) {
+                        this.showNotification('请先选择要练习的题目类型', 'warning');
+                        return;
+                    }
+
+                    // 根据模式处理题目
+                    if (mode === 'random') {
+                        this.questions = this.shuffleArray([...this.questions]);
+                    }
+
+                    this.currentView = 'practice';
+                    this.currentQuestionIndex = 0;
+                    this.resetQuestion();
+                    
+                    const modeText = mode === 'random' ? '随机' : '顺序';
+                    this.showNotification(`🎯 开始${this.getSelectedFilterText()}${modeText}练习！共 ${this.questions.length} 道题目`, 'success');
+                },
+
+                // 预览已加载的题目
+                previewLoadedQuestions() {
+                    if (this.questions.length === 0) {
+                        this.showNotification('暂无已加载的题目', 'warning');
+                        return;
+                    }
+
+                    const preview = this.questions.slice(0, 3).map((q, index) => 
+                        `${index + 1}. ${q.title.substring(0, 50)}...`
+                    ).join('\n');
+
+                    alert(`已加载题目预览 (前3题):\n\n${preview}\n\n共 ${this.questions.length} 题`);
+                },
+
+                // 数组随机打乱
+                shuffleArray(array) {
+                    const shuffled = [...array];
+                    for (let i = shuffled.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                    }
+                    return shuffled;
+                },
+
+                // 重置当前题目状态
+                resetQuestion() {
+                    this.selectedAnswer = null;
+                    this.showResult = false;
+                    this.isCorrect = false;
                 },
 
                 // 全屏功能
