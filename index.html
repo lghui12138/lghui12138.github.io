@@ -24,16 +24,35 @@
     
     <style>
         :root {
-            --primary-color: #667eea;
-            --secondary-color: #764ba2;
-            --accent-color: #4facfe;
-            --success-color: #43e97b;
-            --warning-color: #feca57;
-            --error-color: #ff6b6b;
-            --glass-bg: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
+            /* 海洋主题色彩 */
+            --ocean-deep: #1e3a8a;
+            --ocean-surface: #3b82f6;
+            --ocean-light: #60a5fa;
+            --ocean-foam: #93c5fd;
+            --ocean-coral: #f97316;
+            --ocean-sand: #fbbf24;
+            --ocean-seafoam: #34d399;
+            --ocean-turquoise: #06b6d4;
+            
+            /* 原有色彩保留 */
+            --primary-color: #3b82f6;
+            --secondary-color: #1e3a8a;
+            --accent-color: #06b6d4;
+            --success-color: #34d399;
+            --warning-color: #fbbf24;
+            --error-color: #f97316;
+            
+            /* 玻璃效果增强 */
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.25);
+            --glass-shadow: rgba(0, 0, 0, 0.1);
             --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.8);
+            --text-secondary: rgba(255, 255, 255, 0.9);
+            
+            /* 海洋动画变量 */
+            --wave-speed: 20s;
+            --bubble-speed: 15s;
+            --fish-speed: 25s;
         }
 
         * {
@@ -73,36 +92,151 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            background: linear-gradient(135deg, var(--ocean-deep) 0%, var(--ocean-surface) 50%, var(--ocean-light) 100%);
             color: var(--text-primary);
             min-height: 100vh;
             overflow-x: hidden;
-            animation: gradientFlow 20s ease infinite;
+            animation: oceanFlow var(--wave-speed) ease infinite;
             line-height: 1.6;
+            position: relative;
         }
 
-        @keyframes gradientFlow {
+        /* 海洋背景动画 */
+        @keyframes oceanFlow {
             0%, 100% { 
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                background: linear-gradient(135deg, var(--ocean-deep) 0%, var(--ocean-surface) 50%, var(--ocean-light) 100%);
             }
-            20% { 
-                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            25% { 
+                background: linear-gradient(135deg, var(--ocean-surface) 0%, var(--ocean-turquoise) 50%, var(--ocean-seafoam) 100%);
             }
-            40% { 
-                background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            50% { 
+                background: linear-gradient(135deg, var(--ocean-light) 0%, var(--ocean-foam) 50%, var(--ocean-turquoise) 100%);
             }
-            60% { 
-                background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            75% { 
+                background: linear-gradient(135deg, var(--ocean-turquoise) 0%, var(--ocean-seafoam) 50%, var(--ocean-light) 100%);
             }
-            80% { 
-                background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            }
+        }
+
+        /* 海洋波浪效果 */
+        .ocean-waves {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+            animation: waveMove 8s linear infinite;
+            z-index: 2;
+        }
+
+        .ocean-waves::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(45deg, transparent 40%, rgba(255, 255, 255, 0.05) 60%, transparent 80%);
+            animation: waveMove 6s linear infinite reverse;
+        }
+
+        @keyframes waveMove {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
         .app-container {
             min-height: 100vh;
             position: relative;
             z-index: 10;
+        }
+
+        /* 海洋气泡效果 */
+        .ocean-bubbles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .bubble {
+            position: absolute;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 70%, transparent 100%);
+            border-radius: 50%;
+            animation: bubbleFloat var(--bubble-speed) linear infinite;
+        }
+
+        .bubble:nth-child(1) { width: 20px; height: 20px; left: 10%; animation-delay: 0s; }
+        .bubble:nth-child(2) { width: 15px; height: 15px; left: 20%; animation-delay: 2s; }
+        .bubble:nth-child(3) { width: 25px; height: 25px; left: 30%; animation-delay: 4s; }
+        .bubble:nth-child(4) { width: 18px; height: 18px; left: 40%; animation-delay: 6s; }
+        .bubble:nth-child(5) { width: 22px; height: 22px; left: 50%; animation-delay: 8s; }
+        .bubble:nth-child(6) { width: 16px; height: 16px; left: 60%; animation-delay: 10s; }
+        .bubble:nth-child(7) { width: 24px; height: 24px; left: 70%; animation-delay: 12s; }
+        .bubble:nth-child(8) { width: 19px; height: 19px; left: 80%; animation-delay: 14s; }
+
+        @keyframes bubbleFloat {
+            0% {
+                bottom: -50px;
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            10% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            90% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+            100% {
+                bottom: 100vh;
+                opacity: 0;
+                transform: scale(0.8);
+            }
+        }
+
+        /* 海洋鱼类动画 */
+        .ocean-fish {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .fish {
+            position: absolute;
+            font-size: 24px;
+            animation: fishSwim var(--fish-speed) linear infinite;
+            opacity: 0.6;
+        }
+
+        .fish:nth-child(1) { top: 20%; animation-delay: 0s; }
+        .fish:nth-child(2) { top: 40%; animation-delay: 5s; }
+        .fish:nth-child(3) { top: 60%; animation-delay: 10s; }
+        .fish:nth-child(4) { top: 80%; animation-delay: 15s; }
+
+        @keyframes fishSwim {
+            0% {
+                left: -50px;
+                transform: translateY(0px) rotateY(0deg);
+            }
+            50% {
+                transform: translateY(-20px) rotateY(0deg);
+            }
+            51% {
+                transform: translateY(-20px) rotateY(180deg);
+            }
+            100% {
+                left: calc(100vw + 50px);
+                transform: translateY(0px) rotateY(180deg);
+            }
         }
 
         /* 浮动粒子效果 */
@@ -424,10 +558,11 @@
             padding: 30px;
             text-align: center;
             backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border: 1px solid var(--glass-border);
             transition: all 0.4s ease;
             animation: statSlideUp 1s ease-out both;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
         }
 
         .stat-card:nth-child(1) { animation-delay: 0.2s; }
@@ -449,7 +584,8 @@
         .stat-card:hover {
             transform: translateY(-8px);
             background: rgba(255,255,255,0.15);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 50px var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border-color: var(--ocean-light);
         }
 
         .stat-value {
@@ -512,17 +648,19 @@
         }
 
         .module-card {
-            background: rgba(255,255,255,0.95);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 25px;
             padding: 35px;
-            color: #333;
-            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
+            color: var(--text-primary);
+            box-shadow: 0 15px 50px var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.2);
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             overflow: hidden;
             cursor: pointer;
             animation: moduleSlideIn 0.8s ease-out both;
-            border: 2px solid transparent;
+            border: 2px solid var(--glass-border);
         }
 
         .module-card:nth-child(1) { animation-delay: 0.1s; }
@@ -550,19 +688,19 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            background: linear-gradient(135deg, var(--ocean-light), var(--ocean-turquoise));
             opacity: 0;
             transition: opacity 0.4s ease;
         }
 
         .module-card:hover::before {
-            opacity: 1;
+            opacity: 0.1;
         }
 
         .module-card:hover {
             transform: translateY(-20px) scale(1.03);
-            box-shadow: 0 35px 80px rgba(0,0,0,0.25);
-            border-color: rgba(102, 126, 234, 0.3);
+            box-shadow: 0 35px 80px var(--glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+            border-color: var(--ocean-light);
         }
 
         .module-header {
@@ -844,6 +982,24 @@
 
         <!-- 主要内容 -->
         <div v-if="!loading" class="app-container">
+            <!-- 海洋动画元素 -->
+            <div class="ocean-waves"></div>
+            <div class="ocean-bubbles">
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+                <div class="bubble"></div>
+            </div>
+            <div class="ocean-fish">
+                <div class="fish">🐠</div>
+                <div class="fish">🐟</div>
+                <div class="fish">🐡</div>
+                <div class="fish">🦈</div>
+            </div>
             <!-- 头部标题 -->
             <header class="header">
                 <h1 class="main-title">🌊 流体力学学习平台</h1>
