@@ -904,6 +904,20 @@ window.QuestionBankData = (function() {
             }
             
             try {
+                // 尝试自动连接GitHub（如果未连接）
+                if (window.GitHubStorage && !window.GitHubStorage.isConnected) {
+                    try {
+                        const token = localStorage.getItem('github_token');
+                        if (token) {
+                            console.log('🔗 尝试自动连接GitHub...');
+                            await window.GitHubStorage.connect(token);
+                            console.log('✅ GitHub自动连接成功');
+                        }
+                    } catch (connectError) {
+                        console.warn('⚠️ GitHub自动连接失败:', connectError.message);
+                    }
+                }
+                
                 // 优先从GitHub存储加载
                 if (window.GitHubStorage && window.GitHubStorage.isConnected) {
                     try {
