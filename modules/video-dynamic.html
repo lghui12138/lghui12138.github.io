@@ -322,6 +322,96 @@
             background: white;
         }
 
+        /* 抖音视频样式 */
+        .douyin-video-placeholder {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #fe2c55, #ff6b35);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+        }
+
+        .douyin-play-btn {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            border-radius: 15px;
+            padding: 20px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            color: #fe2c55;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            font-weight: 600;
+        }
+
+        .douyin-play-btn:hover {
+            transform: scale(1.05);
+            background: white;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .douyin-play-btn i {
+            font-size: 1.5rem;
+        }
+
+        .platform-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+        }
+
+        .douyin-badge {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+        /* 平台标签样式 */
+        .platform-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 8px;
+            vertical-align: middle;
+        }
+
+        .douyin-tag {
+            background: #fe2c55;
+            color: white;
+        }
+
+        .bilibili-tag {
+            background: #00a1d6;
+            color: white;
+        }
+
+        .featured-tag {
+            background: linear-gradient(45deg, #ffd700, #ffed4a);
+            color: #333;
+            animation: sparkle 2s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+
         /* 视频控制器 */
         .video-controls {
             position: absolute;
@@ -704,14 +794,28 @@
             <div class="course-grid">
                 <div v-for="course in courses" :key="course.id" class="course-card">
                     <div class="video-player">
+                        <!-- B站视频 -->
                         <iframe 
-                            v-if="course.videoId" 
+                            v-if="course.platform === 'B站' && course.videoId" 
                             :src="getBilibiliEmbedUrl(course.videoId)"
                             class="video-iframe"
                             :title="course.title"
                             allowfullscreen
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         ></iframe>
+                        
+                        <!-- 抖音视频 -->
+                        <div v-else-if="course.platform === '抖音'" class="douyin-video-placeholder">
+                            <div class="douyin-play-btn" @click="openDouyinVideo(course.videoUrl)">
+                                <i class="fab fa-tiktok"></i>
+                                <span>打开抖音视频</span>
+                            </div>
+                            <div class="platform-badge douyin-badge">
+                                <i class="fab fa-tiktok"></i> 抖音视频
+                            </div>
+                        </div>
+                        
+                        <!-- 其他视频或占位符 -->
                         <div v-else class="video-placeholder">
                             <div class="play-btn" @click="loadVideo(course)">
                                 <i class="fas fa-play"></i>
@@ -735,7 +839,18 @@
                     </div>
 
                     <div class="course-info">
-                        <h3 class="course-title">{{ course.title }}</h3>
+                        <h3 class="course-title">
+                            {{ course.title }}
+                            <span v-if="course.platform === '抖音'" class="platform-tag douyin-tag">
+                                <i class="fab fa-tiktok"></i> 抖音
+                            </span>
+                            <span v-else-if="course.platform === 'B站'" class="platform-tag bilibili-tag">
+                                <i class="fab fa-bilibili"></i> B站
+                            </span>
+                            <span v-if="course.featured" class="featured-tag">
+                                <i class="fas fa-crown"></i> 精品
+                            </span>
+                        </h3>
                         <p class="course-description">{{ course.description }}</p>
                         
                         <div class="course-meta">
@@ -820,91 +935,44 @@
                     courses: [
                         {
                             id: 1,
-                            title: "流体力学基础理论",
-                            description: "流体的基本概念、性质和分类，流体力学的研究方法和基本假设",
-                            videoId: "BV1yV4y1L7kE",
-                            duration: "45分钟",
-                            views: "1.2万",
-                            rating: "9.6",
+                            title: "动量输运、牛顿内摩擦定律、欧拉坐标",
+                            description: "详细讲解流体力学中的动量输运原理、牛顿内摩擦定律的物理意义和数学表达，以及欧拉坐标系统在流体运动描述中的应用。",
+                            videoId: "douyin",
+                            videoUrl: "https://v.douyin.com/7vrVT-4KmbI/",
+                            duration: "抖音视频",
+                            views: "教师原创",
+                            rating: "9.8",
                             difficulty: "easy",
-                            tags: ["基础理论", "概念导入", "必修"]
+                            tags: ["动量输运", "牛顿内摩擦定律", "欧拉坐标"],
+                            platform: "抖音",
+                            featured: true
                         },
                         {
                             id: 2,
-                            title: "流体静力学原理",
-                            description: "静止流体的压强分布、压强测量和流体静力学基本方程的应用",
-                            videoId: "BV1Rv4y1i7ku",
-                            duration: "38分钟",
-                            views: "8.5千",
-                            rating: "9.4",
+                            title: "欧拉、拉格朗日坐标系统",
+                            description: "全面对比欧拉坐标和拉格朗日坐标两种描述流体运动的方法，详解流线和迹线的概念与区别。",
+                            videoId: "douyin",
+                            videoUrl: "https://v.douyin.com/X-ud2xkwvII/",
+                            duration: "抖音视频",
+                            views: "教师原创",
+                            rating: "9.6",
                             difficulty: "easy",
-                            tags: ["静力学", "压强", "工程应用"]
+                            tags: ["欧拉坐标", "拉格朗日坐标", "流线", "迹线"],
+                            platform: "抖音"
                         },
                         {
                             id: 3,
-                            title: "流体运动学基础",
-                            description: "流体运动的描述方法、速度场和加速度场、流线和迹线",
-                            videoId: "BV1Kt4y1y7PG",
-                            duration: "42分钟",
-                            views: "7.8千",
-                            rating: "9.2",
-                            difficulty: "medium",
-                            tags: ["运动学", "速度场", "流线"]
-                        },
-                        {
-                            id: 4,
-                            title: "伯努利方程与应用",
-                            description: "伯努利方程的推导、物理意义和工程应用实例分析",
-                            videoId: "BV1JK4y1c7qM",
-                            duration: "55分钟",
-                            views: "1.5万",
-                            rating: "9.8",
-                            difficulty: "medium",
-                            tags: ["伯努利", "能量", "工程应用"]
-                        },
-                        {
-                            id: 5,
-                            title: "粘性流动理论",
-                            description: "粘性流体的基本概念、层流和湍流、雷诺数的物理意义",
-                            videoId: "BV1dK4y1s7Tv",
-                            duration: "48分钟",
-                            views: "9.2千",
-                            rating: "9.3",
-                            difficulty: "hard",
-                            tags: ["粘性", "雷诺数", "湍流"]
-                        },
-                        {
-                            id: 6,
-                            title: "边界层理论入门",
-                            description: "边界层的形成机理、边界层厚度和边界层方程简介",
-                            videoId: "BV1MK4y1s7rW",
-                            duration: "52分钟",
-                            views: "6.8千",
-                            rating: "9.1",
-                            difficulty: "hard",
-                            tags: ["边界层", "高级理论", "研究前沿"]
-                        },
-                        {
-                            id: 7,
-                            title: "流体机械原理",
-                            description: "泵、风机等流体机械的工作原理和性能分析方法",
-                            videoId: "BV1FK4y1s7eP",
-                            duration: "46分钟",
-                            views: "1.1万",
-                            rating: "9.5",
-                            difficulty: "medium",
-                            tags: ["流体机械", "泵", "工程实践"]
-                        },
-                        {
-                            id: 8,
-                            title: "计算流体力学入门",
-                            description: "CFD基本原理、数值方法和软件应用简介",
-                            videoId: "BV1VK4y1s7mQ",
-                            duration: "60分钟",
-                            views: "1.8万",
-                            rating: "9.7",
-                            difficulty: "hard",
-                            tags: ["CFD", "数值计算", "前沿技术"]
+                            title: "流体力学之美，太美了",
+                            description: "探索流体世界的奇妙现象与科学原理，揭示自然界的流动艺术。",
+                            videoId: "BV16T421D7k4",
+                            videoUrl: "https://www.bilibili.com/video/BV16T421D7k4",
+                            duration: "18:45",
+                            views: "32,458",
+                            rating: "9.9",
+                            difficulty: "easy",
+                            tags: ["流体力学", "基础理论", "可视化"],
+                            platform: "B站",
+                            featured: true
                         }
                     ]
                 }
@@ -987,6 +1055,65 @@
                     this.watchedVideos++;
                     // 保存学习进度
                     this.saveProgress();
+                },
+
+                // 打开抖音视频
+                openDouyinVideo(url) {
+                    try {
+                        const douyinWindow = window.open(url, '_blank');
+                        if (douyinWindow) {
+                            this.showNotification('🚀 已打开抖音视频页面', 'success');
+                            this.watchedVideos++;
+                            this.saveProgress();
+                        } else {
+                            this.showNotification('❌ 无法打开抖音页面，请检查浏览器弹窗设置', 'error');
+                            this.showDouyinBackup(url);
+                        }
+                    } catch (error) {
+                        console.error('❌ 抖音视频打开失败:', error);
+                        this.showNotification('❌ 无法打开抖音页面，请检查浏览器弹窗设置', 'error');
+                        this.showDouyinBackup(url);
+                    }
+                },
+
+                // 抖音视频备用方案
+                showDouyinBackup(url) {
+                    const modal = document.createElement('div');
+                    modal.style.cssText = `
+                        position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+                        background: rgba(0,0,0,0.7); z-index: 10020; 
+                        display: flex; align-items: center; justify-content: center;
+                    `;
+                    
+                    modal.innerHTML = `
+                        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 400px; text-align: center;">
+                            <h3 style="color: #fe2c55; margin-bottom: 20px;">
+                                <i class="fab fa-tiktok"></i> 抖音视频
+                            </h3>
+                            <p style="margin-bottom: 20px;">请手动访问抖音视频：</p>
+                            <div style="margin-bottom: 20px;">
+                                <a href="${url}" target="_blank" style="
+                                    background: #fe2c55; color: white; padding: 10px 20px; 
+                                    text-decoration: none; border-radius: 8px; display: inline-block;
+                                ">
+                                    <i class="fab fa-tiktok"></i> 打开抖音视频
+                                </a>
+                            </div>
+                            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                                提示：可以复制链接到抖音APP中观看
+                            </p>
+                            <button onclick="navigator.clipboard.writeText('${url}').then(()=>alert('链接已复制到剪贴板')).catch(()=>alert('复制失败，请手动复制'))" style="
+                                background: #007bff; color: white; border: none; padding: 8px 16px; 
+                                border-radius: 6px; cursor: pointer; margin-right: 10px;
+                            ">复制链接</button>
+                            <button onclick="this.parentElement.parentElement.remove()" style="
+                                background: #ddd; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;
+                            ">关闭</button>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    setTimeout(() => modal.remove(), 10000); // 10秒后自动关闭
                 },
 
                 saveProgress() {
