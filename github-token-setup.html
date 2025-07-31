@@ -21,7 +21,7 @@
             border-radius: 15px;
             padding: 40px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            max-width: 500px;
+            max-width: 600px;
             width: 100%;
         }
         
@@ -43,7 +43,7 @@
             font-weight: 500;
         }
         
-        input[type="password"] {
+        input[type="password"], input[type="text"] {
             width: 100%;
             padding: 12px 15px;
             border: 2px solid #e1e5e9;
@@ -53,7 +53,7 @@
             box-sizing: border-box;
         }
         
-        input[type="password"]:focus {
+        input[type="password"]:focus, input[type="text"]:focus {
             outline: none;
             border-color: #667eea;
         }
@@ -73,6 +73,14 @@
         
         .btn:hover {
             transform: translateY(-2px);
+        }
+        
+        .btn.secondary {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
         }
         
         .status {
@@ -124,44 +132,137 @@
             color: #555;
         }
         
-        .copy-btn {
-            background: #28a745;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-left: 10px;
-            font-size: 12px;
+        .api-config {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #17a2b8;
         }
         
-        .copy-btn:hover {
-            background: #218838;
+        .api-config h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .test-results {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e1e5e9;
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+        
+        .tab.active {
+            border-bottom-color: #667eea;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🔑 GitHub Token 设置</h1>
+        <h1>🔑 GitHub 配置中心</h1>
         
-        <div class="instructions">
-            <h3>📋 获取 GitHub Token 步骤：</h3>
-            <ol>
-                <li>访问 <a href="https://github.com/settings/tokens/new" target="_blank">GitHub Token 创建页面</a></li>
-                <li>填写 Token 描述（如：流体力学学习平台）</li>
-                <li>选择权限：<strong>repo</strong>（完整仓库访问权限）</li>
-                <li>点击 "Generate token" 生成 Token</li>
-                <li>复制生成的 Token（注意：只显示一次！）</li>
-            </ol>
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('token')">Token 设置</div>
+            <div class="tab" onclick="switchTab('api')">API 配置</div>
+            <div class="tab" onclick="switchTab('test')">连接测试</div>
         </div>
         
-        <div class="form-group">
-            <label for="githubToken">GitHub Personal Access Token:</label>
-            <input type="password" id="githubToken" placeholder="请输入你的 GitHub Token">
+        <!-- Token 设置 -->
+        <div id="token-tab" class="tab-content active">
+            <div class="instructions">
+                <h3>📋 获取 GitHub Token 步骤：</h3>
+                <ol>
+                    <li>访问 <a href="https://github.com/settings/tokens/new" target="_blank">GitHub Token 创建页面</a></li>
+                    <li>填写 Token 描述（如：流体力学学习平台）</li>
+                    <li>选择权限：<strong>repo</strong>（完整仓库访问权限）</li>
+                    <li>点击 "Generate token" 生成 Token</li>
+                    <li>复制生成的 Token（注意：只显示一次！）</li>
+                </ol>
+            </div>
+            
+            <div class="form-group">
+                <label for="githubToken">GitHub Personal Access Token:</label>
+                <input type="password" id="githubToken" placeholder="请输入你的 GitHub Token">
+            </div>
+            
+            <button class="btn" onclick="saveToken()">💾 保存 Token</button>
         </div>
         
-        <button class="btn" onclick="saveToken()">💾 保存 Token</button>
-        <button class="btn" onclick="testConnection()" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); margin-top: 10px;">🔗 测试连接</button>
+        <!-- API 配置 -->
+        <div id="api-tab" class="tab-content">
+            <div class="api-config">
+                <h3>🔧 API 配置</h3>
+                <p>配置GitHub API访问参数，用于题目数据加载</p>
+            </div>
+            
+            <div class="form-group">
+                <label for="apiBaseUrl">API 基础URL:</label>
+                <input type="text" id="apiBaseUrl" value="https://api.github.com" placeholder="GitHub API基础URL">
+            </div>
+            
+            <div class="form-group">
+                <label for="repoOwner">仓库所有者:</label>
+                <input type="text" id="repoOwner" value="lghui12138" placeholder="GitHub用户名">
+            </div>
+            
+            <div class="form-group">
+                <label for="repoName">仓库名称:</label>
+                <input type="text" id="repoName" value="lghui12138.github.io" placeholder="仓库名称">
+            </div>
+            
+            <div class="form-group">
+                <label for="repoBranch">分支名称:</label>
+                <input type="text" id="repoBranch" value="main" placeholder="分支名称">
+            </div>
+            
+            <div class="form-group">
+                <label for="rawBaseUrl">Raw文件基础URL:</label>
+                <input type="text" id="rawBaseUrl" value="https://raw.githubusercontent.com/lghui12138/lghui12138.github.io/main" placeholder="Raw文件访问URL">
+            </div>
+            
+            <button class="btn secondary" onclick="saveApiConfig()">💾 保存 API 配置</button>
+        </div>
+        
+        <!-- 连接测试 -->
+        <div id="test-tab" class="tab-content">
+            <div class="api-config">
+                <h3>🧪 连接测试</h3>
+                <p>测试GitHub连接和题目数据访问</p>
+            </div>
+            
+            <button class="btn secondary" onclick="testConnection()">🔗 测试 GitHub 连接</button>
+            <button class="btn secondary" onclick="testQuestionLoading()">📚 测试题目加载</button>
+            <button class="btn secondary" onclick="loadAllQuestions()">🚀 加载所有题目</button>
+            
+            <div id="testResults" class="test-results" style="display: none;"></div>
+        </div>
         
         <div id="status" class="status" style="display: none;"></div>
         
@@ -171,15 +272,57 @@
     </div>
 
     <script>
-        // 页面加载时检查是否已有token
+        // GitHub API 配置
+        const GITHUB_CONFIG = {
+            apiBaseUrl: 'https://api.github.com',
+            owner: 'lghui12138',
+            repo: 'lghui12138.github.io',
+            branch: 'main',
+            rawBaseUrl: 'https://raw.githubusercontent.com/lghui12138/lghui12138.github.io/main'
+        };
+        
+        // 页面加载时初始化
         window.onload = function() {
+            loadSavedConfig();
+        };
+        
+        // 切换标签页
+        function switchTab(tabName) {
+            // 隐藏所有标签页内容
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // 移除所有标签页活动状态
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 显示选中的标签页
+            document.getElementById(tabName + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // 加载保存的配置
+        function loadSavedConfig() {
             const savedToken = localStorage.getItem('github_token');
             if (savedToken) {
                 document.getElementById('githubToken').value = savedToken;
-                showStatus('已检测到保存的 Token', 'info');
             }
-        };
+            
+            // 加载API配置
+            const savedConfig = localStorage.getItem('github_api_config');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                document.getElementById('apiBaseUrl').value = config.apiBaseUrl || GITHUB_CONFIG.apiBaseUrl;
+                document.getElementById('repoOwner').value = config.owner || GITHUB_CONFIG.owner;
+                document.getElementById('repoName').value = config.repo || GITHUB_CONFIG.repo;
+                document.getElementById('repoBranch').value = config.branch || GITHUB_CONFIG.branch;
+                document.getElementById('rawBaseUrl').value = config.rawBaseUrl || GITHUB_CONFIG.rawBaseUrl;
+            }
+        }
         
+        // 保存Token
         function saveToken() {
             const token = document.getElementById('githubToken').value.trim();
             
@@ -197,6 +340,21 @@
             }, 1000);
         }
         
+        // 保存API配置
+        function saveApiConfig() {
+            const config = {
+                apiBaseUrl: document.getElementById('apiBaseUrl').value.trim(),
+                owner: document.getElementById('repoOwner').value.trim(),
+                repo: document.getElementById('repoName').value.trim(),
+                branch: document.getElementById('repoBranch').value.trim(),
+                rawBaseUrl: document.getElementById('rawBaseUrl').value.trim()
+            };
+            
+            localStorage.setItem('github_api_config', JSON.stringify(config));
+            showStatus('✅ API 配置已保存', 'success');
+        }
+        
+        // 测试GitHub连接
         async function testConnection() {
             const token = document.getElementById('githubToken').value.trim();
             
@@ -247,18 +405,103 @@
             }
         }
         
+        // 测试题目加载
+        async function testQuestionLoading() {
+            const testResults = document.getElementById('testResults');
+            testResults.style.display = 'block';
+            testResults.innerHTML = '🧪 开始测试题目加载...\n';
+            
+            const config = getCurrentConfig();
+            const testFiles = [
+                '易错题集.json',
+                '真题_中国海洋大学_2000-2021_cleaned.json',
+                '分类_流体力学基础.json'
+            ];
+            
+            let successCount = 0;
+            let totalCount = 0;
+            
+            for (const file of testFiles) {
+                totalCount++;
+                testResults.innerHTML += `\n📖 测试加载: ${file}\n`;
+                
+                try {
+                    const url = `${config.rawBaseUrl}/question-banks/${file}`;
+                    const response = await fetch(url);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const questionCount = Array.isArray(data) ? data.length : (data.questions ? data.questions.length : 0);
+                        testResults.innerHTML += `✅ 成功: ${questionCount} 道题目\n`;
+                        successCount++;
+                    } else {
+                        testResults.innerHTML += `❌ 失败: HTTP ${response.status}\n`;
+                    }
+                } catch (error) {
+                    testResults.innerHTML += `❌ 错误: ${error.message}\n`;
+                }
+            }
+            
+            testResults.innerHTML += `\n🎯 测试结果: ${successCount}/${totalCount} 个文件加载成功`;
+            showStatus(`题目加载测试完成: ${successCount}/${totalCount} 成功`, successCount === totalCount ? 'success' : 'info');
+        }
+        
+        // 加载所有题目
+        async function loadAllQuestions() {
+            const testResults = document.getElementById('testResults');
+            testResults.style.display = 'block';
+            testResults.innerHTML = '🚀 开始加载所有题目...\n';
+            
+            const config = getCurrentConfig();
+            const allFiles = [
+                '易错题集.json', '真题_中国海洋大学_2000-2021_cleaned.json', 
+                '真题_中国海洋大学_2000-2021.json', '分类_动量方程.json',
+                '分类_势流.json', '分类_压力.json', '分类_实验与量纲.json',
+                '分类_流体力学基础.json', '分类_流体性质.json', '分类_流线轨迹.json',
+                '分类_涡度.json', '分类_湍流.json', '分类_管道流动.json',
+                '分类_粘性.json', '分类_能量方程.json', '分类_自由面.json',
+                '分类_边界层.json', '分类_雷诺数.json'
+            ];
+            
+            let totalQuestions = 0;
+            let loadedFiles = 0;
+            
+            for (const file of allFiles) {
+                try {
+                    const url = `${config.rawBaseUrl}/question-banks/${file}`;
+                    const response = await fetch(url);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const questionCount = Array.isArray(data) ? data.length : (data.questions ? data.questions.length : 0);
+                        totalQuestions += questionCount;
+                        loadedFiles++;
+                        testResults.innerHTML += `✅ ${file}: ${questionCount} 道题目\n`;
+                    }
+                } catch (error) {
+                    testResults.innerHTML += `❌ ${file}: 加载失败\n`;
+                }
+            }
+            
+            testResults.innerHTML += `\n🎉 加载完成: ${loadedFiles} 个文件, 总共 ${totalQuestions} 道题目`;
+            showStatus(`题目加载完成: ${totalQuestions} 道题目`, 'success');
+        }
+        
+        // 获取当前配置
+        function getCurrentConfig() {
+            const savedConfig = localStorage.getItem('github_api_config');
+            if (savedConfig) {
+                return JSON.parse(savedConfig);
+            }
+            return GITHUB_CONFIG;
+        }
+        
+        // 显示状态
         function showStatus(message, type) {
             const statusDiv = document.getElementById('status');
             statusDiv.textContent = message;
             statusDiv.className = `status ${type}`;
             statusDiv.style.display = 'block';
-        }
-        
-        // 复制功能
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('已复制到剪贴板');
-            });
         }
     </script>
 </body>

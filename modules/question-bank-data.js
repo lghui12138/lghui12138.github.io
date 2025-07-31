@@ -904,18 +904,19 @@ window.QuestionBankData = (function() {
             }
             
             try {
-                // 使用已有的GitHub配置直接访问题目文件
-                const GITHUB_CONFIG = {
+                // 获取保存的GitHub配置
+                const savedConfig = localStorage.getItem('github_api_config');
+                const GITHUB_CONFIG = savedConfig ? JSON.parse(savedConfig) : {
                     owner: 'lghui12138',
                     repo: 'lghui12138.github.io',
                     branch: 'main',
-                    baseUrl: 'https://raw.githubusercontent.com/lghui12138/lghui12138.github.io/main'
+                    rawBaseUrl: 'https://raw.githubusercontent.com/lghui12138/lghui12138.github.io/main'
                 };
                 
                 // 优先从GitHub直接访问
                 try {
                     console.log(`🌐 尝试从GitHub直接访问题库: ${bank.filename}`);
-                    const url = `${GITHUB_CONFIG.baseUrl}/question-banks/${bank.filename}`;
+                    const url = `${GITHUB_CONFIG.rawBaseUrl}/question-banks/${bank.filename}`;
                     const response = await fetch(url);
                     
                     if (response.ok) {
