@@ -34,6 +34,13 @@ window.SecurityProtection = {
             return;
         }
         
+        // 桌面端也需要登录
+        if (!isMobile && !this.currentUser) {
+            console.log('🖥️ 桌面设备检测到，需要先登录');
+            this.showDesktopLoginPrompt();
+            return;
+        }
+        
         // 移动端教师权限检查
         if (isMobile && this.currentUser === this.ownerAccount) {
             console.log('📱 移动端教师权限已确认');
@@ -70,8 +77,8 @@ window.SecurityProtection = {
             this.antiCrawler();
             this.protectImages();
             this.addWatermark();
-            // 直接设为访客模式，不显示登录界面
-            this.setGuestMode();
+            // 显示受限用户欢迎信息
+            this.showRestrictedWelcome(this.currentUser || '用户');
         }
         
         // 保持高清显示
@@ -1066,15 +1073,6 @@ window.SecurityProtection = {
                         font-size: 1em;
                         font-weight: bold;
                     ">登录账号</button>
-                    <button onclick="window.SecurityProtection.guestAccess()" style="
-                        background: #28a745;
-                        color: white;
-                        border: none;
-                        padding: 12px 24px;
-                        border-radius: 10px;
-                        cursor: pointer;
-                        font-size: 1em;
-                    ">访客模式</button>
                     <button onclick="window.location.reload()" style="
                         background: #6c757d;
                         color: white;
@@ -1127,6 +1125,138 @@ window.SecurityProtection = {
         setTimeout(() => {
             welcome.remove();
         }, 4000);
+    },
+    
+    // 显示桌面端登录提示
+    showDesktopLoginPrompt() {
+        const loginPrompt = document.createElement('div');
+        loginPrompt.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        `;
+        
+        loginPrompt.innerHTML = `
+            <div style="
+                background: white;
+                padding: 40px;
+                border-radius: 20px;
+                text-align: center;
+                max-width: 90%;
+                width: 500px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            ">
+                <div style="font-size: 4em; margin-bottom: 20px;">🔐</div>
+                <h2 style="margin-bottom: 20px; color: #333;">网站访问</h2>
+                <p style="margin-bottom: 30px; color: #666; line-height: 1.6;">
+                    本网站需要登录才能访问。<br>
+                    请输入您的账号和密码。
+                </p>
+                <form id="desktopLoginForm" style="text-align: left;">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; color: #333; font-weight: bold;">用户名</label>
+                        <input type="text" id="desktopUsername" placeholder="请输入用户名" style="
+                            width: 100%;
+                            padding: 12px;
+                            border: 2px solid #ddd;
+                            border-radius: 8px;
+                            font-size: 1em;
+                            box-sizing: border-box;
+                        " required>
+                    </div>
+                    <div style="margin-bottom: 30px;">
+                        <label style="display: block; margin-bottom: 8px; color: #333; font-weight: bold;">密码</label>
+                        <input type="password" id="desktopPassword" placeholder="请输入密码" style="
+                            width: 100%;
+                            padding: 12px;
+                            border: 2px solid #ddd;
+                            border-radius: 8px;
+                            font-size: 1em;
+                            box-sizing: border-box;
+                        " required>
+                    </div>
+                    <div style="display: flex; gap: 15px; justify-content: center;">
+                        <button type="submit" style="
+                            background: #007bff;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 10px;
+                            cursor: pointer;
+                            font-size: 1em;
+                            font-weight: bold;
+                        ">登录</button>
+                        <button type="button" onclick="window.location.reload()" style="
+                            background: #6c757d;
+                            color: white;
+                            border: none;
+                            padding: 12px 24px;
+                            border-radius: 10px;
+                            cursor: pointer;
+                            font-size: 1em;
+                        ">刷新页面</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        
+        document.body.appendChild(loginPrompt);
+        
+        // 阻止页面滚动
+        document.body.style.overflow = 'hidden';
+        
+        // 添加表单提交事件
+        document.getElementById('desktopLoginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleDesktopLogin();
+        });
+        
+        console.log('🖥️ 桌面端登录提示已显示');
+    },
+    
+    // 处理桌面端登录
+    handleDesktopLogin() {
+        const username = document.getElementById('desktopUsername').value;
+        const password = document.getElementById('desktopPassword').value;
+        
+        // 简单的登录验证
+        if (username === 'liuguanghui6330156' && password === 'Ll700306') {
+            // 登录成功
+            this.currentUser = username;
+            this.userLevel = 'teacher';
+            
+            // 保存到localStorage
+            localStorage.setItem('currentUsername', username);
+            localStorage.setItem('userInfo', JSON.stringify({
+                username: username,
+                role: 'teacher'
+            }));
+            
+            // 移除登录表单
+            const loginForm = document.querySelector('[style*="z-index: 99999"]');
+            if (loginForm) {
+                loginForm.remove();
+            }
+            
+            // 恢复页面滚动
+            document.body.style.overflow = '';
+            
+            // 重新初始化安全保护
+            this.init();
+            
+            console.log('✅ 桌面端登录成功');
+        } else {
+            // 登录失败
+            alert('用户名或密码错误，请重试');
+        }
     },
     
     // 显示登录表单
@@ -1229,7 +1359,7 @@ window.SecurityProtection = {
         const password = document.getElementById('mobilePassword').value;
         
         // 简单的登录验证
-        if (username === 'liuguanghui6330156' && password === '123456') {
+        if (username === 'liuguanghui6330156' && password === 'Ll700306') {
             // 登录成功
             this.currentUser = username;
             this.userLevel = 'teacher';
