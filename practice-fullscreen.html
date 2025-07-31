@@ -2634,11 +2634,12 @@ input:focus, select:focus, textarea:focus {
                 return `<button class="${cls}" onclick="selectOption(${i})">${String.fromCharCode(65+i)}. ${opt}</button>`;
             }).join('');
             
-            // 动态Web应用 - 现代化操作按钮
-            const actionButtons = createActionButtonsHTML();
-            
-            document.getElementById('questionOptions').innerHTML = opts + actionButtons;
+            // 现代动态Web应用 - 使用DOM操作
+            document.getElementById('questionOptions').innerHTML = opts;
             document.getElementById('questionProgress').innerHTML = `第${current+1}题 / 共${questions.length}题`;
+            
+            // 创建和插入操作按钮（使用DOM，不是innerHTML）
+            createAndInsertActionButtons();
             
             // 收藏状态
             const favButton = document.getElementById('favBtn');
@@ -2753,105 +2754,194 @@ input:focus, select:focus, textarea:focus {
         // 确保全局可访问
         window.submitAnswer = submitAnswer;
         
-        // 简化版 - 直接使用onclick内联事件
-        function createActionButtonsHTML() {
+        // 现代动态Web应用 - DOM操作版本
+        function createAndInsertActionButtons() {
+            // 移除现有的操作按钮
+            const existingActions = document.querySelector('.question-actions-integrated');
+            if (existingActions) {
+                existingActions.remove();
+            }
+            
             const canSubmit = !answered && (selected !== null && selected !== undefined);
-            return `
-                <div class="question-actions-integrated" style="
-                    margin-top: 20px; 
-                    padding: 20px;
-                    background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(0, 123, 255, 0.05));
-                    border-radius: 12px; 
-                    border: ${canSubmit ? '2px solid #28a745' : '2px solid #dee2e6'};
-                    transition: all 0.3s ease;
-                    position: relative;
-                    overflow: hidden;
-                    box-shadow: ${canSubmit ? '0 0 20px rgba(40, 167, 69, 0.1)' : '0 2px 10px rgba(0,0,0,0.08)'};
-                ">
-                    <div style="
-                        display: flex; 
-                        justify-content: space-between; 
-                        align-items: center; 
-                        flex-wrap: wrap; 
-                        gap: 15px;
-                        position: relative;
-                        z-index: 2;
-                    ">
-                        <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                            <button onclick="alert('测试按钮被点击了！selected=' + selected + ', answered=' + answered); if(${canSubmit}) { submitAnswer(); } return false;" 
-                                    style="
-                                        background: ${canSubmit ? 'linear-gradient(135deg, #28a745, #20c997)' : 'linear-gradient(135deg, #6c757d, #5a6268)'};
-                                        color: white;
-                                        border: none;
-                                        padding: 16px 32px;
-                                        border-radius: 10px;
-                                        font-size: 16px;
-                                        font-weight: 600;
-                                        cursor: pointer;
-                                        box-shadow: ${canSubmit ? '0 4px 15px rgba(40, 167, 69, 0.3)' : '0 2px 8px rgba(108, 117, 125, 0.2)'};
-                                        transition: all 0.3s ease;
-                                        min-width: 150px;
-                                        opacity: ${canSubmit ? '1' : '0.7'};
-                                    " 
-                                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(40, 167, 69, 0.4)';" 
-                                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(40, 167, 69, 0.3)';">
-                                <i class="fas fa-paper-plane"></i> 提交答案 (测试版)
-                            </button>
-                            <button onclick="saveCurrentProgress(); this.innerHTML='<i class=\\'fas fa-check\\'></i> 已保存'; setTimeout(()=>{this.innerHTML='<i class=\\'fas fa-bookmark\\'></i> 保存进度'}, 2000); return false;" 
-                                    style="
-                                        background: linear-gradient(135deg, #007bff, #0056b3);
-                                        color: white;
-                                        border: none;
-                                        padding: 16px 32px;
-                                        border-radius: 10px;
-                                        font-size: 16px;
-                                        font-weight: 600;
-                                        cursor: pointer;
-                                        box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
-                                        transition: all 0.3s ease;
-                                        min-width: 150px;
-                                    "
-                                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0, 123, 255, 0.4)'" 
-                                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 123, 255, 0.3)'">
-                                <i class="fas fa-bookmark"></i> 保存进度
-                            </button>
-                        </div>
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                            <button onclick="skipCurrentQuestion()" 
-                                    style="
-                                        background: #6c757d;
-                                        color: white;
-                                        border: none;
-                                        padding: 12px 20px;
-                                        border-radius: 8px;
-                                        font-size: 14px;
-                                        cursor: pointer;
-                                        transition: all 0.3s ease;
-                                        opacity: 0.8;
-                                    "
-                                    onmouseover="this.style.opacity='1'; this.style.transform='scale(1.05)'" 
-                                    onmouseout="this.style.opacity='0.8'; this.style.transform='scale(1)'">
-                                <i class="fas fa-step-forward"></i> 跳过
-                            </button>
-                        </div>
-                    </div>
-                    <div style="
-                        margin-top: 15px; 
-                        text-align: center;
-                        padding: 10px;
-                        background: rgba(255,255,255,0.7);
-                        border-radius: 8px;
-                        font-size: 14px; 
-                        font-weight: 500;
-                        color: ${answered ? '#28a745' : (canSubmit ? '#007bff' : '#6c757d')};
-                        border-left: 4px solid ${answered ? '#28a745' : (canSubmit ? '#007bff' : '#6c757d')};
-                        transition: all 0.3s ease;
-                    ">
-                        <i class="fas ${answered ? 'fa-check-circle' : (canSubmit ? 'fa-hand-pointer' : 'fa-info-circle')}"></i>
-                        ${answered ? '✅ 已提交答案，查看下方分析结果' : (canSubmit ? '🎯 点击提交答案，立即获得批改结果' : '👆 请先选择一个选项')}
-                    </div>
-                </div>
+            
+            // 创建容器
+            const container = document.createElement('div');
+            container.className = 'question-actions-integrated';
+            container.style.cssText = `
+                margin-top: 20px; 
+                padding: 20px;
+                background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(0, 123, 255, 0.05));
+                border-radius: 12px; 
+                border: ${canSubmit ? '2px solid #28a745' : '2px solid #dee2e6'};
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+                box-shadow: ${canSubmit ? '0 0 20px rgba(40, 167, 69, 0.1)' : '0 2px 10px rgba(0,0,0,0.08)'};
             `;
+            
+            // 创建按钮行
+            const buttonRow = document.createElement('div');
+            buttonRow.style.cssText = `
+                display: flex; 
+                justify-content: space-between; 
+                align-items: center; 
+                flex-wrap: wrap; 
+                gap: 15px;
+                position: relative;
+                z-index: 2;
+            `;
+            
+            // 主要按钮组
+            const mainButtons = document.createElement('div');
+            mainButtons.style.cssText = 'display: flex; gap: 12px; flex-wrap: wrap;';
+            
+            // 提交按钮
+            const submitBtn = document.createElement('button');
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 提交答案';
+            submitBtn.style.cssText = `
+                background: ${canSubmit ? 'linear-gradient(135deg, #28a745, #20c997)' : 'linear-gradient(135deg, #6c757d, #5a6268)'};
+                color: white;
+                border: none;
+                padding: 16px 32px;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                box-shadow: ${canSubmit ? '0 4px 15px rgba(40, 167, 69, 0.3)' : '0 2px 8px rgba(108, 117, 125, 0.2)'};
+                transition: all 0.3s ease;
+                min-width: 150px;
+                opacity: ${canSubmit ? '1' : '0.7'};
+            `;
+            
+            // 提交按钮事件
+            submitBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('🔥 DOM按钮被点击! selected:', selected, 'answered:', answered);
+                
+                if (answered) {
+                    alert('您已经提交过答案了！');
+                    return;
+                }
+                
+                if (selected === null || selected === undefined) {
+                    alert('请先选择一个答案选项！');
+                    return;
+                }
+                
+                // 立即处理提交
+                answered = true;
+                const questionTime = Math.floor((Date.now() - questionStartTime) / 1000);
+                questionTimes.push(questionTime);
+                
+                const q = questions[current];
+                q.userSelected = selected;
+                
+                // 重新渲染以显示结果
+                renderQuestion();
+                
+                if (selected !== q.answer) {
+                    addToWrongBook(q, selected);
+                    if (typeof showSmartHint === 'function') {
+                        showSmartHint('答错了，正在为您生成详细分析...');
+                    }
+                } else {
+                    if (typeof showSmartHint === 'function') {
+                        showSmartHint('答对了！正在为您生成学习建议...');
+                    }
+                }
+                
+                // 立即显示批改结果
+                setTimeout(() => {
+                    if (typeof toggleExplanation === 'function') {
+                        console.log('🚀 显示批改结果');
+                        toggleExplanation(true);
+                    }
+                }, 200);
+                
+                console.log('✅ 提交完成');
+            });
+            
+            // 保存按钮
+            const saveBtn = document.createElement('button');
+            saveBtn.innerHTML = '<i class="fas fa-bookmark"></i> 保存进度';
+            saveBtn.style.cssText = `
+                background: linear-gradient(135deg, #007bff, #0056b3);
+                color: white;
+                border: none;
+                padding: 16px 32px;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+                transition: all 0.3s ease;
+                min-width: 150px;
+            `;
+            
+            saveBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const originalText = this.innerHTML;
+                this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 保存中...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    try {
+                        localStorage.setItem('fullscreen_progress', JSON.stringify({
+                            current: current,
+                            selected: selected,
+                            answered: answered,
+                            questionTimes: questionTimes,
+                            timestamp: Date.now()
+                        }));
+                        
+                        this.innerHTML = '<i class="fas fa-check"></i> 已保存';
+                        setTimeout(() => {
+                            this.innerHTML = originalText;
+                            this.disabled = false;
+                        }, 1500);
+                    } catch (e) {
+                        this.innerHTML = originalText;
+                        this.disabled = false;
+                        alert('保存失败: ' + e.message);
+                    }
+                }, 500);
+            });
+            
+            // 组装按钮
+            mainButtons.appendChild(submitBtn);
+            mainButtons.appendChild(saveBtn);
+            buttonRow.appendChild(mainButtons);
+            
+            // 状态指示器
+            const statusDiv = document.createElement('div');
+            statusDiv.style.cssText = `
+                margin-top: 15px; 
+                text-align: center;
+                padding: 10px;
+                background: rgba(255,255,255,0.7);
+                border-radius: 8px;
+                font-size: 14px; 
+                font-weight: 500;
+                color: ${answered ? '#28a745' : (canSubmit ? '#007bff' : '#6c757d')};
+                border-left: 4px solid ${answered ? '#28a745' : (canSubmit ? '#007bff' : '#6c757d')};
+                transition: all 0.3s ease;
+            `;
+            
+            const statusText = answered ? '✅ 已提交答案，查看下方分析结果' : 
+                             (canSubmit ? '🎯 点击提交答案，立即获得批改结果' : '👆 请先选择一个选项');
+            const statusIcon = answered ? 'fa-check-circle' : (canSubmit ? 'fa-hand-pointer' : 'fa-info-circle');
+            
+            statusDiv.innerHTML = `<i class="fas ${statusIcon}"></i> ${statusText}`;
+            
+            // 组装容器
+            container.appendChild(buttonRow);
+            container.appendChild(statusDiv);
+            
+            // 插入到页面中
+            const optionsContainer = document.getElementById('questionOptions');
+            optionsContainer.appendChild(container);
+            
+            console.log('✅ DOM按钮已创建和绑定', {canSubmit, selected, answered});
         }
 
         // 简化保存函数
