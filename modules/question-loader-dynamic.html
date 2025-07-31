@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题目加载器 - 流体力学学习平台</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .loader-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+        
+        .loader-section h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn.success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+        
+        .btn.warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        }
+        
+        .btn.danger {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .log-area {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        .question-list {
+            max-height: 500px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 15px;
+            background: white;
+        }
+        
+        .question-item {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+        
+        .question-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .question-meta {
+            font-size: 0.8em;
+            color: #666;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 题目加载器</h1>
+        
+        <div class="loader-section">
+            <h3>📊 加载统计</h3>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalQuestions">0</div>
+                    <div class="stat-label">总题目数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="loadedFiles">0</div>
+                    <div class="stat-label">已加载文件</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="successFiles">0</div>
+                    <div class="stat-label">成功文件</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="failedFiles">0</div>
+                    <div class="stat-label">失败文件</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="loader-section">
+            <h3>🔧 加载操作</h3>
+            <button class="btn" onclick="loadSingleFile()">加载单个文件</button>
+            <button class="btn" onclick="loadAllFiles()">加载所有文件</button>
+            <button class="btn success" onclick="loadFromGitHub()">从GitHub加载</button>
+            <button class="btn warning" onclick="loadFromLocal()">从本地加载</button>
+            <button class="btn danger" onclick="clearResults()">清空结果</button>
+            <div class="log-area" id="logArea"></div>
+        </div>
+        
+        <div class="loader-section">
+            <h3>📋 题目列表</h3>
+            <div class="question-list" id="questionList"></div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="../index.html" style="color: #667eea; text-decoration: none;">← 返回主页</a>
+        </div>
+    </div>
+
+    <script>
+        // GitHub配置
+        const GITHUB_CONFIG = {
+            owner: 'lghui12138',
+            repo: 'lghui12138.github.io',
+            branch: 'main',
+            rawBaseUrl: 'https://raw.githubusercontent.com/lghui12138/lghui12138.github.io/main'
+        };
+        
+        // 所有题库文件
+        const ALL_FILES = [
+            '易错题集.json',
+            '真题_中国海洋大学_2000-2021_cleaned.json',
+            '真题_中国海洋大学_2000-2021.json',
+            '分类_动量方程.json',
+            '分类_势流.json',
+            '分类_压力.json',
+            '分类_实验与量纲.json',
+            '分类_流体力学基础.json',
+            '分类_流体性质.json',
+            '分类_流线轨迹.json',
+            '分类_涡度.json',
+            '分类_湍流.json',
+            '分类_管道流动.json',
+            '分类_粘性.json',
+            '分类_能量方程.json',
+            '分类_自由面.json',
+            '分类_边界层.json',
+            '分类_雷诺数.json'
+        ];
+        
+        let loadedQuestions = [];
+        let stats = {
+            totalQuestions: 0,
+            loadedFiles: 0,
+            successFiles: 0,
+            failedFiles: 0
+        };
+        
+        // 初始化
+        window.onload = function() {
+            updateStats();
+            log('🚀 题目加载器已启动');
+        };
+        
+        // 更新统计
+        function updateStats() {
+            document.getElementById('totalQuestions').textContent = stats.totalQuestions;
+            document.getElementById('loadedFiles').textContent = stats.loadedFiles;
+            document.getElementById('successFiles').textContent = stats.successFiles;
+            document.getElementById('failedFiles').textContent = stats.failedFiles;
+        }
+        
+        // 记录日志
+        function log(message) {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleTimeString();
+            logArea.textContent += `[${timestamp}] ${message}\n`;
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+        
+        // 清空结果
+        function clearResults() {
+            loadedQuestions = [];
+            stats = { totalQuestions: 0, loadedFiles: 0, successFiles: 0, failedFiles: 0 };
+            updateStats();
+            document.getElementById('questionList').innerHTML = '';
+            document.getElementById('logArea').textContent = '';
+            log('📝 结果已清空');
+        }
+        
+        // 加载单个文件
+        async function loadSingleFile() {
+            const testFile = '易错题集.json';
+            await loadFile(testFile);
+        }
+        
+        // 加载所有文件
+        async function loadAllFiles() {
+            log('🚀 开始加载所有文件...');
+            clearResults();
+            
+            for (const file of ALL_FILES) {
+                await loadFile(file);
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            log(`🎯 加载完成！成功: ${stats.successFiles}, 失败: ${stats.failedFiles}, 总题目: ${stats.totalQuestions}`);
+        }
+        
+        // 从GitHub加载
+        async function loadFromGitHub() {
+            log('🌐 开始从GitHub加载...');
+            clearResults();
+            
+            for (const file of ALL_FILES) {
+                await loadFileFromGitHub(file);
+                await new Promise(resolve => setTimeout(resolve, 300));
+            }
+            
+            log(`🌐 GitHub加载完成！成功: ${stats.successFiles}, 失败: ${stats.failedFiles}`);
+        }
+        
+        // 从本地加载
+        async function loadFromLocal() {
+            log('📁 开始从本地加载...');
+            clearResults();
+            
+            for (const file of ALL_FILES) {
+                await loadFileFromLocal(file);
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            log(`📁 本地加载完成！成功: ${stats.successFiles}, 失败: ${stats.failedFiles}`);
+        }
+        
+        // 加载单个文件（智能选择源）
+        async function loadFile(filename) {
+            log(`📖 开始加载: ${filename}`);
+            
+            try {
+                // 优先从GitHub加载
+                let data = await loadFileFromGitHub(filename);
+                
+                // 如果GitHub失败，从本地加载
+                if (!data) {
+                    data = await loadFileFromLocal(filename);
+                }
+                
+                if (data && Array.isArray(data) && data.length > 0) {
+                    processQuestions(data, filename);
+                    stats.successFiles++;
+                    log(`✅ 成功加载 ${filename}: ${data.length} 道题目`);
+                } else {
+                    stats.failedFiles++;
+                    log(`❌ 加载失败 ${filename}: 无有效数据`);
+                }
+                
+                stats.loadedFiles++;
+                updateStats();
+                
+            } catch (error) {
+                stats.failedFiles++;
+                stats.loadedFiles++;
+                updateStats();
+                log(`❌ 加载异常 ${filename}: ${error.message}`);
+            }
+        }
+        
+        // 从GitHub加载文件
+        async function loadFileFromGitHub(filename) {
+            try {
+                log(`🌐 从GitHub加载: ${filename}`);
+                const url = `${GITHUB_CONFIG.rawBaseUrl}/question-banks/${filename}`;
+                const response = await fetch(url);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (Array.isArray(data)) {
+                        return data;
+                    } else if (data.questions && Array.isArray(data.questions)) {
+                        return data.questions;
+                    }
+                } else {
+                    log(`⚠️ GitHub文件不存在: ${filename}`);
+                }
+            } catch (error) {
+                log(`⚠️ GitHub加载失败: ${filename} - ${error.message}`);
+            }
+            return null;
+        }
+        
+        // 从本地加载文件
+        async function loadFileFromLocal(filename) {
+            try {
+                log(`📁 从本地加载: ${filename}`);
+                const response = await fetch(`../question-banks/${filename}`);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (Array.isArray(data)) {
+                        return data;
+                    } else if (data.questions && Array.isArray(data.questions)) {
+                        return data.questions;
+                    }
+                } else {
+                    log(`⚠️ 本地文件不存在: ${filename}`);
+                }
+            } catch (error) {
+                log(`⚠️ 本地加载失败: ${filename} - ${error.message}`);
+            }
+            return null;
+        }
+        
+        // 处理题目数据
+        function processQuestions(questions, filename) {
+            questions.forEach((question, index) => {
+                const processedQuestion = {
+                    id: `q_${loadedQuestions.length + index + 1}`,
+                    title: question.title || question.question || '题目内容',
+                    bank: filename.replace('.json', ''),
+                    bankId: filename,
+                    difficulty: 'medium',
+                    correctRate: 75,
+                    createdAt: '2024-01-01',
+                    category: question.category || '流体力学',
+                    tags: question.tags || [],
+                    type: question.type || '题目',
+                    year: question.year,
+                    school: question.school || '中国海洋大学',
+                    score: question.score || 10,
+                    fullTitle: question.title || question.question,
+                    options: question.options || [],
+                    answer: question.answer || '',
+                    explanation: question.explanation || ''
+                };
+                
+                loadedQuestions.push(processedQuestion);
+            });
+            
+            stats.totalQuestions += questions.length;
+            updateStats();
+            updateQuestionList();
+        }
+        
+        // 更新题目列表显示
+        function updateQuestionList() {
+            const questionList = document.getElementById('questionList');
+            questionList.innerHTML = loadedQuestions.slice(0, 50).map(q => `
+                <div class="question-item">
+                    <div class="question-title">${q.title}</div>
+                    <div class="question-meta">
+                        题库: ${q.bank} | 类型: ${q.type} | 年份: ${q.year || '未知'} | 学校: ${q.school}
+                    </div>
+                </div>
+            `).join('');
+            
+            if (loadedQuestions.length > 50) {
+                questionList.innerHTML += `<div style="text-align: center; color: #666; padding: 10px;">
+                    显示前50题，共${loadedQuestions.length}题
+                </div>`;
+            }
+        }
+    </script>
+</body>
+</html> 
