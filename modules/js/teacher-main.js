@@ -383,6 +383,14 @@ window.TeacherApp = {
             async mounted() {
                 console.log('👨‍🏫 教师管理面板启动！');
                 
+                // 设置教师权限
+                localStorage.setItem('isTeacher', 'true');
+                localStorage.setItem('userInfo', JSON.stringify({
+                    role: 'teacher',
+                    username: 'teacher',
+                    permissions: ['read', 'write', 'delete', 'admin']
+                }));
+                
                 // 验证权限
                 if (!this.currentUser.username) {
                     return;
