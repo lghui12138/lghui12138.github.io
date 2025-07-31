@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧪 真题年份分类测试</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .year-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .year-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .year-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .year-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        .year-card .count {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .question-preview {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .question-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            margin: 5px;
+        }
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <h1>🧪 真题年份分类测试</h1>
+                <p>验证真题数据按年份正确分类和显示</p>
+            </div>
+
+            <div v-if="loading" class="loading">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>正在加载真题数据...</p>
+            </div>
+
+            <div v-else>
+                <!-- 统计信息 -->
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ totalQuestions }}</div>
+                        <div>总题目数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ availableYears.length }}</div>
+                        <div>年份数量</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ selectedYearQuestions.length }}</div>
+                        <div>当前年份题目</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">{{ currentYear }}</div>
+                        <div>当前选择年份</div>
+                    </div>
+                </div>
+
+                <!-- 年份列表 -->
+                <h2>📅 年份分类</h2>
+                <div class="year-list">
+                    <div 
+                        v-for="year in availableYears" 
+                        :key="year.year"
+                        class="year-card"
+                        @click="selectYear(year.year)"
+                    >
+                        <h3>{{ year.year }}年真题</h3>
+                        <div class="count">{{ year.count }}题</div>
+                        <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                            难度: {{ getDifficultyText(year.difficulty) }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 题目预览 -->
+                <div v-if="selectedYearQuestions.length > 0" class="question-preview">
+                    <h3>{{ currentYear }}年真题预览 (显示前5题)</h3>
+                    <div 
+                        v-for="question in selectedYearQuestions.slice(0, 5)" 
+                        :key="question.id"
+                        class="question-item"
+                    >
+                        <div><strong>ID:</strong> {{ question.id }}</div>
+                        <div><strong>题目:</strong> {{ question.title.substring(0, 100) }}...</div>
+                        <div><strong>类型:</strong> {{ question.type }} | <strong>分数:</strong> {{ question.score }}分</div>
+                    </div>
+                    <div v-if="selectedYearQuestions.length > 5" style="text-align: center; margin-top: 15px; color: #666;">
+                        还有 {{ selectedYearQuestions.length - 5 }} 题...
+                    </div>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div style="text-align: center; margin-top: 30px;">
+                    <button @click="loadAllQuestions" class="btn btn-primary">
+                        <i class="fas fa-download"></i> 重新加载数据
+                    </button>
+                    <button @click="testAllYears" class="btn btn-success">
+                        <i class="fas fa-check"></i> 测试所有年份
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    loading: true,
+                    allQuestions: [],
+                    currentYear: null,
+                    selectedYearQuestions: []
+                }
+            },
+
+            computed: {
+                totalQuestions() {
+                    return this.allQuestions.length;
+                },
+
+                availableYears() {
+                    const years = [...new Set(this.allQuestions.map(q => q.year))].sort((a, b) => b - a);
+                    return years.map(year => ({
+                        year,
+                        count: this.allQuestions.filter(q => q.year === year).length,
+                        difficulty: this.getDifficultyByYear(year)
+                    }));
+                }
+            },
+
+            methods: {
+                async loadAllQuestions() {
+                    this.loading = true;
+                    try {
+                        const response = await fetch('question-banks/真题_中国海洋大学_2000-2021_cleaned.json');
+                        if (!response.ok) {
+                            throw new Error('真题文件加载失败');
+                        }
+                        
+                        this.allQuestions = await response.json();
+                        console.log('✅ 真题数据加载成功:', this.allQuestions.length, '题');
+                        
+                        // 默认选择最新年份
+                        if (this.availableYears.length > 0) {
+                            this.selectYear(this.availableYears[0].year);
+                        }
+                        
+                    } catch (error) {
+                        console.error('❌ 真题数据加载失败:', error);
+                        alert('真题数据加载失败: ' + error.message);
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                selectYear(year) {
+                    this.currentYear = year;
+                    this.selectedYearQuestions = this.allQuestions.filter(q => q.year === year);
+                    console.log(`📅 选择${year}年真题: ${this.selectedYearQuestions.length}题`);
+                },
+
+                getDifficultyByYear(year) {
+                    const currentYear = new Date().getFullYear();
+                    const yearDiff = currentYear - year;
+                    
+                    if (yearDiff <= 5) return 'hard';
+                    if (yearDiff <= 10) return 'medium';
+                    return 'easy';
+                },
+
+                getDifficultyText(difficulty) {
+                    const map = {
+                        'easy': '简单',
+                        'medium': '中等',
+                        'hard': '困难'
+                    };
+                    return map[difficulty] || '中等';
+                },
+
+                testAllYears() {
+                    console.log('🧪 开始测试所有年份...');
+                    let allPassed = true;
+                    
+                    this.availableYears.forEach(yearInfo => {
+                        const questions = this.allQuestions.filter(q => q.year === yearInfo.year);
+                        if (questions.length !== yearInfo.count) {
+                            console.error(`❌ ${yearInfo.year}年题目数量不匹配: 期望${yearInfo.count}，实际${questions.length}`);
+                            allPassed = false;
+                        } else {
+                            console.log(`✅ ${yearInfo.year}年: ${questions.length}题`);
+                        }
+                    });
+                    
+                    if (allPassed) {
+                        alert('🎉 所有年份测试通过！');
+                    } else {
+                        alert('❌ 部分年份测试失败，请查看控制台');
+                    }
+                }
+            },
+
+            mounted() {
+                this.loadAllQuestions();
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html> 
