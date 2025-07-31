@@ -903,22 +903,8 @@
             // 显示筛选结果
             showNotification(`显示${year}年分数线数据`, 'info');
             
-            // 这里可以添加实际的图表更新逻辑
-            const chartPlaceholder = document.querySelector('.chart-placeholder');
-            if (year === 'all') {
-                chartPlaceholder.innerHTML = `
-                    <i class="fas fa-chart-line"></i>
-                    <p>分数线趋势图表 (2020-2025)</p>
-                    <p style="font-size: 0.9rem; opacity: 0.7;">显示全部年份数据</p>
-                `;
-            } else {
-                chartPlaceholder.innerHTML = `
-                    <i class="fas fa-chart-line"></i>
-                    <p>${year}年分数线数据</p>
-                    <p style="font-size: 0.9rem; opacity: 0.7;">国家线: ${getScoreData(year).national}分</p>
-                    <p style="font-size: 0.9rem; opacity: 0.7;">复试线: ${getScoreData(year).reexam}分</p>
-                `;
-            }
+            // 更新图表
+            updateChart(year);
         }
         
         // 详细的分数线数据
@@ -2316,14 +2302,25 @@
                             borderColor: '#ff6b6b',
                             backgroundColor: 'rgba(255, 107, 107, 0.1)',
                             tension: 0.3,
-                            fill: true
+                            fill: false,
+                            yAxisID: 'y'
                         }, {
                             label: '国家线',
                             data: scoreData.nationalScores,
                             borderColor: '#4ecdc4',
                             backgroundColor: 'rgba(78, 205, 196, 0.1)',
                             tension: 0.3,
-                            fill: true
+                            fill: false,
+                            yAxisID: 'y'
+                        }, {
+                            label: '报名人数',
+                            data: scoreData.applicants.map(val => val ? val / 10 : null), // 缩放报名人数以便在同一图表显示
+                            borderColor: '#27ae60',
+                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                            tension: 0.3,
+                            fill: false,
+                            yAxisID: 'y1',
+                            type: 'line'
                         }]
                     },
                     options: {
@@ -2354,11 +2351,41 @@
                                 }
                             },
                             y: {
+                                type: 'linear',
+                                display: true,
+                                position: 'left',
                                 ticks: {
-                                    color: 'white'
+                                    color: 'white',
+                                    callback: function(value) {
+                                        return value + '分';
+                                    }
                                 },
                                 grid: {
                                     color: 'rgba(255,255,255,0.2)'
+                                },
+                                title: {
+                                    display: true,
+                                    text: '分数线',
+                                    color: 'white'
+                                }
+                            },
+                            y1: {
+                                type: 'linear',
+                                display: true,
+                                position: 'right',
+                                ticks: {
+                                    color: 'white',
+                                    callback: function(value) {
+                                        return (value * 10) + '人';
+                                    }
+                                },
+                                grid: {
+                                    drawOnChartArea: false,
+                                },
+                                title: {
+                                    display: true,
+                                    text: '报名人数',
+                                    color: 'white'
                                 }
                             }
                         }
