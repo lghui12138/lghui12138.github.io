@@ -1393,8 +1393,15 @@
                 },
 
                 canStartPractice() {
-                    return (this.filters.category && this.filters.category !== '全部类型') || 
-                           (this.filters.year && this.filters.year !== '全部年份');
+                    // 只要选择了具体的年份或分类，就显示练习按钮
+                    const hasCategory = this.filters.category && 
+                                       this.filters.category !== '全部类型' && 
+                                       this.filters.category !== '';
+                    const hasYear = this.filters.year && 
+                                   this.filters.year !== '全部年份' && 
+                                   this.filters.year !== '';
+                    
+                    return hasCategory || hasYear;
                 },
 
                 loadedQuestionsCount() {
@@ -1461,11 +1468,8 @@
 
                 // 筛选条件变化处理
                 onFilterChange() {
-                    // 延迟执行，避免频繁触发
-                    clearTimeout(this.filterTimeout);
-                    this.filterTimeout = setTimeout(() => {
-                        this.smartLoadQuestions();
-                    }, 300);
+                    // 立即执行智能加载，不延迟
+                    this.smartLoadQuestions();
                 },
 
                 // 智能加载题目
@@ -1480,30 +1484,31 @@
                         return;
                     }
                     
-                    this.loading = true;
-                    this.loadingText = '正在智能加载题目...';
+                    console.log('🎯 智能加载触发:', { category, year });
                     
                     try {
-                        // 优先处理年份筛选
-                        if (year && year !== '全部年份' && year !== 'all') {
-                            // 选择具体年份，只加载该年份的真题
+                        // 优先处理年份筛选 - 这是最重要的功能
+                        if (year && year !== '全部年份' && year !== 'all' && year !== '') {
+                            console.log(`📅 加载${year}年真题`);
                             await this.loadRealExamQuestions(year);
-                            this.showNotification(`✅ 已加载${year}年真题: ${this.questions.length}题`, 'success');
-                        } else if (category === '历年真题') {
-                            // 选择历年真题分类，加载所有真题
+                            return;
+                        }
+                        
+                        // 处理分类筛选
+                        if (category === '历年真题') {
+                            console.log('📚 加载所有历年真题');
                             await this.loadRealExamQuestions('all');
-                            this.showNotification(`✅ 已加载历年真题: ${this.questions.length}题`, 'success');
                         } else if (category === '易错题集') {
+                            console.log('⚠️ 加载易错题集');
                             await this.loadErrorProneQuestions();
-                            this.showNotification(`✅ 已加载易错题集: ${this.questions.length}题`, 'success');
                         } else if (category === '计算题集') {
+                            console.log('🧮 加载计算题集');
                             await this.loadCalculationQuestions();
-                            this.showNotification(`✅ 已加载计算题集: ${this.questions.length}题`, 'success');
                         } else if (category === '综合题集') {
+                            console.log('📝 加载综合题集');
                             await this.loadComprehensiveQuestions();
-                            this.showNotification(`✅ 已加载综合题集: ${this.questions.length}题`, 'success');
                         } else {
-                            // 默认不自动加载，等待用户手动选择
+                            // 清空题目，等待用户选择
                             this.questions = [];
                             this.totalQuestions = 0;
                         }
@@ -1514,8 +1519,6 @@
                     } catch (error) {
                         console.error('智能加载失败:', error);
                         this.showNotification('智能加载失败: ' + error.message, 'error');
-                    } finally {
-                        this.loading = false;
                     }
                 },
 
@@ -1569,6 +1572,10 @@
                         }));
                         
                         this.totalQuestions = this.questions.length;
+                        
+                        // 显示加载成功提示
+                        const yearText = year === 'all' ? '历年真题' : `${year}年真题`;
+                        this.showNotification(`✅ 已加载${yearText}: ${this.questions.length}题`, 'success');
                         
                     } finally {
                         this.loading = false;
@@ -2537,8 +2544,14 @@
                 });
                 
                 // 监听筛选条件变化
-                this.$watch('filters.category', this.onFilterChange);
-                this.$watch('filters.year', this.onFilterChange);
+                this.$watch('filters.category', (newVal, oldVal) => {
+                    console.log('📂 分类变化:', oldVal, '->', newVal);
+                    this.onFilterChange();
+                });
+                this.$watch('filters.year', (newVal, oldVal) => {
+                    console.log('📅 年份变化:', oldVal, '->', newVal);
+                    this.onFilterChange();
+                });
             },
 
             beforeUnmount() {
