@@ -1246,21 +1246,53 @@ window.QuestionBankPractice = (function() {
         checkAnswer: function() {
             const question = currentSession.questions[currentSession.currentIndex];
             const userAnswer = currentSession.userAnswers[currentSession.currentIndex];
-            const correctAnswer = question.correct;
+            
+            // 获取正确答案，支持多种格式
+            const correctAnswer = question.correct || question.answer;
             
             let isCorrect = false;
             
             // 根据题型检查答案
-            switch(question.type) {
+            switch(question.type || '选择题') {
+                case '填空题':
                 case 'fill':
                     isCorrect = this.checkFillAnswer(userAnswer, correctAnswer);
                     break;
+                case '判断题':
                 case 'judge':
                     isCorrect = userAnswer === correctAnswer;
                     break;
+                case '选择题':
                 default: // 选择题
-                    isCorrect = userAnswer === correctAnswer;
+                    // 对于选择题，需要处理字母答案和数字索引
+                    if (typeof userAnswer === 'number') {
+                        // 用户答案是索引
+                        if (typeof correctAnswer === 'string') {
+                            // 正确答案是字母，转换为索引
+                            const correctIndex = correctAnswer.charCodeAt(0) - 65; // A=0, B=1, etc.
+                            isCorrect = userAnswer === correctIndex;
+                        } else {
+                            isCorrect = userAnswer === correctAnswer;
+                        }
+                    } else if (typeof userAnswer === 'string') {
+                        // 用户答案是字母
+                        if (typeof correctAnswer === 'number') {
+                            // 正确答案是索引，转换为字母
+                            const correctLetter = String.fromCharCode(65 + correctAnswer);
+                            isCorrect = userAnswer.toUpperCase() === correctLetter;
+                        } else {
+                            isCorrect = userAnswer.toUpperCase() === correctAnswer.toString().toUpperCase();
+                        }
+                    }
+                    break;
             }
+            
+            console.log('答案检查:', {
+                userAnswer,
+                correctAnswer,
+                isCorrect,
+                questionType: question.type || '选择题'
+            });
             
             // 显示结果
             this.showAnswerResult(isCorrect, question);
@@ -1290,10 +1322,14 @@ window.QuestionBankPractice = (function() {
         
         // 显示答案结果
         showAnswerResult: function(isCorrect, question) {
-            const explanationArea = document.getElementById('explanationArea');
+            const answerDisplay = document.getElementById('answerDisplay');
+            const answerContent = document.getElementById('answerContent');
             const explanationContent = document.getElementById('explanationContent');
             
-            if (!explanationArea || !explanationContent) return;
+            if (!answerDisplay || !answerContent) {
+                console.error('答案显示区域未找到');
+                return;
+            }
             
             const resultIcon = isCorrect ? '✅' : '❌';
             const resultText = isCorrect ? '回答正确！' : '回答错误';
@@ -1302,61 +1338,82 @@ window.QuestionBankPractice = (function() {
             // 生成或获取答案
             const answer = this.generateAnswer(question);
             
-            explanationContent.innerHTML = `
-                <div style="color: ${resultColor}; font-weight: bold; font-size: 1.8em; margin-bottom: 25px; text-align: center; padding: 20px; background: ${isCorrect ? '#d4edda' : '#f8d7da'}; border-radius: 12px;">
+            // 更新答案内容 - 使用更大的字体和更清晰的布局
+            answerContent.innerHTML = `
+                <div style="color: ${resultColor}; font-weight: bold; font-size: 2.2em; margin-bottom: 30px; text-align: center; padding: 25px; background: ${isCorrect ? '#d4edda' : '#f8d7da'}; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                     ${resultIcon} ${resultText}
                 </div>
-                <div style="background: #fff3cd; border: 2px solid #ffeaa7; border-radius: 12px; padding: 25px; margin-bottom: 25px; font-size: 1.4em; line-height: 1.8;">
-                    <strong style="font-size: 1.2em; color: #856404;">📝 参考答案：</strong><br><br>
-                    <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107; font-size: 1.3em; line-height: 2;">
+                <div style="background: #fff3cd; border: 3px solid #ffeaa7; border-radius: 15px; padding: 30px; margin-bottom: 30px; font-size: 1.6em; line-height: 1.8;">
+                    <strong style="font-size: 1.4em; color: #856404;">📝 参考答案：</strong><br><br>
+                    <div style="background: white; padding: 25px; border-radius: 10px; border-left: 5px solid #ffc107; font-size: 1.5em; line-height: 2; color: #333; font-weight: 500;">
                         ${answer}
                     </div>
                 </div>
-                
-                ${question.explanation ? `
-                    <div style="margin-bottom: 25px; background: #e7f3ff; border: 2px solid #b3d9ff; border-radius: 12px; padding: 25px;">
-                        <strong style="font-size: 1.3em; color: #0056b3;">💡 详细解释：</strong><br><br>
-                        <div style="font-size: 1.2em; line-height: 2; color: #333;">${question.explanation}</div>
-                    </div>
-                ` : ''}
-                
-                <div style="background: #f8f9fa; border: 2px solid #dee2e6; padding: 25px; border-radius: 12px; font-size: 1.3em;">
-                    <strong style="color: #495057; font-size: 1.2em;">✓ 标准答案：</strong><br><br>
-                    <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; font-size: 1.2em; line-height: 1.8;">
-                        ${this.formatCorrectAnswer(question)}
-                    </div>
-                </div>
-                
-                <div style="text-align: center; margin-top: 30px;">
-                    <button onclick="QuestionBankPractice.continueToNext()" style="
-                        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-                        color: white;
-                        border: none;
-                        padding: 15px 30px;
-                        border-radius: 25px;
-                        font-size: 1.2em;
-                        cursor: pointer;
-                        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
-                        transition: all 0.3s ease;
-                    " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                        继续下一题 →
-                    </button>
-                </div>
             `;
             
-            explanationArea.style.display = 'block';
+            // 更新解释内容
+            if (explanationContent) {
+                explanationContent.innerHTML = `
+                    ${question.explanation ? `
+                        <div style="margin-bottom: 30px; background: #e7f3ff; border: 3px solid #b3d9ff; border-radius: 15px; padding: 30px;">
+                            <strong style="font-size: 1.5em; color: #0056b3;">💡 详细解释：</strong><br><br>
+                            <div style="font-size: 1.4em; line-height: 2; color: #333;">${question.explanation}</div>
+                        </div>
+                    ` : ''}
+                    
+                    <div style="background: #f8f9fa; border: 3px solid #dee2e6; padding: 30px; border-radius: 15px; font-size: 1.5em;">
+                        <strong style="color: #495057; font-size: 1.4em;">✓ 标准答案：</strong><br><br>
+                        <div style="background: white; padding: 20px; border-radius: 10px; border-left: 5px solid #28a745; font-size: 1.4em; line-height: 1.8;">
+                            ${this.formatCorrectAnswer(question)}
+                        </div>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 40px;">
+                        <button onclick="QuestionBankPractice.continueToNext()" style="
+                            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                            color: white;
+                            border: none;
+                            padding: 18px 35px;
+                            border-radius: 25px;
+                            font-size: 1.4em;
+                            cursor: pointer;
+                            box-shadow: 0 6px 20px rgba(79, 172, 254, 0.3);
+                            transition: all 0.3s ease;
+                            font-weight: bold;
+                        " onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 25px rgba(79, 172, 254, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 20px rgba(79, 172, 254, 0.3)'">
+                            继续下一题 →
+                        </button>
+                    </div>
+                `;
+            }
+            
+            // 显示答案区域
+            answerDisplay.style.display = 'block';
+            
+            // 优化答案显示区域的样式
+            answerDisplay.style.minHeight = '50vh';
+            answerDisplay.style.maxHeight = '80vh';
+            answerDisplay.style.fontSize = '18px';
+            answerDisplay.style.padding = '40px';
+            answerDisplay.style.background = 'rgba(240,248,255,0.98)';
+            answerDisplay.style.backdropFilter = 'blur(10px)';
+            answerDisplay.style.boxShadow = '0 15px 50px rgba(0,0,0,0.15)';
             
             // 滚动到答案显示区域
             setTimeout(() => {
-                explanationArea.scrollIntoView({ 
+                answerDisplay.scrollIntoView({ 
                     behavior: 'smooth', 
                     block: 'start' 
                 });
-            }, 100);
+            }, 200);
             
             // 禁用答题控制
             const submitBtn = document.getElementById('submitBtn');
-            if (submitBtn) submitBtn.disabled = true;
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = '已提交';
+                submitBtn.style.background = '#6c757d';
+            }
             const optionsContainer = document.getElementById('optionsContainer');
             if (optionsContainer) optionsContainer.style.pointerEvents = 'none';
         },
@@ -4179,78 +4236,56 @@ window.QuestionBankPractice = (function() {
         
         // 生成答案
         generateAnswer: function(question) {
-            // 如果题目已有答案，直接返回
-            if (question.answer) {
-                return question.answer;
-            }
-            
-            // 根据题目内容生成答案
-            const questionText = question.title || question.question || '';
+            // 获取题目的正确答案
+            const correctAnswer = question.answer || question.correct;
             const questionType = question.type || '选择题';
             
-            // 选择题答案生成
-            if (questionType === '选择题' && question.options) {
-                // 根据题目关键词判断答案
-                const keywords = {
-                    '连续性方程': 'C',
-                    '位移厚度': 'B', 
-                    '雷诺数': 'B',
-                    '流函数': 'B',
-                    '伯努利方程': 'C',
-                    '层流湍流': 'C',
-                    '边界层分离': 'C',
-                    '涡度': 'B',
-                    '表面张力': 'B',
-                    '动量方程': 'C'
-                };
-                
-                for (const [key, value] of Object.entries(keywords)) {
-                    if (questionText.includes(key)) {
-                        return `答案：${value}`;
-                    }
-                }
-                
-                // 默认返回第一个选项
-                return `答案：A`;
+            // 如果有完整的答案说明，直接返回
+            if (question.explanation) {
+                return question.explanation;
             }
             
-            // 填空题答案生成
+            // 根据题型格式化答案
+            if (questionType === '选择题') {
+                if (question.options && correctAnswer !== undefined) {
+                    let answerIndex;
+                    if (typeof correctAnswer === 'string') {
+                        // 字母答案转数字索引
+                        answerIndex = correctAnswer.charCodeAt(0) - 65;
+                    } else {
+                        answerIndex = correctAnswer;
+                    }
+                    
+                    if (question.options[answerIndex]) {
+                        const answerLetter = String.fromCharCode(65 + answerIndex);
+                        return `${answerLetter}. ${question.options[answerIndex]}`;
+                    }
+                }
+                return correctAnswer ? `答案：${correctAnswer}` : '答案未设置';
+            }
+            
+            if (questionType === '判断题') {
+                if (correctAnswer === true || correctAnswer === '正确' || correctAnswer === 'T') {
+                    return '正确';
+                } else if (correctAnswer === false || correctAnswer === '错误' || correctAnswer === 'F') {
+                    return '错误';
+                }
+                return correctAnswer ? `${correctAnswer}` : '答案未设置';
+            }
+            
             if (questionType === '填空题') {
-                const fillKeywords = {
-                    '涡度沿流线': '常数',
-                    '边界层厚度': '减小',
-                    '雷诺数': '增大',
-                    '粘性': '增大',
-                    '压力': '减小'
-                };
-                
-                for (const [key, value] of Object.entries(fillKeywords)) {
-                    if (questionText.includes(key)) {
-                        return `答案：${value}`;
-                    }
+                if (Array.isArray(correctAnswer)) {
+                    return correctAnswer.join(' 或 ');
                 }
-                
-                return `答案：根据题目内容填写`;
+                return correctAnswer || '答案未设置';
             }
             
-            // 解答题答案生成
             if (questionType === '解答题' || questionType === '计算题') {
-                if (questionText.includes('边界层理论')) {
-                    return `答案：边界层理论的基本假设包括：1) 边界层厚度远小于特征长度；2) 边界层内粘性力与惯性力同量级；3) 边界层外可视为无粘流动；4) 边界层内压力沿法向不变。`;
-                }
-                
-                if (questionText.includes('势流理论')) {
-                    return `答案：理想流体势流理论能成功处理绕流问题的原因：1) 高雷诺数下，粘性影响主要局限于边界层内；2) 边界层外的主流区域可视为无粘流动；3) 势流理论能准确预测压力分布和升力；4) 边界层理论提供了粘性效应的修正。`;
-                }
-                
-                if (questionText.includes('流线方程')) {
-                    return `答案：流线方程：dx/u = dy/v，积分得到流线方程。具体计算需要根据给定的速度场进行积分。`;
-                }
-                
-                return `答案：根据题目要求，结合相关理论进行分析和计算。`;
+                return correctAnswer || '详见解析';
             }
             
-            return `答案：请参考相关教材或资料。`;
+            // 默认情况
+            return correctAnswer || '答案未设置';
         },
         
         // 智能推荐系统
