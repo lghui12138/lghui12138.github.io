@@ -391,6 +391,62 @@
                 gap: 5px;
             }
         }
+
+        .quick-actions {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .quick-actions h2 {
+            color: white;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            font-weight: bold;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .action-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .action-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+            border-color: #4facfe;
+        }
+
+        .action-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .action-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .action-desc {
+            color: #666;
+            font-size: 0.95em;
+            line-height: 1.5;
+        }
     </style>
 </head>
 <body>
@@ -446,29 +502,71 @@
             </div>
         </div>
 
-        <!-- GitHub设置 -->
-        <div class="github-settings">
-            <h3><i class="fab fa-github"></i> GitHub同步设置</h3>
+        <!-- 数据同步设置 -->
+        <div class="sync-settings">
+            <h3><i class="fas fa-sync-alt"></i> 数据同步设置</h3>
             <div class="form-group">
-                <label for="githubToken">GitHub Personal Access Token</label>
-                <input type="password" id="githubToken" class="form-control" placeholder="请输入GitHub Token">
-                <small class="form-text text-muted">用于自动同步题库到GitHub仓库</small>
+                <label for="syncToken">数据同步密钥</label>
+                <input type="password" id="syncToken" class="form-control" placeholder="请输入同步密钥">
+                <small class="form-text text-muted">用于自动同步题库数据到云端</small>
             </div>
-            <button type="button" class="btn btn-primary" onclick="TeacherManagement.setGitHubToken(document.getElementById('githubToken').value)">
-                <i class="fas fa-save"></i> 保存Token
+            <button type="button" class="btn btn-primary" onclick="TeacherManagement.setSyncToken(document.getElementById('syncToken').value)">
+                <i class="fas fa-save"></i> 保存密钥
             </button>
         </div>
 
-        <!-- 题库管理 -->
+        <!-- 快速操作区 -->
+        <div class="quick-actions">
+            <h2><i class="fas fa-tachometer-alt"></i> 快速操作</h2>
+            <div class="action-grid">
+                <div class="action-card" onclick="window.open('teacher-question-bank-manager.html', '_blank')">
+                    <div class="action-icon">📚</div>
+                    <div class="action-title">题库管理</div>
+                    <div class="action-desc">管理所有题库，添加、编辑和删除题目</div>
+                </div>
+                
+                <div class="action-card" onclick="TeacherManagement.viewStudentProgress()">
+                    <div class="action-icon">📊</div>
+                    <div class="action-title">学生进度</div>
+                    <div class="action-desc">查看学生学习进度和成绩统计</div>
+                </div>
+                
+                <div class="action-card" onclick="TeacherManagement.manageExams()">
+                    <div class="action-icon">📝</div>
+                    <div class="action-title">考试管理</div>
+                    <div class="action-desc">创建和管理在线考试</div>
+                </div>
+                
+                <div class="action-card" onclick="TeacherManagement.viewAnalytics()">
+                    <div class="action-icon">📈</div>
+                    <div class="action-title">数据分析</div>
+                    <div class="action-desc">查看详细的学习数据分析</div>
+                </div>
+                
+                <div class="action-card" onclick="TeacherManagement.manageContent()">
+                    <div class="action-icon">🎥</div>
+                    <div class="action-title">内容管理</div>
+                    <div class="action-desc">管理视频课程和学习资料</div>
+                </div>
+                
+                <div class="action-card" onclick="TeacherManagement.systemSettings()">
+                    <div class="action-icon">⚙️</div>
+                    <div class="action-title">系统设置</div>
+                    <div class="action-desc">配置系统参数和权限</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 题库概览 -->
         <div class="banks-container">
             <div class="banks-header">
-                <h2><i class="fas fa-book"></i> 题库管理</h2>
-                <button class="btn-create-bank" onclick="TeacherManagement.createNewBank()">
-                    <i class="fas fa-plus"></i> 创建新题库
+                <h2><i class="fas fa-book"></i> 题库概览</h2>
+                <button class="btn-create-bank" onclick="window.open('teacher-question-bank-manager.html', '_blank')">
+                    <i class="fas fa-cog"></i> 进入管理界面
                 </button>
             </div>
             <div id="banksList">
-                <!-- 题库列表将在这里显示 -->
+                <!-- 题库概览将在这里显示 -->
             </div>
         </div>
 
@@ -498,10 +596,10 @@
                 // 初始化教师管理系统
                 TeacherManagement.init();
                 
-                // 加载GitHub Token
-                const savedToken = TeacherManagement.getGitHubToken();
+                // 加载同步密钥
+                const savedToken = TeacherManagement.getSyncToken();
                 if (savedToken) {
-                    document.getElementById('githubToken').value = savedToken;
+                    document.getElementById('syncToken').value = savedToken;
                 }
             } else {
                 alert('用户名或密码错误！\n\n测试账号：\n用户名：teacher\n密码：teacher123');

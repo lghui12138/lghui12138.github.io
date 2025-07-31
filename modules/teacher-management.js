@@ -10,9 +10,9 @@ window.TeacherManagement = (function() {
     
     // 配置
     const config = {
-        githubToken: null,
-        githubRepo: 'lghui12138/lghui12138.github.io',
-        githubBranch: 'main',
+        syncToken: null,
+        cloudStorage: true,
+        syncBranch: 'main',
         autoSave: true,
         autoSaveInterval: 5000 // 5秒自动保存
     };
@@ -524,6 +524,271 @@ window.TeacherManagement = (function() {
             } else {
                 alert(`${type.toUpperCase()}: ${message}`);
             }
+        },
+
+        // 新增教师端功能
+        
+        // 查看学生进度
+        viewStudentProgress: function() {
+            const content = `
+                <div class="student-progress-container">
+                    <h2><i class="fas fa-chart-line"></i> 学生学习进度</h2>
+                    <div class="progress-stats">
+                        <div class="stat-card">
+                            <div class="stat-number">156</div>
+                            <div class="stat-label">总学生数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">89%</div>
+                            <div class="stat-label">平均完成率</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">78.5</div>
+                            <div class="stat-label">平均分数</div>
+                        </div>
+                    </div>
+                    <div class="student-list">
+                        <div class="student-item">
+                            <span class="student-name">张三</span>
+                            <span class="student-progress">85%</span>
+                            <span class="student-score">82分</span>
+                        </div>
+                        <div class="student-item">
+                            <span class="student-name">李四</span>
+                            <span class="student-progress">92%</span>
+                            <span class="student-score">88分</span>
+                        </div>
+                        <!-- 更多学生数据... -->
+                    </div>
+                </div>
+            `;
+            this.showModal('学生进度管理', content);
+        },
+
+        // 管理考试
+        manageExams: function() {
+            const content = `
+                <div class="exam-management">
+                    <h2><i class="fas fa-clipboard-list"></i> 考试管理</h2>
+                    <div class="exam-actions">
+                        <button class="btn btn-success" onclick="TeacherManagement.createExam()">
+                            <i class="fas fa-plus"></i> 创建新考试
+                        </button>
+                        <button class="btn btn-primary" onclick="TeacherManagement.viewExamResults()">
+                            <i class="fas fa-chart-bar"></i> 查看考试结果
+                        </button>
+                    </div>
+                    <div class="exam-list">
+                        <div class="exam-item">
+                            <h4>流体力学期中考试</h4>
+                            <p>考试时间：2024-01-15 14:00-16:00</p>
+                            <p>参考人数：156人</p>
+                            <div class="exam-buttons">
+                                <button class="btn btn-sm btn-primary">查看详情</button>
+                                <button class="btn btn-sm btn-warning">编辑</button>
+                                <button class="btn btn-sm btn-danger">删除</button>
+                            </div>
+                        </div>
+                        <!-- 更多考试... -->
+                    </div>
+                </div>
+            `;
+            this.showModal('考试管理', content);
+        },
+
+        // 查看数据分析
+        viewAnalytics: function() {
+            const content = `
+                <div class="analytics-dashboard">
+                    <h2><i class="fas fa-chart-pie"></i> 数据分析仪表板</h2>
+                    <div class="analytics-grid">
+                        <div class="chart-container">
+                            <h3>题目难度分布</h3>
+                            <div class="chart-placeholder">
+                                [难度分布图表]
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h3>学生答题正确率</h3>
+                            <div class="chart-placeholder">
+                                [正确率趋势图]
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h3>知识点掌握情况</h3>
+                            <div class="chart-placeholder">
+                                [知识点统计图]
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h3>学习时间分布</h3>
+                            <div class="chart-placeholder">
+                                [时间分布图]
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            this.showModal('数据分析', content);
+        },
+
+        // 管理内容
+        manageContent: function() {
+            const content = `
+                <div class="content-management">
+                    <h2><i class="fas fa-video"></i> 内容管理</h2>
+                    <div class="content-tabs">
+                        <button class="tab-btn active" onclick="TeacherManagement.showContentTab('videos')">视频课程</button>
+                        <button class="tab-btn" onclick="TeacherManagement.showContentTab('materials')">学习资料</button>
+                        <button class="tab-btn" onclick="TeacherManagement.showContentTab('exercises')">练习题</button>
+                    </div>
+                    <div class="content-list">
+                        <div class="content-item">
+                            <h4>流体力学基础理论</h4>
+                            <p>时长：45分钟 | 观看次数：1,234</p>
+                            <div class="content-buttons">
+                                <button class="btn btn-sm btn-primary">编辑</button>
+                                <button class="btn btn-sm btn-warning">统计</button>
+                                <button class="btn btn-sm btn-danger">删除</button>
+                            </div>
+                        </div>
+                        <!-- 更多内容... -->
+                    </div>
+                </div>
+            `;
+            this.showModal('内容管理', content);
+        },
+
+        // 系统设置
+        systemSettings: function() {
+            const content = `
+                <div class="system-settings">
+                    <h2><i class="fas fa-cog"></i> 系统设置</h2>
+                    <div class="settings-sections">
+                        <div class="setting-section">
+                            <h3>用户权限设置</h3>
+                            <div class="setting-item">
+                                <label>允许学生创建笔记</label>
+                                <input type="checkbox" checked>
+                            </div>
+                            <div class="setting-item">
+                                <label>允许学生查看解析</label>
+                                <input type="checkbox" checked>
+                            </div>
+                        </div>
+                        <div class="setting-section">
+                            <h3>考试设置</h3>
+                            <div class="setting-item">
+                                <label>考试时间限制(分钟)</label>
+                                <input type="number" value="120">
+                            </div>
+                            <div class="setting-item">
+                                <label>允许考试中暂停</label>
+                                <input type="checkbox">
+                            </div>
+                        </div>
+                        <div class="setting-section">
+                            <h3>数据同步</h3>
+                            <div class="setting-item">
+                                <label>自动同步间隔(分钟)</label>
+                                <input type="number" value="30">
+                            </div>
+                            <div class="setting-item">
+                                <label>启用数据备份</label>
+                                <input type="checkbox" checked>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-success" onclick="TeacherManagement.saveSettings()">保存设置</button>
+                </div>
+            `;
+            this.showModal('系统设置', content);
+        },
+
+        // 显示模态框
+        showModal: function(title, content) {
+            const modal = document.createElement('div');
+            modal.className = 'teacher-modal';
+            modal.innerHTML = `
+                <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>${title}</h3>
+                        <button class="close-btn" onclick="this.closest('.teacher-modal').remove()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        ${content}
+                    </div>
+                </div>
+            `;
+            
+            // 添加模态框样式
+            const style = document.createElement('style');
+            style.textContent = `
+                .teacher-modal {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    z-index: 10000;
+                }
+                .modal-overlay {
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.5);
+                }
+                .modal-content {
+                    position: relative;
+                    background: white;
+                    margin: 50px auto;
+                    max-width: 90%;
+                    max-height: 90%;
+                    border-radius: 20px;
+                    overflow: hidden;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                }
+                .modal-header {
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 20px;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                .modal-body {
+                    padding: 30px;
+                    max-height: 70vh;
+                    overflow-y: auto;
+                }
+                .close-btn {
+                    background: none;
+                    border: none;
+                    color: white;
+                    font-size: 24px;
+                    cursor: pointer;
+                }
+            `;
+            document.head.appendChild(style);
+            document.body.appendChild(modal);
+        },
+
+        // 数据同步密钥管理
+        setSyncToken: function(token) {
+            if (token && token.trim()) {
+                config.syncToken = token.trim();
+                localStorage.setItem('sync_token', token.trim());
+                showNotification('同步密钥保存成功', 'success');
+            } else {
+                showNotification('请输入有效的同步密钥', 'error');
+            }
+        },
+        
+        getSyncToken: function() {
+            return config.syncToken || localStorage.getItem('sync_token') || '';
         }
     };
 })(); 
