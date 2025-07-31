@@ -2640,8 +2640,12 @@ input:focus, select:focus, textarea:focus {
             document.getElementById('questionOptions').innerHTML = opts + actionButtons;
             document.getElementById('questionProgress').innerHTML = `第${current+1}题 / 共${questions.length}题`;
             
-            // 动态绑定事件监听器
+            // 立即绑定事件 + 延迟绑定（双保险）
             initializeActionButtons();
+            setTimeout(() => {
+                console.log('🔧 延迟重新绑定事件...');
+                initializeActionButtons();
+            }, 100);
             
             // 收藏状态
             const favButton = document.getElementById('favBtn');
@@ -2689,10 +2693,14 @@ input:focus, select:focus, textarea:focus {
             if (answered) return;
             
             selected = i;
-            console.log('✅ 选择选项:', i, 'selected=', selected);
+            console.log('✅ 选择选项:', i, 'selected现在=', selected);
             
             // 立即更新按钮状态
+            console.log('🔄 调用updateButtonStates()...');
             updateButtonStates();
+            
+            // 重新渲染但保持事件绑定
+            console.log('🔄 重新渲染题目...');
             renderQuestion(); // 重新渲染选项状态
         }
         
@@ -2792,29 +2800,50 @@ input:focus, select:focus, textarea:focus {
 
         // 初始化动态事件绑定
         function initializeActionButtons() {
-            console.log('初始化动态按钮事件...');
+            console.log('🚀 初始化动态按钮事件...');
             
             // 提交答案按钮
             const submitBtn = document.getElementById('submitAnswerBtn');
             if (submitBtn) {
+                // 移除可能存在的旧事件监听器
+                submitBtn.removeEventListener('click', handleSubmitAnswer);
                 submitBtn.addEventListener('click', handleSubmitAnswer);
-                console.log('提交按钮事件已绑定');
+                console.log('✅ 提交按钮事件已绑定', submitBtn);
+                
+                // 测试按钮是否能响应点击
+                submitBtn.onclick = function() {
+                    console.log('🔥 按钮被点击了！');
+                    handleSubmitAnswer();
+                };
+            } else {
+                console.error('❌ 找不到提交按钮！');
             }
             
             // 保存进度按钮  
             const saveBtn = document.getElementById('saveProgressBtn');
             if (saveBtn) {
+                saveBtn.removeEventListener('click', handleSaveProgress);
                 saveBtn.addEventListener('click', handleSaveProgress);
+                console.log('✅ 保存按钮事件已绑定');
             }
             
             // 跳过按钮
             const skipBtn = document.getElementById('skipQuestionBtn');
             if (skipBtn) {
+                skipBtn.removeEventListener('click', skipCurrentQuestion);
                 skipBtn.addEventListener('click', skipCurrentQuestion);
+                console.log('✅ 跳过按钮事件已绑定');
             }
             
             // 立即更新按钮状态
             updateButtonStates();
+            
+            // 额外的调试信息
+            console.log('📊 当前状态:', {
+                selected: selected,
+                answered: answered,
+                questions: questions.length
+            });
         }
         
         // 动态更新所有按钮状态
@@ -2824,27 +2853,36 @@ input:focus, select:focus, textarea:focus {
             const container = document.getElementById('actionContainer');
             
             if (!submitBtn) {
-                console.log('提交按钮未找到');
+                console.log('❌ 提交按钮未找到，尝试重新绑定...');
+                setTimeout(() => initializeActionButtons(), 50);
                 return;
             }
             
             const canSubmit = !answered && (selected !== null && selected !== undefined);
-            console.log('更新按钮状态: canSubmit=', canSubmit, 'selected=', selected, 'answered=', answered);
+            console.log('📊 更新按钮状态: canSubmit=', canSubmit, 'selected=', selected, 'answered=', answered);
             
-            // 更新提交按钮
-            submitBtn.disabled = !canSubmit;
-            submitBtn.style.background = canSubmit ? 
-                'linear-gradient(135deg, #28a745, #20c997)' : 
-                'linear-gradient(135deg, #6c757d, #5a6268)';
-            submitBtn.style.cursor = canSubmit ? 'pointer' : 'not-allowed';
-            submitBtn.style.boxShadow = canSubmit ? 
-                '0 4px 15px rgba(40, 167, 69, 0.3)' : 
-                '0 2px 8px rgba(108, 117, 125, 0.2)';
+            // 更新提交按钮 - 强制移除disabled并重新设置
+            if (canSubmit) {
+                submitBtn.disabled = false;
+                submitBtn.style.background = 'linear-gradient(135deg, #28a745, #20c997)';
+                submitBtn.style.cursor = 'pointer';
+                submitBtn.style.boxShadow = '0 4px 15px rgba(40, 167, 69, 0.3)';
+                submitBtn.style.opacity = '1';
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 提交答案';
+                console.log('✅ 按钮已启用');
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.style.background = 'linear-gradient(135deg, #6c757d, #5a6268)';
+                submitBtn.style.cursor = 'not-allowed';
+                submitBtn.style.boxShadow = '0 2px 8px rgba(108, 117, 125, 0.2)';
+                submitBtn.style.opacity = '0.7';
+                console.log('⚠️ 按钮已禁用');
+            }
             
             // 更新状态指示器
             if (statusDiv) {
-                const statusText = answered ? '✓ 已提交答案，查看下方分析结果' : 
-                                 (canSubmit ? '👆 点击提交答案，立即获得批改结果' : '请先选择一个选项');
+                const statusText = answered ? '✅ 已提交答案，查看下方分析结果' : 
+                                 (canSubmit ? '🎯 点击提交答案，立即获得批改结果' : '👆 请先选择一个选项');
                 const statusColor = answered ? '#28a745' : 
                                    (canSubmit ? '#007bff' : '#6c757d');
                 const statusIcon = answered ? 'fa-check-circle' : 
@@ -2858,22 +2896,28 @@ input:focus, select:focus, textarea:focus {
             // 更新容器边框
             if (container) {
                 container.style.borderColor = canSubmit ? '#28a745' : '#dee2e6';
+                container.style.boxShadow = canSubmit ? '0 0 20px rgba(40, 167, 69, 0.1)' : '0 2px 10px rgba(0,0,0,0.08)';
             }
         }
         
-        // 处理提交答案
+        // 处理提交答案 - 强化版本
         function handleSubmitAnswer() {
-            console.log('🚀 提交答案被触发:', {selected, answered});
+            console.log('🔥🔥🔥 提交答案被触发!', {selected, answered, questions: questions.length});
             
+            // 强制检查条件
             if (answered) {
+                console.log('⚠️ 已经提交过答案');
                 alert('您已经提交过答案了！');
                 return;
             }
             
             if (selected === null || selected === undefined) {
+                console.log('⚠️ 未选择选项');
                 alert('请先选择一个答案选项！');
                 return;
             }
+            
+            console.log('✅ 开始提交流程...');
             
             // 立即更新UI显示提交状态
             const submitBtn = document.getElementById('submitAnswerBtn');
@@ -2883,16 +2927,20 @@ input:focus, select:focus, textarea:focus {
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
                 submitBtn.style.background = 'linear-gradient(135deg, #ffc107, #e0a800)';
+                console.log('🎨 按钮UI已更新');
             }
             
             if (statusDiv) {
                 statusDiv.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 正在提交答案...';
                 statusDiv.style.color = '#ffc107';
                 statusDiv.style.borderLeftColor = '#ffc107';
+                console.log('🎨 状态指示器已更新');
             }
             
             // 执行提交逻辑
+            console.log('⏰ 300ms后执行submitCurrentAnswer()');
             setTimeout(() => {
+                console.log('🚀 执行submitCurrentAnswer()');
                 submitCurrentAnswer();
             }, 300);
         }
