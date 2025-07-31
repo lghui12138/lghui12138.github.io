@@ -83,7 +83,7 @@ window.TeacherComponents = {
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="filters-section">
                     <div class="filter-group">
                         <input v-model="searchQuery" placeholder="搜索题目..." class="search-input">
@@ -108,15 +108,15 @@ window.TeacherComponents = {
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="questions-list">
                     <div v-if="filteredQuestions.length === 0" class="no-questions">
                         <i class="fas fa-inbox"></i>
                         <p>暂无题目</p>
-                    </div>
+                </div>
                     <div v-for="question in filteredQuestions" :key="question.id" class="question-item">
                         <div class="question-header">
-                            <input type="checkbox" :value="question.id" v-model="selectedQuestions">
+                                    <input type="checkbox" :value="question.id" v-model="selectedQuestions">
                             <span class="question-id">#{question.id}</span>
                             <span :class="['difficulty-badge', question.difficulty]">{{ getDifficultyText(question.difficulty) }}</span>
                             <span class="category-badge">{{ question.category }}</span>
@@ -128,14 +128,14 @@ window.TeacherComponents = {
                         <div class="question-actions">
                             <button @click="editQuestion(question)" class="action-btn btn-primary">
                                 <i class="fas fa-edit"></i> 编辑
-                            </button>
+                                        </button>
                             <button @click="deleteQuestion(question.id)" class="action-btn btn-danger">
                                 <i class="fas fa-trash"></i> 删除
-                            </button>
-                        </div>
+                                        </button>
+                                    </div>
                     </div>
                 </div>
-                
+
                 <div v-if="selectedQuestions.length > 0" class="batch-actions">
                     <span>已选择 {{ selectedQuestions.length }} 个题目</span>
                     <button @click="batchDelete" class="action-btn btn-danger">
@@ -194,7 +194,7 @@ window.TeacherComponents = {
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="feedback-tabs">
                     <button @click="activeTab = 'realtime'" :class="['tab-btn', {active: activeTab === 'realtime'}]">
                         实时统计
@@ -206,13 +206,13 @@ window.TeacherComponents = {
                         数据分析
                     </button>
                 </div>
-                
+
                 <div v-if="activeTab === 'realtime'" class="realtime-stats">
                     <div class="stats-grid">
                         <div class="stat-card">
                             <i class="fas fa-users"></i>
                             <div class="stat-value">{{ students.length }}</div>
-                            <div class="stat-label">总学生数</div>
+                                <div class="stat-label">总学生数</div>
                         </div>
                         <div class="stat-card">
                             <i class="fas fa-clock"></i>
@@ -255,13 +255,13 @@ window.TeacherComponents = {
                     <h3><i class="fas fa-database"></i> 题库管理</h3>
                     <button @click="showCreateModal = true" class="action-btn btn-success">
                         <i class="fas fa-plus"></i> 创建题库
-                    </button>
-                </div>
-                
+                                    </button>
+                                </div>
+                                
                 <div class="search-section">
                     <input v-model="searchQuery" placeholder="搜索题库..." class="search-input">
-                </div>
-                
+                        </div>
+
                 <div class="banks-grid">
                     <div v-for="bank in filteredBanks" :key="bank.id" 
                          @click="$emit('select-bank', bank)"

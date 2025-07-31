@@ -854,7 +854,7 @@
                         <i class="fas fa-sign-in-alt"></i> 登录
                     </button>
                     <p style="text-align: center; margin-top: 15px; font-size: 0.9em; opacity: 0.8;">
-                        教师账号: liuguanghui6330156 | 或注册学生账号
+                        教师登录 | 或注册学生账号
                     </p>
                 </div>
             </section>
@@ -976,13 +976,13 @@
                         {
                             id: 'practice',
                             title: '📝 智能题库',
-                            description: '海量题目智能练习，GitHub批量加载，按年份索引真题，教师管理功能',
+                            description: '海量题目智能练习，云端数据加载，按年份索引真题，教师管理功能',
                             icon: 'fas fa-brain',
                             questionCount: 728,
                             estimatedTime: 120,
                             difficulty: 'medium',
                             url: 'modules/practice-dynamic.html',
-                            features: ['GitHub批量加载', '按年份索引', '教师管理', '学生反馈'],
+                            features: ['云端数据加载', '按年份索引', '教师管理', '学生反馈'],
                             badge: { type: 'important', text: '核心' }
                         },
                         {
@@ -1155,7 +1155,7 @@
                 // 检查是否是指定教师账号
                 isAuthorizedTeacher() {
                     return this.currentUser && 
-                           this.currentUser.username === 'liuguanghui6330156' && 
+                           this.currentUser.authorized === true && 
                            this.currentUser.authorized === true;
                 },
 
@@ -1167,7 +1167,7 @@
                     }
 
                     // 指定教师账号验证
-                    if (this.loginForm.username === 'liuguanghui6330156') {
+                    if (this.loginForm.username === this.OWNER_ACCOUNT) {
                         if (this.loginForm.password === 'Ll700306') {
                             const user = {
                                 username: this.loginForm.username,
@@ -1182,7 +1182,7 @@
                             this.loginForm = { username: '', password: '' };
                             return;
                         } else {
-                            this.showNotification('教师账号密码错误', 'error');
+                            this.showNotification('用户名或密码错误', 'error');
                             return;
                         }
                     }
@@ -1243,7 +1243,7 @@
                     // 严格的教师权限检查
                     if (module.id === 'teacher-panel') {
                         if (!this.isAuthorizedTeacher()) {
-                            this.showNotification('只有指定的教师账号 liuguanghui6330156 才能访问教师面板', 'error');
+                            this.showNotification('需要教师权限才能访问教师面板', 'error');
                             return;
                         }
                     }

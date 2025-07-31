@@ -248,7 +248,7 @@ window.PracticeApp = {
                     if (this.isRealExamMode) {
                         this.currentView = 'realExamSelector';
                     } else {
-                        this.currentView = 'selector';
+                    this.currentView = 'selector';
                     }
                     this.resetQuestionState();
                 },

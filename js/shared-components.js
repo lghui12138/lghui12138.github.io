@@ -88,7 +88,7 @@ window.SharedMixin = {
         // 验证教师权限并显示错误信息
         requireTeacherAccess(moduleName = '此功能') {
             if (!this.isAuthorizedTeacher()) {
-                this.showNotification(`${moduleName}仅限指定教师账号 liuguanghui6330156 访问`, 'error');
+                this.showNotification(`${moduleName}需要教师权限访问`, 'error');
                 return false;
             }
             return true;
