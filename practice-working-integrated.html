@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 题库系统 - 可工作集成版</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .main-actions {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(67, 233, 123, 0.3);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .status-panel {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            text-align: center;
+        }
+        
+        .status-value {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .status-label {
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .log-panel {
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            padding: 20px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        
+        .log-success { color: #51cf66; }
+        .log-error { color: #ff6b6b; }
+        .log-info { color: #4facfe; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 流体力学题库系统</h1>
+            <p>可工作的集成版本 - 基于 practice-fullscreen-fixed-final.html 的成功逻辑</p>
+        </div>
+
+        <div class="status-panel">
+            <div class="status-grid">
+                <div>
+                    <div class="status-value" id="total-questions">0</div>
+                    <div class="status-label">题目总数</div>
+                </div>
+                <div>
+                    <div class="status-value" id="loaded-banks">0</div>
+                    <div class="status-label">已加载题库</div>
+                </div>
+                <div>
+                    <div class="status-value" id="load-status">待机</div>
+                    <div class="status-label">加载状态</div>
+                </div>
+                <div>
+                    <div class="status-value" id="system-status">初始化中</div>
+                    <div class="status-label">系统状态</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-actions">
+            <button class="btn btn-primary" onclick="loadAllQuestions()" id="load-btn">
+                <i class="fas fa-download"></i> 从GitHub加载题库
+            </button>
+            <button class="btn" onclick="startPractice()" id="practice-btn" disabled>
+                <i class="fas fa-play"></i> 开始练习
+            </button>
+            <button class="btn" onclick="openFullscreen()" id="fullscreen-btn" disabled>
+                <i class="fas fa-expand"></i> 全屏模式
+            </button>
+        </div>
+
+        <div class="status-panel">
+            <h3>加载日志</h3>
+            <div class="log-panel" id="log-panel">
+                <div class="log-entry log-info">[初始化] 系统准备就绪</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        // ============ 全局变量 ============
+        let questions = [];
+        let currentIndex = 0;
+        let loadedBankCount = 0;
+        let isLoading = false;
+        
+        // GitHub配置
+        const GITHUB_CONFIG = {
+            owner: 'lghui12138',
+            repo: 'lghui12138.github.io',
+            branch: 'main',
+            rawBaseUrl: 'https://raw.githubusercontent.com/lghui12138/lghui12138.github.io/main'
+        };
+        
+        // 题库文件列表 (从可工作的版本复制)
+        const questionBankFiles = [
+            '易错题集.json',
+            '真题_中国海洋大学_2000-2021_cleaned.json',
+            '真题_中国海洋大学_2000-2021.json',
+            '分类_动量方程.json',
+            '分类_势流.json',
+            '分类_压力.json',
+            '分类_实验与量纲.json',
+            '分类_流体力学基础.json',
+            '分类_流体性质.json',
+            '分类_流线轨迹.json',
+            '分类_涡度.json',
+            '分类_湍流.json',
+            '分类_管道流动.json',
+            '分类_粘性.json',
+            '分类_能量方程.json',
+            '分类_自由面.json',
+            '分类_边界层.json',
+            '分类_雷诺数.json'
+        ];
+        
+        // ============ 日志功能 ============
+        function addLog(message, type = 'info') {
+            const logPanel = document.getElementById('log-panel');
+            const time = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.textContent = `[${time}] ${message}`;
+            logPanel.appendChild(logEntry);
+            logPanel.scrollTop = logPanel.scrollHeight;
+        }
+        
+        // ============ 状态更新 ============
+        function updateStatus() {
+            document.getElementById('total-questions').textContent = questions.length;
+            document.getElementById('loaded-banks').textContent = loadedBankCount;
+            document.getElementById('load-status').textContent = isLoading ? '加载中' : '完成';
+            document.getElementById('system-status').textContent = questions.length > 0 ? '就绪' : '待加载';
+            
+            // 更新按钮状态
+            const practiceBtn = document.getElementById('practice-btn');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const canPractice = questions.length > 0 && !isLoading;
+            
+            practiceBtn.disabled = !canPractice;
+            fullscreenBtn.disabled = !canPractice;
+        }
+        
+        // ============ 题库加载 (复制可工作的逻辑) ============
+        async function loadAllQuestions() {
+            if (isLoading) {
+                addLog('题库正在加载中...', 'info');
+                return;
+            }
+            
+            isLoading = true;
+            loadedBankCount = 0;
+            questions = [];
+            
+            addLog('开始从GitHub批量加载题库...', 'info');
+            updateStatus();
+            
+            let totalLoaded = 0;
+            
+            for (const file of questionBankFiles) {
+                try {
+                    addLog(`正在加载: ${file}`, 'info');
+                    const url = `${GITHUB_CONFIG.rawBaseUrl}/question-banks/${file}`;
+                    const response = await fetch(url);
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        const questionData = Array.isArray(data) ? data : (data.questions ? data.questions : []);
+                        
+                        if (questionData && questionData.length > 0) {
+                            const convertedQuestions = questionData.map((q, index) => ({
+                                id: totalLoaded + index + 1,
+                                title: q.title || q.question || `题目${totalLoaded + index + 1}`,
+                                options: q.options || ['A', 'B', 'C', 'D'],
+                                answer: typeof q.answer === 'number' ? q.answer : (q.correctAnswer || 0),
+                                explanation: q.explanation || '暂无解析',
+                                category: q.category || '流体力学',
+                                difficulty: q.difficulty || 'medium',
+                                year: q.year || null,
+                                school: q.school || '中国海洋大学',
+                                bank: file.replace('.json', ''),
+                                bankId: file
+                            }));
+                            
+                            questions = questions.concat(convertedQuestions);
+                            totalLoaded += convertedQuestions.length;
+                            loadedBankCount++;
+                            
+                            addLog(`✅ ${file}: +${convertedQuestions.length}题`, 'success');
+                        }
+                    } else {
+                        addLog(`⚠️ 文件不存在: ${file}`, 'error');
+                    }
+                } catch (error) {
+                    addLog(`❌ 加载失败: ${file} - ${error.message}`, 'error');
+                }
+                
+                updateStatus();
+                // 给UI一点时间更新
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            isLoading = false;
+            updateStatus();
+            
+            if (questions.length > 0) {
+                addLog(`🎉 加载完成！总共: ${questions.length} 道题目`, 'success');
+                
+                // 打乱题目顺序
+                questions = shuffleArray(questions);
+                addLog('题目顺序已打乱', 'info');
+            } else {
+                addLog('❌ 没有加载到任何题目', 'error');
+            }
+        }
+        
+        // 打乱数组
+        function shuffleArray(array) {
+            const shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+        
+        // ============ 练习功能 ============
+        function startPractice() {
+            if (questions.length === 0) {
+                alert('请先加载题库');
+                return;
+            }
+            
+            // 创建简单的练习界面
+            createPracticeInterface();
+        }
+        
+        function openFullscreen() {
+            if (questions.length === 0) {
+                alert('请先加载题库');
+                return;
+            }
+            
+            // 创建全屏练习界面
+            createFullscreenInterface();
+        }
+        
+        function createPracticeInterface() {
+            const practiceModal = document.createElement('div');
+            practiceModal.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;">
+                    <div style="background: white; color: #333; border-radius: 15px; padding: 30px; max-width: 600px; width: 90%;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3>题库练习 - 第 ${currentIndex + 1} 题 / ${questions.length}</h3>
+                            <button onclick="closePractice()" style="background: #ff6b6b; color: white; border: none; padding: 8px 16px; border-radius: 5px; cursor: pointer;">关闭</button>
+                        </div>
+                        <div style="margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px; font-size: 1.1em; line-height: 1.6;">
+                            ${questions[currentIndex].title}
+                        </div>
+                        <div id="options-container">
+                            ${questions[currentIndex].options.map((option, index) => 
+                                `<div onclick="selectAnswer(${index})" style="padding: 15px; margin: 10px 0; border: 2px solid #e9ecef; border-radius: 8px; cursor: pointer; transition: all 0.3s;" id="option-${index}">
+                                    <strong>${String.fromCharCode(65 + index)}.</strong> ${option}
+                                </div>`
+                            ).join('')}
+                        </div>
+                        <div style="margin-top: 20px; text-align: center;">
+                            <button onclick="previousQuestion()" ${currentIndex === 0 ? 'disabled' : ''} style="background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 0 10px; cursor: pointer;">上一题</button>
+                            <button onclick="nextQuestion()" style="background: #51cf66; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 0 10px; cursor: pointer;">下一题</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            practiceModal.id = 'practice-modal';
+            document.body.appendChild(practiceModal);
+        }
+        
+        function createFullscreenInterface() {
+            const fullscreenModal = document.createElement('div');
+            fullscreenModal.innerHTML = `
+                <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); z-index: 10000; color: white; padding: 20px; overflow-y: auto;">
+                    <div style="max-width: 1200px; margin: 0 auto;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                            <h2><i class="fas fa-expand"></i> 全屏练习模式</h2>
+                            <button onclick="closeFullscreen()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
+                                <i class="fas fa-times"></i> 退出全屏
+                            </button>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px;">
+                            <div style="text-align: center; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                                <div style="font-size: 2em; font-weight: bold;">${questions.length}</div>
+                                <div>总题数</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                                <div style="font-size: 2em; font-weight: bold;">${currentIndex + 1}</div>
+                                <div>当前题目</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                                <div style="font-size: 2em; font-weight: bold;">${((currentIndex + 1) / questions.length * 100).toFixed(1)}%</div>
+                                <div>进度</div>
+                            </div>
+                            <div style="text-align: center; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                                <div style="font-size: 2em; font-weight: bold;">${questions[currentIndex].bank}</div>
+                                <div>题库来源</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background: rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; margin-bottom: 20px;">
+                            <div style="font-size: 1.3em; line-height: 1.6; margin-bottom: 30px;">
+                                ${questions[currentIndex].title}
+                            </div>
+                            <div id="fullscreen-options">
+                                ${questions[currentIndex].options.map((option, index) => 
+                                    `<div onclick="selectFullscreenAnswer(${index})" style="padding: 20px; margin: 15px 0; background: rgba(255,255,255,0.1); border: 2px solid transparent; border-radius: 12px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; gap: 15px;" id="fs-option-${index}">
+                                        <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                                            ${String.fromCharCode(65 + index)}
+                                        </div>
+                                        <div style="flex: 1;">${option}</div>
+                                    </div>`
+                                ).join('')}
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center;">
+                            <button onclick="previousQuestion()" ${currentIndex === 0 ? 'disabled' : ''} style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 15px 30px; border-radius: 8px; margin: 0 10px; cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-chevron-left"></i> 上一题
+                            </button>
+                            <button onclick="nextQuestion()" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 15px 30px; border-radius: 8px; margin: 0 10px; cursor: pointer; font-size: 16px;">
+                                下一题 <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            fullscreenModal.id = 'fullscreen-modal';
+            document.body.appendChild(fullscreenModal);
+        }
+        
+        // ============ 导航功能 ============
+        function nextQuestion() {
+            if (currentIndex < questions.length - 1) {
+                currentIndex++;
+                updatePracticeInterface();
+            }
+        }
+        
+        function previousQuestion() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updatePracticeInterface();
+            }
+        }
+        
+        function updatePracticeInterface() {
+            const practiceModal = document.getElementById('practice-modal');
+            const fullscreenModal = document.getElementById('fullscreen-modal');
+            
+            if (practiceModal) {
+                closePractice();
+                createPracticeInterface();
+            }
+            
+            if (fullscreenModal) {
+                closeFullscreen();
+                createFullscreenInterface();
+            }
+        }
+        
+        function selectAnswer(index) {
+            // 重置所有选项样式
+            questions[currentIndex].options.forEach((_, i) => {
+                const option = document.getElementById(`option-${i}`);
+                if (option) {
+                    option.style.background = '#f8f9fa';
+                    option.style.borderColor = '#e9ecef';
+                    option.style.color = '#333';
+                }
+            });
+            
+            // 高亮选中的选项
+            const selectedOption = document.getElementById(`option-${index}`);
+            if (selectedOption) {
+                selectedOption.style.background = '#667eea';
+                selectedOption.style.borderColor = '#667eea';
+                selectedOption.style.color = 'white';
+            }
+        }
+        
+        function selectFullscreenAnswer(index) {
+            // 重置所有选项样式
+            questions[currentIndex].options.forEach((_, i) => {
+                const option = document.getElementById(`fs-option-${i}`);
+                if (option) {
+                    option.style.background = 'rgba(255,255,255,0.1)';
+                    option.style.borderColor = 'transparent';
+                }
+            });
+            
+            // 高亮选中的选项
+            const selectedOption = document.getElementById(`fs-option-${index}`);
+            if (selectedOption) {
+                selectedOption.style.background = 'rgba(255,255,255,0.3)';
+                selectedOption.style.borderColor = 'rgba(255,255,255,0.5)';
+            }
+        }
+        
+        function closePractice() {
+            const modal = document.getElementById('practice-modal');
+            if (modal) {
+                document.body.removeChild(modal);
+            }
+        }
+        
+        function closeFullscreen() {
+            const modal = document.getElementById('fullscreen-modal');
+            if (modal) {
+                document.body.removeChild(modal);
+            }
+        }
+        
+        // ============ 初始化 ============
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('页面加载完成，可以开始加载题库', 'success');
+            updateStatus();
+        });
+    </script>
+</body>
+</html> 

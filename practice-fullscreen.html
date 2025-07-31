@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
     <title>全屏做题 - 流体力学学习平台</title>
@@ -2645,8 +2645,89 @@ input:focus, select:focus, textarea:focus {
         </div>
     </div>
     <script>
-        // 全屏模式管理
+        // 全局变量
+        let questions = [];
+        let current = 0;
+        let selected = null;
+        let answered = false;
         let isFullscreen = false;
+        
+        // 解析切换函数 - 必须在HTML之前定义
+        function toggleExplanation(forceShow) {
+            const q = questions[current];
+            const section = document.getElementById('explanationSection');
+            if (!answered) return;
+            if (forceShow || !section.classList.contains('active')) {
+                // 大幅优化答案显示样式
+                const isCorrect = selected === q.answer;
+                const resultIcon = isCorrect ? '✅' : '❌';
+                const resultText = isCorrect ? '回答正确！' : '回答错误';
+                const resultColor = isCorrect ? '#28a745' : '#dc3545';
+                
+                section.innerHTML = `
+                    <div style="
+                        background: rgba(240,248,255,0.98); 
+                        border: 3px solid #007bff; 
+                        border-radius: 20px; 
+                        padding: 45px; 
+                        margin: 30px 0; 
+                        min-height: 70vh; 
+                        max-height: 85vh; 
+                        overflow-y: auto;
+                        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+                        backdrop-filter: blur(15px);
+                    ">
+                        <div style="color: #007bff; margin-bottom: 35px; font-size: 2.5em; font-weight: bold; text-align: center;">
+                            <i class="fas fa-lightbulb"></i> 🎯 批改结果
+                        </div>
+                        
+                        <div style="color: ${resultColor}; font-weight: bold; font-size: 2.8em; margin-bottom: 40px; text-align: center; padding: 35px; background: ${isCorrect ? '#d4edda' : '#f8d7da'}; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);">
+                            ${resultIcon} ${resultText}
+                        </div>
+                        
+                        <div style="background: #fff3cd; border: 4px solid #ffeaa7; border-radius: 20px; padding: 40px; margin-bottom: 40px; font-size: 1.8em; line-height: 2.0;">
+                            <strong style="font-size: 1.6em; color: #856404;">📝 参考答案：</strong><br><br>
+                            <div style="background: white; padding: 35px; border-radius: 15px; border-left: 6px solid #ffc107; font-size: 1.7em; line-height: 2.2; color: #333; font-weight: 500;">
+                                ${String.fromCharCode(65+q.answer)}
+                            </div>
+                        </div>
+                        
+                        <div style="background: #e7f3ff; border: 4px solid #b3d9ff; border-radius: 20px; padding: 40px; margin-bottom: 40px;">
+                            <strong style="font-size: 1.8em; color: #0056b3;">💡 详细解释：</strong><br><br>
+                            <div style="font-size: 1.6em; line-height: 2.2; color: #333;">${q.explanation || '暂无解析'}</div>
+                        </div>
+                        
+                        <div id="aiAnalysisSection" style="margin-top: 30px;"></div>
+                        
+                        <div style="text-align: center; margin-top: 50px;">
+                            <button onclick="nextQuestion()" style="
+                                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                                color: white;
+                                border: none;
+                                padding: 22px 45px;
+                                border-radius: 30px;
+                                font-size: 1.6em;
+                                cursor: pointer;
+                                box-shadow: 0 8px 25px rgba(79, 172, 254, 0.4);
+                                transition: all 0.3s ease;
+                                font-weight: bold;
+                            " onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 12px 30px rgba(79, 172, 254, 0.5)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 8px 25px rgba(79, 172, 254, 0.4)'">
+                                继续下一题 →
+                            </button>
+                        </div>
+                    </div>
+                `;
+                section.classList.add('active');
+                
+                // 添加AI智能分析
+                generateAIAnalysis(q, isCorrect);
+                
+                if (window.MathJax) MathJax.typesetPromise([section]);
+            } else {
+                section.classList.remove('active');
+                section.innerHTML = '';
+            }
+        }
 
         function toggleFullscreen() {
             if (isFullscreen) {
@@ -4778,8 +4859,6 @@ input:focus, select:focus, textarea:focus {
                 answered = false;
                 renderQuestion();
             }
-        }
-                
             } catch (error) {
                 console.error('❌ 题目加载失败:', error);
                 // 使用默认测试题目作为备用

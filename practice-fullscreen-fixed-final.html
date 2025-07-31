@@ -363,6 +363,12 @@
                 <button class="btn warning" @click="loadFromLocal">
                     <i class="fas fa-folder"></i> 从本地加载
                 </button>
+                <button class="btn" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);" @click="useOptimizedEngine">
+                    <i class="fas fa-rocket"></i> 使用优化引擎
+                </button>
+                <button class="btn" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);" @click="openFullscreenMode">
+                    <i class="fas fa-expand"></i> 全屏模式
+                </button>
                 <button class="btn danger" @click="resetProgress">
                     <i class="fas fa-redo"></i> 重置进度
                 </button>
@@ -424,6 +430,12 @@
     </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- 加载三个优化模块 -->
+    <script src="js/components/questionBankEngine.js"></script>
+    <script src="js/components/fullscreenPracticeComponent.js"></script>
+    <script src="js/components/mainIntegrationOptimized.js"></script>
+    
     <script>
         const { createApp } = Vue;
         
@@ -711,6 +723,84 @@
                     this.showResult = false;
                     this.startTime = Date.now();
                     this.showNotification('进度已重置', 'info');
+                },
+                
+                // 🚀 使用优化引擎加载题库
+                async useOptimizedEngine() {
+                    console.log('🚀 使用优化引擎加载题库...');
+                    this.isLoading = true;
+                    
+                    try {
+                        // 检查优化引擎是否可用
+                        if (window.QuestionBankEngine) {
+                            console.log('✅ 优化引擎已加载');
+                            this.showNotification('正在使用优化引擎加载题库...', 'info');
+                            
+                            // 使用优化引擎初始化题库
+                            const success = await window.QuestionBankEngine.init('all');
+                            
+                            if (success) {
+                                // 获取加载的题目数量
+                                const totalQuestions = window.QuestionBankEngine.getTotalQuestions();
+                                console.log(`✅ 优化引擎加载成功！共 ${totalQuestions} 道题目`);
+                                
+                                // 获取当前题目并转换格式
+                                this.convertEngineDataToVue();
+                                
+                                this.showNotification(`🎉 优化引擎加载成功！共 ${totalQuestions} 道题目`, 'success');
+                            } else {
+                                throw new Error('优化引擎初始化失败');
+                            }
+                        } else {
+                            throw new Error('优化引擎未加载，请检查js/components/文件夹中的模块文件');
+                        }
+                    } catch (error) {
+                        console.error('❌ 优化引擎加载失败:', error);
+                        this.showNotification('优化引擎加载失败: ' + error.message, 'error');
+                    } finally {
+                        this.isLoading = false;
+                    }
+                },
+                
+                // 🖥️ 打开全屏模式
+                openFullscreenMode() {
+                    console.log('🖥️ 打开全屏模式...');
+                    
+                    if (window.FullscreenPracticeComponent) {
+                        console.log('✅ 全屏组件已加载');
+                        
+                        // 确保有题目可练习
+                        if (this.questions.length === 0) {
+                            this.showNotification('请先加载题库再使用全屏模式', 'info');
+                            return;
+                        }
+                        
+                        this.showNotification('正在进入全屏练习模式...', 'info');
+                        window.FullscreenPracticeComponent.enterFullscreen();
+                    } else {
+                        this.showNotification('全屏组件未加载，请先使用"使用优化引擎"加载模块', 'error');
+                    }
+                },
+                
+                // 🔄 转换引擎数据格式以兼容Vue界面
+                convertEngineDataToVue() {
+                    if (window.QuestionBankEngine) {
+                        const currentQuestion = window.QuestionBankEngine.getCurrentQuestion();
+                        if (currentQuestion) {
+                            // 创建一个兼容的题目格式来显示当前题目
+                            this.questions = [{
+                                title: currentQuestion.question,
+                                options: currentQuestion.options,
+                                answer: currentQuestion.correctAnswer,
+                                explanation: currentQuestion.explanation || '暂无解析'
+                            }];
+                            
+                            this.currentIndex = 0;
+                            this.selectedOption = null;
+                            this.showResult = false;
+                            console.log('✅ 题目格式转换完成，当前显示优化引擎的第一题');
+                        }
+                    }
                 }
             },
             
