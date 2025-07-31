@@ -3,21 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📚 教师题库管理 - 流体力学海洋</title>
-    
-    <!-- Font Awesome -->
-    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
+    <title>题库管理系统 - 教师端</title>
     <style>
-        :root {
-            --ocean-blue: #006994;
-            --ocean-light: #4facfe;
-            --ocean-deep: #003d5b;
-            --coral: #ff6b6b;
-            --seafoam: #00f2fe;
-            --sand: #f4d03f;
-        }
-
         * {
             margin: 0;
             padding: 0;
@@ -25,188 +12,217 @@
         }
 
         body {
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--ocean-blue) 0%, var(--ocean-light) 100%);
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            color: #333;
+            padding: 20px;
         }
 
         .container {
             max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
 
         .header {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
             padding: 30px;
-            margin-bottom: 30px;
             text-align: center;
-            border: 2px solid rgba(79,172,254,0.2);
-            box-shadow: 0 15px 50px rgba(0,0,0,0.1);
         }
 
         .header h1 {
-            color: var(--ocean-blue);
             font-size: 2.5em;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
-        .nav-tabs {
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
             display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-bottom: 30px;
+            min-height: 800px;
         }
 
-        .nav-tab {
-            padding: 15px 30px;
-            background: rgba(255,255,255,0.9);
-            border: 2px solid var(--ocean-light);
-            border-radius: 15px;
+        .sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            border-right: 2px solid #e9ecef;
+            padding: 30px;
+        }
+
+        .sidebar h3 {
+            color: #495057;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+        }
+
+        .bank-list {
+            list-style: none;
+        }
+
+        .bank-item {
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            padding: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-weight: bold;
-            color: var(--ocean-blue);
+            position: relative;
         }
 
-        .nav-tab:hover {
-            background: var(--ocean-light);
-            color: white;
+        .bank-item:hover {
+            border-color: #4facfe;
             transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.2);
         }
 
-        .nav-tab.active {
-            background: var(--ocean-blue);
-            color: white;
+        .bank-item.active {
+            border-color: #4facfe;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
         }
 
-        .tab-content {
-            display: none;
+        .bank-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #333;
+            margin-bottom: 8px;
         }
 
-        .tab-content.active {
-            display: block;
-        }
-
-        .question-banks-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .bank-card {
-            background: rgba(255,255,255,0.95);
-            border-radius: 20px;
-            padding: 25px;
-            border: 2px solid rgba(79,172,254,0.2);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .bank-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
-        }
-
-        .bank-header {
+        .bank-info {
+            color: #666;
+            font-size: 0.9em;
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .bank-title {
-            font-size: 1.3em;
-            font-weight: bold;
-            color: var(--ocean-blue);
         }
 
         .bank-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: none;
+        }
+
+        .bank-item:hover .bank-actions {
+            display: block;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-left: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+
+        .toolbar h2 {
+            color: #495057;
+            font-size: 1.8em;
+        }
+
+        .btn-group {
             display: flex;
             gap: 10px;
         }
 
-        .btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 14px;
+        .btn-large {
+            padding: 12px 25px;
+            font-size: 1em;
+            border-radius: 25px;
+        }
+
+        .question-list {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .question-item {
+            border-bottom: 1px solid #e9ecef;
+            padding: 25px;
             transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
         }
 
-        .btn-primary {
-            background: var(--ocean-light);
-            color: white;
+        .question-item:hover {
+            background: #f8f9fa;
         }
 
-        .btn-success {
-            background: #28a745;
-            color: white;
+        .question-item:last-child {
+            border-bottom: none;
         }
 
-        .btn-warning {
-            background: #ffc107;
-            color: #333;
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
         }
 
-        .btn-danger {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            display: block;
-            margin-bottom: 8px;
+        .question-title {
+            font-size: 1.2em;
             font-weight: bold;
-            color: var(--ocean-blue);
+            color: #333;
+            flex: 1;
+            margin-right: 20px;
+            line-height: 1.5;
         }
 
-        .form-input {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            transition: border-color 0.3s ease;
+        .question-meta {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
         }
 
-        .form-input:focus {
-            outline: none;
-            border-color: var(--ocean-light);
+        .meta-tag {
+            background: #e9ecef;
+            color: #495057;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
         }
 
-        .form-textarea {
-            width: 100%;
-            min-height: 120px;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            resize: vertical;
-            transition: border-color 0.3s ease;
-        }
-
-        .form-textarea:focus {
-            outline: none;
-            border-color: var(--ocean-light);
+        .question-actions {
+            display: flex;
+            gap: 10px;
         }
 
         .modal {
@@ -217,7 +233,7 @@
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.5);
-            z-index: 10000;
+            z-index: 1000;
         }
 
         .modal-content {
@@ -228,493 +244,456 @@
             background: white;
             border-radius: 20px;
             padding: 30px;
+            width: 90%;
             max-width: 800px;
             max-height: 90vh;
             overflow-y: auto;
-            width: 90%;
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #eee;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e9ecef;
         }
 
-        .modal-title {
-            font-size: 1.5em;
-            color: var(--ocean-blue);
-            font-weight: bold;
+        .modal-header h3 {
+            color: #333;
+            font-size: 1.8em;
         }
 
         .close-btn {
             background: none;
             border: none;
-            font-size: 24px;
+            font-size: 2em;
+            color: #999;
             cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #f8f9fa;
             color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 15px rgba(79, 172, 254, 0.2);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 40px;
         }
 
         .options-container {
-            border: 2px solid #eee;
+            background: #f8f9fa;
             border-radius: 10px;
-            padding: 15px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .option-group {
+            display: flex;
+            align-items: center;
             margin-bottom: 15px;
+        }
+
+        .option-label {
+            width: 30px;
+            height: 30px;
+            background: #4facfe;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
         }
 
         .option-input {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-        }
-
-        .option-input input[type="radio"] {
-            margin-right: 10px;
-        }
-
-        .option-input input[type="text"] {
             flex: 1;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
         }
 
-        .add-option-btn {
-            background: var(--ocean-light);
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .question-list {
-            max-height: 500px;
-            overflow-y: auto;
-            border: 2px solid #eee;
-            border-radius: 10px;
-            padding: 15px;
-        }
-
-        .question-item {
-            background: #f8f9fa;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 15px;
-            border-left: 4px solid var(--ocean-light);
-        }
-
-        .question-title {
-            font-weight: bold;
-            color: var(--ocean-blue);
-            margin-bottom: 8px;
-        }
-
-        .question-content {
-            color: #666;
-            margin-bottom: 10px;
-        }
-
-        .question-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .stats-grid {
+        .stats-cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
             margin-bottom: 30px;
         }
 
-        .stat-card {
-            background: rgba(255,255,255,0.95);
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
             border-radius: 15px;
-            padding: 20px;
             text-align: center;
-            border: 2px solid rgba(79,172,254,0.2);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
-        .stat-value {
+        .stats-number {
             font-size: 2.5em;
             font-weight: bold;
-            color: var(--ocean-blue);
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
 
-        .stat-label {
+        .stats-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
             color: #666;
-            font-size: 14px;
+            font-size: 1.2em;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 4em;
+            margin-bottom: 20px;
+            color: #dee2e6;
+        }
+
+        .search-bar {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 1em;
+        }
+
+        .search-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            font-size: 1.2em;
+            cursor: pointer;
         }
 
         .notification {
             position: fixed;
             top: 20px;
             right: 20px;
-            padding: 15px 20px;
+            padding: 15px 25px;
             border-radius: 10px;
             color: white;
             font-weight: bold;
-            z-index: 20000;
-            animation: slideIn 0.3s ease;
+            z-index: 1001;
+            transform: translateX(400px);
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
         }
 
         .notification.success {
-            background: #28a745;
+            background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
         }
 
         .notification.error {
-            background: #dc3545;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
         }
 
         .notification.warning {
-            background: #ffc107;
-            color: #333;
+            background: linear-gradient(135deg, #ffd93d 0%, #ff9f43 100%);
         }
 
-        .notification.info {
-            background: #17a2b8;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
             }
-            to {
-                transform: translateX(0);
-                opacity: 1;
+            
+            .sidebar {
+                width: 100%;
             }
-        }
-
-        .search-box {
-            background: rgba(255,255,255,0.95);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            display: flex;
-            gap: 15px;
-            align-items: center;
-        }
-
-        .search-input {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: var(--ocean-light);
+            
+            .btn-group {
+                flex-wrap: wrap;
+            }
+            
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- 头部 -->
         <div class="header">
-            <h1><i class="fas fa-chalkboard-teacher"></i> 教师题库管理系统</h1>
-            <p style="color: #666; margin-top: 10px;">管理所有题库，添加、编辑和删除题目</p>
-            <a href="teacher-panel.html" class="btn btn-primary" style="margin-top: 15px;">
-                <i class="fas fa-arrow-left"></i> 返回教师面板
-            </a>
+            <h1>📚 题库管理系统</h1>
+            <p>流体力学学习平台 - 教师管理端</p>
         </div>
 
-        <!-- 统计信息 -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-value" id="totalBanks">0</div>
-                <div class="stat-label">题库总数</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="totalQuestions">0</div>
-                <div class="stat-label">题目总数</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="avgQuestions">0</div>
-                <div class="stat-label">平均题数</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value" id="lastUpdate">-</div>
-                <div class="stat-label">最近更新</div>
-            </div>
-        </div>
-
-        <!-- 导航标签 -->
-        <div class="nav-tabs">
-            <div class="nav-tab active" onclick="showTab('manage')">
-                <i class="fas fa-list"></i> 管理题库
-            </div>
-            <div class="nav-tab" onclick="showTab('create')">
-                <i class="fas fa-plus"></i> 创建题库
-            </div>
-            <div class="nav-tab" onclick="showTab('import')">
-                <i class="fas fa-upload"></i> 导入题库
-            </div>
-            <div class="nav-tab" onclick="showTab('export')">
-                <i class="fas fa-download"></i> 导出题库
-            </div>
-        </div>
-
-        <!-- 管理题库标签页 -->
-        <div id="manage-tab" class="tab-content active">
-            <!-- 搜索框 -->
-            <div class="search-box">
-                <input type="text" id="searchInput" class="search-input" placeholder="搜索题库名称...">
-                <button class="btn btn-primary" onclick="searchBanks()">
-                    <i class="fas fa-search"></i> 搜索
-                </button>
-                <button class="btn btn-success" onclick="loadQuestionBanks()">
-                    <i class="fas fa-refresh"></i> 刷新
-                </button>
-            </div>
-
-            <!-- 题库列表 -->
-            <div id="questionBanksList" class="question-banks-grid">
-                <!-- 题库卡片将在这里动态生成 -->
-            </div>
-        </div>
-
-        <!-- 创建题库标签页 -->
-        <div id="create-tab" class="tab-content">
-            <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
-                <h2 style="color: var(--ocean-blue); margin-bottom: 20px;">创建新题库</h2>
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="search-bar">
+                    <input type="text" id="bankSearch" class="search-input" placeholder="搜索题库...">
+                    <button class="search-btn" onclick="searchBanks()">🔍</button>
+                </div>
                 
+                <h3>📋 题库列表</h3>
+                <ul class="bank-list" id="bankList">
+                    <li class="loading">加载中...</li>
+                </ul>
+                
+                <button class="btn btn-success btn-large" style="width: 100%; margin-top: 20px;" onclick="createNewBank()">
+                    ➕ 创建新题库
+                </button>
+            </div>
+
+            <div class="content-area">
+                <div class="toolbar">
+                    <h2 id="currentBankName">请选择题库</h2>
+                    <div class="btn-group">
+                        <button class="btn btn-success btn-large" onclick="addQuestion()" id="addQuestionBtn" disabled>
+                            ➕ 添加题目
+                        </button>
+                        <button class="btn btn-large" onclick="importQuestions()" id="importBtn" disabled>
+                            📤 导入题目
+                        </button>
+                        <button class="btn btn-large" onclick="exportBank()" id="exportBtn" disabled>
+                            📥 导出题库
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-cards" id="statsCards" style="display: none;">
+                    <div class="stats-card">
+                        <div class="stats-number" id="totalQuestions">0</div>
+                        <div class="stats-label">总题目数</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-number" id="easyQuestions">0</div>
+                        <div class="stats-label">简单题目</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-number" id="mediumQuestions">0</div>
+                        <div class="stats-label">中等题目</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="stats-number" id="hardQuestions">0</div>
+                        <div class="stats-label">困难题目</div>
+                    </div>
+                </div>
+
+                <div class="question-list" id="questionList">
+                    <div class="empty-state">
+                        <i>📝</i>
+                        <h3>选择题库开始管理</h3>
+                        <p>从左侧选择一个题库，或创建新的题库来开始管理题目</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 题库编辑模态框 -->
+    <div class="modal" id="bankModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="bankModalTitle">创建题库</h3>
+                <button class="close-btn" onclick="closeBankModal()">&times;</button>
+            </div>
+            <form onsubmit="saveBankInfo(event)">
                 <div class="form-group">
                     <label class="form-label">题库名称</label>
-                    <input type="text" id="newBankName" class="form-input" placeholder="请输入题库名称">
+                    <input type="text" id="bankName" class="form-input" required placeholder="输入题库名称...">
                 </div>
-
                 <div class="form-group">
                     <label class="form-label">题库描述</label>
-                    <textarea id="newBankDescription" class="form-textarea" placeholder="请输入题库描述"></textarea>
+                    <textarea id="bankDescription" class="form-input form-textarea" placeholder="输入题库描述..."></textarea>
                 </div>
+                <div class="form-group">
+                    <label class="form-label">题库分类</label>
+                    <select id="bankCategory" class="form-input form-select">
+                        <option value="流体力学基础">流体力学基础</option>
+                        <option value="流体性质">流体性质</option>
+                        <option value="动量方程">动量方程</option>
+                        <option value="能量方程">能量方程</option>
+                        <option value="压力">压力</option>
+                        <option value="势流">势流</option>
+                        <option value="粘性">粘性</option>
+                        <option value="边界层">边界层</option>
+                        <option value="湍流">湍流</option>
+                        <option value="管道流动">管道流动</option>
+                        <option value="自由面">自由面</option>
+                        <option value="涡度">涡度</option>
+                        <option value="雷诺数">雷诺数</option>
+                        <option value="实验与量纲">实验与量纲</option>
+                        <option value="流线轨迹">流线轨迹</option>
+                        <option value="易错题">易错题</option>
+                        <option value="真题">真题</option>
+                        <option value="其他">其他</option>
+                    </select>
+                </div>
+                <div style="text-align: right; margin-top: 30px;">
+                    <button type="button" class="btn" style="background: #6c757d; margin-right: 10px;" onclick="closeBankModal()">取消</button>
+                    <button type="submit" class="btn btn-success">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
+    <!-- 题目编辑模态框 -->
+    <div class="modal" id="questionModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="questionModalTitle">添加题目</h3>
+                <button class="close-btn" onclick="closeQuestionModal()">&times;</button>
+            </div>
+            <form onsubmit="saveQuestion(event)">
+                <div class="form-group">
+                    <label class="form-label">题目内容</label>
+                    <textarea id="questionTitle" class="form-input form-textarea" required placeholder="输入题目内容..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">题目类型</label>
+                    <select id="questionType" class="form-input form-select" onchange="updateQuestionForm()">
+                        <option value="选择题">选择题</option>
+                        <option value="判断题">判断题</option>
+                        <option value="填空题">填空题</option>
+                        <option value="解答题">解答题</option>
+                        <option value="计算题">计算题</option>
+                    </select>
+                </div>
                 <div class="form-group">
                     <label class="form-label">难度等级</label>
-                    <select id="newBankDifficulty" class="form-input">
+                    <select id="questionDifficulty" class="form-input form-select">
                         <option value="easy">简单</option>
                         <option value="medium">中等</option>
                         <option value="hard">困难</option>
                     </select>
                 </div>
+                
+                <!-- 选择题选项 -->
+                <div id="optionsSection" class="form-group">
+                    <label class="form-label">选项设置</label>
+                    <div class="options-container">
+                        <div class="option-group">
+                            <div class="option-label">A</div>
+                            <input type="text" class="option-input" id="optionA" placeholder="选项A内容">
+                        </div>
+                        <div class="option-group">
+                            <div class="option-label">B</div>
+                            <input type="text" class="option-input" id="optionB" placeholder="选项B内容">
+                        </div>
+                        <div class="option-group">
+                            <div class="option-label">C</div>
+                            <input type="text" class="option-input" id="optionC" placeholder="选项C内容">
+                        </div>
+                        <div class="option-group">
+                            <div class="option-label">D</div>
+                            <input type="text" class="option-input" id="optionD" placeholder="选项D内容">
+                        </div>
+                    </div>
+                </div>
 
-                <button class="btn btn-success" onclick="createNewBank()">
-                    <i class="fas fa-plus"></i> 创建题库
-                </button>
-            </div>
-        </div>
-
-        <!-- 导入题库标签页 -->
-        <div id="import-tab" class="tab-content">
-            <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
-                <h2 style="color: var(--ocean-blue); margin-bottom: 20px;">导入题库</h2>
+                <div class="form-group">
+                    <label class="form-label">正确答案</label>
+                    <input type="text" id="questionAnswer" class="form-input" required placeholder="输入正确答案...">
+                    <small style="color: #666; margin-top: 5px; display: block;">
+                        选择题填写选项字母(A/B/C/D)，判断题填写(正确/错误)，填空题和其他题型填写具体答案
+                    </small>
+                </div>
                 
                 <div class="form-group">
-                    <label class="form-label">选择JSON文件</label>
-                    <input type="file" id="importFile" class="form-input" accept=".json">
+                    <label class="form-label">题目解释</label>
+                    <textarea id="questionExplanation" class="form-input form-textarea" placeholder="输入题目解释和解题思路..."></textarea>
                 </div>
-
-                <div class="form-group">
-                    <label class="form-label">或粘贴JSON内容</label>
-                    <textarea id="jsonContent" class="form-textarea" style="min-height: 200px;" placeholder="请粘贴题库JSON内容"></textarea>
-                </div>
-
-                <button class="btn btn-primary" onclick="importQuestionBank()">
-                    <i class="fas fa-upload"></i> 导入题库
-                </button>
-            </div>
-        </div>
-
-        <!-- 导出题库标签页 -->
-        <div id="export-tab" class="tab-content">
-            <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
-                <h2 style="color: var(--ocean-blue); margin-bottom: 20px;">导出题库</h2>
                 
-                <div id="exportBanksList">
-                    <!-- 导出选项将在这里生成 -->
+                <div class="form-group">
+                    <label class="form-label">知识点标签</label>
+                    <input type="text" id="questionTags" class="form-input" placeholder="用逗号分隔多个标签，如：流体静力学,压力,帕斯卡定律">
                 </div>
 
-                <button class="btn btn-success" onclick="exportAllBanks()">
-                    <i class="fas fa-download"></i> 导出所有题库
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 编辑题库模态框 -->
-    <div id="editBankModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">编辑题库</h3>
-                <button class="close-btn" onclick="closeModal('editBankModal')">&times;</button>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">题库名称</label>
-                <input type="text" id="editBankName" class="form-input">
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">题库描述</label>
-                <textarea id="editBankDescription" class="form-textarea"></textarea>
-            </div>
-
-            <h4 style="color: var(--ocean-blue); margin: 20px 0;">题目列表</h4>
-            <div id="questionsList" class="question-list">
-                <!-- 题目列表将在这里生成 -->
-            </div>
-
-            <div style="margin-top: 20px; display: flex; gap: 10px;">
-                <button class="btn btn-success" onclick="addNewQuestion()">
-                    <i class="fas fa-plus"></i> 添加题目
-                </button>
-                <button class="btn btn-primary" onclick="saveBank()">
-                    <i class="fas fa-save"></i> 保存题库
-                </button>
-                <button class="btn btn-danger" onclick="closeModal('editBankModal')">
-                    <i class="fas fa-times"></i> 取消
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 编辑题目模态框 -->
-    <div id="editQuestionModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title">编辑题目</h3>
-                <button class="close-btn" onclick="closeModal('editQuestionModal')">&times;</button>
-            </div>
-            
-            <div class="form-group">
-                <label class="form-label">题目内容</label>
-                <textarea id="editQuestionContent" class="form-textarea" placeholder="请输入题目内容"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">题目类型</label>
-                <select id="editQuestionType" class="form-input" onchange="handleQuestionTypeChange()">
-                    <option value="选择题">选择题</option>
-                    <option value="填空题">填空题</option>
-                    <option value="判断题">判断题</option>
-                    <option value="解答题">解答题</option>
-                </select>
-            </div>
-
-            <div id="optionsContainer" class="options-container">
-                <label class="form-label">选项 (选择正确答案)</label>
-                <div id="optionsList">
-                    <!-- 选项将在这里生成 -->
+                <div style="text-align: right; margin-top: 30px;">
+                    <button type="button" class="btn" style="background: #6c757d; margin-right: 10px;" onclick="closeQuestionModal()">取消</button>
+                    <button type="submit" class="btn btn-success">保存题目</button>
                 </div>
-                <button type="button" class="add-option-btn" onclick="addOption()">
-                    <i class="fas fa-plus"></i> 添加选项
-                </button>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">答案解析</label>
-                <textarea id="editQuestionExplanation" class="form-textarea" placeholder="请输入答案解析"></textarea>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">难度等级</label>
-                <select id="editQuestionDifficulty" class="form-input">
-                    <option value="easy">简单</option>
-                    <option value="medium">中等</option>
-                    <option value="hard">困难</option>
-                </select>
-            </div>
-
-            <div style="margin-top: 20px; display: flex; gap: 10px;">
-                <button class="btn btn-primary" onclick="saveQuestion()">
-                    <i class="fas fa-save"></i> 保存题目
-                </button>
-                <button class="btn btn-danger" onclick="closeModal('editQuestionModal')">
-                    <i class="fas fa-times"></i> 取消
-                </button>
-            </div>
+            </form>
         </div>
     </div>
 
+    <script src="../js/core/utils.js"></script>
+    <script src="../modules/teacher-management.js"></script>
     <script>
-        // 全局变量
-        let currentBankData = null;
-        let currentQuestionIndex = -1;
+        let currentBank = null;
+        let currentQuestionId = null;
         let questionBanks = [];
 
-        // 页面加载完成后初始化
+        // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', function() {
             loadQuestionBanks();
-            updateStats();
         });
-
-        // 显示标签页
-        function showTab(tabName) {
-            // 隐藏所有标签页
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // 移除所有标签的active类
-            document.querySelectorAll('.nav-tab').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            // 显示目标标签页
-            document.getElementById(tabName + '-tab').classList.add('active');
-            
-            // 激活对应的导航标签
-            event.target.classList.add('active');
-            
-            // 特殊处理
-            if (tabName === 'export') {
-                loadExportOptions();
-            }
-        }
 
         // 加载题库列表
         async function loadQuestionBanks() {
             try {
-                const response = await fetch('/question-banks/index.json');
-                const index = await response.json();
-                
-                questionBanks = [];
-                
-                // 加载所有分类的题库
-                for (const [category, banks] of Object.entries(index)) {
-                    for (const bankInfo of banks) {
-                        const bankFile = typeof bankInfo === 'string' ? bankInfo : bankInfo.file;
-                        const bankName = typeof bankInfo === 'string' ? 
-                            bankFile.replace('.json', '') : 
-                            (bankInfo.name || bankFile.replace('.json', ''));
-                        
-                        try {
-                            const bankResponse = await fetch(`/question-banks/${bankFile}`);
-                            const bankData = await bankResponse.json();
-                            
-                            questionBanks.push({
-                                file: bankFile,
-                                name: bankName,
-                                category: category,
-                                data: Array.isArray(bankData) ? bankData : (bankData.questions || []),
-                                description: bankInfo.intro || '无描述'
-                            });
-                        } catch (error) {
-                            console.error(`加载题库 ${bankFile} 失败:`, error);
-                        }
-                    }
-                }
-                
-                displayQuestionBanks(questionBanks);
-                updateStats();
-                
+                const response = await fetch('../question-banks/index.json');
+                const data = await response.json();
+                questionBanks = data.banks || [];
+                displayBankList();
             } catch (error) {
                 console.error('加载题库列表失败:', error);
                 showNotification('加载题库列表失败', 'error');
@@ -722,515 +701,612 @@
         }
 
         // 显示题库列表
-        function displayQuestionBanks(banks) {
-            const container = document.getElementById('questionBanksList');
+        function displayBankList() {
+            const bankList = document.getElementById('bankList');
             
-            if (banks.length === 0) {
-                container.innerHTML = `
-                    <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #666;">
-                        <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 20px;"></i>
-                        <p>暂无题库</p>
-                    </div>
-                `;
+            if (questionBanks.length === 0) {
+                bankList.innerHTML = '<li style="text-align: center; color: #666; padding: 20px;">暂无题库</li>';
                 return;
             }
-            
-            container.innerHTML = banks.map(bank => `
-                <div class="bank-card">
-                    <div class="bank-header">
-                        <div class="bank-title">${bank.name}</div>
-                        <div class="bank-actions">
-                            <button class="btn btn-primary" onclick="editBank('${bank.file}')" title="编辑题库">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-warning" onclick="exportBank('${bank.file}')" title="导出题库">
-                                <i class="fas fa-download"></i>
-                            </button>
-                            <button class="btn btn-danger" onclick="deleteBank('${bank.file}')" title="删除题库">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
+
+            bankList.innerHTML = questionBanks.map(bank => `
+                <li class="bank-item" onclick="selectBank('${bank.id}')">
+                    <div class="bank-name">${bank.name}</div>
+                    <div class="bank-info">
+                        <span>${bank.questionCount || 0} 题</span>
+                        <span>${bank.category || '未分类'}</span>
                     </div>
-                    <p style="color: #666; margin-bottom: 15px; font-size: 14px;">${bank.description}</p>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span style="background: var(--ocean-light); color: white; padding: 4px 8px; border-radius: 8px; font-size: 12px;">
-                            ${bank.category}
-                        </span>
-                        <span style="color: var(--ocean-blue); font-weight: bold;">
-                            ${bank.data.length} 题
-                        </span>
+                    <div class="bank-actions">
+                        <button class="btn" onclick="event.stopPropagation(); editBank('${bank.id}')">编辑</button>
+                        <button class="btn btn-danger" onclick="event.stopPropagation(); deleteBank('${bank.id}')">删除</button>
                     </div>
-                </div>
+                </li>
             `).join('');
         }
 
-        // 编辑题库
-        async function editBank(bankFile) {
-            const bank = questionBanks.find(b => b.file === bankFile);
-            if (!bank) return;
-            
-            currentBankData = bank;
-            
-            document.getElementById('editBankName').value = bank.name;
-            document.getElementById('editBankDescription').value = bank.description;
-            
-            displayQuestionsList(bank.data);
-            
-            document.getElementById('editBankModal').style.display = 'block';
+        // 选择题库
+        async function selectBank(bankId) {
+            try {
+                // 移除之前的active状态
+                document.querySelectorAll('.bank-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // 添加active状态到当前选中的题库
+                event.target.closest('.bank-item').classList.add('active');
+                
+                const bank = questionBanks.find(b => b.id === bankId);
+                if (!bank) {
+                    showNotification('题库不存在', 'error');
+                    return;
+                }
+
+                currentBank = bank;
+                
+                // 加载题库内容
+                const response = await fetch(`../question-banks/${bank.filename}`);
+                const questions = await response.json();
+                
+                currentBank.questions = questions;
+                
+                // 更新界面
+                document.getElementById('currentBankName').textContent = bank.name;
+                document.getElementById('addQuestionBtn').disabled = false;
+                document.getElementById('importBtn').disabled = false;
+                document.getElementById('exportBtn').disabled = false;
+                
+                displayQuestions(questions);
+                updateStats(questions);
+                
+            } catch (error) {
+                console.error('加载题库失败:', error);
+                showNotification('加载题库失败', 'error');
+            }
         }
 
         // 显示题目列表
-        function displayQuestionsList(questions) {
-            const container = document.getElementById('questionsList');
+        function displayQuestions(questions) {
+            const questionList = document.getElementById('questionList');
+            const statsCards = document.getElementById('statsCards');
             
-            if (questions.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 20px; color: #666;">
-                        <i class="fas fa-question-circle" style="font-size: 24px; margin-bottom: 10px;"></i>
-                        <p>暂无题目</p>
+            if (!questions || questions.length === 0) {
+                questionList.innerHTML = `
+                    <div class="empty-state">
+                        <i>📝</i>
+                        <h3>暂无题目</h3>
+                        <p>点击"添加题目"开始创建第一道题目</p>
                     </div>
                 `;
+                statsCards.style.display = 'none';
                 return;
             }
+
+            statsCards.style.display = 'grid';
             
-            container.innerHTML = questions.map((question, index) => `
+            questionList.innerHTML = questions.map((question, index) => `
                 <div class="question-item">
-                    <div class="question-title">题目 ${index + 1}</div>
-                    <div class="question-content">${(question.question || question.title || '').substring(0, 100)}...</div>
-                    <div class="question-actions">
-                        <button class="btn btn-primary" onclick="editQuestion(${index})">
-                            <i class="fas fa-edit"></i> 编辑
-                        </button>
-                        <button class="btn btn-danger" onclick="deleteQuestion(${index})">
-                            <i class="fas fa-trash"></i> 删除
-                        </button>
+                    <div class="question-header">
+                        <div class="question-title">${question.title || question.question || '未命名题目'}</div>
+                        <div class="question-actions">
+                            <button class="btn" onclick="editQuestion(${index})">编辑</button>
+                            <button class="btn btn-danger" onclick="deleteQuestion(${index})">删除</button>
+                        </div>
+                    </div>
+                    <div class="question-meta">
+                        <span class="meta-tag">${question.type || '选择题'}</span>
+                        <span class="meta-tag">${getDifficultyText(question.difficulty)}</span>
+                        <span class="meta-tag">${question.category || currentBank?.category || '未分类'}</span>
+                        ${question.tags ? question.tags.map(tag => `<span class="meta-tag">${tag}</span>`).join('') : ''}
                     </div>
                 </div>
             `).join('');
         }
 
-        // 添加新题目
-        function addNewQuestion() {
-            currentQuestionIndex = -1;
-            
-            // 清空表单
-            document.getElementById('editQuestionContent').value = '';
-            document.getElementById('editQuestionType').value = '选择题';
-            document.getElementById('editQuestionExplanation').value = '';
-            document.getElementById('editQuestionDifficulty').value = 'medium';
-            
-            // 初始化选项
-            initializeOptions();
-            
-            document.getElementById('editQuestionModal').style.display = 'block';
-        }
-
-        // 编辑题目
-        function editQuestion(index) {
-            if (!currentBankData || !currentBankData.data[index]) return;
-            
-            currentQuestionIndex = index;
-            const question = currentBankData.data[index];
-            
-            document.getElementById('editQuestionContent').value = question.question || question.title || '';
-            document.getElementById('editQuestionType').value = question.type || '选择题';
-            document.getElementById('editQuestionExplanation').value = question.explanation || '';
-            document.getElementById('editQuestionDifficulty').value = question.difficulty || 'medium';
-            
-            // 加载选项
-            loadQuestionOptions(question);
-            
-            document.getElementById('editQuestionModal').style.display = 'block';
-        }
-
-        // 加载题目选项
-        function loadQuestionOptions(question) {
-            const container = document.getElementById('optionsList');
-            container.innerHTML = '';
-            
-            if (question.options && Array.isArray(question.options)) {
-                question.options.forEach((option, index) => {
-                    addOptionElement(option, index === question.correct);
-                });
-            } else {
-                // 默认添加4个选项
-                for (let i = 0; i < 4; i++) {
-                    addOptionElement('', i === 0);
-                }
+        // 获取难度文本
+        function getDifficultyText(difficulty) {
+            switch(difficulty) {
+                case 'easy': return '简单';
+                case 'medium': return '中等';
+                case 'hard': return '困难';
+                default: return '中等';
             }
         }
 
-        // 初始化选项
-        function initializeOptions() {
-            const container = document.getElementById('optionsList');
-            container.innerHTML = '';
+        // 更新统计信息
+        function updateStats(questions) {
+            const total = questions.length;
+            const easy = questions.filter(q => q.difficulty === 'easy').length;
+            const medium = questions.filter(q => q.difficulty === 'medium').length;
+            const hard = questions.filter(q => q.difficulty === 'hard').length;
             
-            // 默认添加4个选项
-            for (let i = 0; i < 4; i++) {
-                addOptionElement('', i === 0);
-            }
-        }
-
-        // 添加选项
-        function addOption() {
-            addOptionElement('', false);
-        }
-
-        // 添加选项元素
-        function addOptionElement(text = '', isCorrect = false) {
-            const container = document.getElementById('optionsList');
-            const optionIndex = container.children.length;
-            
-            const optionDiv = document.createElement('div');
-            optionDiv.className = 'option-input';
-            optionDiv.innerHTML = `
-                <input type="radio" name="correctOption" value="${optionIndex}" ${isCorrect ? 'checked' : ''}>
-                <input type="text" placeholder="选项 ${String.fromCharCode(65 + optionIndex)}" value="${text}">
-                <button type="button" onclick="removeOption(this)" style="margin-left: 10px; background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">
-                    <i class="fas fa-trash"></i>
-                </button>
-            `;
-            
-            container.appendChild(optionDiv);
-        }
-
-        // 移除选项
-        function removeOption(button) {
-            button.parentElement.remove();
-            
-            // 重新编号
-            const container = document.getElementById('optionsList');
-            Array.from(container.children).forEach((option, index) => {
-                const radio = option.querySelector('input[type="radio"]');
-                const textInput = option.querySelector('input[type="text"]');
-                
-                radio.value = index;
-                textInput.placeholder = `选项 ${String.fromCharCode(65 + index)}`;
-            });
-        }
-
-        // 处理题目类型变化
-        function handleQuestionTypeChange() {
-            const questionType = document.getElementById('editQuestionType').value;
-            const optionsContainer = document.getElementById('optionsContainer');
-            
-            if (questionType === '选择题') {
-                optionsContainer.style.display = 'block';
-            } else {
-                optionsContainer.style.display = 'none';
-            }
-        }
-
-        // 保存题目
-        function saveQuestion() {
-            const content = document.getElementById('editQuestionContent').value.trim();
-            const type = document.getElementById('editQuestionType').value;
-            const explanation = document.getElementById('editQuestionExplanation').value.trim();
-            const difficulty = document.getElementById('editQuestionDifficulty').value;
-            
-            if (!content) {
-                showNotification('请输入题目内容', 'warning');
-                return;
-            }
-            
-            const question = {
-                question: content,
-                type: type,
-                explanation: explanation,
-                difficulty: difficulty
-            };
-            
-            if (type === '选择题') {
-                const optionInputs = document.querySelectorAll('#optionsList input[type="text"]');
-                const correctRadio = document.querySelector('#optionsList input[type="radio"]:checked');
-                
-                if (optionInputs.length < 2) {
-                    showNotification('选择题至少需要2个选项', 'warning');
-                    return;
-                }
-                
-                if (!correctRadio) {
-                    showNotification('请选择正确答案', 'warning');
-                    return;
-                }
-                
-                question.options = Array.from(optionInputs).map(input => input.value.trim()).filter(text => text);
-                question.correct = parseInt(correctRadio.value);
-            }
-            
-            if (currentQuestionIndex === -1) {
-                // 添加新题目
-                currentBankData.data.push(question);
-            } else {
-                // 更新现有题目
-                currentBankData.data[currentQuestionIndex] = question;
-            }
-            
-            displayQuestionsList(currentBankData.data);
-            closeModal('editQuestionModal');
-            showNotification('题目保存成功', 'success');
-        }
-
-        // 删除题目
-        function deleteQuestion(index) {
-            if (!confirm('确定要删除这道题目吗？')) return;
-            
-            currentBankData.data.splice(index, 1);
-            displayQuestionsList(currentBankData.data);
-            showNotification('题目删除成功', 'success');
-        }
-
-        // 保存题库
-        async function saveBank() {
-            const name = document.getElementById('editBankName').value.trim();
-            const description = document.getElementById('editBankDescription').value.trim();
-            
-            if (!name) {
-                showNotification('请输入题库名称', 'warning');
-                return;
-            }
-            
-            // 这里应该调用后端API保存题库
-            // 由于是静态网站，我们只能下载文件
-            const bankData = {
-                name: name,
-                description: description,
-                questions: currentBankData.data
-            };
-            
-            downloadFile(
-                JSON.stringify(bankData, null, 2),
-                `${currentBankData.file}`,
-                'application/json'
-            );
-            
-            showNotification('题库已生成下载文件，请手动替换服务器文件', 'info');
-            closeModal('editBankModal');
-        }
-
-        // 删除题库
-        function deleteBank(bankFile) {
-            if (!confirm('确定要删除这个题库吗？这个操作不可恢复！')) return;
-            
-            showNotification('请手动从服务器删除文件: ' + bankFile, 'warning');
+            document.getElementById('totalQuestions').textContent = total;
+            document.getElementById('easyQuestions').textContent = easy;
+            document.getElementById('mediumQuestions').textContent = medium;
+            document.getElementById('hardQuestions').textContent = hard;
         }
 
         // 创建新题库
         function createNewBank() {
-            const name = document.getElementById('newBankName').value.trim();
-            const description = document.getElementById('newBankDescription').value.trim();
-            const difficulty = document.getElementById('newBankDifficulty').value;
+            currentBank = null;
+            document.getElementById('bankModalTitle').textContent = '创建新题库';
+            document.getElementById('bankName').value = '';
+            document.getElementById('bankDescription').value = '';
+            document.getElementById('bankCategory').value = '流体力学基础';
+            document.getElementById('bankModal').style.display = 'block';
+        }
+
+        // 编辑题库
+        function editBank(bankId) {
+            const bank = questionBanks.find(b => b.id === bankId);
+            if (!bank) return;
+            
+            currentBank = bank;
+            document.getElementById('bankModalTitle').textContent = '编辑题库';
+            document.getElementById('bankName').value = bank.name;
+            document.getElementById('bankDescription').value = bank.description || '';
+            document.getElementById('bankCategory').value = bank.category || '流体力学基础';
+            document.getElementById('bankModal').style.display = 'block';
+        }
+
+        // 保存题库信息
+        function saveBankInfo(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('bankName').value.trim();
+            const description = document.getElementById('bankDescription').value.trim();
+            const category = document.getElementById('bankCategory').value;
             
             if (!name) {
                 showNotification('请输入题库名称', 'warning');
                 return;
             }
-            
+
             const bankData = {
+                id: currentBank ? currentBank.id : 'bank_' + Date.now(),
                 name: name,
                 description: description,
-                difficulty: difficulty,
-                questions: []
+                category: category,
+                filename: currentBank ? currentBank.filename : `${name}.json`,
+                questionCount: currentBank ? currentBank.questionCount : 0,
+                createTime: currentBank ? currentBank.createTime : new Date().toISOString(),
+                updateTime: new Date().toISOString()
             };
-            
-            const fileName = name.replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_') + '.json';
-            
-            downloadFile(
-                JSON.stringify(bankData, null, 2),
-                fileName,
-                'application/json'
-            );
-            
-            // 清空表单
-            document.getElementById('newBankName').value = '';
-            document.getElementById('newBankDescription').value = '';
-            document.getElementById('newBankDifficulty').value = 'easy';
-            
-            showNotification('新题库已生成，请上传到 question-banks 目录并更新 index.json', 'success');
-        }
 
-        // 导入题库
-        function importQuestionBank() {
-            const fileInput = document.getElementById('importFile');
-            const jsonContent = document.getElementById('jsonContent').value.trim();
-            
-            if (fileInput.files.length > 0) {
-                const file = fileInput.files[0];
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        processImportedData(data);
-                    } catch (error) {
-                        showNotification('文件格式错误，请检查JSON格式', 'error');
-                    }
-                };
-                
-                reader.readAsText(file);
-            } else if (jsonContent) {
-                try {
-                    const data = JSON.parse(jsonContent);
-                    processImportedData(data);
-                } catch (error) {
-                    showNotification('JSON格式错误，请检查语法', 'error');
+            if (currentBank) {
+                // 更新现有题库
+                const index = questionBanks.findIndex(b => b.id === currentBank.id);
+                if (index !== -1) {
+                    questionBanks[index] = bankData;
                 }
             } else {
-                showNotification('请选择文件或输入JSON内容', 'warning');
+                // 创建新题库
+                questionBanks.push(bankData);
+                // 创建空的题目文件
+                saveBankQuestions(bankData, []);
+            }
+
+            // 更新index.json
+            updateBankIndex();
+            displayBankList();
+            closeBankModal();
+            
+            showNotification(currentBank ? '题库更新成功' : '题库创建成功', 'success');
+        }
+
+        // 关闭题库模态框
+        function closeBankModal() {
+            document.getElementById('bankModal').style.display = 'none';
+        }
+
+        // 删除题库
+        function deleteBank(bankId) {
+            if (!confirm('确定要删除这个题库吗？此操作不可恢复！')) {
+                return;
+            }
+
+            const index = questionBanks.findIndex(b => b.id === bankId);
+            if (index !== -1) {
+                questionBanks.splice(index, 1);
+                updateBankIndex();
+                displayBankList();
+                
+                // 如果删除的是当前选中的题库，清空显示
+                if (currentBank && currentBank.id === bankId) {
+                    currentBank = null;
+                    document.getElementById('currentBankName').textContent = '请选择题库';
+                    document.getElementById('questionList').innerHTML = `
+                        <div class="empty-state">
+                            <i>📝</i>
+                            <h3>选择题库开始管理</h3>
+                            <p>从左侧选择一个题库，或创建新的题库来开始管理题目</p>
+                        </div>
+                    `;
+                    document.getElementById('statsCards').style.display = 'none';
+                    document.getElementById('addQuestionBtn').disabled = true;
+                    document.getElementById('importBtn').disabled = true;
+                    document.getElementById('exportBtn').disabled = true;
+                }
+                
+                showNotification('题库删除成功', 'success');
             }
         }
 
-        // 处理导入的数据
-        function processImportedData(data) {
-            // 验证数据格式
-            if (!data.questions || !Array.isArray(data.questions)) {
-                showNotification('题库格式错误，缺少questions数组', 'error');
+        // 添加题目
+        function addQuestion() {
+            if (!currentBank) {
+                showNotification('请先选择题库', 'warning');
                 return;
             }
             
-            const fileName = (data.name || 'imported_bank').replace(/[^a-zA-Z0-9\u4e00-\u9fa5]/g, '_') + '.json';
-            
-            downloadFile(
-                JSON.stringify(data, null, 2),
-                fileName,
-                'application/json'
-            );
-            
-            showNotification(`题库导入成功，请上传 ${fileName} 到 question-banks 目录`, 'success');
+            currentQuestionId = null;
+            document.getElementById('questionModalTitle').textContent = '添加题目';
+            clearQuestionForm();
+            updateQuestionForm();
+            document.getElementById('questionModal').style.display = 'block';
         }
 
-        // 加载导出选项
-        function loadExportOptions() {
-            const container = document.getElementById('exportBanksList');
+        // 编辑题目
+        function editQuestion(index) {
+            if (!currentBank || !currentBank.questions) return;
             
-            container.innerHTML = questionBanks.map(bank => `
-                <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f8f9fa; border-radius: 10px; margin-bottom: 10px;">
-                    <div>
-                        <strong>${bank.name}</strong>
-                        <span style="color: #666; margin-left: 10px;">(${bank.data.length} 题)</span>
-                    </div>
-                    <button class="btn btn-primary" onclick="exportBank('${bank.file}')">
-                        <i class="fas fa-download"></i> 导出
-                    </button>
-                </div>
-            `).join('');
+            const question = currentBank.questions[index];
+            currentQuestionId = index;
+            
+            document.getElementById('questionModalTitle').textContent = '编辑题目';
+            document.getElementById('questionTitle').value = question.title || question.question || '';
+            document.getElementById('questionType').value = question.type || '选择题';
+            document.getElementById('questionDifficulty').value = question.difficulty || 'medium';
+            document.getElementById('questionAnswer').value = question.answer || question.correct || '';
+            document.getElementById('questionExplanation').value = question.explanation || '';
+            document.getElementById('questionTags').value = question.tags ? question.tags.join(',') : '';
+            
+            // 填充选项
+            if (question.options) {
+                document.getElementById('optionA').value = question.options[0] || '';
+                document.getElementById('optionB').value = question.options[1] || '';
+                document.getElementById('optionC').value = question.options[2] || '';
+                document.getElementById('optionD').value = question.options[3] || '';
+            }
+            
+            updateQuestionForm();
+            document.getElementById('questionModal').style.display = 'block';
         }
 
-        // 导出题库
-        function exportBank(bankFile) {
-            const bank = questionBanks.find(b => b.file === bankFile);
-            if (!bank) return;
+        // 更新题目表单
+        function updateQuestionForm() {
+            const type = document.getElementById('questionType').value;
+            const optionsSection = document.getElementById('optionsSection');
             
-            const exportData = {
-                name: bank.name,
-                description: bank.description,
-                category: bank.category,
-                questions: bank.data
+            if (type === '选择题') {
+                optionsSection.style.display = 'block';
+            } else {
+                optionsSection.style.display = 'none';
+            }
+        }
+
+        // 清空题目表单
+        function clearQuestionForm() {
+            document.getElementById('questionTitle').value = '';
+            document.getElementById('questionType').value = '选择题';
+            document.getElementById('questionDifficulty').value = 'medium';
+            document.getElementById('questionAnswer').value = '';
+            document.getElementById('questionExplanation').value = '';
+            document.getElementById('questionTags').value = '';
+            document.getElementById('optionA').value = '';
+            document.getElementById('optionB').value = '';
+            document.getElementById('optionC').value = '';
+            document.getElementById('optionD').value = '';
+        }
+
+        // 保存题目
+        function saveQuestion(event) {
+            event.preventDefault();
+            
+            if (!currentBank) {
+                showNotification('请先选择题库', 'warning');
+                return;
+            }
+
+            const title = document.getElementById('questionTitle').value.trim();
+            const type = document.getElementById('questionType').value;
+            const difficulty = document.getElementById('questionDifficulty').value;
+            const answer = document.getElementById('questionAnswer').value.trim();
+            const explanation = document.getElementById('questionExplanation').value.trim();
+            const tags = document.getElementById('questionTags').value.split(',').map(tag => tag.trim()).filter(tag => tag);
+
+            if (!title || !answer) {
+                showNotification('请填写题目内容和正确答案', 'warning');
+                return;
+            }
+
+            const questionData = {
+                id: currentQuestionId !== null ? currentBank.questions[currentQuestionId].id : 'q_' + Date.now(),
+                title: title,
+                question: title, // 兼容性
+                type: type,
+                difficulty: difficulty,
+                category: currentBank.category,
+                answer: answer,
+                correct: answer, // 兼容性
+                explanation: explanation,
+                tags: tags,
+                createTime: currentQuestionId !== null ? currentBank.questions[currentQuestionId].createTime : new Date().toISOString(),
+                updateTime: new Date().toISOString()
             };
+
+            // 如果是选择题，添加选项
+            if (type === '选择题') {
+                const options = [
+                    document.getElementById('optionA').value.trim(),
+                    document.getElementById('optionB').value.trim(),
+                    document.getElementById('optionC').value.trim(),
+                    document.getElementById('optionD').value.trim()
+                ].filter(option => option);
+                
+                if (options.length < 2) {
+                    showNotification('选择题至少需要2个选项', 'warning');
+                    return;
+                }
+                
+                questionData.options = options;
+            }
+
+            if (!currentBank.questions) {
+                currentBank.questions = [];
+            }
+
+            if (currentQuestionId !== null) {
+                // 更新现有题目
+                currentBank.questions[currentQuestionId] = questionData;
+            } else {
+                // 添加新题目
+                currentBank.questions.push(questionData);
+            }
+
+            // 更新题库文件
+            saveBankQuestions(currentBank, currentBank.questions);
             
-            downloadFile(
-                JSON.stringify(exportData, null, 2),
-                bank.file,
-                'application/json'
-            );
+            // 更新题库的题目数量
+            const bankIndex = questionBanks.findIndex(b => b.id === currentBank.id);
+            if (bankIndex !== -1) {
+                questionBanks[bankIndex].questionCount = currentBank.questions.length;
+                questionBanks[bankIndex].updateTime = new Date().toISOString();
+            }
             
-            showNotification(`${bank.name} 导出成功`, 'success');
+            updateBankIndex();
+            displayQuestions(currentBank.questions);
+            updateStats(currentBank.questions);
+            displayBankList();
+            closeQuestionModal();
+            
+            showNotification(currentQuestionId !== null ? '题目更新成功' : '题目添加成功', 'success');
         }
 
-        // 导出所有题库
-        function exportAllBanks() {
-            const allBanks = {
-                exportTime: new Date().toISOString(),
-                totalBanks: questionBanks.length,
-                totalQuestions: questionBanks.reduce((sum, bank) => sum + bank.data.length, 0),
-                banks: questionBanks.map(bank => ({
-                    file: bank.file,
-                    name: bank.name,
-                    description: bank.description,
-                    category: bank.category,
-                    questions: bank.data
-                }))
-            };
+        // 关闭题目模态框
+        function closeQuestionModal() {
+            document.getElementById('questionModal').style.display = 'none';
+        }
+
+        // 删除题目
+        function deleteQuestion(index) {
+            if (!currentBank || !currentBank.questions) return;
             
-            downloadFile(
-                JSON.stringify(allBanks, null, 2),
-                'all_question_banks_' + new Date().toISOString().split('T')[0] + '.json',
-                'application/json'
-            );
+            if (!confirm('确定要删除这道题目吗？')) {
+                return;
+            }
+
+            currentBank.questions.splice(index, 1);
             
-            showNotification('所有题库导出成功', 'success');
+            // 更新题库文件
+            saveBankQuestions(currentBank, currentBank.questions);
+            
+            // 更新题库的题目数量
+            const bankIndex = questionBanks.findIndex(b => b.id === currentBank.id);
+            if (bankIndex !== -1) {
+                questionBanks[bankIndex].questionCount = currentBank.questions.length;
+                questionBanks[bankIndex].updateTime = new Date().toISOString();
+            }
+            
+            updateBankIndex();
+            displayQuestions(currentBank.questions);
+            updateStats(currentBank.questions);
+            displayBankList();
+            
+            showNotification('题目删除成功', 'success');
         }
 
         // 搜索题库
         function searchBanks() {
-            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+            const searchTerm = document.getElementById('bankSearch').value.toLowerCase().trim();
+            const bankItems = document.querySelectorAll('.bank-item');
             
-            if (!searchTerm) {
-                displayQuestionBanks(questionBanks);
+            bankItems.forEach(item => {
+                const bankName = item.querySelector('.bank-name').textContent.toLowerCase();
+                if (bankName.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // 导出题库
+        function exportBank() {
+            if (!currentBank || !currentBank.questions) {
+                showNotification('没有可导出的题库', 'warning');
                 return;
             }
-            
-            const filteredBanks = questionBanks.filter(bank => 
-                bank.name.toLowerCase().includes(searchTerm) ||
-                bank.description.toLowerCase().includes(searchTerm) ||
-                bank.category.toLowerCase().includes(searchTerm)
-            );
-            
-            displayQuestionBanks(filteredBanks);
-            showNotification(`找到 ${filteredBanks.length} 个相关题库`, 'info');
-        }
 
-        // 更新统计信息
-        function updateStats() {
-            const totalBanks = questionBanks.length;
-            const totalQuestions = questionBanks.reduce((sum, bank) => sum + bank.data.length, 0);
-            const avgQuestions = totalBanks > 0 ? Math.round(totalQuestions / totalBanks) : 0;
-            
-            document.getElementById('totalBanks').textContent = totalBanks;
-            document.getElementById('totalQuestions').textContent = totalQuestions;
-            document.getElementById('avgQuestions').textContent = avgQuestions;
-            document.getElementById('lastUpdate').textContent = new Date().toLocaleDateString();
-        }
+            const data = {
+                bank: currentBank,
+                questions: currentBank.questions,
+                exportTime: new Date().toISOString()
+            };
 
-        // 关闭模态框
-        function closeModal(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        }
-
-        // 下载文件
-        function downloadFile(content, fileName, contentType) {
-            const blob = new Blob([content], { type: contentType });
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${currentBank.name}_${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
             URL.revokeObjectURL(url);
+            
+            showNotification('题库导出成功', 'success');
+        }
+
+        // 导入题目
+        function importQuestions() {
+            if (!currentBank) {
+                showNotification('请先选择题库', 'warning');
+                return;
+            }
+
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = function(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const data = JSON.parse(e.target.result);
+                        let questions = [];
+
+                        if (data.questions) {
+                            questions = data.questions;
+                        } else if (Array.isArray(data)) {
+                            questions = data;
+                        } else {
+                            throw new Error('无效的文件格式');
+                        }
+
+                        if (!Array.isArray(questions) || questions.length === 0) {
+                            showNotification('没有找到有效的题目数据', 'warning');
+                            return;
+                        }
+
+                        // 添加到当前题库
+                        if (!currentBank.questions) {
+                            currentBank.questions = [];
+                        }
+
+                        const importedCount = questions.length;
+                        currentBank.questions.push(...questions);
+
+                        // 更新题库文件
+                        saveBankQuestions(currentBank, currentBank.questions);
+                        
+                        // 更新题库信息
+                        const bankIndex = questionBanks.findIndex(b => b.id === currentBank.id);
+                        if (bankIndex !== -1) {
+                            questionBanks[bankIndex].questionCount = currentBank.questions.length;
+                            questionBanks[bankIndex].updateTime = new Date().toISOString();
+                        }
+                        
+                        updateBankIndex();
+                        displayQuestions(currentBank.questions);
+                        updateStats(currentBank.questions);
+                        displayBankList();
+                        
+                        showNotification(`成功导入 ${importedCount} 道题目`, 'success');
+
+                    } catch (error) {
+                        console.error('导入失败:', error);
+                        showNotification('文件格式错误，导入失败', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // 更新题库索引
+        function updateBankIndex() {
+            const indexData = {
+                banks: questionBanks,
+                updateTime: new Date().toISOString()
+            };
+            
+            // 这里应该保存到服务器，目前只在本地更新
+            console.log('更新题库索引:', indexData);
+            
+            // 模拟保存操作
+            localStorage.setItem('questionBankIndex', JSON.stringify(indexData));
+        }
+
+        // 保存题库题目
+        function saveBankQuestions(bank, questions) {
+            // 这里应该保存到服务器，目前只在本地存储
+            console.log('保存题库题目:', bank.filename, questions);
+            
+            // 模拟保存操作
+            localStorage.setItem(`questionBank_${bank.id}`, JSON.stringify(questions));
         }
 
         // 显示通知
-        function showNotification(message, type = 'info', duration = 3000) {
+        function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
             notification.className = `notification ${type}`;
             notification.textContent = message;
-            
             document.body.appendChild(notification);
-            
+
+            // 显示动画
             setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, duration);
+                notification.classList.add('show');
+            }, 100);
+
+            // 自动隐藏
+            setTimeout(() => {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
         }
 
         // 点击模态框外部关闭
         window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
+            const bankModal = document.getElementById('bankModal');
+            const questionModal = document.getElementById('questionModal');
+            
+            if (event.target === bankModal) {
+                closeBankModal();
+            } else if (event.target === questionModal) {
+                closeQuestionModal();
             }
-        };
+        }
+
+        // 键盘快捷键
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey || event.metaKey) {
+                switch(event.key) {
+                    case 'n':
+                        event.preventDefault();
+                        if (currentBank) {
+                            addQuestion();
+                        } else {
+                            createNewBank();
+                        }
+                        break;
+                    case 's':
+                        event.preventDefault();
+                        if (currentBank) {
+                            exportBank();
+                        }
+                        break;
+                }
+            }
+            
+            if (event.key === 'Escape') {
+                closeBankModal();
+                closeQuestionModal();
+            }
+        });
     </script>
 </body>
 </html> 

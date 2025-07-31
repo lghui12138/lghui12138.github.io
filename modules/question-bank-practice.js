@@ -96,7 +96,7 @@ window.QuestionBankPractice = (function() {
             this.setupWheelEvents();
         },
         
-        // 设置滚轮事件 - 完全修复版本
+        // 设置滚轮事件 - 优化页面滚动体验
         setupWheelEvents: function() {
             // 监听整个文档的滚轮事件
             document.addEventListener('wheel', (e) => {
@@ -114,91 +114,51 @@ window.QuestionBankPractice = (function() {
                 // 检查是否在全屏模式
                 const isFullscreen = practiceState.isFullscreen;
                 
-                // 非全屏模式下，优先处理页面滚动
+                // 非全屏模式：优先保证页面正常滚动
                 if (!isFullscreen) {
-                    // 检查页面是否可以滚动
-                    const canScrollPage = document.body.scrollHeight > window.innerHeight;
+                    // 只有当明确在题目区域内滚动，且该区域无滚动条时，才切换题目
+                    const rect = questionDisplay.getBoundingClientRect();
+                    const isInQuestionArea = e.clientY >= rect.top && e.clientY <= rect.bottom && 
+                                           e.clientX >= rect.left && e.clientX <= rect.right;
                     
-                    if (canScrollPage) {
-                        // 检查是否在页面顶部或底部
-                        const isAtPageTop = window.scrollY <= 10;
-                        const isAtPageBottom = (window.scrollY + window.innerHeight) >= document.body.scrollHeight - 10;
+                    if (isInQuestionArea) {
+                        const hasQuestionScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
                         
-                        // 检查是否在题目显示区域内
-                        const rect = questionDisplay.getBoundingClientRect();
-                        const isInQuestionArea = e.clientY >= rect.top && e.clientY <= rect.bottom;
-                        
-                        // 如果在题目区域内且页面滚动到边界，才考虑切换题目
-                        if (isInQuestionArea) {
-                            const hasScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
+                        // 如果题目区域有滚动条，让它正常滚动
+                        if (hasQuestionScrollbar) {
+                            const isAtTop = questionDisplay.scrollTop <= 1;
+                            const isAtBottom = questionDisplay.scrollTop + questionDisplay.clientHeight >= questionDisplay.scrollHeight - 1;
                             
-                            if (hasScrollbar) {
-                                // 题目区域有滚动条，优先处理题目内滚动
-                                const isAtTop = questionDisplay.scrollTop === 0;
-                                const isAtBottom = questionDisplay.scrollTop + questionDisplay.clientHeight >= questionDisplay.scrollHeight;
-                                
-                                if ((isAtTop && e.deltaY < 0 && isAtPageTop) || 
-                                    (isAtBottom && e.deltaY > 0 && isAtPageBottom)) {
-                                    e.preventDefault();
-                                    if (e.deltaY > 0) {
-                                        this.nextQuestion();
-                                    } else {
-                                        this.previousQuestion();
-                                    }
-                                }
-                                return;
-                            } else {
-                                // 题目区域无滚动条，在页面边界时切换题目
-                                if ((e.deltaY < 0 && isAtPageTop) || (e.deltaY > 0 && isAtPageBottom)) {
-                                    e.preventDefault();
-                                    if (e.deltaY > 0) {
-                                        this.nextQuestion();
-                                    } else {
-                                        this.previousQuestion();
-                                    }
-                                }
-                                return;
-                            }
-                        }
-                        // 不在题目区域内，允许正常页面滚动
-                        return;
-                    } else {
-                        // 页面无法滚动，检查题目区域
-                        const rect = questionDisplay.getBoundingClientRect();
-                        const isInQuestionArea = e.clientY >= rect.top && e.clientY <= rect.bottom;
-                        
-                        if (isInQuestionArea) {
-                            const hasScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
-                            
-                            if (hasScrollbar) {
-                                const isAtTop = questionDisplay.scrollTop === 0;
-                                const isAtBottom = questionDisplay.scrollTop + questionDisplay.clientHeight >= questionDisplay.scrollHeight;
-                                
-                                if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
-                                    e.preventDefault();
-                                    if (e.deltaY > 0) {
-                                        this.nextQuestion();
-                                    } else {
-                                        this.previousQuestion();
-                                    }
-                                }
-                                return;
-                            } else {
-                                // 题目区域无滚动条，直接切换题目
+                            // 只在题目区域滚动到边界时切换题目
+                            if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
                                 e.preventDefault();
                                 if (e.deltaY > 0) {
                                     this.nextQuestion();
                                 } else {
                                     this.previousQuestion();
                                 }
-                                return;
+                            }
+                            return;
+                        }
+                        
+                        // 题目区域无滚动条，且页面已滚动到边界，才切换题目
+                        const pageAtTop = window.scrollY <= 1;
+                        const pageAtBottom = (window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight - 1;
+                        
+                        if ((e.deltaY < 0 && pageAtTop) || (e.deltaY > 0 && pageAtBottom)) {
+                            e.preventDefault();
+                            if (e.deltaY > 0) {
+                                this.nextQuestion();
+                            } else {
+                                this.previousQuestion();
                             }
                         }
-                        return;
                     }
+                    // 其他情况都允许页面正常滚动
+                    return;
                 }
                 
-                // 全屏模式下的处理逻辑（保持原有逻辑）
+                // 全屏模式：保持原有的题目切换逻辑
                 const hasScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
                 
                 if (hasScrollbar) {
@@ -213,7 +173,6 @@ window.QuestionBankPractice = (function() {
                             this.previousQuestion();
                         }
                     }
-                    return;
                 } else {
                     e.preventDefault();
                     if (e.deltaY > 0) {
@@ -1344,31 +1303,62 @@ window.QuestionBankPractice = (function() {
             const answer = this.generateAnswer(question);
             
             explanationContent.innerHTML = `
-                <div style="color: ${resultColor}; font-weight: bold; font-size: 1.1em; margin-bottom: 15px;">
+                <div style="color: ${resultColor}; font-weight: bold; font-size: 1.8em; margin-bottom: 25px; text-align: center; padding: 20px; background: ${isCorrect ? '#d4edda' : '#f8d7da'}; border-radius: 12px;">
                     ${resultIcon} ${resultText}
                 </div>
-                <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin-bottom: 15px;">
-                    <strong>📝 参考答案：</strong><br>
-                    ${answer}
+                <div style="background: #fff3cd; border: 2px solid #ffeaa7; border-radius: 12px; padding: 25px; margin-bottom: 25px; font-size: 1.4em; line-height: 1.8;">
+                    <strong style="font-size: 1.2em; color: #856404;">📝 参考答案：</strong><br><br>
+                    <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107; font-size: 1.3em; line-height: 2;">
+                        ${answer}
+                    </div>
                 </div>
                 
                 ${question.explanation ? `
-                    <div style="margin-bottom: 15px;">
-                        <strong>解释：</strong>${question.explanation}
+                    <div style="margin-bottom: 25px; background: #e7f3ff; border: 2px solid #b3d9ff; border-radius: 12px; padding: 25px;">
+                        <strong style="font-size: 1.3em; color: #0056b3;">💡 详细解释：</strong><br><br>
+                        <div style="font-size: 1.2em; line-height: 2; color: #333;">${question.explanation}</div>
                     </div>
                 ` : ''}
                 
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px;">
-                    <strong>正确答案：</strong>
-                    ${this.formatCorrectAnswer(question)}
+                <div style="background: #f8f9fa; border: 2px solid #dee2e6; padding: 25px; border-radius: 12px; font-size: 1.3em;">
+                    <strong style="color: #495057; font-size: 1.2em;">✓ 标准答案：</strong><br><br>
+                    <div style="background: white; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; font-size: 1.2em; line-height: 1.8;">
+                        ${this.formatCorrectAnswer(question)}
+                    </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 30px;">
+                    <button onclick="QuestionBankPractice.continueToNext()" style="
+                        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                        color: white;
+                        border: none;
+                        padding: 15px 30px;
+                        border-radius: 25px;
+                        font-size: 1.2em;
+                        cursor: pointer;
+                        box-shadow: 0 4px 15px rgba(79, 172, 254, 0.3);
+                        transition: all 0.3s ease;
+                    " onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                        继续下一题 →
+                    </button>
                 </div>
             `;
             
             explanationArea.style.display = 'block';
             
+            // 滚动到答案显示区域
+            setTimeout(() => {
+                explanationArea.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'start' 
+                });
+            }, 100);
+            
             // 禁用答题控制
-            document.getElementById('submitBtn').disabled = true;
-            document.getElementById('optionsContainer').style.pointerEvents = 'none';
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) submitBtn.disabled = true;
+            const optionsContainer = document.getElementById('optionsContainer');
+            if (optionsContainer) optionsContainer.style.pointerEvents = 'none';
         },
         
         // 格式化正确答案显示
