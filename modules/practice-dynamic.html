@@ -1351,6 +1351,13 @@
                         return years;
                     }
                     
+                    // 如果URL参数包含真题类型，强制从真题数据中提取年份
+                    const urlParams = new URLSearchParams(window.location.search);
+                    if (urlParams.get('type') === 'real' && this.allQuestions.length > 0) {
+                        const years = [...new Set(this.allQuestions.map(q => q.year))].sort((a, b) => b - a);
+                        return years;
+                    }
+                    
                     // 否则从题库中提取年份
                     const years = new Set();
                     this.availableBanks.forEach(bank => {
