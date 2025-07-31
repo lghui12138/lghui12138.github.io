@@ -97,6 +97,11 @@ window.SecurityProtection = {
             console.log(`🔒 受限用户: ${this.currentUser || '未登录'}`);
         }
         
+        // 特殊处理：liuguanghui6330156 同时具有教师权限
+        if (this.currentUser === this.ownerAccount) {
+            console.log(`👨‍🏫 ${this.currentUser} 同时具有教师权限`);
+        }
+        
         console.log(`🔐 用户权限检查完成: ${this.userLevel}`);
     },
     
@@ -117,6 +122,11 @@ window.SecurityProtection = {
         const username = (userInfo.username || '').toLowerCase();
         
         if (teacherKeywords.some(keyword => username.includes(keyword))) {
+            return true;
+        }
+        
+        // 特殊处理：liuguanghui6330156 是唯一教师账号
+        if (this.currentUser === this.ownerAccount) {
             return true;
         }
         
