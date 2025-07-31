@@ -58,7 +58,15 @@ window.SecurityProtection = {
             this.preventScreenshot();
             this.blockCopyPaste();
             this.preventRightClick();
-            this.blockDevTools();
+            
+            // 移动设备不检测开发者工具
+            const isMobile = this.detectMobileDevice();
+            if (!isMobile) {
+                this.blockDevTools();
+            } else {
+                console.log('📱 移动设备，跳过开发者工具检测');
+            }
+            
             this.antiCrawler();
             this.protectImages();
             this.addWatermark();
@@ -433,6 +441,15 @@ window.SecurityProtection = {
     
     // 阻止开发者工具
     blockDevTools() {
+        // 检测移动设备
+        const isMobile = this.detectMobileDevice();
+        
+        // 移动设备不检测开发者工具
+        if (isMobile) {
+            console.log('📱 移动设备，跳过开发者工具检测');
+            return;
+        }
+        
         // 根据用户级别决定是否阻止开发者工具
         if (this.userLevel === 'owner' || this.userLevel === 'teacher') {
             // 所有者或教师：允许开发者工具
@@ -478,6 +495,15 @@ window.SecurityProtection = {
     
     // 处理开发者工具打开
     handleDevToolsOpen() {
+        // 检测移动设备
+        const isMobile = this.detectMobileDevice();
+        
+        // 移动设备不受开发者工具检测影响
+        if (isMobile) {
+            console.log('📱 移动设备，开发者工具检测已忽略');
+            return;
+        }
+        
         // 检查用户级别，教师和所有者不受影响
         if (this.userLevel === 'owner' || this.userLevel === 'teacher') {
             console.log('🔓 教师/所有者用户，开发者工具检测已忽略');
