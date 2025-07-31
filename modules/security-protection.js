@@ -18,8 +18,23 @@ window.SecurityProtection = {
         // 获取用户权限
         this.checkUserPrivileges();
         
-        // 如果不是网站所有者，启用全面保护措施
-        if (this.userLevel !== 'owner') {
+        // 根据用户级别启用不同的保护措施
+        if (this.userLevel === 'owner') {
+            // 网站所有者：完全访问权限
+            this.showOwnerWelcome();
+        } else if (this.userLevel === 'mobile_developer') {
+            // 移动设备开发者模式用户：轻度保护
+            this.enableContentProtection();
+            this.preventScreenshot();
+            this.blockCopyPaste();
+            this.preventRightClick();
+            this.blockDevTools();
+            this.antiCrawler();
+            this.protectImages();
+            this.addWatermark();
+            this.showMobileDeveloperWelcome();
+        } else {
+            // 其他用户：严格保护
             this.enableContentProtection();
             this.preventScreenshot();
             this.blockCopyPaste();
@@ -30,8 +45,6 @@ window.SecurityProtection = {
             this.addWatermark();
             // 直接设为访客模式，不显示登录界面
             this.setGuestMode();
-        } else {
-            this.showOwnerWelcome();
         }
         
         // 保持高清显示
@@ -50,10 +63,21 @@ window.SecurityProtection = {
         // 检查所有可能的用户名来源
         this.currentUser = userInfo.username || storedUsername || sessionUsername || null;
         
-        // 只有特定账号才有完全权限
+        // 检测设备类型和开发者模式
+        const isMobile = this.detectMobileDevice();
+        const isDeveloperMode = this.detectDeveloperMode();
+        
+        console.log(`📱 设备检测: ${isMobile ? '移动设备' : '桌面设备'}`);
+        console.log(`🔧 开发者模式: ${isDeveloperMode ? '已启用' : '未启用'}`);
+        
+        // 权限判断逻辑
         if (this.currentUser === this.ownerAccount) {
             this.userLevel = 'owner';
             console.log(`👑 网站所有者已登录: ${this.currentUser}`);
+        } else if (isMobile && isDeveloperMode) {
+            // 手机在开发者模式下可以使用
+            this.userLevel = 'mobile_developer';
+            console.log(`📱🔧 移动设备开发者模式用户: ${this.currentUser || '未登录'}`);
         } else {
             this.userLevel = 'restricted';
             console.log(`🔒 受限用户: ${this.currentUser || '未登录'}`);
@@ -62,8 +86,107 @@ window.SecurityProtection = {
         console.log(`🔐 用户权限检查完成: ${this.userLevel}`);
     },
     
+    // 检测移动设备
+    detectMobileDevice() {
+        const userAgent = navigator.userAgent.toLowerCase();
+        const mobileKeywords = [
+            'android', 'iphone', 'ipad', 'ipod', 'blackberry', 
+            'windows phone', 'mobile', 'tablet'
+        ];
+        
+        return mobileKeywords.some(keyword => userAgent.includes(keyword));
+    },
+    
+    // 检测开发者模式
+    detectDeveloperMode() {
+        // 检测开发者工具是否打开
+        let devtools = false;
+        
+        // 方法1: 检测窗口大小变化
+        const threshold = 160;
+        const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+        const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+        
+        if (widthThreshold || heightThreshold) {
+            devtools = true;
+        }
+        
+        // 方法2: 检测控制台是否打开
+        const devtoolsOpen = /./;
+        devtoolsOpen.toString = function() {
+            devtools = true;
+        };
+        console.log('%c', devtoolsOpen);
+        
+        // 方法3: 检测Firebug
+        if (window.console && (window.console.firebug || window.console.exception)) {
+            devtools = true;
+        }
+        
+        // 方法4: 检测Chrome开发者工具
+        if (window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) {
+            devtools = true;
+        }
+        
+        // 方法5: 检测Safari开发者工具
+        if (window.outerHeight - window.innerHeight > 200 || window.outerWidth - window.innerWidth > 200) {
+            devtools = true;
+        }
+        
+        return devtools;
+    },
+    
     // 启用内容保护
     enableContentProtection() {
+        // 根据用户级别决定保护强度
+        if (this.userLevel === 'owner' || this.userLevel === 'mobile_developer') {
+            // 所有者或移动设备开发者模式用户：轻度保护
+            console.log('🔓 启用轻度内容保护');
+            this.enableLightProtection();
+        } else {
+            // 其他用户：严格保护
+            console.log('🔒 启用严格内容保护');
+            this.enableStrictProtection();
+        }
+    },
+    
+    // 轻度保护（允许基本操作）
+    enableLightProtection() {
+        // 禁用拖拽
+        document.body.style.webkitUserDrag = 'none';
+        document.body.style.userDrag = 'none';
+        
+        // 添加轻度CSS保护
+        const style = document.createElement('style');
+        style.textContent = `
+            /* 保护图片 */
+            img {
+                -webkit-user-drag: none !important;
+                user-drag: none !important;
+            }
+            
+            /* 允许文本选择，但限制复制 */
+            * {
+                -webkit-user-select: auto;
+                -moz-user-select: auto;
+                -ms-user-select: auto;
+                user-select: auto;
+            }
+            
+            /* 输入框正常功能 */
+            input, textarea, [contenteditable] {
+                -webkit-user-select: text !important;
+                -moz-user-select: text !important;
+                -ms-user-select: text !important;
+                user-select: text !important;
+                pointer-events: auto !important;
+            }
+        `;
+        document.head.appendChild(style);
+    },
+    
+    // 严格保护（禁止所有复制操作）
+    enableStrictProtection() {
         // 禁用文本选择
         document.body.style.userSelect = 'none';
         document.body.style.webkitUserSelect = 'none';
@@ -74,7 +197,7 @@ window.SecurityProtection = {
         document.body.style.webkitUserDrag = 'none';
         document.body.style.userDrag = 'none';
         
-        // 添加CSS保护
+        // 添加严格CSS保护
         const style = document.createElement('style');
         style.textContent = `
             * {
@@ -171,6 +294,13 @@ window.SecurityProtection = {
     
     // 阻止复制粘贴
     blockCopyPaste() {
+        // 根据用户级别决定是否阻止复制
+        if (this.userLevel === 'owner' || this.userLevel === 'mobile_developer') {
+            // 所有者或移动设备开发者模式用户：允许复制
+            console.log('🔓 允许复制粘贴操作');
+            return;
+        }
+        
         // 禁用复制快捷键（允许输入但不允许复制）
         document.addEventListener('keydown', (e) => {
             // 检查是否在输入框中
@@ -234,6 +364,13 @@ window.SecurityProtection = {
     
     // 阻止开发者工具
     blockDevTools() {
+        // 根据用户级别决定是否阻止开发者工具
+        if (this.userLevel === 'owner' || this.userLevel === 'mobile_developer') {
+            // 所有者或移动设备开发者模式用户：允许开发者工具
+            console.log('🔓 允许开发者工具访问');
+            return;
+        }
+        
         // 监听F12和其他开发者工具快捷键
         document.addEventListener('keydown', (e) => {
             if (e.key === 'F12' || 
@@ -731,6 +868,39 @@ window.SecurityProtection = {
         setTimeout(() => {
             welcome.remove();
         }, 5000);
+    },
+    
+    // 显示移动设备开发者模式用户欢迎信息
+    showMobileDeveloperWelcome() {
+        const welcome = document.createElement('div');
+        welcome.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            z-index: 99998;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        `;
+        
+        welcome.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-mobile-alt"></i>
+                <div>
+                    <div style="font-weight: bold;">移动开发者模式</div>
+                    <div style="font-size: 12px; opacity: 0.9;">轻度保护已启用，可正常使用</div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(welcome);
+        
+        setTimeout(() => {
+            welcome.remove();
+        }, 4000);
     },
     
     // 显示受限用户欢迎信息
