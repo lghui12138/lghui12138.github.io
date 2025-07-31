@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>流体力学学习平台 - 动态版</title>
+    <title>🌊 流体力学学习平台 - 模块化动态版</title>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/quill/1.3.7/quill.min.js"></script>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdn.bootcdn.net/ajax/libs/quill/1.3.7/quill.snow.min.css" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -14,10 +17,87 @@
         }
 
         body {
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #006994 0%, #4facfe 25%, #00f2fe 50%, #006994 75%, #003d5b 100%);
+            background-size: 400% 400%;
+            animation: ocean-wave 15s ease-in-out infinite;
+            color: white;
             min-height: 100vh;
-            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes ocean-wave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* 海洋背景效果 */
+        .ocean-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .wave {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 150px;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 100"><path d="M0,50 Q250,0 500,50 T1000,50 L1000,100 L0,100 Z" fill="rgba(255,255,255,0.1)"/></svg>') repeat-x;
+            animation: wave-animation 20s linear infinite;
+        }
+
+        .wave:nth-child(2) {
+            bottom: 10px;
+            opacity: 0.8;
+            animation: wave-animation 18s linear infinite reverse;
+        }
+
+        .wave:nth-child(3) {
+            bottom: 20px;
+            opacity: 0.6;
+            animation: wave-animation 25s linear infinite;
+        }
+
+        @keyframes wave-animation {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* 游动的海洋生物 */
+        .ocean-creatures {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .fish {
+            position: absolute;
+            font-size: 2em;
+            opacity: 0.6;
+            animation: swim 25s linear infinite;
+        }
+
+        @keyframes swim {
+            0% { 
+                transform: translateX(-100px) translateY(0px);
+                opacity: 0;
+            }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { 
+                transform: translateX(calc(100vw + 100px)) translateY(-50px);
+                opacity: 0;
+            }
         }
 
         .app-container {
@@ -144,9 +224,60 @@
         .module-stats {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             font-size: 0.9em;
             color: #888;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .module-features {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .feature-tag {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .hero-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            border-radius: 15px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .hero-btn.secondary {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+        }
+
+        .hero-btn.accent {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            box-shadow: 0 8px 25px rgba(240, 147, 251, 0.3);
+        }
+
+        .hero-btn.warning {
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            box-shadow: 0 8px 25px rgba(255, 236, 210, 0.3);
+        }
+
+        .hero-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
         }
 
         .start-button {
@@ -291,12 +422,40 @@
 </head>
 <body>
     <div id="app">
-        <div class="app-container">
-            <!-- 头部 -->
-            <div class="header">
-                <h1><i class="fas fa-flask"></i> 流体力学学习平台</h1>
-                <p>动态智能学习系统 - 现代化教学体验</p>
+        <!-- 海洋背景 -->
+        <div class="ocean-bg">
+            <div class="wave"></div>
+            <div class="wave"></div>
+            <div class="wave"></div>
+        </div>
+
+        <!-- 游动的海洋生物 -->
+        <div class="ocean-creatures">
+            <div v-for="fish in oceanCreatures" :key="fish.id" 
+                 class="fish" 
+                 :style="{ 
+                     top: fish.y + 'px', 
+                     animationDelay: fish.delay + 's',
+                     animationDuration: fish.duration + 's'
+                 }">
+                {{ fish.icon }}
             </div>
+        </div>
+
+        <div class="app-container">
+            <!-- 现代化首页大标题 -->
+            <header class="modern-hero" style="min-height: 60vh; display: flex; align-items: center; justify-content: center;">
+                <div class="modern-hero-content" style="text-align: center;">
+                    <h1 style="font-size: 4rem; margin-bottom: 20px;">🌊 流体力学学习平台</h1>
+                    <p style="font-size: 1.5rem; opacity: 0.9; margin-bottom: 40px;">中国海洋大学803流体力学 · 智能题库 · AI助手 · 视频课程</p>
+                    <div style="display: flex; gap: 30px; justify-content: center; flex-wrap: wrap;">
+                        <button @click="navigateToModule('question-bank')" class="hero-btn">题库练习</button>
+                        <button @click="navigateToModule('video')" class="hero-btn secondary">视频学习</button>
+                        <button @click="navigateToModule('ai-assistant')" class="hero-btn accent">AI助手</button>
+                        <button @click="navigateToModule('teacher')" class="hero-btn warning">教师端</button>
+                    </div>
+                </div>
+            </header>
 
             <!-- 统计面板 -->
             <div class="stats-panel">
@@ -348,13 +507,18 @@
                     </div>
                     <div class="module-title">{{ module.title }}</div>
                     <div class="module-desc">{{ module.description }}</div>
-                    <div class="module-stats">
-                        <span><i class="far fa-file-alt"></i> {{ module.questionCount }}题</span>
-                        <span><i class="far fa-clock"></i> {{ module.estimatedTime }}分钟</span>
-                        <span :style="{ color: getDifficultyColor(module.difficulty) }">
-                            {{ getDifficultyText(module.difficulty) }}
-                        </span>
-                    </div>
+                                         <div class="module-stats">
+                         <span v-if="module.questionCount > 0"><i class="far fa-file-alt"></i> {{ module.questionCount }}题</span>
+                         <span v-if="module.estimatedTime > 0"><i class="far fa-clock"></i> {{ module.estimatedTime }}分钟</span>
+                         <span :style="{ color: getDifficultyColor(module.difficulty) }">
+                             {{ getDifficultyText(module.difficulty) }}
+                         </span>
+                     </div>
+                     <div class="module-features" v-if="module.features">
+                         <div class="feature-tag" v-for="feature in module.features.slice(0, 2)" :key="feature">
+                             {{ feature }}
+                         </div>
+                     </div>
                     <button class="start-button" @click.stop="startPractice(module)">
                         <i class="fas fa-play"></i> 开始练习
                     </button>
@@ -391,20 +555,117 @@
                     completedSessions: 0,
                     averageScore: 0,
                     studyTime: 0,
-                    learningModules: [
-                        {
-                            id: 'basic-concepts',
-                            title: '基础概念练习',
-                            description: '流体力学基本概念、定义和原理',
-                            icon: 'fas fa-graduation-cap',
-                            questionCount: 105,
-                            estimatedTime: 120,
-                            difficulty: 'easy',
-                            url: 'practice-dynamic.html?type=concepts'
-                        },
-                        {
-                            id: 'fluid-statics',
-                            title: '流体静力学',
+                                         oceanCreatures: [
+                         { id: 1, icon: '🐟', y: 100, delay: 0, duration: 25 },
+                         { id: 2, icon: '🐠', y: 200, delay: 5, duration: 30 },
+                         { id: 3, icon: '🐡', y: 300, delay: 10, duration: 20 },
+                         { id: 4, icon: '🦈', y: 150, delay: 15, duration: 35 },
+                         { id: 5, icon: '🐙', y: 400, delay: 20, duration: 40 },
+                         { id: 6, icon: '🦑', y: 250, delay: 25, duration: 28 }
+                     ],
+                     learningModules: [
+                         {
+                             id: 'intelligent-question-bank',
+                             title: '智能题库',
+                             description: 'AI驱动的题库系统，智能出题与练习，错题本、收藏、全屏模式',
+                             icon: 'fas fa-brain',
+                             questionCount: 728,
+                             estimatedTime: 180,
+                             difficulty: 'medium',
+                             url: 'practice-dynamic.html',
+                             features: ['AI智能推荐', '错题自动收集', '全屏练习模式', '语音朗读']
+                         },
+                         {
+                             id: 'video-learning',
+                             title: '视频学习',
+                             description: '精选流体力学视频课程，支持倍速播放、笔记记录、弹幕互动',
+                             icon: 'fas fa-video',
+                             questionCount: 30,
+                             estimatedTime: 600,
+                             difficulty: 'easy',
+                             url: 'modules/video-module.html',
+                             features: ['章节化课程', '进度跟踪', '视频笔记', '倍速播放']
+                         },
+                         {
+                             id: 'ai-assistant',
+                             title: 'AI学习助手',
+                             description: '智能学习助手，个性化答疑解惑，学习建议与知识点解析',
+                             icon: 'fas fa-robot',
+                             questionCount: 0,
+                             estimatedTime: 0,
+                             difficulty: 'easy',
+                             url: 'modules/ai-assistant-module.html',
+                             features: ['智能问答', '学习建议', '知识点补充', '个性化计划']
+                         },
+                         {
+                             id: 'fluid-statics',
+                             title: '流体静力学',
+                             description: '静止流体的压强分布和浮力计算专项练习',
+                             icon: 'fas fa-balance-scale',
+                             questionCount: 78,
+                             estimatedTime: 90,
+                             difficulty: 'medium',
+                             url: 'practice-dynamic.html?type=statics',
+                             features: ['专项练习', '典型例题', '计算技巧', '公式总结']
+                         },
+                         {
+                             id: 'fluid-dynamics',
+                             title: '流体动力学',
+                             description: '流体运动规律和动力学方程深度学习',
+                             icon: 'fas fa-rocket',
+                             questionCount: 92,
+                             estimatedTime: 110,
+                             difficulty: 'hard',
+                             url: 'practice-dynamic.html?type=dynamics',
+                             features: ['伯努利方程', '连续性方程', '动量方程', '高级应用']
+                         },
+                         {
+                             id: 'viscous-flow',
+                             title: '粘性流动',
+                             description: '粘性流体的运动特性和计算方法',
+                             icon: 'fas fa-water',
+                             questionCount: 33,
+                             estimatedTime: 45,
+                             difficulty: 'hard',
+                             url: 'practice-dynamic.html?type=viscous',
+                             features: ['雷诺数', '层流湍流', '管道流动', '边界层理论']
+                         },
+                         {
+                             id: 'exam-practice',
+                             title: '考试模式',
+                             description: '模拟真实考试环境的综合练习，限时答题',
+                             icon: 'fas fa-clipboard-check',
+                             questionCount: 50,
+                             estimatedTime: 120,
+                             difficulty: 'hard',
+                             url: 'practice-dynamic.html?type=exam',
+                             features: ['限时考试', '成绩统计', '答题分析', '错题回顾']
+                         },
+                         {
+                             id: 'real-exams',
+                             title: '历年真题',
+                             description: '中国海洋大学真题集(2000-2021)，权威题源',
+                             icon: 'fas fa-medal',
+                             questionCount: 329,
+                             estimatedTime: 200,
+                             difficulty: 'hard',
+                             url: 'practice-dynamic.html?type=real-exams',
+                             features: ['历年真题', '考点分析', '难度梯度', '命题规律']
+                         },
+                         {
+                             id: 'error-prone-questions',
+                             title: '易错题集',
+                             description: '流体力学易错名词及概念汇总，重点突破',
+                             icon: 'fas fa-exclamation-triangle',
+                             questionCount: 105,
+                             estimatedTime: 120,
+                             difficulty: 'medium',
+                             url: 'practice-dynamic.html?type=error-prone',
+                                                                                        features: ['易错概念', '名词辨析', '概念强化', '记忆技巧']
+                         },
+                         {
+                             id: 'fluid-statics-extra',
+                             title: '流体静力学',
                             description: '静止流体的压强分布和浮力计算',
                             icon: 'fas fa-balance-scale',
                             questionCount: 78,
@@ -460,12 +721,28 @@
                     this.showNotification(`正在进入 ${module.title}...`);
                     // 可以添加模块详情显示逻辑
                 },
-                startPractice(module) {
-                    this.showNotification(`开始 ${module.title} 练习！`);
-                    setTimeout(() => {
-                        window.location.href = module.url;
-                    }, 1000);
-                },
+                                 navigateToModule(moduleType) {
+                     const moduleUrls = {
+                         'question-bank': 'practice-dynamic.html',
+                         'video': 'modules/video-module.html',
+                         'ai-assistant': 'modules/ai-assistant-module.html',
+                         'teacher': 'teacher-panel.html'
+                     };
+                     
+                     this.showNotification(`正在进入${moduleType === 'question-bank' ? '题库练习' : 
+                                                     moduleType === 'video' ? '视频学习' :
+                                                     moduleType === 'ai-assistant' ? 'AI助手' : '教师端'}...`);
+                     
+                     setTimeout(() => {
+                         window.open(moduleUrls[moduleType], '_blank');
+                     }, 1000);
+                 },
+                 startPractice(module) {
+                     this.showNotification(`开始 ${module.title} 练习！`);
+                     setTimeout(() => {
+                         window.open(module.url, '_blank');
+                     }, 1000);
+                 },
                 toggleTeacherPanel() {
                     this.showTeacherPanel = !this.showTeacherPanel;
                     this.showNotification(this.showTeacherPanel ? '教师面板已打开' : '教师面板已关闭');

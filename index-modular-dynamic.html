@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌊 流体力学学习平台 - 模块化入口</title>
+    
+    <!-- 外部依赖 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- 共享组件库 -->
+    <script src="js/shared-components.js"></script>
+    
+    <style>
+        :root {
+            --ocean-primary: #006994;
+            --ocean-secondary: #4facfe;
+            --ocean-accent: #00f2fe;
+            --ocean-deep: #003d5b;
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--ocean-primary) 0%, var(--ocean-secondary) 25%, var(--ocean-accent) 50%, var(--ocean-primary) 75%, var(--ocean-deep) 100%);
+            background-size: 400% 400%;
+            animation: ocean-wave 15s ease-in-out infinite;
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        @keyframes ocean-wave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .hero-section {
+            text-align: center;
+            padding: 80px 20px;
+            margin-bottom: 50px;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            opacity: 0.9;
+            margin-bottom: 40px;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeIn 1s ease-out 0.4s both;
+        }
+
+        .hero-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--glass-bg);
+            color: white;
+            border: 2px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.2);
+        }
+
+        .modules-section {
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+        }
+
+        .stats-section {
+            margin-bottom: 50px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            border-top: 1px solid var(--glass-border);
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            margin-top: 50px;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .floating-action {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--ocean-secondary), var(--ocean-accent));
+            color: white;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .floating-action:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.4);
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 海洋背景组件 -->
+        <ocean-background></ocean-background>
+
+        <!-- 通知组件 -->
+        <notification-component :notification="notification" @close="notification = ''"></notification-component>
+
+        <!-- 加载组件 -->
+        <loading-spinner :show="loading" text="正在加载模块..."></loading-spinner>
+
+        <div class="app-container" v-if="!loading">
+            <!-- 英雄区域 -->
+            <section class="hero-section">
+                <h1 class="hero-title">🌊 流体力学学习平台</h1>
+                <p class="hero-subtitle">中国海洋大学803流体力学 · 模块化智能学习系统</p>
+                <div class="hero-buttons">
+                    <button @click="quickStart('practice')" class="hero-btn">
+                        <i class="fas fa-rocket"></i> 立即开始练习
+                    </button>
+                    <button @click="quickStart('video')" class="hero-btn">
+                        <i class="fas fa-video"></i> 观看教学视频
+                    </button>
+                    <button @click="quickStart('ai')" class="hero-btn">
+                        <i class="fas fa-robot"></i> AI学习助手
+                    </button>
+                </div>
+            </section>
+
+            <!-- 统计面板 -->
+            <section class="stats-section">
+                <stats-panel 
+                    :total-questions="totalQuestions"
+                    :completed-sessions="completedSessions" 
+                    :average-score="averageScore"
+                    :study-time="studyTime">
+                </stats-panel>
+            </section>
+
+            <!-- 学习模块 -->
+            <section class="modules-section">
+                <h2 class="section-title">📚 学习模块</h2>
+                <div class="modules-grid">
+                    <module-card 
+                        v-for="module in learningModules" 
+                        :key="module.id"
+                        :module="module"
+                        @click="openModule"
+                        @start="startModule">
+                    </module-card>
+                </div>
+            </section>
+        </div>
+
+        <!-- 底部信息 -->
+        <footer class="footer">
+            <p>&copy; 2024 流体力学智能学习平台 | 模块化动态版本 v{{ version }}</p>
+            <p>基于 Vue.js 3.0 构建 | 现代化模块化架构</p>
+        </footer>
+
+        <!-- 浮动操作按钮 -->
+        <button class="floating-action" @click="showQuickActions" title="快速操作">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            mixins: [SharedMixin],
+            components: {
+                'ocean-background': OceanBackground,
+                'notification-component': NotificationComponent,
+                'module-card': ModuleCard,
+                'stats-panel': StatsPanel,
+                'loading-spinner': LoadingSpinner
+            },
+            data() {
+                return {
+                    version: '2.0.0',
+                    totalQuestions: 728,
+                    completedSessions: 0,
+                    averageScore: 0,
+                    studyTime: 0,
+                    learningModules: [
+                        {
+                            id: 'intelligent-practice',
+                            title: '🧠 智能题库练习',
+                            description: 'AI驱动的智能题库系统，自适应学习路径，错题本管理',
+                            icon: 'fas fa-brain',
+                            questionCount: 728,
+                            estimatedTime: 180,
+                            difficulty: 'medium',
+                            url: 'modules/practice-dynamic.html',
+                            features: ['AI推荐', '错题收集', '全屏模式'],
+                            badge: { type: 'recommended', text: '推荐' }
+                        },
+                        {
+                            id: 'video-learning',
+                            title: '🎥 视频课程学习',
+                            description: '精选流体力学视频课程，章节化学习，进度跟踪',
+                            icon: 'fas fa-video',
+                            questionCount: 0,
+                            estimatedTime: 600,
+                            difficulty: 'easy',
+                            url: 'modules/video-dynamic.html',
+                            features: ['章节学习', '进度跟踪', '笔记功能'],
+                            badge: { type: 'hot', text: '热门' }
+                        },
+                        {
+                            id: 'ai-assistant',
+                            title: '🤖 AI学习助手',
+                            description: '智能问答系统，个性化学习建议，知识点解析',
+                            icon: 'fas fa-robot',
+                            questionCount: 0,
+                            estimatedTime: 0,
+                            difficulty: 'easy',
+                            url: 'modules/ai-assistant-dynamic.html',
+                            features: ['智能问答', '学习建议', '个性化'],
+                            badge: { type: 'new', text: '新功能' }
+                        },
+                        {
+                            id: 'exam-mode',
+                            title: '📝 考试模拟',
+                            description: '真实考试环境模拟，限时答题，成绩分析',
+                            icon: 'fas fa-clipboard-check',
+                            questionCount: 50,
+                            estimatedTime: 120,
+                            difficulty: 'hard',
+                            url: 'modules/exam-dynamic.html',
+                            features: ['限时考试', '成绩分析', '错题回顾']
+                        },
+                        {
+                            id: 'real-exams',
+                            title: '🏆 历年真题',
+                            description: '中国海洋大学历年真题集，权威题源，考点分析',
+                            icon: 'fas fa-medal',
+                            questionCount: 329,
+                            estimatedTime: 200,
+                            difficulty: 'hard',
+                            url: 'modules/real-exams-dynamic.html',
+                            features: ['历年真题', '考点分析', '难度梯度']
+                        },
+                        {
+                            id: 'teacher-panel',
+                            title: '👨‍🏫 教师管理',
+                            description: '教师端管理系统，题库管理，学生进度监控',
+                            icon: 'fas fa-chalkboard-teacher',
+                            questionCount: 0,
+                            estimatedTime: 0,
+                            difficulty: 'medium',
+                            url: 'modules/teacher-dynamic.html',
+                            features: ['题库管理', '进度监控', '数据分析']
+                        }
+                    ]
+                }
+            },
+            methods: {
+                quickStart(type) {
+                    const urls = {
+                        practice: 'modules/practice-dynamic.html',
+                        video: 'modules/video-dynamic.html',
+                        ai: 'modules/ai-assistant-dynamic.html'
+                    };
+                    
+                    const names = {
+                        practice: '题库练习',
+                        video: '视频学习',
+                        ai: 'AI助手'
+                    };
+                    
+                    this.showNotification(`正在启动${names[type]}...`, 'info');
+                    setTimeout(() => {
+                        this.navigateToModule(urls[type]);
+                    }, 1000);
+                },
+                
+                openModule(module) {
+                    this.showNotification(`正在打开 ${module.title}...`, 'info');
+                    setTimeout(() => {
+                        this.navigateToModule(module.url);
+                    }, 800);
+                },
+                
+                startModule(module) {
+                    this.showNotification(`开始学习 ${module.title}！`, 'success');
+                    this.navigateToModule(module.url);
+                },
+                
+                showQuickActions() {
+                    // 这里可以展开快速操作菜单
+                    this.showNotification('快速操作功能开发中...', 'info');
+                },
+                
+                loadUserStats() {
+                    const stats = this.loadFromStorage('userStats', {});
+                    this.completedSessions = stats.completedSessions || 0;
+                    this.averageScore = stats.averageScore || 0;
+                    this.studyTime = stats.studyTime || 0;
+                }
+            },
+            
+            mounted() {
+                console.log('🌊 模块化动态平台启动成功！');
+                this.setLoading(true);
+                
+                // 模拟加载过程
+                setTimeout(() => {
+                    this.loadUserStats();
+                    this.setLoading(false);
+                    this.showNotification('欢迎来到流体力学学习平台！', 'success');
+                }, 1500);
+                
+                // 定期更新学习时长
+                setInterval(() => {
+                    if (document.visibilityState === 'visible') {
+                        this.studyTime += 1;
+                        this.saveToStorage('userStats', {
+                            completedSessions: this.completedSessions,
+                            averageScore: this.averageScore,
+                            studyTime: this.studyTime
+                        });
+                    }
+                }, 60000); // 每分钟更新一次
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html> 

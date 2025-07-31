@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 智能题库练习 - 流体力学学习平台</title>
+    
+    <!-- 外部依赖 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- 共享组件库 -->
+    <script src="../js/shared-components.js"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #006994 0%, #4facfe 100%);
+            margin: 0;
+            font-family: 'SF Pro Display', sans-serif;
+            color: white;
+        }
+
+        .practice-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .practice-header {
+            text-align: center;
+            padding: 40px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 30px;
+        }
+
+        .question-panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            color: #333;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .question-title {
+            font-size: 1.4em;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .options-container {
+            margin-bottom: 30px;
+        }
+
+        .option-item {
+            background: #f8f9fa;
+            border: 3px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .option-item:hover {
+            border-color: #007bff;
+            background: #e3f2fd;
+            transform: translateX(10px);
+        }
+
+        .option-item.selected {
+            border-color: #007bff;
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            color: #0056b3;
+            font-weight: bold;
+        }
+
+        .option-item.correct {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+        }
+
+        .option-item.incorrect {
+            border-color: #dc3545;
+            background: linear-gradient(135deg, #f8d7da, #f1b0b7);
+            color: #721c24;
+        }
+
+        .controls-panel {
+            background: linear-gradient(135deg, #f8f9fa, #e3f2fd);
+            border-radius: 20px;
+            border: 3px solid #2196F3;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            min-width: 150px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+
+        .control-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .control-btn.save {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+
+        .result-panel {
+            margin-top: 30px;
+            padding: 30px;
+            border-radius: 20px;
+            animation: slideIn 0.6s ease-out;
+        }
+
+        .result-panel.correct {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            border: 4px solid #28a745;
+        }
+
+        .result-panel.incorrect {
+            background: linear-gradient(135deg, #f8d7da, #f1b0b7);
+            border: 4px solid #dc3545;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .stats-bar {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div id="practiceApp">
+        <!-- 海洋背景 -->
+        <ocean-background></ocean-background>
+
+        <!-- 通知组件 -->
+        <notification-component :notification="notification" @close="notification = ''"></notification-component>
+
+        <!-- 加载动画 -->
+        <loading-spinner :show="loading" text="正在加载题目..."></loading-spinner>
+
+        <div class="practice-container" v-if="!loading">
+            <!-- 页面头部 -->
+            <header class="practice-header">
+                <h1><i class="fas fa-brain"></i> 智能题库练习</h1>
+                <p>AI驱动的自适应学习系统</p>
+            </header>
+
+            <!-- 统计信息 -->
+            <div class="stats-bar">
+                <div style="display: flex; justify-content: space-around; flex-wrap: wrap;">
+                    <div><strong>总题数:</strong> {{ questions.length }}</div>
+                    <div><strong>当前:</strong> {{ currentIndex + 1 }} / {{ questions.length }}</div>
+                    <div><strong>正确率:</strong> {{ correctRate }}%</div>
+                    <div><strong>用时:</strong> {{ formatTime(elapsedTime) }}</div>
+                </div>
+            </div>
+
+            <!-- 题目面板 -->
+            <div class="question-panel" v-if="currentQuestion">
+                <div class="question-header">
+                    <div class="question-progress">
+                        第 {{ currentIndex + 1 }} 题 / 共 {{ questions.length }} 题
+                    </div>
+                    <div class="difficulty-badge" :class="'difficulty-' + currentQuestion.difficulty">
+                        {{ getDifficultyText(currentQuestion.difficulty) }}
+                    </div>
+                </div>
+
+                <div class="question-title">
+                    {{ currentQuestion.title }}
+                </div>
+
+                <div class="options-container">
+                    <div 
+                        v-for="(option, index) in currentQuestion.options" 
+                        :key="index"
+                        class="option-item"
+                        :class="{
+                            'selected': selectedOption === index && !answered,
+                            'correct': answered && index === currentQuestion.answer,
+                            'incorrect': answered && selectedOption === index && index !== currentQuestion.answer
+                        }"
+                        @click="selectOption(index)"
+                    >
+                        {{ String.fromCharCode(65 + index) }}. {{ option }}
+                    </div>
+                </div>
+
+                <!-- 控制面板 -->
+                <div class="controls-panel">
+                    <div style="color: #1976d2; font-weight: bold; font-size: 18px; margin-bottom: 10px;">
+                        🎯 操作控制台
+                    </div>
+                    <div style="color: #666; font-size: 14px; margin-bottom: 20px;">
+                        {{ answered ? '已提交答案，查看下方解析' : '选择答案后点击提交按钮' }}
+                    </div>
+                    
+                    <div class="control-buttons">
+                        <button 
+                            class="control-btn" 
+                            @click="submitAnswer"
+                            :disabled="answered || selectedOption === null"
+                        >
+                            {{ answered ? '✅ 已提交' : '🚀 提交答案' }}
+                        </button>
+                        
+                        <button class="control-btn save" @click="saveProgress">
+                            💾 保存进度
+                        </button>
+                        
+                        <button class="control-btn" style="background: #6c757d;" @click="skipQuestion">
+                            ⏭️ 跳过此题
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 答案解析 -->
+                <div v-if="answered" class="result-panel" :class="isCorrect ? 'correct' : 'incorrect'">
+                    <div style="text-align: center; margin-bottom: 25px;">
+                        <div style="font-size: 32px; margin-bottom: 10px;">
+                            {{ isCorrect ? '✅' : '❌' }}
+                        </div>
+                        <div style="font-size: 24px; font-weight: bold;" :style="{ color: isCorrect ? '#28a745' : '#dc3545' }">
+                            {{ isCorrect ? '回答正确！' : '回答错误！' }}
+                        </div>
+                    </div>
+
+                    <div style="background: #fff; padding: 25px; border-radius: 15px; margin-bottom: 20px;">
+                        <div style="font-size: 18px; color: #333; margin-bottom: 15px;">
+                            <strong>🎯 正确答案：</strong>
+                            <span style="background: #ffc107; padding: 5px 15px; border-radius: 8px; color: #000; font-weight: bold;">
+                                {{ String.fromCharCode(65 + currentQuestion.answer) }}
+                            </span>
+                        </div>
+                        <div style="font-size: 16px; color: #666; line-height: 1.8;">
+                            {{ currentQuestion.options[currentQuestion.answer] }}
+                        </div>
+                    </div>
+
+                    <div style="background: #e7f3ff; padding: 25px; border-radius: 15px;">
+                        <div style="font-size: 18px; color: #0056b3; font-weight: bold; margin-bottom: 15px;">
+                            💡 详细解析：
+                        </div>
+                        <div style="font-size: 16px; color: #333; line-height: 1.8;">
+                            {{ currentQuestion.explanation }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 导航按钮 -->
+                <div class="nav-buttons">
+                    <button class="nav-btn" @click="previousQuestion" :disabled="currentIndex === 0">
+                        ← 上一题
+                    </button>
+                    <button class="nav-btn" @click="nextQuestion" v-if="currentIndex < questions.length - 1">
+                        下一题 →
+                    </button>
+                    <button class="nav-btn" @click="showResults" v-else style="background: #28a745;">
+                        查看成绩 🎉
+                    </button>
+                </div>
+            </div>
+
+            <!-- 最终结果 -->
+            <div v-if="showFinalResults" class="question-panel">
+                <div style="text-align: center; padding: 40px;">
+                    <h2 style="color: #007bff; margin-bottom: 30px;">🎉 练习完成！</h2>
+                    <div style="font-size: 24px; margin-bottom: 20px;">
+                        总题数：{{ questions.length }} 题
+                    </div>
+                    <div style="font-size: 24px; margin-bottom: 20px;">
+                        正确数：{{ correctCount }} 题
+                    </div>
+                    <div style="font-size: 28px; font-weight: bold; color: #28a745; margin-bottom: 30px;">
+                        正确率：{{ correctRate }}%
+                    </div>
+                    <div style="font-size: 18px; color: #666; margin-bottom: 30px;">
+                        用时：{{ formatTime(elapsedTime) }}
+                    </div>
+                    <button class="control-btn" @click="resetPractice">
+                        🔄 再次练习
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            mixins: [SharedMixin],
+            components: {
+                'ocean-background': OceanBackground,
+                'notification-component': NotificationComponent,
+                'loading-spinner': LoadingSpinner
+            },
+            data() {
+                return {
+                    questions: [],
+                    currentIndex: 0,
+                    selectedOption: null,
+                    answered: false,
+                    showFinalResults: false,
+                    correctCount: 0,
+                    userAnswers: [],
+                    startTime: Date.now(),
+                    elapsedTime: 0
+                }
+            },
+            computed: {
+                currentQuestion() {
+                    return this.questions[this.currentIndex] || {};
+                },
+                isCorrect() {
+                    return this.selectedOption === this.currentQuestion.answer;
+                },
+                correctRate() {
+                    if (this.userAnswers.length === 0) return 0;
+                    return Math.round((this.correctCount / this.userAnswers.length) * 100);
+                }
+            },
+            methods: {
+                initQuestions() {
+                    // 获取URL参数确定题库类型
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const type = urlParams.get('type') || 'default';
+                    
+                    // 根据类型加载不同题库
+                    this.questions = this.getQuestionsByType(type);
+                    this.shuffleQuestions();
+                },
+                
+                getQuestionsByType(type) {
+                    const questionBanks = {
+                        'default': this.getDefaultQuestions(),
+                        'statics': this.getStaticsQuestions(),
+                        'dynamics': this.getDynamicsQuestions(),
+                        'viscous': this.getViscousQuestions(),
+                        'exam': this.getExamQuestions(),
+                        'real-exams': this.getRealExamQuestions(),
+                        'error-prone': this.getErrorProneQuestions()
+                    };
+                    
+                    return questionBanks[type] || questionBanks['default'];
+                },
+                
+                getDefaultQuestions() {
+                    return [
+                        {
+                            title: "流体静力学中，静止流体内部任意一点的压强大小",
+                            options: [
+                                "与该点所在深度成正比",
+                                "与该点所在深度成反比", 
+                                "与流体密度无关",
+                                "只取决于大气压强"
+                            ],
+                            answer: 0,
+                            explanation: "根据流体静力学基本方程，静止流体内部压强随深度线性增加，p = p0 + ρgh，因此压强与深度成正比。",
+                            difficulty: 'easy'
+                        },
+                        {
+                            title: "理想流体的特征包括",
+                            options: [
+                                "有粘性、不可压缩",
+                                "无粘性、可压缩",
+                                "无粘性、不可压缩", 
+                                "有粘性、可压缩"
+                            ],
+                            answer: 2,
+                            explanation: "理想流体是一种理论假设的流体，具有无粘性和不可压缩两个主要特征。",
+                            difficulty: 'easy'
+                        },
+                        {
+                            title: "连续性方程的物理意义是",
+                            options: [
+                                "能量守恒",
+                                "动量守恒",
+                                "质量守恒",
+                                "角动量守恒"
+                            ],
+                            answer: 2,
+                            explanation: "连续性方程反映了流体流动过程中质量守恒的基本原理，即单位时间内流入和流出控制体的质量相等。",
+                            difficulty: 'medium'
+                        },
+                        {
+                            title: "伯努利方程适用于",
+                            options: [
+                                "任意流体的流动",
+                                "理想流体的定常流动",
+                                "粘性流体的非定常流动",
+                                "可压缩流体的流动"
+                            ],
+                            answer: 1,
+                            explanation: "伯努利方程基于理想流体、定常流动、沿流线等假设条件，反映了流动过程中机械能守恒。",
+                            difficulty: 'medium'
+                        },
+                        {
+                            title: "雷诺数的物理意义是表示",
+                            options: [
+                                "流体的密度",
+                                "流体的粘度", 
+                                "惯性力与粘性力的比值",
+                                "压力与速度的关系"
+                            ],
+                            answer: 2,
+                            explanation: "雷诺数Re = ρVL/μ，表示惯性力与粘性力的比值，是判断流动状态（层流或湍流）的重要无量纲参数。",
+                            difficulty: 'hard'
+                        }
+                    ];
+                },
+                
+                getStaticsQuestions() {
+                    // 流体静力学专题题目
+                    return this.getDefaultQuestions().filter(q => q.title.includes('静力学') || q.title.includes('压强'));
+                },
+                
+                getDifficultyText(difficulty) {
+                    const texts = {
+                        'easy': '简单',
+                        'medium': '中等',
+                        'hard': '困难'
+                    };
+                    return texts[difficulty] || '未知';
+                },
+                
+                selectOption(index) {
+                    if (!this.answered) {
+                        this.selectedOption = index;
+                    }
+                },
+                
+                submitAnswer() {
+                    if (this.selectedOption === null || this.answered) return;
+                    
+                    this.answered = true;
+                    this.userAnswers.push({
+                        questionIndex: this.currentIndex,
+                        selected: this.selectedOption,
+                        correct: this.selectedOption === this.currentQuestion.answer
+                    });
+                    
+                    if (this.isCorrect) {
+                        this.correctCount++;
+                        this.showNotification('回答正确！', 'success');
+                    } else {
+                        this.showNotification('回答错误，请查看解析', 'warning');
+                    }
+                },
+                
+                nextQuestion() {
+                    if (this.currentIndex < this.questions.length - 1) {
+                        this.currentIndex++;
+                        this.selectedOption = null;
+                        this.answered = false;
+                    }
+                },
+                
+                previousQuestion() {
+                    if (this.currentIndex > 0) {
+                        this.currentIndex--;
+                        this.selectedOption = null;
+                        this.answered = false;
+                    }
+                },
+                
+                skipQuestion() {
+                    this.showNotification('跳过当前题目', 'info');
+                    this.nextQuestion();
+                },
+                
+                showResults() {
+                    this.showFinalResults = true;
+                },
+                
+                resetPractice() {
+                    this.currentIndex = 0;
+                    this.selectedOption = null;
+                    this.answered = false;
+                    this.showFinalResults = false;
+                    this.correctCount = 0;
+                    this.userAnswers = [];
+                    this.startTime = Date.now();
+                    this.shuffleQuestions();
+                    this.showNotification('重新开始练习！', 'success');
+                },
+                
+                shuffleQuestions() {
+                    for (let i = this.questions.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [this.questions[i], this.questions[j]] = [this.questions[j], this.questions[i]];
+                    }
+                },
+                
+                saveProgress() {
+                    const progressData = {
+                        currentIndex: this.currentIndex,
+                        userAnswers: this.userAnswers,
+                        correctCount: this.correctCount,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    this.saveToStorage('practiceProgress', progressData);
+                    this.showNotification('进度已保存！', 'success');
+                },
+                
+                updateTimer() {
+                    this.elapsedTime = Math.floor((Date.now() - this.startTime) / 1000);
+                }
+            },
+            
+            mounted() {
+                console.log('🧠 智能题库练习模块启动！');
+                this.setLoading(true);
+                
+                setTimeout(() => {
+                    this.initQuestions();
+                    this.setLoading(false);
+                    this.showNotification('题库加载完成，开始练习！', 'success');
+                }, 1000);
+                
+                // 定时器更新
+                setInterval(this.updateTimer, 1000);
+            }
+        }).mount('#practiceApp');
+    </script>
+</body>
+</html> 

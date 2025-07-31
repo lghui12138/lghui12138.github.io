@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎥 视频课程学习 - 流体力学学习平台</title>
+    
+    <!-- 外部依赖 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- 共享组件库 -->
+    <script src="../js/shared-components.js"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            font-family: 'SF Pro Display', sans-serif;
+            color: white;
+        }
+
+        .video-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .video-header {
+            text-align: center;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .course-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            color: #333;
+        }
+
+        .course-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+        }
+
+        .course-thumbnail {
+            position: relative;
+            height: 200px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            color: white;
+        }
+
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.7);
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .play-overlay:hover {
+            background: rgba(0,0,0,0.9);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .course-info {
+            padding: 25px;
+        }
+
+        .course-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .course-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .course-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9em;
+            color: #888;
+            margin-bottom: 20px;
+        }
+
+        .course-progress {
+            background: #f0f0f0;
+            border-radius: 10px;
+            height: 8px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            height: 100%;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .course-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333;
+            border: 2px solid #dee2e6;
+        }
+
+        .video-player {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .player-container {
+            position: relative;
+            background: #000;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        .video-placeholder {
+            aspect-ratio: 16/9;
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2em;
+        }
+
+        .player-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .control-button {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 8px 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .control-button:hover {
+            background: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .notes-panel {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            color: #333;
+        }
+
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .note-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .note-time {
+            color: #667eea;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .note-content {
+            margin-top: 8px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="videoApp">
+        <!-- 海洋背景 -->
+        <ocean-background></ocean-background>
+
+        <!-- 通知组件 -->
+        <notification-component :notification="notification" @close="notification = ''"></notification-component>
+
+        <!-- 加载动画 -->
+        <loading-spinner :show="loading" text="正在加载课程..."></loading-spinner>
+
+        <div class="video-container" v-if="!loading">
+            <!-- 页面头部 -->
+            <header class="video-header">
+                <h1><i class="fas fa-video"></i> 视频课程学习</h1>
+                <p>精选流体力学视频课程，系统化学习知识点</p>
+            </header>
+
+            <!-- 视频播放器 -->
+            <div v-if="currentVideo" class="video-player">
+                <h2 style="margin-bottom: 20px;">{{ currentVideo.title }}</h2>
+                
+                <div class="player-container">
+                    <div class="video-placeholder">
+                        <div style="text-align: center;">
+                            <i class="fas fa-play-circle" style="font-size: 3em; margin-bottom: 20px;"></i>
+                            <div>{{ currentVideo.title }}</div>
+                            <div style="font-size: 0.6em; margin-top: 10px; opacity: 0.8;">
+                                点击播放按钮开始学习
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="player-controls">
+                    <div class="control-group">
+                        <button class="control-button" @click="togglePlay">
+                            <i :class="isPlaying ? 'fas fa-pause' : 'fas fa-play'"></i>
+                            {{ isPlaying ? '暂停' : '播放' }}
+                        </button>
+                        <button class="control-button" @click="changeSpeed">
+                            <i class="fas fa-tachometer-alt"></i>
+                            {{ playSpeed }}x
+                        </button>
+                        <button class="control-button" @click="toggleFullscreen">
+                            <i class="fas fa-expand"></i>
+                            全屏
+                        </button>
+                    </div>
+                    
+                    <div class="control-group">
+                        <button class="control-button" @click="addNote">
+                            <i class="fas fa-sticky-note"></i>
+                            添加笔记
+                        </button>
+                        <button class="control-button" @click="markCompleted">
+                            <i class="fas fa-check"></i>
+                            标记完成
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; color: #666;">
+                    <strong>课程描述：</strong>{{ currentVideo.description }}
+                </div>
+            </div>
+
+            <!-- 课程列表 -->
+            <div class="course-grid">
+                <div 
+                    v-for="course in courses" 
+                    :key="course.id"
+                    class="course-card"
+                    @click="selectCourse(course)"
+                >
+                    <div class="course-thumbnail">
+                        {{ course.icon }}
+                        <div class="play-overlay" @click.stop="playCourse(course)">
+                            <i class="fas fa-play" style="color: white; font-size: 24px;"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="course-info">
+                        <h3 class="course-title">{{ course.title }}</h3>
+                        <p class="course-description">{{ course.description }}</p>
+                        
+                        <div class="course-meta">
+                            <span><i class="far fa-clock"></i> {{ course.duration }}</span>
+                            <span><i class="fas fa-signal"></i> {{ course.difficulty }}</span>
+                            <span><i class="far fa-eye"></i> {{ course.views }} 观看</span>
+                        </div>
+                        
+                        <div class="course-progress">
+                            <div class="progress-bar" :style="{ width: course.progress + '%' }"></div>
+                        </div>
+                        
+                        <div class="course-actions">
+                            <button class="action-btn btn-primary" @click.stop="playCourse(course)">
+                                <i class="fas fa-play"></i> 
+                                {{ course.progress > 0 ? '继续学习' : '开始学习' }}
+                            </button>
+                            <button class="action-btn btn-secondary" @click.stop="toggleFavorite(course)">
+                                <i :class="course.isFavorite ? 'fas fa-heart' : 'far fa-heart'"></i>
+                                {{ course.isFavorite ? '已收藏' : '收藏' }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 学习笔记 -->
+            <div class="notes-panel" v-if="notes.length > 0">
+                <div class="notes-header">
+                    <h3><i class="fas fa-sticky-note"></i> 学习笔记</h3>
+                    <button class="control-button" @click="exportNotes">
+                        <i class="fas fa-download"></i> 导出笔记
+                    </button>
+                </div>
+                
+                <div class="note-item" v-for="note in notes" :key="note.id">
+                    <div class="note-time">{{ note.time }} - {{ note.course }}</div>
+                    <div class="note-content">{{ note.content }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            mixins: [SharedMixin],
+            components: {
+                'ocean-background': OceanBackground,
+                'notification-component': NotificationComponent,
+                'loading-spinner': LoadingSpinner
+            },
+            data() {
+                return {
+                    currentVideo: null,
+                    isPlaying: false,
+                    playSpeed: 1.0,
+                    notes: [],
+                    courses: [
+                        {
+                            id: 1,
+                            title: '流体力学基础概念',
+                            description: '流体的定义、性质和基本假设，建立流体力学的基础认知',
+                            duration: '45分钟',
+                            difficulty: '简单',
+                            views: 1250,
+                            progress: 75,
+                            icon: '📚',
+                            isFavorite: false
+                        },
+                        {
+                            id: 2,
+                            title: '流体静力学原理',
+                            description: '静止流体的压强分布规律，浮力原理和工程应用',
+                            duration: '60分钟',
+                            difficulty: '中等',
+                            views: 980,
+                            progress: 30,
+                            icon: '⚖️',
+                            isFavorite: true
+                        },
+                        {
+                            id: 3,
+                            title: '流体运动学基础',
+                            description: '流体运动的描述方法，速度场和加速度场的概念',
+                            duration: '55分钟',
+                            difficulty: '中等',
+                            views: 756,
+                            progress: 0,
+                            icon: '🌊',
+                            isFavorite: false
+                        },
+                        {
+                            id: 4,
+                            title: '连续性方程',
+                            description: '质量守恒定律在流体力学中的应用，连续性方程的推导和应用',
+                            duration: '40分钟',
+                            difficulty: '中等',
+                            views: 892,
+                            progress: 100,
+                            icon: '🔄',
+                            isFavorite: false
+                        },
+                        {
+                            id: 5,
+                            title: '伯努利方程',
+                            description: '能量守恒在流体中的表现，伯努利方程的推导和工程应用',
+                            duration: '70分钟',
+                            difficulty: '困难',
+                            views: 634,
+                            progress: 15,
+                            icon: '⚡',
+                            isFavorite: true
+                        },
+                        {
+                            id: 6,
+                            title: '粘性流动理论',
+                            description: '粘性流体的运动规律，雷诺数和层流湍流转换',
+                            duration: '65分钟',
+                            difficulty: '困难',
+                            views: 423,
+                            progress: 0,
+                            icon: '🌀',
+                            isFavorite: false
+                        }
+                    ]
+                }
+            },
+            methods: {
+                selectCourse(course) {
+                    this.currentVideo = course;
+                    this.showNotification(`选择课程：${course.title}`, 'info');
+                },
+                
+                playCourse(course) {
+                    this.currentVideo = course;
+                    this.isPlaying = true;
+                    this.showNotification(`开始播放：${course.title}`, 'success');
+                },
+                
+                togglePlay() {
+                    this.isPlaying = !this.isPlaying;
+                    this.showNotification(this.isPlaying ? '开始播放' : '暂停播放', 'info');
+                },
+                
+                changeSpeed() {
+                    const speeds = [0.5, 0.75, 1.0, 1.25, 1.5, 2.0];
+                    const currentIndex = speeds.indexOf(this.playSpeed);
+                    this.playSpeed = speeds[(currentIndex + 1) % speeds.length];
+                    this.showNotification(`播放速度：${this.playSpeed}x`, 'info');
+                },
+                
+                toggleFullscreen() {
+                    this.showNotification('全屏功能开发中...', 'info');
+                },
+                
+                addNote() {
+                    const content = prompt('请输入笔记内容：');
+                    if (content) {
+                        const note = {
+                            id: Date.now(),
+                            time: new Date().toLocaleTimeString(),
+                            course: this.currentVideo.title,
+                            content: content
+                        };
+                        this.notes.unshift(note);
+                        this.saveToStorage('videoNotes', this.notes);
+                        this.showNotification('笔记已添加！', 'success');
+                    }
+                },
+                
+                markCompleted() {
+                    if (this.currentVideo) {
+                        this.currentVideo.progress = 100;
+                        this.saveToStorage('courseProgress', this.courses);
+                        this.showNotification('课程已标记为完成！', 'success');
+                    }
+                },
+                
+                toggleFavorite(course) {
+                    course.isFavorite = !course.isFavorite;
+                    this.saveToStorage('favorites', this.courses.filter(c => c.isFavorite));
+                    this.showNotification(
+                        course.isFavorite ? '已添加到收藏' : '已取消收藏', 
+                        course.isFavorite ? 'success' : 'info'
+                    );
+                },
+                
+                exportNotes() {
+                    const notesText = this.notes.map(note => 
+                        `${note.time} - ${note.course}\n${note.content}\n\n`
+                    ).join('');
+                    
+                    const blob = new Blob([notesText], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = '流体力学学习笔记.txt';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    this.showNotification('笔记已导出！', 'success');
+                },
+                
+                loadProgress() {
+                    const savedProgress = this.loadFromStorage('courseProgress', []);
+                    if (savedProgress.length > 0) {
+                        savedProgress.forEach(saved => {
+                            const course = this.courses.find(c => c.id === saved.id);
+                            if (course) {
+                                course.progress = saved.progress;
+                            }
+                        });
+                    }
+                    
+                    const savedNotes = this.loadFromStorage('videoNotes', []);
+                    this.notes = savedNotes;
+                    
+                    const savedFavorites = this.loadFromStorage('favorites', []);
+                    savedFavorites.forEach(fav => {
+                        const course = this.courses.find(c => c.id === fav.id);
+                        if (course) {
+                            course.isFavorite = true;
+                        }
+                    });
+                }
+            },
+            
+            mounted() {
+                console.log('🎥 视频学习模块启动！');
+                this.setLoading(true);
+                
+                setTimeout(() => {
+                    this.loadProgress();
+                    this.setLoading(false);
+                    this.showNotification('视频课程加载完成！', 'success');
+                }, 1200);
+            }
+        }).mount('#videoApp');
+    </script>
+</body>
+</html> 
