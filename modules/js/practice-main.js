@@ -11,7 +11,7 @@ window.PracticeApp = {
                     loading: true,
                     loadingText: '正在初始化...',
                     isFullscreen: false,
-                    currentView: 'selector', // 'selector' | 'practice'
+                    currentView: 'selector', // 'selector' | 'practice' | 'realExamSelector'
                     
                     // 通知系统
                     notification: {
@@ -28,6 +28,10 @@ window.PracticeApp = {
                     allQuestions: [],
                     questions: [], // 当前练习的题目
                     totalQuestions: 0,
+                    
+                    // 真题相关数据
+                    realExamYears: [],
+                    isRealExamMode: false,
                     
                     // 筛选条件
                     filters: {
@@ -241,7 +245,11 @@ window.PracticeApp = {
                 },
 
                 backToSelector() {
-                    this.currentView = 'selector';
+                    if (this.isRealExamMode) {
+                        this.currentView = 'realExamSelector';
+                    } else {
+                        this.currentView = 'selector';
+                    }
                     this.resetQuestionState();
                 },
 
@@ -285,6 +293,216 @@ window.PracticeApp = {
                 updateFilters(newFilters) {
                     this.filters = { ...newFilters };
                     localStorage.setItem(PracticeConfig.storageKeys.filters, JSON.stringify(this.filters));
+                },
+
+                // 真题练习处理
+                async handleRealExamPractice(examId, examYear, examMode = 'all') {
+                    console.log('📚 处理真题练习请求:', { examId, examYear, examMode });
+                    
+                    this.loading = true;
+                    this.loadingText = '正在加载真题数据...';
+                    
+                    try {
+                        // 加载真题数据
+                        await this.loadRealExamData(examId, examYear, examMode);
+                        
+                        // 根据模式决定如何开始练习
+                        if (examMode === 'all') {
+                            // 显示真题选择器
+                            this.showRealExamSelector();
+                        } else {
+                            // 自动开始练习
+                            this.startRealExamPractice(examId, examYear, examMode);
+                        }
+                        
+                    } catch (error) {
+                        console.error('❌ 真题练习初始化失败:', error);
+                        this.showNotification('真题练习初始化失败: ' + error.message, 'error');
+                        this.loading = false;
+                    }
+                },
+
+                // 加载真题数据
+                async loadRealExamData(examId, examYear, examMode = 'all') {
+                    console.log('📖 加载真题数据:', { examId, examYear, examMode });
+                    
+                    try {
+                        // 从真题文件加载数据
+                        const response = await fetch('../question-banks/真题_中国海洋大学_2000-2021_cleaned.json');
+                        if (!response.ok) {
+                            throw new Error('真题文件加载失败');
+                        }
+                        
+                        const allExamQuestions = await response.json();
+                        
+                        // 处理题目数据
+                        const processedQuestions = allExamQuestions.map(q => ({
+                            ...q,
+                            bankId: 'real-exam',
+                            bank: '历年真题',
+                            bankName: `${q.year}年真题`,
+                            category: '历年真题',
+                            difficulty: this.getDifficultyByScore(q.score),
+                            options: q.options || [],
+                            answer: q.answer || '',
+                            explanation: q.explanation || ''
+                        }));
+                        
+                        // 根据模式和年份筛选题目
+                        let filteredQuestions = processedQuestions;
+                        
+                        if (examYear && examYear !== 'all') {
+                            filteredQuestions = processedQuestions.filter(q => q.year === parseInt(examYear));
+                            console.log(`📅 筛选${examYear}年真题: ${filteredQuestions.length}题`);
+                        }
+                        
+                        if (filteredQuestions.length === 0) {
+                            throw new Error(`未找到${examYear || ''}年的真题数据`);
+                        }
+                        
+                        // 存储所有题目和年份信息
+                        this.allQuestions = filteredQuestions;
+                        this.realExamYears = this.getRealExamYears(processedQuestions);
+                        
+                        // 构建题库信息
+                        this.availableBanks = this.buildRealExamBanks(processedQuestions, examYear);
+                        this.totalQuestions = this.allQuestions.length;
+                        
+                        console.log(`✅ 真题数据加载完成: ${this.allQuestions.length}题，${this.realExamYears.length}个年份`);
+                        
+                    } catch (error) {
+                        console.error('❌ 真题数据加载失败:', error);
+                        throw error;
+                    }
+                },
+
+                // 开始真题练习
+                startRealExamPractice(examId, examYear, examMode = 'normal') {
+                    console.log('🎯 开始真题练习:', { examId, examYear, examMode });
+                    
+                    // 设置真题模式
+                    this.isRealExamMode = true;
+                    
+                    // 设置练习题目
+                    this.questions = [...this.allQuestions];
+                    
+                    // 根据模式处理题目
+                    if (examMode === 'random') {
+                        this.questions = PracticeUtils.shuffleArray([...this.questions]);
+                    }
+                    
+                    this.currentView = 'practice';
+                    this.currentQuestionIndex = 0;
+                    this.stats.startTime = Date.now();
+                    this.resetQuestionState();
+                    
+                    // 更新加载状态
+                    this.loading = false;
+                    
+                    // 显示练习信息
+                    const yearText = examYear ? `${examYear}年` : '历年';
+                    const modeText = examMode === 'random' ? '随机' : '顺序';
+                    this.showNotification(`🎯 开始${yearText}真题${modeText}练习！共 ${this.questions.length} 道题目`, 'success');
+                    
+                    // 保存真题练习状态
+                    localStorage.setItem('currentRealExamPractice', JSON.stringify({
+                        examId,
+                        examYear,
+                        examMode,
+                        startTime: Date.now(),
+                        totalQuestions: this.questions.length
+                    }));
+                },
+
+                // 根据分数判断难度
+                getDifficultyByScore(score) {
+                    if (score <= 5) return 'easy';
+                    if (score <= 10) return 'medium';
+                    return 'hard';
+                },
+
+                // 获取真题年份列表
+                getRealExamYears(questions) {
+                    const years = [...new Set(questions.map(q => q.year))].sort((a, b) => b - a);
+                    return years.map(year => ({
+                        year,
+                        count: questions.filter(q => q.year === year).length,
+                        label: `${year}年 (${questions.filter(q => q.year === year).length}题)`
+                    }));
+                },
+
+                // 构建真题题库信息
+                buildRealExamBanks(questions, selectedYear) {
+                    const banks = [];
+                    
+                    // 添加"所有真题"选项
+                    banks.push({
+                        id: 'real-exam-all',
+                        name: '所有历年真题',
+                        description: `中国海洋大学历年真题合集 (${questions.length}题)`,
+                        questionCount: questions.length,
+                        year: 'all'
+                    });
+                    
+                    // 按年份添加题库
+                    const years = this.getRealExamYears(questions);
+                    years.forEach(yearInfo => {
+                        banks.push({
+                            id: `real-exam-${yearInfo.year}`,
+                            name: `${yearInfo.year}年真题`,
+                            description: `${yearInfo.year}年中国海洋大学流体力学真题 (${yearInfo.count}题)`,
+                            questionCount: yearInfo.count,
+                            year: yearInfo.year
+                        });
+                    });
+                    
+                    return banks;
+                },
+
+                // 显示真题选择器
+                showRealExamSelector() {
+                    this.loading = false;
+                    this.currentView = 'realExamSelector';
+                    this.showNotification('请选择要练习的真题年份', 'info');
+                },
+
+                // 开始特定年份的真题练习
+                startYearPractice(year, mode = 'normal') {
+                    let selectedQuestions = [];
+                    
+                    if (year === 'all') {
+                        selectedQuestions = [...this.allQuestions];
+                    } else {
+                        selectedQuestions = this.allQuestions.filter(q => q.year === year);
+                    }
+                    
+                    if (selectedQuestions.length === 0) {
+                        this.showNotification(`未找到${year}年的真题`, 'warning');
+                        return;
+                    }
+                    
+                    // 根据模式处理题目
+                    if (mode === 'random') {
+                        selectedQuestions = PracticeUtils.shuffleArray([...selectedQuestions]);
+                    }
+                    
+                    this.questions = selectedQuestions;
+                    this.currentView = 'practice';
+                    this.currentQuestionIndex = 0;
+                    this.stats.startTime = Date.now();
+                    this.resetQuestionState();
+                    
+                    const yearText = year === 'all' ? '所有年份' : `${year}年`;
+                    const modeText = mode === 'random' ? '随机' : '顺序';
+                    this.showNotification(`🎯 开始${yearText}真题${modeText}练习！共 ${selectedQuestions.length} 道题目`, 'success');
+                    
+                    // 保存真题练习状态
+                    localStorage.setItem('currentRealExamPractice', JSON.stringify({
+                        year,
+                        mode,
+                        startTime: Date.now(),
+                        totalQuestions: selectedQuestions.length
+                    }));
                 },
 
                 // 学生反馈功能
@@ -394,14 +612,26 @@ window.PracticeApp = {
             mounted() {
                 console.log('🧠 智能题库练习启动！');
                 
-                // 初始化
-                setTimeout(() => {
-                    this.loadProgress();
-                    this.updateStats();
-                    this.initParticles();
-                    this.loading = false;
-                    this.showNotification('欢迎来到智能题库！点击"批量加载所有题库"开始', 'info');
-                }, 1500);
+                // 检查URL参数，判断是否为真题练习
+                const urlParams = new URLSearchParams(window.location.search);
+                const examType = urlParams.get('type');
+                const examId = urlParams.get('exam');
+                const examYear = urlParams.get('year');
+                const examMode = urlParams.get('mode');
+                
+                if (examType === 'real') {
+                    console.log('📚 检测到真题练习请求:', { examType, examId, examYear, examMode });
+                    this.handleRealExamPractice(examId, examYear, examMode);
+                } else {
+                    // 普通练习模式
+                    setTimeout(() => {
+                        this.loadProgress();
+                        this.updateStats();
+                        this.initParticles();
+                        this.loading = false;
+                        this.showNotification('欢迎来到智能题库！点击"批量加载所有题库"开始', 'info');
+                    }, 1500);
+                }
 
                 // 绑定键盘事件
                 document.addEventListener('keydown', this.handleKeyboard);
@@ -428,6 +658,7 @@ window.PracticeApp = {
                 'notification-component': PracticeComponents.NotificationComponent,
                 'fullscreen-controls': PracticeComponents.FullscreenControls,
                 'question-bank-selector': PracticeComponents.QuestionBankSelector,
+                'real-exam-selector': PracticeComponents.RealExamSelector,
                 'practice-interface': PracticeComponents.PracticeInterface,
                 'keyboard-hints': PracticeComponents.KeyboardHints
             }

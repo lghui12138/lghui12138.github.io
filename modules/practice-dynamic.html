@@ -1089,48 +1089,48 @@
 
             <!-- 练习界面 -->
             <div v-if="currentView === 'practice'">
-                <!-- 练习统计 -->
-                <div class="practice-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">{{ currentQuestionIndex + 1 }}</div>
-                        <div class="stat-label">当前题目</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">{{ questions.length }}</div>
-                        <div class="stat-label">总题目数</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">{{ correctAnswers }}</div>
-                        <div class="stat-label">正确题数</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">{{ Math.round((correctAnswers / Math.max(answeredQuestions, 1)) * 100) }}%</div>
-                        <div class="stat-label">正确率</div>
-                    </div>
+            <!-- 练习统计 -->
+            <div class="practice-stats">
+                <div class="stat-item">
+                    <div class="stat-value">{{ currentQuestionIndex + 1 }}</div>
+                    <div class="stat-label">当前题目</div>
                 </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ questions.length }}</div>
+                    <div class="stat-label">总题目数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ correctAnswers }}</div>
+                    <div class="stat-label">正确题数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">{{ Math.round((correctAnswers / Math.max(answeredQuestions, 1)) * 100) }}%</div>
+                    <div class="stat-label">正确率</div>
+                </div>
+            </div>
 
-                <!-- 题目卡片 -->
-                <div v-if="currentQuestion" class="question-card">
-                    <div class="question-header">
-                        <div class="question-number">
-                            第 {{ currentQuestionIndex + 1 }} 题
+            <!-- 题目卡片 -->
+            <div v-if="currentQuestion" class="question-card">
+                <div class="question-header">
+                    <div class="question-number">
+                        第 {{ currentQuestionIndex + 1 }} 题
                             <span v-if="currentQuestion.bank" style="font-size: 0.8em; opacity: 0.8;">
                                 ({{ currentQuestion.bank }})
                             </span>
-                        </div>
+                    </div>
                         <div :class="['question-difficulty', `difficulty-${currentQuestion.difficulty || 'medium'}`]">
-                            {{ getDifficultyText(currentQuestion.difficulty) }}
-                        </div>
+                        {{ getDifficultyText(currentQuestion.difficulty) }}
                     </div>
+                </div>
 
-                    <div class="question-title">
-                        {{ currentQuestion.title }}
-                    </div>
+                <div class="question-title">
+                    {{ currentQuestion.title }}
+                </div>
 
                     <div class="question-content" v-if="currentQuestion.content" v-html="currentQuestion.content"></div>
 
                     <ul class="options-list" v-if="currentQuestion.options">
-                        <li v-for="(option, index) in currentQuestion.options" :key="index" class="option-item">
+                    <li v-for="(option, index) in currentQuestion.options" :key="index" class="option-item">
                             <label :class="[
                                 'option-label', 
                                 { 
@@ -1140,20 +1140,20 @@
                                 }
                             ]">
                                 <div class="option-letter">{{ String.fromCharCode(65 + index) }}</div>
-                                <input 
-                                    type="radio" 
-                                    :name="`question-${currentQuestionIndex}`"
-                                    :value="index"
-                                    v-model="selectedAnswer"
-                                    class="option-radio"
+                            <input 
+                                type="radio" 
+                                :name="`question-${currentQuestionIndex}`"
+                                :value="index"
+                                v-model="selectedAnswer"
+                                class="option-radio"
                                     style="display: none;"
-                                >
-                                {{ option }}
-                            </label>
-                        </li>
-                    </ul>
+                            >
+                            {{ option }}
+                        </label>
+                    </li>
+                </ul>
 
-                    <div class="action-buttons">
+                <div class="action-buttons">
                         <button @click="submitAnswer" class="action-btn" :disabled="selectedAnswer === null || showResult" title="提交答案 [Enter]">
                             <i class="fas fa-check"></i> 提交答案
                         </button>
@@ -1172,20 +1172,20 @@
                         <button @click="nextQuestion" class="action-btn" :disabled="currentQuestionIndex === questions.length - 1" title="下一题 [→]" style="flex: 1;">
                             下一题 <i class="fas fa-arrow-right"></i>
                         </button>
-                    </div>
+                </div>
 
-                    <!-- 答题结果显示 -->
-                    <div v-if="showResult" :class="['result-display', isCorrect ? 'result-correct' : 'result-incorrect']">
-                        <div>
-                            <i :class="['result-icon', isCorrect ? 'fas fa-check-circle' : 'fas fa-times-circle']"></i>
-                            <strong>{{ isCorrect ? '回答正确！' : '回答错误！' }}</strong>
+                <!-- 答题结果显示 -->
+                <div v-if="showResult" :class="['result-display', isCorrect ? 'result-correct' : 'result-incorrect']">
+                    <div>
+                        <i :class="['result-icon', isCorrect ? 'fas fa-check-circle' : 'fas fa-times-circle']"></i>
+                        <strong>{{ isCorrect ? '回答正确！' : '回答错误！' }}</strong>
                             <span v-if="!isCorrect && currentQuestion.options">
                                 正确答案是：{{ String.fromCharCode(65 + currentQuestion.answer) }}. {{ currentQuestion.options[currentQuestion.answer] }}
                             </span>
-                        </div>
-                        <div v-if="currentQuestion.explanation" class="explanation">
+                    </div>
+                    <div v-if="currentQuestion.explanation" class="explanation">
                             <strong>📖 解析：</strong>{{ currentQuestion.explanation }}
-                        </div>
+                    </div>
                     </div>
                 </div>
 
@@ -1660,9 +1660,9 @@
                     switch(event.key) {
                         case 'Enter':
                             if (this.currentView === 'practice') {
-                                event.preventDefault();
+                            event.preventDefault();
                                 if (!this.showResult) {
-                                    this.submitAnswer();
+                            this.submitAnswer();
                                 } else {
                                     this.nextQuestion();
                                 }
@@ -1670,14 +1670,14 @@
                             break;
                         case 'ArrowLeft':
                             if (this.currentView === 'practice') {
-                                event.preventDefault();
-                                this.previousQuestion();
+                            event.preventDefault();
+                            this.previousQuestion();
                             }
                             break;
                         case 'ArrowRight':
                             if (this.currentView === 'practice') {
-                                event.preventDefault();
-                                this.nextQuestion();
+                            event.preventDefault();
+                            this.nextQuestion();
                             }
                             break;
                         case 'F11':
@@ -1719,11 +1719,19 @@
             mounted() {
                 console.log('🧠 智能题库练习启动！');
                 
+                // 检查URL参数，处理真题模式
+                this.handleUrlParameters();
+                
                 // 初始化
                 setTimeout(() => {
                     this.loadProgress();
                     this.loading = false;
-                    this.showNotification('欢迎来到智能题库！点击"批量加载所有题库"开始', 'info');
+                    
+                    if (this.isRealExamMode) {
+                        this.showNotification(`开始练习${this.currentRealExam.year}年真题！`, 'success');
+                    } else {
+                        this.showNotification('欢迎来到智能题库！点击"批量加载所有题库"开始', 'info');
+                    }
                 }, 1500);
 
                 // 绑定键盘事件

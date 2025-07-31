@@ -758,8 +758,24 @@
                 
                 startPractice(exam) {
                     this.showNotification(`开始练习：${exam.title}`, 'success');
-                    // 跳转到练习页面，传递真题数据
-                    const practiceUrl = `../practice-fullscreen.html?type=real&bank=${encodeURIComponent(exam.id)}&mode=order`;
+                    
+                    // 将真题数据保存到localStorage，以便练习页面使用
+                    const examData = {
+                        id: exam.id,
+                        title: exam.title,
+                        year: exam.year || new Date().getFullYear(),
+                        questions: exam.questions || [],
+                        questionCount: exam.questionCount || 0,
+                        difficulty: exam.difficulty,
+                        topics: exam.topics || [],
+                        type: 'real-exam',
+                        source: 'real-exams-dynamic'
+                    };
+                    
+                    localStorage.setItem('currentRealExam', JSON.stringify(examData));
+                    
+                    // 跳转到模块化练习页面，并传递真题参数
+                    const practiceUrl = `practice-dynamic.html?type=real&exam=${encodeURIComponent(exam.id)}&year=${exam.year || new Date().getFullYear()}`;
                     window.location.href = practiceUrl;
                 },
                 
