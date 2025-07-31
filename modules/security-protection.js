@@ -28,7 +28,8 @@ window.SecurityProtection = {
             this.antiCrawler();
             this.protectImages();
             this.addWatermark();
-            this.addUserIdentification();
+            // 直接设为访客模式，不显示登录界面
+            this.setGuestMode();
         } else {
             this.showOwnerWelcome();
         }
@@ -92,7 +93,7 @@ window.SecurityProtection = {
                 user-select: none !important;
             }
             
-            /* 允许输入框正常输入 */
+            /* 允许输入框正常输入和选择（但复制仍被阻止） */
             input, textarea, [contenteditable] {
                 -webkit-user-select: text !important;
                 -moz-user-select: text !important;
@@ -170,32 +171,37 @@ window.SecurityProtection = {
     
     // 阻止复制粘贴
     blockCopyPaste() {
-        // 禁用复制快捷键（但允许在输入框中使用）
+        // 禁用复制快捷键（允许输入但不允许复制）
         document.addEventListener('keydown', (e) => {
             // 检查是否在输入框中
             const target = e.target;
             const isInputElement = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true';
             
-            if (!isInputElement && (e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || 
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || 
                 e.key === 'a' || e.key === 'A' || e.key === 'x' || e.key === 'X' ||
                 e.key === 's' || e.key === 'S')) {
-                e.preventDefault();
-                this.showWarning('复制功能已被禁用');
-                return false;
+                
+                // 如果是在输入框中，只允许全选（Ctrl+A），禁止复制
+                if (isInputElement && (e.key === 'c' || e.key === 'C' || e.key === 'x' || e.key === 'X')) {
+                    e.preventDefault();
+                    this.showWarning('复制功能已被禁用');
+                    return false;
+                }
+                // 如果不在输入框中，禁止所有操作
+                else if (!isInputElement) {
+                    e.preventDefault();
+                    this.showWarning('复制功能已被禁用');
+                    return false;
+                }
             }
         });
         
-        // 禁用复制事件（但允许在输入框中使用）
+        // 禁用所有复制事件
         document.addEventListener('copy', (e) => {
-            const target = e.target;
-            const isInputElement = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true';
-            
-            if (!isInputElement) {
-                e.preventDefault();
-                e.clipboardData.setData('text/plain', '');
-                this.showWarning('内容受到保护，无法复制');
-                return false;
-            }
+            e.preventDefault();
+            e.clipboardData.setData('text/plain', '');
+            this.showWarning('内容受到保护，无法复制');
+            return false;
         });
         
         // 禁用选择事件（但允许在输入框中使用）
@@ -758,6 +764,15 @@ window.SecurityProtection = {
         setTimeout(() => {
             welcome.remove();
         }, 4000);
+    },
+    
+    // 静默设置访客模式
+    setGuestMode() {
+        this.currentUser = 'guest';
+        this.userLevel = 'restricted';
+        localStorage.setItem('currentUsername', 'guest');
+        sessionStorage.setItem('currentUsername', 'guest');
+        console.log('👥 访客模式已启用（静默）');
     },
     
     // 显示访客欢迎信息
