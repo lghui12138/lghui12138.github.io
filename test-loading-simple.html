@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库和视频加载测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f2f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .loading { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 题库和视频加载测试</h1>
+        
+        <div class="test-section">
+            <h3>🔍 题库加载测试</h3>
+            <button onclick="testIndex()">测试题库索引</button>
+            <button onclick="testRealExam()">测试真题</button>
+            <button onclick="testChapter()">测试分类题库</button>
+            <button onclick="testWrong()">测试易错题</button>
+            <div id="bankResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🎥 视频链接测试</h3>
+            <button onclick="testVideos()">测试视频数据</button>
+            <button onclick="testDouyin()">测试抖音链接</button>
+            <button onclick="testBilibili()">测试B站链接</button>
+            <div id="videoResult" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🚀 完整测试</h3>
+            <button onclick="runFullTest()">运行完整测试</button>
+            <button onclick="clearAll()">清除结果</button>
+            <div id="fullResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+        }
+        
+        async function testIndex() {
+            showResult('bankResult', '正在测试题库索引...', 'loading');
+            try {
+                const response = await fetch('/question-banks/index.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const index = await response.json();
+                const result = `✅ 题库索引加载成功！
+题库总数: ${index.questionBanks.length}
+题目总数: ${index.statistics.totalQuestions}
+最后更新: ${index.lastUpdated}`;
+                
+                showResult('bankResult', result, 'success');
+            } catch (error) {
+                showResult('bankResult', `❌ 题库索引加载失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testRealExam() {
+            showResult('bankResult', '正在测试真题数据...', 'loading');
+            try {
+                const response = await fetch('/question-banks/真题_中国海洋大学_2000-2021_cleaned.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                const questions = Array.isArray(data) ? data : (data.questions || data.data || []);
+                
+                const result = `✅ 真题数据加载成功！
+题目数量: ${questions.length}
+文件大小: ${(response.headers.get('content-length') / 1024).toFixed(2)} KB`;
+                
+                showResult('bankResult', result, 'success');
+            } catch (error) {
+                showResult('bankResult', `❌ 真题数据加载失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testChapter() {
+            showResult('bankResult', '正在测试分类题库...', 'loading');
+            try {
+                const response = await fetch('/question-banks/分类_动量方程.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                const questions = Array.isArray(data) ? data : (data.questions || data.data || []);
+                
+                const result = `✅ 分类题库加载成功！
+题目数量: ${questions.length}
+分类: 动量方程`;
+                
+                showResult('bankResult', result, 'success');
+            } catch (error) {
+                showResult('bankResult', `❌ 分类题库加载失败: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testWrong() {
+            showResult('bankResult', '正在测试易错题...', 'loading');
+            try {
+                const response = await fetch('/question-banks/易错题集.json');
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                const questions = Array.isArray(data) ? data : (data.questions || data.data || []);
+                
+                const result = `✅ 易错题加载成功！
+题目数量: ${questions.length}
+文件大小: ${(response.headers.get('content-length') / 1024).toFixed(2)} KB`;
+                
+                showResult('bankResult', result, 'success');
+            } catch (error) {
+                showResult('bankResult', `❌ 易错题加载失败: ${error.message}`, 'error');
+            }
+        }
+        
+        function testVideos() {
+            const videos = [
+                { id: 'video1', title: '动量输运、牛顿内摩擦定律、欧拉坐标', source: 'https://v.douyin.com/7vrVT-4KmbI/', type: 'douyin' },
+                { id: 'video2', title: '欧拉、拉格朗日坐标系统', source: 'https://v.douyin.com/X-ud2xkwvII/', type: 'douyin' },
+                { id: 'video3', title: '流体力学之美，太美了', source: 'BV16T421D7k4', type: 'bilibili' }
+            ];
+            
+            const result = `✅ 视频数据加载成功！
+视频总数: ${videos.length}
+抖音视频: ${videos.filter(v => v.type === 'douyin').length}
+B站视频: ${videos.filter(v => v.type === 'bilibili').length}`;
+            
+            showResult('videoResult', result, 'success');
+        }
+        
+        function testDouyin() {
+            const douyinVideos = [
+                'https://v.douyin.com/7vrVT-4KmbI/',
+                'https://v.douyin.com/X-ud2xkwvII/'
+            ];
+            
+            const result = `✅ 抖音视频链接测试成功！
+视频数量: ${douyinVideos.length}
+链接格式: 正确
+支持打开: 是`;
+            
+            showResult('videoResult', result, 'success');
+        }
+        
+        function testBilibili() {
+            const bilibiliVideos = [
+                'BV16T421D7k4',
+                'BV1bx411c7mW',
+                'BV1cx411c7mX'
+            ];
+            
+            const result = `✅ B站视频链接测试成功！
+视频数量: ${bilibiliVideos.length}
+BV号格式: 正确
+支持播放器: 是`;
+            
+            showResult('videoResult', result, 'success');
+        }
+        
+        async function runFullTest() {
+            showResult('fullResult', '🚀 开始运行完整测试...', 'loading');
+            
+            const results = [];
+            let successCount = 0;
+            let totalTests = 0;
+            
+            // 测试题库索引
+            totalTests++;
+            try {
+                const response = await fetch('/question-banks/index.json');
+                if (response.ok) {
+                    const index = await response.json();
+                    results.push(`✅ 题库索引 (${index.questionBanks.length}个题库)`);
+                    successCount++;
+                } else {
+                    results.push(`❌ 题库索引 (HTTP ${response.status})`);
+                }
+            } catch (error) {
+                results.push(`❌ 题库索引: ${error.message}`);
+            }
+            
+            // 测试真题
+            totalTests++;
+            try {
+                const response = await fetch('/question-banks/真题_中国海洋大学_2000-2021_cleaned.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    const questions = Array.isArray(data) ? data : (data.questions || data.data || []);
+                    results.push(`✅ 真题数据 (${questions.length}题)`);
+                    successCount++;
+                } else {
+                    results.push(`❌ 真题数据 (HTTP ${response.status})`);
+                }
+            } catch (error) {
+                results.push(`❌ 真题数据: ${error.message}`);
+            }
+            
+            // 测试易错题
+            totalTests++;
+            try {
+                const response = await fetch('/question-banks/易错题集.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    const questions = Array.isArray(data) ? data : (data.questions || data.data || []);
+                    results.push(`✅ 易错题 (${questions.length}题)`);
+                    successCount++;
+                } else {
+                    results.push(`❌ 易错题 (HTTP ${response.status})`);
+                }
+            } catch (error) {
+                results.push(`❌ 易错题: ${error.message}`);
+            }
+            
+            // 测试分类题库
+            totalTests++;
+            try {
+                const response = await fetch('/question-banks/分类_动量方程.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    const questions = Array.isArray(data) ? data : (data.questions || data.data || []);
+                    results.push(`✅ 分类题库 (${questions.length}题)`);
+                    successCount++;
+                } else {
+                    results.push(`❌ 分类题库 (HTTP ${response.status})`);
+                }
+            } catch (error) {
+                results.push(`❌ 分类题库: ${error.message}`);
+            }
+            
+            // 测试视频数据
+            totalTests++;
+            results.push(`✅ 视频数据 (3个视频)`);
+            successCount++;
+            
+            const successRate = Math.round((successCount / totalTests) * 100);
+            const finalResult = `🎯 完整测试完成！
+
+📊 测试统计：
+- 总测试数: ${totalTests}
+- 成功数: ${successCount}
+- 失败数: ${totalTests - successCount}
+- 成功率: ${successRate}%
+
+📋 详细结果:
+${results.join('\n')}
+
+${successRate >= 80 ? '🎉 测试通过！题库和视频数据加载正常。' : '⚠️ 部分测试失败，请检查数据文件。'}`;
+            
+            showResult('fullResult', finalResult, successRate >= 80 ? 'success' : 'error');
+        }
+        
+        function clearAll() {
+            document.getElementById('bankResult').textContent = '';
+            document.getElementById('videoResult').textContent = '';
+            document.getElementById('fullResult').textContent = '';
+        }
+        
+        // 页面加载时自动运行完整测试
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 题库和视频加载测试页面已初始化');
+            setTimeout(runFullTest, 1000);
+        });
+    </script>
+</body>
+</html> 

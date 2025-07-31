@@ -2072,10 +2072,6 @@
   background: var(--gradient-success);
 }
 
-.achievement-item.locked .achievement-icon {
-  background: #ccc;
-}
-
 .achievement-info {
   flex: 1;
 }
@@ -2795,31 +2791,78 @@ input:focus, select:focus, textarea:focus {
   };
   document.title = (groupMap[type] || '题库') + ' - 流体力学学习平台';
   fetch('/question-banks/index.json').then(r=>r.json()).then(async index => {
-    let files = index[type] || [];
-    if (type === 'wrong' && files.length === 0) {
-      document.body.innerHTML = '<div style="text-align:center;padding:60px 0;font-size:1.3em;color:#888;">暂无易错题数据</div>';
+    // 根据类型映射到正确的题库文件
+    let files = [];
+    if (type === 'real') {
+      // 真题类型：加载所有真题文件
+      files = index.questionBanks.filter(bank => bank.category === '真题' || bank.filename.includes('真题')).map(bank => ({
+        file: bank.filename,
+        intro: bank.description,
+        count: bank.questionCount,
+        tags: bank.tags || []
+      }));
+    } else if (type === 'chapter') {
+      // 章节分类：加载所有分类文件
+      files = index.questionBanks.filter(bank => bank.category !== '真题' && bank.category !== '易错题' && !bank.filename.includes('真题')).map(bank => ({
+        file: bank.filename,
+        intro: bank.description,
+        count: bank.questionCount,
+        tags: bank.tags || []
+      }));
+    } else if (type === 'wrong') {
+      // 易错题：加载易错题文件
+      files = index.questionBanks.filter(bank => bank.category === '易错题').map(bank => ({
+        file: bank.filename,
+        intro: bank.description,
+        count: bank.questionCount,
+        tags: bank.tags || []
+      }));
+    }
+    
+    console.log(`📚 加载${type}类型题库，找到${files.length}个文件:`, files.map(f => f.file));
+    
+    if (files.length === 0) {
+      document.body.innerHTML = `<div style="text-align:center;padding:60px 0;font-size:1.3em;color:#888;">暂无${groupMap[type] || '题库'}数据</div>`;
       return;
     }
     // 预加载所有题库元信息
     let metaList = [];
     let tagSet = new Set();
     for (const item of files) {
-      const file = typeof item === 'string' ? item : item.file;
-      const intro = typeof item === 'string' ? '' : (item.intro || '');
-      let meta = { file, intro, count: 0, tags: [], preview: [] };
+      const file = item.file;
+      const intro = item.intro || '';
+      let meta = { file, intro, count: item.count || 0, tags: item.tags || [], preview: [] };
+      
       try {
+        console.log(`📖 正在加载题库文件: ${file}`);
         const res = await fetch('/question-banks/' + file);
+        if (!res.ok) {
+          console.error(`❌ 加载题库文件失败: ${file}, 状态: ${res.status}`);
+          continue;
+        }
+        
         const data = await res.json();
-        const arr = Array.isArray(data) ? data : (data.questions||data.data||[]);
+        const arr = Array.isArray(data) ? data : (data.questions || data.data || []);
         meta.count = arr.length;
-        meta.preview = arr.slice(0,3).map(q=>q.title||q.question||q.text||'').filter(Boolean);
-        let tags = new Set();
+        meta.preview = arr.slice(0, 3).map(q => q.title || q.question || q.text || '').filter(Boolean);
+        
+        // 收集标签和年份信息
+        let tags = new Set(item.tags || []);
         let years = new Set();
-        arr.forEach(q => { if(q.tags) q.tags.forEach(t=>{tags.add(t);tagSet.add(t);}); if(q.year) years.add(q.year); });
+        arr.forEach(q => { 
+          if(q.tags) q.tags.forEach(t => {tags.add(t); tagSet.add(t);}); 
+          if(q.year) years.add(q.year); 
+        });
         meta.tags = [...tags];
+        
         if(years.size) meta.intro += (meta.intro ? ' ' : '') + [...years].sort().join(',')+'年';
         if(tags.size) meta.intro += (meta.intro ? ' | ' : '') + [...tags].slice(0,3).join('、');
-      } catch {}
+        
+        console.log(`✅ 成功加载题库: ${file}, 题目数量: ${meta.count}`);
+      } catch (error) {
+        console.error(`❌ 加载题库文件出错: ${file}`, error);
+        // 即使加载失败也添加到列表中，显示基本信息
+      }
       metaList.push(meta);
     }
     // 搜索框
@@ -2966,57 +3009,6 @@ input:focus, select:focus, textarea:focus {
     updateCards();
   });
 })();
-        // ====== 题库选择与错题本功能 ======
-        let questions = [];
-        let current = 0;
-        let selected = null;
-        let answered = false;
-        let wrongBook = [];
-        let favBook = JSON.parse(localStorage.getItem('fullscreen_favbook')||'[]');
-        // 题库元信息结构扩展
-        let qbList = [];
-        const GITHUB_REPO = 'lghui12138/lghui12138.github.io';
-        const GITHUB_QB_DIR = 'question-banks';
-        const GITHUB_TOKEN_KEY = 'github_token';
-        let showAllQb = false;
-        function getGithubToken() { return localStorage.getItem(GITHUB_TOKEN_KEY) || ''; }
-        // 修改 fetchGithubQuestionBanks 以本地聚合分类题库
-        async function fetchGithubQuestionBanks() {
-          // 远程+本地分类题库
-          const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_QB_DIR}`;
-          const urlHidden = `https://api.github.com/repos/${GITHUB_REPO}/contents/${GITHUB_QB_DIR}/hidden`;
-          const token = getGithubToken();
-          const headers = token ? { 'Authorization': `token ${token}` } : {};
-          let files = [];
-          try {
-            const res = await fetch(url, {headers});
-            if (res.ok) files = await res.json();
-          } catch {}
-          if (showAllQb) {
-            try {
-              const res2 = await fetch(urlHidden, {headers});
-              if (res2.ok) {
-                const hidden = await res2.json();
-                files = files.concat(hidden.map(f=>({...f, hidden:true})));
-              }
-            } catch {}
-          }
-          // 本地分类题库聚合
-          try {
-            const localFiles = await fetch('/question-banks/').then(r=>r.text()).then(html=>{
-              // 解析目录列表
-              const matches = Array.from(html.matchAll(/href="([^"]+分类_[^"]+\.json)"/g));
-              return matches.map(m=>({name:decodeURIComponent(m[1]), value:m[1].replace(/\.[^.]+$/, ''), url:'/question-banks/'+m[1], hidden:false}));
-            });
-            files = files.concat(localFiles);
-          } catch {}
-          return files.filter(f => /\.(json|csv)$/i.test(f.name)).map(f => ({
-            name: f.name,
-            value: f.name.replace(/\.[^.]+$/, ''),
-            url: f.url,
-            hidden: !!f.hidden || (f.path && f.path.includes('/hidden/'))
-          }));
-        }
         async function renderQBSelect() {
             // 拉取题库元信息
             qbList = await fetchGithubQuestionBanksWithMeta();
@@ -4045,645 +4037,11 @@ input:focus, select:focus, textarea:focus {
             if(ok) showSuccess(`批量下架/上架完成！成功:${ok} 失败:${fail}`); else showError(`批量操作失败！成功:${ok} 失败:${fail}`);
             await renderQBSelect();
         }
-        // 监听筛选
-        ['qbTagFilter','qbLevelFilter','qbUploaderFilter'].forEach(id=>{
-          document.getElementById(id).addEventListener('change',renderQBSelect);
-        });
-        // 拉取题库元信息
-        async function fetchGithubQuestionBanksWithMeta() {
-          // 兼容原有fetchGithubQuestionBanks，假设文件名格式: name_level_tag1,tag2_uploader.json
-          const list = await fetchGithubQuestionBanks();
-          return list.map(qb=>{
-            // 解析元信息
-            let m = qb.name.match(/^(.+?)(?:_([a-z]+))?(?:_([\w,]+))?(?:_by([\w\u4e00-\u9fa5]+))?\.[a-z]+$/i);
-            let tags = [], level = '', uploader = '';
-            if(m){
-              level = m[2]||'';
-              tags = m[3]?m[3].split(','):[];
-              uploader = m[4]||'';
-            }
-            return {...qb, level, tags, uploader};
-          });
-        }
-        // 键盘快捷键
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'ArrowLeft') prevQuestion();
-            if (e.key === 'ArrowRight') nextQuestion();
-            if (e.key === 'Enter') { if (!answered) selectOption(selected??0); else nextQuestion(); }
-            if (e.key >= '1' && e.key <= '4') selectOption(Number(e.key)-1);
-            if (e.key === 'e' || e.key === 'E') toggleExplanation();
-            if (e.key === 'f' || e.key === 'F') toggleFav();
-            if (e.key === 'Escape') window.location.href = 'index-modular.html';
-        });
-        // 新增：做题时间计时器
-        let startTime = Date.now();
-        let timerInterval = null;
-        let questionStartTime = Date.now();
-        let questionTimes = [];
-
-        function startTimer() {
-            startTime = Date.now();
-            questionStartTime = Date.now();
-            timerInterval = setInterval(updateTimer, 1000);
-        }
-
-        function updateTimer() {
-            const elapsed = Math.floor((Date.now() - startTime) / 1000);
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = elapsed % 60;
-            document.getElementById('timerText').textContent = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-
-        function stopTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-        }
-
-        // 新增：做题统计
-        function updateStats() {
-            if (!questions.length) return;
-            
-            const total = questions.length;
-            const answered = questions.filter(q => typeof q.userSelected === 'number').length;
-            const correct = questions.filter(q => q.userSelected === q.answer).length;
-            const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
-            
-            // 计算平均用时
-            const avgTime = questionTimes.length > 0 ? 
-                Math.round(questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length) : 0;
-            
-            document.getElementById('totalQuestions').textContent = total;
-            document.getElementById('answeredQuestions').textContent = answered;
-            document.getElementById('accuracyRate').textContent = `${accuracy}%`;
-            document.getElementById('avgTime').textContent = `${avgTime}s`;
-        }
-
-        // 新增：题目导航
-        function updateQuestionNav() {
-            if (!questions.length) return;
-            
-            const nav = document.getElementById('questionNav');
-            nav.innerHTML = '';
-            
-            questions.forEach((q, index) => {
-                const item = document.createElement('button');
-                item.className = 'nav-item';
-                item.textContent = index + 1;
-                
-                if (index === current) {
-                    item.classList.add('current');
-                } else if (typeof q.userSelected === 'number') {
-                    if (q.userSelected === q.answer) {
-                        item.classList.add('answered');
-                    } else {
-                        item.classList.add('wrong');
-                    }
-                } else {
-                    item.classList.add('unanswered');
-                }
-                
-                item.onclick = () => {
-                    current = index;
-                    selected = null;
-                    answered = false;
-                    questionStartTime = Date.now();
-                    renderQuestion();
-                    updateQuestionNav();
-                };
-                
-                nav.appendChild(item);
-            });
-        }
-
-        // 新增：语音朗读功能
-        let speechSynthesis = window.speechSynthesis;
-        let currentUtterance = null;
-
-        function speakText(text) {
-            if (speechSynthesis) {
-                // 停止当前朗读
-                if (currentUtterance) {
-                    speechSynthesis.cancel();
-                }
-                
-                currentUtterance = new SpeechSynthesisUtterance(text);
-                currentUtterance.lang = 'zh-CN';
-                currentUtterance.rate = 0.8;
-                currentUtterance.pitch = 1;
-                
-                currentUtterance.onstart = () => {
-                    document.getElementById('voicePlayBtn').style.display = 'none';
-                    document.getElementById('voiceStopBtn').style.display = 'block';
-                };
-                
-                currentUtterance.onend = () => {
-                    document.getElementById('voicePlayBtn').style.display = 'block';
-                    document.getElementById('voiceStopBtn').style.display = 'none';
-                    currentUtterance = null;
-                };
-                
-                speechSynthesis.speak(currentUtterance);
-            }
-        }
-
-        function stopSpeaking() {
-            if (speechSynthesis) {
-                speechSynthesis.cancel();
-                document.getElementById('voicePlayBtn').style.display = 'block';
-                document.getElementById('voiceStopBtn').style.display = 'none';
-                currentUtterance = null;
-            }
-        }
-
-        // 新增：智能提示系统
-        function showSmartHint(message, duration = 3000) {
-            const hint = document.getElementById('smartHint');
-            hint.textContent = message;
-            hint.style.display = 'block';
-            
-            setTimeout(() => {
-                hint.style.display = 'none';
-            }, duration);
-        }
-
-        // 新增：做题模式管理
-        let currentMode = 'practice';
-        
-        function switchMode(mode) {
-            currentMode = mode;
-            
-            // 更新模式按钮状态
-            document.querySelectorAll('.mode-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            document.querySelector(`[data-mode="${mode}"]`).classList.add('active');
-            
-            // 根据模式调整行为
-            switch(mode) {
-                case 'exam':
-                    // 考试模式：隐藏答案，计时，不能返回
-                    showSmartHint('考试模式：答案将在提交后显示');
-                    break;
-                case 'review':
-                    // 复习模式：显示答案，可以查看解析
-                    showSmartHint('复习模式：可以查看答案和解析');
-                    break;
-                default:
-                    // 练习模式：正常做题
-                    showSmartHint('练习模式：正常做题');
-            }
-        }
-
-        // 新增：AI智能推荐系统
-        function showAiRecommendation() {
-            const aiPanel = document.getElementById('aiRecommendation');
-            const aiContent = document.getElementById('aiContent');
-            
-            // 分析用户做题情况
-            const total = questions.length;
-            const answered = questions.filter(q => typeof q.userSelected === 'number').length;
-            const correct = questions.filter(q => q.userSelected === q.answer).length;
-            const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
-            const avgTime = questionTimes.length > 0 ? 
-                Math.round(questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length) : 0;
-            
-            let recommendation = '';
-            
-            if (answered === 0) {
-                recommendation = '您还没有开始做题，建议先熟悉一下题目类型和难度。';
-            } else if (accuracy < 60) {
-                recommendation = `您的正确率较低（${accuracy}%），建议：<br>1. 仔细阅读题目和选项<br>2. 复习相关知识点<br>3. 多做同类型题目`;
-            } else if (accuracy < 80) {
-                recommendation = `您的正确率中等（${accuracy}%），建议：<br>1. 重点关注错题<br>2. 加强薄弱环节<br>3. 提高做题速度`;
-            } else {
-                recommendation = `您的正确率很高（${accuracy}%），建议：<br>1. 挑战更高难度题目<br>2. 提高做题效率<br>3. 帮助其他同学`;
-            }
-            
-            if (avgTime > 60) {
-                recommendation += '<br><br>⚠️ 您的平均用时较长，建议提高做题速度。';
-            }
-            
-            aiContent.innerHTML = recommendation;
-            aiPanel.classList.add('show');
-        }
-        
-        function hideAiRecommendation() {
-            document.getElementById('aiRecommendation').classList.remove('show');
-        }
-        
-        function applyAiRecommendation() {
-            hideAiRecommendation();
-            showSmartHint('AI建议已应用，继续加油！');
-        }
-        
-        // 新增：学习数据分析
-        function showAnalytics() {
-            const analyticsPanel = document.getElementById('analyticsPanel');
-            const analyticsChart = document.getElementById('analyticsChart');
-            const analyticsDetails = document.getElementById('analyticsDetails');
-            
-            // 生成图表数据
-            const total = questions.length;
-            const answered = questions.filter(q => typeof q.userSelected === 'number').length;
-            const correct = questions.filter(q => q.userSelected === q.answer).length;
-            const wrong = answered - correct;
-            const unanswered = total - answered;
-            
-            // 创建柱状图
-            const chartHTML = `
-                <div style="display: flex; align-items: end; justify-content: space-around; height: 100%; padding: 20px;">
-                    <div style="display: flex; flex-direction: column; align-items: center;">
-                        <div class="analytics-bar" style="height: ${(correct/total)*100}%; background: var(--success-color);" title="正确: ${correct}"></div>
-                        <div style="margin-top: 5px; font-size: 0.8em; color: #666;">正确</div>
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: center;">
-                        <div class="analytics-bar" style="height: ${(wrong/total)*100}%; background: var(--danger-color);" title="错误: ${wrong}"></div>
-                        <div style="margin-top: 5px; font-size: 0.8em; color: #666;">错误</div>
-                    </div>
-                    <div style="display: flex; flex-direction: column; align-items: center;">
-                        <div class="analytics-bar" style="height: ${(unanswered/total)*100}%; background: var(--light-gray);" title="未答: ${unanswered}"></div>
-                        <div style="margin-top: 5px; font-size: 0.8em; color: #666;">未答</div>
-                    </div>
-                </div>
-            `;
-            
-            analyticsChart.innerHTML = chartHTML;
-            
-            // 生成详细分析
-            const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
-            const avgTime = questionTimes.length > 0 ? 
-                Math.round(questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length) : 0;
-            
-            const detailsHTML = `
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 20px;">
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: var(--primary-color);">${total}</div>
-                        <div style="color: #666; font-size: 0.9em;">总题数</div>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: var(--success-color);">${correct}</div>
-                        <div style="color: #666; font-size: 0.9em;">答对题数</div>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: var(--warning-color);">${accuracy}%</div>
-                        <div style="color: #666; font-size: 0.9em;">正确率</div>
-                    </div>
-                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
-                        <div style="font-size: 1.5em; font-weight: bold; color: var(--info-color);">${avgTime}s</div>
-                        <div style="color: #666; font-size: 0.9em;">平均用时</div>
-                    </div>
-                </div>
-            `;
-            
-            analyticsDetails.innerHTML = detailsHTML;
-            analyticsPanel.classList.add('show');
-        }
-        
-        function hideAnalytics() {
-            document.getElementById('analyticsPanel').classList.remove('show');
-        }
-        
-        // 新增：社交分享功能
-        function showSharePanel() {
-            document.getElementById('sharePanel').classList.add('show');
-        }
-        
-        function hideSharePanel() {
-            document.getElementById('sharePanel').classList.remove('show');
-        }
-        
-        function shareToWechat() {
-            const shareData = generateShareData();
-            showSmartHint('请使用微信扫描二维码分享');
-            // 这里可以集成微信分享SDK
-        }
-        
-        function shareToQQ() {
-            const shareData = generateShareData();
-            const url = `https://connect.qq.com/widget/shareqq/index.html?url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(shareData.title)}&desc=${encodeURIComponent(shareData.desc)}`;
-            window.open(url, '_blank');
-        }
         
         function shareToWeibo() {
             const shareData = generateShareData();
             const url = `https://service.weibo.com/share/share.php?url=${encodeURIComponent(window.location.href)}&title=${encodeURIComponent(shareData.title)}`;
             window.open(url, '_blank');
-        }
-        
-        function copyShareLink() {
-            const shareData = generateShareData();
-            const shareText = `${shareData.title}\n${shareData.desc}\n${window.location.href}`;
-            
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(shareText).then(() => {
-                    showSmartHint('分享链接已复制到剪贴板');
-                });
-            } else {
-                // 兼容旧浏览器
-                const textArea = document.createElement('textarea');
-                textArea.value = shareText;
-                document.body.appendChild(textArea);
-                textArea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textArea);
-                showSmartHint('分享链接已复制到剪贴板');
-            }
-        }
-        
-        function generateShareData() {
-            const total = questions.length;
-            const answered = questions.filter(q => typeof q.userSelected === 'number').length;
-            const correct = questions.filter(q => q.userSelected === q.answer).length;
-            const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
-            
-            return {
-                title: '我在流体力学题库完成了做题！',
-                desc: `共${total}题，答对${correct}题，正确率${accuracy}%`
-            };
-        }
-        
-        // 新增：离线模式检测
-        function checkOfflineStatus() {
-            if (!navigator.onLine) {
-                document.getElementById('offlineIndicator').classList.add('show');
-                showSmartHint('当前处于离线模式，部分功能可能受限');
-            } else {
-                document.getElementById('offlineIndicator').classList.remove('show');
-            }
-        }
-        
-        // 新增：学习进度追踪
-        function updateProgressTracker() {
-            const today = new Date().toISOString().split('T')[0];
-            const todayQuestions = parseInt(localStorage.getItem(`questions_${today}`) || '0');
-            const streakDays = parseInt(localStorage.getItem('streak_days') || '0');
-            const totalQuestionsDone = parseInt(localStorage.getItem('total_questions_done') || '0');
-            
-            document.getElementById('todayQuestions').textContent = todayQuestions;
-            document.getElementById('streakDays').textContent = streakDays;
-            document.getElementById('totalQuestionsDone').textContent = totalQuestionsDone;
-            
-            // 显示进度追踪器
-            document.getElementById('progressTracker').classList.add('show');
-        }
-        
-        // 新增：主题切换功能
-        function initThemeSwitcher() {
-            const currentTheme = localStorage.getItem('selected_theme') || 'default';
-            applyTheme(currentTheme);
-            
-            document.querySelectorAll('.theme-btn').forEach(btn => {
-                btn.onclick = () => {
-                    const theme = btn.dataset.theme;
-                    applyTheme(theme);
-                    
-                    // 更新按钮状态
-                    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                };
-            });
-        }
-        
-        function applyTheme(theme) {
-            localStorage.setItem('selected_theme', theme);
-            
-            // 移除所有主题类
-            document.body.classList.remove('theme-default', 'theme-ocean', 'theme-sunset', 'theme-forest');
-            
-            // 应用新主题
-            if (theme !== 'default') {
-                document.body.classList.add(`theme-${theme}`);
-            }
-            
-            // 更新CSS变量
-            const themes = {
-                ocean: { primary: '#667eea', secondary: '#764ba2' },
-                sunset: { primary: '#f093fb', secondary: '#f5576c' },
-                forest: { primary: '#4facfe', secondary: '#00f2fe' }
-            };
-            
-            if (themes[theme]) {
-                document.documentElement.style.setProperty('--primary-color', themes[theme].primary);
-                document.documentElement.style.setProperty('--success-color', themes[theme].secondary);
-            }
-        }
-        
-        // 新增：学习进度更新
-        function updateLearningProgress() {
-            const today = new Date().toISOString().split('T')[0];
-            
-            // 更新今日做题数
-            const todayQuestions = parseInt(localStorage.getItem(`questions_${today}`) || '0');
-            localStorage.setItem(`questions_${today}`, todayQuestions + 1);
-            
-            // 更新总做题数
-            const totalQuestionsDone = parseInt(localStorage.getItem('total_questions_done') || '0');
-            localStorage.setItem('total_questions_done', totalQuestionsDone + 1);
-            
-            // 更新连续天数
-            const lastStudyDate = localStorage.getItem('last_study_date');
-            const streakDays = parseInt(localStorage.getItem('streak_days') || '0');
-            
-            if (lastStudyDate === today) {
-                // 今天已经学习过，不更新连续天数
-            } else if (lastStudyDate === getYesterdayDate()) {
-                // 昨天学习过，连续天数+1
-                localStorage.setItem('streak_days', streakDays + 1);
-            } else {
-                // 中断了，重置为1
-                localStorage.setItem('streak_days', 1);
-            }
-            
-            localStorage.setItem('last_study_date', today);
-            
-            // 更新显示
-            updateProgressTracker();
-        }
-        
-        function getYesterdayDate() {
-            const yesterday = new Date();
-            yesterday.setDate(yesterday.getDate() - 1);
-            return yesterday.toISOString().split('T')[0];
-        }
-        
-        // 新增：机器学习预测系统
-        function showMlPrediction() {
-            const mlPanel = document.getElementById('mlPrediction');
-            const predictionContent = document.getElementById('predictionContent');
-            const predictionChart = document.getElementById('predictionChart');
-            
-            // 分析学习数据
-            const total = questions.length;
-            const answered = questions.filter(q => typeof q.userSelected === 'number').length;
-            const correct = questions.filter(q => q.userSelected === q.answer).length;
-            const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
-            const avgTime = questionTimes.length > 0 ? 
-                Math.round(questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length) : 0;
-            
-            // 生成预测内容
-            let prediction = '';
-            let predictedAccuracy = 0;
-            
-            if (answered < 5) {
-                prediction = '数据不足，无法进行准确预测。建议继续做题以获得更多数据。';
-                predictedAccuracy = 50;
-            } else {
-                // 简单的线性回归预测
-                const recentAccuracy = calculateRecentAccuracy();
-                const timeTrend = calculateTimeTrend();
-                
-                if (recentAccuracy > 80 && timeTrend < 0) {
-                    prediction = '您的学习表现优秀！预测在接下来的题目中，正确率将保持在85%以上。';
-                    predictedAccuracy = 85;
-                } else if (recentAccuracy > 60) {
-                    prediction = '您的学习表现良好，预测正确率将稳定在70-80%之间。';
-                    predictedAccuracy = 75;
-                } else {
-                    prediction = '建议加强基础练习，预测正确率将逐步提升到65%左右。';
-                    predictedAccuracy = 65;
-                }
-            }
-            
-            predictionContent.innerHTML = prediction;
-            
-            // 生成预测图表
-            generatePredictionChart(predictionChart, accuracy, predictedAccuracy);
-            
-            mlPanel.classList.add('show');
-        }
-        
-        function hideMlPrediction() {
-            document.getElementById('mlPrediction').classList.remove('show');
-        }
-        
-        function calculateRecentAccuracy() {
-            const recentQuestions = questions.slice(-5);
-            const recentAnswered = recentQuestions.filter(q => typeof q.userSelected === 'number');
-            const recentCorrect = recentAnswered.filter(q => q.userSelected === q.answer);
-            return recentAnswered.length > 0 ? Math.round((recentCorrect.length / recentAnswered.length) * 100) : 0;
-        }
-        
-        function calculateTimeTrend() {
-            if (questionTimes.length < 3) return 0;
-            const recentTimes = questionTimes.slice(-3);
-            const avgRecent = recentTimes.reduce((a, b) => a + b, 0) / recentTimes.length;
-            const avgOverall = questionTimes.reduce((a, b) => a + b, 0) / questionTimes.length;
-            return avgRecent - avgOverall;
-        }
-        
-        function generatePredictionChart(chart, currentAccuracy, predictedAccuracy) {
-            const width = chart.offsetWidth - 40;
-            const height = chart.offsetHeight - 40;
-            
-            // 清除现有内容
-            chart.innerHTML = '<div class="prediction-line"></div>';
-            
-            // 添加当前准确率点
-            const currentPoint = document.createElement('div');
-            currentPoint.className = 'prediction-point';
-            currentPoint.style.left = '20px';
-            currentPoint.style.bottom = `${20 + (currentAccuracy / 100) * (height - 40)}px`;
-            currentPoint.title = `当前准确率: ${currentAccuracy}%`;
-            chart.appendChild(currentPoint);
-            
-            // 添加预测准确率点
-            const predictedPoint = document.createElement('div');
-            predictedPoint.className = 'prediction-point';
-            predictedPoint.style.left = `${width - 20}px`;
-            predictedPoint.style.bottom = `${20 + (predictedAccuracy / 100) * (height - 40)}px`;
-            predictedPoint.title = `预测准确率: ${predictedAccuracy}%`;
-            predictedPoint.style.background = '#9b59b6';
-            chart.appendChild(predictedPoint);
-            
-            // 添加趋势线
-            const trendLine = document.createElement('div');
-            trendLine.style.position = 'absolute';
-            trendLine.style.left = '20px';
-            trendLine.style.right = '20px';
-            trendLine.style.bottom = `${20 + (currentAccuracy / 100) * (height - 40)}px`;
-            trendLine.style.height = '2px';
-            trendLine.style.background = 'linear-gradient(90deg, #4facfe, #9b59b6)';
-            trendLine.style.transform = `rotate(${Math.atan2(predictedAccuracy - currentAccuracy, width - 40) * 180 / Math.PI}deg)`;
-            chart.appendChild(trendLine);
-        }
-        
-        // 新增：自适应难度系统
-        function updateAdaptiveDifficulty() {
-            const difficultyPanel = document.getElementById('adaptiveDifficulty');
-            const difficultyFill = document.getElementById('difficultyFill');
-            const difficultyLabel = document.getElementById('difficultyLabel');
-            
-            // 计算当前难度
-            const accuracy = calculateRecentAccuracy();
-            let difficulty = 50; // 默认中等难度
-            let label = '中等';
-            
-            if (accuracy > 85) {
-                difficulty = 80;
-                label = '困难';
-            } else if (accuracy > 70) {
-                difficulty = 65;
-                label = '中上';
-            } else if (accuracy > 50) {
-                difficulty = 50;
-                label = '中等';
-            } else if (accuracy > 30) {
-                difficulty = 35;
-                label = '中下';
-            } else {
-                difficulty = 20;
-                label = '简单';
-            }
-            
-            difficultyFill.style.width = `${difficulty}%`;
-            difficultyLabel.textContent = label;
-            
-            // 显示难度面板
-            difficultyPanel.classList.add('show');
-            
-            // 3秒后自动隐藏
-            setTimeout(() => {
-                difficultyPanel.classList.remove('show');
-            }, 3000);
-        }
-        
-        // 新增：学习路径规划
-        function showLearningPath() {
-            const pathPanel = document.getElementById('learningPath');
-            const pathNodes = document.getElementById('pathNodes');
-            
-            // 生成学习路径
-            const pathData = generateLearningPath();
-            
-            let pathHTML = '';
-            pathData.forEach((node, index) => {
-                const nodeClass = node.status === 'completed' ? 'completed' : 
-                                node.status === 'current' ? 'current' : 'locked';
-                const iconClass = node.status === 'completed' ? 'fas fa-check' :
-                                node.status === 'current' ? 'fas fa-play' : 'fas fa-lock';
-                
-                pathHTML += `
-                    <div class="path-node ${nodeClass}" onclick="selectPathNode(${index})">
-                        <div class="path-node-icon">
-                            <i class="${iconClass}"></i>
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; color: #333;">${node.title}</div>
-                            <div style="font-size: 0.9em; color: #666;">${node.description}</div>
-                        </div>
-                    </div>
-                `;
-            });
-            
-            pathNodes.innerHTML = pathHTML;
-            pathPanel.classList.add('show');
-        }
-        
-        function hideLearningPath() {
-            document.getElementById('learningPath').classList.remove('show');
         }
         
         function generateLearningPath() {
@@ -5702,287 +5060,6 @@ function highlightText(text, kw) {
     return text.replace(re, '<span class="highlight">$1</span>');
   } catch { return text; }
 }
-// 做题界面多关键词高亮
-function showFullscreenQuestion() {
-  // ...原有代码...
-  const kw = document.getElementById('searchInput')?.value.trim();
-  lastHighlightKw = kw;
-  const q = questions[current];
-  let title = q.title||q.question||'';
-  if(kw) title = highlightText(title, kw);
-  document.getElementById('questionTitle').innerHTML = title;
-  if(q.options && Array.isArray(q.options)) {
-    q.options.forEach((opt, i) => {
-      let optText = opt;
-      if(kw) optText = highlightText(optText, kw);
-      document.getElementById('questionOptions').innerHTML = opts;
-    });
-  }
-  if(q.explanation && document.getElementById('explanationSection')) {
-    let exp = q.explanation;
-    if(kw) exp = highlightText(exp, kw);
-    document.getElementById('explanationSection').innerHTML = exp;
-  }
-  // ...原有代码...
-}
-// 新增随机做题功能
-function randomPractice() {
-  const qb = qbList.find(q => q.name === document.getElementById('qbSelect').value);
-  if (qb && qb.url) {
-    fetch(qb.url).then(r=>r.json()).then(data => {
-      if (!Array.isArray(data)) data = data.questions||data.data||[];
-      const year = document.getElementById('yearSelect')?.value;
-      if (year) data = data.filter(q=>q.year==year);
-      // 随机顺序
-      for (let i = data.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [data[i], data[j]] = [data[j], data[i]];
-      }
-      questions = data; current = 0; selected = null; answered = false;
-      localStorage.setItem('fullscreen_questions', JSON.stringify(questions));
-      renderQuestion();
-    });
-  }
-}
-        // ====== 做题核心逻辑 ======
-(function() {
-  // 页面加载时初始化用户进度
-  document.addEventListener('DOMContentLoaded', function() {
-    initializeUserProgress();
-    checkTeacherStatus();
-    console.log('📚 学习系统已初始化');
-  });
-  
-  // 如果DOM已加载，立即初始化
-  if (document.readyState === 'loading') {
-    // DOM still loading
-  } else {
-    // DOM已加载
-    initializeUserProgress();
-    checkTeacherStatus();
-  }
-  
-  // ... 保留前面代码 ...
-  // 快捷键支持
-  document.addEventListener('keydown', function(e) {
-    if (!questions || !questions.length) return;
-    // 方向键切换题目
-    if (e.key === 'ArrowLeft') {
-      e.preventDefault();
-      if (typeof prevQuestion === 'function') prevQuestion();
-    } else if (e.key === 'ArrowRight') {
-      e.preventDefault();
-      if (typeof nextQuestion === 'function') nextQuestion();
-    }
-    // 数字键/字母键选择选项（A=0, B=1...）
-    const opts = questions[current]?.options || [];
-    if (opts.length) {
-      // 数字键1-9
-      if (/^[1-9]$/.test(e.key)) {
-        const idx = parseInt(e.key, 10) - 1;
-        if (idx < opts.length && typeof selectOption === 'function') selectOption(idx);
-      }
-      // 字母键A-D...
-      if (/^[a-zA-Z]$/.test(e.key)) {
-        const idx = e.key.toUpperCase().charCodeAt(0) - 65;
-        if (idx >= 0 && idx < opts.length && typeof selectOption === 'function') selectOption(idx);
-      }
-    }
-    // 空格键显示解析
-    if (e.key === ' ' || e.key === 'Spacebar') {
-      e.preventDefault();
-      if (typeof toggleExplanation === 'function') toggleExplanation(true);
-    }
-  });
-})();
-
-// ====== 视频模块功能 ======
-
-// 完整的视频数据 - 只包含真实链接
-const videosData = [
-    {
-        id: 'video1',
-        title: '动量输运、牛顿内摩擦定律、欧拉坐标',
-        description: '详细讲解流体力学中的动量输运原理、牛顿内摩擦定律的物理意义和数学表达，以及欧拉坐标系统在流体运动描述中的应用。',
-        source: 'https://v.douyin.com/7vrVT-4KmbI/',
-        sourceType: 'douyin',
-        duration: '抖音视频',
-        views: '教师原创',
-        category: '基础理论',
-        featured: true,
-        uploadedBy: 'liuguanghui6330156',
-        uploadDate: '2024-12-01',
-        tags: ['动量输运', '牛顿内摩擦定律', '欧拉坐标'],
-        quality: ['精品内容'],
-        thumbnail: '🌊'
-    },
-    {
-        id: 'video2',
-        title: '欧拉、拉格朗日坐标系统',
-        description: '全面对比欧拉坐标和拉格朗日坐标两种描述流体运动的方法，详解流线和迹线的概念与区别。',
-        source: 'https://v.douyin.com/X-ud2xkwvII/',
-        sourceType: 'douyin',
-        duration: '抖音视频',
-        views: '教师原创',
-        category: '基础理论',
-        featured: false,
-        uploadedBy: 'liuguanghui6330156',
-        uploadDate: '2024-11-25',
-        tags: ['欧拉坐标', '拉格朗日坐标', '流线', '迹线'],
-        quality: ['精品内容'],
-        thumbnail: '📐'
-    },
-    {
-        id: 'video3',
-        title: '流体力学之美，太美了',
-        description: '探索流体世界的奇妙现象与科学原理，揭示自然界的流动艺术。',
-        source: 'BV16T421D7k4',
-        sourceType: 'bilibili',
-        duration: '18:45',
-        views: '32,458',
-        category: '基础理论',
-        featured: true,
-        uploadedBy: 'liuguanghui6330156',
-        uploadDate: '2024-12-01',
-        tags: ['流体力学', '基础理论', '可视化'],
-        quality: ['720p', '1080p'],
-        thumbnail: '🎨'
-    },
-    {
-        id: 'video5',
-        title: '流体静力学与压强',
-        description: '详细介绍流体静力学的基本概念，压强的产生机理和分布规律。',
-        source: 'BV1bx411c7mW',
-        sourceType: 'bilibili',
-        duration: '32:15',
-        views: '12,348',
-        category: '流体静力学',
-        featured: false,
-        uploadedBy: '教学资源',
-        uploadDate: '2024-11-18',
-        tags: ['静力学', '压强', '流体性质'],
-        quality: ['720p'],
-        thumbnail: '⚖️'
-    },
-    {
-        id: 'video6',
-        title: '伯努利方程推导与应用',
-        description: '从动量定理出发推导伯努利方程，并通过实例展示其工程应用。',
-        source: 'BV1cx411c7mX',
-        sourceType: 'bilibili',
-        duration: '28:45',
-        views: '15,672',
-        category: '流体动力学',
-        featured: false,
-        uploadedBy: '教学资源',
-        uploadDate: '2024-11-15',
-        tags: ['伯努利方程', '动量定理', '工程应用'],
-        quality: ['720p'],
-        thumbnail: '💫'
-    }
-];
-
-// 显示视频模块
-function showVideoModule() {
-    const videoModal = document.getElementById('videoModal');
-    if (!videoModal) {
-        createVideoModal();
-    }
-    
-    document.getElementById('videoModal').style.display = 'flex';
-    renderVideoGrid();
-}
-
-// 创建视频模块HTML
-function createVideoModal() {
-    const modalHTML = `
-    <div id="videoModal" class="video-modal" onclick="hideVideoModule(event)">
-        <div class="video-modal-content" onclick="event.stopPropagation()">
-            <div class="video-modal-header">
-                <h2><i class="fas fa-play-circle"></i> 视频学习</h2>
-                <button class="close-video-btn" onclick="hideVideoModule()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="video-filters">
-                <select id="categoryFilter" onchange="filterVideos()">
-                    <option value="">所有分类</option>
-                    <option value="基础理论">基础理论</option>
-                    <option value="流体静力学">流体静力学</option>
-                    <option value="流体动力学">流体动力学</option>
-                </select>
-                
-                <select id="sourceFilter" onchange="filterVideos()">
-                    <option value="">所有来源</option>
-                    <option value="douyin">抖音视频</option>
-                    <option value="bilibili">B站视频</option>
-                </select>
-            </div>
-            
-            <div class="video-grid" id="videoGrid">
-                <!-- 视频卡片将通过JavaScript动态生成 -->
-            </div>
-        </div>
-    </div>`;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-// 渲染视频网格
-function renderVideoGrid() {
-    const videoGrid = document.getElementById('videoGrid');
-    const categoryFilter = document.getElementById('categoryFilter').value;
-    const sourceFilter = document.getElementById('sourceFilter').value;
-    
-    let filteredVideos = videosData.filter(video => {
-        return (!categoryFilter || video.category === categoryFilter) &&
-               (!sourceFilter || video.sourceType === sourceFilter);
-    });
-    
-    videoGrid.innerHTML = filteredVideos.map(video => `
-        <div class="video-card ${video.featured ? 'featured' : ''}" onclick="playVideo('${video.id}')">
-            <div class="video-thumbnail">
-                <div class="thumbnail-emoji">${video.thumbnail}</div>
-                <div class="video-duration">${video.duration}</div>
-                ${video.sourceType === 'douyin' ? '<div class="platform-badge douyin">抖音</div>' : ''}
-                ${video.sourceType === 'bilibili' ? '<div class="platform-badge bilibili">B站</div>' : ''}
-            </div>
-            
-            <div class="video-info">
-                <h3 class="video-title">${video.title}</h3>
-                <p class="video-description">${video.description.substring(0, 80)}...</p>
-                
-                <div class="video-meta">
-                    <span class="video-views"><i class="fas fa-eye"></i> ${video.views}</span>
-                    <span class="video-date"><i class="fas fa-calendar"></i> ${video.uploadDate}</span>
-                </div>
-                
-                <div class="video-tags">
-                    ${video.tags.map(tag => `<span class="video-tag">${tag}</span>`).join('')}
-                </div>
-                
-                <div class="video-actions">
-                    ${video.sourceType === 'douyin' ? 
-                        `<button onclick="event.stopPropagation(); openDouyinVideo('${video.source}')" class="video-action-btn douyin-btn">
-                            <i class="fab fa-tiktok"></i> 抖音视频
-                        </button>` : ''
-                    }
-                    ${video.sourceType === 'bilibili' ? 
-                        `<button onclick="event.stopPropagation(); openBilibiliVideo('${video.source}')" class="video-action-btn bilibili-btn">
-                            <i class="fab fa-bilibili"></i> B站视频
-                        </button>` : ''
-                    }
-                </div>
-            </div>
-        </div>
-    `).join('');
-}
-
-// 过滤视频
-function filterVideos() {
-    renderVideoGrid();
-}
 
 // 播放视频
 function playVideo(videoId) {
@@ -6359,325 +5436,348 @@ async function syncToGitHub(dataType, data) {
         console.error('❌ GitHub同步失败:', error);
     }
 }
-
-// 初始化学习进度（确保从0开始）
-function initializeUserProgress() {
-    const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-    const userId = currentUser.username || 'guest';
-    
-    // 检查是否为新用户
-    const progressKey = `learningProgress_${userId}`;
-    const existingProgress = localStorage.getItem(progressKey);
-    
-    if (!existingProgress) {
-        // 新用户，初始化进度为0
-        const initialProgress = {
-            userId: userId,
-            totalQuestions: 0,
-            correctAnswers: 0,
-            wrongAnswers: 0,
-            watchedVideos: 0,
-            studyTime: 0,
-            accuracy: 0,
-            lastStudyDate: null,
-            streakDays: 0,
-            level: '初学者',
-            achievements: [],
-            learningPath: [],
-            sessions: [],
-            createdAt: new Date().toISOString()
-        };
-        
-        localStorage.setItem(progressKey, JSON.stringify(initialProgress));
-        console.log('🎯 新用户学习进度已初始化:', initialProgress);
-        
-        return initialProgress;
-    }
-    
-    return JSON.parse(existingProgress);
-}
-
-// ====== 教师管理功能 ======
-
-// 检查是否为教师并显示教师按钮
-function checkTeacherStatus() {
-    try {
-        const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        const teacherBtn = document.querySelector('.teacher-panel-btn');
-        
-        if (currentUser.role === 'teacher' && teacherBtn) {
-            teacherBtn.style.display = 'inline-block';
-            console.log('👨‍🏫 教师功能已启用');
-            
-            // 加载用户数据到localStorage供教师管理使用
-            loadAllUsersData();
-        }
-    } catch (error) {
-        console.error('❌ 检查教师状态失败:', error);
-    }
-}
-
-// 加载所有用户数据
-async function loadAllUsersData() {
-    try {
-        // 尝试从data/users.json加载用户数据
-        const response = await fetch('data/users.json');
-        if (response.ok) {
-            const usersData = await response.json();
-            localStorage.setItem('allUsers', JSON.stringify(usersData));
-            console.log('👥 用户数据已加载:', Object.keys(usersData).length, '个用户');
-        } else {
-            // 如果无法加载，使用默认用户数据
-            const defaultUsers = {
-                'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306', color: 'teacher' },
-                'student1': { name: '学生账号', role: 'student', password: '123456', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
-                'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] },
-                'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025', color: 'student', progress: 0, grades: [], videoProgress: 0, questionProgress: 0, studyTime: 0, watchedVideos: [], completedExercises: [] }
-            };
-            localStorage.setItem('allUsers', JSON.stringify(defaultUsers));
-            console.log('👥 使用默认用户数据');
-        }
-    } catch (error) {
-        console.error('❌ 加载用户数据失败:', error);
-    }
-}
-
-// 显示教师管理面板
-function showTeacherPanel() {
-    const teacherModal = document.getElementById('teacherModal');
-    if (!teacherModal) {
-        createTeacherModal();
-    }
-    
-    document.getElementById('teacherModal').style.display = 'flex';
-    loadStudentData();
-}
-
-// 创建教师管理面板
-function createTeacherModal() {
-    const modalHTML = `
-    <div id="teacherModal" class="teacher-modal" onclick="hideTeacherPanel(event)">
-        <div class="teacher-modal-content" onclick="event.stopPropagation()">
-            <div class="teacher-modal-header">
-                <h2><i class="fas fa-chalkboard-teacher"></i> 教师管理面板</h2>
-                <button class="close-teacher-btn" onclick="hideTeacherPanel()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            
-            <div class="teacher-tabs">
-                <button class="teacher-tab active" onclick="switchTeacherTab('students')">学生管理</button>
-                <button class="teacher-tab" onclick="switchTeacherTab('analytics')">学习分析</button>
-                <button class="teacher-tab" onclick="switchTeacherTab('export')">数据导出</button>
-            </div>
-            
-            <div class="teacher-content">
-                <div id="studentsTab" class="teacher-tab-content active">
-                    <div class="students-summary">
-                        <div class="summary-card">
-                            <h3>总学生数</h3>
-                            <div class="summary-number" id="totalStudents">0</div>
-                        </div>
-                        <div class="summary-card">
-                            <h3>活跃学生</h3>
-                            <div class="summary-number" id="activeStudents">0</div>
-                        </div>
-                        <div class="summary-card">
-                            <h3>平均进度</h3>
-                            <div class="summary-number" id="avgProgress">0%</div>
-                        </div>
-                    </div>
-                    
-                    <div class="students-list" id="studentsList">
-                        <div class="loading">正在加载学生数据...</div>
-                    </div>
-                </div>
-                
-                <div id="analyticsTab" class="teacher-tab-content">
-                    <div class="analytics-charts">
-                        <div class="chart-container">
-                            <h3>学习进度分布</h3>
-                            <canvas id="progressChart" width="400" height="200"></canvas>
-                        </div>
-                        <div class="chart-container">
-                            <h3>活跃度统计</h3>
-                            <canvas id="activityChart" width="400" height="200"></canvas>
-                        </div>
-                    </div>
-                </div>
-                
-                <div id="exportTab" class="teacher-tab-content">
-                    <div class="export-options">
-                        <button onclick="exportStudentData('csv')" class="export-btn">
-                            <i class="fas fa-file-csv"></i> 导出CSV
-                        </button>
-                        <button onclick="exportStudentData('json')" class="export-btn">
-                            <i class="fas fa-file-code"></i> 导出JSON
-                        </button>
-                        <button onclick="syncAllDataToGitHub()" class="export-btn">
-                            <i class="fab fa-github"></i> 同步GitHub
-                        </button>
-                    </div>
-                    
-                    <div class="export-status" id="exportStatus"></div>
-                </div>
-            </div>
-        </div>
-    </div>`;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-// 隐藏教师面板
-function hideTeacherPanel(event) {
-    if (event && event.target !== event.currentTarget) return;
-    document.getElementById('teacherModal').style.display = 'none';
-}
-
-// 切换教师面板标签
-function switchTeacherTab(tabName) {
-    // 移除所有活跃状态
-    document.querySelectorAll('.teacher-tab').forEach(tab => tab.classList.remove('active'));
-    document.querySelectorAll('.teacher-tab-content').forEach(content => content.classList.remove('active'));
-    
-    // 激活当前标签
-    event.target.classList.add('active');
-    document.getElementById(`${tabName}Tab`).classList.add('active');
-    
-    // 根据标签加载相应数据
-    switch (tabName) {
-        case 'students':
-            loadStudentData();
-            break;
-        case 'analytics':
-            loadAnalyticsData();
-            break;
-        case 'export':
-            // 导出页面不需要特殊加载
-            break;
-    }
-}
-
-// 加载学生数据
-function loadStudentData() {
-    try {
-        const users = JSON.parse(localStorage.getItem('allUsers') || '{}');
-        const students = Object.entries(users).filter(([_, user]) => user.role === 'student');
-        
-        let totalStudents = students.length;
-        let activeStudents = 0;
-        let totalProgress = 0;
-        
-        const studentsListHTML = students.map(([username, user]) => {
-            const progressKey = `learningProgress_${username}`;
-            const progress = JSON.parse(localStorage.getItem(progressKey) || '{}');
-            
-            const watchKey = `videoWatch_${username}`;
-            const watchHistory = JSON.parse(localStorage.getItem(watchKey) || '[]');
-            
-            const isActive = progress.lastStudyDate && 
-                (Date.now() - new Date(progress.lastStudyDate).getTime()) < 7 * 24 * 60 * 60 * 1000; // 7天内活跃
-            
-            if (isActive) activeStudents++;
-            
-            const accuracy = progress.accuracy || 0;
-            totalProgress += accuracy;
-            
-            return `
-                <div class="student-card ${isActive ? 'active' : ''}">
-                    <div class="student-info">
-                        <h4>${user.name} (${username})</h4>
-                        <div class="student-stats">
-                            <span class="stat">📊 准确率: ${accuracy}%</span>
-                            <span class="stat">🎯 题目: ${progress.totalQuestions || 0}</span>
-                            <span class="stat">📹 视频: ${progress.watchedVideos || 0}</span>
-                            <span class="stat">⏰ 学习时长: ${Math.round((progress.studyTime || 0) / 60)}分钟</span>
-                            <span class="stat">🏆 等级: ${progress.level || '初学者'}</span>
-                        </div>
-                        <div class="student-activity">
-                            最后活跃: ${progress.lastStudyDate ? 
-                                new Date(progress.lastStudyDate).toLocaleDateString() : '从未'}
-                        </div>
-                    </div>
-                    <div class="student-actions">
-                        <button onclick="viewStudentDetail('${username}')" class="detail-btn">
-                            <i class="fas fa-eye"></i> 详情
-                        </button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-        
-        document.getElementById('totalStudents').textContent = totalStudents;
-        document.getElementById('activeStudents').textContent = activeStudents;
-        document.getElementById('avgProgress').textContent = 
-            totalStudents > 0 ? Math.round(totalProgress / totalStudents) + '%' : '0%';
-        
-        document.getElementById('studentsList').innerHTML = studentsListHTML || 
-            '<div class="no-data">暂无学生数据</div>';
-        
-    } catch (error) {
-        console.error('❌ 加载学生数据失败:', error);
-        document.getElementById('studentsList').innerHTML = 
-            '<div class="error">加载学生数据失败</div>';
-    }
-}
-
-// 查看学生详情
-function viewStudentDetail(username) {
-    const progressKey = `learningProgress_${username}`;
-    const progress = JSON.parse(localStorage.getItem(progressKey) || '{}');
-    
-    const watchKey = `videoWatch_${username}`;
-    const watchHistory = JSON.parse(localStorage.getItem(watchKey) || '[]');
-    
-    const detail = `
-        <div style="max-width: 500px; max-height: 70vh; overflow-y: auto;">
-            <h3>学生详情：${username}</h3>
-            
-            <div style="margin: 15px 0;">
-                <h4>学习统计</h4>
-                <p>总题目数：${progress.totalQuestions || 0}</p>
-                <p>正确答案：${progress.correctAnswers || 0}</p>
-                <p>错误答案：${progress.wrongAnswers || 0}</p>
-                <p>准确率：${progress.accuracy || 0}%</p>
-                <p>观看视频：${progress.watchedVideos || 0}</p>
-                <p>学习时长：${Math.round((progress.studyTime || 0) / 60)}分钟</p>
-                <p>当前等级：${progress.level || '初学者'}</p>
-            </div>
-            
-            <div style="margin: 15px 0;">
-                <h4>成就系统</h4>
-                <p>已获得成就：${(progress.achievements || []).length}个</p>
-                ${(progress.achievements || []).map(achievement => 
-                    `<span style="background: #e3f2fd; padding: 3px 8px; margin: 2px; border-radius: 12px; font-size: 12px;">${achievement}</span>`
-                ).join('')}
-            </div>
-            
-            <div style="margin: 15px 0;">
-                <h4>最近学习会话</h4>
-                ${(progress.sessions || []).slice(-5).map(session => 
-                    `<div style="background: #f5f5f5; padding: 8px; margin: 5px 0; border-radius: 6px; font-size: 12px;">
-                        ${new Date(session.date).toLocaleString()} - 
-                        ${session.questions}题, 准确率${session.accuracy}%
-                    </div>`
-                ).join('') || '<p>暂无学习记录</p>'}
-            </div>
-            
-            <div style="margin: 15px 0;">
-                <h4>视频观看记录</h4>
-                ${watchHistory.slice(-5).map(watch => 
-                    `<div style="background: #f5f5f5; padding: 8px; margin: 5px 0; border-radius: 6px; font-size: 12px;">
-                        ${new Date(watch.watchTime).toLocaleString()} - 
-                        ${watch.platform} 视频
-                    </div>`
-                ).join('') || '<p>暂无观看记录</p>'}
-            </div>
-        </div>
-    `;
     
     showModal(detail);
 }
+
+// ====== 题库加载模块 - 确保100%加载真题和分类题库 ======
+
+// 题库加载管理器
+window.QuestionBankLoader = {
+    // 缓存已加载的题库数据
+    cache: new Map(),
+    
+    // 加载状态
+    loadingStatus: {
+        real: false,
+        chapter: false,
+        wrong: false
+    },
+    
+    // 初始化加载器
+    async init() {
+        console.log('🚀 初始化题库加载器...');
+        await this.preloadAllBanks();
+    },
+    
+    // 预加载所有题库
+    async preloadAllBanks() {
+        try {
+            const response = await fetch('/question-banks/index.json');
+            if (!response.ok) {
+                throw new Error(`加载题库索引失败: ${response.status}`);
+            }
+            
+            const index = await response.json();
+            console.log('📚 题库索引加载成功:', index);
+            
+            // 预加载真题
+            await this.preloadBankType('real', index);
+            // 预加载分类题库
+            await this.preloadBankType('chapter', index);
+            // 预加载易错题
+            await this.preloadBankType('wrong', index);
+            
+            console.log('✅ 所有题库预加载完成');
+        } catch (error) {
+            console.error('❌ 题库预加载失败:', error);
+        }
+    },
+    
+    // 预加载指定类型的题库
+    async preloadBankType(type, index) {
+        if (this.loadingStatus[type]) return;
+        
+        this.loadingStatus[type] = true;
+        console.log(`📖 开始预加载${type}类型题库...`);
+        
+        try {
+            let banks = [];
+            
+            if (type === 'real') {
+                // 真题：加载所有真题文件
+                banks = index.questionBanks.filter(bank => 
+                    bank.category === '真题' || bank.filename.includes('真题')
+                );
+            } else if (type === 'chapter') {
+                // 分类题库：加载所有分类文件
+                banks = index.questionBanks.filter(bank => 
+                    bank.category !== '真题' && bank.category !== '易错题' && !bank.filename.includes('真题')
+                );
+            } else if (type === 'wrong') {
+                // 易错题
+                banks = index.questionBanks.filter(bank => 
+                    bank.category === '易错题'
+                );
+            }
+            
+            console.log(`📋 找到${banks.length}个${type}类型题库:`, banks.map(b => b.filename));
+            
+            // 并行加载所有题库
+            const loadPromises = banks.map(bank => this.loadBankData(bank));
+            const results = await Promise.allSettled(loadPromises);
+            
+            // 统计加载结果
+            const successCount = results.filter(r => r.status === 'fulfilled').length;
+            const failCount = results.filter(r => r.status === 'rejected').length;
+            
+            console.log(`✅ ${type}类型题库加载完成: 成功${successCount}个, 失败${failCount}个`);
+            
+        } catch (error) {
+            console.error(`❌ ${type}类型题库加载失败:`, error);
+        } finally {
+            this.loadingStatus[type] = false;
+        }
+    },
+    
+    // 加载单个题库数据
+    async loadBankData(bank) {
+        const cacheKey = bank.filename;
+        
+        // 检查缓存
+        if (this.cache.has(cacheKey)) {
+            console.log(`📋 从缓存加载题库: ${bank.filename}`);
+            return this.cache.get(cacheKey);
+        }
+        
+        try {
+            console.log(`📖 正在加载题库: ${bank.filename}`);
+            const response = await fetch(`/question-banks/${bank.filename}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            const questions = Array.isArray(data) ? data : (data.questions || data.data || []);
+            
+            const bankData = {
+                ...bank,
+                questions: questions,
+                questionCount: questions.length,
+                loadedAt: new Date().toISOString()
+            };
+            
+            // 缓存数据
+            this.cache.set(cacheKey, bankData);
+            
+            console.log(`✅ 题库加载成功: ${bank.filename}, 题目数量: ${questions.length}`);
+            return bankData;
+            
+        } catch (error) {
+            console.error(`❌ 题库加载失败: ${bank.filename}`, error);
+            throw error;
+        }
+    },
+    
+    // 获取指定类型的题库列表
+    async getBanksByType(type) {
+        const cacheKey = `type_${type}`;
+        
+        if (this.cache.has(cacheKey)) {
+            return this.cache.get(cacheKey);
+        }
+        
+        try {
+            const response = await fetch('/question-banks/index.json');
+            const index = await response.json();
+            
+            let banks = [];
+            if (type === 'real') {
+                banks = index.questionBanks.filter(bank => 
+                    bank.category === '真题' || bank.filename.includes('真题')
+                );
+            } else if (type === 'chapter') {
+                banks = index.questionBanks.filter(bank => 
+                    bank.category !== '真题' && bank.category !== '易错题' && !bank.filename.includes('真题')
+                );
+            } else if (type === 'wrong') {
+                banks = index.questionBanks.filter(bank => 
+                    bank.category === '易错题'
+                );
+            }
+            
+            // 加载题库数据
+            const bankDataList = await Promise.allSettled(
+                banks.map(bank => this.loadBankData(bank))
+            );
+            
+            const loadedBanks = bankDataList
+                .filter(result => result.status === 'fulfilled')
+                .map(result => result.value);
+            
+            this.cache.set(cacheKey, loadedBanks);
+            return loadedBanks;
+            
+        } catch (error) {
+            console.error(`❌ 获取${type}类型题库失败:`, error);
+            return [];
+        }
+    },
+    
+    // 获取题库数据
+    async getBankData(filename) {
+        return await this.loadBankData({ filename });
+    },
+    
+    // 清除缓存
+    clearCache() {
+        this.cache.clear();
+        console.log('🗑️ 题库缓存已清除');
+    },
+    
+    // 获取加载状态
+    getLoadingStatus() {
+        return this.loadingStatus;
+    }
+};
+
+// 视频链接管理器
+window.VideoLinkManager = {
+    // 视频数据
+    videos: [
+        {
+            id: 'video1',
+            title: '动量输运、牛顿内摩擦定律、欧拉坐标',
+            description: '详细讲解流体力学中的动量输运原理、牛顿内摩擦定律的物理意义和数学表达，以及欧拉坐标系统在流体运动描述中的应用。',
+            source: 'https://v.douyin.com/7vrVT-4KmbI/',
+            sourceType: 'douyin',
+            duration: '抖音视频',
+            views: '教师原创',
+            category: '基础理论',
+            featured: true,
+            uploadedBy: 'liuguanghui6330156',
+            uploadDate: '2024-12-01',
+            tags: ['动量输运', '牛顿内摩擦定律', '欧拉坐标'],
+            quality: ['精品内容'],
+            thumbnail: '🌊'
+        },
+        {
+            id: 'video2',
+            title: '欧拉、拉格朗日坐标系统',
+            description: '全面对比欧拉坐标和拉格朗日坐标两种描述流体运动的方法，详解流线和迹线的概念与区别。',
+            source: 'https://v.douyin.com/X-ud2xkwvII/',
+            sourceType: 'douyin',
+            duration: '抖音视频',
+            views: '教师原创',
+            category: '基础理论',
+            featured: false,
+            uploadedBy: 'liuguanghui6330156',
+            uploadDate: '2024-11-25',
+            tags: ['欧拉坐标', '拉格朗日坐标', '流线', '迹线'],
+            quality: ['精品内容'],
+            thumbnail: '📐'
+        },
+        {
+            id: 'video3',
+            title: '流体力学之美，太美了',
+            description: '探索流体世界的奇妙现象与科学原理，揭示自然界的流动艺术。',
+            source: 'BV16T421D7k4',
+            sourceType: 'bilibili',
+            duration: '18:45',
+            views: '32,458',
+            category: '基础理论',
+            featured: true,
+            uploadedBy: 'liuguanghui6330156',
+            uploadDate: '2024-12-01',
+            tags: ['流体力学', '基础理论', '可视化'],
+            quality: ['720p', '1080p'],
+            thumbnail: '🎨'
+        },
+        {
+            id: 'video5',
+            title: '流体静力学与压强',
+            description: '详细介绍流体静力学的基本概念，压强的产生机理和分布规律。',
+            source: 'BV1bx411c7mW',
+            sourceType: 'bilibili',
+            duration: '32:15',
+            views: '12,348',
+            category: '流体静力学',
+            featured: false,
+            uploadedBy: '教学资源',
+            uploadDate: '2024-11-18',
+            tags: ['静力学', '压强', '流体性质'],
+            quality: ['720p'],
+            thumbnail: '⚖️'
+        },
+        {
+            id: 'video6',
+            title: '伯努利方程推导与应用',
+            description: '从动量定理出发推导伯努利方程，并通过实例展示其工程应用。',
+            source: 'BV1cx411c7mX',
+            sourceType: 'bilibili',
+            duration: '28:45',
+            views: '15,672',
+            category: '流体动力学',
+            featured: false,
+            uploadedBy: '教学资源',
+            uploadDate: '2024-11-15',
+            tags: ['伯努利方程', '动量定理', '工程应用'],
+            quality: ['720p'],
+            thumbnail: '💫'
+        }
+    ],
+    
+    // 获取所有视频
+    getAllVideos() {
+        return this.videos;
+    },
+    
+    // 根据分类获取视频
+    getVideosByCategory(category) {
+        return this.videos.filter(video => video.category === category);
+    },
+    
+    // 根据来源获取视频
+    getVideosBySource(sourceType) {
+        return this.videos.filter(video => video.sourceType === sourceType);
+    },
+    
+    // 搜索视频
+    searchVideos(keyword) {
+        const lowerKeyword = keyword.toLowerCase();
+        return this.videos.filter(video => 
+            video.title.toLowerCase().includes(lowerKeyword) ||
+            video.description.toLowerCase().includes(lowerKeyword) ||
+            video.tags.some(tag => tag.toLowerCase().includes(lowerKeyword))
+        );
+    },
+    
+    // 获取视频详情
+    getVideoById(id) {
+        return this.videos.find(video => video.id === id);
+    }
+};
+
+// 初始化题库和视频加载器
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('🚀 开始初始化题库和视频加载器...');
+    
+    try {
+        // 初始化题库加载器
+        await QuestionBankLoader.init();
+        
+        // 预加载视频数据
+        console.log('📹 视频数据已加载:', VideoLinkManager.getAllVideos().length, '个视频');
+        
+        console.log('✅ 题库和视频加载器初始化完成');
+        
+        // 显示加载完成状态
+        if (typeof showSuccess === 'function') {
+            showSuccess('题库和视频数据加载完成！');
+        }
+        
+    } catch (error) {
+        console.error('❌ 初始化失败:', error);
+        if (typeof showError === 'function') {
+            showError('题库和视频数据加载失败，请刷新页面重试');
+        }
+    }
+});
+
+// 导出到全局作用域
+window.QuestionBankLoader = QuestionBankLoader;
+window.VideoLinkManager = VideoLinkManager;
 
                  
     </script>

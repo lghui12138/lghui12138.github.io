@@ -1550,13 +1550,17 @@
                 
                 setTimeout(async () => {
                     this.loadSettings();
-                    // 加载真实题库数据
-                    await this.loadRealQuestionBanks();
-                    // 加载真实视频数据
-                    await this.loadRealVideos();
+                    
+                    // 先尝试超级加载模式
+                    console.log('🔥 启动初始化超级加载...');
+                    const questionCount = await this.superLoadQuestions();
+                    
+                    // 加载视频数据
+                    const videoCount = await this.superLoadVideos();
+                    
                     this.setLoading(false);
-                    this.showNotification('教师面板加载完成！', 'success');
-                }, 1500);
+                    this.showNotification(`🎉 教师面板启动完成！已加载 ${questionCount} 道题目，${videoCount} 个视频`, 'success');
+                }, 1000);
             }
         }).mount('#teacherApp');
     </script>
