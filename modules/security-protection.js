@@ -23,7 +23,7 @@ window.SecurityProtection = {
             // 网站所有者：完全访问权限
             this.showOwnerWelcome();
         } else if (this.userLevel === 'mobile_developer') {
-            // 移动设备开发者模式用户：轻度保护
+            // 移动设备开发者模式用户：严格保护（但允许开发者工具）
             this.enableContentProtection();
             this.preventScreenshot();
             this.blockCopyPaste();
@@ -75,7 +75,7 @@ window.SecurityProtection = {
             this.userLevel = 'owner';
             console.log(`👑 网站所有者已登录: ${this.currentUser}`);
         } else if (isMobile && isDeveloperMode) {
-            // 手机在开发者模式下可以使用
+            // 手机在开发者模式下：允许开发者工具，但禁止复制
             this.userLevel = 'mobile_developer';
             console.log(`📱🔧 移动设备开发者模式用户: ${this.currentUser || '未登录'}`);
         } else {
@@ -139,12 +139,12 @@ window.SecurityProtection = {
     // 启用内容保护
     enableContentProtection() {
         // 根据用户级别决定保护强度
-        if (this.userLevel === 'owner' || this.userLevel === 'mobile_developer') {
-            // 所有者或移动设备开发者模式用户：轻度保护
+        if (this.userLevel === 'owner') {
+            // 网站所有者：轻度保护
             console.log('🔓 启用轻度内容保护');
             this.enableLightProtection();
         } else {
-            // 其他用户：严格保护
+            // 其他用户（包括移动开发者模式）：严格保护
             console.log('🔒 启用严格内容保护');
             this.enableStrictProtection();
         }
@@ -295,8 +295,8 @@ window.SecurityProtection = {
     // 阻止复制粘贴
     blockCopyPaste() {
         // 根据用户级别决定是否阻止复制
-        if (this.userLevel === 'owner' || this.userLevel === 'mobile_developer') {
-            // 所有者或移动设备开发者模式用户：允许复制
+        if (this.userLevel === 'owner') {
+            // 网站所有者：允许复制
             console.log('🔓 允许复制粘贴操作');
             return;
         }
@@ -877,7 +877,7 @@ window.SecurityProtection = {
             position: fixed;
             top: 20px;
             right: 20px;
-            background: linear-gradient(135deg, #007bff, #0056b3);
+            background: linear-gradient(135deg, #ffc107, #e0a800);
             color: white;
             padding: 15px 20px;
             border-radius: 10px;
@@ -891,7 +891,7 @@ window.SecurityProtection = {
                 <i class="fas fa-mobile-alt"></i>
                 <div>
                     <div style="font-weight: bold;">移动开发者模式</div>
-                    <div style="font-size: 12px; opacity: 0.9;">轻度保护已启用，可正常使用</div>
+                    <div style="font-size: 12px; opacity: 0.9;">内容保护已启用，开发者工具可用</div>
                 </div>
             </div>
         `;
