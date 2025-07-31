@@ -1116,6 +1116,143 @@
         .score-feedback.poor {
             color: #dc3545;
         }
+
+        /* 快速访问题库样式 */
+        .quick-bank-card {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quick-bank-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            border-color: var(--primary-color);
+        }
+
+        .quick-bank-card:active {
+            transform: translateY(-1px);
+        }
+
+        .quick-bank-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .quick-bank-info {
+            flex: 1;
+        }
+
+        .quick-bank-info h4 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .quick-bank-info p {
+            margin: 0 0 8px 0;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .bank-stats {
+            display: inline-block;
+            background: #f8f9fa;
+            color: #495057;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .quick-bank-arrow {
+            color: #6c757d;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .quick-bank-card:hover .quick-bank-arrow {
+            color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .quick-bank-arrow .rotated {
+            transform: rotate(180deg);
+        }
+
+        .classification-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            color: #495057;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .classification-btn:hover {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .classification-btn i {
+            font-size: 16px;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .quick-banks-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px;
+            }
+
+            .quick-bank-card {
+                padding: 15px;
+                gap: 12px;
+            }
+
+            .quick-bank-icon {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .quick-bank-info h4 {
+                font-size: 16px;
+            }
+
+            .classification-list {
+                padding: 15px !important;
+            }
+
+            .classification-btn {
+                padding: 10px 12px;
+                font-size: 13px;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1253,6 +1390,92 @@
                         <button @click="previewLoadedQuestions" class="action-btn">
                             <i class="fas fa-eye"></i> 预览题目
                         </button>
+                    </div>
+                </div>
+
+                <!-- 快速访问题库 -->
+                <div class="quick-access-section" style="margin: 30px 0; padding: 25px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 15px; border: 1px solid #dee2e6;">
+                    <h3 style="margin: 0 0 20px 0; color: #495057; display: flex; align-items: center; gap: 10px; font-size: 18px;">
+                        <i class="fas fa-rocket"></i> 快速访问题库
+                        <span style="font-size: 14px; color: #6c757d; font-weight: normal;">- 一键直达各类专项练习</span>
+                    </h3>
+                    
+                    <div class="quick-banks-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
+                        <!-- 易错题集 -->
+                        <div class="quick-bank-card error-prone" @click="quickStartPractice('易错题集')" style="cursor: pointer;">
+                            <div class="quick-bank-icon" style="background: linear-gradient(135deg, #dc3545, #c82333);">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="quick-bank-info">
+                                <h4>易错题集</h4>
+                                <p>高频易错题专项训练</p>
+                                <span class="bank-stats">重点突破 · 提升正确率</span>
+                            </div>
+                            <div class="quick-bank-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+
+                        <!-- 历年真题 -->
+                        <div class="quick-bank-card real-exam" @click="quickStartPractice('历年真题')" style="cursor: pointer;">
+                            <div class="quick-bank-icon" style="background: linear-gradient(135deg, #007bff, #0056b3);">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                            <div class="quick-bank-info">
+                                <h4>历年真题</h4>
+                                <p>中国海洋大学2001-2023</p>
+                                <span class="bank-stats">真题演练 · 实战检验</span>
+                            </div>
+                            <div class="quick-bank-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+
+                        <!-- 分类练习 -->
+                        <div class="quick-bank-card classification" @click="showClassificationMenu" style="cursor: pointer;">
+                            <div class="quick-bank-icon" style="background: linear-gradient(135deg, #28a745, #1e7e34);">
+                                <i class="fas fa-th-list"></i>
+                            </div>
+                            <div class="quick-bank-info">
+                                <h4>分类练习</h4>
+                                <p>按知识点分类专项练习</p>
+                                <span class="bank-stats">系统学习 · 逐一突破</span>
+                            </div>
+                            <div class="quick-bank-arrow">
+                                <i class="fas fa-chevron-down" :class="{ 'rotated': showClassificationList }"></i>
+                            </div>
+                        </div>
+
+                        <!-- 全部题库 -->
+                        <div class="quick-bank-card all-banks" @click="loadAllQuestionBanks" style="cursor: pointer;">
+                            <div class="quick-bank-icon" style="background: linear-gradient(135deg, #6f42c1, #59339d);">
+                                <i class="fas fa-database"></i>
+                            </div>
+                            <div class="quick-bank-info">
+                                <h4>全部题库</h4>
+                                <p>加载所有18个题库</p>
+                                <span class="bank-stats">海量题目 · 综合练习</span>
+                            </div>
+                            <div class="quick-bank-arrow">
+                                <i class="fas fa-arrow-right"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 分类题库展开列表 -->
+                    <div v-if="showClassificationList" class="classification-list" style="margin-top: 20px; padding: 20px; background: white; border-radius: 12px; border: 2px solid #28a745;">
+                        <h4 style="margin: 0 0 15px 0; color: #28a745; display: flex; align-items: center; gap: 8px;">
+                            <i class="fas fa-list-ul"></i> 选择分类题库
+                        </h4>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+                            <button v-for="category in classificationCategories" 
+                                    :key="category.id"
+                                    @click="quickStartClassification(category.id, category.name)"
+                                    class="classification-btn">
+                                <i :class="category.icon"></i>
+                                {{ category.name }}
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -1617,6 +1840,26 @@
                     userTextAnswer: '',
                     showAnswer: false,
                     answerSimilarity: 0,
+                    
+                    // 快速访问相关
+                    showClassificationList: false,
+                    classificationCategories: [
+                        { id: 'fluid-basics', name: '流体力学基础', icon: 'fas fa-water' },
+                        { id: 'fluid-properties', name: '流体性质', icon: 'fas fa-flask' },
+                        { id: 'pressure', name: '压力', icon: 'fas fa-compress-arrows-alt' },
+                        { id: 'viscosity', name: '粘性', icon: 'fas fa-tint' },
+                        { id: 'reynolds', name: '雷诺数', icon: 'fas fa-calculator' },
+                        { id: 'boundary-layer', name: '边界层', icon: 'fas fa-layer-group' },
+                        { id: 'streamline', name: '流线轨迹', icon: 'fas fa-route' },
+                        { id: 'vorticity', name: '涡度', icon: 'fas fa-sync-alt' },
+                        { id: 'momentum', name: '动量方程', icon: 'fas fa-arrow-right' },
+                        { id: 'energy', name: '能量方程', icon: 'fas fa-bolt' },
+                        { id: 'potential-flow', name: '势流', icon: 'fas fa-wave-square' },
+                        { id: 'pipe-flow', name: '管道流动', icon: 'fas fa-minus' },
+                        { id: 'turbulence', name: '湍流', icon: 'fas fa-wind' },
+                        { id: 'free-surface', name: '自由面', icon: 'fas fa-water' },
+                        { id: 'experiment', name: '实验与量纲', icon: 'fas fa-microscope' }
+                    ],
                     // 练习数据
                     questions: [],
                     currentQuestionIndex: 0,
@@ -2124,6 +2367,95 @@
                     if (similarity >= 70) return '良好！回答基本正确';
                     if (similarity >= 50) return '一般，需要改进';
                     return '需要重新学习相关知识点';
+                },
+
+                // 快速访问方法
+                async quickStartPractice(type) {
+                    console.log(`🚀 快速开始练习: ${type}`);
+                    
+                    if (type === '易错题集') {
+                        this.filters.category = '易错题集';
+                        this.filters.year = '';
+                        await this.loadErrorProneQuestions();
+                        this.showNotification(`✅ 已加载${type}`, 'success');
+                    } else if (type === '历年真题') {
+                        this.filters.category = '历年真题';
+                        this.filters.year = '';
+                        await this.loadRealExamQuestions('all');
+                        this.showNotification(`✅ 已加载${type}`, 'success');
+                    }
+                },
+
+                showClassificationMenu() {
+                    this.showClassificationList = !this.showClassificationList;
+                    this.showNotification(
+                        this.showClassificationList ? '📚 展开分类题库列表' : '📚 收起分类题库列表', 
+                        'info'
+                    );
+                },
+
+                async quickStartClassification(categoryId, categoryName) {
+                    console.log(`📚 快速开始分类练习: ${categoryName}`);
+                    
+                    try {
+                        this.loading = true;
+                        this.loadingText = `正在加载${categoryName}...`;
+                        
+                        // 映射分类ID到文件名
+                        const categoryFiles = {
+                            'fluid-basics': '分类_流体力学基础.json',
+                            'fluid-properties': '分类_流体性质.json', 
+                            'pressure': '分类_压力.json',
+                            'viscosity': '分类_粘性.json',
+                            'reynolds': '分类_雷诺数.json',
+                            'boundary-layer': '分类_边界层.json',
+                            'streamline': '分类_流线轨迹.json',
+                            'vorticity': '分类_涡度.json',
+                            'momentum': '分类_动量方程.json',
+                            'energy': '分类_能量方程.json',
+                            'potential-flow': '分类_势流.json',
+                            'pipe-flow': '分类_管道流动.json',
+                            'turbulence': '分类_湍流.json',
+                            'free-surface': '分类_自由面.json',
+                            'experiment': '分类_实验与量纲.json'
+                        };
+                        
+                        const filename = categoryFiles[categoryId];
+                        if (!filename) {
+                            throw new Error(`未找到${categoryName}对应的题库文件`);
+                        }
+                        
+                        const response = await fetch(`../question-banks/${filename}`);
+                        if (!response.ok) {
+                            throw new Error(`加载${categoryName}失败`);
+                        }
+                        
+                        const data = await response.json();
+                        const questions = Array.isArray(data) ? data : (data.questions || []);
+                        
+                        this.questions = questions.map((q, index) => ({
+                            ...q,
+                            id: `${categoryId}_${index}`,
+                            bankId: categoryId,
+                            bank: categoryName,
+                            category: categoryName,
+                            knowledgePoints: q.tags || q.knowledgePoints || [categoryName],
+                            questionNumber: index + 1
+                        }));
+                        
+                        this.totalQuestions = this.questions.length;
+                        this.showClassificationList = false;
+                        this.filters.category = categoryName;
+                        this.filters.year = '';
+                        
+                        this.showNotification(`✅ 已加载${categoryName}: ${this.questions.length}题`, 'success');
+                        
+                    } catch (error) {
+                        console.error(`加载${categoryName}失败:`, error);
+                        this.showNotification(`❌ 加载${categoryName}失败: ${error.message}`, 'error');
+                    } finally {
+                        this.loading = false;
+                    }
                 },
 
                 // 全屏功能
