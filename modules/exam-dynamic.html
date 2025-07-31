@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📝 考试模拟 - 流体力学学习平台</title>
+    
+    <!-- 外部依赖 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- 共享组件库 -->
+    <script src="../js/shared-components.js"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            margin: 0;
+            font-family: 'SF Pro Display', sans-serif;
+            color: white;
+        }
+
+        .exam-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .exam-setup {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            color: #333;
+            text-align: center;
+        }
+
+        .setup-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .setup-card {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-radius: 15px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .setup-card:hover, .setup-card.selected {
+            border-color: #e74c3c;
+            background: #ffeaea;
+            transform: translateY(-5px);
+        }
+
+        .exam-paper {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .exam-header {
+            text-align: center;
+            border-bottom: 3px solid #e74c3c;
+            padding-bottom: 30px;
+            margin-bottom: 40px;
+        }
+
+        .exam-timer {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #e74c3c;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+            z-index: 1000;
+        }
+
+        .question-counter {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .question-item {
+            background: #f8f9fa;
+            border-left: 5px solid #e74c3c;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+
+        .question-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+
+        .option-grid {
+            display: grid;
+            gap: 15px;
+        }
+
+        .option-item {
+            background: white;
+            border: 3px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .option-item:hover {
+            border-color: #e74c3c;
+            background: #ffeaea;
+        }
+
+        .option-item.selected {
+            border-color: #e74c3c;
+            background: linear-gradient(135deg, #ffeaea, #ffd6d6);
+            color: #c0392b;
+            font-weight: bold;
+        }
+
+        .option-label {
+            background: #e74c3c;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .option-text {
+            flex: 1;
+            line-height: 1.6;
+        }
+
+        .exam-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .control-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+        }
+
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+        }
+
+        .control-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 10px;
+            margin: 30px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .nav-item {
+            aspect-ratio: 1;
+            background: white;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .nav-item:hover {
+            border-color: #e74c3c;
+        }
+
+        .nav-item.answered {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .nav-item.current {
+            background: #e74c3c;
+            border-color: #c0392b;
+            color: white;
+        }
+
+        .exam-warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            color: #856404;
+            text-align: center;
+        }
+
+        .time-warning {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+
+        .exam-result {
+            text-align: center;
+            padding: 60px 40px;
+        }
+
+        .result-score {
+            font-size: 4em;
+            font-weight: bold;
+            margin: 30px 0;
+        }
+
+        .result-grade {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 30px;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .result-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .setup-option {
+            margin: 10px 0;
+        }
+
+        .setup-label {
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .setup-select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div id="examApp">
+        <!-- 海洋背景 -->
+        <ocean-background></ocean-background>
+
+        <!-- 通知组件 -->
+        <notification-component :notification="notification" @close="notification = ''"></notification-component>
+
+        <!-- 加载动画 -->
+        <loading-spinner :show="loading" text="正在生成试卷..."></loading-spinner>
+
+        <div class="exam-container" v-if="!loading">
+            <!-- 考试设置页面 -->
+            <div v-if="examState === 'setup'" class="exam-setup">
+                <h1><i class="fas fa-clipboard-check"></i> 考试模拟设置</h1>
+                <p>配置您的模拟考试参数</p>
+
+                <div class="setup-grid">
+                    <div 
+                        v-for="mode in examModes" 
+                        :key="mode.id"
+                        class="setup-card"
+                        :class="{ selected: selectedMode === mode.id }"
+                        @click="selectedMode = mode.id"
+                    >
+                        <div style="font-size: 3em; margin-bottom: 15px;">{{ mode.icon }}</div>
+                        <h3>{{ mode.name }}</h3>
+                        <p>{{ mode.description }}</p>
+                        <div style="margin-top: 15px; font-weight: bold; color: #e74c3c;">
+                            {{ mode.questions }}题 · {{ mode.duration }}分钟
+                        </div>
+                    </div>
+                </div>
+
+                <div class="setup-option">
+                    <label class="setup-label">题目类型：</label>
+                    <select v-model="examSettings.questionType" class="setup-select">
+                        <option value="mixed">综合题型</option>
+                        <option value="basic">基础概念</option>
+                        <option value="calculation">计算应用</option>
+                        <option value="analysis">分析论述</option>
+                    </select>
+                </div>
+
+                <div class="setup-option">
+                    <label class="setup-label">难度等级：</label>
+                    <select v-model="examSettings.difficulty" class="setup-select">
+                        <option value="easy">简单</option>
+                        <option value="medium">中等</option>
+                        <option value="hard">困难</option>
+                        <option value="mixed">混合难度</option>
+                    </select>
+                </div>
+
+                <button class="control-btn" @click="startExam" :disabled="!selectedMode">
+                    <i class="fas fa-play"></i> 开始考试
+                </button>
+            </div>
+
+            <!-- 考试进行中 -->
+            <div v-if="examState === 'inProgress'">
+                <!-- 计时器 -->
+                <div class="exam-timer" :class="{ 'time-warning': timeRemaining <= 300 }">
+                    <i class="fas fa-clock"></i> {{ formatTime(timeRemaining) }}
+                </div>
+
+                <!-- 题目计数器 -->
+                <div class="question-counter">
+                    题目 {{ currentQuestionIndex + 1 }} / {{ examQuestions.length }}
+                </div>
+
+                <!-- 时间警告 -->
+                <div v-if="timeRemaining <= 300" class="exam-warning time-warning">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>时间警告：</strong>考试时间还剩 {{ Math.floor(timeRemaining / 60) }} 分钟，请抓紧时间完成答题！
+                </div>
+
+                <div class="exam-paper">
+                    <div class="exam-header">
+                        <h1>流体力学模拟考试</h1>
+                        <p>{{ getCurrentModeInfo().name }} | 共 {{ examQuestions.length }} 题</p>
+                        <div class="exam-warning">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>考试说明：</strong>请认真作答，考试期间不允许切换窗口。时间到自动提交。
+                        </div>
+                    </div>
+
+                    <!-- 题目导航 -->
+                    <div class="nav-grid">
+                        <div 
+                            v-for="(question, index) in examQuestions"
+                            :key="index"
+                            class="nav-item"
+                            :class="{
+                                answered: answers[index] !== null,
+                                current: currentQuestionIndex === index
+                            }"
+                            @click="jumpToQuestion(index)"
+                        >
+                            {{ index + 1 }}
+                        </div>
+                    </div>
+
+                    <!-- 当前题目 -->
+                    <div v-if="currentQuestion" class="question-item">
+                        <div class="question-title">
+                            {{ currentQuestionIndex + 1 }}. {{ currentQuestion.title }}
+                        </div>
+                        
+                        <div class="option-grid">
+                            <div 
+                                v-for="(option, index) in currentQuestion.options"
+                                :key="index"
+                                class="option-item"
+                                :class="{ selected: answers[currentQuestionIndex] === index }"
+                                @click="selectAnswer(index)"
+                            >
+                                <div class="option-label">{{ String.fromCharCode(65 + index) }}</div>
+                                <div class="option-text">{{ option }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 考试控制按钮 -->
+                <div class="exam-controls">
+                    <button 
+                        class="control-btn" 
+                        @click="previousQuestion"
+                        :disabled="currentQuestionIndex === 0"
+                    >
+                        <i class="fas fa-chevron-left"></i> 上一题
+                    </button>
+                    
+                    <button class="control-btn" @click="submitExam">
+                        <i class="fas fa-paper-plane"></i> 提交试卷
+                    </button>
+                    
+                    <button 
+                        class="control-btn" 
+                        @click="nextQuestion"
+                        :disabled="currentQuestionIndex === examQuestions.length - 1"
+                    >
+                        下一题 <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 考试结果 -->
+            <div v-if="examState === 'completed'" class="exam-paper">
+                <div class="exam-result">
+                    <h1><i class="fas fa-trophy"></i> 考试完成</h1>
+                    
+                    <div class="result-score" :style="{ color: getGradeColor(examResult.score) }">
+                        {{ examResult.score }}分
+                    </div>
+                    
+                    <div class="result-grade" :style="{ color: getGradeColor(examResult.score) }">
+                        {{ getGradeText(examResult.score) }}
+                    </div>
+                    
+                    <div class="result-details">
+                        <div class="result-item">
+                            <div style="font-size: 2em; color: #28a745;">{{ examResult.correct }}</div>
+                            <div>答对题数</div>
+                        </div>
+                        <div class="result-item">
+                            <div style="font-size: 2em; color: #dc3545;">{{ examResult.wrong }}</div>
+                            <div>答错题数</div>
+                        </div>
+                        <div class="result-item">
+                            <div style="font-size: 2em; color: #6c757d;">{{ examResult.unanswered }}</div>
+                            <div>未答题数</div>
+                        </div>
+                        <div class="result-item">
+                            <div style="font-size: 2em; color: #007bff;">{{ examResult.timeUsed }}</div>
+                            <div>用时(分钟)</div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 40px;">
+                        <button class="control-btn" @click="reviewAnswers">
+                            <i class="fas fa-eye"></i> 查看解析
+                        </button>
+                        <button class="control-btn" @click="restartExam" style="background: #28a745;">
+                            <i class="fas fa-redo"></i> 重新考试
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            mixins: [SharedMixin],
+            components: {
+                'ocean-background': OceanBackground,
+                'notification-component': NotificationComponent,
+                'loading-spinner': LoadingSpinner
+            },
+            data() {
+                return {
+                    examState: 'setup', // setup, inProgress, completed
+                    selectedMode: null,
+                    currentQuestionIndex: 0,
+                    answers: [],
+                    timeRemaining: 0,
+                    examStartTime: null,
+                    examTimer: null,
+                    examModes: [
+                        {
+                            id: 'quick',
+                            name: '快速测试',
+                            description: '适合日常练习和知识点检测',
+                            questions: 10,
+                            duration: 15,
+                            icon: '⚡'
+                        },
+                        {
+                            id: 'standard',
+                            name: '标准考试',
+                            description: '模拟真实考试环境和难度',
+                            questions: 30,
+                            duration: 45,
+                            icon: '📝'
+                        },
+                        {
+                            id: 'comprehensive',
+                            name: '综合测评',
+                            description: '全面检测学习成果和知识掌握',
+                            questions: 50,
+                            duration: 75,
+                            icon: '🎯'
+                        },
+                        {
+                            id: 'final',
+                            name: '期末模拟',
+                            description: '期末考试标准，严格计时',
+                            questions: 80,
+                            duration: 120,
+                            icon: '🏆'
+                        }
+                    ],
+                    examSettings: {
+                        questionType: 'mixed',
+                        difficulty: 'medium'
+                    },
+                    examQuestions: [],
+                    examResult: {}
+                }
+            },
+            computed: {
+                currentQuestion() {
+                    return this.examQuestions[this.currentQuestionIndex];
+                }
+            },
+            methods: {
+                startExam() {
+                    if (!this.selectedMode) return;
+                    
+                    this.setLoading(true);
+                    
+                    setTimeout(() => {
+                        this.generateExamQuestions();
+                        this.initializeExam();
+                        this.setLoading(false);
+                        this.examState = 'inProgress';
+                        this.showNotification('考试开始！请认真作答', 'success');
+                    }, 2000);
+                },
+                
+                generateExamQuestions() {
+                    const mode = this.examModes.find(m => m.id === this.selectedMode);
+                    const questionCount = mode.questions;
+                    
+                    // 基础题库
+                    const baseQuestions = [
+                        {
+                            title: "流体静力学中，静止流体内部任意一点的压强大小",
+                            options: [
+                                "与该点所在深度成正比",
+                                "与该点所在深度成反比", 
+                                "与流体密度无关",
+                                "只取决于大气压强"
+                            ],
+                            answer: 0,
+                            explanation: "根据流体静力学基本方程，静止流体内部压强随深度线性增加。"
+                        },
+                        {
+                            title: "理想流体的特征包括",
+                            options: [
+                                "有粘性、不可压缩",
+                                "无粘性、可压缩",
+                                "无粘性、不可压缩", 
+                                "有粘性、可压缩"
+                            ],
+                            answer: 2,
+                            explanation: "理想流体是无粘性、不可压缩的理论流体。"
+                        },
+                        {
+                            title: "连续性方程的物理意义是",
+                            options: [
+                                "能量守恒",
+                                "动量守恒",
+                                "质量守恒",
+                                "角动量守恒"
+                            ],
+                            answer: 2,
+                            explanation: "连续性方程反映了流体流动过程中质量守恒的基本原理。"
+                        },
+                        {
+                            title: "伯努利方程适用于",
+                            options: [
+                                "任意流体的流动",
+                                "理想流体的定常流动",
+                                "粘性流体的非定常流动",
+                                "可压缩流体的流动"
+                            ],
+                            answer: 1,
+                            explanation: "伯努利方程适用于理想流体的定常流动。"
+                        },
+                        {
+                            title: "雷诺数的物理意义是表示",
+                            options: [
+                                "流体的密度",
+                                "流体的粘度", 
+                                "惯性力与粘性力的比值",
+                                "压力与速度的关系"
+                            ],
+                            answer: 2,
+                            explanation: "雷诺数表示惯性力与粘性力的比值，用于判断流动状态。"
+                        }
+                    ];
+                    
+                    // 根据题目数量生成试卷
+                    this.examQuestions = [];
+                    for (let i = 0; i < questionCount; i++) {
+                        const questionIndex = i % baseQuestions.length;
+                        const question = { ...baseQuestions[questionIndex] };
+                        question.id = i + 1;
+                        this.examQuestions.push(question);
+                    }
+                    
+                    // 初始化答案数组
+                    this.answers = new Array(questionCount).fill(null);
+                },
+                
+                initializeExam() {
+                    const mode = this.examModes.find(m => m.id === this.selectedMode);
+                    this.timeRemaining = mode.duration * 60; // 转换为秒
+                    this.examStartTime = Date.now();
+                    this.currentQuestionIndex = 0;
+                    
+                    // 开始计时
+                    this.examTimer = setInterval(() => {
+                        this.timeRemaining--;
+                        if (this.timeRemaining <= 0) {
+                            this.submitExam(true); // 自动提交
+                        }
+                    }, 1000);
+                },
+                
+                selectAnswer(optionIndex) {
+                    this.$set(this.answers, this.currentQuestionIndex, optionIndex);
+                },
+                
+                jumpToQuestion(index) {
+                    this.currentQuestionIndex = index;
+                },
+                
+                nextQuestion() {
+                    if (this.currentQuestionIndex < this.examQuestions.length - 1) {
+                        this.currentQuestionIndex++;
+                    }
+                },
+                
+                previousQuestion() {
+                    if (this.currentQuestionIndex > 0) {
+                        this.currentQuestionIndex--;
+                    }
+                },
+                
+                submitExam(autoSubmit = false) {
+                    if (!autoSubmit) {
+                        const unanswered = this.answers.filter(a => a === null).length;
+                        if (unanswered > 0) {
+                            if (!confirm(`还有 ${unanswered} 题未作答，确定要提交吗？`)) {
+                                return;
+                            }
+                        } else {
+                            if (!confirm('确定要提交试卷吗？提交后无法修改。')) {
+                                return;
+                            }
+                        }
+                    }
+                    
+                    // 停止计时
+                    if (this.examTimer) {
+                        clearInterval(this.examTimer);
+                        this.examTimer = null;
+                    }
+                    
+                    // 计算成绩
+                    this.calculateResult();
+                    this.examState = 'completed';
+                    
+                    const message = autoSubmit ? '时间到，试卷已自动提交！' : '试卷提交成功！';
+                    this.showNotification(message, 'success');
+                },
+                
+                calculateResult() {
+                    let correct = 0;
+                    let wrong = 0;
+                    let unanswered = 0;
+                    
+                    this.answers.forEach((answer, index) => {
+                        if (answer === null) {
+                            unanswered++;
+                        } else if (answer === this.examQuestions[index].answer) {
+                            correct++;
+                        } else {
+                            wrong++;
+                        }
+                    });
+                    
+                    const score = Math.round((correct / this.examQuestions.length) * 100);
+                    const timeUsed = Math.round((Date.now() - this.examStartTime) / 60000);
+                    
+                    this.examResult = {
+                        score,
+                        correct,
+                        wrong,
+                        unanswered,
+                        timeUsed,
+                        total: this.examQuestions.length
+                    };
+                    
+                    // 保存成绩
+                    this.saveResult();
+                },
+                
+                saveResult() {
+                    const results = this.loadFromStorage('examResults', []);
+                    results.unshift({
+                        ...this.examResult,
+                        mode: this.selectedMode,
+                        date: new Date().toISOString(),
+                        settings: this.examSettings
+                    });
+                    this.saveToStorage('examResults', results);
+                },
+                
+                getGradeColor(score) {
+                    if (score >= 90) return '#28a745';
+                    if (score >= 80) return '#007bff';
+                    if (score >= 70) return '#ffc107';
+                    if (score >= 60) return '#fd7e14';
+                    return '#dc3545';
+                },
+                
+                getGradeText(score) {
+                    if (score >= 90) return '优秀';
+                    if (score >= 80) return '良好';
+                    if (score >= 70) return '中等';
+                    if (score >= 60) return '及格';
+                    return '不及格';
+                },
+                
+                getCurrentModeInfo() {
+                    return this.examModes.find(m => m.id === this.selectedMode) || {};
+                },
+                
+                reviewAnswers() {
+                    this.showNotification('答案解析功能开发中...', 'info');
+                },
+                
+                restartExam() {
+                    this.examState = 'setup';
+                    this.selectedMode = null;
+                    this.currentQuestionIndex = 0;
+                    this.answers = [];
+                    this.timeRemaining = 0;
+                    this.examQuestions = [];
+                    this.examResult = {};
+                    
+                    if (this.examTimer) {
+                        clearInterval(this.examTimer);
+                        this.examTimer = null;
+                    }
+                }
+            },
+            
+            mounted() {
+                console.log('📝 考试模拟模块启动！');
+                this.setLoading(true);
+                
+                setTimeout(() => {
+                    this.setLoading(false);
+                    this.showNotification('考试系统准备就绪！', 'success');
+                }, 1000);
+            },
+            
+            beforeUnmount() {
+                if (this.examTimer) {
+                    clearInterval(this.examTimer);
+                }
+            }
+        }).mount('#examApp');
+    </script>
+</body>
+</html> 

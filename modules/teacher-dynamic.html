@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👨‍🏫 教师管理 - 流体力学学习平台</title>
+    
+    <!-- 外部依赖 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- 共享组件库 -->
+    <script src="../js/shared-components.js"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            margin: 0;
+            font-family: 'SF Pro Display', sans-serif;
+            color: white;
+        }
+
+        .teacher-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .dashboard-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            color: #333;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            background: white;
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .data-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .action-btn {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 5px;
+            font-size: 0.9em;
+        }
+
+        .btn-view {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-edit {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .tab-container {
+            margin-bottom: 30px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #333;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .form-input:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+<body>
+    <div id="teacherApp">
+        <!-- 海洋背景 -->
+        <ocean-background></ocean-background>
+
+        <!-- 通知组件 -->
+        <notification-component :notification="notification" @close="notification = ''"></notification-component>
+
+        <!-- 加载动画 -->
+        <loading-spinner :show="loading" text="正在加载教师面板..."></loading-spinner>
+
+        <div class="teacher-container" v-if="!loading">
+            <!-- 页面头部 -->
+            <header style="text-align: center; padding: 40px 0; margin-bottom: 30px;">
+                <h1><i class="fas fa-chalkboard-teacher"></i> 教师管理面板</h1>
+                <p>题库管理、学生进度监控、数据分析</p>
+            </header>
+
+            <!-- 统计概览 -->
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ totalStudents }}</div>
+                    <div class="stat-label">注册学生</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ totalQuestions }}</div>
+                    <div class="stat-label">题库总数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ averageScore }}%</div>
+                    <div class="stat-label">平均成绩</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ activeToday }}</div>
+                    <div class="stat-label">今日活跃</div>
+                </div>
+            </div>
+
+            <!-- 功能标签页 -->
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button 
+                        v-for="tab in tabs" 
+                        :key="tab.id"
+                        class="tab-btn"
+                        :class="{ active: activeTab === tab.id }"
+                        @click="switchTab(tab.id)"
+                    >
+                        <i :class="tab.icon"></i> {{ tab.name }}
+                    </button>
+                </div>
+
+                <!-- 学生管理 -->
+                <div class="tab-content" :class="{ active: activeTab === 'students' }">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-users"></i> 学生管理</h3>
+                        
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>学号</th>
+                                        <th>姓名</th>
+                                        <th>班级</th>
+                                        <th>练习次数</th>
+                                        <th>平均分</th>
+                                        <th>最后活跃</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="student in students" :key="student.id">
+                                        <td>{{ student.studentId }}</td>
+                                        <td>{{ student.name }}</td>
+                                        <td>{{ student.class }}</td>
+                                        <td>{{ student.practiceCount }}</td>
+                                        <td>
+                                            <span :style="{ color: getScoreColor(student.averageScore) }">
+                                                {{ student.averageScore }}%
+                                            </span>
+                                        </td>
+                                        <td>{{ student.lastActive }}</td>
+                                        <td>
+                                            <button class="action-btn btn-view" @click="viewStudent(student)">
+                                                <i class="fas fa-eye"></i> 查看
+                                            </button>
+                                            <button class="action-btn btn-edit" @click="editStudent(student)">
+                                                <i class="fas fa-edit"></i> 编辑
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 题库管理 -->
+                <div class="tab-content" :class="{ active: activeTab === 'questions' }">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-question-circle"></i> 题库管理</h3>
+                        
+                        <div style="margin-bottom: 20px;">
+                            <button class="submit-btn" @click="showAddQuestion = !showAddQuestion">
+                                <i class="fas fa-plus"></i> 添加新题目
+                            </button>
+                        </div>
+
+                        <div v-if="showAddQuestion" class="alert alert-success">
+                            <h4>添加新题目</h4>
+                            <div class="form-group">
+                                <label class="form-label">题目内容：</label>
+                                <textarea v-model="newQuestion.title" class="form-input" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">选项A：</label>
+                                <input v-model="newQuestion.optionA" class="form-input" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">选项B：</label>
+                                <input v-model="newQuestion.optionB" class="form-input" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">选项C：</label>
+                                <input v-model="newQuestion.optionC" class="form-input" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">选项D：</label>
+                                <input v-model="newQuestion.optionD" class="form-input" type="text">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">正确答案：</label>
+                                <select v-model="newQuestion.answer" class="form-input">
+                                    <option value="0">A</option>
+                                    <option value="1">B</option>
+                                    <option value="2">C</option>
+                                    <option value="3">D</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">解析：</label>
+                                <textarea v-model="newQuestion.explanation" class="form-input" rows="3"></textarea>
+                            </div>
+                            <button class="submit-btn" @click="addQuestion">
+                                <i class="fas fa-save"></i> 保存题目
+                            </button>
+                        </div>
+
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>题目ID</th>
+                                        <th>题目内容</th>
+                                        <th>难度</th>
+                                        <th>正确率</th>
+                                        <th>创建时间</th>
+                                        <th>操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr v-for="question in questionBank" :key="question.id">
+                                        <td>{{ question.id }}</td>
+                                        <td>{{ question.title.substring(0, 50) }}...</td>
+                                        <td>
+                                            <span :class="'difficulty-' + question.difficulty">
+                                                {{ getDifficultyText(question.difficulty) }}
+                                            </span>
+                                        </td>
+                                        <td>{{ question.correctRate }}%</td>
+                                        <td>{{ question.createdAt }}</td>
+                                        <td>
+                                            <button class="action-btn btn-edit" @click="editQuestion(question)">
+                                                <i class="fas fa-edit"></i> 编辑
+                                            </button>
+                                            <button class="action-btn btn-delete" @click="deleteQuestion(question)">
+                                                <i class="fas fa-trash"></i> 删除
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据分析 -->
+                <div class="tab-content" :class="{ active: activeTab === 'analytics' }">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-chart-bar"></i> 学习数据分析</h3>
+                        
+                        <div class="chart-container">
+                            <canvas ref="scoreChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <canvas ref="activityChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 系统设置 -->
+                <div class="tab-content" :class="{ active: activeTab === 'settings' }">
+                    <div class="dashboard-card">
+                        <h3><i class="fas fa-cog"></i> 系统设置</h3>
+                        
+                        <div class="form-group">
+                            <label class="form-label">平台名称：</label>
+                            <input v-model="settings.platformName" class="form-input" type="text">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">每日练习题数限制：</label>
+                            <input v-model="settings.dailyQuestionLimit" class="form-input" type="number">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">考试时间限制（分钟）：</label>
+                            <input v-model="settings.examTimeLimit" class="form-input" type="number">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">及格分数线：</label>
+                            <input v-model="settings.passingScore" class="form-input" type="number">
+                        </div>
+                        
+                        <button class="submit-btn" @click="saveSettings">
+                            <i class="fas fa-save"></i> 保存设置
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            mixins: [SharedMixin],
+            components: {
+                'ocean-background': OceanBackground,
+                'notification-component': NotificationComponent,
+                'loading-spinner': LoadingSpinner
+            },
+            data() {
+                return {
+                    activeTab: 'students',
+                    totalStudents: 156,
+                    totalQuestions: 728,
+                    averageScore: 78,
+                    activeToday: 23,
+                    showAddQuestion: false,
+                    tabs: [
+                        { id: 'students', name: '学生管理', icon: 'fas fa-users' },
+                        { id: 'questions', name: '题库管理', icon: 'fas fa-question-circle' },
+                        { id: 'analytics', name: '数据分析', icon: 'fas fa-chart-bar' },
+                        { id: 'settings', name: '系统设置', icon: 'fas fa-cog' }
+                    ],
+                    students: [
+                        {
+                            id: 1,
+                            studentId: '20240001',
+                            name: '张三',
+                            class: '海工2201',
+                            practiceCount: 45,
+                            averageScore: 85,
+                            lastActive: '2024-01-15'
+                        },
+                        {
+                            id: 2,
+                            studentId: '20240002',
+                            name: '李四',
+                            class: '海工2201',
+                            practiceCount: 32,
+                            averageScore: 72,
+                            lastActive: '2024-01-14'
+                        },
+                        {
+                            id: 3,
+                            studentId: '20240003',
+                            name: '王五',
+                            class: '海工2202',
+                            practiceCount: 58,
+                            averageScore: 91,
+                            lastActive: '2024-01-15'
+                        }
+                    ],
+                    questionBank: [
+                        {
+                            id: 1,
+                            title: '流体静力学中，静止流体内部任意一点的压强大小',
+                            difficulty: 'easy',
+                            correctRate: 78,
+                            createdAt: '2024-01-10'
+                        },
+                        {
+                            id: 2,
+                            title: '理想流体的特征包括',
+                            difficulty: 'medium',
+                            correctRate: 65,
+                            createdAt: '2024-01-11'
+                        },
+                        {
+                            id: 3,
+                            title: '雷诺数的物理意义是表示',
+                            difficulty: 'hard',
+                            correctRate: 52,
+                            createdAt: '2024-01-12'
+                        }
+                    ],
+                    newQuestion: {
+                        title: '',
+                        optionA: '',
+                        optionB: '',
+                        optionC: '',
+                        optionD: '',
+                        answer: 0,
+                        explanation: ''
+                    },
+                    settings: {
+                        platformName: '流体力学学习平台',
+                        dailyQuestionLimit: 100,
+                        examTimeLimit: 120,
+                        passingScore: 60
+                    }
+                }
+            },
+            methods: {
+                switchTab(tabId) {
+                    this.activeTab = tabId;
+                    if (tabId === 'analytics') {
+                        this.$nextTick(() => {
+                            this.initCharts();
+                        });
+                    }
+                },
+                
+                getScoreColor(score) {
+                    if (score >= 90) return '#28a745';
+                    if (score >= 70) return '#ffc107';
+                    return '#dc3545';
+                },
+                
+                getDifficultyText(difficulty) {
+                    const texts = {
+                        'easy': '简单',
+                        'medium': '中等',
+                        'hard': '困难'
+                    };
+                    return texts[difficulty] || '未知';
+                },
+                
+                viewStudent(student) {
+                    this.showNotification(`查看学生：${student.name}`, 'info');
+                },
+                
+                editStudent(student) {
+                    this.showNotification(`编辑学生：${student.name}`, 'info');
+                },
+                
+                addQuestion() {
+                    if (!this.newQuestion.title) {
+                        this.showNotification('请填写题目内容', 'warning');
+                        return;
+                    }
+                    
+                    const question = {
+                        id: this.questionBank.length + 1,
+                        title: this.newQuestion.title,
+                        difficulty: 'medium',
+                        correctRate: 0,
+                        createdAt: new Date().toISOString().split('T')[0]
+                    };
+                    
+                    this.questionBank.unshift(question);
+                    this.showNotification('题目添加成功！', 'success');
+                    this.showAddQuestion = false;
+                    this.resetNewQuestion();
+                },
+                
+                resetNewQuestion() {
+                    this.newQuestion = {
+                        title: '',
+                        optionA: '',
+                        optionB: '',
+                        optionC: '',
+                        optionD: '',
+                        answer: 0,
+                        explanation: ''
+                    };
+                },
+                
+                editQuestion(question) {
+                    this.showNotification(`编辑题目：${question.id}`, 'info');
+                },
+                
+                deleteQuestion(question) {
+                    if (confirm(`确定删除题目 ${question.id} 吗？`)) {
+                        const index = this.questionBank.findIndex(q => q.id === question.id);
+                        if (index > -1) {
+                            this.questionBank.splice(index, 1);
+                            this.showNotification('题目删除成功！', 'success');
+                        }
+                    }
+                },
+                
+                saveSettings() {
+                    this.saveToStorage('teacherSettings', this.settings);
+                    this.showNotification('设置保存成功！', 'success');
+                },
+                
+                initCharts() {
+                    this.initScoreChart();
+                    this.initActivityChart();
+                },
+                
+                initScoreChart() {
+                    const ctx = this.$refs.scoreChart?.getContext('2d');
+                    if (!ctx) return;
+                    
+                    new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['0-60', '60-70', '70-80', '80-90', '90-100'],
+                            datasets: [{
+                                label: '学生人数',
+                                data: [12, 28, 45, 38, 33],
+                                backgroundColor: [
+                                    '#dc3545',
+                                    '#ffc107',
+                                    '#007bff',
+                                    '#28a745',
+                                    '#17a2b8'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: '成绩分布统计'
+                                }
+                            }
+                        }
+                    });
+                },
+                
+                initActivityChart() {
+                    const ctx = this.$refs.activityChart?.getContext('2d');
+                    if (!ctx) return;
+                    
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+                            datasets: [{
+                                label: '活跃用户数',
+                                data: [65, 78, 90, 81, 56, 45, 38],
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: '本周学习活跃度'
+                                }
+                            }
+                        }
+                    });
+                },
+                
+                loadSettings() {
+                    const saved = this.loadFromStorage('teacherSettings', {});
+                    if (Object.keys(saved).length > 0) {
+                        this.settings = { ...this.settings, ...saved };
+                    }
+                }
+            },
+            
+            mounted() {
+                console.log('👨‍🏫 教师管理面板启动！');
+                this.setLoading(true);
+                
+                setTimeout(() => {
+                    this.loadSettings();
+                    this.setLoading(false);
+                    this.showNotification('教师面板加载完成！', 'success');
+                }, 1500);
+            }
+        }).mount('#teacherApp');
+    </script>
+</body>
+</html> 

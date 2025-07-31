@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 学习分析 - 流体力学学习平台</title>
+    
+    <!-- 外部依赖 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- 共享组件库 -->
+    <script src="../js/shared-components.js"></script>
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #8e44ad 0%, #3498db 100%);
+            margin: 0;
+            font-family: 'SF Pro Display', sans-serif;
+            color: white;
+        }
+
+        .analytics-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .analytics-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            color: #333;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+        }
+
+        .metric-card {
+            text-align: center;
+            padding: 25px;
+            background: linear-gradient(135deg, #8e44ad, #3498db);
+            color: white;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .metric-number {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .metric-change {
+            font-size: 0.9em;
+            margin-top: 10px;
+            padding: 5px 10px;
+            border-radius: 10px;
+            display: inline-block;
+        }
+
+        .metric-up {
+            background: rgba(39, 174, 96, 0.2);
+            color: #27ae60;
+        }
+
+        .metric-down {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+        }
+
+        .tab-container {
+            margin-bottom: 30px;
+        }
+
+        .tab-buttons {
+            display: flex;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #333;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .progress-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-left: 5px solid #8e44ad;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .progress-title {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .progress-score {
+            font-weight: bold;
+            color: #8e44ad;
+        }
+
+        .progress-bar-container {
+            background: #e9ecef;
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(135deg, #8e44ad, #3498db);
+            border-radius: 5px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .weakness-item {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .weakness-title {
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 8px;
+        }
+
+        .weakness-description {
+            color: #856404;
+            font-size: 0.9em;
+        }
+
+        .recommendation-item {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .recommendation-title {
+            font-weight: bold;
+            color: #155724;
+            margin-bottom: 8px;
+        }
+
+        .recommendation-description {
+            color: #155724;
+            font-size: 0.9em;
+        }
+
+        .time-range-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .time-btn {
+            padding: 8px 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            background: transparent;
+            color: white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .time-btn.active {
+            background: white;
+            color: #333;
+        }
+
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .achievement-item {
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .achievement-item.unlocked {
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .achievement-icon {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .achievement-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .achievement-description {
+            font-size: 0.8em;
+            opacity: 0.8;
+        }
+
+        .study-streak {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #ff7675, #fd79a8);
+            color: white;
+            border-radius: 20px;
+            margin-bottom: 20px;
+        }
+
+        .streak-number {
+            font-size: 4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .streak-label {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .streak-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.2);
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+        }
+
+        .calendar-day.active {
+            background: rgba(255,255,255,0.8);
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="analyticsApp">
+        <!-- 海洋背景 -->
+        <ocean-background></ocean-background>
+
+        <!-- 通知组件 -->
+        <notification-component :notification="notification" @close="notification = ''"></notification-component>
+
+        <!-- 加载动画 -->
+        <loading-spinner :show="loading" text="正在分析学习数据..."></loading-spinner>
+
+        <div class="analytics-container" v-if="!loading">
+            <!-- 页面头部 -->
+            <header style="text-align: center; padding: 40px 0; margin-bottom: 30px;">
+                <h1><i class="fas fa-chart-line"></i> 学习分析</h1>
+                <p>深度分析您的学习数据，提供个性化改进建议</p>
+            </header>
+
+            <!-- 时间范围选择器 -->
+            <div class="time-range-selector">
+                <button 
+                    v-for="range in timeRanges" 
+                    :key="range.value"
+                    class="time-btn"
+                    :class="{ active: selectedTimeRange === range.value }"
+                    @click="switchTimeRange(range.value)"
+                >
+                    {{ range.label }}
+                </button>
+            </div>
+
+            <!-- 核心指标 -->
+            <div class="dashboard-grid">
+                <div class="metric-card">
+                    <div class="metric-number">{{ metrics.totalScore }}</div>
+                    <div class="metric-label">综合得分</div>
+                    <div class="metric-change metric-up">
+                        <i class="fas fa-arrow-up"></i> +{{ metrics.scoreChange }}
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">{{ metrics.practiceCount }}</div>
+                    <div class="metric-label">练习次数</div>
+                    <div class="metric-change metric-up">
+                        <i class="fas fa-arrow-up"></i> +{{ metrics.practiceChange }}
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">{{ metrics.studyTime }}h</div>
+                    <div class="metric-label">学习时长</div>
+                    <div class="metric-change metric-up">
+                        <i class="fas fa-arrow-up"></i> +{{ metrics.timeChange }}h
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-number">{{ metrics.accuracy }}%</div>
+                    <div class="metric-label">正确率</div>
+                    <div class="metric-change" :class="metrics.accuracyChange >= 0 ? 'metric-up' : 'metric-down'">
+                        <i :class="metrics.accuracyChange >= 0 ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                        {{ metrics.accuracyChange >= 0 ? '+' : '' }}{{ metrics.accuracyChange }}%
+                    </div>
+                </div>
+            </div>
+
+            <!-- 功能标签页 -->
+            <div class="tab-container">
+                <div class="tab-buttons">
+                    <button 
+                        v-for="tab in tabs" 
+                        :key="tab.id"
+                        class="tab-btn"
+                        :class="{ active: activeTab === tab.id }"
+                        @click="switchTab(tab.id)"
+                    >
+                        <i :class="tab.icon"></i> {{ tab.name }}
+                    </button>
+                </div>
+
+                <!-- 学习进度 -->
+                <div class="tab-content" :class="{ active: activeTab === 'progress' }">
+                    <div class="analytics-card">
+                        <h3><i class="fas fa-tasks"></i> 学习进度分析</h3>
+                        
+                        <div v-for="subject in progressData" :key="subject.id" class="progress-item">
+                            <div class="progress-header">
+                                <div class="progress-title">{{ subject.name }}</div>
+                                <div class="progress-score">{{ subject.score }}分</div>
+                            </div>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar" :style="{ width: subject.progress + '%' }"></div>
+                            </div>
+                            <div class="progress-details">
+                                <span>完成度: {{ subject.progress }}%</span>
+                                <span>练习: {{ subject.practiced }}/{{ subject.total }}题</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 成绩趋势 -->
+                <div class="tab-content" :class="{ active: activeTab === 'trends' }">
+                    <div class="analytics-card">
+                        <h3><i class="fas fa-chart-line"></i> 成绩趋势图</h3>
+                        <div class="chart-container">
+                            <canvas ref="trendsChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <div class="analytics-card">
+                        <h3><i class="fas fa-pie-chart"></i> 知识点掌握度</h3>
+                        <div class="chart-container">
+                            <canvas ref="masteryChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 薄弱环节 -->
+                <div class="tab-content" :class="{ active: activeTab === 'weaknesses' }">
+                    <div class="analytics-card">
+                        <h3><i class="fas fa-exclamation-triangle"></i> 薄弱知识点</h3>
+                        
+                        <div v-for="weakness in weaknesses" :key="weakness.id" class="weakness-item">
+                            <div class="weakness-title">
+                                <i class="fas fa-exclamation-circle"></i> {{ weakness.topic }}
+                            </div>
+                            <div class="weakness-description">
+                                正确率: {{ weakness.accuracy }}% | 
+                                错误次数: {{ weakness.errorCount }} | 
+                                建议: {{ weakness.suggestion }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-card">
+                        <h3><i class="fas fa-lightbulb"></i> 学习建议</h3>
+                        
+                        <div v-for="recommendation in recommendations" :key="recommendation.id" class="recommendation-item">
+                            <div class="recommendation-title">
+                                <i class="fas fa-star"></i> {{ recommendation.title }}
+                            </div>
+                            <div class="recommendation-description">
+                                {{ recommendation.description }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 学习成就 -->
+                <div class="tab-content" :class="{ active: activeTab === 'achievements' }">
+                    <div class="analytics-card">
+                        <h3><i class="fas fa-trophy"></i> 学习成就</h3>
+                        
+                        <div class="study-streak">
+                            <div class="streak-number">{{ studyStreak }}</div>
+                            <div class="streak-label">连续学习天数</div>
+                            <div>保持学习习惯，继续加油！</div>
+                            
+                            <div class="streak-calendar">
+                                <div 
+                                    v-for="day in recentDays" 
+                                    :key="day.date"
+                                    class="calendar-day"
+                                    :class="{ active: day.studied }"
+                                >
+                                    {{ day.day }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="achievement-grid">
+                            <div 
+                                v-for="achievement in achievements" 
+                                :key="achievement.id"
+                                class="achievement-item"
+                                :class="{ unlocked: achievement.unlocked }"
+                            >
+                                <div class="achievement-icon">{{ achievement.icon }}</div>
+                                <div class="achievement-title">{{ achievement.title }}</div>
+                                <div class="achievement-description">{{ achievement.description }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            mixins: [SharedMixin],
+            components: {
+                'ocean-background': OceanBackground,
+                'notification-component': NotificationComponent,
+                'loading-spinner': LoadingSpinner
+            },
+            data() {
+                return {
+                    activeTab: 'progress',
+                    selectedTimeRange: '7d',
+                    timeRanges: [
+                        { value: '7d', label: '近7天' },
+                        { value: '30d', label: '近30天' },
+                        { value: '90d', label: '近3个月' },
+                        { value: 'all', label: '全部' }
+                    ],
+                    tabs: [
+                        { id: 'progress', name: '学习进度', icon: 'fas fa-tasks' },
+                        { id: 'trends', name: '成绩趋势', icon: 'fas fa-chart-line' },
+                        { id: 'weaknesses', name: '薄弱环节', icon: 'fas fa-exclamation-triangle' },
+                        { id: 'achievements', name: '学习成就', icon: 'fas fa-trophy' }
+                    ],
+                    metrics: {
+                        totalScore: 85,
+                        scoreChange: 5,
+                        practiceCount: 126,
+                        practiceChange: 15,
+                        studyTime: 24,
+                        timeChange: 3,
+                        accuracy: 78,
+                        accuracyChange: 2
+                    },
+                    progressData: [
+                        {
+                            id: 1,
+                            name: '流体静力学',
+                            progress: 85,
+                            score: 88,
+                            practiced: 34,
+                            total: 40
+                        },
+                        {
+                            id: 2,
+                            name: '流体运动学',
+                            progress: 72,
+                            score: 76,
+                            practiced: 29,
+                            total: 40
+                        },
+                        {
+                            id: 3,
+                            name: '流体动力学',
+                            progress: 65,
+                            score: 71,
+                            practiced: 26,
+                            total: 40
+                        },
+                        {
+                            id: 4,
+                            name: '粘性流动',
+                            progress: 58,
+                            score: 64,
+                            practiced: 23,
+                            total: 40
+                        }
+                    ],
+                    weaknesses: [
+                        {
+                            id: 1,
+                            topic: '伯努利方程应用',
+                            accuracy: 45,
+                            errorCount: 8,
+                            suggestion: '重点复习能量守恒原理和应用条件'
+                        },
+                        {
+                            id: 2,
+                            topic: '雷诺数计算',
+                            accuracy: 52,
+                            errorCount: 6,
+                            suggestion: '加强量纲分析和数值计算练习'
+                        },
+                        {
+                            id: 3,
+                            topic: '压强分布规律',
+                            accuracy: 61,
+                            errorCount: 5,
+                            suggestion: '理解静力学基本方程的物理意义'
+                        }
+                    ],
+                    recommendations: [
+                        {
+                            id: 1,
+                            title: '重点攻克能量方程',
+                            description: '建议每天练习2-3道伯努利方程相关题目，并观看相关视频课程'
+                        },
+                        {
+                            id: 2,
+                            title: '加强概念理解',
+                            description: '建议使用AI助手多问一些概念性问题，深化理论理解'
+                        },
+                        {
+                            id: 3,
+                            title: '保持练习频率',
+                            description: '当前学习进度良好，建议保持每天30分钟的练习时间'
+                        }
+                    ],
+                    studyStreak: 12,
+                    recentDays: [
+                        { date: '2024-01-09', day: '9', studied: true },
+                        { date: '2024-01-10', day: '10', studied: true },
+                        { date: '2024-01-11', day: '11', studied: false },
+                        { date: '2024-01-12', day: '12', studied: true },
+                        { date: '2024-01-13', day: '13', studied: true },
+                        { date: '2024-01-14', day: '14', studied: true },
+                        { date: '2024-01-15', day: '15', studied: true }
+                    ],
+                    achievements: [
+                        {
+                            id: 1,
+                            title: '初出茅庐',
+                            description: '完成首次练习',
+                            icon: '🎯',
+                            unlocked: true
+                        },
+                        {
+                            id: 2,
+                            title: '勤奋学者',
+                            description: '连续学习7天',
+                            icon: '📚',
+                            unlocked: true
+                        },
+                        {
+                            id: 3,
+                            title: '百题斩',
+                            description: '完成100道题目',
+                            icon: '💯',
+                            unlocked: true
+                        },
+                        {
+                            id: 4,
+                            title: '精益求精',
+                            description: '单次练习90分以上',
+                            icon: '⭐',
+                            unlocked: false
+                        },
+                        {
+                            id: 5,
+                            title: '学霸模式',
+                            description: '连续学习30天',
+                            icon: '🏆',
+                            unlocked: false
+                        },
+                        {
+                            id: 6,
+                            title: '流体大师',
+                            description: '所有模块85分以上',
+                            icon: '👑',
+                            unlocked: false
+                        }
+                    ]
+                }
+            },
+            methods: {
+                switchTab(tabId) {
+                    this.activeTab = tabId;
+                    if (tabId === 'trends') {
+                        this.$nextTick(() => {
+                            this.initCharts();
+                        });
+                    }
+                },
+                
+                switchTimeRange(range) {
+                    this.selectedTimeRange = range;
+                    this.loadAnalyticsData(range);
+                },
+                
+                loadAnalyticsData(range) {
+                    // 根据时间范围加载不同的数据
+                    this.showNotification(`已切换到${range}的数据视图`, 'info');
+                },
+                
+                initCharts() {
+                    this.initTrendsChart();
+                    this.initMasteryChart();
+                },
+                
+                initTrendsChart() {
+                    const ctx = this.$refs.trendsChart?.getContext('2d');
+                    if (!ctx) return;
+                    
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: ['第1周', '第2周', '第3周', '第4周', '第5周', '第6周', '第7周', '第8周'],
+                            datasets: [{
+                                label: '练习成绩',
+                                data: [65, 68, 72, 75, 78, 76, 82, 85],
+                                borderColor: '#8e44ad',
+                                backgroundColor: 'rgba(142, 68, 173, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }, {
+                                label: '正确率',
+                                data: [60, 65, 70, 72, 75, 73, 78, 78],
+                                borderColor: '#3498db',
+                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: '学习成绩变化趋势'
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100
+                                }
+                            }
+                        }
+                    });
+                },
+                
+                initMasteryChart() {
+                    const ctx = this.$refs.masteryChart?.getContext('2d');
+                    if (!ctx) return;
+                    
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['流体静力学', '流体运动学', '流体动力学', '粘性流动'],
+                            datasets: [{
+                                data: [85, 72, 65, 58],
+                                backgroundColor: [
+                                    '#27ae60',
+                                    '#3498db',
+                                    '#f39c12',
+                                    '#e74c3c'
+                                ]
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: '各知识点掌握度分布'
+                                },
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }
+                    });
+                }
+            },
+            
+            mounted() {
+                console.log('📊 学习分析模块启动！');
+                this.setLoading(true);
+                
+                setTimeout(() => {
+                    this.setLoading(false);
+                    this.showNotification('学习数据分析完成！', 'success');
+                }, 1800);
+            }
+        }).mount('#analyticsApp');
+    </script>
+</body>
+</html> 
