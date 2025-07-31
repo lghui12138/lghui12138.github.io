@@ -3,10 +3,13 @@
 
 window.SecurityProtection = {
     // 当前用户权限级别
-    userLevel: 'student', // 'admin', 'teacher', 'student'
+    userLevel: 'student', // 'owner', 'restricted'
     
-    // 特权用户列表（您和教师账号）
-    privilegedUsers: ['admin', 'teacher'],
+    // 唯一特权用户（网站所有者）
+    ownerAccount: 'liuguanghui6330156',
+    
+    // 当前登录用户
+    currentUser: null,
     
     // 初始化安全保护
     init() {
@@ -15,8 +18,8 @@ window.SecurityProtection = {
         // 获取用户权限
         this.checkUserPrivileges();
         
-        // 如果不是特权用户，启用保护措施
-        if (!this.privilegedUsers.includes(this.userLevel)) {
+        // 如果不是网站所有者，启用全面保护措施
+        if (this.userLevel !== 'owner') {
             this.enableContentProtection();
             this.preventScreenshot();
             this.blockCopyPaste();
@@ -25,6 +28,9 @@ window.SecurityProtection = {
             this.antiCrawler();
             this.protectImages();
             this.addWatermark();
+            this.addUserIdentification();
+        } else {
+            this.showOwnerWelcome();
         }
         
         // 保持高清显示
@@ -35,17 +41,21 @@ window.SecurityProtection = {
     
     // 检查用户权限
     checkUserPrivileges() {
-        // 从localStorage或sessionStorage获取用户信息
+        // 从localStorage获取用户信息
         const userInfo = JSON.parse(localStorage.getItem('userInfo') || '{}');
-        const isTeacher = localStorage.getItem('isTeacher') === 'true';
-        const isAdmin = localStorage.getItem('isAdmin') === 'true';
+        const storedUsername = localStorage.getItem('currentUsername');
+        const sessionUsername = sessionStorage.getItem('currentUsername');
         
-        if (isAdmin || userInfo.role === 'admin' || userInfo.username === 'admin' || userInfo.securityLevel === 'maximum') {
-            this.userLevel = 'admin';
-        } else if (isTeacher || userInfo.role === 'teacher') {
-            this.userLevel = 'teacher';
+        // 检查所有可能的用户名来源
+        this.currentUser = userInfo.username || storedUsername || sessionUsername || null;
+        
+        // 只有特定账号才有完全权限
+        if (this.currentUser === this.ownerAccount) {
+            this.userLevel = 'owner';
+            console.log(`👑 网站所有者已登录: ${this.currentUser}`);
         } else {
-            this.userLevel = 'student';
+            this.userLevel = 'restricted';
+            console.log(`🔒 受限用户: ${this.currentUser || '未登录'}`);
         }
         
         console.log(`🔐 用户权限检查完成: ${this.userLevel}`);
@@ -519,6 +529,245 @@ window.SecurityProtection = {
         if (warning) {
             warning.remove();
         }
+    },
+    
+    // 添加用户身份识别
+    addUserIdentification() {
+        // 创建用户识别输入框
+        const loginPrompt = document.createElement('div');
+        loginPrompt.id = 'user-identification';
+        loginPrompt.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        `;
+        
+        loginPrompt.innerHTML = `
+            <div style="
+                background: white;
+                padding: 40px;
+                border-radius: 15px;
+                max-width: 400px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            ">
+                <h2 style="color: #333; margin-bottom: 20px;">
+                    🔐 用户身份验证
+                </h2>
+                <p style="color: #666; margin-bottom: 30px;">
+                    请输入您的用户名以访问内容
+                </p>
+                <input 
+                    type="text" 
+                    id="username-input" 
+                    placeholder="请输入用户名"
+                    style="
+                        width: 100%;
+                        padding: 12px;
+                        border: 2px solid #ddd;
+                        border-radius: 8px;
+                        font-size: 16px;
+                        margin-bottom: 20px;
+                        box-sizing: border-box;
+                    "
+                    autofocus
+                />
+                <div>
+                    <button onclick="SecurityProtection.verifyUser()" style="
+                        background: #007bff;
+                        color: white;
+                        border: none;
+                        padding: 12px 30px;
+                        border-radius: 8px;
+                        font-size: 16px;
+                        cursor: pointer;
+                        margin-right: 10px;
+                    ">确认</button>
+                    <button onclick="SecurityProtection.guestAccess()" style="
+                        background: #6c757d;
+                        color: white;
+                        border: none;
+                        padding: 12px 30px;
+                        border-radius: 8px;
+                        font-size: 16px;
+                        cursor: pointer;
+                    ">访客浏览</button>
+                </div>
+                <p style="font-size: 12px; color: #999; margin-top: 20px;">
+                    访客模式将启用内容保护功能
+                </p>
+            </div>
+        `;
+        
+        document.body.appendChild(loginPrompt);
+        
+        // 回车键确认
+        document.getElementById('username-input').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.verifyUser();
+            }
+        });
+    },
+    
+    // 验证用户
+    verifyUser() {
+        const username = document.getElementById('username-input').value.trim();
+        
+        if (!username) {
+            alert('请输入用户名');
+            return;
+        }
+        
+        // 保存用户名
+        localStorage.setItem('currentUsername', username);
+        sessionStorage.setItem('currentUsername', username);
+        localStorage.setItem('userInfo', JSON.stringify({
+            username: username,
+            loginTime: new Date().toISOString()
+        }));
+        
+        // 重新检查权限
+        this.currentUser = username;
+        
+        if (username === this.ownerAccount) {
+            this.userLevel = 'owner';
+            this.removeUserIdentification();
+            this.showOwnerWelcome();
+            console.log(`👑 网站所有者已验证: ${username}`);
+        } else {
+            this.userLevel = 'restricted';
+            this.removeUserIdentification();
+            this.showRestrictedWelcome(username);
+            console.log(`🔒 受限用户已登录: ${username}`);
+        }
+    },
+    
+    // 访客访问
+    guestAccess() {
+        this.currentUser = 'guest';
+        this.userLevel = 'restricted';
+        localStorage.setItem('currentUsername', 'guest');
+        sessionStorage.setItem('currentUsername', 'guest');
+        
+        this.removeUserIdentification();
+        this.showGuestWelcome();
+        console.log('👥 访客模式已启用');
+    },
+    
+    // 移除用户识别界面
+    removeUserIdentification() {
+        const loginPrompt = document.getElementById('user-identification');
+        if (loginPrompt) {
+            loginPrompt.remove();
+        }
+    },
+    
+    // 显示所有者欢迎信息
+    showOwnerWelcome() {
+        const welcome = document.createElement('div');
+        welcome.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            z-index: 99998;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        `;
+        
+        welcome.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-crown"></i>
+                <div>
+                    <div style="font-weight: bold;">欢迎回来，所有者！</div>
+                    <div style="font-size: 12px; opacity: 0.9;">所有功能已解锁</div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(welcome);
+        
+        setTimeout(() => {
+            welcome.remove();
+        }, 5000);
+    },
+    
+    // 显示受限用户欢迎信息
+    showRestrictedWelcome(username) {
+        const welcome = document.createElement('div');
+        welcome.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            z-index: 99998;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        `;
+        
+        welcome.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-shield-alt"></i>
+                <div>
+                    <div style="font-weight: bold;">欢迎，${username}</div>
+                    <div style="font-size: 12px; opacity: 0.9;">内容保护已启用</div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(welcome);
+        
+        setTimeout(() => {
+            welcome.remove();
+        }, 4000);
+    },
+    
+    // 显示访客欢迎信息
+    showGuestWelcome() {
+        const welcome = document.createElement('div');
+        welcome.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #6c757d, #495057);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            z-index: 99998;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        `;
+        
+        welcome.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <i class="fas fa-user"></i>
+                <div>
+                    <div style="font-weight: bold;">访客模式</div>
+                    <div style="font-size: 12px; opacity: 0.9;">内容保护已启用</div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(welcome);
+        
+        setTimeout(() => {
+            welcome.remove();
+        }, 4000);
     }
 };
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="format-detection" content="telephone=no">
     <title>🎬 增强版视频课程 - 流体力学学习平台</title>
@@ -1090,33 +1090,10 @@
             // 显示模态框
             document.getElementById('videoModal').style.display = 'block';
             
-            // 处理B站视频
+            // 处理B站视频 - 直接跳转到B站页面
             if (video.sourceType === 'bilibili') {
-                setTimeout(() => {
-                    const videoPlayer = document.getElementById('videoPlayer');
-                    if (videoPlayer) {
-                        // 提取BV号
-                        let bvid = video.url;
-                        if (video.url.includes('bilibili.com/video/')) {
-                            const bvMatch = video.url.match(/BV[0-9A-Za-z]+/);
-                            bvid = bvMatch ? bvMatch[0] : video.url;
-                        }
-                        
-                        // 创建B站iframe
-                        const embedUrl = `https://player.bilibili.com/player.html?bvid=${bvid}&autoplay=1&page=1&high_quality=1&danmaku=0`;
-                        videoPlayer.innerHTML = `
-                            <iframe 
-                                src="${embedUrl}"
-                                style="width: 100%; height: 100%; border: none;"
-                                allowfullscreen
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            ></iframe>
-                        `;
-                        
-                        updateVideoProgress(videoId, 25); // 记录观看进度
-                        showNotification('🎥 B站视频已加载', 'success');
-                    }
-                }, 100);
+                openBilibiliVideo(video.url);
+                updateVideoProgress(videoId, 25); // 记录观看进度
                 return;
             }
             
@@ -1175,6 +1152,23 @@
             }
         }
 
+        // 打开B站视频
+        function openBilibiliVideo(url) {
+            try {
+                const bilibiliWindow = window.open(url, '_blank');
+                if (bilibiliWindow) {
+                    showNotification('🚀 已打开B站视频页面', 'success');
+                } else {
+                    showNotification('❌ 无法打开B站页面，请检查浏览器弹窗设置', 'error');
+                    showBilibiliBackup(url);
+                }
+            } catch (error) {
+                console.error('❌ B站视频打开失败:', error);
+                showNotification('❌ 无法打开B站页面，请检查浏览器弹窗设置', 'error');
+                showBilibiliBackup(url);
+            }
+        }
+
         // 抖音视频备用方案
         function showDouyinBackup(url) {
             const modal = document.createElement('div');
@@ -1200,6 +1194,46 @@
                     </div>
                     <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
                         提示：可以复制链接到抖音APP中观看
+                    </p>
+                    <button onclick="navigator.clipboard.writeText('${url}').then(()=>alert('链接已复制到剪贴板')).catch(()=>alert('复制失败，请手动复制'))" style="
+                        background: #007bff; color: white; border: none; padding: 8px 16px; 
+                        border-radius: 6px; cursor: pointer; margin-right: 10px;
+                    ">复制链接</button>
+                    <button onclick="this.parentElement.parentElement.remove()" style="
+                        background: #ddd; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;
+                    ">关闭</button>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+            setTimeout(() => modal.remove(), 10000); // 10秒后自动关闭
+        }
+
+        // B站视频备用方案
+        function showBilibiliBackup(url) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+                background: rgba(0,0,0,0.7); z-index: 10020; 
+                display: flex; align-items: center; justify-content: center;
+            `;
+            
+            modal.innerHTML = `
+                <div style="background: white; padding: 30px; border-radius: 15px; max-width: 400px; text-align: center;">
+                    <h3 style="color: #00a1d6; margin-bottom: 20px;">
+                        <i class="fab fa-bilibili"></i> B站视频
+                    </h3>
+                    <p style="margin-bottom: 20px;">请手动访问B站视频：</p>
+                    <div style="margin-bottom: 20px;">
+                        <a href="${url}" target="_blank" style="
+                            background: #00a1d6; color: white; padding: 10px 20px; 
+                            text-decoration: none; border-radius: 8px; display: inline-block;
+                        ">
+                            <i class="fab fa-bilibili"></i> 打开B站视频
+                        </a>
+                    </div>
+                    <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                        提示：可以复制链接到B站APP中观看
                     </p>
                     <button onclick="navigator.clipboard.writeText('${url}').then(()=>alert('链接已复制到剪贴板')).catch(()=>alert('复制失败，请手动复制'))" style="
                         background: #007bff; color: white; border: none; padding: 8px 16px; 

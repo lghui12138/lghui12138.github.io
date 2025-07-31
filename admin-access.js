@@ -3,25 +3,29 @@
 
 console.log('🔑 管理员权限脚本启动...');
 
-// 设置管理员权限
-function setAdminAccess() {
-    // 设置管理员标识
-    localStorage.setItem('isAdmin', 'true');
+// 设置所有者权限
+function setOwnerAccess() {
+    const ownerAccount = 'liuguanghui6330156';
+    
+    // 设置所有者标识
+    localStorage.setItem('currentUsername', ownerAccount);
+    sessionStorage.setItem('currentUsername', ownerAccount);
     localStorage.setItem('userInfo', JSON.stringify({
-        role: 'admin',
-        username: 'admin',
+        username: ownerAccount,
+        role: 'owner',
         permissions: ['all'],
-        securityLevel: 'maximum'
+        securityLevel: 'maximum',
+        loginTime: new Date().toISOString()
     }));
     
     // 显示权限确认
-    const adminNotice = document.createElement('div');
-    adminNotice.innerHTML = `
+    const ownerNotice = document.createElement('div');
+    ownerNotice.innerHTML = `
         <div style="
             position: fixed;
             top: 10px;
             left: 10px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, #28a745, #20c997);
             color: white;
             padding: 10px 15px;
             border-radius: 8px;
@@ -29,60 +33,66 @@ function setAdminAccess() {
             z-index: 99999;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         ">
-            👑 管理员模式已激活
+            👑 所有者模式已激活
         </div>
     `;
-    document.body.appendChild(adminNotice);
+    document.body.appendChild(ownerNotice);
     
     // 3秒后自动隐藏
     setTimeout(() => {
-        adminNotice.remove();
+        ownerNotice.remove();
     }, 3000);
     
-    console.log('✅ 管理员权限已设置');
+    // 移除用户身份验证界面（如果存在）
+    const userIdentification = document.getElementById('user-identification');
+    if (userIdentification) {
+        userIdentification.remove();
+    }
+    
+    console.log('✅ 所有者权限已设置');
 }
 
-// 检查是否是管理员环境
-function checkAdminEnvironment() {
-    // 检查特定的管理员标识（可以是特殊的URL参数、本地存储等）
+// 检查是否是所有者环境
+function checkOwnerEnvironment() {
+    // 检查特定的所有者标识
     const urlParams = new URLSearchParams(window.location.search);
-    const adminKey = urlParams.get('admin_key');
-    const storedAdmin = localStorage.getItem('isAdmin');
+    const ownerKey = urlParams.get('owner_key');
+    const storedUsername = localStorage.getItem('currentUsername');
     
-    // 如果有管理员密钥或已设置管理员权限
-    if (adminKey === 'lghui12138_admin_2024' || storedAdmin === 'true') {
-        setAdminAccess();
+    // 如果有所有者密钥或已设置所有者权限
+    if (ownerKey === 'liuguanghui6330156_owner_2024' || storedUsername === 'liuguanghui6330156') {
+        setOwnerAccess();
         return true;
     }
     
     return false;
 }
 
-// 添加快捷键激活管理员模式
+// 添加快捷键激活所有者模式
 let keySequence = [];
-const adminSequence = ['Control', 'Shift', 'A', 'D', 'M', 'I', 'N'];
+const ownerSequence = ['Control', 'Shift', 'O', 'W', 'N', 'E', 'R'];
 
 document.addEventListener('keydown', (e) => {
     keySequence.push(e.key);
     
     // 只保留最后7个按键
-    if (keySequence.length > adminSequence.length) {
+    if (keySequence.length > ownerSequence.length) {
         keySequence.shift();
     }
     
-    // 检查是否匹配管理员序列
-    if (keySequence.length === adminSequence.length && 
-        keySequence.every((key, index) => key === adminSequence[index])) {
-        setAdminAccess();
+    // 检查是否匹配所有者序列
+    if (keySequence.length === ownerSequence.length && 
+        keySequence.every((key, index) => key === ownerSequence[index])) {
+        setOwnerAccess();
         keySequence = []; // 重置序列
     }
 });
 
 // 页面加载时检查
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', checkAdminEnvironment);
+    document.addEventListener('DOMContentLoaded', checkOwnerEnvironment);
 } else {
-    checkAdminEnvironment();
+    checkOwnerEnvironment();
 }
 
-console.log('🔑 管理员权限脚本已加载 - 使用 Ctrl+Shift+A+D+M+I+N 或 ?admin_key=lghui12138_admin_2024 激活'); 
+console.log('🔑 所有者权限脚本已加载 - 使用 Ctrl+Shift+O+W+N+E+R 或 ?owner_key=liuguanghui6330156_owner_2024 激活'); 
