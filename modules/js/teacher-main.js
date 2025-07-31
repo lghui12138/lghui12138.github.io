@@ -412,7 +412,7 @@ window.TeacherApp = {
             components: {
                 'question-manager': TeacherComponents.QuestionManager,
                 'student-feedback-viewer': TeacherComponents.StudentFeedbackViewer,
-                'question-editor-modal': TeacherComponents.QuestionEditorModal,
+                'bank-manager': TeacherComponents.BankManager,
                 'analytics-dashboard': {
                     template: '<div>统计分析功能开发中...</div>'
                 },
