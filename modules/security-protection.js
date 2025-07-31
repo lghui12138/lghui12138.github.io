@@ -92,6 +92,15 @@ window.SecurityProtection = {
                 user-select: none !important;
             }
             
+            /* 允许输入框正常输入 */
+            input, textarea, [contenteditable] {
+                -webkit-user-select: text !important;
+                -moz-user-select: text !important;
+                -ms-user-select: text !important;
+                user-select: text !important;
+                pointer-events: auto !important;
+            }
+            
             /* 保护图片 */
             img {
                 -webkit-user-drag: none !important;
@@ -161,9 +170,13 @@ window.SecurityProtection = {
     
     // 阻止复制粘贴
     blockCopyPaste() {
-        // 禁用复制快捷键
+        // 禁用复制快捷键（但允许在输入框中使用）
         document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || 
+            // 检查是否在输入框中
+            const target = e.target;
+            const isInputElement = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true';
+            
+            if (!isInputElement && (e.ctrlKey || e.metaKey) && (e.key === 'c' || e.key === 'C' || 
                 e.key === 'a' || e.key === 'A' || e.key === 'x' || e.key === 'X' ||
                 e.key === 's' || e.key === 'S')) {
                 e.preventDefault();
@@ -172,18 +185,28 @@ window.SecurityProtection = {
             }
         });
         
-        // 禁用复制事件
+        // 禁用复制事件（但允许在输入框中使用）
         document.addEventListener('copy', (e) => {
-            e.preventDefault();
-            e.clipboardData.setData('text/plain', '');
-            this.showWarning('内容受到保护，无法复制');
-            return false;
+            const target = e.target;
+            const isInputElement = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true';
+            
+            if (!isInputElement) {
+                e.preventDefault();
+                e.clipboardData.setData('text/plain', '');
+                this.showWarning('内容受到保护，无法复制');
+                return false;
+            }
         });
         
-        // 禁用选择事件
+        // 禁用选择事件（但允许在输入框中使用）
         document.addEventListener('selectstart', (e) => {
-            e.preventDefault();
-            return false;
+            const target = e.target;
+            const isInputElement = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.contentEditable === 'true';
+            
+            if (!isInputElement) {
+                e.preventDefault();
+                return false;
+            }
         });
     },
     
