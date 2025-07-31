@@ -153,6 +153,11 @@
             background: #2ecc71;
             color: white;
         }
+        
+        .btn-manage {
+            background: #f39c12;
+            color: white;
+        }
 
         .filter-panel {
             background: rgba(255,255,255,0.95);
@@ -427,6 +432,9 @@
                                 <button class="action-btn btn-download" @click="downloadExam(exam)">
                                     <i class="fas fa-download"></i> 下载PDF
                                 </button>
+                                <button v-if="teacherMode" class="action-btn btn-manage" @click="manageExam(exam)">
+                                    <i class="fas fa-edit"></i> 管理真题
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -447,89 +455,168 @@
             },
             data() {
                 return {
+                    loading: true,
                     searchKeyword: '',
                     filters: {
                         yearRange: 'all',
-                        questionType: 'all',
-                        difficulty: 'all',
-                        topic: 'all'
+                        difficulty: 'all'
                     },
-                    examData: [
-                        {
-                            year: 2023,
-                            semester: '秋季学期期末考试',
-                            totalQuestions: 45,
-                            averageScore: 76,
-                            practiceCount: 234,
-                            exams: [
-                                {
-                                    id: '2023-final',
-                                    title: '流体力学期末考试',
-                                    date: '2023-12-25',
-                                    difficulty: 'hard',
-                                    progress: 0,
-                                    topics: ['statics', 'dynamics', 'viscous']
-                                },
-                                {
-                                    id: '2023-mid',
-                                    title: '流体力学期中考试',
-                                    date: '2023-11-15',
-                                    difficulty: 'medium',
-                                    progress: 60,
-                                    topics: ['statics', 'kinematics']
+                    examData: [],
+                    filteredExams: [],
+                    realExamLoader: null,
+                    teacherMode: false
+                }
+            },
+            methods: {
+                // 初始化真题加载器
+                async initRealExamLoader() {
+                    console.log('🚀 初始化真题加载器...');
+                    
+                    // 创建真题加载器
+                    this.realExamLoader = {
+                        cache: new Map(),
+                        
+                        async loadRealExamData() {
+                            try {
+                                console.log('📚 开始加载真题数据...');
+                                
+                                // 加载题库索引
+                                const indexResponse = await fetch('/question-banks/index.json');
+                                if (!indexResponse.ok) {
+                                    throw new Error(`题库索引加载失败: ${indexResponse.status}`);
                                 }
-                            ]
-                        },
-                        {
-                            year: 2022,
-                            semester: '秋季学期期末考试',
-                            totalQuestions: 42,
-                            averageScore: 72,
-                            practiceCount: 456,
-                            exams: [
-                                {
-                                    id: '2022-final',
-                                    title: '流体力学期末考试',
-                                    date: '2022-12-28',
-                                    difficulty: 'hard',
-                                    progress: 25,
-                                    topics: ['statics', 'dynamics', 'viscous']
-                                },
-                                {
-                                    id: '2022-mid',
-                                    title: '流体力学期中考试',
-                                    date: '2022-11-20',
-                                    difficulty: 'medium',
-                                    progress: 85,
-                                    topics: ['statics', 'kinematics']
+                                
+                                const index = await indexResponse.json();
+                                console.log('✅ 题库索引加载成功:', index);
+                                
+                                // 查找真题文件
+                                const realExamFiles = index.questionBanks.filter(bank => 
+                                    bank.category === '真题' || bank.filename.includes('真题')
+                                );
+                                
+                                console.log('📋 找到真题文件:', realExamFiles.map(f => f.filename));
+                                
+                                // 加载真题数据
+                                const examData = [];
+                                let totalQuestions = 0;
+                                
+                                for (const file of realExamFiles) {
+                                    try {
+                                        console.log(`📖 正在加载真题文件: ${file.filename}`);
+                                        const response = await fetch(`/question-banks/${file.filename}`);
+                                        
+                                        if (!response.ok) {
+                                            console.error(`❌ 真题文件加载失败: ${file.filename}, 状态: ${response.status}`);
+                                            continue;
+                                        }
+                                        
+                                        const data = await response.json();
+                                        const questions = Array.isArray(data) ? data : (data.questions || data.data || []);
+                                        
+                                        console.log(`✅ 真题文件加载成功: ${file.filename}, 题目数量: ${questions.length}`);
+                                        
+                                        // 解析年份信息
+                                        const yearMatch = file.filename.match(/(\d{4})/);
+                                        const year = yearMatch ? parseInt(yearMatch[1]) : new Date().getFullYear();
+                                        
+                                        // 按年份分组
+                                        let yearData = examData.find(y => y.year === year);
+                                        if (!yearData) {
+                                            yearData = {
+                                                year: year,
+                                                semester: '秋季学期期末考试',
+                                                totalQuestions: 0,
+                                                averageScore: Math.floor(Math.random() * 20) + 65, // 模拟数据
+                                                practiceCount: Math.floor(Math.random() * 300) + 200, // 模拟数据
+                                                exams: []
+                                            };
+                                            examData.push(yearData);
+                                        }
+                                        
+                                        // 创建考试对象
+                                        const exam = {
+                                            id: `${year}-${file.filename.replace('.json', '')}`,
+                                            title: `${year}年流体力学期末考试`,
+                                            date: `${year}-12-25`,
+                                            difficulty: this.getDifficultyByQuestionCount(questions.length),
+                                            progress: 0,
+                                            topics: this.extractTopics(questions),
+                                            questionCount: questions.length,
+                                            questions: questions
+                                        };
+                                        
+                                        yearData.exams.push(exam);
+                                        yearData.totalQuestions += questions.length;
+                                        totalQuestions += questions.length;
+                                        
+                                    } catch (error) {
+                                        console.error(`❌ 真题文件加载出错: ${file.filename}`, error);
+                                    }
                                 }
-                            ]
+                                
+                                // 按年份排序
+                                examData.sort((a, b) => b.year - a.year);
+                                
+                                console.log('✅ 真题数据加载完成:', examData);
+                                return { examData, totalQuestions };
+                                
+                            } catch (error) {
+                                console.error('❌ 真题数据加载失败:', error);
+                                throw error;
+                            }
                         },
-                        {
-                            year: 2021,
-                            semester: '秋季学期期末考试',
-                            totalQuestions: 38,
-                            averageScore: 74,
-                            practiceCount: 389,
-                            exams: [
-                                {
-                                    id: '2021-final',
-                                    title: '流体力学期末考试',
-                                    date: '2021-12-30',
-                                    difficulty: 'hard',
-                                    progress: 100,
-                                    topics: ['statics', 'dynamics', 'viscous']
-                                },
-                                {
-                                    id: '2021-mid',
-                                    title: '流体力学期中考试',
-                                    date: '2021-11-18',
-                                    difficulty: 'medium',
-                                    progress: 100,
-                                    topics: ['statics', 'kinematics']
-                                }
-                            ]
+                        
+                        getDifficultyByQuestionCount(count) {
+                            if (count >= 50) return 'hard';
+                            if (count >= 30) return 'medium';
+                            return 'easy';
                         },
+                        
+                        extractTopics(questions) {
+                            const topics = new Set();
+                            questions.forEach(q => {
+                                if (q.category) topics.add(q.category);
+                                if (q.tags) q.tags.forEach(tag => topics.add(tag));
+                            });
+                            return Array.from(topics);
+                        }
+                    };
+                    
+                    return this.realExamLoader;
+                },
+                
+                // 加载真题数据
+                async loadRealExamData() {
+                    try {
+                        this.setLoading(true);
+                        
+                        if (!this.realExamLoader) {
+                            this.realExamLoader = await this.initRealExamLoader();
+                        }
+                        
+                        const { examData, totalQuestions } = await this.realExamLoader.loadRealExamData();
+                        
+                        this.examData = examData;
+                        this.filteredExams = [...examData];
+                        
+                        console.log('✅ 真题数据加载完成:', examData);
+                        this.showNotification(`真题数据加载完成！共 ${totalQuestions} 道权威真题`, 'success');
+                        
+                    } catch (error) {
+                        console.error('❌ 真题数据加载失败:', error);
+                        this.showNotification('真题数据加载失败，请检查网络连接', 'error');
+                        
+                        // 加载失败时使用备用数据
+                        this.loadFallbackData();
+                    } finally {
+                        this.setLoading(false);
+                    }
+                },
+                
+                // 备用数据
+                loadFallbackData() {
+                    console.log('📋 加载备用真题数据...');
+                    this.examData = [
                         {
                             year: 2020,
                             semester: '秋季学期期末考试',
@@ -539,7 +626,7 @@
                             exams: [
                                 {
                                     id: '2020-final',
-                                    title: '流体力学期末考试',
+                                    title: '2020年流体力学期末考试',
                                     date: '2020-12-25',
                                     difficulty: 'hard',
                                     progress: 75,
@@ -556,7 +643,7 @@
                             exams: [
                                 {
                                     id: '2019-final',
-                                    title: '流体力学期末考试',
+                                    title: '2019年流体力学期末考试',
                                     date: '2019-12-27',
                                     difficulty: 'medium',
                                     progress: 90,
@@ -564,126 +651,10 @@
                                 }
                             ]
                         }
-                    ],
-                    filteredExams: [],
-                    examsByYear: {
-                        2024: {
-                            year: 2024,
-                            title: '2024年流体力学考试真题',
-                            difficulty: '困难',
-                            questionCount: 45,
-                            timeLimit: 180,
-                            passingRate: 72,
-                            questions: [
-                                {
-                                    id: '2024-01',
-                                    title: '【2024真题】某输水管道，管径D=0.5m，流量Q=0.5m³/s，水的密度ρ=1000kg/m³，动力粘度μ=1.0×10⁻³Pa·s，求雷诺数Re',
-                                    type: '计算题',
-                                    points: 10,
-                                    difficulty: 'medium',
-                                    category: '管流计算',
-                                    solution: 'Re = ρVD/μ = ρQD/(μA) = 1000×0.5×0.5/(1.0×10⁻³×π×0.25²) ≈ 1.27×10⁶'
-                                },
-                                {
-                                    id: '2024-02', 
-                                    title: '【2024真题】推导圆管层流速度分布公式，并求平均速度与最大速度的关系',
-                                    type: '推导题',
-                                    points: 15,
-                                    difficulty: 'hard',
-                                    category: '层流理论',
-                                    solution: '速度分布：u(r) = (ΔP/4μL)(R²-r²)，平均速度V̄ = Vmax/2'
-                                }
-                            ]
-                        },
-                        2023: {
-                            year: 2023,
-                            title: '2023年流体力学考试真题',
-                            difficulty: '中等',
-                            questionCount: 42,
-                            timeLimit: 180,
-                            passingRate: 78,
-                            questions: [
-                                {
-                                    id: '2023-01',
-                                    title: '【2023真题】水在圆管中流动，已知管径d=100mm，流量Q=0.02m³/s，求断面平均流速',
-                                    type: '计算题',
-                                    points: 8,
-                                    difficulty: 'easy',
-                                    category: '基础计算',
-                                    solution: 'V = Q/A = 0.02/(π×0.05²) = 2.55 m/s'
-                                },
-                                {
-                                    id: '2023-02',
-                                    title: '【2023真题】简述伯努利方程的物理意义和适用条件',
-                                    type: '简答题',
-                                    points: 12,
-                                    difficulty: 'medium',
-                                    category: '理论阐述',
-                                    solution: '物理意义：机械能守恒；适用条件：理想流体、定常流动、沿流线'
-                                }
-                            ]
-                        },
-                        2022: {
-                            year: 2022,
-                            title: '2022年流体力学考试真题',
-                            difficulty: '中等',
-                            questionCount: 40,
-                            timeLimit: 180,
-                            passingRate: 75,
-                            questions: [
-                                {
-                                    id: '2022-01',
-                                    title: '【2022真题】某潜水器在水下100m处，求该处的绝对压强（取大气压强为101.3kPa）',
-                                    type: '计算题',
-                                    points: 8,
-                                    difficulty: 'easy',
-                                    category: '静压强',
-                                    solution: 'p = p₀ + ρgh = 101300 + 1000×9.8×100 = 1081.3 kPa'
-                                }
-                            ]
-                        },
-                        2021: {
-                            year: 2021,
-                            title: '2021年流体力学考试真题',
-                            difficulty: '困难',
-                            questionCount: 38,
-                            timeLimit: 180,
-                            passingRate: 68,
-                            questions: [
-                                {
-                                    id: '2021-01',
-                                    title: '【2021真题】分析流体在管道突然扩大时的能量损失机理',
-                                    type: '分析题',
-                                    points: 15,
-                                    difficulty: 'hard',
-                                    category: '能量损失',
-                                    solution: '由于流线分离和涡流形成，动能转化为热能而损失'
-                                }
-                            ]
-                        },
-                        2020: {
-                            year: 2020,
-                            title: '2020年流体力学考试真题',
-                            difficulty: '中等',
-                            questionCount: 35,
-                            timeLimit: 180,
-                            passingRate: 80,
-                            questions: [
-                                {
-                                    id: '2020-01',
-                                    title: '【2020真题】水从大容器通过小孔流出，已知液面高度h=2m，求出流速度',
-                                    type: '计算题',
-                                    points: 10,
-                                    difficulty: 'medium',
-                                    category: '孔口出流',
-                                    solution: 'v = √(2gh) = √(2×9.8×2) = 6.26 m/s'
-                                }
-                            ]
-                        }
-                    }
-                }
-            },
-            methods: {
+                    ];
+                    this.filteredExams = [...this.examData];
+                },
+                
                 filterExams() {
                     let filtered = [...this.examData];
                     
@@ -734,9 +705,77 @@
                 
                 startPractice(exam) {
                     this.showNotification(`开始练习：${exam.title}`, 'success');
-                    // 这里可以跳转到练习页面，传递exam.id参数
-                    const practiceUrl = `practice-dynamic.html?type=real-exam&examId=${exam.id}`;
-                    this.navigateToModule(practiceUrl);
+                    // 跳转到练习页面，传递真题数据
+                    const practiceUrl = `../practice-fullscreen.html?type=real&bank=${encodeURIComponent(exam.id)}&mode=order`;
+                    window.location.href = practiceUrl;
+                },
+                
+                // 教师管理功能
+                manageExam(exam) {
+                    if (!this.teacherMode) {
+                        this.showNotification('只有教师可以管理真题', 'warning');
+                        return;
+                    }
+                    
+                    this.showNotification(`管理真题：${exam.title}`, 'info');
+                    // 这里可以打开管理弹窗
+                    this.openExamManager(exam);
+                },
+                
+                openExamManager(exam) {
+                    const modal = document.createElement('div');
+                    modal.style.cssText = `
+                        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                        background: rgba(0,0,0,0.7); z-index: 10000;
+                        display: flex; align-items: center; justify-content: center;
+                    `;
+                    
+                    modal.innerHTML = `
+                        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                            <h3 style="color: #f39c12; margin-bottom: 20px;">
+                                <i class="fas fa-edit"></i> 真题管理：${exam.title}
+                            </h3>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">题目数量：</label>
+                                <input type="number" value="${exam.questionCount || 0}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">难度等级：</label>
+                                <select style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                                    <option value="easy" ${exam.difficulty === 'easy' ? 'selected' : ''}>简单</option>
+                                    <option value="medium" ${exam.difficulty === 'medium' ? 'selected' : ''}>中等</option>
+                                    <option value="hard" ${exam.difficulty === 'hard' ? 'selected' : ''}>困难</option>
+                                </select>
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">考试日期：</label>
+                                <input type="date" value="${exam.date}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                            </div>
+                            
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 5px; font-weight: bold;">知识点：</label>
+                                <input type="text" value="${exam.topics.join(', ')}" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+                            </div>
+                            
+                            <div style="text-align: center; margin-top: 30px;">
+                                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
+                                    background: #f39c12; color: white; border: none; padding: 10px 20px; 
+                                    border-radius: 5px; cursor: pointer; margin-right: 10px;
+                                ">保存更改</button>
+                                <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
+                                    background: #ddd; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;
+                                ">取消</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    modal.onclick = (e) => {
+                        if (e.target === modal) modal.remove();
+                    };
                 },
                 
                 viewAnalysis(exam) {
@@ -765,14 +804,20 @@
             
             mounted() {
                 console.log('🏆 历年真题模块启动！');
-                this.setLoading(true);
                 
-                setTimeout(() => {
+                // 检查是否为教师模式
+                const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+                this.teacherMode = currentUser.role === 'teacher';
+                
+                // 加载真题数据
+                this.loadRealExamData().then(() => {
                     this.loadProgress();
                     this.filterExams(); // 初始化显示所有数据
-                    this.setLoading(false);
-                    this.showNotification('历年真题加载完成！共 329 道权威真题', 'success');
-                }, 1500);
+                    this.showNotification('历年真题加载完成！', 'success');
+                }).catch(error => {
+                    console.error('❌ 真题模块初始化失败:', error);
+                    this.showNotification('真题模块初始化失败，使用备用数据', 'warning');
+                });
             }
         }).mount('#realExamsApp');
     </script>
