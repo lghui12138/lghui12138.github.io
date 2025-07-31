@@ -1336,6 +1336,12 @@
                         difficulty: '',
                         keyword: ''
                     },
+                    
+                    // 智能加载相关
+                    autoLoadEnabled: true,
+                    lastLoadedCategory: '',
+                    lastLoadedYear: '',
+                    filterTimeout: null,
                     // 练习数据
                     questions: [],
                     currentQuestionIndex: 0,
@@ -1360,37 +1366,8 @@
                 },
                 
                 availableYears() {
-                    // 如果URL参数包含真题类型，强制从真题数据中提取年份
-                    const urlParams = new URLSearchParams(window.location.search);
-                    if (urlParams.get('type') === 'real') {
-                        // 如果真题数据已加载，直接使用
-                        if (this.allQuestions.length > 0) {
-                            const years = [...new Set(this.allQuestions.map(q => q.year))].sort((a, b) => b - a);
-                            return years;
-                        }
-                        // 如果还没加载，返回预期的年份范围
-                        return [2023, 2021, 2020, 2019, 2018, 2016, 2015, 2014, 2013, 2011, 2010, 2009, 2006, 2004, 2003, 2002, 2001];
-                    }
-                    
-                    // 如果是真题模式，使用真题年份
-                    if (this.isRealExamMode && this.realExamYears.length > 0) {
-                        return this.realExamYears.map(y => y.year);
-                    }
-                    
-                    // 如果真题数据已加载但realExamYears还没设置，从allQuestions中提取
-                    if (this.isRealExamMode && this.allQuestions.length > 0) {
-                        const years = [...new Set(this.allQuestions.map(q => q.year))].sort((a, b) => b - a);
-                        return years;
-                    }
-                    
-                    // 否则从题库中提取年份
-                    const years = new Set();
-                    this.availableBanks.forEach(bank => {
-                        if (bank.year && typeof bank.year === 'number') {
-                            years.add(bank.year);
-                        }
-                    });
-                    return Array.from(years).sort((a, b) => b - a);
+                    // 强制返回真题年份列表，确保年份选项始终显示
+                    return [2023, 2021, 2020, 2019, 2018, 2016, 2015, 2014, 2013, 2011, 2010, 2009, 2006, 2004, 2003, 2002, 2001];
                 },
                 
                 filteredBanks() {
@@ -1449,6 +1426,130 @@
                     setTimeout(() => {
                         this.notification.show = false;
                     }, 3000);
+                },
+
+                // 筛选条件变化处理
+                onFilterChange() {
+                    // 延迟执行，避免频繁触发
+                    clearTimeout(this.filterTimeout);
+                    this.filterTimeout = setTimeout(() => {
+                        this.smartLoadQuestions();
+                    }, 300);
+                },
+
+                // 智能加载题目
+                async smartLoadQuestions() {
+                    if (!this.autoLoadEnabled) return;
+                    
+                    const category = this.filters.category;
+                    const year = this.filters.year;
+                    
+                    // 检查是否需要重新加载
+                    if (category === this.lastLoadedCategory && year === this.lastLoadedYear) {
+                        return;
+                    }
+                    
+                    this.loading = true;
+                    this.loadingText = '正在智能加载题目...';
+                    
+                    try {
+                        if (category === '历年真题') {
+                            await this.loadRealExamQuestions(year);
+                        } else if (category === '易错题集') {
+                            await this.loadErrorProneQuestions();
+                        } else if (category === '计算题集') {
+                            await this.loadCalculationQuestions();
+                        } else if (category === '综合题集') {
+                            await this.loadComprehensiveQuestions();
+                        } else {
+                            // 默认加载所有题目
+                            await this.loadAllQuestionBanks();
+                        }
+                        
+                        this.lastLoadedCategory = category;
+                        this.lastLoadedYear = year;
+                        
+                        this.showNotification(`✅ 智能加载完成: ${this.questions.length}题`, 'success');
+                        
+                    } catch (error) {
+                        console.error('智能加载失败:', error);
+                        this.showNotification('智能加载失败: ' + error.message, 'error');
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+
+                // 加载真题题目
+                async loadRealExamQuestions(year = 'all') {
+                    const response = await fetch('../question-banks/真题_中国海洋大学_2000-2021_cleaned.json');
+                    if (!response.ok) {
+                        throw new Error('真题文件加载失败');
+                    }
+                    
+                    let questions = await response.json();
+                    
+                    // 根据年份筛选
+                    if (year && year !== 'all' && year !== '全部年份') {
+                        const selectedYear = parseInt(year);
+                        questions = questions.filter(q => q.year === selectedYear);
+                    }
+                    
+                    // 处理题目数据
+                    this.questions = questions.map(q => ({
+                        ...q,
+                        bankId: 'real-exam',
+                        bank: '历年真题',
+                        bankName: `${q.year}年真题`,
+                        category: '历年真题',
+                        difficulty: this.getDifficultyByScore(q.score),
+                        options: q.options || [],
+                        answer: q.answer || '',
+                        explanation: q.explanation || ''
+                    }));
+                    
+                    this.totalQuestions = this.questions.length;
+                },
+
+                // 加载易错题
+                async loadErrorProneQuestions() {
+                    const response = await fetch('../question-banks/易错题集.json');
+                    if (!response.ok) {
+                        throw new Error('易错题文件加载失败');
+                    }
+                    
+                    const data = await response.json();
+                    const questions = Array.isArray(data) ? data : (data.questions || []);
+                    
+                    this.questions = questions.map((q, index) => ({
+                        id: `error-prone_${index}`,
+                        title: q.title || q.question || `易错题${index + 1}`,
+                        content: q.content || '',
+                        options: q.options || ['A', 'B', 'C', 'D'],
+                        answer: q.answer || 0,
+                        explanation: q.explanation || '暂无解析',
+                        category: '易错题集',
+                        difficulty: q.difficulty || 'hard',
+                        bank: '易错题集',
+                        bankId: 'error-prone'
+                    }));
+                    
+                    this.totalQuestions = this.questions.length;
+                },
+
+                // 加载计算题
+                async loadCalculationQuestions() {
+                    // 从真题中筛选计算题
+                    await this.loadRealExamQuestions();
+                    this.questions = this.questions.filter(q => q.type === '计算题');
+                    this.totalQuestions = this.questions.length;
+                },
+
+                // 加载综合题
+                async loadComprehensiveQuestions() {
+                    // 从真题中筛选综合题
+                    await this.loadRealExamQuestions();
+                    this.questions = this.questions.filter(q => q.type === '综合题');
+                    this.totalQuestions = this.questions.length;
                 },
 
                 // 全屏功能
@@ -2216,6 +2317,10 @@
                 document.addEventListener('fullscreenchange', () => {
                     this.isFullscreen = !!document.fullscreenElement;
                 });
+                
+                // 监听筛选条件变化
+                this.$watch('filters.category', this.onFilterChange);
+                this.$watch('filters.year', this.onFilterChange);
             },
 
             beforeUnmount() {
