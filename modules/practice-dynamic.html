@@ -931,6 +931,191 @@
                 display: none;
             }
         }
+
+        /* 填空题样式 */
+        .fill-blank-section {
+            margin: 20px 0;
+        }
+
+        .answer-input-container {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+        }
+
+        .input-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #495057;
+            font-size: 16px;
+        }
+
+        .input-label i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        .answer-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            line-height: 1.5;
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .input-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .btn-outline:hover {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .answer-comparison {
+            margin-top: 25px;
+            background: white;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            overflow: hidden;
+        }
+
+        .comparison-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+        }
+
+        .comparison-header h4 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .comparison-header i {
+            margin-right: 8px;
+        }
+
+        .comparison-content {
+            padding: 20px;
+        }
+
+        .user-answer-section,
+        .standard-answer-section {
+            margin-bottom: 20px;
+        }
+
+        .user-answer-section h5,
+        .standard-answer-section h5 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .user-answer-section h5 {
+            color: #495057;
+        }
+
+        .standard-answer-section h5 {
+            color: #28a745;
+        }
+
+        .answer-box {
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 15px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .user-answer {
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+        }
+
+        .standard-answer {
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+        }
+
+        .similarity-score {
+            margin-top: 20px;
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .score-display {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .score-label {
+            margin-right: 10px;
+            color: #495057;
+        }
+
+        .score-value {
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .score-value.high {
+            color: #28a745;
+        }
+
+        .score-value.medium {
+            color: #ffc107;
+        }
+
+        .score-value.low {
+            color: #dc3545;
+        }
+
+        .score-feedback {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .score-feedback.excellent {
+            color: #28a745;
+        }
+
+        .score-feedback.good {
+            color: #17a2b8;
+        }
+
+        .score-feedback.average {
+            color: #ffc107;
+        }
+
+        .score-feedback.poor {
+            color: #dc3545;
+        }
     </style>
 </head>
 <body>
@@ -1246,7 +1431,8 @@
 
                     <div class="question-content" v-if="currentQuestion.content" v-html="currentQuestion.content"></div>
 
-                    <ul class="options-list" v-if="currentQuestion.options">
+                    <!-- 选择题选项 -->
+                    <ul class="options-list" v-if="currentQuestion.options && currentQuestion.options.length > 0">
                     <li v-for="(option, index) in currentQuestion.options" :key="index" class="option-item">
                             <label :class="[
                                 'option-label', 
@@ -1269,6 +1455,68 @@
                         </label>
                     </li>
                 </ul>
+                
+                    <!-- 填空题/主观题输入区域 -->
+                    <div v-else class="fill-blank-section">
+                        <div class="answer-input-container">
+                            <label class="input-label">
+                                <i class="fas fa-pencil-alt"></i>
+                                请在下方输入您的答案：
+                            </label>
+                            <textarea 
+                                v-model="userTextAnswer" 
+                                :placeholder="getAnswerPlaceholder(currentQuestion)"
+                                rows="4"
+                                class="answer-input"
+                                @input="onAnswerInput"></textarea>
+                            
+                            <div class="input-actions">
+                                <button @click="submitTextAnswer" 
+                                        class="action-btn btn-primary"
+                                        :disabled="!userTextAnswer.trim() || showResult">
+                                    <i class="fas fa-check"></i>
+                                    提交答案
+                                </button>
+                                <button @click="showStandardAnswer" 
+                                        class="action-btn btn-outline"
+                                        v-if="!showResult">
+                                    <i class="fas fa-eye"></i>
+                                    查看答案
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 答案对比区域 -->
+                        <div v-if="showResult || showAnswer" class="answer-comparison">
+                            <div class="comparison-header">
+                                <h4><i class="fas fa-balance-scale"></i> 答案对比</h4>
+                            </div>
+                            
+                            <div class="comparison-content">
+                                <div class="user-answer-section">
+                                    <h5><i class="fas fa-user"></i> 您的答案</h5>
+                                    <div class="answer-box user-answer">{{ userTextAnswer }}</div>
+                                </div>
+                                
+                                <div class="standard-answer-section">
+                                    <h5><i class="fas fa-star"></i> 标准答案</h5>
+                                    <div class="answer-box standard-answer" v-html="currentQuestion.answer"></div>
+                                </div>
+                                
+                                <div v-if="showResult" class="similarity-score">
+                                    <div class="score-display">
+                                        <span class="score-label">相似度:</span>
+                                        <span class="score-value" :class="getSimilarityClass(answerSimilarity)">
+                                            {{ answerSimilarity }}%
+                                        </span>
+                                    </div>
+                                    <div class="score-feedback" :class="getFeedbackClass(answerSimilarity)">
+                                        {{ getFeedbackText(answerSimilarity) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
                 <div class="action-buttons">
                         <button @click="submitAnswer" class="action-btn" :disabled="selectedAnswer === null || showResult" title="提交答案 [Enter]">
@@ -1364,6 +1612,11 @@
                     lastLoadedCategory: '',
                     lastLoadedYear: '',
                     filterTimeout: null,
+                    
+                    // 填空题相关
+                    userTextAnswer: '',
+                    showAnswer: false,
+                    answerSimilarity: 0,
                     // 练习数据
                     questions: [],
                     currentQuestionIndex: 0,
@@ -1775,6 +2028,102 @@
                     this.selectedAnswer = null;
                     this.showResult = false;
                     this.isCorrect = false;
+                    this.userTextAnswer = '';
+                    this.showAnswer = false;
+                    this.answerSimilarity = 0;
+                },
+
+                // 填空题相关方法
+                getAnswerPlaceholder(question) {
+                    if (question.type === '计算题') {
+                        return '请输入计算过程和最终答案...';
+                    } else if (question.type === '分析题') {
+                        return '请输入分析过程和结论...';
+                    } else if (question.type === '证明题') {
+                        return '请输入证明步骤...';
+                    } else {
+                        return '请输入您的答案...';
+                    }
+                },
+
+                onAnswerInput() {
+                    // 可以在这里添加实时提示或格式检查
+                },
+
+                submitTextAnswer() {
+                    if (!this.userTextAnswer.trim()) {
+                        this.showNotification('请输入答案后再提交', 'warning');
+                        return;
+                    }
+
+                    // 计算答案相似度
+                    this.answerSimilarity = this.calculateSimilarity(this.userTextAnswer, this.currentQuestion.answer);
+                    
+                    // 显示结果
+                    this.showResult = true;
+                    this.isCorrect = this.answerSimilarity >= 60; // 60%以上视为正确
+                    
+                    // 更新统计
+                    if (this.isCorrect) {
+                        this.correctAnswers++;
+                    }
+                    
+                    // 保存用户答案
+                    this.userAnswers[this.currentQuestionIndex] = this.userTextAnswer;
+                    
+                    this.showNotification(
+                        this.isCorrect ? '回答正确！' : `答案相似度 ${this.answerSimilarity}%，请查看标准答案`,
+                        this.isCorrect ? 'success' : 'warning'
+                    );
+                },
+
+                showStandardAnswer() {
+                    this.showAnswer = true;
+                    this.showNotification('已显示标准答案，可以对比学习', 'info');
+                },
+
+                calculateSimilarity(userAnswer, standardAnswer) {
+                    if (!userAnswer || !standardAnswer) return 0;
+                    
+                    const user = userAnswer.toLowerCase().trim();
+                    const standard = standardAnswer.toString().toLowerCase().trim();
+                    
+                    // 简单的相似度计算算法
+                    if (user === standard) return 100;
+                    
+                    // 包含关键词检查
+                    const userWords = user.split(/\s+/);
+                    const standardWords = standard.split(/\s+/);
+                    
+                    let matchCount = 0;
+                    userWords.forEach(word => {
+                        if (standardWords.some(sw => sw.includes(word) || word.includes(sw))) {
+                            matchCount++;
+                        }
+                    });
+                    
+                    const similarity = Math.round((matchCount / Math.max(userWords.length, standardWords.length)) * 100);
+                    return Math.min(similarity, 100);
+                },
+
+                getSimilarityClass(similarity) {
+                    if (similarity >= 80) return 'high';
+                    if (similarity >= 60) return 'medium';
+                    return 'low';
+                },
+
+                getFeedbackClass(similarity) {
+                    if (similarity >= 90) return 'excellent';
+                    if (similarity >= 70) return 'good';
+                    if (similarity >= 50) return 'average';
+                    return 'poor';
+                },
+
+                getFeedbackText(similarity) {
+                    if (similarity >= 90) return '优秀！回答非常准确';
+                    if (similarity >= 70) return '良好！回答基本正确';
+                    if (similarity >= 50) return '一般，需要改进';
+                    return '需要重新学习相关知识点';
                 },
 
                 // 全屏功能
