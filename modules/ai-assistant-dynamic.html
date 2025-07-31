@@ -256,13 +256,13 @@
                         v-for="suggestion in suggestions" 
                         :key="suggestion.id"
                         class="suggestion-card"
-                        @click="askSuggestion(suggestion.question)"
+                        @click="askSuggestion(suggestion.text)"
                     >
                         <div style="font-weight: bold; margin-bottom: 10px;">
-                            <i :class="suggestion.icon"></i> {{ suggestion.title }}
+                            <i :class="suggestion.icon"></i> {{ suggestion.text }}
                         </div>
                         <div style="color: #666; font-size: 0.9em;">
-                            {{ suggestion.question }}
+                            {{ suggestion.text }}
                         </div>
                     </div>
                 </div>
@@ -288,39 +288,63 @@
                     suggestions: [
                         {
                             id: 1,
-                            title: '基础概念',
-                            question: '什么是流体？流体的基本特征有哪些？',
-                            icon: 'fas fa-book'
+                            text: '什么是伯努利方程？',
+                            icon: '⚡',
+                            category: 'theory'
                         },
                         {
-                            id: 2,
-                            title: '压强计算',
-                            question: '如何计算流体静压强？有哪些应用实例？',
-                            icon: 'fas fa-calculator'
+                            id: 2, 
+                            text: '雷诺数的物理意义是什么？',
+                            icon: '🔢',
+                            category: 'theory'
                         },
                         {
                             id: 3,
-                            title: '伯努利方程',
-                            question: '伯努利方程的物理意义是什么？如何应用？',
-                            icon: 'fas fa-formula'
+                            text: '如何区分层流和湍流？',
+                            icon: '🌊',
+                            category: 'concept'
                         },
                         {
                             id: 4,
-                            title: '雷诺数',
-                            question: '雷诺数的作用是什么？如何判断流动状态？',
-                            icon: 'fas fa-chart-line'
+                            text: '流体粘性的作用机理',
+                            icon: '🌀',
+                            category: 'concept'
                         },
                         {
                             id: 5,
-                            title: '学习建议',
-                            question: '我是流体力学初学者，应该如何系统学习？',
-                            icon: 'fas fa-graduation-cap'
+                            text: '连续性方程的推导过程',
+                            icon: '⚖️',
+                            category: 'theory'
                         },
                         {
                             id: 6,
-                            title: '解题技巧',
-                            question: '流体力学计算题有什么解题技巧？',
-                            icon: 'fas fa-puzzle-piece'
+                            text: '阿基米德原理的工程应用',
+                            icon: '🚢',
+                            category: 'application'
+                        },
+                        {
+                            id: 7,
+                            text: '如何学好流体力学？',
+                            icon: '📚',
+                            category: 'study'
+                        },
+                        {
+                            id: 8,
+                            text: '推荐一些练习题目',
+                            icon: '🎯',
+                            category: 'practice'
+                        },
+                        {
+                            id: 9,
+                            text: '边界层理论的基本概念',
+                            icon: '📐',
+                            category: 'advanced'
+                        },
+                        {
+                            id: 10,
+                            text: '流体力学在工程中的应用',
+                            icon: '🏗️',
+                            category: 'application'
                         }
                     ]
                 }
@@ -357,107 +381,232 @@
                     this.scrollToBottom();
                 },
                 
-                generateAIResponse(question) {
-                    const responses = {
-                        '流体': `
-                            <strong>流体的定义和特征：</strong><br><br>
-                            🌊 <strong>流体定义：</strong>流体是指液体和气体的总称，具有在切应力作用下连续变形的特性。<br><br>
-                            📋 <strong>基本特征：</strong><br>
-                            • <strong>连续性：</strong>流体在宏观上是连续介质<br>
-                            • <strong>流动性：</strong>在任何微小切应力作用下都会发生连续变形<br>
-                            • <strong>易变形性：</strong>形状易变，体积相对稳定（液体）或易变（气体）<br><br>
-                            💡 <strong>学习建议：</strong>理解流体的连续性假设是学习流体力学的基础！
-                        `,
-                        '压强': `
-                            <strong>流体静压强计算：</strong><br><br>
-                            📐 <strong>基本公式：</strong>p = p₀ + ρgh<br>
-                            • p₀ - 液面压强<br>
-                            • ρ - 流体密度<br>
-                            • g - 重力加速度<br>
-                            • h - 深度<br><br>
-                            🏗️ <strong>工程应用：</strong><br>
-                            • 水坝设计中的水压力计算<br>
-                            • 潜水器的耐压设计<br>
-                            • 液压系统的压力传递<br><br>
-                            ⚠️ <strong>注意事项：</strong>适用于静止或匀速运动的流体
-                        `,
-                        '伯努利': `
-                            <strong>伯努利方程详解：</strong><br><br>
-                            🧮 <strong>方程形式：</strong><br>
-                            p₁ + ½ρv₁² + ρgh₁ = p₂ + ½ρv₂² + ρgh₂<br><br>
-                            💭 <strong>物理意义：</strong><br>
-                            • <strong>压强能：</strong>p - 单位体积流体的压强能<br>
-                            • <strong>动能：</strong>½ρv² - 单位体积流体的动能<br>
-                            • <strong>势能：</strong>ρgh - 单位体积流体的重力势能<br><br>
-                            🔧 <strong>应用条件：</strong><br>
-                            • 理想流体（无粘性）<br>
-                            • 定常流动<br>
-                            • 沿流线应用
-                        `,
-                        '雷诺数': `
-                            <strong>雷诺数的重要性：</strong><br><br>
-                            📊 <strong>定义：</strong>Re = ρVL/μ<br>
-                            • ρ - 流体密度<br>
-                            • V - 特征速度<br>
-                            • L - 特征长度<br>
-                            • μ - 动力粘度<br><br>
-                            🌊 <strong>判断标准：</strong><br>
-                            • <strong>圆管流动：</strong><br>
-                            &nbsp;&nbsp;Re < 2300 → 层流<br>
-                            &nbsp;&nbsp;Re > 4000 → 湍流<br>
-                            &nbsp;&nbsp;2300 < Re < 4000 → 过渡流<br><br>
-                            💡 <strong>物理意义：</strong>表示惯性力与粘性力的比值
-                        `,
-                        '学习': `
-                            <strong>流体力学学习路径建议：</strong><br><br>
-                            📚 <strong>第一阶段 - 基础概念：</strong><br>
-                            • 流体的基本性质<br>
-                            • 流体静力学原理<br>
-                            • 压强分布规律<br><br>
-                            🌊 <strong>第二阶段 - 运动分析：</strong><br>
-                            • 流体运动学<br>
-                            • 连续性方程<br>
-                            • 伯努利方程<br><br>
-                            🔬 <strong>第三阶段 - 深入理论：</strong><br>
-                            • 粘性流动<br>
-                            • 雷诺数和流态<br>
-                            • 工程应用<br><br>
-                            💪 <strong>学习建议：</strong>理论结合实践，多做习题！
-                        `,
-                        '技巧': `
-                            <strong>流体力学解题技巧：</strong><br><br>
-                            🎯 <strong>解题步骤：</strong><br>
-                            1. <strong>审题分析：</strong>明确已知条件和求解目标<br>
-                            2. <strong>选择原理：</strong>判断适用的基本方程<br>
-                            3. <strong>建立方程：</strong>根据原理列出方程<br>
-                            4. <strong>求解计算：</strong>代入数值求解<br>
-                            5. <strong>检验结果：</strong>检查结果的合理性<br><br>
-                            💡 <strong>常用技巧：</strong><br>
-                            • 画出流动示意图<br>
-                            • 选择合适的控制体<br>
-                            • 注意单位换算<br>
-                            • 检查量纲一致性<br><br>
-                            ⚡ <strong>提升方法：</strong>多练习典型例题，总结解题规律
-                        `
-                    };
+                generateAIResponse(message) {
+                    // 模拟AI响应延迟
+                    this.isTyping = true;
                     
-                    // 根据关键词匹配响应
-                    for (const keyword in responses) {
-                        if (question.includes(keyword)) {
-                            return responses[keyword];
+                    setTimeout(() => {
+                        let response = '';
+                        const msg = message.toLowerCase();
+                        
+                        // 流体力学专业知识问答
+                        if (msg.includes('伯努利') || msg.includes('bernoulli')) {
+                            response = `💡 关于伯努利方程：
+
+**伯努利方程**：p + ½ρV² + ρgh = 常数
+
+**适用条件**：
+• 理想流体（无粘性、不可压缩）
+• 定常流动
+• 沿流线应用
+
+**物理意义**：
+• p - 静压能
+• ½ρV² - 动能
+• ρgh - 位能
+
+伯努利方程体现了流动过程中机械能守恒的基本原理。`;
                         }
-                    }
-                    
-                    // 默认响应
-                    return `
-                        <strong>感谢您的提问！</strong><br><br>
-                        我是您的流体力学AI学习助手。虽然我正在学习更多知识来回答您的具体问题，但我可以为您提供以下帮助：<br><br>
-                        📚 <strong>基础概念解释</strong><br>
-                        🧮 <strong>公式推导和应用</strong><br>
-                        💡 <strong>解题思路指导</strong><br>
-                        📖 <strong>学习方法建议</strong><br><br>
-                        请尝试点击下方的推荐问题，或者问一些更具体的流体力学问题，我会尽力为您详细解答！
-                    `;
+                        else if (msg.includes('雷诺数') || msg.includes('reynolds')) {
+                            response = `🔢 雷诺数 (Reynolds Number)：
+
+**公式**：Re = ρVL/μ
+
+其中：
+• ρ - 流体密度
+• V - 特征速度
+• L - 特征长度
+• μ - 动力粘度
+
+**物理意义**：表示惯性力与粘性力的比值
+
+**判断标准**（圆管流动）：
+• Re < 2300：层流
+• 2300 < Re < 4000：过渡流
+• Re > 4000：湍流`;
+                        }
+                        else if (msg.includes('粘性') || msg.includes('viscosity')) {
+                            response = `🌊 流体粘性：
+
+**定义**：流体抵抗剪切变形的性质
+
+**牛顿内摩擦定律**：τ = μ(du/dy)
+
+**分类**：
+• **牛顿流体**：剪应力与剪切率成正比（水、空气）
+• **非牛顿流体**：不成正比（血液、聚合物）
+
+**温度影响**：
+• 液体：温度↑ → 粘度↓
+• 气体：温度↑ → 粘度↑`;
+                        }
+                        else if (msg.includes('连续性') || msg.includes('continuity')) {
+                            response = `⚖️ 连续性方程：
+
+**微分形式**：∂ρ/∂t + ∇·(ρV) = 0
+
+**积分形式**：ρ₁A₁V₁ = ρ₂A₂V₂（不可压缩流体）
+
+**物理意义**：质量守恒定律在流体力学中的体现
+
+**适用条件**：
+• 定常流动
+• 连续介质假设
+• 无质量源汇`;
+                        }
+                        else if (msg.includes('压强') || msg.includes('pressure')) {
+                            response = `📏 流体压强：
+
+**静力学基本方程**：p = p₀ + ρgh
+
+**压强分类**：
+• **绝对压强**：以真空为基准
+• **表压强**：以大气压为基准
+• **负压（真空度）**：低于大气压的压强
+
+**关系式**：绝对压强 = 表压强 + 大气压强
+
+**帕斯卡定律**：静止流体中任意一点的压强在各个方向上都相等`;
+                        }
+                        else if (msg.includes('流线') || msg.includes('streamline')) {
+                            response = `📈 流线与流动描述：
+
+**流线**：某一瞬时流场中处处与速度矢量相切的曲线
+
+**迹线**：流体质点的运动轨迹
+
+**区别**：
+• 流线：瞬时概念
+• 迹线：历史轨迹
+• 定常流动中两者重合
+
+**流线性质**：
+• 不能相交（除奇点外）
+• 切向即为该点速度方向
+• 形状随时间变化（非定常流动）`;
+                        }
+                        else if (msg.includes('边界层') || msg.includes('boundary layer')) {
+                            response = `🌊 边界层理论：
+
+**定义**：紧贴固体壁面的薄层，粘性效应显著
+
+**边界层厚度**：速度达到外流速度99%处到壁面的距离
+
+**特点**：
+• 速度梯度很大
+• 粘性应力不可忽略
+• 厚度沿流向增长
+
+**分类**：
+• **层流边界层**：有序流动
+• **湍流边界层**：混合强烈
+
+**工程意义**：阻力计算、传热传质分析的基础`;
+                        }
+                        else if (msg.includes('阿基米德') || msg.includes('archimedes')) {
+                            response = `⚖️ 阿基米德原理：
+
+**表述**：浸入流体中的物体受到的浮力等于被物体排开的流体重量
+
+**公式**：F浮 = ρ流体 × V排开 × g
+
+**应用**：
+• 浮体稳定性分析
+• 比重计设计
+• 潜水器浮力控制
+• 液体密度测量
+
+**浮沉条件**：
+• ρ物 < ρ流：漂浮
+• ρ物 = ρ流：悬浮
+• ρ物 > ρ流：下沉`;
+                        }
+                        else if (msg.includes('学习建议') || msg.includes('如何学')) {
+                            response = `📚 流体力学学习建议：
+
+**基础阶段**：
+1. 掌握基本概念（压强、密度、粘性等）
+2. 理解三大守恒定律（质量、动量、能量）
+3. 熟练静力学计算
+
+**进阶阶段**：
+1. 深入理解伯努利方程及其应用
+2. 掌握管流和边界层理论
+3. 学习量纲分析方法
+
+**实践建议**：
+• 多做练习题，特别是易错题
+• 结合工程实例理解概念
+• 重视物理过程分析
+• 建立错题本，定期复习`;
+                        }
+                        else if (msg.includes('推荐') || msg.includes('题目')) {
+                            response = `🎯 学习资源推荐：
+
+**练习模块**：
+• 流体静力学专题 - 适合初学者
+• 流体动力学专题 - 理解核心方程
+• 粘性流动专题 - 掌握雷诺数概念
+• 易错题集 - 避免常见错误
+
+**学习路径**：
+1. 先从基础概念开始
+2. 逐步学习各专题模块
+3. 大量练习易错题
+4. 最后进行考试模拟
+
+需要我为您推荐具体的练习题目吗？`;
+                        }
+                        else if (msg.includes('你好') || msg.includes('hello')) {
+                            response = `👋 您好！我是流体力学AI学习助手！
+
+我可以帮助您：
+• 解答流体力学概念问题
+• 提供学习建议和方法
+• 推荐适合的练习题目
+• 解释物理现象和工程应用
+
+请随时向我提问，比如：
+"什么是伯努利方程？"
+"雷诺数有什么意义？"
+"如何学好流体力学？"`;
+                        }
+                        else if (msg.includes('谢谢') || msg.includes('thank')) {
+                            response = `😊 不用客气！学习流体力学是一个渐进的过程，遇到问题随时问我！
+
+记住要：
+• 理论联系实际
+• 多做练习巩固
+• 错题及时总结
+• 保持学习热情
+
+祝您学习进步！🎓`;
+                        }
+                        else {
+                            // 通用回复
+                            response = `🤔 我理解您的问题。关于"${message}"，让我为您提供一些相关信息：
+
+这个问题可能涉及到流体力学的多个方面。建议您：
+
+1. **明确问题背景** - 是理论概念还是实际应用？
+2. **参考相关资料** - 查看对应的专题学习模块
+3. **做针对性练习** - 通过题目加深理解
+
+您可以问我更具体的问题，比如：
+• "伯努利方程的应用条件是什么？"
+• "如何计算雷诺数？"
+• "流线和迹线有什么区别？"
+
+我会为您提供详细的解答！`;
+                        }
+                        
+                        this.isTyping = false;
+                        this.addMessage('ai', response);
+                        this.scrollToBottom();
+                        
+                        // 保存对话记录
+                        this.saveMessages();
+                    }, 1000 + Math.random() * 1000); // 1-2秒的随机延迟，模拟真实AI响应
                 },
                 
                 askSuggestion(question) {
@@ -481,27 +630,33 @@
             },
             
             mounted() {
-                console.log('🤖 AI学习助手启动！');
+                console.log('🤖 AI学习助手模块启动！');
                 this.setLoading(true);
                 
                 setTimeout(() => {
-                    this.loadMessages();
                     this.setLoading(false);
-                    this.showNotification('AI助手已就绪，可以开始提问！', 'success');
+                    this.loadMessages();
                     
-                    // 如果没有历史消息，显示欢迎消息
+                    // 如果没有历史消息，显示欢迎信息
                     if (this.messages.length === 0) {
-                        this.addMessage('ai', `
-                            👋 <strong>欢迎使用AI学习助手！</strong><br><br>
-                            我是您的流体力学专属AI导师，可以帮助您：<br>
-                            • 解答流体力学概念问题<br>
-                            • 提供解题思路和技巧<br>
-                            • 推荐个性化学习路径<br>
-                            • 分析知识点的关联性<br><br>
-                            请随时向我提问，或点击下方的推荐问题开始对话！🚀
-                        `);
+                        this.addMessage('ai', `👋 欢迎使用流体力学AI学习助手！
+
+我是您的专属学习伙伴，可以帮助您：
+
+🎯 **概念解答** - 解释流体力学基本概念和原理
+📊 **公式推导** - 详解重要方程的来源和应用
+🔧 **实际应用** - 介绍工程实践中的流体力学
+📚 **学习指导** - 提供个性化的学习建议和方法
+🎲 **题目推荐** - 根据您的需求推荐练习内容
+
+请选择下方的建议问题，或直接输入您想了解的内容！
+
+💡 **提示**：您可以问我任何关于流体力学的问题，我会尽力为您提供详细准确的解答。`);
                     }
-                }, 1500);
+                    
+                    this.showNotification('AI助手已就绪，开始学习吧！', 'success');
+                    this.scrollToBottom();
+                }, 800);
             }
         }).mount('#aiApp');
     </script>
