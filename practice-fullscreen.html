@@ -1426,6 +1426,57 @@
   100% { transform: rotate(360deg); }
 }
 
+/* 新增：题目内操作按钮样式优化 */
+.question-actions {
+  margin-top: 30px !important;
+  padding: 25px !important;
+  background: rgba(248, 249, 250, 0.9) !important;
+  backdrop-filter: blur(10px) !important;
+  border-radius: 15px !important;
+  border: 2px solid #e9ecef !important;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+}
+
+.action-btn {
+  font-family: inherit !important;
+  letter-spacing: 0.5px !important;
+  text-decoration: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.action-btn:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+}
+
+.action-btn:disabled:hover {
+  transform: none !important;
+  box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3) !important;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .question-actions {
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+  
+  .question-actions > div {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  
+  .action-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    padding: 15px 20px !important;
+    font-size: 16px !important;
+  }
+}
+
 /* 新增：学习成就系统 */
 .achievement-system {
   position: fixed;
@@ -2540,7 +2591,102 @@ input:focus, select:focus, textarea:focus {
                 // 选项支持图片/富文本
                 return `<button class="${cls}" onclick="selectOption(${i})">${String.fromCharCode(65+i)}. ${opt}</button>`;
             }).join('');
-            document.getElementById('questionOptions').innerHTML = opts;
+            
+            // 添加答题操作按钮区域
+            const actionButtons = `
+                <div class="question-actions" style="
+                    margin-top: 30px; 
+                    padding: 25px; 
+                    background: rgba(248, 249, 250, 0.8); 
+                    border-radius: 15px; 
+                    border: 2px solid #e9ecef;
+                    display: flex; 
+                    justify-content: space-between; 
+                    align-items: center; 
+                    flex-wrap: wrap; 
+                    gap: 15px;
+                ">
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <button id="submitAnswerBtn" class="action-btn submit-btn" onclick="submitCurrentAnswer()" 
+                                style="
+                                    background: linear-gradient(135deg, #28a745, #20c997);
+                                    color: white;
+                                    border: none;
+                                    padding: 12px 25px;
+                                    border-radius: 12px;
+                                    font-size: 16px;
+                                    font-weight: 600;
+                                    cursor: pointer;
+                                    box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+                                    transition: all 0.3s ease;
+                                    min-width: 120px;
+                                " 
+                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(40, 167, 69, 0.4)'" 
+                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(40, 167, 69, 0.3)'"
+                                ${(selected === null || selected === undefined) ? 'disabled' : ''}>
+                            <i class="fas fa-check"></i> 提交答案
+                        </button>
+                        <button class="action-btn skip-btn" onclick="skipCurrentQuestion()" 
+                                style="
+                                    background: linear-gradient(135deg, #6c757d, #5a6268);
+                                    color: white;
+                                    border: none;
+                                    padding: 12px 25px;
+                                    border-radius: 12px;
+                                    font-size: 16px;
+                                    font-weight: 600;
+                                    cursor: pointer;
+                                    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
+                                    transition: all 0.3s ease;
+                                    min-width: 120px;
+                                " 
+                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(108, 117, 125, 0.4)'" 
+                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(108, 117, 125, 0.3)'">
+                            <i class="fas fa-forward"></i> 跳过此题
+                        </button>
+                    </div>
+                    <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                        <button class="action-btn save-btn" onclick="saveProgress()" 
+                                style="
+                                    background: linear-gradient(135deg, #007bff, #0056b3);
+                                    color: white;
+                                    border: none;
+                                    padding: 12px 25px;
+                                    border-radius: 12px;
+                                    font-size: 16px;
+                                    font-weight: 600;
+                                    cursor: pointer;
+                                    box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+                                    transition: all 0.3s ease;
+                                    min-width: 120px;
+                                " 
+                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(0, 123, 255, 0.4)'" 
+                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(0, 123, 255, 0.3)'">
+                            <i class="fas fa-save"></i> 保存进度
+                        </button>
+                        <button class="action-btn report-btn" onclick="reportCurrentQuestion()" 
+                                style="
+                                    background: linear-gradient(135deg, #ffc107, #e0a800);
+                                    color: #333;
+                                    border: none;
+                                    padding: 12px 25px;
+                                    border-radius: 12px;
+                                    font-size: 16px;
+                                    font-weight: 600;
+                                    cursor: pointer;
+                                    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+                                    transition: all 0.3s ease;
+                                    min-width: 120px;
+                                " 
+                                onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255, 193, 7, 0.4)'" 
+                                onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 193, 7, 0.3)'">
+                            <i class="fas fa-flag"></i> 报告问题
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('questionOptions').innerHTML = opts + actionButtons;
             
             // 更新进度显示
             if (isFullscreen) {
@@ -2576,33 +2722,35 @@ input:focus, select:focus, textarea:focus {
         function selectOption(i) {
             if (answered) return;
             
+            selected = i;
+            renderQuestion(); // 重新渲染以更新按钮状态
+        }
+        
+        // 新增：提交当前答案
+        function submitCurrentAnswer() {
+            if (answered || (selected !== 0 && !selected)) return;
+            
             // 记录答题时间
             const questionTime = Math.floor((Date.now() - questionStartTime) / 1000);
             questionTimes.push(questionTime);
             
-            selected = i;
             answered = true;
             
             // 记录用户选择的答案
             const q = questions[current];
-            q.userSelected = i;
+            q.userSelected = selected;
             
             renderQuestion();
             
-            if (i !== q.answer) {
-                addToWrongBook(q, i);
+            if (selected !== q.answer) {
+                addToWrongBook(q, selected);
                 showSmartHint('答错了，正在为您生成详细分析...');
             } else {
                 showSmartHint('答对了！正在为您生成学习建议...');
             }
             
-            // 根据模式决定是否显示解析
-            if (currentMode === 'practice') {
-                setTimeout(() => toggleExplanation(true), 300);
-            } else if (currentMode === 'review') {
-                setTimeout(() => toggleExplanation(true), 300);
-            }
-            // 考试模式不显示解析
+            // 立即显示批改结果
+            setTimeout(() => toggleExplanation(true), 300);
             
             saveProgress();
             
@@ -2625,6 +2773,42 @@ input:focus, select:focus, textarea:focus {
                 setTimeout(() => {
                     showCompletionSummary();
                 }, 1000);
+            }
+        }
+        
+        // 新增：跳过当前题目
+        function skipCurrentQuestion() {
+            if (current < questions.length - 1) {
+                current++;
+                selected = null;
+                answered = false;
+                questionStartTime = Date.now();
+                renderQuestion();
+                saveProgress();
+                showSmartHint('已跳过，进入下一题');
+            } else {
+                showSmartHint('已经是最后一题了');
+            }
+        }
+        
+        // 新增：报告当前题目问题
+        function reportCurrentQuestion() {
+            const q = questions[current];
+            const feedback = prompt('请描述您发现的问题：\n\n例如：\n- 题目描述不清楚\n- 答案有误\n- 选项重复\n- 其他问题');
+            
+            if (feedback && feedback.trim()) {
+                // 保存反馈到本地存储
+                const reports = JSON.parse(localStorage.getItem('questionReports') || '[]');
+                reports.push({
+                    questionId: q.id || current,
+                    questionTitle: q.title,
+                    feedback: feedback.trim(),
+                    timestamp: new Date().toISOString(),
+                    userAgent: navigator.userAgent
+                });
+                localStorage.setItem('questionReports', JSON.stringify(reports));
+                
+                showSmartHint('感谢您的反馈，问题已记录！');
             }
         }
         function prevQuestion() { 
