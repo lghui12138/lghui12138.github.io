@@ -515,39 +515,59 @@
                                         
                                         console.log(`✅ 真题文件加载成功: ${file.filename}, 题目数量: ${questions.length}`);
                                         
-                                        // 解析年份信息
-                                        const yearMatch = file.filename.match(/(\d{4})/);
-                                        const year = yearMatch ? parseInt(yearMatch[1]) : new Date().getFullYear();
+                                        // 解析年份信息 - 支持年份范围
+                                        const yearMatches = file.filename.match(/(\d{4})/g);
+                                        let years = [];
                                         
-                                        // 按年份分组
-                                        let yearData = examData.find(y => y.year === year);
-                                        if (!yearData) {
-                                            yearData = {
-                                                year: year,
-                                                semester: '秋季学期期末考试',
-                                                totalQuestions: 0,
-                                                averageScore: Math.floor(Math.random() * 20) + 65, // 模拟数据
-                                                practiceCount: Math.floor(Math.random() * 300) + 200, // 模拟数据
-                                                exams: []
-                                            };
-                                            examData.push(yearData);
+                                        if (yearMatches && yearMatches.length >= 2) {
+                                            // 如果有多个年份，解析年份范围
+                                            const startYear = parseInt(yearMatches[0]);
+                                            const endYear = parseInt(yearMatches[1]);
+                                            for (let year = startYear; year <= endYear; year++) {
+                                                years.push(year);
+                                            }
+                                        } else if (yearMatches && yearMatches.length === 1) {
+                                            // 如果只有一个年份
+                                            years = [parseInt(yearMatches[0])];
+                                        } else {
+                                            // 如果没有年份信息，使用当前年份
+                                            years = [new Date().getFullYear()];
                                         }
                                         
-                                        // 创建考试对象
-                                        const exam = {
-                                            id: `${year}-${file.filename.replace('.json', '')}`,
-                                            title: `${year}年流体力学期末考试`,
-                                            date: `${year}-12-25`,
-                                            difficulty: this.getDifficultyByQuestionCount(questions.length),
-                                            progress: 0,
-                                            topics: this.extractTopics(questions),
-                                            questionCount: questions.length,
-                                            questions: questions
-                                        };
+                                        console.log(`📅 解析到年份: ${years.join(', ')}`);
                                         
-                                        yearData.exams.push(exam);
-                                        yearData.totalQuestions += questions.length;
-                                        totalQuestions += questions.length;
+                                        // 为每个年份创建考试对象
+                                        for (const year of years) {
+                                            // 按年份分组
+                                            let yearData = examData.find(y => y.year === year);
+                                            if (!yearData) {
+                                                yearData = {
+                                                    year: year,
+                                                    semester: '秋季学期期末考试',
+                                                    totalQuestions: 0,
+                                                    averageScore: Math.floor(Math.random() * 20) + 65, // 模拟数据
+                                                    practiceCount: Math.floor(Math.random() * 300) + 200, // 模拟数据
+                                                    exams: []
+                                                };
+                                                examData.push(yearData);
+                                            }
+                                            
+                                            // 创建考试对象
+                                            const exam = {
+                                                id: `${year}-${file.filename.replace('.json', '')}`,
+                                                title: `${year}年流体力学期末考试`,
+                                                date: `${year}-12-25`,
+                                                difficulty: this.getDifficultyByQuestionCount(questions.length),
+                                                progress: 0,
+                                                topics: this.extractTopics(questions),
+                                                questionCount: questions.length,
+                                                questions: questions
+                                            };
+                                            
+                                            yearData.exams.push(exam);
+                                            yearData.totalQuestions += questions.length;
+                                            totalQuestions += questions.length;
+                                        }
                                         
                                     } catch (error) {
                                         console.error(`❌ 真题文件加载出错: ${file.filename}`, error);
