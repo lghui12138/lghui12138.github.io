@@ -2634,12 +2634,111 @@ input:focus, select:focus, textarea:focus {
                 return `<button class="${cls}" onclick="selectOption(${i})">${String.fromCharCode(65+i)}. ${opt}</button>`;
             }).join('');
             
-            // 现代动态Web应用 - 使用DOM操作
-            document.getElementById('questionOptions').innerHTML = opts;
+            // 最简单的按钮 - 直接插入HTML + 延迟事件绑定
+            const simpleButtons = `
+                <div style="margin-top: 20px; padding: 20px; background: #f8f9fa; border-radius: 12px; border: 2px solid #dee2e6;">
+                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                        <button id="simpleSubmitBtn" style="
+                            background: #28a745; 
+                            color: white; 
+                            border: none; 
+                            padding: 16px 32px; 
+                            border-radius: 10px; 
+                            font-size: 16px; 
+                            font-weight: 600; 
+                            cursor: pointer; 
+                            min-width: 150px;
+                        ">
+                            🚀 提交答案
+                        </button>
+                        <button id="simpleSaveBtn" style="
+                            background: #007bff; 
+                            color: white; 
+                            border: none; 
+                            padding: 16px 32px; 
+                            border-radius: 10px; 
+                            font-size: 16px; 
+                            font-weight: 600; 
+                            cursor: pointer; 
+                            min-width: 150px;
+                        ">
+                            💾 保存进度
+                        </button>
+                    </div>
+                    <div style="text-align: center; margin-top: 15px; font-size: 14px; color: #666;">
+                        选择选项后点击提交按钮
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('questionOptions').innerHTML = opts + simpleButtons;
             document.getElementById('questionProgress').innerHTML = `第${current+1}题 / 共${questions.length}题`;
             
-            // 创建和插入操作按钮（使用DOM，不是innerHTML）
-            createAndInsertActionButtons();
+            // 延迟绑定事件，确保DOM已渲染
+            setTimeout(() => {
+                console.log('🔧 开始绑定简单按钮事件...');
+                
+                const submitBtn = document.getElementById('simpleSubmitBtn');
+                const saveBtn = document.getElementById('simpleSaveBtn');
+                
+                console.log('找到按钮:', {submitBtn: !!submitBtn, saveBtn: !!saveBtn});
+                
+                if (submitBtn) {
+                    // 移除所有现有监听器
+                    submitBtn.replaceWith(submitBtn.cloneNode(true));
+                    const newSubmitBtn = document.getElementById('simpleSubmitBtn');
+                    
+                    newSubmitBtn.addEventListener('click', function() {
+                        alert('🔥 提交按钮被点击了！selected=' + selected + ', answered=' + answered);
+                        console.log('🔥 按钮点击事件触发');
+                        
+                        if (answered) {
+                            alert('您已经提交过答案了！');
+                            return;
+                        }
+                        
+                        if (selected === null || selected === undefined) {
+                            alert('请先选择一个答案选项！');
+                            return;
+                        }
+                        
+                        alert('开始提交答案...');
+                        
+                        // 简化的提交逻辑
+                        answered = true;
+                        const q = questions[current];
+                        q.userSelected = selected;
+                        
+                        // 重新渲染
+                        renderQuestion();
+                        
+                        // 显示批改结果
+                        setTimeout(() => {
+                            if (typeof toggleExplanation === 'function') {
+                                toggleExplanation(true);
+                            }
+                            alert('批改结果已显示！');
+                        }, 500);
+                        
+                        alert('提交完成！');
+                    });
+                    
+                    console.log('✅ 提交按钮事件已绑定');
+                }
+                
+                if (saveBtn) {
+                    saveBtn.addEventListener('click', function() {
+                        alert('💾 保存按钮被点击了！');
+                        this.innerHTML = '✅ 已保存';
+                        setTimeout(() => {
+                            this.innerHTML = '💾 保存进度';
+                        }, 2000);
+                    });
+                    
+                    console.log('✅ 保存按钮事件已绑定');
+                }
+                
+            }, 300);
             
             // 收藏状态
             const favButton = document.getElementById('favBtn');
@@ -2691,6 +2790,16 @@ input:focus, select:focus, textarea:focus {
             
             // 重新渲染以更新按钮状态
             renderQuestion();
+            
+            // 额外确保按钮状态更新
+            setTimeout(() => {
+                const submitBtn = document.getElementById('simpleSubmitBtn');
+                if (submitBtn && selected !== null && selected !== undefined && !answered) {
+                    submitBtn.style.background = '#28a745';
+                    submitBtn.style.opacity = '1';
+                    console.log('🎯 按钮状态已更新为可提交');
+                }
+            }, 100);
         }
         
         // 终极简化提交函数
