@@ -1267,21 +1267,47 @@
                 availableYears() {
                     const years = new Set();
                     this.availableBanks.forEach(bank => {
-                        if (bank.year) years.add(bank.year);
+                        if (bank.year && typeof bank.year === 'number') {
+                            years.add(bank.year);
+                        }
                     });
                     return Array.from(years).sort((a, b) => b - a);
                 },
                 
                 filteredBanks() {
                     return this.availableBanks.filter(bank => {
-                        if (this.filters.category && !bank.name.includes(this.filters.category)) return false;
-                        if (this.filters.year && bank.year !== this.filters.year) return false;
-                        if (this.filters.difficulty && bank.difficulty !== this.filters.difficulty) return false;
+                        // 分类筛选
+                        if (this.filters.category && this.filters.category !== '全部类型') {
+                            if (this.filters.category === '历年真题' && bank.category !== '历年真题') return false;
+                            if (this.filters.category === '易错题集' && bank.category !== '易错题集') return false;
+                            if (this.filters.category === '计算题集' && bank.category !== '计算题集') return false;
+                            if (this.filters.category === '综合题集' && bank.category !== '综合题集') return false;
+                        }
+                        
+                        // 年份筛选
+                        if (this.filters.year && this.filters.year !== '全部年份') {
+                            if (this.filters.year === '2000-2021' && bank.year === 'all') return true;
+                            if (this.filters.year === '2000-2021' && typeof bank.year === 'number' && bank.year >= 2000 && bank.year <= 2021) return true;
+                            if (this.filters.year !== '2000-2021' && bank.year !== this.filters.year) return false;
+                        }
+                        
+                        // 难度筛选
+                        if (this.filters.difficulty && this.filters.difficulty !== '全部难度') {
+                            const difficultyMap = {
+                                '简单': 'easy',
+                                '中等': 'medium',
+                                '困难': 'hard'
+                            };
+                            if (bank.difficulty !== difficultyMap[this.filters.difficulty]) return false;
+                        }
+                        
+                        // 关键词搜索
                         if (this.filters.keyword) {
                             const keyword = this.filters.keyword.toLowerCase();
                             if (!bank.name.toLowerCase().includes(keyword) && 
                                 !bank.description?.toLowerCase().includes(keyword)) return false;
                         }
+                        
                         return true;
                     });
                 }
@@ -1740,8 +1766,8 @@
                         this.allQuestions = filteredQuestions;
                         this.realExamYears = this.getRealExamYears(processedQuestions);
                         
-                        // 构建题库信息
-                        this.availableBanks = this.buildRealExamBanks(processedQuestions, examYear);
+                        // 构建题库信息 - 按年份分类
+                        this.availableBanks = this.buildRealExamBanksByYear(processedQuestions, examYear);
                         this.totalQuestions = this.allQuestions.length;
                         
                         console.log(`✅ 真题数据加载完成: ${this.allQuestions.length}题，${this.realExamYears.length}个年份`);
@@ -1806,8 +1832,8 @@
                     }));
                 },
 
-                // 构建真题题库信息
-                buildRealExamBanks(questions, selectedYear) {
+                // 构建真题题库信息 - 按年份分类
+                buildRealExamBanksByYear(questions, selectedYear) {
                     const banks = [];
                     
                     // 添加"所有真题"选项
@@ -1816,10 +1842,12 @@
                         name: '所有历年真题',
                         description: `中国海洋大学历年真题合集 (${questions.length}题)`,
                         questionCount: questions.length,
-                        year: 'all'
+                        year: 'all',
+                        category: '历年真题',
+                        difficulty: 'hard'
                     });
                     
-                    // 按年份添加题库
+                    // 按年份分组添加题库
                     const years = this.getRealExamYears(questions);
                     years.forEach(yearInfo => {
                         banks.push({
@@ -1827,11 +1855,65 @@
                             name: `${yearInfo.year}年真题`,
                             description: `${yearInfo.year}年中国海洋大学流体力学真题 (${yearInfo.count}题)`,
                             questionCount: yearInfo.count,
-                            year: yearInfo.year
+                            year: yearInfo.year,
+                            category: '历年真题',
+                            difficulty: this.getDifficultyByYear(yearInfo.year)
                         });
                     });
                     
+                    // 添加易错题集
+                    const errorProneQuestions = questions.filter(q => q.score >= 15 || q.type === '综合题');
+                    if (errorProneQuestions.length > 0) {
+                        banks.push({
+                            id: 'real-exam-error-prone',
+                            name: '易错题集',
+                            description: `历年真题中的易错题目 (${errorProneQuestions.length}题)`,
+                            questionCount: errorProneQuestions.length,
+                            year: 'error-prone',
+                            category: '易错题集',
+                            difficulty: 'hard'
+                        });
+                    }
+                    
+                    // 添加计算题集
+                    const calculationQuestions = questions.filter(q => q.type === '计算题');
+                    if (calculationQuestions.length > 0) {
+                        banks.push({
+                            id: 'real-exam-calculation',
+                            name: '计算题集',
+                            description: `历年真题中的计算题 (${calculationQuestions.length}题)`,
+                            questionCount: calculationQuestions.length,
+                            year: 'calculation',
+                            category: '计算题集',
+                            difficulty: 'medium'
+                        });
+                    }
+                    
+                    // 添加综合题集
+                    const comprehensiveQuestions = questions.filter(q => q.type === '综合题');
+                    if (comprehensiveQuestions.length > 0) {
+                        banks.push({
+                            id: 'real-exam-comprehensive',
+                            name: '综合题集',
+                            description: `历年真题中的综合题 (${comprehensiveQuestions.length}题)`,
+                            questionCount: comprehensiveQuestions.length,
+                            year: 'comprehensive',
+                            category: '综合题集',
+                            difficulty: 'hard'
+                        });
+                    }
+                    
                     return banks;
+                },
+
+                // 根据年份判断难度
+                getDifficultyByYear(year) {
+                    const currentYear = new Date().getFullYear();
+                    const yearDiff = currentYear - year;
+                    
+                    if (yearDiff <= 5) return 'hard';      // 近5年真题
+                    if (yearDiff <= 10) return 'medium';   // 5-10年前真题
+                    return 'easy';                         // 10年前真题
                 },
 
                 // 显示真题选择器
@@ -1847,7 +1929,17 @@
                     
                     if (year === 'all') {
                         selectedQuestions = [...this.allQuestions];
+                    } else if (year === 'error-prone') {
+                        // 易错题集
+                        selectedQuestions = this.allQuestions.filter(q => q.score >= 15 || q.type === '综合题');
+                    } else if (year === 'calculation') {
+                        // 计算题集
+                        selectedQuestions = this.allQuestions.filter(q => q.type === '计算题');
+                    } else if (year === 'comprehensive') {
+                        // 综合题集
+                        selectedQuestions = this.allQuestions.filter(q => q.type === '综合题');
                     } else {
+                        // 特定年份
                         selectedQuestions = this.allQuestions.filter(q => q.year === year);
                     }
                     
@@ -1866,7 +1958,7 @@
                     this.currentQuestionIndex = 0;
                     this.resetQuestion();
                     
-                    const yearText = year === 'all' ? '所有年份' : `${year}年`;
+                    const yearText = this.getYearDisplayText(year);
                     const modeText = mode === 'random' ? '随机' : '顺序';
                     this.showNotification(`🎯 开始${yearText}真题${modeText}练习！共 ${selectedQuestions.length} 道题目`, 'success');
                     
@@ -1877,6 +1969,17 @@
                         startTime: Date.now(),
                         totalQuestions: selectedQuestions.length
                     }));
+                },
+
+                // 获取年份显示文本
+                getYearDisplayText(year) {
+                    const yearMap = {
+                        'all': '所有年份',
+                        'error-prone': '易错题集',
+                        'calculation': '计算题集',
+                        'comprehensive': '综合题集'
+                    };
+                    return yearMap[year] || `${year}年`;
                 },
 
                 // 数组随机打乱
