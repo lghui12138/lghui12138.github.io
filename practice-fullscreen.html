@@ -5713,30 +5713,143 @@ function playVideo(videoId) {
 // 打开抖音视频
 function openDouyinVideo(url) {
     try {
+        console.log('🎵 正在打开抖音视频，URL:', url);
         const douyinWindow = window.open(url, '_blank');
-        showSuccess('🚀 已打开抖音视频页面');
+        
+        if (douyinWindow) {
+            showSuccess('🚀 已打开抖音视频页面');
+            // 记录视频观看
+            recordVideoWatch(url, 'douyin');
+        } else {
+            showError('❌ 无法打开抖音页面，请检查浏览器弹窗设置');
+            // 提供备用方案
+            showDouyinBackup(url);
+        }
     } catch (error) {
+        console.error('❌ 抖音视频打开失败:', error);
         showError('❌ 无法打开抖音页面，请检查浏览器弹窗设置');
+        showDouyinBackup(url);
     }
+}
+
+// 抖音视频备用方案
+function showDouyinBackup(url) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+        background: rgba(0,0,0,0.7); z-index: 10020; 
+        display: flex; align-items: center; justify-content: center;
+    `;
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 400px; text-align: center;">
+            <h3 style="color: #fe2c55; margin-bottom: 20px;">
+                <i class="fab fa-tiktok"></i> 抖音视频
+            </h3>
+            <p style="margin-bottom: 20px;">请手动访问抖音视频：</p>
+            <div style="margin-bottom: 20px;">
+                <a href="${url}" target="_blank" style="
+                    background: #fe2c55; color: white; padding: 10px 20px; 
+                    text-decoration: none; border-radius: 8px; display: inline-block;
+                ">
+                    <i class="fab fa-tiktok"></i> 打开抖音视频
+                </a>
+            </div>
+            <p style="font-size: 12px; color: #666; margin-bottom: 15px;">
+                提示：可以复制链接到抖音APP中观看
+            </p>
+            <button onclick="navigator.clipboard.writeText('${url}').then(()=>alert('链接已复制到剪贴板')).catch(()=>alert('复制失败，请手动复制'))" style="
+                background: #007bff; color: white; border: none; padding: 8px 16px; 
+                border-radius: 6px; cursor: pointer; margin-right: 10px;
+            ">复制链接</button>
+            <button onclick="this.parentElement.parentElement.remove()" style="
+                background: #ddd; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;
+            ">关闭</button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.remove(), 10000); // 10秒后自动关闭
 }
 
 // 打开B站视频
 function openBilibiliVideo(source) {
     try {
         let videoUrl;
+        console.log('🎥 正在打开B站视频，source:', source);
+        
         if (source.startsWith('BV')) {
             // 如果是BV号，使用播放器页面
             videoUrl = `https://player.bilibili.com/player.html?bvid=${source}&autoplay=1&page=1&high_quality=1&danmaku=0&t=0&as_wide=1&hasMuteButton=1&allowfullscreen=true&quality=120&vd_source=&volume=0.8&p2p=0`;
+        } else if (source.includes('bilibili.com')) {
+            // 如果是完整的B站链接，提取BV号
+            const bvMatch = source.match(/BV[0-9A-Za-z]+/);
+            if (bvMatch) {
+                const bv = bvMatch[0];
+                videoUrl = `https://player.bilibili.com/player.html?bvid=${bv}&autoplay=1&page=1&high_quality=1&danmaku=0&t=0&as_wide=1&hasMuteButton=1&allowfullscreen=true&quality=120&vd_source=&volume=0.8&p2p=0`;
+            } else {
+                videoUrl = source; // 直接使用原链接
+            }
         } else {
-            // 如果是完整链接，直接使用
+            // 其他情况直接使用
             videoUrl = source;
         }
         
+        console.log('📺 最终视频URL:', videoUrl);
         const bilibiliWindow = window.open(videoUrl, '_blank');
-        showSuccess('🚀 已打开B站视频播放器');
+        
+        if (bilibiliWindow) {
+            showSuccess('🚀 已打开B站视频播放器');
+            // 记录视频观看
+            recordVideoWatch(source, 'bilibili');
+        } else {
+            showError('❌ 无法打开B站视频，请检查浏览器弹窗设置');
+            // 提供备用方案
+            showBilibiliBackup(source);
+        }
     } catch (error) {
+        console.error('❌ B站视频打开失败:', error);
         showError('❌ 无法打开B站视频，请检查浏览器弹窗设置');
+        showBilibiliBackup(source);
     }
+}
+
+// B站视频备用方案
+function showBilibiliBackup(source) {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
+        background: rgba(0,0,0,0.7); z-index: 10020; 
+        display: flex; align-items: center; justify-content: center;
+    `;
+    
+    let finalUrl = source;
+    if (source.startsWith('BV')) {
+        finalUrl = `https://www.bilibili.com/video/${source}`;
+    }
+    
+    modal.innerHTML = `
+        <div style="background: white; padding: 30px; border-radius: 15px; max-width: 400px; text-align: center;">
+            <h3 style="color: #00a1d6; margin-bottom: 20px;">
+                <i class="fab fa-bilibili"></i> B站视频
+            </h3>
+            <p style="margin-bottom: 20px;">请手动访问B站视频：</p>
+            <div style="margin-bottom: 20px;">
+                <a href="${finalUrl}" target="_blank" style="
+                    background: #00a1d6; color: white; padding: 10px 20px; 
+                    text-decoration: none; border-radius: 8px; display: inline-block;
+                ">
+                    <i class="fab fa-bilibili"></i> 打开B站视频
+                </a>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" style="
+                background: #ddd; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;
+            ">关闭</button>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    setTimeout(() => modal.remove(), 10000); // 10秒后自动关闭
 }
 
 // 隐藏视频模块
