@@ -364,10 +364,10 @@
                     <i class="fas fa-folder"></i> 从本地加载
                 </button>
                 <button class="btn" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);" @click="useOptimizedEngine">
-                    <i class="fas fa-rocket"></i> 使用优化引擎
+                    <i class="fas fa-rocket"></i> 批量加载所有题库
                 </button>
                 <button class="btn" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);" @click="openFullscreenMode">
-                    <i class="fas fa-expand"></i> 全屏模式
+                    <i class="fas fa-expand"></i> 浏览器全屏
                 </button>
                 <button class="btn danger" @click="resetProgress">
                     <i class="fas fa-redo"></i> 重置进度
@@ -430,11 +430,6 @@
     </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    
-    <!-- 加载三个优化模块 -->
-    <script src="js/components/questionBankEngine.js"></script>
-    <script src="js/components/fullscreenPracticeComponent.js"></script>
-    <script src="js/components/mainIntegrationOptimized.js"></script>
     
     <script>
         const { createApp } = Vue;
@@ -725,81 +720,127 @@
                     this.showNotification('进度已重置', 'info');
                 },
                 
-                // 🚀 使用优化引擎加载题库
+                // 🚀 使用优化引擎加载题库（直接调用内嵌逻辑）
                 async useOptimizedEngine() {
                     console.log('🚀 使用优化引擎加载题库...');
-                    this.isLoading = true;
+                    this.showNotification('正在使用优化引擎批量加载题库...', 'info');
                     
-                    try {
-                        // 检查优化引擎是否可用
-                        if (window.QuestionBankEngine) {
-                            console.log('✅ 优化引擎已加载');
-                            this.showNotification('正在使用优化引擎加载题库...', 'info');
-                            
-                            // 使用优化引擎初始化题库
-                            const success = await window.QuestionBankEngine.init('all');
-                            
-                            if (success) {
-                                // 获取加载的题目数量
-                                const totalQuestions = window.QuestionBankEngine.getTotalQuestions();
-                                console.log(`✅ 优化引擎加载成功！共 ${totalQuestions} 道题目`);
-                                
-                                // 获取当前题目并转换格式
-                                this.convertEngineDataToVue();
-                                
-                                this.showNotification(`🎉 优化引擎加载成功！共 ${totalQuestions} 道题目`, 'success');
-                            } else {
-                                throw new Error('优化引擎初始化失败');
-                            }
-                        } else {
-                            throw new Error('优化引擎未加载，请检查js/components/文件夹中的模块文件');
-                        }
-                    } catch (error) {
-                        console.error('❌ 优化引擎加载失败:', error);
-                        this.showNotification('优化引擎加载失败: ' + error.message, 'error');
-                    } finally {
-                        this.isLoading = false;
-                    }
+                    // 直接调用内嵌的优化加载逻辑
+                    await this.loadAllQuestionsOptimized();
                 },
                 
-                // 🖥️ 打开全屏模式
+                // 🖥️ 打开全屏模式（简化版，直接使用浏览器全屏API）
                 openFullscreenMode() {
                     console.log('🖥️ 打开全屏模式...');
                     
-                    if (window.FullscreenPracticeComponent) {
-                        console.log('✅ 全屏组件已加载');
-                        
-                        // 确保有题目可练习
-                        if (this.questions.length === 0) {
-                            this.showNotification('请先加载题库再使用全屏模式', 'info');
-                            return;
-                        }
-                        
-                        this.showNotification('正在进入全屏练习模式...', 'info');
-                        window.FullscreenPracticeComponent.enterFullscreen();
+                    if (this.questions.length === 0) {
+                        this.showNotification('请先加载题库再使用全屏模式', 'info');
+                        return;
+                    }
+                    
+                    // 使用浏览器原生全屏API
+                    const elem = document.documentElement;
+                    if (elem.requestFullscreen) {
+                        elem.requestFullscreen();
+                        this.showNotification('已进入全屏练习模式，按ESC退出', 'success');
+                    } else if (elem.webkitRequestFullscreen) {
+                        elem.webkitRequestFullscreen();
+                        this.showNotification('已进入全屏练习模式，按ESC退出', 'success');
+                    } else if (elem.msRequestFullscreen) {
+                        elem.msRequestFullscreen();
+                        this.showNotification('已进入全屏练习模式，按ESC退出', 'success');
                     } else {
-                        this.showNotification('全屏组件未加载，请先使用"使用优化引擎"加载模块', 'error');
+                        this.showNotification('您的浏览器不支持全屏模式', 'error');
                     }
                 },
                 
-                // 🔄 转换引擎数据格式以兼容Vue界面
-                convertEngineDataToVue() {
-                    if (window.QuestionBankEngine) {
-                        const currentQuestion = window.QuestionBankEngine.getCurrentQuestion();
-                        if (currentQuestion) {
-                            // 创建一个兼容的题目格式来显示当前题目
-                            this.questions = [{
-                                title: currentQuestion.question,
-                                options: currentQuestion.options,
-                                answer: currentQuestion.correctAnswer,
-                                explanation: currentQuestion.explanation || '暂无解析'
-                            }];
-                            
-                            this.currentIndex = 0;
-                            this.selectedOption = null;
-                            this.showResult = false;
-                            console.log('✅ 题目格式转换完成，当前显示优化引擎的第一题');
+                
+                
+                // 🎯 直接集成GitHub加载逻辑（无需外部模块）
+                async loadAllQuestionsOptimized() {
+                    console.log('🚀 开始优化批量加载...');
+                    this.isLoading = true;
+                    
+                    const GITHUB_CONFIG = {
+                        owner: 'lghui12138',
+                        repo: 'lghui12138.github.io',
+                        branch: 'main',
+                        rawBaseUrl: 'https://raw.githubusercontent.com/lghui12138/lghui12138.github.io/main'
+                    };
+                    
+                    const files = [
+                        '易错题集.json',
+                        '真题_中国海洋大学_2000-2021_cleaned.json',
+                        '真题_中国海洋大学_2000-2021.json',
+                        '分类_动量方程.json',
+                        '分类_势流.json',
+                        '分类_压力.json',
+                        '分类_实验与量纲.json',
+                        '分类_流体力学基础.json',
+                        '分类_流体性质.json',
+                        '分类_流线轨迹.json',
+                        '分类_涡度.json',
+                        '分类_湍流.json',
+                        '分类_管道流动.json',
+                        '分类_粘性.json',
+                        '分类_能量方程.json',
+                        '分类_自由面.json',
+                        '分类_边界层.json',
+                        '分类_雷诺数.json'
+                    ];
+                    
+                    let loadedQuestions = [];
+                    let totalLoaded = 0;
+                    
+                    try {
+                        for (const file of files) {
+                            try {
+                                console.log(`📖 加载: ${file}`);
+                                const url = `${GITHUB_CONFIG.rawBaseUrl}/question-banks/${file}`;
+                                const response = await fetch(url);
+                                
+                                if (response.ok) {
+                                    const data = await response.json();
+                                    const questions = Array.isArray(data) ? data : (data.questions ? data.questions : []);
+                                    
+                                    if (questions && questions.length > 0) {
+                                        const convertedQuestions = questions.map((q, index) => ({
+                                            title: q.title || q.question || `题目${totalLoaded + index + 1}`,
+                                            options: q.options || ['A', 'B', 'C', 'D'],
+                                            answer: q.answer || 0,
+                                            explanation: q.explanation || '暂无解析',
+                                            category: q.category || '流体力学',
+                                            difficulty: q.difficulty || 'medium',
+                                            year: q.year || null,
+                                            school: q.school || '中国海洋大学',
+                                            bank: file.replace('.json', ''),
+                                            bankId: file
+                                        }));
+                                        
+                                        loadedQuestions = loadedQuestions.concat(convertedQuestions);
+                                        totalLoaded += convertedQuestions.length;
+                                        console.log(`✅ ${file}: +${convertedQuestions.length}题`);
+                                    }
+                                } else {
+                                    console.warn(`⚠️ GitHub文件不存在: ${file}`);
+                                }
+                            } catch (error) {
+                                console.warn(`⚠️ 加载失败: ${file}`, error.message);
+                            }
                         }
+                        
+                        if (loadedQuestions.length > 0) {
+                            this.questions = loadedQuestions;
+                            this.showNotification(`🎉 优化加载完成！总共: ${loadedQuestions.length} 道题目`, 'success');
+                            console.log(`🎉 优化加载完成！总共: ${loadedQuestions.length} 道题目`);
+                        } else {
+                            throw new Error('没有加载到任何题目');
+                        }
+                    } catch (error) {
+                        console.error('❌ 优化加载失败:', error);
+                        this.showNotification('优化加载失败: ' + error.message, 'error');
+                    } finally {
+                        this.isLoading = false;
                     }
                 }
             },
