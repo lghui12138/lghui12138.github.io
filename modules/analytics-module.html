@@ -11,8 +11,22 @@
     <!-- Font Awesome - 使用国内CDN -->
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Chart.js - 使用国内CDN -->
-    <script src="https://cdn.bootcdn.net/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <!-- Chart.js - 使用多个CDN备用 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script>
+        // 如果第一个CDN失败，尝试备用CDN
+        if (typeof Chart === 'undefined') {
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js';
+            script.onerror = function() {
+                console.warn('CDN加载失败，尝试本地备用');
+                const localScript = document.createElement('script');
+                localScript.src = 'https://unpkg.com/chart.js@3.9.1/dist/chart.min.js';
+                document.head.appendChild(localScript);
+            };
+            document.head.appendChild(script);
+        }
+    </script>
     
     <style>
         /* ===== 海洋主题变量 ===== */
@@ -1044,7 +1058,28 @@
                     });
                 });
 
-                // 索引视频数据
+                // 索引视频数据 - 使用模拟数据
+                const videosData = [
+                    {
+                        title: '流体力学基础',
+                        description: '流体力学基本概念和原理',
+                        category: '基础理论',
+                        tags: ['流体力学', '基础', '理论']
+                    },
+                    {
+                        title: '伯努利方程',
+                        description: '理想流体的能量守恒定律',
+                        category: '流体动力学',
+                        tags: ['伯努利', '能量守恒', '理想流体']
+                    },
+                    {
+                        title: '雷诺数',
+                        description: '判断流动状态的无量纲参数',
+                        category: '流体特性',
+                        tags: ['雷诺数', '层流', '湍流']
+                    }
+                ];
+                
                 videosData.forEach((video, index) => {
                     this.indexDocument('video', index, {
                         title: video.title,
@@ -2456,14 +2491,19 @@
         
         // 页面加载完成后初始化图表
         document.addEventListener('DOMContentLoaded', function() {
-            // 延迟初始化图表，确保Chart.js已加载
-            setTimeout(() => {
+            // 检查Chart.js是否已加载
+            function checkChartJS() {
                 if (typeof Chart !== 'undefined') {
+                    console.log('✅ Chart.js已加载');
                     initChart();
                 } else {
-                    console.error('Chart.js未加载');
+                    console.log('⏳ 等待Chart.js加载...');
+                    setTimeout(checkChartJS, 100);
                 }
-            }, 500);
+            }
+            
+            // 延迟检查Chart.js加载状态
+            setTimeout(checkChartJS, 500);
         });
 
         console.log('📈 数据分析模块已加载');
