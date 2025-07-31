@@ -13,6 +13,12 @@ window.SecurityProtection = {
     
     // 初始化安全保护
     init() {
+        // 防止重复初始化
+        if (window.securityProtectionInitialized) {
+            console.log('🔒 安全保护系统已初始化，跳过重复初始化');
+            return;
+        }
+        
         console.log('🔒 启动安全保护系统...');
         
         // 获取用户权限
@@ -41,7 +47,7 @@ window.SecurityProtection = {
             // 教师：允许开发者工具和复制，但禁止录频
             this.enableContentProtection();
             this.preventScreenshot();
-            this.preventRightClick();
+            // 教师不阻止右键菜单，允许开发者工具
             this.antiCrawler();
             this.protectImages();
             this.addWatermark();
@@ -62,6 +68,9 @@ window.SecurityProtection = {
         
         // 保持高清显示
         this.ensureHighQuality();
+        
+        // 标记已初始化
+        window.securityProtectionInitialized = true;
         
         console.log(`✅ 安全保护已启用 (用户级别: ${this.userLevel})`);
     },
@@ -106,6 +115,14 @@ window.SecurityProtection = {
         if (this.currentUser === this.ownerAccount) {
             console.log(`👨‍🏫 ${this.currentUser} 同时具有教师权限`);
         }
+        
+        // 调试信息
+        console.log(`🔍 调试信息:`);
+        console.log(`  - 当前用户: ${this.currentUser}`);
+        console.log(`  - 所有者账号: ${this.ownerAccount}`);
+        console.log(`  - 是否匹配: ${this.currentUser === this.ownerAccount}`);
+        console.log(`  - 教师检测: ${isTeacher}`);
+        console.log(`  - 最终级别: ${this.userLevel}`);
         
         console.log(`🔐 用户权限检查完成: ${this.userLevel}`);
     },
@@ -442,6 +459,11 @@ window.SecurityProtection = {
         
         const threshold = 160;
         setInterval(() => {
+            // 检查用户级别，教师和所有者不受开发者工具检测影响
+            if (this.userLevel === 'owner' || this.userLevel === 'teacher') {
+                return;
+            }
+            
             if (window.outerHeight - window.innerHeight > threshold || 
                 window.outerWidth - window.innerWidth > threshold) {
                 if (!devtools.open) {
@@ -456,6 +478,12 @@ window.SecurityProtection = {
     
     // 处理开发者工具打开
     handleDevToolsOpen() {
+        // 检查用户级别，教师和所有者不受影响
+        if (this.userLevel === 'owner' || this.userLevel === 'teacher') {
+            console.log('🔓 教师/所有者用户，开发者工具检测已忽略');
+            return;
+        }
+        
         // 模糊页面内容
         document.body.style.filter = 'blur(20px)';
         document.body.style.pointerEvents = 'none';
