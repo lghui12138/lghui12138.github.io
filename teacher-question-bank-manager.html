@@ -88,29 +88,70 @@
             background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
         }
 
+        .bank-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
         .bank-name {
             font-weight: bold;
             font-size: 1.1em;
             color: #333;
-            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+
+        .priority-badge {
+            color: #ff9800;
+            margin-right: 5px;
+            font-size: 1.2em;
+        }
+
+        .recommended-badge {
+            color: #f44336;
+            margin-right: 5px;
+            font-size: 1.2em;
+        }
+
+        .difficulty-badge {
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
         }
 
         .bank-info {
             color: #666;
-            font-size: 0.9em;
+            font-size: 0.85em;
             display: flex;
-            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .bank-info span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .bank-actions {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            display: none;
+            display: flex;
+            gap: 5px;
+            opacity: 0;
+            transition: opacity 0.2s;
         }
 
         .bank-item:hover .bank-actions {
-            display: block;
+            opacity: 1;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 14px;
+            border-radius: 6px;
         }
 
         .btn {
@@ -149,13 +190,60 @@
             align-items: center;
             margin-bottom: 30px;
             padding: 20px;
-            background: #f8f9fa;
-            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
         .toolbar h2 {
-            color: #495057;
+            color: white;
             font-size: 1.8em;
+            margin: 0;
+        }
+
+        .toolbar-left .subtitle {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .sort-controls, .filter-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        .sort-controls label, .filter-controls label {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .sort-controls select, .filter-controls select {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 5px;
+            background: white;
+            color: #333;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .sort-controls select:focus, .filter-controls select:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
         }
 
         .btn-group {
@@ -503,17 +591,49 @@
             </div>
 
             <div class="content-area">
+                <!-- 工具栏 -->
                 <div class="toolbar">
-                    <h2 id="currentBankName">请选择题库</h2>
-                    <div class="btn-group">
-                        <button class="btn btn-success btn-large" onclick="addQuestion()" id="addQuestionBtn" disabled>
-                            ➕ 添加题目
+                    <div class="toolbar-left">
+                        <h2>📚 题库管理系统</h2>
+                        <span class="subtitle">管理所有题库和题目</span>
+                    </div>
+                    <div class="toolbar-right">
+                        <!-- 排序控制 -->
+                        <div class="sort-controls">
+                            <label for="sortBy">排序方式：</label>
+                            <select id="sortBy" onchange="sortQuestionBanks()">
+                                <option value="priority">优先级</option>
+                                <option value="questionCount">题目数量</option>
+                                <option value="lastUpdated">更新时间</option>
+                                <option value="difficulty">难度</option>
+                                <option value="name">名称</option>
+                                <option value="category">分类</option>
+                            </select>
+                            <select id="sortOrder" onchange="sortQuestionBanks()">
+                                <option value="asc">升序</option>
+                                <option value="desc">降序</option>
+                            </select>
+                        </div>
+                        
+                        <!-- 筛选控制 -->
+                        <div class="filter-controls">
+                            <label for="filterCategory">分类筛选：</label>
+                            <select id="filterCategory" onchange="filterQuestionBanks()">
+                                <option value="">全部分类</option>
+                                <option value="易错题">易错题</option>
+                                <option value="真题">真题</option>
+                                <option value="基础理论">基础理论</option>
+                                <option value="基础概念">基础概念</option>
+                                <option value="高级理论">高级理论</option>
+                                <option value="专题应用">专题应用</option>
+                            </select>
+                        </div>
+                        
+                        <button class="btn btn-primary" onclick="createNewBank()">
+                            <i class="fas fa-plus"></i> 新建题库
                         </button>
-                        <button class="btn btn-large" onclick="importQuestions()" id="importBtn" disabled>
-                            📤 导入题目
-                        </button>
-                        <button class="btn btn-large" onclick="exportBank()" id="exportBtn" disabled>
-                            📥 导出题库
+                        <button class="btn btn-success" onclick="refreshData()">
+                            <i class="fas fa-sync"></i> 刷新数据
                         </button>
                     </div>
                 </div>
@@ -555,6 +675,30 @@
                     <div class="stats-card">
                         <div class="stats-number" id="hardQuestions">0</div>
                         <div class="stats-label">困难题目</div>
+                    </div>
+                </div>
+
+                <!-- 题库操作工具栏 -->
+                <div id="bankToolbar" class="bank-toolbar" style="display: none; margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 10px; border: 1px solid #e3e6ea;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="toolbar-left">
+                            <h3 id="currentBankName" style="margin: 0; color: #333;">请选择题库</h3>
+                            <span id="currentBankDesc" class="subtitle" style="color: #666; font-size: 14px;"></span>
+                        </div>
+                        <div class="toolbar-right" style="display: flex; gap: 10px;">
+                            <button class="btn btn-success" onclick="addQuestion()" id="addQuestionBtn">
+                                ➕ 添加题目
+                            </button>
+                            <button class="btn btn-info" onclick="importQuestions()" id="importBtn">
+                                📤 导入题目
+                            </button>
+                            <button class="btn btn-warning" onclick="exportBank()" id="exportBtn">
+                                📥 导出题库
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteBank()" id="deleteBankBtn">
+                                🗑️ 删除题库
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -734,10 +878,13 @@
                     tags: bank.tags || [],
                     color: bank.color || '#4facfe',
                     createTime: bank.lastUpdated || new Date().toISOString(),
-                    updateTime: bank.lastUpdated || new Date().toISOString()
+                    updateTime: bank.lastUpdated || new Date().toISOString(),
+                    priority: bank.priority || 999,
+                    recommended: bank.recommended || false
                 }));
                 
-                displayBankList();
+                // 初始排序（按优先级）
+                sortQuestionBanks('priority', 'asc');
                 updateOverallStats();
             } catch (error) {
                 console.error('加载题库列表失败:', error);
@@ -745,28 +892,108 @@
             }
         }
 
+        // 排序题库
+        function sortQuestionBanks(sortBy = null, order = null) {
+            const sortField = sortBy || document.getElementById('sortBy').value;
+            const sortOrder = order || document.getElementById('sortOrder').value;
+            
+            questionBanks.sort((a, b) => {
+                let valueA = a[sortField];
+                let valueB = b[sortField];
+                
+                // 特殊处理不同类型的排序
+                if (sortField === 'difficulty') {
+                    const difficultyOrder = { 'easy': 1, 'medium': 2, 'hard': 3 };
+                    valueA = difficultyOrder[valueA] || 2;
+                    valueB = difficultyOrder[valueB] || 2;
+                } else if (sortField === 'questionCount' || sortField === 'priority') {
+                    valueA = parseInt(valueA) || 0;
+                    valueB = parseInt(valueB) || 0;
+                } else if (sortField === 'lastUpdated') {
+                    valueA = new Date(valueA);
+                    valueB = new Date(valueB);
+                } else {
+                    valueA = valueA.toString().toLowerCase();
+                    valueB = valueB.toString().toLowerCase();
+                }
+                
+                if (sortOrder === 'desc') {
+                    return valueA > valueB ? -1 : valueA < valueB ? 1 : 0;
+                } else {
+                    return valueA < valueB ? -1 : valueA > valueB ? 1 : 0;
+                }
+            });
+            
+            displayBankList();
+        }
+
+        // 筛选题库
+        function filterQuestionBanks() {
+            const filterCategory = document.getElementById('filterCategory').value;
+            displayBankList(filterCategory);
+        }
+
+        // 刷新数据
+        function refreshData() {
+            showNotification('正在刷新数据...', 'info');
+            loadQuestionBanks();
+            setTimeout(() => {
+                showNotification('数据刷新完成', 'success');
+            }, 1000);
+        }
+
         // 显示题库列表
-        function displayBankList() {
+        function displayBankList(filterCategory = '') {
             const bankList = document.getElementById('bankList');
             
-            if (questionBanks.length === 0) {
+            // 筛选题库
+            let filteredBanks = questionBanks;
+            if (filterCategory) {
+                filteredBanks = questionBanks.filter(bank => bank.category === filterCategory);
+            }
+            
+            if (filteredBanks.length === 0) {
                 bankList.innerHTML = '<li style="text-align: center; color: #666; padding: 20px;">暂无题库</li>';
                 return;
             }
 
-            bankList.innerHTML = questionBanks.map(bank => `
-                <li class="bank-item" onclick="selectBank('${bank.id}')">
-                    <div class="bank-name">${bank.name}</div>
-                    <div class="bank-info">
-                        <span>${bank.questionCount || 0} 题</span>
-                        <span>${bank.category || '未分类'}</span>
-                    </div>
-                    <div class="bank-actions">
-                        <button class="btn" onclick="event.stopPropagation(); editBank('${bank.id}')">编辑</button>
-                        <button class="btn btn-danger" onclick="event.stopPropagation(); deleteBank('${bank.id}')">删除</button>
-                    </div>
-                </li>
-            `).join('');
+            bankList.innerHTML = filteredBanks.map(bank => {
+                const priorityBadge = bank.priority <= 3 ? '<span class="priority-badge">⭐</span>' : '';
+                const recommendedBadge = bank.recommended ? '<span class="recommended-badge">🔥</span>' : '';
+                const difficultyColor = {
+                    'easy': '#28a745',
+                    'medium': '#ffc107', 
+                    'hard': '#dc3545'
+                }[bank.difficulty] || '#6c757d';
+                
+                return `
+                    <li class="bank-item" onclick="selectBank('${bank.id}')">
+                        <div class="bank-header">
+                            <div class="bank-name">
+                                ${priorityBadge}${recommendedBadge}${bank.name}
+                            </div>
+                            <div class="bank-meta">
+                                <span class="difficulty-badge" style="background: ${difficultyColor}">
+                                    ${bank.difficulty === 'easy' ? '简单' : bank.difficulty === 'medium' ? '中等' : '困难'}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="bank-info">
+                            <span class="question-count">📊 ${bank.questionCount || 0} 题</span>
+                            <span class="category">📂 ${bank.category || '未分类'}</span>
+                            <span class="update-time">🕒 ${new Date(bank.updateTime).toLocaleDateString()}</span>
+                        </div>
+                        <div class="bank-actions">
+                            <button class="btn btn-sm" onclick="event.stopPropagation(); editBank('${bank.id}')" title="编辑题库">
+                                ✏️
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="event.stopPropagation(); deleteBank('${bank.id}')" title="删除题库">
+                                🗑️
+                            </button>
+                        </div>
+                    </li>
+                `;
+            }).join('');
         }
 
         // 选择题库
@@ -804,9 +1031,10 @@
                 
                 // 更新界面
                 document.getElementById('currentBankName').textContent = bank.name;
-                document.getElementById('addQuestionBtn').disabled = false;
-                document.getElementById('importBtn').disabled = false;
-                document.getElementById('exportBtn').disabled = false;
+                document.getElementById('currentBankDesc').textContent = bank.description;
+                
+                // 显示题库工具栏
+                document.getElementById('bankToolbar').style.display = 'block';
                 
                 // 隐藏总体统计，显示单个题库统计
                 document.getElementById('overallStats').style.display = 'none';
