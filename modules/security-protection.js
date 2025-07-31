@@ -22,19 +22,17 @@ window.SecurityProtection = {
         if (this.userLevel === 'owner') {
             // 网站所有者：完全访问权限
             this.showOwnerWelcome();
-        } else if (this.userLevel === 'mobile_developer') {
-            // 移动设备开发者模式用户：严格保护（但允许开发者工具）
+        } else if (this.userLevel === 'teacher') {
+            // 教师：允许开发者工具和复制，但禁止录频
             this.enableContentProtection();
             this.preventScreenshot();
-            this.blockCopyPaste();
             this.preventRightClick();
-            this.blockDevTools();
             this.antiCrawler();
             this.protectImages();
             this.addWatermark();
-            this.showMobileDeveloperWelcome();
+            this.showTeacherWelcome();
         } else {
-            // 其他用户：严格保护
+            // 学生和其他用户：严格保护
             this.enableContentProtection();
             this.preventScreenshot();
             this.blockCopyPaste();
@@ -70,20 +68,49 @@ window.SecurityProtection = {
         console.log(`📱 设备检测: ${isMobile ? '移动设备' : '桌面设备'}`);
         console.log(`🔧 开发者模式: ${isDeveloperMode ? '已启用' : '未启用'}`);
         
+        // 检测用户角色
+        const isTeacher = this.detectTeacherRole(userInfo);
+        
+        console.log(`👨‍🏫 教师角色: ${isTeacher ? '是' : '否'}`);
+        
         // 权限判断逻辑
         if (this.currentUser === this.ownerAccount) {
             this.userLevel = 'owner';
             console.log(`👑 网站所有者已登录: ${this.currentUser}`);
-        } else if (isMobile && isDeveloperMode) {
-            // 手机在开发者模式下：允许开发者工具，但禁止复制
-            this.userLevel = 'mobile_developer';
-            console.log(`📱🔧 移动设备开发者模式用户: ${this.currentUser || '未登录'}`);
+        } else if (isTeacher) {
+            // 教师：允许开发者工具和复制
+            this.userLevel = 'teacher';
+            console.log(`👨‍🏫 教师用户: ${this.currentUser}`);
         } else {
+            // 学生和其他用户：严格限制
             this.userLevel = 'restricted';
             console.log(`🔒 受限用户: ${this.currentUser || '未登录'}`);
         }
         
         console.log(`🔐 用户权限检查完成: ${this.userLevel}`);
+    },
+    
+    // 检测教师角色
+    detectTeacherRole(userInfo) {
+        // 检查用户信息中的角色
+        if (userInfo.role === 'teacher') {
+            return true;
+        }
+        
+        // 检查localStorage中的教师标识
+        if (localStorage.getItem('isTeacher') === 'true') {
+            return true;
+        }
+        
+        // 检查用户名是否包含教师关键词
+        const teacherKeywords = ['teacher', 'professor', 'instructor', 'admin', 'liuguanghui'];
+        const username = (userInfo.username || '').toLowerCase();
+        
+        if (teacherKeywords.some(keyword => username.includes(keyword))) {
+            return true;
+        }
+        
+        return false;
     },
     
     // 检测移动设备
@@ -139,12 +166,12 @@ window.SecurityProtection = {
     // 启用内容保护
     enableContentProtection() {
         // 根据用户级别决定保护强度
-        if (this.userLevel === 'owner') {
-            // 网站所有者：轻度保护
+        if (this.userLevel === 'owner' || this.userLevel === 'teacher') {
+            // 网站所有者或教师：轻度保护
             console.log('🔓 启用轻度内容保护');
             this.enableLightProtection();
         } else {
-            // 其他用户（包括移动开发者模式）：严格保护
+            // 学生和其他用户：严格保护
             console.log('🔒 启用严格内容保护');
             this.enableStrictProtection();
         }
@@ -295,8 +322,8 @@ window.SecurityProtection = {
     // 阻止复制粘贴
     blockCopyPaste() {
         // 根据用户级别决定是否阻止复制
-        if (this.userLevel === 'owner') {
-            // 网站所有者：允许复制
+        if (this.userLevel === 'owner' || this.userLevel === 'teacher') {
+            // 网站所有者或教师：允许复制
             console.log('🔓 允许复制粘贴操作');
             return;
         }
@@ -365,8 +392,8 @@ window.SecurityProtection = {
     // 阻止开发者工具
     blockDevTools() {
         // 根据用户级别决定是否阻止开发者工具
-        if (this.userLevel === 'owner' || this.userLevel === 'mobile_developer') {
-            // 所有者或移动设备开发者模式用户：允许开发者工具
+        if (this.userLevel === 'owner' || this.userLevel === 'teacher') {
+            // 所有者或教师：允许开发者工具
             console.log('🔓 允许开发者工具访问');
             return;
         }
@@ -870,14 +897,14 @@ window.SecurityProtection = {
         }, 5000);
     },
     
-    // 显示移动设备开发者模式用户欢迎信息
-    showMobileDeveloperWelcome() {
+    // 显示教师欢迎信息
+    showTeacherWelcome() {
         const welcome = document.createElement('div');
         welcome.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
-            background: linear-gradient(135deg, #ffc107, #e0a800);
+            background: linear-gradient(135deg, #28a745, #20c997);
             color: white;
             padding: 15px 20px;
             border-radius: 10px;
@@ -888,10 +915,10 @@ window.SecurityProtection = {
         
         welcome.innerHTML = `
             <div style="display: flex; align-items: center; gap: 10px;">
-                <i class="fas fa-mobile-alt"></i>
+                <i class="fas fa-chalkboard-teacher"></i>
                 <div>
-                    <div style="font-weight: bold;">移动开发者模式</div>
-                    <div style="font-size: 12px; opacity: 0.9;">内容保护已启用，开发者工具可用</div>
+                    <div style="font-weight: bold;">教师模式</div>
+                    <div style="font-size: 12px; opacity: 0.9;">开发者工具和复制功能已启用</div>
                 </div>
             </div>
         `;
