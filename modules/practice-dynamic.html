@@ -993,16 +993,24 @@
                             <label class="filter-label">题库类型</label>
                             <select v-model="filters.category" class="filter-select">
                                 <option value="">全部类型</option>
-                                <option value="真题">历年真题</option>
-                                <option value="分类">分类练习</option>
-                                <option value="易错">易错题集</option>
+                                <option v-if="isRealExamMode" value="历年真题">历年真题</option>
+                                <option v-if="isRealExamMode" value="易错题集">易错题集</option>
+                                <option v-if="isRealExamMode" value="计算题集">计算题集</option>
+                                <option v-if="isRealExamMode" value="综合题集">综合题集</option>
+                                <option v-if="!isRealExamMode" value="真题">历年真题</option>
+                                <option v-if="!isRealExamMode" value="分类">分类练习</option>
+                                <option v-if="!isRealExamMode" value="易错">易错题集</option>
                             </select>
                         </div>
                         <div class="filter-group">
                             <label class="filter-label">年份</label>
                             <select v-model="filters.year" class="filter-select">
                                 <option value="">全部年份</option>
-                                <option v-for="year in availableYears" :key="year" :value="year">{{ year }}</option>
+                                <option v-if="isRealExamMode" value="all">所有历年真题</option>
+                                <option v-if="isRealExamMode" value="error-prone">易错题集</option>
+                                <option v-if="isRealExamMode" value="calculation">计算题集</option>
+                                <option v-if="isRealExamMode" value="comprehensive">综合题集</option>
+                                <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年真题</option>
                             </select>
                         </div>
                         <div class="filter-group">
@@ -1332,6 +1340,12 @@
                 },
                 
                 availableYears() {
+                    // 如果是真题模式，使用真题年份
+                    if (this.isRealExamMode && this.realExamYears.length > 0) {
+                        return this.realExamYears.map(y => y.year);
+                    }
+                    
+                    // 否则从题库中提取年份
                     const years = new Set();
                     this.availableBanks.forEach(bank => {
                         if (bank.year && typeof bank.year === 'number') {
@@ -1353,9 +1367,19 @@
                         
                         // 年份筛选
                         if (this.filters.year && this.filters.year !== '全部年份') {
-                            if (this.filters.year === '2000-2021' && bank.year === 'all') return true;
-                            if (this.filters.year === '2000-2021' && typeof bank.year === 'number' && bank.year >= 2000 && bank.year <= 2021) return true;
-                            if (this.filters.year !== '2000-2021' && bank.year !== this.filters.year) return false;
+                            // 如果是真题模式，按年份筛选
+                            if (this.isRealExamMode) {
+                                const selectedYear = parseInt(this.filters.year);
+                                if (bank.year === 'all') return true; // 所有真题
+                                if (bank.year === selectedYear) return true; // 特定年份
+                                if (bank.year === 'error-prone' || bank.year === 'calculation' || bank.year === 'comprehensive') return true; // 特殊分类
+                                return false;
+                            } else {
+                                // 普通题库模式
+                                if (this.filters.year === '2000-2021' && bank.year === 'all') return true;
+                                if (this.filters.year === '2000-2021' && typeof bank.year === 'number' && bank.year >= 2000 && bank.year <= 2021) return true;
+                                if (this.filters.year !== '2000-2021' && bank.year !== this.filters.year) return false;
+                            }
                         }
                         
                         // 难度筛选
