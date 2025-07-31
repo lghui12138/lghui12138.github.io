@@ -2318,109 +2318,181 @@
         function updateChart(year) {
             console.log('更新图表数据:', year);
             
-            const ctx = document.getElementById('scoreChart').getContext('2d');
+            const ctx = document.getElementById('scoreChart');
+            if (!ctx) {
+                console.error('找不到图表容器');
+                return;
+            }
+            
+            // 确保图表容器有尺寸和样式
+            ctx.style.width = '100%';
+            ctx.style.height = '400px';
+            ctx.style.display = 'block';
+            
+            // 添加图表容器的CSS样式
+            const chartContainer = ctx.parentElement;
+            if (chartContainer) {
+                chartContainer.style.padding = '20px';
+                chartContainer.style.background = 'white';
+                chartContainer.style.borderRadius = '10px';
+                chartContainer.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1)';
+                chartContainer.style.margin = '20px 0';
+            }
             
             // 销毁现有图表
             if (scoreChart) {
                 scoreChart.destroy();
             }
             
+            // 准备数据
+            const years = [2020, 2021, 2022, 2023, 2024, 2025];
+            const nationalScores = [288, 280, 290, 279, 288, 274];
+            const reexamScores = [288, 313, 292, 294, 288, 274];
+            const applicants = [null, null, 110, 105, 120, 125];
+            
             if (year === 'all') {
-                // 显示全部年份的趋势图
+                // 显示所有年份的曲线图
                 scoreChart = new Chart(ctx, {
                     type: 'line',
                     data: {
-                        labels: scoreData.years,
-                        datasets: [{
-                            label: '复试线',
-                            data: scoreData.reexamScores,
-                            borderColor: '#ff6b6b',
-                            backgroundColor: 'rgba(255, 107, 107, 0.1)',
-                            tension: 0.3,
-                            fill: false,
-                            yAxisID: 'y'
-                        }, {
-                            label: '国家线',
-                            data: scoreData.nationalScores,
-                            borderColor: '#4ecdc4',
-                            backgroundColor: 'rgba(78, 205, 196, 0.1)',
-                            tension: 0.3,
-                            fill: false,
-                            yAxisID: 'y'
-                        }, {
-                            label: '报名人数',
-                            data: scoreData.applicants.map(val => val ? val / 10 : null), // 缩放报名人数以便在同一图表显示
-                            borderColor: '#27ae60',
-                            backgroundColor: 'rgba(39, 174, 96, 0.1)',
-                            tension: 0.3,
-                            fill: false,
-                            yAxisID: 'y1',
-                            type: 'line'
-                        }]
+                        labels: years,
+                        datasets: [
+                            {
+                                label: '复试线',
+                                data: reexamScores,
+                                borderColor: '#3498db',
+                                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#3498db',
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                tension: 0.2,
+                                fill: true,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '国家线',
+                                data: nationalScores,
+                                borderColor: '#e74c3c',
+                                backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#e74c3c',
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                tension: 0.2,
+                                fill: true,
+                                yAxisID: 'y'
+                            },
+                            {
+                                label: '报名人数',
+                                data: applicants.map(val => val ? val / 10 : null),
+                                borderColor: '#27ae60',
+                                backgroundColor: 'rgba(39, 174, 96, 0.1)',
+                                borderWidth: 3,
+                                pointBackgroundColor: '#27ae60',
+                                pointRadius: 6,
+                                pointHoverRadius: 8,
+                                tension: 0.2,
+                                fill: false,
+                                yAxisID: 'y1'
+                            }
+                        ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
+                                display: true,
+                                position: 'top',
                                 labels: {
-                                    color: 'white'
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
                                 }
                             },
-                            title: {
-                                display: true,
-                                text: '分数线趋势图表 (2020-2025)',
-                                color: 'white',
-                                font: {
-                                    size: 16
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                borderColor: 'rgba(77, 184, 214, 0.5)',
+                                borderWidth: 1,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        if (context.dataset.label === '报名人数') {
+                                            return `${context.label}: ${context.parsed.y * 10}人`;
+                                        }
+                                        return `${context.label}: ${context.parsed.y}分`;
+                                    }
                                 }
                             }
                         },
                         scales: {
                             x: {
-                                ticks: {
-                                    color: 'white'
-                                },
                                 grid: {
-                                    color: 'rgba(255,255,255,0.2)'
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
                                 }
                             },
                             y: {
                                 type: 'linear',
                                 display: true,
                                 position: 'left',
+                                beginAtZero: false,
+                                min: 250,
+                                max: 400,
+                                grid: {
+                                    borderDash: [5, 5],
+                                    color: 'rgba(0, 0, 0, 0.1)'
+                                },
                                 ticks: {
-                                    color: 'white',
                                     callback: function(value) {
                                         return value + '分';
+                                    },
+                                    font: {
+                                        size: 12
                                     }
-                                },
-                                grid: {
-                                    color: 'rgba(255,255,255,0.2)'
                                 },
                                 title: {
                                     display: true,
                                     text: '分数线',
-                                    color: 'white'
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
                                 }
                             },
                             y1: {
                                 type: 'linear',
                                 display: true,
                                 position: 'right',
-                                ticks: {
-                                    color: 'white',
-                                    callback: function(value) {
-                                        return (value * 10) + '人';
-                                    }
-                                },
                                 grid: {
                                     drawOnChartArea: false,
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return (value * 10) + '人';
+                                    },
+                                    font: {
+                                        size: 12
+                                    }
                                 },
                                 title: {
                                     display: true,
                                     text: '报名人数',
-                                    color: 'white'
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
                                 }
                             }
                         }
@@ -2434,17 +2506,19 @@
                     data: {
                         labels: ['国家线', '复试线'],
                         datasets: [{
-                            label: `${year}年分数`,
+                            label: `${year}年分数线`,
                             data: [yearData.national, yearData.reexam],
                             backgroundColor: [
-                                'rgba(78, 205, 196, 0.7)',
-                                'rgba(255, 107, 107, 0.7)'
+                                'rgba(231, 76, 60, 0.8)',
+                                'rgba(52, 152, 219, 0.8)'
                             ],
                             borderColor: [
-                                '#4ecdc4',
-                                '#ff6b6b'
+                                'rgba(231, 76, 60, 1)',
+                                'rgba(52, 152, 219, 1)'
                             ],
-                            borderWidth: 2
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            borderSkipped: false
                         }]
                     },
                     options: {
@@ -2452,36 +2526,63 @@
                         maintainAspectRatio: false,
                         plugins: {
                             legend: {
+                                display: true,
+                                position: 'top',
                                 labels: {
-                                    color: 'white'
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
                                 }
                             },
-                            title: {
-                                display: true,
-                                text: `${year}年分数线数据`,
-                                color: 'white',
-                                font: {
-                                    size: 16
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                borderColor: 'rgba(77, 184, 214, 0.5)',
+                                borderWidth: 1,
+                                cornerRadius: 8,
+                                callbacks: {
+                                    label: function(context) {
+                                        return `${context.label}: ${context.parsed.y}分`;
+                                    },
+                                    afterBody: function(context) {
+                                        const diff = Math.abs(yearData.reexam - yearData.national);
+                                        return [`分差: ${diff}分`];
+                                    }
                                 }
                             }
                         },
                         scales: {
                             x: {
-                                ticks: {
-                                    color: 'white'
-                                },
                                 grid: {
-                                    color: 'rgba(255,255,255,0.2)'
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
                                 }
                             },
                             y: {
-                                ticks: {
-                                    color: 'white'
-                                },
+                                beginAtZero: false,
+                                min: 250,
+                                max: 400,
                                 grid: {
-                                    color: 'rgba(255,255,255,0.2)'
+                                    borderDash: [5, 5],
+                                    color: 'rgba(0, 0, 0, 0.1)'
                                 },
-                                beginAtZero: true
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '分';
+                                    },
+                                    font: {
+                                        size: 12
+                                    }
+                                }
                             }
                         }
                     }
