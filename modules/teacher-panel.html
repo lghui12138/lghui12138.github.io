@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>👨‍🏫 教师管理面板 - 流体力学题库</title>
+    
+    <!-- 外部依赖 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 模块化样式 -->
+    <link rel="stylesheet" href="styles/practice-base.css">
+    <link rel="stylesheet" href="styles/teacher-panel.css">
+</head>
+<body>
+    <div id="teacherApp">
+        <!-- 加载覆盖层 -->
+        <div v-if="loading" class="loading-overlay">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">{{ loadingText }}</div>
+        </div>
+
+        <!-- 通知组件 -->
+        <div v-if="notification.show" :class="['notification', notification.type, 'show']">
+            <i :class="getNotificationIcon()"></i>
+            {{ notification.message }}
+            <button @click="notification.show = false" class="notification-close">×</button>
+        </div>
+
+        <!-- 头部导航 -->
+        <header class="teacher-header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1 class="header-title">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        教师管理面板
+                    </h1>
+                    <span class="header-subtitle">流体力学题库管理系统</span>
+                </div>
+                <div class="header-right">
+                    <span class="user-info">
+                        <i class="fas fa-user-circle"></i>
+                        {{ currentUser.displayName || '教师' }}
+                    </span>
+                    <button @click="logout" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        退出
+                    </button>
+                    <a href="practice-modular.html" class="back-btn">
+                        <i class="fas fa-arrow-left"></i>
+                        返回练习
+                    </a>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主要内容 -->
+        <main class="teacher-main" v-if="!loading">
+            <!-- 功能导航 -->
+            <nav class="function-nav">
+                <button v-for="tab in tabs" :key="tab.id"
+                        @click="activeTab = tab.id"
+                        :class="['nav-btn', { active: activeTab === tab.id }]">
+                    <i :class="tab.icon"></i>
+                    {{ tab.name }}
+                    <span v-if="tab.badge" class="badge">{{ tab.badge }}</span>
+                </button>
+            </nav>
+
+            <!-- 统计面板 -->
+            <section class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ stats.totalQuestions }}</div>
+                        <div class="stat-label">题库总数</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ stats.activeStudents }}</div>
+                        <div class="stat-label">活跃学生</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ stats.averageScore }}%</div>
+                        <div class="stat-label">平均得分</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-number">{{ stats.todayAnswers }}</div>
+                        <div class="stat-label">今日答题</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 内容区域 -->
+            <section class="content-area">
+                <!-- 题目管理 -->
+                <div v-if="activeTab === 'questions'" class="tab-content">
+                    <question-manager
+                        :questions="allQuestions"
+                        :banks="questionBanks"
+                        @add-question="showQuestionEditor"
+                        @edit-question="editQuestion"
+                        @delete-question="deleteQuestion"
+                        @refresh="loadQuestions">
+                    </question-manager>
+                </div>
+
+                <!-- 学生反馈 -->
+                <div v-if="activeTab === 'feedback'" class="tab-content">
+                    <student-feedback-viewer
+                        :feedbacks="studentFeedbacks"
+                        :students="studentList"
+                        @refresh="loadStudentFeedbacks">
+                    </student-feedback-viewer>
+                </div>
+
+                <!-- 统计分析 -->
+                <div v-if="activeTab === 'analytics'" class="tab-content">
+                    <analytics-dashboard
+                        :data="analyticsData"
+                        @export="exportData">
+                    </analytics-dashboard>
+                </div>
+
+                <!-- 系统设置 -->
+                <div v-if="activeTab === 'settings'" class="tab-content">
+                    <system-settings
+                        :settings="systemSettings"
+                        @save="saveSettings">
+                    </system-settings>
+                </div>
+            </section>
+        </main>
+
+        <!-- 题目编辑器模态框 -->
+        <question-editor-modal
+            v-if="showEditor"
+            :question="editingQuestion"
+            :banks="questionBanks"
+            @save="saveQuestion"
+            @close="closeEditor">
+        </question-editor-modal>
+    </div>
+
+    <!-- 模块化脚本 -->
+    <script src="js/practice-config.js"></script>
+    <script src="js/teacher-components.js"></script>
+    <script src="js/teacher-management.js"></script>
+    <script src="js/question-editor.js"></script>
+    <script src="js/student-feedback.js"></script>
+    <script src="js/teacher-main.js"></script>
+</body>
+</html> 

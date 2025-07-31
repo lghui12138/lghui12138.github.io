@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 智能题库练习 - 模块化版本</title>
+    
+    <!-- 外部依赖 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- 模块化样式 -->
+    <link rel="stylesheet" href="styles/practice-base.css">
+    <link rel="stylesheet" href="styles/practice-components.css">
+    <link rel="stylesheet" href="styles/practice-animations.css">
+</head>
+<body>
+    <!-- 浮动粒子效果 -->
+    <div class="floating-elements">
+        <div class="floating-particle" v-for="(particle, index) in particles" :key="index" :style="particle.style"></div>
+    </div>
+
+    <div id="app" :class="['fullscreen-container', { 'is-fullscreen': isFullscreen }]">
+        <!-- 加载覆盖层 -->
+        <div v-if="loading" class="loading-overlay">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">{{ loadingText }}</div>
+        </div>
+
+        <!-- 通知组件 -->
+        <notification-component 
+            v-if="notification.show" 
+            :notification="notification"
+            @close="notification.show = false">
+        </notification-component>
+
+        <!-- 全屏控制按钮 -->
+        <fullscreen-controls 
+            :isFullscreen="isFullscreen"
+            @toggle-fullscreen="toggleFullscreen"
+            @exit="exitToPlatform">
+        </fullscreen-controls>
+
+        <!-- 主要内容 -->
+        <div v-if="!loading" class="practice-container">
+            <!-- 页面标题 -->
+            <h1 class="page-title">🧠 智能题库练习</h1>
+
+            <!-- 题库选择界面 -->
+            <question-bank-selector 
+                v-if="currentView === 'selector'"
+                :banks="availableBanks"
+                :filters="filters"
+                :stats="stats"
+                :loading="isLoadingBanks"
+                @load-banks="loadAllQuestionBanks"
+                @start-practice="startPractice"
+                @start-random="startRandomPractice"
+                @filter-change="updateFilters">
+            </question-bank-selector>
+
+            <!-- 练习界面 -->
+            <practice-interface
+                v-if="currentView === 'practice'"
+                :question="currentQuestion"
+                :stats="practiceStats"
+                :progress="practiceProgress"
+                @submit="submitAnswer"
+                @navigate="navigateQuestion"
+                @back="backToSelector"
+                @save="saveProgress">
+            </practice-interface>
+
+            <!-- 快捷键提示 -->
+            <keyboard-hints></keyboard-hints>
+        </div>
+    </div>
+
+    <!-- 模块化脚本 -->
+    <script src="js/practice-config.js"></script>
+    <script src="js/practice-data-loader.js"></script>
+    <script src="js/practice-components.js"></script>
+    <script src="js/practice-main.js"></script>
+</body>
+</html> 
