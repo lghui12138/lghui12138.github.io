@@ -18,6 +18,16 @@ window.SecurityProtection = {
         // 获取用户权限
         this.checkUserPrivileges();
         
+        // 检测移动设备
+        const isMobile = this.detectMobileDevice();
+        
+        // 移动端需要先登录
+        if (isMobile && !this.currentUser) {
+            console.log('📱 移动设备检测到，需要先登录');
+            this.showMobileLoginPrompt();
+            return;
+        }
+        
         // 根据用户级别启用不同的保护措施
         if (this.userLevel === 'owner') {
             // 网站所有者：完全访问权限
@@ -77,12 +87,12 @@ window.SecurityProtection = {
         if (this.currentUser === this.ownerAccount) {
             this.userLevel = 'owner';
             console.log(`👑 网站所有者已登录: ${this.currentUser}`);
-        } else if (isTeacher) {
-            // 教师：允许开发者工具和复制
+        } else if (this.currentUser && isTeacher) {
+            // 已登录的教师：允许开发者工具和复制
             this.userLevel = 'teacher';
             console.log(`👨‍🏫 教师用户: ${this.currentUser}`);
         } else {
-            // 学生和其他用户：严格限制
+            // 未登录用户或学生：严格限制
             this.userLevel = 'restricted';
             console.log(`🔒 受限用户: ${this.currentUser || '未登录'}`);
         }
@@ -928,6 +938,70 @@ window.SecurityProtection = {
         setTimeout(() => {
             welcome.remove();
         }, 4000);
+    },
+    
+    // 显示移动端登录提示
+    showMobileLoginPrompt() {
+        const loginPrompt = document.createElement('div');
+        loginPrompt.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, sans-serif;
+        `;
+        
+        loginPrompt.innerHTML = `
+            <div style="
+                background: white;
+                padding: 30px;
+                border-radius: 20px;
+                text-align: center;
+                max-width: 90%;
+                width: 400px;
+                box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            ">
+                <div style="font-size: 3em; margin-bottom: 20px;">📱</div>
+                <h2 style="margin-bottom: 20px; color: #333;">移动端访问</h2>
+                <p style="margin-bottom: 30px; color: #666; line-height: 1.6;">
+                    移动设备需要先登录才能访问网站。<br>
+                    请使用桌面浏览器或登录账号后访问。
+                </p>
+                <div style="display: flex; gap: 15px; justify-content: center;">
+                    <button onclick="window.location.reload()" style="
+                        background: #007bff;
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-size: 1em;
+                    ">刷新页面</button>
+                    <button onclick="history.back()" style="
+                        background: #6c757d;
+                        color: white;
+                        border: none;
+                        padding: 12px 24px;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-size: 1em;
+                    ">返回上页</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(loginPrompt);
+        
+        // 阻止页面滚动
+        document.body.style.overflow = 'hidden';
+        
+        console.log('📱 移动端登录提示已显示');
     },
     
     // 显示受限用户欢迎信息

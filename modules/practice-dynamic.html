@@ -319,6 +319,43 @@
             border-color: var(--accent-color);
         }
 
+        /* 移动端全屏控制优化 */
+        .mobile-controls {
+            top: 10px;
+            right: 10px;
+            gap: 8px;
+        }
+
+        .mobile-controls .fullscreen-btn,
+        .mobile-controls .exit-btn {
+            padding: 10px 16px;
+            font-size: 0.8em;
+            border-radius: 20px;
+            min-width: 44px;
+            min-height: 44px;
+            justify-content: center;
+        }
+
+        .mobile-controls .btn-text {
+            display: none;
+        }
+
+        .mobile-controls .fullscreen-btn:hover,
+        .mobile-controls .exit-btn:hover {
+            transform: scale(1.1);
+        }
+
+        /* 移动端全屏模式优化 */
+        @media (max-width: 768px) {
+            .is-fullscreen .practice-container {
+                padding: 60px 15px 20px;
+            }
+            
+            .fullscreen-controls {
+                opacity: 1;
+            }
+        }
+
         /* 主要内容区域 */
         .practice-container {
             max-width: 1200px;
@@ -1514,13 +1551,14 @@
         </div>
 
         <!-- 全屏控制按钮 -->
-        <div class="fullscreen-controls">
+        <div class="fullscreen-controls" :class="{ 'mobile-controls': isMobile }">
             <button @click="toggleFullscreen" :class="['fullscreen-btn', { active: isFullscreen }]" :title="isFullscreen ? '退出全屏 [F11]' : '进入全屏 [F11]'">
                 <i :class="isFullscreen ? 'fas fa-compress' : 'fas fa-expand'"></i>
-                {{ isFullscreen ? '退出全屏' : '全屏模式' }}
+                <span class="btn-text">{{ isFullscreen ? '退出全屏' : '全屏模式' }}</span>
             </button>
             <button @click="backToSelector" class="exit-btn" title="返回题库选择 [ESC]">
-                <i class="fas fa-arrow-left"></i> 返回题库
+                <i class="fas fa-arrow-left"></i> 
+                <span class="btn-text">返回题库</span>
             </button>
         </div>
 
@@ -2142,7 +2180,10 @@
                     incorrectAnswers: 0,
                     answeredQuestions: 0,
                     startTime: null,
-                    totalTime: 0
+                    totalTime: 0,
+                    
+                    // 移动端检测
+                    isMobile: false
                 }
             },
             
@@ -3351,6 +3392,18 @@
                     if (yearDiff <= 10) return 'medium';   // 5-10年前真题
                     return 'easy';                         // 10年前真题
                 },
+                
+                // 检测移动设备
+                detectMobileDevice() {
+                    const userAgent = navigator.userAgent.toLowerCase();
+                    const mobileKeywords = [
+                        'android', 'iphone', 'ipad', 'ipod', 'blackberry', 
+                        'windows phone', 'mobile', 'tablet'
+                    ];
+                    
+                    this.isMobile = mobileKeywords.some(keyword => userAgent.includes(keyword));
+                    console.log(`📱 移动设备检测: ${this.isMobile ? '是' : '否'}`);
+                },
 
                 // 显示真题选择器
                 showRealExamSelector() {
@@ -3492,6 +3545,9 @@
 
             mounted() {
                 console.log('🧠 智能题库练习启动！');
+                
+                // 检测移动设备
+                this.detectMobileDevice();
                 
                 // 检查URL参数，处理真题模式
                 this.handleUrlParameters();
