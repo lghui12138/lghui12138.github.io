@@ -940,6 +940,9 @@
     <!-- 通知容器 -->
     <div id="notification-container">    </div>
     
+    <!-- 配置文件引用 -->
+    <script src="../js/core/config.js"></script>
+    
     <!-- 智能模型选择器引用 -->
     <script src="../js/core/smart-model-selector.js"></script>
     
@@ -1181,19 +1184,9 @@
         // 调用AI API (使用智能模型选择)
         async function callAIAPI(message) {
             try {
-                // 首先尝试从百度搜索获取相关信息
-                const searchResults = await searchBaidu(message);
-                
-                // 构建增强的提示词
-                let enhancedPrompt = message;
-                if (searchResults && searchResults.length > 0) {
-                    enhancedPrompt += '\n\n参考信息：\n' + searchResults.slice(0, 3).map(result => 
-                        `- ${result.title}: ${result.snippet}`
-                    ).join('\n');
-                }
-                
                 // 添加流体力学相关的上下文
                 const fluidMechanicsContext = getFluidMechanicsContext(message);
+                let enhancedPrompt = message;
                 if (fluidMechanicsContext) {
                     enhancedPrompt += '\n\n相关知识点：\n' + fluidMechanicsContext;
                 }
@@ -1241,158 +1234,19 @@
                     throw new Error('智能模型选择器未加载');
                 }
                 
-                // 如果有搜索结果，添加到回复中
-                if (searchResults && searchResults.length > 0) {
-                    aiResponse += '\n\n📚 相关参考资料：\n';
-                    searchResults.slice(0, 2).forEach((result, index) => {
-                        aiResponse += `${index + 1}. ${result.title}\n   链接：${result.url}\n`;
-                    });
-                }
-                
                 return aiResponse;
                 
             } catch (error) {
-                console.warn('⚠️ 智能模型调用失败，使用传统API:', error.message);
+                console.warn('⚠️ 智能模型调用失败，使用本地知识库:', error.message);
                 
-                // 回退到传统API调用
-                try {
-                    const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': 'Bearer sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis'
-                        },
-                        body: JSON.stringify({
-                            model: 'deepseek-chat',
-                            messages: [
-                                {
-                                    role: 'system',
-                                    content: systemPrompt
-                                },
-                                {
-                                    role: 'user',
-                                    content: enhancedPrompt
-                                }
-                            ],
-                            temperature: 0.7,
-                            max_tokens: 1500
-                        })
-                    });
-                    
-                    if (!response.ok) {
-                        throw new Error(`API请求失败: ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    let aiResponse = data.choices[0].message.content;
-                    
-                    // 如果有搜索结果，添加到回复中
-                    if (searchResults && searchResults.length > 0) {
-                        aiResponse += '\n\n📚 相关参考资料：\n';
-                        searchResults.slice(0, 2).forEach((result, index) => {
-                            aiResponse += `${index + 1}. ${result.title}\n   链接：${result.url}\n`;
-                        });
-                    }
-                    
-                    return aiResponse;
-                    
-                } catch (fallbackError) {
-                    console.error('❌ 传统API调用也失败:', fallbackError);
-                    throw new Error(`AI服务暂时不可用: ${fallbackError.message}`);
-                }
+                // 回退到本地知识库
+                return getLocalKnowledgeResponse(message);
             }
         }
         
-        // 百度搜索功能
-        async function searchBaidu(query) {
-            try {
-                // 构建搜索查询，添加流体力学相关关键词
-                const searchQuery = encodeURIComponent(query + ' 流体力学');
-                
-                // 使用代理服务或直接调用百度搜索API
-                const response = await fetch(`https://api.baidu.com/json/sms?q=${searchQuery}&num=5`, {
-                    method: 'GET',
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                    }
-                });
-                
-                if (!response.ok) {
-                    // 如果API不可用，返回模拟数据
-                    return getMockSearchResults(query);
-                }
-                
-                const data = await response.json();
-                return data.results || getMockSearchResults(query);
-                
-            } catch (error) {
-                console.error('百度搜索失败:', error);
-                return getMockSearchResults(query);
-            }
-        }
+        // 百度搜索功能已移除 (解决CORS问题)
         
-        // 获取模拟搜索结果
-        function getMockSearchResults(query) {
-            const mockResults = {
-                '伯努利方程': [
-                    {
-                        title: '伯努利方程详解 - 流体力学基础',
-                        url: 'https://baike.baidu.com/item/伯努利方程',
-                        snippet: '伯努利方程是流体力学中的基本方程，描述了理想流体在定常流动中的能量守恒定律。'
-                    },
-                    {
-                        title: '伯努利方程的应用实例',
-                        url: 'https://www.zhihu.com/question/伯努利方程应用',
-                        snippet: '伯努利方程在航空、水利、化工等领域有广泛应用，是理解流体运动的重要工具。'
-                    }
-                ],
-                '雷诺数': [
-                    {
-                        title: '雷诺数计算与应用',
-                        url: 'https://baike.baidu.com/item/雷诺数',
-                        snippet: '雷诺数是判断流体流动状态的重要无量纲参数，Re = VL/ν。'
-                    },
-                    {
-                        title: '层流与湍流的判断标准',
-                        url: 'https://www.zhihu.com/question/层流湍流',
-                        snippet: '雷诺数小于2300为层流，大于4000为湍流，中间为过渡区。'
-                    }
-                ],
-                '边界层': [
-                    {
-                        title: '边界层理论详解',
-                        url: 'https://baike.baidu.com/item/边界层',
-                        snippet: '边界层是靠近固体壁面的薄层流体，其中粘性效应显著。'
-                    },
-                    {
-                        title: '边界层厚度计算',
-                        url: 'https://www.zhihu.com/question/边界层厚度',
-                        snippet: '边界层厚度随距离的平方根增加，δ ∝ √x。'
-                    }
-                ]
-            };
-            
-            // 查找匹配的关键词
-            for (const [keyword, results] of Object.entries(mockResults)) {
-                if (query.includes(keyword)) {
-                    return results;
-                }
-            }
-            
-            // 默认搜索结果
-            return [
-                {
-                    title: '流体力学基础知识',
-                    url: 'https://baike.baidu.com/item/流体力学',
-                    snippet: '流体力学是研究流体运动规律的科学，是力学的重要分支。'
-                },
-                {
-                    title: '流体力学应用实例',
-                    url: 'https://www.zhihu.com/question/流体力学应用',
-                    snippet: '流体力学在工程、航空、水利等领域有广泛应用。'
-                }
-            ];
-        }
+
         
         // 获取流体力学上下文
         function getFluidMechanicsContext(message) {
@@ -1439,6 +1293,186 @@
             }
             
             return null;
+        }
+        
+        // 本地知识库回复 (AI服务不可用时的备用方案)
+        function getLocalKnowledgeResponse(message) {
+            console.log('📚 使用本地知识库生成回复');
+            
+            const knowledgeBase = {
+                '伯努利方程': {
+                    title: '🌊 伯努利方程',
+                    content: `
+<strong>伯努利方程</strong>是流体力学中的基本方程之一：
+
+<strong>方程形式：</strong>
+p + ½ρv² + ρgh = 常数
+
+<strong>物理意义：</strong>
+• 压力能 (p)
+• 动能 (½ρv²) 
+• 势能 (ρgh)
+
+三种能量形式的总和在理想流动中保持不变，体现了<strong>能量守恒定律</strong>在流体中的应用。
+
+<strong>应用条件：</strong>
+• 理想流体（无粘性）
+• 不可压缩流体
+• 定常流动
+• 沿流线应用
+
+<strong>工程应用：</strong>
+• 文丘里流量计
+• 皮托管测速
+• 飞机升力原理
+• 水利工程计算`
+                },
+                
+                '层流': {
+                    title: '🌀 层流与湍流',
+                    content: `
+<strong>层流特征：</strong>
+• 流体分层流动，互不混合
+• 流线平行，速度分布规律
+• Re < 2300（圆管）
+• 流动稳定，阻力较小
+
+<strong>湍流特征：</strong>
+• 流体不规则混合
+• 涡旋运动，速度脉动
+• Re > 4000（圆管）
+• 传热传质效率高
+
+<strong>判断依据：</strong>
+雷诺数 Re = ρVD/μ = VD/ν
+
+<strong>过渡区：</strong>
+2300 < Re < 4000，流动状态不稳定`
+                },
+                
+                '雷诺数': {
+                    title: '📊 雷诺数',
+                    content: `
+<strong>雷诺数 (Reynolds Number)</strong>
+
+<strong>计算公式：</strong>
+Re = ρVL/μ = VL/ν
+
+其中：
+• ρ - 流体密度
+• V - 特征速度
+• L - 特征长度
+• μ - 动力粘度
+• ν - 运动粘度
+
+<strong>物理意义：</strong>
+惯性力与粘性力的比值，判断流动状态的无量纲参数
+
+<strong>临界值：</strong>
+• 圆管：Re < 2300 (层流)
+• 平板：Re < 5×10⁵ (层流)
+• 球体：Re < 0.1 (蠕流)`
+                },
+                
+                '边界层': {
+                    title: '🎯 边界层理论',
+                    content: `
+<strong>边界层概念：</strong>
+紧贴固体壁面的薄层，在此层内粘性力不可忽略
+
+<strong>厚度定义：</strong>
+速度达到主流速度99%处的距离
+
+<strong>发展过程：</strong>
+• 入口段：边界层逐渐发展
+• 发展段：厚度沿程增加
+• 充分发展段：速度分布不变
+
+<strong>工程意义：</strong>
+• 决定表面阻力大小
+• 影响传热传质系数
+• 分离现象的根源
+• 流动控制的关键`
+                },
+                
+                '连续性方程': {
+                    title: '📐 连续性方程',
+                    content: `
+<strong>连续性方程基础：</strong>
+基于质量守恒定律推导
+
+<strong>一般形式：</strong>
+∂ρ/∂t + ∇·(ρV) = 0
+
+<strong>不可压缩流体：</strong>
+∇·V = 0
+
+<strong>一维稳定流：</strong>
+A₁V₁ = A₂V₂ = 常数
+
+<strong>应用：</strong>
+• 管道变径流动
+• 喷嘴设计
+• 流量测量
+• 流场分析`
+                },
+                
+                '流体静力学': {
+                    title: '⚖️ 流体静力学',
+                    content: `
+<strong>基本方程：</strong>
+dp = -ρg dz
+
+<strong>积分形式：</strong>
+p₂ - p₁ = -ρg(z₂ - z₁)
+
+<strong>重要定律：</strong>
+• 帕斯卡定律：静止流体中压力等向传递
+• 阿基米德定律：浮力等于排开液体重量
+
+<strong>应用：</strong>
+• 液压系统设计
+• U形管压力计
+• 浮力计算
+• 大坝受力分析`
+                }
+            };
+            
+            // 查找匹配的知识点
+            for (const [keyword, knowledge] of Object.entries(knowledgeBase)) {
+                if (message.toLowerCase().includes(keyword.toLowerCase()) || 
+                    keyword.toLowerCase().includes(message.toLowerCase().substring(0, 3))) {
+                    return knowledge.content;
+                }
+            }
+            
+            // 如果没有找到特定知识点，提供通用回复
+            return `
+🤖 <strong>AI助手暂时离线</strong>
+
+很抱歉，AI服务暂时不可用。不过我可以为您提供一些学习建议：
+
+<strong>关于 "${message}"：</strong>
+
+📚 <strong>学习资源：</strong>
+• 查阅《流体力学》教材相关章节
+• 观看配套的视频教程
+• 练习相关的计算题目
+
+🔍 <strong>常用查询：</strong>
+• 伯努利方程的应用
+• 雷诺数的计算方法
+• 层流与湍流的区别
+• 边界层理论基础
+• 流体静力学原理
+
+💡 <strong>学习建议：</strong>
+1. 先理解基本概念和物理意义
+2. 掌握基本公式的推导过程
+3. 多做练习题巩固理解
+4. 结合实际工程案例学习
+
+如果需要更详细的解答，请稍后重试或提供更具体的问题描述。`;
         }
         
         // 智能问题分析
