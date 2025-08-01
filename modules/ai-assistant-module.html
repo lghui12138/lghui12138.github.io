@@ -164,9 +164,13 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(10px);
             overflow: hidden;
-            height: 600px;
+            height: 70vh;
+            min-height: 500px;
+            max-height: 800px;
             display: flex;
             flex-direction: column;
+            margin: 0 auto;
+            max-width: 900px;
         }
         
         .chat-header {
@@ -450,26 +454,64 @@
             line-height: 1.5;
         }
         
-        /* ===== 响应式设计 ===== */
+        /* ===== 桌面端优化 ===== */
+        @media (min-width: 769px) {
+            .chat-container {
+                height: 75vh;
+                max-height: 700px;
+            }
+            
+            .message-content {
+                max-width: 60%;
+            }
+            
+            .input-container textarea {
+                max-height: 120px;
+            }
+        }
+        
+        /* ===== 移动端响应式设计 ===== */
         @media (max-width: 768px) {
             .chat-container {
-                height: 500px;
+                height: 60vh;
+                min-height: 400px;
+                max-height: 600px;
+                margin: 10px;
+                border-radius: 15px;
             }
             
             .message-content {
                 max-width: 85%;
+                padding: 12px;
+                font-size: 0.9rem;
             }
             
             .quick-grid {
                 grid-template-columns: 1fr;
+                gap: 10px;
             }
             
             .features-panel {
                 grid-template-columns: 1fr;
+                gap: 15px;
             }
             
             .page-title {
-                font-size: 2rem;
+                font-size: 1.8rem;
+                margin-bottom: 15px;
+            }
+            
+            .chat-header {
+                padding: 15px;
+            }
+            
+            .chat-messages {
+                padding: 15px;
+                gap: 12px;
+            }
+            
+            .chat-input {
+                padding: 15px;
             }
         }
         
@@ -541,22 +583,6 @@
                 opacity: 1;
             }
         }
-        /* ===== 移动端适配 ===== */
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-                margin: 0;
-            }
-            
-            .page-title {
-                font-size: 1.5rem;
-                margin-bottom: 15px;
-            }
-            
-            .chat-container {
-                height: 60vh;
-                min-height: 400px;
-            }
             
             .message {
                 margin-bottom: 15px;
@@ -1181,85 +1207,105 @@
             }
         }
         
-        // 调用AI API (使用智能模型选择)
+        // 调用AI API (优先使用本地知识库)
         async function callAIAPI(message) {
+            console.log('🤖 处理用户问题:', message);
+            
+            // 首先尝试本地知识库
+            const localResponse = getLocalKnowledgeResponse(message);
+            
+            // 如果本地知识库有准确答案，直接返回
+            if (localResponse) {
+                console.log('📚 使用本地知识库回复');
+                return localResponse;
+            }
+            
+            // 如果本地知识库没有准确答案，且AI系统可用，才调用AI
             try {
-                // 添加流体力学相关的上下文
-                const fluidMechanicsContext = getFluidMechanicsContext(message);
-                let enhancedPrompt = message;
-                if (fluidMechanicsContext) {
-                    enhancedPrompt += '\n\n相关知识点：\n' + fluidMechanicsContext;
-                }
-                
-                const systemPrompt = `你是一个专业的流体力学教师，擅长解答学生问题。请遵循以下原则：
+                // 检查AI系统是否可用
+                if (window.SmartModelSelector && window.AppConfig) {
+                    console.log('🧠 本地知识库无准确答案，调用智能AI系统');
+                    
+                    // 初始化智能模型选择器（如果还没有初始化）
+                    if (!window.smartModelSelectorInstance) {
+                        console.log('🔧 正在初始化智能模型选择器...');
+                        
+                        const smartConfig = window.AppConfig.api.smartAI;
+                        
+                        // 不进行模型可用性检查，直接初始化
+                        window.smartModelSelectorInstance = {
+                            callAI: window.SmartModelSelector.callAI.bind(window.SmartModelSelector)
+                        };
+                        
+                        // 更新配置
+                        window.SmartModelSelector.updateConfig({
+                            apiKey: smartConfig.apiKey,
+                            apiUrl: smartConfig.endpoint,
+                            defaultStrategy: smartConfig.defaultStrategy,
+                            maxRetries: smartConfig.maxRetries,
+                            requestTimeout: smartConfig.requestTimeout,
+                            skipAvailabilityCheck: true // 跳过可用性检查
+                        });
+                        
+                        console.log('✅ 智能模型选择器快速初始化完成');
+                    }
+                    
+                    // 添加流体力学相关的上下文
+                    const fluidMechanicsContext = getFluidMechanicsContext(message);
+                    let enhancedPrompt = message;
+                    if (fluidMechanicsContext) {
+                        enhancedPrompt += '\n\n相关知识点：\n' + fluidMechanicsContext;
+                    }
+                    
+                    const systemPrompt = `你是一个专业的流体力学教师，擅长解答学生问题。请遵循以下原则：
 1. 用简洁明了的语言回答
 2. 适当使用公式和图表说明
 3. 结合最新的学术资料和研究成果
 4. 提供实际应用案例
 5. 如果涉及计算，请给出详细步骤
 6. 对于复杂问题，分步骤解答`;
-                
-                let aiResponse;
-                
-                // 检查依赖是否加载
-                console.log('🔍 检查系统依赖...');
-                console.log('AppConfig:', typeof window.AppConfig);
-                console.log('SmartModelSelector:', typeof window.SmartModelSelector);
-                
-                // 使用智能模型选择系统
-                if (window.SmartModelSelector && window.AppConfig) {
-                    console.log('🧠 使用智能模型选择系统');
                     
-                    try {
-                        // 初始化智能模型选择器（如果还没有初始化）
-                        if (!window.smartModelSelectorInstance) {
-                            console.log('🔧 正在初始化智能模型选择器...');
-                            
-                            // 使用AppConfig中的配置
-                            const smartConfig = window.AppConfig.api.smartAI;
-                            
-                            window.smartModelSelectorInstance = await window.SmartModelSelector.init({
-                                apiKey: smartConfig.apiKey,
-                                apiUrl: smartConfig.endpoint,
-                                defaultStrategy: smartConfig.defaultStrategy,
-                                maxRetries: smartConfig.maxRetries,
-                                requestTimeout: smartConfig.requestTimeout
-                            });
-                            console.log('✅ 智能模型选择器初始化完成');
-                        }
-                        
-                        console.log('🤖 正在调用AI...');
-                        const result = await window.smartModelSelectorInstance.callAI(enhancedPrompt, {
-                            strategy: 'balanced',
-                            features: ['chat', 'reasoning'],
-                            maxTokens: 1500,
-                            temperature: 0.7,
-                            systemPrompt: systemPrompt
-                        });
-                        
-                        console.log(`✅ AI响应成功，使用模型: ${result.model}`);
-                        aiResponse = result.content;
-                        
-                    } catch (smartError) {
-                        console.error('❌ 智能模型选择失败:', smartError);
-                        console.warn('⚠️ 回退到本地知识库');
-                        throw smartError; // 触发回退逻辑
-                    }
+                    console.log('🤖 正在调用AI...');
+                    const result = await window.smartModelSelectorInstance.callAI(enhancedPrompt, {
+                        strategy: 'balanced',
+                        features: ['chat', 'reasoning'],
+                        maxTokens: 1500,
+                        temperature: 0.7,
+                        systemPrompt: systemPrompt
+                    });
+                    
+                    console.log(`✅ AI响应成功，使用模型: ${result.model}`);
+                    return result.content + '\n\n<small style="color: #888;">🤖 由智能AI提供</small>';
+                    
                 } else {
-                    const missing = [];
-                    if (!window.SmartModelSelector) missing.push('SmartModelSelector');
-                    if (!window.AppConfig) missing.push('AppConfig');
-                    console.error(`❌ 依赖未加载: ${missing.join(', ')}`);
-                    throw new Error(`依赖未加载: ${missing.join(', ')}`);
+                    console.warn('⚠️ AI系统不可用，返回本地知识库回复');
+                    return localResponse;
                 }
                 
-                return aiResponse;
-                
             } catch (error) {
-                console.warn('⚠️ 智能模型调用失败，使用本地知识库:', error.message);
+                console.error('❌ AI调用失败:', error);
+                console.log('📚 提供学习建议');
                 
-                // 回退到本地知识库
-                return getLocalKnowledgeResponse(message);
+                // 提供学习建议作为备用回复
+                return `🤔 <strong>关于 "${message}"</strong>
+
+很抱歉，我暂时无法为您提供详细解答。建议您：
+
+📚 <strong>学习资源：</strong>
+• 查阅《流体力学》教材相关章节
+• 观看配套的视频教程
+• 练习相关的计算题目
+
+🔍 <strong>常见主题：</strong>
+• 伯努利方程 • 雷诺数 • 层流湍流 • 边界层 • 连续性方程 • 流体静力学
+
+💡 <strong>学习建议：</strong>
+1. 先理解基本概念和物理意义
+2. 掌握基本公式的推导过程  
+3. 多做练习题巩固理解
+4. 结合实际工程案例学习
+
+请尝试提供更具体的问题描述，或者询问上述常见主题。`;
             }
         }
         
@@ -1314,184 +1360,141 @@
             return null;
         }
         
-        // 本地知识库回复 (AI服务不可用时的备用方案)
+        // 本地知识库回复 (优先使用，准确匹配)
         function getLocalKnowledgeResponse(message) {
-            console.log('📚 使用本地知识库生成回复');
+            console.log('📚 搜索本地知识库:', message);
             
             const knowledgeBase = {
-                '伯努利方程': {
-                    title: '🌊 伯努利方程',
-                    content: `
-<strong>伯努利方程</strong>是流体力学中的基本方程之一：
+                '伯努利': {
+                    keywords: ['伯努利', '伯努利方程', 'bernoulli', '能量守恒', '压力能', '动能', '势能'],
+                    content: `🌊 <strong>伯努利方程</strong>
 
 <strong>方程形式：</strong>
 p + ½ρv² + ρgh = 常数
 
 <strong>物理意义：</strong>
-• 压力能 (p)
-• 动能 (½ρv²) 
-• 势能 (ρgh)
+• 压力能 (p) - 流体静压能
+• 动能 (½ρv²) - 流体运动能 
+• 势能 (ρgh) - 重力势能
 
 三种能量形式的总和在理想流动中保持不变，体现了<strong>能量守恒定律</strong>在流体中的应用。
 
 <strong>应用条件：</strong>
-• 理想流体（无粘性）
-• 不可压缩流体
-• 定常流动
-• 沿流线应用
+• 理想流体（无粘性）• 不可压缩流体 • 定常流动 • 沿流线应用
 
 <strong>工程应用：</strong>
-• 文丘里流量计
-• 皮托管测速
-• 飞机升力原理
-• 水利工程计算`
+• 文丘里流量计 • 皮托管测速 • 飞机升力原理 • 水利工程计算`
                 },
                 
                 '层流': {
-                    title: '🌀 层流与湍流',
-                    content: `
+                    keywords: ['层流', '湍流', 'laminar', 'turbulent', '流态', '流动状态'],
+                    content: `🌀 <strong>层流与湍流</strong>
+
 <strong>层流特征：</strong>
-• 流体分层流动，互不混合
-• 流线平行，速度分布规律
-• Re < 2300（圆管）
-• 流动稳定，阻力较小
+• 流体分层流动，互不混合 • 流线平行，速度分布规律
+• Re < 2300（圆管）• 流动稳定，阻力较小
 
 <strong>湍流特征：</strong>
-• 流体不规则混合
-• 涡旋运动，速度脉动
-• Re > 4000（圆管）
-• 传热传质效率高
+• 流体不规则混合 • 涡旋运动，速度脉动
+• Re > 4000（圆管）• 传热传质效率高
 
-<strong>判断依据：</strong>
-雷诺数 Re = ρVD/μ = VD/ν
-
-<strong>过渡区：</strong>
-2300 < Re < 4000，流动状态不稳定`
+<strong>判断依据：</strong> 雷诺数 Re = ρVD/μ = VD/ν
+<strong>过渡区：</strong> 2300 < Re < 4000，流动状态不稳定`
                 },
                 
                 '雷诺数': {
-                    title: '📊 雷诺数',
-                    content: `
-<strong>雷诺数 (Reynolds Number)</strong>
+                    keywords: ['雷诺数', 'reynolds', '雷诺', 're', '无量纲', '惯性力', '粘性力'],
+                    content: `📊 <strong>雷诺数 (Reynolds Number)</strong>
 
-<strong>计算公式：</strong>
-Re = ρVL/μ = VL/ν
+<strong>计算公式：</strong> Re = ρVL/μ = VL/ν
 
-其中：
-• ρ - 流体密度
-• V - 特征速度
-• L - 特征长度
-• μ - 动力粘度
-• ν - 运动粘度
+<strong>参数说明：</strong>
+• ρ - 流体密度 • V - 特征速度 • L - 特征长度
+• μ - 动力粘度 • ν - 运动粘度
 
 <strong>物理意义：</strong>
 惯性力与粘性力的比值，判断流动状态的无量纲参数
 
 <strong>临界值：</strong>
-• 圆管：Re < 2300 (层流)
-• 平板：Re < 5×10⁵ (层流)
-• 球体：Re < 0.1 (蠕流)`
+• 圆管：Re < 2300 (层流) • 平板：Re < 5×10⁵ (层流) • 球体：Re < 0.1 (蠕流)`
                 },
                 
                 '边界层': {
-                    title: '🎯 边界层理论',
-                    content: `
+                    keywords: ['边界层', 'boundary layer', '壁面', '粘性', '速度梯度', '分离'],
+                    content: `🎯 <strong>边界层理论</strong>
+
 <strong>边界层概念：</strong>
 紧贴固体壁面的薄层，在此层内粘性力不可忽略
 
-<strong>厚度定义：</strong>
-速度达到主流速度99%处的距离
+<strong>厚度定义：</strong> 速度达到主流速度99%处的距离
 
 <strong>发展过程：</strong>
-• 入口段：边界层逐渐发展
-• 发展段：厚度沿程增加
+• 入口段：边界层逐渐发展 • 发展段：厚度沿程增加 
 • 充分发展段：速度分布不变
 
 <strong>工程意义：</strong>
-• 决定表面阻力大小
-• 影响传热传质系数
-• 分离现象的根源
-• 流动控制的关键`
+• 决定表面阻力大小 • 影响传热传质系数 • 分离现象的根源 • 流动控制的关键`
                 },
                 
-                '连续性方程': {
-                    title: '📐 连续性方程',
-                    content: `
-<strong>连续性方程基础：</strong>
-基于质量守恒定律推导
+                '连续性': {
+                    keywords: ['连续性方程', '质量守恒', 'continuity', '流量守恒', '质量流量'],
+                    content: `📐 <strong>连续性方程</strong>
 
-<strong>一般形式：</strong>
-∂ρ/∂t + ∇·(ρV) = 0
+<strong>基础原理：</strong> 基于质量守恒定律推导
 
-<strong>不可压缩流体：</strong>
-∇·V = 0
+<strong>一般形式：</strong> ∂ρ/∂t + ∇·(ρV) = 0
+<strong>不可压缩流体：</strong> ∇·V = 0
+<strong>一维稳定流：</strong> A₁V₁ = A₂V₂ = 常数
 
-<strong>一维稳定流：</strong>
-A₁V₁ = A₂V₂ = 常数
-
-<strong>应用：</strong>
-• 管道变径流动
-• 喷嘴设计
-• 流量测量
-• 流场分析`
+<strong>工程应用：</strong>
+• 管道变径流动 • 喷嘴设计 • 流量测量 • 流场分析`
                 },
                 
-                '流体静力学': {
-                    title: '⚖️ 流体静力学',
-                    content: `
-<strong>基本方程：</strong>
-dp = -ρg dz
+                '静力学': {
+                    keywords: ['流体静力学', '静压', '压强', '帕斯卡', '阿基米德', '浮力'],
+                    content: `⚖️ <strong>流体静力学</strong>
 
-<strong>积分形式：</strong>
-p₂ - p₁ = -ρg(z₂ - z₁)
+<strong>基本方程：</strong> dp = -ρg dz
+<strong>积分形式：</strong> p₂ - p₁ = -ρg(z₂ - z₁)
 
 <strong>重要定律：</strong>
 • 帕斯卡定律：静止流体中压力等向传递
 • 阿基米德定律：浮力等于排开液体重量
 
 <strong>应用：</strong>
-• 液压系统设计
-• U形管压力计
-• 浮力计算
-• 大坝受力分析`
+• 液压系统设计 • U形管压力计 • 浮力计算 • 大坝受力分析`
+                },
+                
+                '粘性': {
+                    keywords: ['粘性', '粘度', 'viscosity', '剪切应力', '牛顿流体'],
+                    content: `🔄 <strong>流体粘性</strong>
+
+<strong>定义：</strong> 流体阻抗变形的性质
+<strong>牛顿内摩擦定律：</strong> τ = μ(du/dy)
+
+<strong>粘度类型：</strong>
+• 动力粘度 μ (Pa·s) • 运动粘度 ν = μ/ρ (m²/s)
+
+<strong>牛顿流体：</strong> 剪切应力与剪切率成正比
+<strong>非牛顿流体：</strong> 不满足牛顿内摩擦定律`
                 }
             };
             
-            // 查找匹配的知识点
-            for (const [keyword, knowledge] of Object.entries(knowledgeBase)) {
-                if (message.toLowerCase().includes(keyword.toLowerCase()) || 
-                    keyword.toLowerCase().includes(message.toLowerCase().substring(0, 3))) {
-                    return knowledge.content;
+            const messageLower = message.toLowerCase();
+            
+            // 精确匹配关键词
+            for (const [topicKey, topic] of Object.entries(knowledgeBase)) {
+                for (const keyword of topic.keywords) {
+                    if (messageLower.includes(keyword.toLowerCase())) {
+                        console.log(`✅ 本地知识库匹配: ${topicKey} (关键词: ${keyword})`);
+                        return topic.content + '\n\n<small style="color: #888;">📚 来源：本地知识库</small>';
+                    }
                 }
             }
             
-            // 如果没有找到特定知识点，提供通用回复
-            return `
-🤖 <strong>AI助手暂时离线</strong>
-
-很抱歉，AI服务暂时不可用。不过我可以为您提供一些学习建议：
-
-<strong>关于 "${message}"：</strong>
-
-📚 <strong>学习资源：</strong>
-• 查阅《流体力学》教材相关章节
-• 观看配套的视频教程
-• 练习相关的计算题目
-
-🔍 <strong>常用查询：</strong>
-• 伯努利方程的应用
-• 雷诺数的计算方法
-• 层流与湍流的区别
-• 边界层理论基础
-• 流体静力学原理
-
-💡 <strong>学习建议：</strong>
-1. 先理解基本概念和物理意义
-2. 掌握基本公式的推导过程
-3. 多做练习题巩固理解
-4. 结合实际工程案例学习
-
-如果需要更详细的解答，请稍后重试或提供更具体的问题描述。`;
+            console.log('❌ 本地知识库无匹配结果');
+            // 如果没有找到特定知识点，返回null让AI处理
+            return null;
         }
         
         // 智能问题分析

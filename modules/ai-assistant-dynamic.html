@@ -814,20 +814,37 @@
                 async generateAIResponse(question) {
                     console.log('🤖 动态AI助手生成回复:', question);
                     
+                    // 首先尝试本地知识库
+                    const localResponse = this.getLocalResponse(question);
+                    
+                    // 如果本地知识库有准确答案，直接返回
+                    if (localResponse && !localResponse.includes('💡 <strong>提示：</strong>')) {
+                        console.log('📚 使用本地知识库回复');
+                        return localResponse;
+                    }
+                    
+                    // 如果本地知识库没有准确答案，且AI系统可用，才调用AI
                     try {
                         // 检查智能模型选择器是否可用
                         if (window.SmartModelSelector && window.AppConfig) {
-                            // 初始化智能模型选择器（如果还没有初始化）
+                            console.log('🧠 本地知识库无准确答案，调用智能AI系统');
+                            
+                            // 快速初始化（不检查模型可用性）
                             if (!window.smartModelSelectorInstance) {
-                                console.log('🔧 初始化智能模型选择器...');
+                                console.log('🔧 快速初始化智能模型选择器...');
                                 const smartConfig = window.AppConfig.api.smartAI;
                                 
-                                window.smartModelSelectorInstance = await window.SmartModelSelector.init({
+                                window.smartModelSelectorInstance = {
+                                    callAI: window.SmartModelSelector.callAI.bind(window.SmartModelSelector)
+                                };
+                                
+                                window.SmartModelSelector.updateConfig({
                                     apiKey: smartConfig.apiKey,
                                     apiUrl: smartConfig.endpoint,
                                     defaultStrategy: smartConfig.defaultStrategy,
                                     maxRetries: smartConfig.maxRetries,
-                                    requestTimeout: smartConfig.requestTimeout
+                                    requestTimeout: smartConfig.requestTimeout,
+                                    skipAvailabilityCheck: true
                                 });
                             }
                             
@@ -847,37 +864,59 @@
                             });
                             
                             console.log('✅ AI回复成功:', result.model);
-                            return result.content;
+                            return result.content + '<br><br><small style="color: #888;">🤖 由智能AI提供</small>';
                             
                         } else {
-                            console.warn('⚠️ 智能模型选择器不可用，使用本地知识库');
-                            return this.getLocalResponse(question);
+                            console.warn('⚠️ 智能模型选择器不可用，返回本地知识库回复');
+                            return localResponse || this.getFallbackResponse(question);
                         }
                         
                     } catch (error) {
                         console.error('❌ AI调用失败:', error);
-                        return this.getLocalResponse(question);
+                        return localResponse || this.getFallbackResponse(question);
                     }
                 },
                 
                 getLocalResponse(question) {
-                    // 本地知识库作为备用
-                    const responses = {
-                        '伯努利': '🌊 <strong>伯努利方程</strong>是流体力学中的基本方程之一：<br><br><strong>方程形式：</strong> p + ½ρv² + ρgh = 常数<br><br><strong>物理意义：</strong><br>• 压力能 (p)<br>• 动能 (½ρv²)<br>• 势能 (ρgh)<br><br>三种能量形式的总和在理想流动中保持不变，体现了<strong>能量守恒定律</strong>在流体中的应用。',
-                        '层流': '🌀 <strong>层流与湍流的区别：</strong><br><br><strong>层流特征：</strong><br>• 流体分层流动，互不混合<br>• 流线平行，速度分布规律<br>• Re < 2300（圆管）<br><br><strong>湍流特征：</strong><br>• 流体不规则混合<br>• 涡旋运动，速度脉动<br>• Re > 4000（圆管）<br><br><strong>判断依据：</strong> 雷诺数 Re = ρVD/μ',
-                        '雷诺数': '📊 <strong>雷诺数 (Reynolds Number)</strong><br><br><strong>计算公式：</strong> Re = ρVL/μ = VL/ν<br><br><strong>物理意义：</strong><br>• 惯性力与粘性力的比值<br>• 判断流动状态的无量纲参数<br><br><strong>应用：</strong><br>• 圆管：Re < 2300 (层流)<br>• 平板：Re < 5×10⁵ (层流)<br>• 球体：Re < 0.1 (蠕流)',
-                        '边界层': '🎯 <strong>边界层理论</strong><br><br><strong>基本概念：</strong><br>边界层是紧贴固体壁面的薄层，在此层内粘性力不可忽略。<br><br><strong>厚度定义：</strong><br>速度达到主流速度99%处的距离<br><br><strong>重要性：</strong><br>• 决定阻力大小<br>• 影响传热传质<br>• 工程设计关键'
+                    console.log('📚 搜索本地知识库:', question);
+                    
+                    const knowledgeBase = {
+                        '伯努利': {
+                            keywords: ['伯努利', '伯努利方程', 'bernoulli', '能量守恒'],
+                            content: '🌊 <strong>伯努利方程</strong><br><br><strong>方程：</strong> p + ½ρv² + ρgh = 常数<br><br><strong>物理意义：</strong><br>• 压力能 (p) • 动能 (½ρv²) • 势能 (ρgh)<br><br>体现了<strong>能量守恒定律</strong>在流体中的应用。<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
+                        },
+                        '层流': {
+                            keywords: ['层流', '湍流', 'laminar', 'turbulent'],
+                            content: '🌀 <strong>层流与湍流</strong><br><br><strong>层流：</strong> 分层流动，Re < 2300<br><strong>湍流：</strong> 混合流动，Re > 4000<br><strong>判断：</strong> 雷诺数 Re = ρVD/μ<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
+                        },
+                        '雷诺数': {
+                            keywords: ['雷诺数', 'reynolds', '雷诺', 're'],
+                            content: '📊 <strong>雷诺数</strong><br><br><strong>公式：</strong> Re = ρVL/μ = VL/ν<br><strong>意义：</strong> 惯性力与粘性力的比值<br><strong>临界值：</strong> 圆管Re < 2300(层流)<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
+                        },
+                        '边界层': {
+                            keywords: ['边界层', 'boundary layer', '壁面'],
+                            content: '🎯 <strong>边界层理论</strong><br><br><strong>定义：</strong> 紧贴壁面的薄层，粘性力显著<br><strong>厚度：</strong> 速度达主流99%处<br><strong>意义：</strong> 决定阻力和传热<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
+                        }
                     };
-
-                    // 寻找匹配的关键词
-                    for (const [keyword, response] of Object.entries(responses)) {
-                        if (question.includes(keyword)) {
-                            return response;
+                    
+                    const questionLower = question.toLowerCase();
+                    
+                    // 精确匹配关键词
+                    for (const [topicKey, topic] of Object.entries(knowledgeBase)) {
+                        for (const keyword of topic.keywords) {
+                            if (questionLower.includes(keyword.toLowerCase())) {
+                                console.log(`✅ 本地知识库匹配: ${topicKey}`);
+                                return topic.content;
+                            }
                         }
                     }
-
-                    // 默认回复
-                    return `🤔 这是一个很好的问题！关于 "<strong>${question}</strong>"，我建议：<br><br>1. 查阅相关教材的基础章节<br>2. 观看配套的视频教程<br>3. 做一些相关的练习题<br><br>如果需要更详细的解答，请尝试提供更具体的问题描述。<br><br>💡 <strong>提示：</strong> AI服务暂时不可用，当前使用本地知识库回复。`;
+                    
+                    console.log('❌ 本地知识库无匹配结果');
+                    return null;
+                },
+                
+                getFallbackResponse(question) {
+                    return `🤔 <strong>关于 "${question}"</strong><br><br>很抱歉，我暂时无法提供详细解答。建议：<br><br>📚 查阅教材相关章节<br>🔍 尝试询问：伯努利方程、雷诺数、层流湍流、边界层<br>💡 提供更具体的问题描述<br><br><small style="color: #888;">💭 系统提示</small>`;
                 },
 
                 selectSuggestion(suggestion) {

@@ -146,10 +146,25 @@ window.SmartModelSelector = (function() {
             
             console.log('🤖 智能AI模型选择器初始化中...');
             
-            // 检查模型可用性
-            await this.checkModelAvailability();
-            
-            console.log(`✅ 智能模型选择器初始化完成，发现 ${availableModels.size} 个可用模型`);
+            // 如果配置了跳过可用性检查，则不检查模型
+            if (!config.skipAvailabilityCheck) {
+                // 检查模型可用性
+                await this.checkModelAvailability();
+                console.log(`✅ 智能模型选择器初始化完成，发现 ${availableModels.size} 个可用模型`);
+            } else {
+                console.log('⚡ 跳过模型可用性检查，快速初始化完成');
+                // 假设所有模型都可用
+                const allModels = [
+                    ...modelList.premium,
+                    ...modelList.balanced, 
+                    ...modelList.lightweight,
+                    ...modelList.vision,
+                    ...modelList.special
+                ];
+                allModels.forEach(model => {
+                    availableModels.set(model.name, true);
+                });
+            }
             
             return this;
         },
