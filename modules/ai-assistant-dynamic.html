@@ -784,32 +784,89 @@
                     this.currentMessage = '';
                     this.scrollToBottom();
 
-                    // 模拟AI思考
+                    // AI思考中
                     this.isTyping = true;
                     
-                    setTimeout(() => {
-                        const aiResponse = this.generateAIResponse(messageText);
-                        this.messages.push({
-                            id: Date.now() + 1,
-                            sender: 'ai',
-                            content: aiResponse,
-                            timestamp: new Date()
-                        });
-                        this.isTyping = false;
-                        this.scrollToBottom();
+                    setTimeout(async () => {
+                        try {
+                            const aiResponse = await this.generateAIResponse(messageText);
+                            this.messages.push({
+                                id: Date.now() + 1,
+                                sender: 'ai',
+                                content: aiResponse,
+                                timestamp: new Date()
+                            });
+                        } catch (error) {
+                            console.error('AI回复失败:', error);
+                            this.messages.push({
+                                id: Date.now() + 1,
+                                sender: 'ai',
+                                content: '抱歉，AI服务暂时不可用。请稍后重试。🤖',
+                                timestamp: new Date()
+                            });
+                        } finally {
+                            this.isTyping = false;
+                            this.scrollToBottom();
+                        }
                     }, 1500 + Math.random() * 2000);
                 },
 
-                generateAIResponse(question) {
+                async generateAIResponse(question) {
+                    console.log('🤖 动态AI助手生成回复:', question);
+                    
+                    try {
+                        // 检查智能模型选择器是否可用
+                        if (window.SmartModelSelector && window.AppConfig) {
+                            // 初始化智能模型选择器（如果还没有初始化）
+                            if (!window.smartModelSelectorInstance) {
+                                console.log('🔧 初始化智能模型选择器...');
+                                const smartConfig = window.AppConfig.api.smartAI;
+                                
+                                window.smartModelSelectorInstance = await window.SmartModelSelector.init({
+                                    apiKey: smartConfig.apiKey,
+                                    apiUrl: smartConfig.endpoint,
+                                    defaultStrategy: smartConfig.defaultStrategy,
+                                    maxRetries: smartConfig.maxRetries,
+                                    requestTimeout: smartConfig.requestTimeout
+                                });
+                            }
+                            
+                            // 调用智能AI
+                            const result = await window.smartModelSelectorInstance.callAI(question, {
+                                strategy: 'balanced',
+                                features: ['chat', 'reasoning'],
+                                maxTokens: 1000,
+                                temperature: 0.7,
+                                systemPrompt: `你是一个专业的流体力学教师，请用简洁明了的方式回答学生问题。回答要包含：
+1. 核心概念解释
+2. 必要的公式（如果适用）
+3. 实际应用举例
+4. 学习建议
+
+请用HTML格式回复，使用<strong>、<br>等标签，让内容易读易懂。`
+                            });
+                            
+                            console.log('✅ AI回复成功:', result.model);
+                            return result.content;
+                            
+                        } else {
+                            console.warn('⚠️ 智能模型选择器不可用，使用本地知识库');
+                            return this.getLocalResponse(question);
+                        }
+                        
+                    } catch (error) {
+                        console.error('❌ AI调用失败:', error);
+                        return this.getLocalResponse(question);
+                    }
+                },
+                
+                getLocalResponse(question) {
+                    // 本地知识库作为备用
                     const responses = {
                         '伯努利': '🌊 <strong>伯努利方程</strong>是流体力学中的基本方程之一：<br><br><strong>方程形式：</strong> p + ½ρv² + ρgh = 常数<br><br><strong>物理意义：</strong><br>• 压力能 (p)<br>• 动能 (½ρv²)<br>• 势能 (ρgh)<br><br>三种能量形式的总和在理想流动中保持不变，体现了<strong>能量守恒定律</strong>在流体中的应用。',
                         '层流': '🌀 <strong>层流与湍流的区别：</strong><br><br><strong>层流特征：</strong><br>• 流体分层流动，互不混合<br>• 流线平行，速度分布规律<br>• Re < 2300（圆管）<br><br><strong>湍流特征：</strong><br>• 流体不规则混合<br>• 涡旋运动，速度脉动<br>• Re > 4000（圆管）<br><br><strong>判断依据：</strong> 雷诺数 Re = ρVD/μ',
                         '雷诺数': '📊 <strong>雷诺数 (Reynolds Number)</strong><br><br><strong>计算公式：</strong> Re = ρVL/μ = VL/ν<br><br><strong>物理意义：</strong><br>• 惯性力与粘性力的比值<br>• 判断流动状态的无量纲参数<br><br><strong>应用：</strong><br>• 圆管：Re < 2300 (层流)<br>• 平板：Re < 5×10⁵ (层流)<br>• 球体：Re < 0.1 (蠕流)',
-                        '边界层': '🎯 <strong>边界层理论</strong><br><br><strong>基本概念：</strong><br>边界层是紧贴固体壁面的薄层，在此层内粘性力不可忽略。<br><br><strong>厚度定义：</strong><br>速度达到主流速度99%处的距离<br><br><strong>重要性：</strong><br>• 决定阻力大小<br>• 影响传热传质<br>• 工程设计关键',
-                        '静力学': '⚖️ <strong>流体静力学基本方程</strong><br><br><strong>微分形式：</strong> dp = -ρg dz<br><br><strong>积分形式：</strong> p₂ - p₁ = -ρg(z₂ - z₁)<br><br><strong>应用：</strong><br>• 压强随高度线性变化<br>• 液体表面为等压面<br>• U形管压力计原理',
-                        '粘性': '🔄 <strong>粘性力 vs 惯性力</strong><br><br><strong>粘性力：</strong><br>• 由分子间相互作用产生<br>• 与速度梯度成正比<br>• τ = μ(du/dy)<br><br><strong>惯性力：</strong><br>• 流体加速运动产生<br>• 与密度和加速度相关<br>• F = ma = ρV(dV/dt)',
-                        '连续性': '📐 <strong>连续性方程推导</strong><br><br><strong>质量守恒原理：</strong><br>∂ρ/∂t + ∇·(ρV) = 0<br><br><strong>不可压缩流体：</strong><br>∇·V = 0<br><br><strong>一维稳定流：</strong><br>A₁V₁ = A₂V₂<br><br>这表明<strong>质量流量守恒</strong>',
-                        '机械': '⚙️ <strong>流体机械工作原理</strong><br><br><strong>离心泵：</strong><br>• 叶轮旋转产生离心力<br>• 液体从中心被甩向外围<br>• 出口动能转化为压力能<br><br><strong>轴流风机：</strong><br>• 叶片产生升力<br>• 推动流体轴向流动<br>• 适用于大流量低压头'
+                        '边界层': '🎯 <strong>边界层理论</strong><br><br><strong>基本概念：</strong><br>边界层是紧贴固体壁面的薄层，在此层内粘性力不可忽略。<br><br><strong>厚度定义：</strong><br>速度达到主流速度99%处的距离<br><br><strong>重要性：</strong><br>• 决定阻力大小<br>• 影响传热传质<br>• 工程设计关键'
                     };
 
                     // 寻找匹配的关键词
@@ -820,7 +877,7 @@
                     }
 
                     // 默认回复
-                    return `🤔 这是一个很好的问题！关于 "<strong>${question}</strong>"，我建议：<br><br>1. 查阅相关教材的基础章节<br>2. 观看配套的视频教程<br>3. 做一些相关的练习题<br><br>如果需要更详细的解答，请尝试提供更具体的问题描述。`;
+                    return `🤔 这是一个很好的问题！关于 "<strong>${question}</strong>"，我建议：<br><br>1. 查阅相关教材的基础章节<br>2. 观看配套的视频教程<br>3. 做一些相关的练习题<br><br>如果需要更详细的解答，请尝试提供更具体的问题描述。<br><br>💡 <strong>提示：</strong> AI服务暂时不可用，当前使用本地知识库回复。`;
                 },
 
                 selectSuggestion(suggestion) {

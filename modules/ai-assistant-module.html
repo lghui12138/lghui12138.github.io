@@ -1201,20 +1201,34 @@
                 
                 let aiResponse;
                 
+                // 检查依赖是否加载
+                console.log('🔍 检查系统依赖...');
+                console.log('AppConfig:', typeof window.AppConfig);
+                console.log('SmartModelSelector:', typeof window.SmartModelSelector);
+                
                 // 使用智能模型选择系统
-                if (window.SmartModelSelector) {
+                if (window.SmartModelSelector && window.AppConfig) {
                     console.log('🧠 使用智能模型选择系统');
                     
                     try {
                         // 初始化智能模型选择器（如果还没有初始化）
                         if (!window.smartModelSelectorInstance) {
+                            console.log('🔧 正在初始化智能模型选择器...');
+                            
+                            // 使用AppConfig中的配置
+                            const smartConfig = window.AppConfig.api.smartAI;
+                            
                             window.smartModelSelectorInstance = await window.SmartModelSelector.init({
-                                apiKey: 'sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis',
-                                apiUrl: 'https://api.siliconflow.cn/v1/chat/completions',
-                                defaultStrategy: 'balanced'
+                                apiKey: smartConfig.apiKey,
+                                apiUrl: smartConfig.endpoint,
+                                defaultStrategy: smartConfig.defaultStrategy,
+                                maxRetries: smartConfig.maxRetries,
+                                requestTimeout: smartConfig.requestTimeout
                             });
+                            console.log('✅ 智能模型选择器初始化完成');
                         }
                         
+                        console.log('🤖 正在调用AI...');
                         const result = await window.smartModelSelectorInstance.callAI(enhancedPrompt, {
                             strategy: 'balanced',
                             features: ['chat', 'reasoning'],
@@ -1227,11 +1241,16 @@
                         aiResponse = result.content;
                         
                     } catch (smartError) {
-                        console.warn('⚠️ 智能模型选择失败，回退到传统模式:', smartError.message);
+                        console.error('❌ 智能模型选择失败:', smartError);
+                        console.warn('⚠️ 回退到本地知识库');
                         throw smartError; // 触发回退逻辑
                     }
                 } else {
-                    throw new Error('智能模型选择器未加载');
+                    const missing = [];
+                    if (!window.SmartModelSelector) missing.push('SmartModelSelector');
+                    if (!window.AppConfig) missing.push('AppConfig');
+                    console.error(`❌ 依赖未加载: ${missing.join(', ')}`);
+                    throw new Error(`依赖未加载: ${missing.join(', ')}`);
                 }
                 
                 return aiResponse;
