@@ -829,22 +829,18 @@
                         if (window.SmartModelSelector && window.AppConfig) {
                             console.log('🧠 本地知识库无准确答案，调用智能AI系统');
                             
-                            // 快速初始化（不检查模型可用性）
+                            // 使用配置文件快速初始化
                             if (!window.smartModelSelectorInstance) {
                                 console.log('🔧 快速初始化智能模型选择器...');
                                 const smartConfig = window.AppConfig.api.smartAI;
                                 
-                                window.smartModelSelectorInstance = {
-                                    callAI: window.SmartModelSelector.callAI.bind(window.SmartModelSelector)
-                                };
-                                
-                                window.SmartModelSelector.updateConfig({
+                                window.smartModelSelectorInstance = await window.SmartModelSelector.init({
                                     apiKey: smartConfig.apiKey,
                                     apiUrl: smartConfig.endpoint,
                                     defaultStrategy: smartConfig.defaultStrategy,
                                     maxRetries: smartConfig.maxRetries,
                                     requestTimeout: smartConfig.requestTimeout,
-                                    skipAvailabilityCheck: true
+                                    skipAvailabilityCheck: smartConfig.skipAvailabilityCheck
                                 });
                             }
                             

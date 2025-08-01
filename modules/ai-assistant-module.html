@@ -1232,19 +1232,14 @@
                         
                         const smartConfig = window.AppConfig.api.smartAI;
                         
-                        // 不进行模型可用性检查，直接初始化
-                        window.smartModelSelectorInstance = {
-                            callAI: window.SmartModelSelector.callAI.bind(window.SmartModelSelector)
-                        };
-                        
-                        // 更新配置
-                        window.SmartModelSelector.updateConfig({
+                        // 使用配置中的skipAvailabilityCheck设置，快速初始化
+                        window.smartModelSelectorInstance = await window.SmartModelSelector.init({
                             apiKey: smartConfig.apiKey,
                             apiUrl: smartConfig.endpoint,
                             defaultStrategy: smartConfig.defaultStrategy,
                             maxRetries: smartConfig.maxRetries,
                             requestTimeout: smartConfig.requestTimeout,
-                            skipAvailabilityCheck: true // 跳过可用性检查
+                            skipAvailabilityCheck: smartConfig.skipAvailabilityCheck // 使用配置文件设置
                         });
                         
                         console.log('✅ 智能模型选择器快速初始化完成');

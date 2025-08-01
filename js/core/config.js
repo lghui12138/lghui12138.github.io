@@ -31,9 +31,10 @@ window.AppConfig = {
             maxRetries: 3,
             requestTimeout: 30000,
             rateLimitDelay: 1000,
-            modelCheckInterval: 10 * 60 * 1000, // 10分钟检查一次模型可用性
+            modelCheckInterval: 10 * 60 * 1000, // 10分钟检查一次模型可用性（仅在需要时）
             defaultStrategy: 'balanced', // balanced, fast, quality
             fallbackModel: 'Qwen/Qwen2.5-7B-Instruct',
+            skipAvailabilityCheck: true, // 跳过模型可用性检查，节省时间和费用
             
             // 模型选择策略配置
             strategies: {
