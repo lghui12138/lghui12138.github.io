@@ -153,7 +153,7 @@ window.SmartModelSelector = (function() {
                 console.log(`✅ 智能模型选择器初始化完成，发现 ${availableModels.size} 个可用模型`);
             } else {
                 console.log('⚡ 跳过模型可用性检查，快速初始化完成');
-                // 假设所有模型都可用
+                // 假设所有模型都可用，存储完整的模型信息
                 const allModels = [
                     ...modelList.premium,
                     ...modelList.balanced, 
@@ -162,8 +162,9 @@ window.SmartModelSelector = (function() {
                     ...modelList.special
                 ];
                 allModels.forEach(model => {
-                    availableModels.set(model.name, true);
+                    availableModels.set(model.name, model);
                 });
+                console.log(`✅ 预设 ${availableModels.size} 个模型为可用状态`);
             }
             
             return this;
@@ -280,8 +281,10 @@ window.SmartModelSelector = (function() {
          * @returns {Object} 选择的模型信息
          */
         selectBestModel: async function(message, options = {}) {
-            // 确保模型可用性是最新的
-            await this.checkModelAvailability();
+            // 只有在配置允许时才检查模型可用性
+            if (!config.skipAvailabilityCheck) {
+                await this.checkModelAvailability();
+            }
             
             if (availableModels.size === 0) {
                 throw new Error('没有可用的AI模型');
