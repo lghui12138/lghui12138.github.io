@@ -19,6 +19,10 @@
     <!-- 安全保护模块 -->
     <script src="security-protection.js"></script>
     
+    <!-- AI智能系统 -->
+    <script src="../js/core/config.js"></script>
+    <script src="../js/core/smart-model-selector.js"></script>
+
     <style>
         :root {
             /* 海洋主题色彩 */
@@ -373,6 +377,481 @@
         .mobile-controls .fullscreen-btn:hover,
         .mobile-controls .exit-btn:hover {
             transform: scale(1.1);
+        }
+
+        /* AI浮动助手按钮 */
+        .ai-assistant-float {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 9999;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+
+        .ai-assistant-float:hover {
+            transform: translateY(-3px) scale(1.1);
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.6);
+        }
+
+        .ai-assistant-float.pulse {
+            animation: aiPulse 2s infinite;
+        }
+
+        @keyframes aiPulse {
+            0%, 100% { 
+                transform: scale(1); 
+                box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+            }
+            50% { 
+                transform: scale(1.1); 
+                box-shadow: 0 12px 40px rgba(102, 126, 234, 0.8);
+            }
+        }
+
+        /* AI弹窗样式 */
+        .ai-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .ai-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .ai-modal {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            transform: scale(0.8) translateY(50px);
+            transition: all 0.3s ease;
+        }
+
+        .ai-modal-overlay.show .ai-modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .ai-modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ai-modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-modal-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .ai-modal-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: rotate(90deg);
+        }
+
+        .ai-modal-content {
+            padding: 0;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .ai-chat-container {
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ai-chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .ai-message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .ai-message.user {
+            flex-direction: row-reverse;
+        }
+
+        .ai-message-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .ai-message.user .ai-message-avatar {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .ai-message.ai .ai-message-avatar {
+            background: linear-gradient(135deg, #34d399, #10b981);
+            color: white;
+        }
+
+        .ai-message-content {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            max-width: 80%;
+            word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .ai-message.user .ai-message-content {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .ai-chat-input-area {
+            background: white;
+            border-top: 1px solid #e9ecef;
+            padding: 15px 20px;
+        }
+
+        .ai-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .ai-chat-input {
+            flex: 1;
+            border: 2px solid #e9ecef;
+            border-radius: 20px;
+            padding: 12px 16px;
+            font-size: 14px;
+            resize: none;
+            max-height: 100px;
+            min-height: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .ai-chat-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .ai-send-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            color: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .ai-send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .ai-send-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* AI快捷提示 */
+        .ai-quick-tips {
+            padding: 15px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .ai-quick-tips h4 {
+            margin: 0 0 10px 0;
+            font-size: 14px;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 8px;
+        }
+
+        .ai-tip-btn {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 8px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+        }
+
+        .ai-tip-btn:hover {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        /* AI批改功能样式 */
+        .ai-grading-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border-radius: 15px;
+            border: 2px solid #667eea;
+        }
+
+        .ai-grading-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .ai-grading-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ai-grading-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 20px;
+            color: white;
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ai-grading-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .ai-grading-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .ai-grading-result {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .ai-grading-score {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .ai-score-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .ai-score-circle.excellent {
+            background: linear-gradient(135deg, #34d399, #10b981);
+        }
+
+        .ai-score-circle.good {
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+        }
+
+        .ai-score-circle.average {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+        }
+
+        .ai-score-circle.poor {
+            background: linear-gradient(135deg, #f87171, #ef4444);
+        }
+
+        .ai-score-details h4 {
+            margin: 0 0 5px 0;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .ai-score-details p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .ai-grading-feedback {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #495057;
+        }
+
+        /* 快捷键说明样式 */
+        .shortcuts-section {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-top: 1px solid #dee2e6;
+        }
+
+        .shortcuts-title {
+            margin: 0 0 12px 0;
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
+        }
+
+        .shortcut-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        .shortcut-key {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        /* 移动端优化 */
+        @media (max-width: 768px) {
+            .ai-assistant-float {
+                bottom: 20px;
+                right: 20px;
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
+
+            .ai-modal {
+                width: 95%;
+                max-height: 85vh;
+            }
+
+            .ai-modal-header {
+                padding: 15px;
+            }
+
+            .ai-modal-title {
+                font-size: 16px;
+            }
+
+            .ai-chat-container {
+                height: 350px;
+            }
+
+            .ai-chat-messages {
+                padding: 15px;
+            }
+
+            .ai-tips-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .shortcuts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 隐藏原来的快捷键提示 */
+        .shortcuts-hint {
+            display: none;
         }
 
         /* 移动端全屏模式优化 */
@@ -2448,6 +2927,35 @@
                     </div>
                 </div>
 
+                <!-- AI批改功能 -->
+                <div v-if="showResult" class="ai-grading-section">
+                    <div class="ai-grading-header">
+                        <div class="ai-grading-title">
+                            <i class="fas fa-robot"></i> AI智能批改
+                        </div>
+                        <button @click="requestAIGrading" 
+                                :disabled="aiGradingLoading" 
+                                class="ai-grading-btn">
+                            <i class="fas fa-magic" v-if="!aiGradingLoading"></i>
+                            <i class="fas fa-spinner fa-spin" v-else></i>
+                            {{ aiGradingLoading ? '分析中...' : 'AI分析' }}
+                        </button>
+                    </div>
+                    
+                    <div v-if="aiGradingResult" class="ai-grading-result">
+                        <div class="ai-grading-score">
+                            <div :class="['ai-score-circle', getAIScoreClass(aiGradingResult.score)]">
+                                {{ aiGradingResult.score }}分
+                            </div>
+                            <div class="ai-score-details">
+                                <h4>{{ aiGradingResult.level }}</h4>
+                                <p>{{ aiGradingResult.summary }}</p>
+                            </div>
+                        </div>
+                        <div class="ai-grading-feedback" v-html="aiGradingResult.feedback"></div>
+                    </div>
+                </div>
+
                 <div v-else class="question-card" style="text-align: center; padding: 60px;">
                     <i class="fas fa-graduation-cap" style="font-size: 4em; color: #ccc; margin-bottom: 20px;"></i>
                     <h3>练习完成！</h3>
@@ -2460,10 +2968,114 @@
                 </div>
             </div>
 
-            <!-- 快捷键提示 -->
-            <div class="shortcuts-hint">
-                <i class="fas fa-keyboard"></i> 
-                快捷键: Enter-提交 | ←→-切换题目 | F11-全屏 | ESC-退出 | Ctrl+S-保存
+            <!-- AI助手浮动按钮 -->
+            <button @click="toggleAIModal" class="ai-assistant-float" :class="{ pulse: aiNotification }" title="AI智能助手">
+                <i class="fas fa-robot"></i>
+            </button>
+
+            <!-- AI助手弹窗 -->
+            <div class="ai-modal-overlay" :class="{ show: showAIModal }" @click="closeAIModal">
+                <div class="ai-modal" @click.stop>
+                    <!-- AI弹窗头部 -->
+                    <div class="ai-modal-header">
+                        <div class="ai-modal-title">
+                            <i class="fas fa-robot"></i>
+                            AI智能助手
+                        </div>
+                        <button @click="closeAIModal" class="ai-modal-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <!-- AI弹窗内容 -->
+                    <div class="ai-modal-content">
+                        <!-- AI快捷提示 -->
+                        <div class="ai-quick-tips">
+                            <h4><i class="fas fa-lightbulb"></i> 智能提问助手</h4>
+                            <div class="ai-tips-grid">
+                                <button @click="askQuickQuestion('请解释这道题的解题思路')" class="ai-tip-btn">
+                                    解题思路
+                                </button>
+                                <button @click="askQuickQuestion('这道题的知识点是什么？')" class="ai-tip-btn">
+                                    知识点解析
+                                </button>
+                                <button @click="askQuickQuestion('有类似的题目吗？')" class="ai-tip-btn">
+                                    相似题目
+                                </button>
+                                <button @click="askQuickQuestion('这道题容易出错的地方在哪里？')" class="ai-tip-btn">
+                                    易错点分析
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- AI聊天区域 -->
+                        <div class="ai-chat-container">
+                            <div class="ai-chat-messages" ref="aiMessages">
+                                <div v-for="(message, index) in aiMessages" :key="index" 
+                                     :class="['ai-message', message.type]">
+                                    <div class="ai-message-avatar">
+                                        {{ message.type === 'user' ? 'U' : 'AI' }}
+                                    </div>
+                                    <div class="ai-message-content" v-html="message.content"></div>
+                                </div>
+                                <div v-if="aiLoading" class="ai-message ai">
+                                    <div class="ai-message-avatar">AI</div>
+                                    <div class="ai-message-content">
+                                        <i class="fas fa-spinner fa-spin"></i> AI正在思考中...
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="ai-chat-input-area">
+                                <div class="ai-input-wrapper">
+                                    <textarea 
+                                        v-model="aiInputText" 
+                                        @keydown.enter.prevent="sendAIMessage"
+                                        class="ai-chat-input" 
+                                        placeholder="向AI询问关于这道题的问题..."></textarea>
+                                    <button @click="sendAIMessage" 
+                                            :disabled="!aiInputText.trim() || aiLoading" 
+                                            class="ai-send-btn">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 快捷键说明 -->
+                        <div class="shortcuts-section">
+                            <h4 class="shortcuts-title">
+                                <i class="fas fa-keyboard"></i> 快捷键说明
+                            </h4>
+                            <div class="shortcuts-grid">
+                                <div class="shortcut-item">
+                                    <span class="shortcut-key">Enter</span>
+                                    <span>提交答案</span>
+                                </div>
+                                <div class="shortcut-item">
+                                    <span class="shortcut-key">← →</span>
+                                    <span>切换题目</span>
+                                </div>
+                                <div class="shortcut-item">
+                                    <span class="shortcut-key">F11</span>
+                                    <span>全屏切换</span>
+                                </div>
+                                <div class="shortcut-item">
+                                    <span class="shortcut-key">ESC</span>
+                                    <span>退出/返回</span>
+                                </div>
+                                <div class="shortcut-item">
+                                    <span class="shortcut-key">Ctrl+S</span>
+                                    <span>保存进度</span>
+                                </div>
+                                <div class="shortcut-item">
+                                    <span class="shortcut-key">1-4</span>
+                                    <span>选择选项</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -2553,7 +3165,19 @@
                         small: 0.8,
                         medium: 1,
                         large: 1.2
-                    }
+                    },
+
+                    // AI相关数据
+                    showAIModal: false,
+                    aiInputText: '',
+                    aiMessages: [],
+                    aiLoading: false,
+                    aiNotification: false,
+                    smartModelSelectorInstance: null,
+                    
+                    // AI批改相关
+                    aiGradingLoading: false,
+                    aiGradingResult: null
                 }
             },
             
@@ -3934,6 +4558,291 @@
                             }
                             break;
                     }
+                },
+
+                // AI相关方法
+                async initAISystem() {
+                    try {
+                        if (window.SmartModelSelector && window.AppConfig) {
+                            console.log('🤖 初始化AI智能助手...');
+                            const smartConfig = window.AppConfig.api.smartAI;
+                            this.smartModelSelectorInstance = await window.SmartModelSelector.init({
+                                apiKey: smartConfig.apiKey,
+                                apiUrl: smartConfig.endpoint,
+                                defaultStrategy: smartConfig.defaultStrategy,
+                                maxRetries: smartConfig.maxRetries,
+                                requestTimeout: smartConfig.requestTimeout,
+                                skipAvailabilityCheck: smartConfig.skipAvailabilityCheck
+                            });
+                            console.log('✅ AI智能助手初始化完成');
+                        }
+                    } catch (error) {
+                        console.error('❌ AI系统初始化失败:', error);
+                    }
+                },
+
+                toggleAIModal() {
+                    this.showAIModal = !this.showAIModal;
+                    if (this.showAIModal && this.aiMessages.length === 0) {
+                        this.addWelcomeMessage();
+                    }
+                },
+
+                closeAIModal() {
+                    this.showAIModal = false;
+                },
+
+                addWelcomeMessage() {
+                    this.aiMessages.push({
+                        type: 'ai',
+                        content: '你好！我是AI智能助手 🤖<br><br>我可以帮助你：<br>• 解释题目的解题思路<br>• 分析知识点<br>• 找出易错点<br>• 批改答题情况<br><br>请随时向我提问！',
+                        timestamp: Date.now()
+                    });
+                },
+
+                async askQuickQuestion(question) {
+                    this.aiInputText = question;
+                    await this.sendAIMessage();
+                },
+
+                async sendAIMessage() {
+                    if (!this.aiInputText.trim() || this.aiLoading) return;
+
+                    const userMessage = this.aiInputText.trim();
+                    this.aiMessages.push({
+                        type: 'user',
+                        content: userMessage,
+                        timestamp: Date.now()
+                    });
+
+                    this.aiInputText = '';
+                    this.aiLoading = true;
+
+                    try {
+                        await this.callAIForQuestion(userMessage);
+                    } catch (error) {
+                        this.aiMessages.push({
+                            type: 'ai',
+                            content: '抱歉，AI暂时无法回复，请稍后再试。如需帮助，可以查看题目解析或咨询老师。',
+                            timestamp: Date.now()
+                        });
+                    } finally {
+                        this.aiLoading = false;
+                        this.$nextTick(() => {
+                            this.scrollAIMessages();
+                        });
+                    }
+                },
+
+                async callAIForQuestion(question) {
+                    // 构建上下文信息
+                    let contextInfo = '';
+                    if (this.currentQuestion) {
+                        contextInfo = `当前题目：${this.currentQuestion.title}\n`;
+                        if (this.currentQuestion.content) {
+                            contextInfo += `题目内容：${this.currentQuestion.content}\n`;
+                        }
+                        if (this.currentQuestion.options && this.currentQuestion.options.length > 0) {
+                            contextInfo += `选项：\n`;
+                            this.currentQuestion.options.forEach((option, index) => {
+                                contextInfo += `${String.fromCharCode(65 + index)}. ${option}\n`;
+                            });
+                        }
+                        if (this.showResult) {
+                            contextInfo += `\n用户选择：${this.selectedAnswer !== null ? String.fromCharCode(65 + this.selectedAnswer) : '未选择'}\n`;
+                            contextInfo += `正确答案：${this.currentQuestion.answer}\n`;
+                            contextInfo += `答题结果：${this.isCorrect ? '正确' : '错误'}\n`;
+                        }
+                    }
+
+                    const enhancedPrompt = `${contextInfo}\n用户问题：${question}`;
+
+                    try {
+                        if (!this.smartModelSelectorInstance) {
+                            await this.initAISystem();
+                        }
+
+                        if (this.smartModelSelectorInstance) {
+                            const result = await this.smartModelSelectorInstance.callAI(enhancedPrompt, {
+                                strategy: 'balanced',
+                                features: ['chat', 'reasoning'],
+                                maxTokens: 1500,
+                                temperature: 0.7,
+                                systemPrompt: '你是一个专业的流体力学教师，善于解答学生的问题。请用简洁易懂的语言回答，可以使用适当的表情符号让回答更生动。'
+                            });
+
+                            this.aiMessages.push({
+                                type: 'ai',
+                                content: result.content + '<br><br><small style="color: #888;">🤖 由智能AI提供</small>',
+                                timestamp: Date.now()
+                            });
+                        } else {
+                            throw new Error('AI系统未初始化');
+                        }
+                    } catch (error) {
+                        console.error('AI调用失败:', error);
+                        // 提供本地回复作为备选
+                        const localResponse = this.getLocalAIResponse(question);
+                        this.aiMessages.push({
+                            type: 'ai',
+                            content: localResponse,
+                            timestamp: Date.now()
+                        });
+                    }
+                },
+
+                getLocalAIResponse(question) {
+                    const questionLower = question.toLowerCase();
+                    
+                    if (questionLower.includes('解题思路') || questionLower.includes('怎么解') || questionLower.includes('怎么做')) {
+                        return '🤔 解题思路：<br>1. 仔细阅读题目，理解题意<br>2. 确定涉及的流体力学原理<br>3. 列出已知条件和求解目标<br>4. 选择合适的公式或方法<br>5. 逐步计算并验证答案<br><br>📚 建议查看题目解析获取详细步骤';
+                    }
+                    
+                    if (questionLower.includes('知识点') || questionLower.includes('考查') || questionLower.includes('原理')) {
+                        if (this.currentQuestion && this.currentQuestion.knowledgePoints) {
+                            return `📖 这道题主要考查：${this.currentQuestion.knowledgePoints.join('、')}<br><br>💡 建议复习相关概念和公式`;
+                        }
+                        return '📖 建议查看题目标签了解具体知识点，并复习相关的流体力学概念和公式';
+                    }
+                    
+                    if (questionLower.includes('易错') || questionLower.includes('注意') || questionLower.includes('陷阱')) {
+                        return '⚠️ 常见易错点：<br>• 单位换算错误<br>• 符号正负号混淆<br>• 边界条件理解错误<br>• 公式适用条件不明确<br><br>🎯 建议仔细检查计算过程';
+                    }
+                    
+                    if (questionLower.includes('类似') || questionLower.includes('相似') || questionLower.includes('练习')) {
+                        return '📚 建议到题库中寻找相同知识点的题目进行练习，或者查看历年真题中的类似题型';
+                    }
+                    
+                    return '🤖 很抱歉，我现在无法理解您的问题。您可以：<br>• 点击上方的快捷提问按钮<br>• 查看题目解析<br>• 询问具体的知识点<br><br>📚 来源：本地知识库';
+                },
+
+                scrollAIMessages() {
+                    if (this.$refs.aiMessages) {
+                        this.$refs.aiMessages.scrollTop = this.$refs.aiMessages.scrollHeight;
+                    }
+                },
+
+                // AI批改功能
+                async requestAIGrading() {
+                    if (!this.currentQuestion || this.aiGradingLoading) return;
+
+                    this.aiGradingLoading = true;
+                    this.aiGradingResult = null;
+
+                    try {
+                        await this.performAIGrading();
+                    } catch (error) {
+                        console.error('AI批改失败:', error);
+                        this.showNotification('AI批改失败，请稍后再试', 'error');
+                    } finally {
+                        this.aiGradingLoading = false;
+                    }
+                },
+
+                async performAIGrading() {
+                    // 构建批改请求
+                    let gradingPrompt = `请作为流体力学专家，对学生的答题进行智能批改分析：\n\n`;
+                    gradingPrompt += `题目：${this.currentQuestion.title}\n`;
+                    
+                    if (this.currentQuestion.content) {
+                        gradingPrompt += `题目内容：${this.currentQuestion.content}\n`;
+                    }
+
+                    if (this.currentQuestion.options && this.currentQuestion.options.length > 0) {
+                        gradingPrompt += `选项：\n`;
+                        this.currentQuestion.options.forEach((option, index) => {
+                            gradingPrompt += `${String.fromCharCode(65 + index)}. ${option}\n`;
+                        });
+                        gradingPrompt += `\n学生选择：${this.selectedAnswer !== null ? String.fromCharCode(65 + this.selectedAnswer) : '未选择'}\n`;
+                        gradingPrompt += `正确答案：${this.currentQuestion.answer}\n`;
+                    } else if (this.userTextAnswer) {
+                        gradingPrompt += `\n学生答案：${this.userTextAnswer}\n`;
+                        gradingPrompt += `标准答案：${this.currentQuestion.answer}\n`;
+                    }
+
+                    gradingPrompt += `\n请提供：
+1. 评分（0-100分）
+2. 评价等级（优秀/良好/一般/需要改进）
+3. 简短总结
+4. 详细分析反馈
+
+请用JSON格式返回：{"score": 分数, "level": "等级", "summary": "总结", "feedback": "反馈"}`;
+
+                    try {
+                        if (!this.smartModelSelectorInstance) {
+                            await this.initAISystem();
+                        }
+
+                        if (this.smartModelSelectorInstance) {
+                            const result = await this.smartModelSelectorInstance.callAI(gradingPrompt, {
+                                strategy: 'quality',
+                                features: ['reasoning', 'analysis'],
+                                maxTokens: 1000,
+                                temperature: 0.3,
+                                systemPrompt: '你是一位经验丰富的流体力学教师，请客观公正地评价学生答题，并给出建设性建议。'
+                            });
+
+                            // 尝试解析JSON结果
+                            try {
+                                const gradingData = JSON.parse(result.content);
+                                this.aiGradingResult = gradingData;
+                            } catch (parseError) {
+                                // 如果不是JSON格式，创建默认结果
+                                this.aiGradingResult = {
+                                    score: this.isCorrect ? 85 : 45,
+                                    level: this.isCorrect ? '良好' : '需要改进',
+                                    summary: this.isCorrect ? '答案正确，理解较好' : '答案有误，需要加强理解',
+                                    feedback: result.content
+                                };
+                            }
+                        } else {
+                            // 提供本地批改结果
+                            this.aiGradingResult = this.getLocalGradingResult();
+                        }
+                    } catch (error) {
+                        console.error('AI批改调用失败:', error);
+                        this.aiGradingResult = this.getLocalGradingResult();
+                    }
+                },
+
+                getLocalGradingResult() {
+                    const baseScore = this.isCorrect ? 85 : 40;
+                    let feedback = '';
+                    
+                    if (this.isCorrect) {
+                        feedback = '✅ <strong>答案正确！</strong><br><br>';
+                        feedback += '👍 <strong>优点分析：</strong><br>';
+                        feedback += '• 正确理解了题目要求<br>';
+                        feedback += '• 准确掌握了相关知识点<br>';
+                        feedback += '• 选择了正确的答案<br><br>';
+                        feedback += '💡 <strong>建议：</strong><br>';
+                        feedback += '• 继续保持良好的学习状态<br>';
+                        feedback += '• 可以尝试更具挑战性的题目';
+                    } else {
+                        feedback = '❌ <strong>答案错误</strong><br><br>';
+                        feedback += '🔍 <strong>问题分析：</strong><br>';
+                        feedback += '• 对题目理解可能存在偏差<br>';
+                        feedback += '• 相关知识点掌握不够扎实<br>';
+                        feedback += '• 建议重新学习相关概念<br><br>';
+                        feedback += '📚 <strong>改进建议：</strong><br>';
+                        feedback += '• 仔细阅读题目解析<br>';
+                        feedback += '• 复习相关理论知识<br>';
+                        feedback += '• 多做类似题目练习';
+                    }
+
+                    return {
+                        score: baseScore,
+                        level: this.isCorrect ? '良好' : '需要改进',
+                        summary: this.isCorrect ? '答案正确，掌握良好' : '答案错误，需要加强练习',
+                        feedback: feedback + '<br><br><small style="color: #888;">📚 来源：本地智能分析</small>'
+                    };
+                },
+
+                getAIScoreClass(score) {
+                    if (score >= 90) return 'excellent';
+                    if (score >= 75) return 'good';
+                    if (score >= 60) return 'average';
+                    return 'poor';
                 }
             },
 
@@ -3964,6 +4873,11 @@
                         this.showNotification('欢迎来到智能题库！点击"批量加载所有题库"开始', 'info');
                     }
                 }, 1500);
+
+                // 初始化AI系统
+                setTimeout(() => {
+                    this.initAISystem();
+                }, 2000);
 
                 // 绑定键盘事件
                 document.addEventListener('keydown', this.handleKeyboard);
