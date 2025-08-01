@@ -2436,6 +2436,10 @@
     <!-- 通知容器 -->
     <div id="notification-container"></div>
     
+    <!-- 引入智能AI系统 -->
+    <script src="../js/core/config.js"></script>
+    <script src="../js/core/smart-model-selector.js"></script>
+    
     <script>
         // 完整的题库数据
         const questionsData = [
@@ -3588,42 +3592,50 @@
     "learningPoints": ["知识点1", "知识点2"]
 }`;
 
-                // 调用SiliconFlow API
-                const response = await fetch('https://api.siliconflow.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis'
-                    },
-                    body: JSON.stringify({
-                        model: 'deepseek-chat',
-                        messages: [
-                            {
-                                role: 'system',
-                                content: `你是一个专业的流体力学教师，擅长出题和解析。请遵循以下原则：
+                // 使用智能模型选择器调用AI
+                let aiResponse;
+                try {
+                    // 检查智能模型选择器是否可用
+                    if (window.SmartModelSelector && window.AppConfig) {
+                        // 初始化智能模型选择器（如果还没有初始化）
+                        if (!window.smartModelSelectorInstance) {
+                            console.log('🔧 初始化智能模型选择器...');
+                            const smartConfig = window.AppConfig.api.smartAI;
+                            
+                            window.smartModelSelectorInstance = await window.SmartModelSelector.init({
+                                apiKey: smartConfig.apiKey,
+                                apiUrl: smartConfig.endpoint,
+                                defaultStrategy: smartConfig.defaultStrategy,
+                                maxRetries: smartConfig.maxRetries,
+                                requestTimeout: smartConfig.requestTimeout
+                            });
+                        }
+                        
+                        // 调用智能AI
+                        const result = await window.smartModelSelectorInstance.callAI(prompt, {
+                            strategy: 'quality', // 出题需要高质量模型
+                            features: ['reasoning', 'generation'],
+                            maxTokens: 1500,
+                            temperature: 0.7,
+                            systemPrompt: `你是一个专业的流体力学教师，擅长出题和解析。请遵循以下原则：
 1. 题目要准确、有教育意义，符合流体力学教学大纲
 2. 提供4个选项，其中只有1个正确答案
 3. 提供详细的解析，包含相关公式和概念
 4. 根据用户水平调整难度
 5. 题目要有实际应用背景
 6. 严格按照要求的JSON格式返回，不要包含其他内容`
-                                },
-                                {
-                                    role: 'user',
-                                    content: prompt
-                                }
-                            ],
-                            temperature: 0.7,
-                            max_tokens: 1500
-                        })
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`API请求失败: ${response.status}`);
+                        });
+                        
+                        console.log(`✅ AI题目生成成功，使用模型: ${result.model}`);
+                        aiResponse = result.content;
+                        
+                    } else {
+                        throw new Error('智能模型选择器不可用');
                     }
-
-                    const data = await response.json();
-                    const aiResponse = data.choices[0].message.content;
+                } catch (smartError) {
+                    console.error('❌ 智能AI调用失败:', smartError);
+                    throw new Error('AI题目生成失败: ' + smartError.message);
+                }
                     
                     // 解析AI返回的JSON
                     let questionData;
@@ -3979,39 +3991,43 @@
         
         // 测试AI连接
         async function testAIConnection() {
-            showNotification('🔍 正在测试AI连接...', 'info');
+            showNotification('🔍 正在测试智能AI系统连接...', 'info');
             
             try {
-                const response = await fetch('https://api.siliconflow.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsofbgajxnis'
-                    },
-                    body: JSON.stringify({
-                        model: 'deepseek-chat',
-                        messages: [
-                            {
-                                role: 'user',
-                                content: '请回复"连接成功"'
-                            }
-                        ],
-                        temperature: 0.1,
-                        max_tokens: 10
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`API请求失败: ${response.status}`);
-                }
-
-                const data = await response.json();
-                const aiResponse = data.choices[0].message.content;
-                
-                if (aiResponse.includes('连接成功') || aiResponse.includes('成功')) {
-                    showNotification('✅ AI连接测试成功！', 'success');
+                // 检查智能模型选择器是否可用
+                if (window.SmartModelSelector && window.AppConfig) {
+                    // 初始化智能模型选择器（如果还没有初始化）
+                    if (!window.smartModelSelectorInstance) {
+                        console.log('🔧 初始化智能模型选择器...');
+                        const smartConfig = window.AppConfig.api.smartAI;
+                        
+                        window.smartModelSelectorInstance = await window.SmartModelSelector.init({
+                            apiKey: smartConfig.apiKey,
+                            apiUrl: smartConfig.endpoint,
+                            defaultStrategy: smartConfig.defaultStrategy,
+                            maxRetries: smartConfig.maxRetries,
+                            requestTimeout: smartConfig.requestTimeout
+                        });
+                    }
+                    
+                    // 调用智能AI测试连接
+                    const result = await window.smartModelSelectorInstance.callAI('请回复"连接成功"', {
+                        strategy: 'fast',
+                        features: ['chat'],
+                        maxTokens: 20,
+                        temperature: 0.1
+                    });
+                    
+                    console.log(`✅ AI连接测试成功，使用模型: ${result.model}`);
+                    
+                    if (result.content.includes('连接成功') || result.content.includes('成功')) {
+                        showNotification(`✅ 智能AI系统连接成功！使用模型: ${result.model}`, 'success');
+                    } else {
+                        showNotification(`⚠️ AI连接成功，但响应异常。模型: ${result.model}`, 'warning');
+                    }
+                    
                 } else {
-                    showNotification('⚠️ AI连接成功，但响应异常', 'warning');
+                    throw new Error('智能模型选择器不可用，请检查系统配置');
                 }
                 
             } catch (error) {
