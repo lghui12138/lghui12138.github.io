@@ -172,10 +172,20 @@ window.LocalQuestionBank = {
     
     // 智能出题系统
     intelligentQuestionGeneration: {
-        // API配置
-        apiKey: AppConfig.api.siliconFlow.apiKey,
-        apiEndpoint: AppConfig.api.siliconFlow.endpoint,
-        model: AppConfig.api.siliconFlow.model,
+        // API配置 (使用智能模型选择)
+        apiKey: AppConfig.api.smartAI.apiKey,
+        apiEndpoint: AppConfig.api.smartAI.endpoint,
+        useSmartSelection: AppConfig.api.smartAI.enabled,
+        defaultStrategy: AppConfig.api.smartAI.defaultStrategy,
+        
+        // 保持向后兼容性
+        fallback: {
+            apiEndpoint: AppConfig.api.siliconFlow.endpoint,
+            model: AppConfig.api.siliconFlow.model
+        },
+        
+        // 智能模型选择器引用
+        smartModelSelector: null,
         
         // 知识图谱
         knowledgeGraph: {
@@ -240,17 +250,45 @@ window.LocalQuestionBank = {
             comparison: "比较{concept1}和{concept2}的异同点。"
         },
         
-        // 调用硅基流动API
-        async callSiliconFlowAPI(prompt) {
+        // 调用AI API (使用智能模型选择)
+        async callAIAPI(prompt) {
             try {
-                const response = await fetch(this.apiEndpoint, {
+                // 初始化智能模型选择器（如果还没有初始化）
+                if (this.useSmartSelection && !this.smartModelSelector && window.SmartModelSelector) {
+                    console.log('🧠 题库系统初始化智能模型选择器...');
+                    this.smartModelSelector = await window.SmartModelSelector.init({
+                        apiKey: this.apiKey,
+                        apiUrl: this.apiEndpoint,
+                        defaultStrategy: this.defaultStrategy
+                    });
+                }
+                
+                // 如果启用了智能模型选择且选择器可用
+                if (this.useSmartSelection && this.smartModelSelector) {
+                    console.log('🧠 使用智能模型选择系统生成题目');
+                    
+                    const result = await this.smartModelSelector.callAI(prompt, {
+                        strategy: 'quality', // 出题使用高质量策略
+                        features: ['reasoning', 'generation'],
+                        maxTokens: AppConfig.api.siliconFlow.maxTokens,
+                        temperature: AppConfig.api.siliconFlow.temperature,
+                        systemPrompt: "你是一个流体力学专家，擅长出题和教学。请根据要求生成高质量的选择题。"
+                    });
+                    
+                    console.log(`✅ AI题目生成成功，使用模型: ${result.model}`);
+                    return result.content;
+                }
+                
+                // 回退到传统API调用
+                console.log('⚙️ 使用传统API调用模式生成题目');
+                const response = await fetch(this.fallback.apiEndpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${this.apiKey}`
                     },
                     body: JSON.stringify({
-                        model: this.model,
+                        model: this.fallback.model,
                         messages: [
                             {
                                 role: "system",
@@ -373,7 +411,7 @@ window.LocalQuestionBank = {
                 const prompt = this.buildAIPrompt(category, difficulty, questionType);
                 
                 // 调用AI API
-                const aiResponse = await this.callSiliconFlowAPI(prompt);
+                const aiResponse = await this.callAIAPI(prompt);
                 
                 // 解析响应
                 const questionData = this.parseAIResponse(aiResponse);

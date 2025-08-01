@@ -23,6 +23,67 @@ window.AppConfig = {
             }
         },
         
+        // 智能AI模型选择配置
+        smartAI: {
+            enabled: true,
+            endpoint: 'https://api.siliconflow.cn/v1/chat/completions',
+            apiKey: 'sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis',
+            maxRetries: 3,
+            requestTimeout: 30000,
+            rateLimitDelay: 1000,
+            modelCheckInterval: 10 * 60 * 1000, // 10分钟检查一次模型可用性
+            defaultStrategy: 'balanced', // balanced, fast, quality
+            fallbackModel: 'Qwen/Qwen2.5-7B-Instruct',
+            
+            // 模型选择策略配置
+            strategies: {
+                fast: {
+                    prioritizeSpeed: true,
+                    maxResponseTime: 5000,
+                    preferredCategories: ['lightweight', 'balanced']
+                },
+                balanced: {
+                    balanceSpeedQuality: true,
+                    maxResponseTime: 15000,
+                    preferredCategories: ['balanced', 'premium', 'lightweight']
+                },
+                quality: {
+                    prioritizeQuality: true,
+                    maxResponseTime: 30000,
+                    preferredCategories: ['premium', 'special', 'balanced']
+                }
+            },
+            
+            // 复杂度映射配置
+            complexityMapping: {
+                simple: {
+                    preferredCategories: ['lightweight', 'balanced'],
+                    maxTokens: 1000,
+                    temperature: 0.5
+                },
+                medium: {
+                    preferredCategories: ['balanced', 'premium'],
+                    maxTokens: 1500,
+                    temperature: 0.7
+                },
+                complex: {
+                    preferredCategories: ['premium', 'special'],
+                    maxTokens: 2500,
+                    temperature: 0.8
+                }
+            },
+            
+            // 功能特定配置
+            featureMapping: {
+                chat: ['general', 'chat'],
+                reasoning: ['reasoning', 'analysis', 'problem-solving'],
+                vision: ['vision', 'image-analysis', 'multimodal'],
+                math: ['reasoning', 'logic', 'math'],
+                qa: ['qa', 'general'],
+                generation: ['general', 'chat']
+            }
+        },
+        
         // GitHub存储API
         github: {
             baseUrl: 'https://api.github.com',

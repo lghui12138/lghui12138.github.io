@@ -47,6 +47,9 @@
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.1.1/dist/tesseract.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/opencv.js@1.7.0/opencv.js" defer></script>
     
+    <!-- 智能模型选择器 -->
+    <script src="js/core/smart-model-selector.js"></script>
+    
     <!-- Additional Security Headers -->
     <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), interest-cohort=()">
     <meta name="pinterest" content="nopin">
@@ -12617,9 +12620,62 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
                   }
               },
 
-              // 调用AI API（流式实现，兼容siliconflow.cn接口，边生成边显示）
+              // 调用AI API（智能模型选择，流式实现）
               callAIAPI: async function(userMessage, onStream) {
                   // onStream: 可选回调，每收到一段新内容就调用（content, isFinal）
+                  
+                  const systemPrompt = `你是中国海洋大学803流体力学专业的AI学习助手，专注于流体力学知识解答、作业批改、界面导航、视频控制、学习规划等。请用专业、准确、简明的中文回答问题，直接给出知识点、解题思路、分析和建议。`;
+                  
+                  // 状态显示
+                  this.updateConnectionStatus('智能选择模型中...', '#3498db');
+                  
+                  // 尝试使用智能模型选择系统
+                  if (window.SmartModelSelector) {
+                      try {
+                          // 初始化智能模型选择器（如果还没有初始化）
+                          if (!window.smartModelSelectorInstance) {
+                              window.smartModelSelectorInstance = await window.SmartModelSelector.init({
+                                  apiKey: 'sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis',
+                                  apiUrl: 'https://api.siliconflow.cn/v1/chat/completions',
+                                  defaultStrategy: 'balanced'
+                              });
+                          }
+                          
+                          this.updateConnectionStatus('智能模型思考中...', '#f39c12');
+                          
+                          const result = await window.smartModelSelectorInstance.callAI(userMessage, {
+                              strategy: 'balanced',
+                              features: ['chat', 'reasoning'],
+                              maxTokens: 2000,
+                              temperature: 0.7,
+                              systemPrompt: systemPrompt
+                          });
+                          
+                          this.updateConnectionStatus('在线 · 智能模型', '#27ae60');
+                          
+                          // 如果有流式回调，模拟流式输出
+                          if (onStream) {
+                              const content = result.content;
+                              const chunks = content.match(/.{1,50}/g) || [content];
+                              
+                              for (let i = 0; i < chunks.length; i++) {
+                                  setTimeout(() => {
+                                      onStream(chunks.slice(0, i + 1).join(''), i === chunks.length - 1);
+                                  }, i * 100);
+                              }
+                          }
+                          
+                          console.log(`✅ 智能模型响应成功，使用模型: ${result.model}`);
+                          return result.content;
+                          
+                      } catch (smartError) {
+                          console.warn('⚠️ 智能模型选择失败，回退到传统模式:', smartError.message);
+                          this.updateConnectionStatus('回退到传统模式...', '#e67e22');
+                      }
+                  }
+                  
+                  // 回退到传统API调用
+                  console.log('⚙️ 使用传统API调用模式');
                   const apiUrl = 'https://api.siliconflow.cn/v1/chat/completions';
                   const apiKey = 'sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis';
                   const model = 'deepseek-ai/DeepSeek-R1';
@@ -12629,7 +12685,7 @@ ${improvementTips ? '- 提供具体的改进建议' : ''}
                       messages: [
                           {
                               role: 'system',
-                              content: `你是中国海洋大学803流体力学专业的AI学习助手，专注于流体力学知识解答、作业批改、界面导航、视频控制、学习规划等。请用专业、准确、简明的中文回答问题，直接给出知识点、解题思路、分析和建议。`
+                              content: systemPrompt
                           },
                           { 
                               role: 'user', 

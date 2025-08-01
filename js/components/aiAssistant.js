@@ -10,14 +10,24 @@ window.IntelligentAIAssistant = {
     conversationHistory: [],
     maxHistoryLength: 50,
     
-    // API配置
+    // API配置 (使用智能模型选择)
     apiConfig: {
-        endpoint: AppConfig.api.siliconFlow.endpoint,
-        apiKey: AppConfig.api.siliconFlow.apiKey,
-        model: AppConfig.api.siliconFlow.model,
+        endpoint: AppConfig.api.smartAI.endpoint,
+        apiKey: AppConfig.api.smartAI.apiKey,
+        useSmartSelection: AppConfig.api.smartAI.enabled,
+        defaultStrategy: AppConfig.api.smartAI.defaultStrategy,
         maxTokens: AppConfig.api.siliconFlow.maxTokens,
-        temperature: AppConfig.api.siliconFlow.temperature
+        temperature: AppConfig.api.siliconFlow.temperature,
+        
+        // 保持向后兼容性
+        fallback: {
+            endpoint: AppConfig.api.siliconFlow.endpoint,
+            model: AppConfig.api.siliconFlow.model
+        }
     },
+    
+    // 智能模型选择器引用
+    smartModelSelector: null,
     
     // 语音识别配置
     speechConfig: {
@@ -65,6 +75,17 @@ window.IntelligentAIAssistant = {
         console.log('🤖 AI智能助手初始化...');
         
         try {
+            // 初始化智能模型选择器
+            if (this.apiConfig.useSmartSelection && window.SmartModelSelector) {
+                console.log('🧠 初始化智能模型选择器...');
+                this.smartModelSelector = await window.SmartModelSelector.init({
+                    apiKey: this.apiConfig.apiKey,
+                    apiUrl: this.apiConfig.endpoint,
+                    defaultStrategy: this.apiConfig.defaultStrategy
+                });
+                console.log('✅ 智能模型选择器初始化完成');
+            }
+            
             // 初始化语音识别
             await this.initializeSpeechRecognition();
             
@@ -422,18 +443,40 @@ window.IntelligentAIAssistant = {
         return `${systemPrompt}${contextPrompt}用户: ${userMessage}\n助手:`;
     },
     
-    // 调用AI API
+    // 调用AI API (使用智能模型选择)
     async callAIAPI(prompt) {
         try {
-            const response = await fetch(this.apiConfig.endpoint, {
+            // 如果启用了智能模型选择且选择器可用
+            if (this.apiConfig.useSmartSelection && this.smartModelSelector) {
+                console.log('🧠 使用智能模型选择系统');
+                
+                const result = await this.smartModelSelector.callAI(prompt, {
+                    strategy: this.apiConfig.defaultStrategy,
+                    features: ['chat', 'reasoning'],
+                    maxTokens: this.apiConfig.maxTokens,
+                    temperature: this.apiConfig.temperature,
+                    systemPrompt: this.systemPrompts.default
+                });
+                
+                console.log(`✅ AI响应成功，使用模型: ${result.model}`);
+                return result.content.trim();
+            }
+            
+            // 回退到传统API调用
+            console.log('⚙️ 使用传统API调用模式');
+            const response = await fetch(this.apiConfig.fallback.endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${this.apiConfig.apiKey}`
                 },
                 body: JSON.stringify({
-                    model: this.apiConfig.model,
+                    model: this.apiConfig.fallback.model,
                     messages: [
+                        {
+                            role: "system",
+                            content: this.systemPrompts.default
+                        },
                         {
                             role: "user",
                             content: prompt

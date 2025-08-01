@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 智能AI模型选择系统 - 集成测试</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #006994 0%, #4facfe 50%, #00f2fe 100%);
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .test-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .test-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .test-input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #333;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .test-button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #ff6b6b;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .test-button:hover {
+            background: #ff5252;
+            transform: translateY(-2px);
+        }
+        
+        .test-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-area {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            min-height: 100px;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+        }
+        
+        .stats-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .complexity-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .complexity-simple {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .complexity-medium {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .complexity-complex {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .model-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            background: #3498db;
+            color: white;
+            border-radius: 4px;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧠 智能AI模型选择系统</h1>
+            <p>流体力学学习平台 - 智能模型选择集成测试</p>
+        </div>
+        
+        <div class="test-grid">
+            <!-- 复杂度分析测试 -->
+            <div class="test-card">
+                <h3><i class="fas fa-brain"></i> 复杂度分析测试</h3>
+                <input type="text" id="complexity-input" class="test-input" 
+                       placeholder="输入问题，测试复杂度分析..." 
+                       value="请详细解释纳维-斯托克斯方程的物理意义和求解方法">
+                <button onclick="testComplexityAnalysis()" class="test-button">
+                    <i class="fas fa-search"></i> 分析复杂度
+                </button>
+                <div id="complexity-result" class="result-area">等待测试...</div>
+            </div>
+            
+            <!-- 模型选择测试 -->
+            <div class="test-card">
+                <h3><i class="fas fa-robot"></i> 智能模型选择测试</h3>
+                <input type="text" id="model-input" class="test-input" 
+                       placeholder="输入问题，测试模型选择..." 
+                       value="层流和湍流的区别是什么？">
+                <select id="strategy-select" class="test-input">
+                    <option value="balanced">平衡策略</option>
+                    <option value="fast">快速策略</option>
+                    <option value="quality">质量策略</option>
+                </select>
+                <button onclick="testModelSelection()" class="test-button">
+                    <i class="fas fa-magic"></i> 智能选择模型
+                </button>
+                <div id="model-result" class="result-area">等待测试...</div>
+            </div>
+            
+            <!-- AI对话测试 -->
+            <div class="test-card">
+                <h3><i class="fas fa-comments"></i> AI对话测试</h3>
+                <input type="text" id="chat-input" class="test-input" 
+                       placeholder="输入问题，测试AI对话..." 
+                       value="什么是伯努利方程？">
+                <button onclick="testAIChat()" class="test-button" id="chat-button">
+                    <i class="fas fa-paper-plane"></i> 发送消息
+                </button>
+                <div id="chat-result" class="result-area">等待测试...</div>
+            </div>
+            
+            <!-- 模型可用性测试 -->
+            <div class="test-card">
+                <h3><i class="fas fa-heartbeat"></i> 模型可用性检测</h3>
+                <button onclick="testModelAvailability()" class="test-button" id="availability-button">
+                    <i class="fas fa-check-circle"></i> 检测所有模型
+                </button>
+                <div id="availability-result" class="result-area">等待测试...</div>
+            </div>
+        </div>
+        
+        <!-- 统计面板 -->
+        <div class="stats-panel">
+            <h3 style="margin-bottom: 20px;"><i class="fas fa-chart-bar"></i> 智能模型选择统计</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value" id="total-models">-</div>
+                    <div class="stat-label">可用模型</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="premium-models">-</div>
+                    <div class="stat-label">高级模型</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="balanced-models">-</div>
+                    <div class="stat-label">平衡模型</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="lightweight-models">-</div>
+                    <div class="stat-label">轻量模型</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="avg-response-time">-</div>
+                    <div class="stat-label">平均响应时间(ms)</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="success-rate">-</div>
+                    <div class="stat-label">成功率</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 引入智能模型选择器 -->
+    <script src="js/core/smart-model-selector.js"></script>
+    
+    <script>
+        let smartSelector = null;
+        
+        // 初始化智能模型选择器
+        async function initSmartSelector() {
+            try {
+                console.log('🤖 初始化智能模型选择器...');
+                smartSelector = await window.SmartModelSelector.init({
+                    apiKey: "sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis",
+                    apiUrl: "https://api.siliconflow.cn/v1/chat/completions",
+                    defaultStrategy: 'balanced'
+                });
+                
+                // 更新统计信息
+                updateStats();
+                
+                console.log('✅ 智能模型选择器初始化完成');
+            } catch (error) {
+                console.error('❌ 智能模型选择器初始化失败:', error);
+            }
+        }
+        
+        // 测试复杂度分析
+        async function testComplexityAnalysis() {
+            const input = document.getElementById('complexity-input').value;
+            const result = document.getElementById('complexity-result');
+            
+            if (!smartSelector) {
+                result.textContent = '❌ 智能模型选择器未初始化';
+                return;
+            }
+            
+            result.textContent = '🔍 分析中...';
+            
+            try {
+                const complexity = smartSelector.analyzeComplexity(input);
+                const complexityClass = `complexity-${complexity}`;
+                const complexityText = {
+                    simple: '简单',
+                    medium: '中等', 
+                    complex: '复杂'
+                }[complexity];
+                
+                result.innerHTML = `
+输入内容: "${input}"
+分析结果: <span class="complexity-indicator ${complexityClass}">${complexityText}</span>
+文本长度: ${input.length} 字符
+关键词检测: 正常
+建议模型类别: ${getRecommendedCategory(complexity)}
+                `.trim();
+            } catch (error) {
+                result.textContent = `❌ 分析失败: ${error.message}`;
+            }
+        }
+        
+        // 测试模型选择
+        async function testModelSelection() {
+            const input = document.getElementById('model-input').value;
+            const strategy = document.getElementById('strategy-select').value;
+            const result = document.getElementById('model-result');
+            
+            if (!smartSelector) {
+                result.textContent = '❌ 智能模型选择器未初始化';
+                return;
+            }
+            
+            result.textContent = '🤖 选择模型中...';
+            
+            try {
+                const selectedModel = await smartSelector.selectBestModel(input, {
+                    strategy: strategy,
+                    features: ['chat', 'reasoning']
+                });
+                
+                const complexity = smartSelector.analyzeComplexity(input);
+                
+                result.innerHTML = `
+问题: "${input}"
+复杂度: <span class="complexity-indicator complexity-${complexity}">${complexity}</span>
+策略: ${strategy}
+选择的模型: <span class="model-badge">${selectedModel.name}</span>
+模型类别: ${selectedModel.category}
+响应时间: ${selectedModel.responseTime}ms
+优先级: ${selectedModel.priority}
+                `.trim();
+            } catch (error) {
+                result.textContent = `❌ 模型选择失败: ${error.message}`;
+            }
+        }
+        
+        // 测试AI对话
+        async function testAIChat() {
+            const input = document.getElementById('chat-input').value;
+            const result = document.getElementById('chat-result');
+            const button = document.getElementById('chat-button');
+            
+            if (!smartSelector) {
+                result.textContent = '❌ 智能模型选择器未初始化';
+                return;
+            }
+            
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
+            result.textContent = '🤖 AI思考中...';
+            
+            try {
+                const response = await smartSelector.callAI(input, {
+                    strategy: 'balanced',
+                    features: ['chat', 'reasoning'],
+                    maxTokens: 1000,
+                    temperature: 0.7,
+                    systemPrompt: '你是一个专业的流体力学教师，请简洁明了地回答问题。'
+                });
+                
+                result.innerHTML = `
+问题: "${input}"
+使用模型: <span class="model-badge">${response.model}</span>
+Token使用: ${response.usage ? response.usage.total_tokens : 'N/A'}
+
+AI回复:
+${response.content}
+                `.trim();
+            } catch (error) {
+                result.textContent = `❌ AI对话失败: ${error.message}`;
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-paper-plane"></i> 发送消息';
+            }
+        }
+        
+        // 测试模型可用性
+        async function testModelAvailability() {
+            const result = document.getElementById('availability-result');
+            const button = document.getElementById('availability-button');
+            
+            if (!smartSelector) {
+                result.textContent = '❌ 智能模型选择器未初始化';
+                return;
+            }
+            
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 检测中...';
+            result.textContent = '🔍 检测所有模型可用性...';
+            
+            try {
+                await smartSelector.checkModelAvailability();
+                const stats = smartSelector.getModelStats();
+                
+                let resultText = `✅ 模型可用性检测完成\n\n`;
+                resultText += `总计: ${stats.total} 个可用模型\n\n`;
+                
+                resultText += `按类别统计:\n`;
+                Object.entries(stats.byCategory).forEach(([category, count]) => {
+                    resultText += `  ${category}: ${count} 个\n`;
+                });
+                
+                resultText += `\n按复杂度统计:\n`;
+                Object.entries(stats.byComplexity).forEach(([complexity, count]) => {
+                    resultText += `  ${complexity}: ${count} 个\n`;
+                });
+                
+                resultText += `\n性能信息:\n`;
+                Object.entries(stats.performance).forEach(([model, perf]) => {
+                    if (perf.responseTime < Infinity) {
+                        resultText += `  ${model}: ${perf.responseTime}ms\n`;
+                    }
+                });
+                
+                result.textContent = resultText;
+                updateStats();
+            } catch (error) {
+                result.textContent = `❌ 检测失败: ${error.message}`;
+            } finally {
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-check-circle"></i> 检测所有模型';
+            }
+        }
+        
+        // 更新统计信息
+        function updateStats() {
+            if (!smartSelector) return;
+            
+            try {
+                const stats = smartSelector.getModelStats();
+                
+                document.getElementById('total-models').textContent = stats.total || 0;
+                document.getElementById('premium-models').textContent = stats.byCategory.premium || 0;
+                document.getElementById('balanced-models').textContent = stats.byCategory.balanced || 0;
+                document.getElementById('lightweight-models').textContent = stats.byCategory.lightweight || 0;
+                
+                // 计算平均响应时间
+                const responseTimes = Object.values(stats.performance)
+                    .map(p => p.responseTime)
+                    .filter(t => t < Infinity);
+                
+                if (responseTimes.length > 0) {
+                    const avgTime = Math.round(responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length);
+                    document.getElementById('avg-response-time').textContent = avgTime;
+                } else {
+                    document.getElementById('avg-response-time').textContent = '-';
+                }
+                
+                // 计算成功率
+                const totalTests = Object.values(stats.performance).length;
+                const successfulTests = Object.values(stats.performance).filter(p => p.responseTime < Infinity).length;
+                const successRate = totalTests > 0 ? Math.round((successfulTests / totalTests) * 100) : 0;
+                document.getElementById('success-rate').textContent = successRate + '%';
+                
+            } catch (error) {
+                console.error('更新统计信息失败:', error);
+            }
+        }
+        
+        // 获取推荐的模型类别
+        function getRecommendedCategory(complexity) {
+            switch (complexity) {
+                case 'simple':
+                    return '轻量模型 (lightweight)';
+                case 'medium':
+                    return '平衡模型 (balanced)';
+                case 'complex':
+                    return '高级模型 (premium)';
+                default:
+                    return '平衡模型 (balanced)';
+            }
+        }
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', () => {
+            console.log('🌊 智能AI模型选择系统集成测试页面加载完成');
+            initSmartSelector();
+        });
+    </script>
+</body>
+</html> 

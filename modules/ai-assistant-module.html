@@ -938,7 +938,10 @@
     </div>
     
     <!-- 通知容器 -->
-    <div id="notification-container"></div>
+    <div id="notification-container">    </div>
+    
+    <!-- 智能模型选择器引用 -->
+    <script src="../js/core/smart-model-selector.js"></script>
     
     <script>
         // 全局变量
@@ -1175,7 +1178,7 @@
             }
         }
         
-        // 调用AI API
+        // 调用AI API (使用智能模型选择)
         async function callAIAPI(message) {
             try {
                 // 首先尝试从百度搜索获取相关信息
@@ -1195,41 +1198,48 @@
                     enhancedPrompt += '\n\n相关知识点：\n' + fluidMechanicsContext;
                 }
                 
-                const response = await fetch('https://api.siliconflow.com/v1/chat/completions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis'
-                    },
-                    body: JSON.stringify({
-                        model: 'deepseek-chat',
-                        messages: [
-                            {
-                                role: 'system',
-                                content: `你是一个专业的流体力学教师，擅长解答学生问题。请遵循以下原则：
+                const systemPrompt = `你是一个专业的流体力学教师，擅长解答学生问题。请遵循以下原则：
 1. 用简洁明了的语言回答
 2. 适当使用公式和图表说明
 3. 结合最新的学术资料和研究成果
 4. 提供实际应用案例
 5. 如果涉及计算，请给出详细步骤
-6. 对于复杂问题，分步骤解答`
-                            },
-                            {
-                                role: 'user',
-                                content: enhancedPrompt
-                            }
-                        ],
-                        temperature: 0.7,
-                        max_tokens: 1500
-                    })
-                });
+6. 对于复杂问题，分步骤解答`;
                 
-                if (!response.ok) {
-                    throw new Error(`API请求失败: ${response.status}`);
+                let aiResponse;
+                
+                // 使用智能模型选择系统
+                if (window.SmartModelSelector) {
+                    console.log('🧠 使用智能模型选择系统');
+                    
+                    try {
+                        // 初始化智能模型选择器（如果还没有初始化）
+                        if (!window.smartModelSelectorInstance) {
+                            window.smartModelSelectorInstance = await window.SmartModelSelector.init({
+                                apiKey: 'sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis',
+                                apiUrl: 'https://api.siliconflow.cn/v1/chat/completions',
+                                defaultStrategy: 'balanced'
+                            });
+                        }
+                        
+                        const result = await window.smartModelSelectorInstance.callAI(enhancedPrompt, {
+                            strategy: 'balanced',
+                            features: ['chat', 'reasoning'],
+                            maxTokens: 1500,
+                            temperature: 0.7,
+                            systemPrompt: systemPrompt
+                        });
+                        
+                        console.log(`✅ AI响应成功，使用模型: ${result.model}`);
+                        aiResponse = result.content;
+                        
+                    } catch (smartError) {
+                        console.warn('⚠️ 智能模型选择失败，回退到传统模式:', smartError.message);
+                        throw smartError; // 触发回退逻辑
+                    }
+                } else {
+                    throw new Error('智能模型选择器未加载');
                 }
-                
-                const data = await response.json();
-                let aiResponse = data.choices[0].message.content;
                 
                 // 如果有搜索结果，添加到回复中
                 if (searchResults && searchResults.length > 0) {
@@ -1242,8 +1252,54 @@
                 return aiResponse;
                 
             } catch (error) {
-                console.error('AI API调用失败:', error);
-                throw error;
+                console.warn('⚠️ 智能模型调用失败，使用传统API:', error.message);
+                
+                // 回退到传统API调用
+                try {
+                    const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis'
+                        },
+                        body: JSON.stringify({
+                            model: 'deepseek-chat',
+                            messages: [
+                                {
+                                    role: 'system',
+                                    content: systemPrompt
+                                },
+                                {
+                                    role: 'user',
+                                    content: enhancedPrompt
+                                }
+                            ],
+                            temperature: 0.7,
+                            max_tokens: 1500
+                        })
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`API请求失败: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    let aiResponse = data.choices[0].message.content;
+                    
+                    // 如果有搜索结果，添加到回复中
+                    if (searchResults && searchResults.length > 0) {
+                        aiResponse += '\n\n📚 相关参考资料：\n';
+                        searchResults.slice(0, 2).forEach((result, index) => {
+                            aiResponse += `${index + 1}. ${result.title}\n   链接：${result.url}\n`;
+                        });
+                    }
+                    
+                    return aiResponse;
+                    
+                } catch (fallbackError) {
+                    console.error('❌ 传统API调用也失败:', fallbackError);
+                    throw new Error(`AI服务暂时不可用: ${fallbackError.message}`);
+                }
             }
         }
         
