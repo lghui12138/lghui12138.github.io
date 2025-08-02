@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公式美化器测试 - 流体力学学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .section {
+            margin: 40px 0;
+        }
+
+        .section-title {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .section-title i {
+            color: #3498db;
+        }
+
+        .test-content {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 4px solid #3498db;
+        }
+
+        .test-title {
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .test-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .formula-example {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border: 2px solid #e9ecef;
+        }
+
+        .example-title {
+            color: #27ae60;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .control-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .info-title {
+            color: #1976d2;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .info-content {
+            color: #1976d2;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .control-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-magic"></i> 公式美化器测试</h1>
+            <p>测试自动检测和美化页面中的数学公式</p>
+        </div>
+
+        <div class="info-box">
+            <div class="info-title">✨ 功能说明</div>
+            <div class="info-content">
+                公式美化器会自动检测页面中的数学公式，将文本格式的公式转换为美观的LaTeX格式。
+                支持各种数学符号，包括向量、积分、微分、希腊字母等。
+            </div>
+        </div>
+
+        <div class="section">
+            <h2 class="section-title">
+                <i class="fas fa-flask"></i> 测试内容
+            </h2>
+            
+            <div class="control-buttons">
+                <button class="control-btn" onclick="beautifyFormulas()">
+                    <i class="fas fa-magic"></i> 美化公式
+                </button>
+                <button class="control-btn" onclick="resetFormulas()">
+                    <i class="fas fa-undo"></i> 重置内容
+                </button>
+                <button class="control-btn" onclick="addMoreFormulas()">
+                    <i class="fas fa-plus"></i> 添加更多公式
+                </button>
+            </div>
+
+            <div class="test-content">
+                <div class="test-title">涡量相关公式</div>
+                <div class="test-description">
+                    以下是涡量相关的数学公式，这些公式将以文本格式显示，然后通过美化器转换为LaTeX格式。
+                </div>
+                
+                <div class="formula-example">
+                    <div class="example-title">涡量定义</div>
+                            <p>涡量定义：$\vec{\omega} = \nabla \times \vec{v}$ 表示流体微团的转动强度</p>
+        <p>物理意义：$\vec{\omega}$ 方向沿转动轴，大小等于角速度的两倍</p>
+        <p>当 $\vec{\omega} = 0$ 时为无旋流动</p>
+                </div>
+
+                <div class="formula-example">
+                    <div class="example-title">涡量方程</div>
+                    <p>对N-S方程取旋度得到涡量方程：$\frac{D\vec{\omega}}{Dt} = (\vec{\omega} \cdot \nabla)\vec{v} + \nu\nabla^2\vec{\omega}$</p>
+                    <p>物理意义：涡量的输运方程包含拉伸和扩散项</p>
+                </div>
+
+                <div class="formula-example">
+                    <div class="example-title">Kelvin定理粘性修正</div>
+                    <p>考虑粘性效应环量变化率：$\frac{D\Gamma}{Dt} = \nu \oint (\nabla^2\vec{v}) \cdot d\vec{l}$</p>
+                    <p>物理意义：粘性对环量的影响，理想流体中环量守恒</p>
+                </div>
+            </div>
+
+            <div class="test-content">
+                <div class="test-title">流体静力学公式</div>
+                <div class="test-description">
+                    流体静力学的基本公式，包括压强分布和浮力原理。
+                </div>
+                
+                <div class="formula-example">
+                    <div class="example-title">流体静力学基本方程</div>
+                    <p>$\nabla p = \rho \vec{g}$ 这是流体静力学的基本微分方程</p>
+                    <p>表示压强梯度等于流体密度与重力加速度的乘积</p>
+                </div>
+
+                <div class="formula-example">
+                    <div class="example-title">静水压强分布</div>
+                    <p>$p = p_0 + \rho g h$ 对于不可压缩流体，压强随深度线性增加</p>
+                    <p>其中 p₀ 为表面压强，h 为深度</p>
+                </div>
+
+                <div class="formula-example">
+                    <div class="example-title">阿基米德浮力</div>
+                    <p>$F_b = \rho g V$ 浮力大小等于排开流体的重量</p>
+                    <p>其中 V 为排开流体的体积</p>
+                </div>
+            </div>
+
+            <div class="test-content">
+                <div class="test-title">流体动力学公式</div>
+                <div class="test-description">
+                    流体动力学的基本控制方程，包括连续性方程和伯努利方程。
+                </div>
+                
+                <div class="formula-example">
+                    <div class="example-title">连续性方程</div>
+                    <p>$\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \vec{v}) = 0$ 基于质量守恒定律</p>
+                    <p>对于不可压缩流体：$\nabla \cdot \vec{v} = 0$ (速度散度为零)</p>
+                </div>
+
+                <div class="formula-example">
+                    <div class="example-title">伯努利方程</div>
+                    <p>$\frac{p}{\rho g} + \frac{v^2}{2g} + z = H$ 沿流线机械能守恒</p>
+                    <p>其中 H 为总水头，沿流线保持不变</p>
+                </div>
+            </div>
+
+            <div class="test-content">
+                <div class="test-title">粘性流动公式</div>
+                <div class="test-description">
+                    粘性流体的基本公式，包括牛顿粘性定律和雷诺数。
+                </div>
+                
+                <div class="formula-example">
+                    <div class="example-title">Newton粘性定律</div>
+                    <p>$\tau = \mu \frac{\partial u}{\partial y}$ 表征流体抵抗剪切变形的能力</p>
+                    <p>其中 μ 为动力粘性系数</p>
+                </div>
+
+                <div class="formula-example">
+                    <div class="example-title">雷诺数</div>
+                    <p>$Re = \frac{\rho v L}{\mu} = \frac{v L}{\nu}$ 判断流动状态的重要参数</p>
+                    <p>Re < 2300 为层流，Re > 4000 为湍流</p>
+                </div>
+            </div>
+
+            <div class="test-content">
+                <div class="test-title">湍流公式</div>
+                <div class="test-description">
+                    湍流的基本方程，包括RANS方程和雷诺应力。
+                </div>
+                
+                <div class="formula-example">
+                    <div class="example-title">RANS方程</div>
+                    <p>$\frac{\partial \bar{u}_i}{\partial t} + \bar{u}_j \frac{\partial \bar{u}_i}{\partial x_j} = -\frac{1}{\rho} \frac{\partial \bar{p}}{\partial x_i} + \nu \nabla^2 \bar{u}_i + \frac{1}{\rho} \frac{\partial \tau_{ij}}{\partial x_j}$</p>
+                    <p>湍流时均运动方程，包含雷诺应力项</p>
+                </div>
+
+                <div class="formula-example">
+                    <div class="example-title">雷诺应力</div>
+                    <p>$\tau_{ij} = -\rho u'_i u'_j$ 表示湍流动量传输</p>
+                    <p>是湍流闭合问题的核心</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载公式美化器 -->
+    <script src="js/components/formulaBeautifier.js"></script>
+    <script>
+        let beautifier;
+        let originalContent;
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            beautifier = new FormulaBeautifier();
+            beautifier.init();
+            
+            // 保存原始内容
+            originalContent = document.querySelector('.container').innerHTML;
+        });
+
+        // 美化公式
+        function beautifyFormulas() {
+            if (beautifier) {
+                beautifier.beautifyAllFormulas();
+                console.log('公式美化完成');
+            }
+        }
+
+        // 重置内容
+        function resetFormulas() {
+            if (originalContent) {
+                document.querySelector('.container').innerHTML = originalContent;
+                console.log('内容已重置');
+            }
+        }
+
+        // 添加更多公式
+        function addMoreFormulas() {
+            const testContent = document.querySelector('.test-content:last-child');
+            if (testContent) {
+                const newContent = `
+                    <div class="test-content">
+                        <div class="test-title">新增公式示例</div>
+                        <div class="test-description">
+                            这些是动态添加的公式，用于测试美化器的实时处理能力。
+                        </div>
+                        
+                        <div class="formula-example">
+                            <div class="example-title">动量方程</div>
+                            <p>∂(ρv⃗)/∂t + ∇·(ρv⃗v⃗) = -∇p + ρg⃗</p>
+                            <p>基于牛顿第二定律的动量守恒方程</p>
+                        </div>
+
+                        <div class="formula-example">
+                            <div class="example-title">能量方程</div>
+                            <p>∂E/∂t + ∇·(Ev⃗) = -∇·(pv⃗) + ρg⃗·v⃗</p>
+                            <p>控制体内总能量守恒</p>
+                        </div>
+                    </div>
+                `;
+                testContent.insertAdjacentHTML('afterend', newContent);
+                console.log('已添加更多公式');
+            }
+        }
+    </script>
+</body>
+</html> 

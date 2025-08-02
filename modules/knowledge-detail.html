@@ -3,9 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>知识点详情 - 流体力学学习平台</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <title>流体力学知识详情 - 流体性质</title>
+    
+    <!-- MathJax配置 -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+
+    <!-- Vue.js多CDN加载 -->
+    <script>
+        function loadVue() {
+            const vueSources = [
+                'https://unpkg.com/vue@3/dist/vue.global.js',
+                'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.js'
+            ];
+            
+            function tryLoadVue(index = 0) {
+                if (index >= vueSources.length) {
+                    console.error('所有Vue.js CDN都加载失败');
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = vueSources[index];
+                script.onload = () => {
+                    console.log('Vue.js加载成功:', vueSources[index]);
+                    initApp();
+                };
+                script.onerror = () => {
+                    console.warn('Vue.js加载失败:', vueSources[index]);
+                    tryLoadVue(index + 1);
+                };
+                document.head.appendChild(script);
+            }
+            
+            tryLoadVue();
+        }
+        
+        document.addEventListener('DOMContentLoaded', loadVue);
+    </script>
+
     <style>
         * {
             margin: 0;
@@ -14,7 +64,7 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #333;
@@ -28,175 +78,375 @@
 
         .header {
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
             padding: 30px;
             margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
             text-align: center;
         }
 
-        .knowledge-icon {
-            font-size: 4rem;
-            margin-bottom: 20px;
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .knowledge-title {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
+        .header h1 {
             color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .knowledge-description {
-            font-size: 1.2rem;
+        .header p {
             color: #7f8c8d;
+            font-size: 1.2em;
             margin-bottom: 20px;
         }
 
-        .knowledge-meta {
-            display: flex;
-            justify-content: center;
-            gap: 30px;
-            flex-wrap: wrap;
-        }
-
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: rgba(102, 126, 234, 0.1);
-            border-radius: 20px;
-            color: #667eea;
-            font-weight: 500;
-        }
-
-        .content-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-            margin-bottom: 30px;
-        }
-
-        .content-card {
+        .content-section {
             background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
             padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin: 30px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
 
-        .card-title {
-            font-size: 1.4rem;
-            margin-bottom: 20px;
+        .section-title {
             color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
         }
 
-        .card-title i {
-            color: #667eea;
+        .section-title i {
+            color: #3498db;
         }
 
-        .key-points-list {
-            list-style: none;
+        .content-text {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-size: 1.1em;
         }
 
-        .key-points-list li {
-            padding: 12px 0;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+        /* 高级公式容器样式 */
+        .advanced-formula-container {
+            border: 3px solid #27ae60;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 25px 0;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.2);
             position: relative;
-            padding-left: 25px;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+            transition: all 0.3s ease;
         }
 
-        .key-points-list li:before {
-            content: '•';
-            color: #667eea;
-            font-size: 1.5rem;
+        .advanced-formula-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(39, 174, 96, 0.3);
+        }
+
+        .advanced-formula-container::before {
+            content: '';
             position: absolute;
+            top: 0;
             left: 0;
-            top: 8px;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #27ae60, #2ecc71, #27ae60);
         }
 
-        .key-points-list li:last-child {
+        .formula-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .formula-title {
+            font-weight: bold;
+            font-size: 1.4em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .formula-category {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .formula-display {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e9ecef;
+        }
+
+        .formula-main {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+        }
+
+        .formula-explanation {
+            color: #555;
+            font-style: italic;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .formula-derivation {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #27ae60;
+        }
+
+        .derivation-title {
+            color: #27ae60;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .derivation-steps {
+            color: #666;
+            line-height: 1.8;
+            text-align: left;
+        }
+
+        .derivation-step {
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .derivation-step:last-child {
             border-bottom: none;
         }
 
-        .applications-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-        }
-
-        .application-item {
-            background: linear-gradient(45deg, #667eea, #764ba2);
-            color: white;
-            padding: 15px;
+        .formula-physics {
+            background: #fff3cd;
             border-radius: 10px;
-            text-align: center;
-            font-weight: 500;
-            transition: transform 0.3s ease;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #ffc107;
         }
 
-        .application-item:hover {
-            transform: translateY(-3px);
-        }
-
-        .formulas-list {
-            list-style: none;
-        }
-
-        .formula-item {
-            background: #f8f9fa;
-            padding: 15px;
+        .physics-title {
+            color: #856404;
+            font-weight: bold;
             margin-bottom: 15px;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
-            font-family: 'Courier New', monospace;
-            font-size: 1.1rem;
+            font-size: 1.2em;
         }
 
-        .back-button {
-            position: fixed;
-            top: 30px;
-            left: 30px;
-            background: rgba(255, 255, 255, 0.9);
+        .physics-meaning {
+            color: #856404;
+            line-height: 1.6;
+        }
+
+        .formula-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .formula-tags {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 5px 12px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #555;
+        }
+
+        /* 不同类别的颜色主题 */
+        .advanced-formula-container.static {
+            background: linear-gradient(135deg, #e8f5e8, #d4edda);
+            border-color: #27ae60;
+        }
+
+        .advanced-formula-container.static .formula-title {
+            color: #27ae60;
+        }
+
+        .advanced-formula-container.static .formula-derivation {
+            border-left-color: #27ae60;
+        }
+
+        .advanced-formula-container.static .derivation-title {
+            color: #27ae60;
+        }
+
+        .advanced-formula-container.dynamics {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-color: #2196f3;
+        }
+
+        .advanced-formula-container.dynamics .formula-title {
+            color: #1976d2;
+        }
+
+        .advanced-formula-container.dynamics .formula-derivation {
+            border-left-color: #2196f3;
+        }
+
+        .advanced-formula-container.dynamics .derivation-title {
+            color: #1976d2;
+        }
+
+        .advanced-formula-container.viscous {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            border-color: #f44336;
+        }
+
+        .advanced-formula-container.viscous .formula-title {
+            color: #d32f2f;
+        }
+
+        .advanced-formula-container.viscous .formula-derivation {
+            border-left-color: #f44336;
+        }
+
+        .advanced-formula-container.viscous .derivation-title {
+            color: #d32f2f;
+        }
+
+        .advanced-formula-container.turbulent {
+            background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+            border-color: #9c27b0;
+        }
+
+        .advanced-formula-container.turbulent .formula-title {
+            color: #7b1fa2;
+        }
+
+        .advanced-formula-container.turbulent .formula-derivation {
+            border-left-color: #9c27b0;
+        }
+
+        .advanced-formula-container.turbulent .derivation-title {
+            color: #7b1fa2;
+        }
+
+        .advanced-formula-container.properties {
+            background: linear-gradient(135deg, #fff3e0, #ffe0b2);
+            border-color: #ff9800;
+        }
+
+        .advanced-formula-container.properties .formula-title {
+            color: #e65100;
+        }
+
+        .advanced-formula-container.properties .formula-derivation {
+            border-left-color: #ff9800;
+        }
+
+        .advanced-formula-container.properties .derivation-title {
+            color: #e65100;
+        }
+
+        .advanced-formula-container.vorticity {
+            background: linear-gradient(135deg, #e0f2f1, #b2dfdb);
+            border-color: #009688;
+        }
+
+        .advanced-formula-container.vorticity .formula-title {
+            color: #00695c;
+        }
+
+        .advanced-formula-container.vorticity .formula-derivation {
+            border-left-color: #009688;
+        }
+
+        .advanced-formula-container.vorticity .derivation-title {
+            color: #00695c;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .MathJax {
+            font-size: 1.1em !important;
+        }
+
+        .formula-display .MathJax {
+            font-size: 1.4em !important;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .info-title {
+            color: #1976d2;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .info-content {
+            color: #1976d2;
+            line-height: 1.6;
+        }
+
+        .navigation-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
             border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 1.5rem;
-            color: #667eea;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: bold;
             cursor: pointer;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .back-button:hover {
-            background: white;
+        .nav-button:hover {
+            background: linear-gradient(135deg, #2980b9, #1abc9c);
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        .loading {
-            text-align: center;
-            padding: 100px 20px;
-            color: white;
-            font-size: 1.2rem;
-        }
-
-        .error {
-            text-align: center;
-            padding: 100px 20px;
-            color: #e74c3c;
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 15px;
-            margin: 50px auto;
-            max-width: 600px;
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.4);
         }
 
         @media (max-width: 768px) {
@@ -204,175 +454,230 @@
                 padding: 10px;
             }
             
-            .header {
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .formula-main {
+                font-size: 1.4em;
+            }
+            
+            .advanced-formula-container {
                 padding: 20px;
             }
             
-            .knowledge-title {
-                font-size: 2rem;
-            }
-            
-            .knowledge-meta {
-                gap: 15px;
-            }
-            
-            .content-grid {
-                grid-template-columns: 1fr;
-                gap: 20px;
-            }
-            
-            .back-button {
-                width: 50px;
-                height: 50px;
-                font-size: 1.3rem;
+            .navigation-buttons {
+                flex-direction: column;
+                align-items: center;
             }
         }
     </style>
 </head>
 <body>
-    <div id="app">
-        <button class="back-button" @click="goBack" title="返回主页">
-            <i class="fas fa-arrow-left"></i>
-        </button>
+    <div id="app" class="container">
+        <div class="header">
+            <h1><i class="fas fa-atom"></i> 流体性质与基础</h1>
+            <p>流体的基本物理性质和连续介质假设</p>
+        </div>
 
-        <div class="container">
-            <div v-if="loading" class="loading">
-                <i class="fas fa-spinner fa-spin"></i> 正在加载知识点内容...
+        <div class="info-box">
+            <div class="info-title">📚 知识点概述</div>
+            <div class="info-content">
+                • 流体的定义和分类<br>
+                • 连续介质假设<br>
+                • 流体密度和粘性<br>
+                • 表面张力与状态方程
+            </div>
+        </div>
+
+        <!-- 流体定义 -->
+        <div class="content-section">
+            <h2 class="section-title">
+                <i class="fas fa-water"></i> 流体的定义
+            </h2>
+            <div class="content-text">
+                流体是一种在剪切力作用下能够连续变形的物质。流体包括液体和气体，它们都具有流动性，能够适应容器的形状。
+            </div>
+        </div>
+
+        <!-- 密度定义 -->
+        <div class="advanced-formula-container properties">
+            <div class="formula-header">
+                <div class="formula-title">密度定义</div>
+                <div class="formula-category">流体性质</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\rho = \frac{m}{V} = \frac{N \cdot \bar{m}}{V}$$</div>
+                <div class="formula-explanation">密度是流体的基本物理性质</div>
             </div>
 
-            <div v-else-if="error" class="error">
-                <h2><i class="fas fa-exclamation-triangle"></i> 加载失败</h2>
-                <p>{{ error }}</p>
-                <button @click="goBack" style="margin-top: 20px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">返回主页</button>
-            </div>
-
-            <div v-else-if="knowledgePoint">
-                <!-- 知识点头部 -->
-                <div class="header">
-                    <div class="knowledge-icon">
-                        <i :class="knowledgePoint.icon"></i>
-                    </div>
-                    <h1 class="knowledge-title">{{ knowledgePoint.title }}</h1>
-                    <p class="knowledge-description">{{ knowledgePoint.description }}</p>
-                    <div class="knowledge-meta">
-                        <div class="meta-item">
-                            <i class="fas fa-bookmark"></i>
-                            {{ knowledgePoint.category }}
-                        </div>
-                        <div class="meta-item">
-                            <i class="fas fa-signal"></i>
-                            {{ knowledgePoint.difficulty }}
-                        </div>
-                    </div>
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">分子数密度：$n = \frac{N}{V}$</div>
+                    <div class="derivation-step">分子质量：$\bar{m}$</div>
+                    <div class="derivation-step">总质量：$m = N \cdot \bar{m}$</div>
+                    <div class="derivation-step">$\therefore \rho = \frac{m}{V} = \frac{N \cdot \bar{m}}{V}$</div>
                 </div>
+            </div>
 
-                <!-- 知识点内容 -->
-                <div class="content-grid">
-                    <!-- 关键要点 -->
-                    <div class="content-card">
-                        <h2 class="card-title">
-                            <i class="fas fa-lightbulb"></i>
-                            关键要点
-                        </h2>
-                        <ul class="key-points-list">
-                            <li v-for="point in knowledgePoint.keyPoints" :key="point">
-                                {{ point }}
-                            </li>
-                        </ul>
-                    </div>
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">密度是流体的基本物理性质，决定了流体的惯性特性。</div>
+            </div>
 
-                    <!-- 应用领域 -->
-                    <div class="content-card">
-                        <h2 class="card-title">
-                            <i class="fas fa-cogs"></i>
-                            应用领域
-                        </h2>
-                        <div class="applications-grid">
-                            <div v-for="app in knowledgePoint.applications" :key="app" class="application-item">
-                                {{ app }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 相关公式 -->
-                    <div class="content-card" v-if="knowledgePoint.formulas && knowledgePoint.formulas.length > 0">
-                        <h2 class="card-title">
-                            <i class="fas fa-calculator"></i>
-                            相关公式
-                        </h2>
-                        <ul class="formulas-list">
-                            <li v-for="formula in knowledgePoint.formulas" :key="formula" class="formula-item">
-                                {{ formula }}
-                            </li>
-                        </ul>
-                    </div>
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">流体性质</span>
+                    <span class="tag">流体力学</span>
                 </div>
             </div>
         </div>
+
+        <!-- 连续介质假设 -->
+        <div class="content-section">
+            <h2 class="section-title">
+                <i class="fas fa-layer-group"></i> 连续介质假设
+            </h2>
+            <div class="content-text">
+                连续介质假设是流体力学的基础假设，它认为流体是连续分布的，忽略分子结构，将流体视为连续的物质。
+            </div>
+        </div>
+
+        <!-- 粘性定义 -->
+        <div class="advanced-formula-container viscous">
+            <div class="formula-header">
+                <div class="formula-title">Newton粘性定律</div>
+                <div class="formula-category">粘性流动</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\tau = \mu \frac{\partial u}{\partial y}$$</div>
+                <div class="formula-explanation">表征流体抵抗剪切变形的能力</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">基于分子动量传输理论</div>
+                    <div class="derivation-step">切应力与速度梯度成正比：</div>
+                    <div class="derivation-step">$\tau = \mu \frac{\partial u}{\partial y}$</div>
+                    <div class="derivation-step">其中 $\mu$ 为动力粘性系数</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">表征流体抵抗剪切变形的能力，是牛顿流体的本构关系。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">粘性流动</span>
+                    <span class="tag">流体力学</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 运动粘性系数 -->
+        <div class="advanced-formula-container properties">
+            <div class="formula-header">
+                <div class="formula-title">运动粘性系数</div>
+                <div class="formula-category">流体性质</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\nu = \frac{\mu}{\rho}$$</div>
+                <div class="formula-explanation">具有速度平方的量纲</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">$\nu = \frac{\mu}{\rho}$</div>
+                    <div class="derivation-step">具有速度平方的量纲</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">$\nu$ 表征动量扩散系数，在雷诺数 $Re = \frac{vL}{\nu}$ 中起关键作用。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">流体性质</span>
+                    <span class="tag">流体力学</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 表面张力 -->
+        <div class="content-section">
+            <h2 class="section-title">
+                <i class="fas fa-tint"></i> 表面张力
+            </h2>
+            <div class="content-text">
+                表面张力是液体表面层分子间的吸引力，使液体表面具有收缩的趋势。表面张力系数 $\sigma$ 表示单位长度上的表面张力。
+            </div>
+        </div>
+
+        <!-- 状态方程 -->
+        <div class="content-section">
+            <h2 class="section-title">
+                <i class="fas fa-chart-line"></i> 状态方程
+            </h2>
+            <div class="content-text">
+                流体的状态方程描述了压强、密度和温度之间的关系。对于理想气体，状态方程为 $p = \rho RT$，其中 $R$ 为气体常数。
+            </div>
+        </div>
+
+        <!-- 导航按钮 -->
+        <div class="navigation-buttons">
+            <a href="../index-dynamic.html" class="nav-button">
+                <i class="fas fa-home"></i> 返回首页
+            </a>
+            <a href="../all-beautiful-formulas.html" class="nav-button">
+                <i class="fas fa-square-root-alt"></i> 查看所有公式
+            </a>
+            <a href="fluid-statics-dynamic.html" class="nav-button">
+                <i class="fas fa-balance-scale"></i> 流体静力学
+            </a>
+        </div>
     </div>
 
+    <!-- 加载高级公式美化器 -->
+    <script src="../js/components/advancedFormulaBeautifier.js"></script>
     <script>
-        const { createApp } = Vue;
-
-        createApp({
-            data() {
-                return {
-                    knowledgePoint: null,
-                    loading: true,
-                    error: null
-                }
-            },
-            async mounted() {
-                await this.loadKnowledgePoint();
-            },
-            methods: {
-                async loadKnowledgePoint() {
-                    try {
-                        this.loading = true;
-                        this.error = null;
-
-                        // 从URL参数获取知识点ID
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const knowledgeId = urlParams.get('id');
-
-                        if (!knowledgeId) {
-                            throw new Error('未指定知识点ID');
-                        }
-
-                        // 加载知识点数据
-                        const response = await fetch('../data/exercises.json');
-                        if (!response.ok) {
-                            throw new Error('无法加载知识点数据');
-                        }
-
-                        const knowledgePoints = await response.json();
-                        const foundPoint = knowledgePoints.find(point => point.id === knowledgeId);
-
-                        if (!foundPoint) {
-                            throw new Error('未找到指定的知识点');
-                        }
-
-                        this.knowledgePoint = foundPoint;
-                        
-                        // 更新页面标题
-                        document.title = `${foundPoint.title} - 流体力学学习平台`;
-
-                    } catch (error) {
-                        console.error('加载知识点失败:', error);
-                        this.error = error.message;
-                    } finally {
-                        this.loading = false;
+        // 初始化Vue应用
+        function initApp() {
+            const { createApp } = Vue;
+            
+            createApp({
+                data() {
+                    return {
+                        knowledgeId: null
                     }
                 },
-                goBack() {
-                    if (window.history.length > 1) {
-                        window.history.back();
-                    } else {
-                        window.location.href = '../index-dynamic.html';
-                    }
+                mounted() {
+                    // 从URL参数获取知识点ID
+                    const urlParams = new URLSearchParams(window.location.search);
+                    this.knowledgeId = urlParams.get('id');
+                    console.log('知识点ID:', this.knowledgeId);
                 }
-            }
-        }).mount('#app');
+            }).mount('#app');
+        }
+
+        // 初始化高级公式美化器
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                if (window.AdvancedFormulaBeautifier) {
+                    const beautifier = new AdvancedFormulaBeautifier();
+                    beautifier.init();
+                }
+            }, 2000);
+        });
     </script>
 </body>
 </html> 

@@ -3,91 +3,404 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌀 粘性流动 - 流体力学学习平台</title>
-    
-    <!-- 外部依赖 -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- 共享组件库 -->
-    <script src="../js/shared-components.js"></script>
-    
+    <title>粘性流动 - 极致美观学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
     <style>
-        body {
-            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        * {
             margin: 0;
-            font-family: 'SF Pro Display', sans-serif;
-            color: white;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .viscous-container {
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* 浮动粒子效果 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 3s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.3em;
+            margin-bottom: 25px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(45deg, #2980b9, #1abc9c);
         }
 
         .topic-card {
-            background: rgba(255,255,255,0.95);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            color: #333;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
         }
 
-        .viscosity-demo {
-            background: linear-gradient(135deg, #f8f1ff, #e8d5ff);
-            border: 3px solid #9b59b6;
-            border-radius: 20px;
-            padding: 30px;
+        .topic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .topic-card:hover::before {
+            left: 100%;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .topic-card h2 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #d32f2f, #f44336);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .topic-card p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+
+        /* 极致美观的公式容器样式 */
+        .ultimate-formula-container {
+            border: 4px solid #f44336;
+            border-radius: 25px;
+            padding: 40px;
             margin: 30px 0;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(244, 67, 54, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out;
+            transition: all 0.4s ease;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            backdrop-filter: blur(10px);
         }
 
-        .demo-title {
-            color: #8e44ad;
-            font-size: 1.4em;
+        .ultimate-formula-container:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(244, 67, 54, 0.4);
+        }
+
+        .ultimate-formula-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #f44336, #d32f2f, #f44336);
+            animation: borderGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes borderGlow {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .formula-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .formula-title {
+            font-weight: bold;
+            font-size: 1.6em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .formula-category {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .formula-display {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 25px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 3px solid #e9ecef;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .formula-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .formula-main {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .formula-explanation {
+            color: #555;
+            font-style: italic;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+
+        .formula-derivation {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 6px solid #f44336;
+            position: relative;
+        }
+
+        .formula-derivation::before {
+            content: '📐';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            font-size: 2em;
+            background: #f44336;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .derivation-title {
+            color: #d32f2f;
             font-weight: bold;
             margin-bottom: 20px;
+            font-size: 1.3em;
             text-align: center;
         }
 
-        .flow-types {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
+        .derivation-steps {
+            color: #666;
+            line-height: 1.8;
+            text-align: left;
         }
 
-        .flow-type {
-            background: #f8f9fa;
+        .derivation-step {
+            margin: 12px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .derivation-step::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #f44336;
+            font-weight: bold;
+        }
+
+        .derivation-step:last-child {
+            border-bottom: none;
+        }
+
+        .formula-physics {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
             border-radius: 15px;
             padding: 25px;
-            text-align: center;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
+            margin: 20px 0;
+            border-left: 6px solid #ffc107;
+            position: relative;
         }
 
-        .flow-type:hover {
-            transform: translateY(-5px);
-            border-color: #9b59b6;
-            box-shadow: 0 10px 25px rgba(155, 89, 182, 0.2);
+        .formula-physics::before {
+            content: '💡';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            font-size: 2em;
+            background: #ffc107;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .flow-icon {
-            font-size: 3em;
-            color: #9b59b6;
-            margin-bottom: 15px;
-        }
-
-        .reynolds-calculator {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 30px 0;
-        }
-
-        .calc-title {
+        .physics-title {
             color: #856404;
             font-weight: bold;
             margin-bottom: 20px;
@@ -95,557 +408,309 @@
             text-align: center;
         }
 
-        .input-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin: 20px 0;
-        }
-
-        .input-group {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .input-label {
-            font-weight: bold;
+        .physics-meaning {
             color: #856404;
-        }
-
-        .input-field {
-            padding: 12px;
-            border: 2px solid #ffc107;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        .calc-button {
-            background: linear-gradient(135deg, #ffc107, #ff8f00);
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 16px;
-            margin: 20px auto;
-            display: block;
-        }
-
-        .result-panel {
-            background: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .reynolds-number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #856404;
-            margin-bottom: 10px;
-        }
-
-        .flow-state {
-            font-size: 1.2em;
-            font-weight: bold;
-            margin-bottom: 15px;
-        }
-
-        .laminar {
-            color: #27ae60;
-        }
-
-        .transitional {
-            color: #f39c12;
-        }
-
-        .turbulent {
-            color: #e74c3c;
-        }
-
-        .equation-showcase {
-            background: linear-gradient(135deg, #f4e4ff, #e6ccff);
-            border: 3px solid #9b59b6;
-            border-radius: 20px;
-            padding: 30px;
-            margin: 30px 0;
-            text-align: center;
-        }
-
-        .equation {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #8e44ad;
-            margin: 15px 0;
-            font-family: 'Times New Roman', serif;
-        }
-
-        .velocity-profile {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
-            text-align: center;
-        }
-
-        .profile-demo {
-            background: white;
-            border: 2px solid #dee2e6;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 15px 0;
-            height: 200px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .velocity-line {
-            position: absolute;
-            background: #9b59b6;
-            border-radius: 2px;
-            animation: flow-animation 2s ease-in-out infinite;
-        }
-
-        @keyframes flow-animation {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; transform: scaleX(1.1); }
-        }
-
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 20px;
-            border-radius: 8px;
-            color: white;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .notification.success {
-            background: #28a745;
-        }
-
-        .notification.warning {
-            background: #ffc107;
-            color: #212529;
-        }
-
-        .notification.error {
-            background: #dc3545;
-        }
-
-        .notification.info {
-            background: #17a2b8;
-        }
-
-        .notification-close {
-            background: none;
-            border: none;
-            color: inherit;
-            font-size: 18px;
-            cursor: pointer;
-            margin-left: 10px;
-        }
-
-        .loading-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(155, 89, 182, 0.9);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-        }
-
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 6px solid rgba(255,255,255,0.3);
-            border-top: 6px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        .loading-text {
-            color: white;
-            font-size: 18px;
-            margin-top: 20px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        .engineering-applications {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .application-item {
-            background: #f8f9fa;
-            border-left: 5px solid #9b59b6;
-            border-radius: 10px;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .application-item:hover {
-            transform: translateX(10px);
-            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.2);
-        }
-
-        .app-title {
-            font-weight: bold;
-            color: #8e44ad;
-            margin-bottom: 10px;
+            line-height: 1.6;
             font-size: 1.1em;
         }
 
-        .app-description {
-            color: #666;
-            line-height: 1.6;
+        .formula-footer {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .formula-tags {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #555;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 粘性流动特定的颜色主题 */
+        .ultimate-formula-container.viscous {
+            background: linear-gradient(135deg, rgba(255, 235, 238, 0.9), rgba(255, 205, 210, 0.7));
+            border-color: #f44336;
+        }
+
+        .ultimate-formula-container.viscous .formula-title {
+            background: linear-gradient(135deg, #d32f2f, #f44336);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ultimate-formula-container.viscous .formula-derivation {
+            border-left-color: #f44336;
+        }
+
+        .ultimate-formula-container.viscous .derivation-title {
+            color: #d32f2f;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .MathJax {
+            font-size: 1.2em !important;
+        }
+
+        .formula-display .MathJax {
+            font-size: 1.6em !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .formula-main {
+                font-size: 1.6em;
+            }
+            
+            .ultimate-formula-container {
+                padding: 25px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="viscousApp">
-        <!-- 通知组件 -->
-        <div v-if="notification.show" :class="['notification', notification.type]">
-            <i :class="getNotificationIcon()"></i>
-            {{ notification.message }}
-            <button @click="notification.show = false" class="notification-close">×</button>
+    <!-- 浮动粒子效果 -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-tint"></i> 粘性流动</h1>
+            <p>极致美观的粘性流动学习资源，包含完整的公式美化系统</p>
+            <div class="nav-buttons">
+                <a href="../index-dynamic.html" class="nav-btn">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+                <a href="fluid-statics-dynamic.html" class="nav-btn">
+                    <i class="fas fa-balance-scale"></i> 流体静力学
+                </a>
+                <a href="fluid-dynamics-dynamic.html" class="nav-btn">
+                    <i class="fas fa-water"></i> 流体动力学
+                </a>
+            </div>
         </div>
 
-        <!-- 加载动画 -->
-        <div v-if="loading" class="loading-overlay">
-            <div class="loading-spinner"></div>
-            <div class="loading-text">正在加载粘性流动内容...</div>
+        <div class="topic-card">
+            <h2>粘性流动基本概念</h2>
+            <p>粘性流动研究流体内部摩擦力的影响，包括牛顿流体、非牛顿流体、雷诺数、边界层等概念。粘性效应在低速流动中起主导作用。</p>
         </div>
 
-        <div class="viscous-container" v-if="!loading">
-            <!-- 页面头部 -->
-            <header style="text-align: center; padding: 40px 0; margin-bottom: 30px;">
-                <h1><i class="fas fa-water"></i> 粘性流动</h1>
-                <p>真实流体的运动规律与粘性效应分析</p>
-            </header>
+        <!-- Navier-Stokes方程 -->
+        <div class="ultimate-formula-container viscous">
+            <div class="formula-header">
+                <div class="formula-title">Navier-Stokes方程</div>
+                <div class="formula-category">粘性流动</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\rho(\frac{\partial \vec{v}}{\partial t} + (\vec{v} \cdot \nabla)\vec{v}) = -\nabla p + \rho\vec{g} + \mu\nabla^2\vec{v}$$</div>
+                <div class="formula-explanation">粘性流体运动的基本方程，包含惯性力、压力梯度、重力和粘性力</div>
+            </div>
 
-            <!-- 粘性基本概念 -->
-            <div class="topic-card">
-                <h2><i class="fas fa-droplet"></i> 粘性基本概念</h2>
-                
-                <div class="viscosity-demo">
-                    <div class="demo-title">🧪 粘性的物理本质</div>
-                    <p style="text-align: center; color: #8e44ad; font-size: 1.1em; line-height: 1.8;">
-                        粘性是流体抵抗剪切变形的性质，源于分子间的相互作用力。<br>
-                        粘性使得流体内部产生摩擦力，是能量耗散的根本原因。
-                    </p>
-                </div>
-
-                <div class="equation-showcase">
-                    <div style="color: #8e44ad; font-size: 1.3em; margin-bottom: 15px;">牛顿内摩擦定律</div>
-                    <div class="equation">τ = μ(du/dy)</div>
-                    <div style="color: #666; margin-top: 15px;">
-                        τ - 剪应力 | μ - 动力粘度 | du/dy - 速度梯度
-                    </div>
-                </div>
-
-                <div class="flow-types">
-                    <div class="flow-type">
-                        <div class="flow-icon">📐</div>
-                        <h3>牛顿流体</h3>
-                        <p>剪应力与剪切率成正比的流体，如水、空气、大多数常见液体</p>
-                    </div>
-                    
-                    <div class="flow-type">
-                        <div class="flow-icon">🍯</div>
-                        <h3>非牛顿流体</h3>
-                        <p>剪应力与剪切率不成正比，如血液、聚合物溶液、泥浆</p>
-                    </div>
-                    
-                    <div class="flow-type">
-                        <div class="flow-icon">🌡️</div>
-                        <h3>温度效应</h3>
-                        <p>温度升高，液体粘度降低，气体粘度增加</p>
-                    </div>
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">基于牛顿第二定律</div>
+                    <div class="derivation-step">流体微元受力：$F = ma$</div>
+                    <div class="derivation-step">惯性力：$\rho(\frac{\partial \vec{v}}{\partial t} + (\vec{v} \cdot \nabla)\vec{v})$</div>
+                    <div class="derivation-step">压力梯度力：$-\nabla p$</div>
+                    <div class="derivation-step">重力：$\rho\vec{g}$</div>
+                    <div class="derivation-step">粘性力：$\mu\nabla^2\vec{v}$</div>
+                    <div class="derivation-step">$\therefore \rho(\frac{\partial \vec{v}}{\partial t} + (\vec{v} \cdot \nabla)\vec{v}) = -\nabla p + \rho\vec{g} + \mu\nabla^2\vec{v}$</div>
                 </div>
             </div>
 
-            <!-- 雷诺数计算器 -->
-            <div class="topic-card">
-                <h2><i class="fas fa-calculator"></i> 雷诺数计算器</h2>
-                
-                <div class="reynolds-calculator">
-                    <div class="calc-title">🔢 流动状态判断工具</div>
-                    <p style="text-align: center; color: #856404; margin-bottom: 25px;">
-                        雷诺数 Re = ρVD/μ 是判断流动状态的重要无量纲参数
-                    </p>
-                    
-                    <div class="input-row">
-                        <div class="input-group">
-                            <label class="input-label">流体密度 ρ (kg/m³)</label>
-                            <input type="number" class="input-field" v-model="density" placeholder="1000">
-                        </div>
-                        <div class="input-group">
-                            <label class="input-label">流速 V (m/s)</label>
-                            <input type="number" class="input-field" v-model="velocity" placeholder="2.0">
-                        </div>
-                        <div class="input-group">
-                            <label class="input-label">特征长度 D (m)</label>
-                            <input type="number" class="input-field" v-model="diameter" placeholder="0.1">
-                        </div>
-                        <div class="input-group">
-                            <label class="input-label">动力粘度 μ (Pa·s)</label>
-                            <input type="number" class="input-field" v-model="viscosity" placeholder="0.001" step="0.0001">
-                        </div>
-                    </div>
-                    
-                    <button class="calc-button" @click="calculateReynolds">
-                        <i class="fas fa-calculator"></i> 计算雷诺数
-                    </button>
-                    
-                    <div v-if="reynoldsResult" class="result-panel">
-                        <div class="reynolds-number">Re = {{ reynoldsResult.toFixed(0) }}</div>
-                        <div class="flow-state" :class="flowStateClass">
-                            {{ flowStateText }}
-                        </div>
-                        <div style="color: #666; font-size: 0.9em;">
-                            {{ flowDescription }}
-                        </div>
-                    </div>
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">Navier-Stokes方程是粘性流体运动的基本方程，描述了流体微元的受力平衡。粘性项 $\mu\nabla^2\vec{v}$ 表示流体内部的摩擦力效应。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">粘性流动</span>
+                    <span class="tag">Navier-Stokes</span>
+                    <span class="tag">粘性力</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 雷诺数 -->
+        <div class="ultimate-formula-container viscous">
+            <div class="formula-header">
+                <div class="formula-title">雷诺数</div>
+                <div class="formula-category">粘性流动</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$Re = \frac{\rho V L}{\mu}$$</div>
+                <div class="formula-explanation">惯性力与粘性力的比值，决定流动状态</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">雷诺数定义为惯性力与粘性力的比值</div>
+                    <div class="derivation-step">惯性力：$F_i = \rho V^2 L^2$</div>
+                    <div class="derivation-step">粘性力：$F_v = \mu V L$</div>
+                    <div class="derivation-step">雷诺数：$Re = \frac{F_i}{F_v} = \frac{\rho V^2 L^2}{\mu V L}$</div>
+                    <div class="derivation-step">$\therefore Re = \frac{\rho V L}{\mu}$</div>
                 </div>
             </div>
 
-            <!-- 速度分布 -->
-            <div class="topic-card">
-                <h2><i class="fas fa-chart-line"></i> 速度分布特性</h2>
-                
-                <div class="velocity-profile">
-                    <h3>管内层流速度分布（泊肃叶流动）</h3>
-                    <div class="equation-showcase">
-                        <div class="equation">u(r) = (ΔP/(4μL)) × (R² - r²)</div>
-                        <div style="color: #666; margin-top: 10px;">
-                            抛物线型速度分布，管中心速度最大
-                        </div>
-                    </div>
-                    
-                    <div class="profile-demo">
-                        <div v-for="(line, index) in velocityLines" :key="index"
-                             class="velocity-line"
-                             :style="line.style">
-                        </div>
-                        <div style="position: absolute; bottom: 10px; left: 10px; color: #666; font-size: 0.9em;">
-                            层流速度分布示意图
-                        </div>
-                    </div>
-                </div>
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">雷诺数是判断流动状态的重要无量纲参数。$Re < 2300$ 为层流，$Re > 4000$ 为湍流，中间为过渡区。雷诺数越大，惯性力越占主导。</div>
+            </div>
 
-                <div class="flow-types">
-                    <div class="flow-type">
-                        <div class="flow-icon">📏</div>
-                        <h3>层流特征</h3>
-                        <p>流体分层流动，速度分布平滑，能量损失小</p>
-                    </div>
-                    
-                    <div class="flow-type">
-                        <div class="flow-icon">🌪️</div>
-                        <h3>湍流特征</h3>
-                        <p>流体混合强烈，速度脉动，能量损失大</p>
-                    </div>
-                    
-                    <div class="flow-type">
-                        <div class="flow-icon">⚡</div>
-                        <h3>转捩区</h3>
-                        <p>层流向湍流过渡的不稳定区域</p>
-                    </div>
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">粘性流动</span>
+                    <span class="tag">雷诺数</span>
+                    <span class="tag">流动状态</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 牛顿粘性定律 -->
+        <div class="ultimate-formula-container viscous">
+            <div class="formula-header">
+                <div class="formula-title">牛顿粘性定律</div>
+                <div class="formula-category">粘性流动</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\tau = \mu \frac{du}{dy}$$</div>
+                <div class="formula-explanation">剪切应力与速度梯度的关系</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">牛顿粘性定律描述剪切应力与速度梯度的关系</div>
+                    <div class="derivation-step">剪切应力：$\tau = \frac{F}{A}$</div>
+                    <div class="derivation-step">速度梯度：$\frac{du}{dy}$</div>
+                    <div class="derivation-step">粘性系数：$\mu$</div>
+                    <div class="derivation-step">$\therefore \tau = \mu \frac{du}{dy}$</div>
                 </div>
             </div>
 
-            <!-- 工程应用 -->
-            <div class="topic-card">
-                <h2><i class="fas fa-tools"></i> 工程应用</h2>
-                
-                <div class="engineering-applications">
-                    <div class="application-item">
-                        <div class="app-title">🚰 管道输送</div>
-                        <div class="app-description">
-                            供水管网、石油管道的压降计算，流量设计，管径选择
-                        </div>
-                    </div>
-                    
-                    <div class="application-item">
-                        <div class="app-title">💨 空气动力学</div>
-                        <div class="app-description">
-                            飞机机翼边界层分析，汽车风阻计算，建筑物风荷载
-                        </div>
-                    </div>
-                    
-                    <div class="application-item">
-                        <div class="app-title">🏭 化工过程</div>
-                        <div class="app-description">
-                            反应器设计，混合器优化，传热传质过程强化
-                        </div>
-                    </div>
-                    
-                    <div class="application-item">
-                        <div class="app-title">🩸 生物流体</div>
-                        <div class="app-description">
-                            血液循环分析，人工器官设计，药物输送系统
-                        </div>
-                    </div>
-                    
-                    <div class="application-item">
-                        <div class="app-title">🌊 海洋工程</div>
-                        <div class="app-description">
-                            海底管道设计，潜水器阻力分析，海流能利用
-                        </div>
-                    </div>
-                    
-                    <div class="application-item">
-                        <div class="app-title">🏎️ 润滑技术</div>
-                        <div class="app-description">
-                            机械轴承润滑，发动机油膜分析，精密仪器设计
-                        </div>
-                    </div>
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">牛顿粘性定律描述了流体内部的剪切应力与速度梯度的关系。粘性系数 $\mu$ 是流体的固有属性，反映了流体的粘性大小。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">粘性流动</span>
+                    <span class="tag">牛顿粘性定律</span>
+                    <span class="tag">剪切应力</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 边界层方程 -->
+        <div class="ultimate-formula-container viscous">
+            <div class="formula-header">
+                <div class="formula-title">边界层方程</div>
+                <div class="formula-category">粘性流动</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$u\frac{\partial u}{\partial x} + v\frac{\partial u}{\partial y} = -\frac{1}{\rho}\frac{\partial p}{\partial x} + \nu\frac{\partial^2 u}{\partial y^2}$$</div>
+                <div class="formula-explanation">边界层内流体的动量方程</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">在边界层内，粘性效应只在法向方向重要</div>
+                    <div class="derivation-step">忽略法向压力梯度：$\frac{\partial p}{\partial y} \approx 0$</div>
+                    <div class="derivation-step">连续性方程：$\frac{\partial u}{\partial x} + \frac{\partial v}{\partial y} = 0$</div>
+                    <div class="derivation-step">动量方程：$u\frac{\partial u}{\partial x} + v\frac{\partial u}{\partial y} = -\frac{1}{\rho}\frac{\partial p}{\partial x} + \nu\frac{\partial^2 u}{\partial y^2}$</div>
                 </div>
             </div>
 
-            <!-- 导航按钮 -->
-            <div style="display: flex; justify-content: space-between; margin-top: 40px;">
-                <a href="fluid-dynamics-dynamic.html" style="background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; border: none; padding: 15px 30px; border-radius: 25px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-arrow-left"></i> 流体动力学
-                </a>
-                <a href="../index.html" style="background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; border: none; padding: 15px 30px; border-radius: 25px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-home"></i> 返回主页
-                </a>
-                <a href="practice-dynamic.html?type=viscous" style="background: linear-gradient(135deg, #9b59b6, #8e44ad); color: white; border: none; padding: 15px 30px; border-radius: 25px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-dumbbell"></i> 开始练习
-                </a>
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">边界层方程描述了固体壁面附近薄层内的流动。在边界层内，粘性效应起主导作用，而在边界层外，流动可视为无粘性。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">粘性流动</span>
+                    <span class="tag">边界层</span>
+                    <span class="tag">壁面效应</span>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const { createApp } = Vue;
+        // 创建浮动粒子效果
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
 
-        createApp({
-            data() {
-                return {
-                    density: 1000,
-                    velocity: 2.0,
-                    diameter: 0.1,
-                    viscosity: 0.001,
-                    reynoldsResult: null,
-                    velocityLines: [],
-                    loading: false,
-                    notification: { show: false, message: '', type: 'info' }
-                }
-            },
-            computed: {
-                flowStateClass() {
-                    if (!this.reynoldsResult) return '';
-                    if (this.reynoldsResult < 2300) return 'laminar';
-                    if (this.reynoldsResult < 4000) return 'transitional';
-                    return 'turbulent';
-                },
-                
-                flowStateText() {
-                    if (!this.reynoldsResult) return '';
-                    if (this.reynoldsResult < 2300) return '层流';
-                    if (this.reynoldsResult < 4000) return '过渡流';
-                    return '湍流';
-                },
-                
-                flowDescription() {
-                    if (!this.reynoldsResult) return '';
-                    if (this.reynoldsResult < 2300) return '流体分层流动，速度分布呈抛物线型，阻力损失较小';
-                    if (this.reynoldsResult < 4000) return '流动状态不稳定，可能在层流和湍流之间转换';
-                    return '流体混合剧烈，存在速度脉动，阻力损失较大';
-                }
-            },
-            
-            methods: {
-                calculateReynolds() {
-                    if (this.density && this.velocity && this.diameter && this.viscosity) {
-                        this.reynoldsResult = (this.density * this.velocity * this.diameter) / this.viscosity;
-                        this.showNotification('雷诺数计算完成！', 'success');
-                    } else {
-                        this.showNotification('请填写所有参数！', 'warning');
-                    }
-                },
-                
-                initVelocityProfile() {
-                    // 生成层流速度分布的可视化线条
-                    console.log('🎯 初始化速度分布图...');
-                    this.velocityLines = [];
-                    for (let i = 0; i < 10; i++) {
-                        const y = 20 + i * 16; // 垂直位置
-                        const r = Math.abs(i - 4.5) / 4.5; // 相对半径
-                        const length = 100 * (1 - r * r); // 抛物线速度分布
-                        
-                        this.velocityLines.push({
-                            style: {
-                                top: y + 'px',
-                                left: '50px',
-                                width: length + 'px',
-                                height: '2px',
-                                backgroundColor: '#9b59b6',
-                                animationDelay: (i * 0.1) + 's'
-                            }
-                        });
-                    }
-                    console.log('✅ 速度分布图初始化完成，线条数量：', this.velocityLines.length);
-                },
-                
-                showNotification(message, type = 'info') {
-                    this.notification = {
-                        show: true,
-                        message: message,
-                        type: type
-                    };
-                    setTimeout(() => {
-                        this.notification.show = false;
-                    }, 3000);
-                },
-
-                getNotificationIcon() {
-                    const iconMap = {
-                        'success': 'fas fa-check-circle',
-                        'warning': 'fas fa-exclamation-triangle',
-                        'error': 'fas fa-times-circle',
-                        'info': 'fas fa-info-circle'
-                    };
-                    return iconMap[this.notification.type] || 'fas fa-bell';
-                }
-            },
-            
-            mounted() {
-                console.log('🌀 粘性流动模块启动！');
-                this.loading = true;
-                
-                // 立即初始化速度分布，不等待延迟
-                this.initVelocityProfile();
-                
-                setTimeout(() => {
-                    this.loading = false;
-                    this.showNotification('粘性流动内容加载完成！', 'success');
-                    // 再次确保速度分布正确初始化
-                    this.initVelocityProfile();
-                }, 500);
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                particlesContainer.appendChild(particle);
             }
-        }).mount('#viscousApp');
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            
+            // 重新渲染数学公式
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typeset();
+                }
+            }, 1000);
+        });
     </script>
 </body>
 </html> 

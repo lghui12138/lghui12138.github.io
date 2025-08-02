@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美观数学公式演示 - 流体力学学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .topic-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 30px 0;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .topic-card h2 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .topic-card h2 i {
+            color: #3498db;
+        }
+
+        /* 优化的公式显示样式 */
+        .formula-container {
+            background: linear-gradient(135deg, #e8f5e8, #d4edda);
+            border: 3px solid #27ae60;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 25px 0;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.2);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .formula-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #27ae60, #2ecc71, #27ae60);
+        }
+
+        .formula-title {
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .formula-display {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid #e9ecef;
+        }
+
+        .formula-main {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+        }
+
+        .formula-explanation {
+            color: #555;
+            font-style: italic;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .formula-derivation {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #27ae60;
+        }
+
+        .derivation-title {
+            color: #27ae60;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .derivation-steps {
+            color: #666;
+            line-height: 1.8;
+            text-align: left;
+        }
+
+        .derivation-step {
+            margin: 10px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .derivation-step:last-child {
+            border-bottom: none;
+        }
+
+        .formula-physics {
+            background: #fff3cd;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 4px solid #ffc107;
+        }
+
+        .physics-title {
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .physics-meaning {
+            color: #856404;
+            line-height: 1.6;
+        }
+
+        /* 不同类别的公式颜色 */
+        .formula-container.dynamics {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-color: #2196f3;
+        }
+
+        .formula-container.dynamics .formula-title {
+            color: #1976d2;
+        }
+
+        .formula-container.dynamics .formula-derivation {
+            border-left-color: #2196f3;
+        }
+
+        .formula-container.dynamics .derivation-title {
+            color: #1976d2;
+        }
+
+        .formula-container.viscous {
+            background: linear-gradient(135deg, #ffebee, #ffcdd2);
+            border-color: #f44336;
+        }
+
+        .formula-container.viscous .formula-title {
+            color: #d32f2f;
+        }
+
+        .formula-container.viscous .formula-derivation {
+            border-left-color: #f44336;
+        }
+
+        .formula-container.viscous .derivation-title {
+            color: #d32f2f;
+        }
+
+        .formula-container.turbulent {
+            background: linear-gradient(135deg, #f3e5f5, #e1bee7);
+            border-color: #9c27b0;
+        }
+
+        .formula-container.turbulent .formula-title {
+            color: #7b1fa2;
+        }
+
+        .formula-container.turbulent .formula-derivation {
+            border-left-color: #9c27b0;
+        }
+
+        .formula-container.turbulent .derivation-title {
+            color: #7b1fa2;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .MathJax {
+            font-size: 1.1em !important;
+        }
+
+        .formula-display .MathJax {
+            font-size: 1.4em !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .formula-main {
+                font-size: 1.4em;
+            }
+            
+            .formula-container {
+                padding: 20px;
+            }
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .info-title {
+            color: #1976d2;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .info-content {
+            color: #1976d2;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-square-root-alt"></i> 美观数学公式演示</h1>
+            <p>展示优化后的数学公式渲染效果</p>
+        </div>
+
+        <div class="info-box">
+            <div class="info-title">✨ 优化特性</div>
+            <div class="info-content">
+                • 使用MathJax渲染LaTeX数学公式<br>
+                • 美观的卡片设计和渐变背景<br>
+                • 不同类别使用不同颜色主题<br>
+                • 详细的推导过程和物理意义说明<br>
+                • 完全响应式设计，支持移动设备<br>
+                • 平滑的动画效果和阴影
+            </div>
+        </div>
+
+        <!-- 流体静力学公式 -->
+        <div class="topic-card">
+            <h2><i class="fas fa-balance-scale"></i> 流体静力学</h2>
+            
+            <div class="formula-container">
+                <div class="formula-title">流体静力学基本方程</div>
+                
+                <div class="formula-display">
+                    <div class="formula-main">$$\nabla p = \rho \vec{g}$$</div>
+                    <div class="formula-explanation">压强梯度等于流体密度与重力加速度的乘积</div>
+                </div>
+
+                <div class="formula-derivation">
+                    <div class="derivation-title">推导过程：</div>
+                    <div class="derivation-steps">
+                        <div class="derivation-step">考虑流体微元在重力场中的平衡</div>
+                        <div class="derivation-step">微元受力：重力 $F_g = \rho \vec{g} dV$</div>
+                        <div class="derivation-step">表面力：$F_s = -\nabla p dV$</div>
+                        <div class="derivation-step">平衡条件：$F_g + F_s = 0$</div>
+                        <div class="derivation-step">即：$\rho \vec{g} - \nabla p = 0$</div>
+                        <div class="derivation-step">$\therefore \nabla p = \rho \vec{g}$</div>
+                    </div>
+                </div>
+
+                <div class="formula-physics">
+                    <div class="physics-title">物理意义：</div>
+                    <div class="physics-meaning">
+                        压强梯度等于流体密度与重力加速度的乘积，这是流体静力学的基本微分方程。
+                    </div>
+                </div>
+            </div>
+
+            <div class="formula-container">
+                <div class="formula-title">静水压强分布</div>
+                
+                <div class="formula-display">
+                    <div class="formula-main">$$p = p_0 + \rho g h$$</div>
+                    <div class="formula-explanation">对于不可压缩流体，压强随深度线性增加</div>
+                </div>
+
+                <div class="formula-derivation">
+                    <div class="derivation-title">推导过程：</div>
+                    <div class="derivation-steps">
+                        <div class="derivation-step">对微分方程 $\frac{dp}{dz} = -\rho g$ 积分</div>
+                        <div class="derivation-step">$\int dp = -\rho g \int dz$</div>
+                        <div class="derivation-step">$p - p_0 = -\rho g(z - z_0)$</div>
+                        <div class="derivation-step">令 $h = z_0 - z$ (深度)</div>
+                        <div class="derivation-step">$\therefore p = p_0 + \rho g h$</div>
+                    </div>
+                </div>
+
+                <div class="formula-physics">
+                    <div class="physics-title">物理意义：</div>
+                    <div class="physics-meaning">
+                        对于不可压缩流体，压强随深度线性增加，斜率为 $\rho g$。
+                    </div>
+                </div>
+            </div>
+
+            <div class="formula-container">
+                <div class="formula-title">阿基米德浮力</div>
+                
+                <div class="formula-display">
+                    <div class="formula-main">$$F_b = \rho g V$$</div>
+                    <div class="formula-explanation">浮力大小等于排开流体的重量</div>
+                </div>
+
+                <div class="formula-derivation">
+                    <div class="derivation-title">推导过程：</div>
+                    <div class="derivation-steps">
+                        <div class="derivation-step">浸入流体的物体受到浮力</div>
+                        <div class="derivation-step">$F_b = \int \int p \cdot \vec{n} dA$</div>
+                        <div class="derivation-step">静水压强：$p = p_0 + \rho g h$</div>
+                        <div class="derivation-step">$\therefore F_b = \rho g \int \int h dA = \rho g V$</div>
+                        <div class="derivation-step">其中 $V$ 为排开流体的体积</div>
+                    </div>
+                </div>
+
+                <div class="formula-physics">
+                    <div class="physics-title">物理意义：</div>
+                    <div class="physics-meaning">
+                        浮力大小等于排开流体的重量，这是阿基米德原理的数学表述。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 流体动力学公式 -->
+        <div class="topic-card">
+            <h2><i class="fas fa-rocket"></i> 流体动力学</h2>
+            
+            <div class="formula-container dynamics">
+                <div class="formula-title">连续性方程</div>
+                
+                <div class="formula-display">
+                    <div class="formula-main">$$\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \vec{v}) = 0$$</div>
+                    <div class="formula-explanation">基于质量守恒定律</div>
+                </div>
+
+                <div class="formula-derivation">
+                    <div class="derivation-title">推导过程：</div>
+                    <div class="derivation-steps">
+                        <div class="derivation-step">基于质量守恒定律</div>
+                        <div class="derivation-step">控制体内质量变化率 = 质量通量</div>
+                        <div class="derivation-step">$\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \vec{v}) = 0$</div>
+                        <div class="derivation-step">对于不可压缩流体：</div>
+                        <div class="derivation-step">$\nabla \cdot \vec{v} = 0$ (速度散度为零)</div>
+                    </div>
+                </div>
+
+                <div class="formula-physics">
+                    <div class="physics-title">物理意义：</div>
+                    <div class="physics-meaning">
+                        流体微团体积在运动过程中保持不变。
+                    </div>
+                </div>
+            </div>
+
+            <div class="formula-container dynamics">
+                <div class="formula-title">伯努利方程</div>
+                
+                <div class="formula-display">
+                    <div class="formula-main">$$\frac{p}{\rho g} + \frac{v^2}{2g} + z = H$$</div>
+                    <div class="formula-explanation">沿流线机械能守恒</div>
+                </div>
+
+                <div class="formula-derivation">
+                    <div class="derivation-title">推导过程：</div>
+                    <div class="derivation-steps">
+                        <div class="derivation-step">沿流线积分欧拉方程</div>
+                        <div class="derivation-step">$\int[\frac{\partial \vec{v}}{\partial t} + (\vec{v} \cdot \nabla)\vec{v}] \cdot ds = \int[-\frac{1}{\rho}\nabla p + \vec{g}] \cdot ds$</div>
+                        <div class="derivation-step">定常流动：$\frac{\partial \vec{v}}{\partial t} = 0$</div>
+                        <div class="derivation-step">$\therefore \int(\vec{v} \cdot \nabla)\vec{v} \cdot ds = \int[-\frac{1}{\rho}\nabla p + \vec{g}] \cdot ds$</div>
+                        <div class="derivation-step">积分得到：$\frac{v^2}{2} + \frac{p}{\rho} + gz = 常数$</div>
+                    </div>
+                </div>
+
+                <div class="formula-physics">
+                    <div class="physics-title">物理意义：</div>
+                    <div class="physics-meaning">
+                        沿流线机械能守恒，总水头保持不变。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 粘性流动公式 -->
+        <div class="topic-card">
+            <h2><i class="fas fa-tint"></i> 粘性流动</h2>
+            
+            <div class="formula-container viscous">
+                <div class="formula-title">N-S方程</div>
+                
+                <div class="formula-display">
+                    <div class="formula-main">$$\rho(\frac{\partial \vec{v}}{\partial t} + \vec{v} \cdot \nabla\vec{v}) = -\nabla p + \mu\nabla^2\vec{v} + \rho\vec{g}$$</div>
+                    <div class="formula-explanation">粘性流体的运动方程</div>
+                </div>
+
+                <div class="formula-derivation">
+                    <div class="derivation-title">推导过程：</div>
+                    <div class="derivation-steps">
+                        <div class="derivation-step">基于动量守恒定律</div>
+                        <div class="derivation-step">考虑粘性应力：</div>
+                        <div class="derivation-step">$\rho(\frac{\partial \vec{v}}{\partial t} + \vec{v} \cdot \nabla\vec{v}) = -\nabla p + \mu\nabla^2\vec{v} + \rho\vec{g}$</div>
+                    </div>
+                </div>
+
+                <div class="formula-physics">
+                    <div class="physics-title">物理意义：</div>
+                    <div class="physics-meaning">
+                        粘性流体的运动方程，包含惯性力、压力梯度、粘性力和重力。
+                    </div>
+                </div>
+            </div>
+
+            <div class="formula-container viscous">
+                <div class="formula-title">雷诺数</div>
+                
+                <div class="formula-display">
+                    <div class="formula-main">$$Re = \frac{\rho v L}{\mu} = \frac{v L}{\nu}$$</div>
+                    <div class="formula-explanation">判断流动状态的重要参数</div>
+                </div>
+
+                <div class="formula-derivation">
+                    <div class="derivation-title">推导过程：</div>
+                    <div class="derivation-steps">
+                        <div class="derivation-step">雷诺数定义：</div>
+                        <div class="derivation-step">$Re = \frac{惯性力}{粘性力}$</div>
+                        <div class="derivation-step">$= \frac{\rho v^2 L^2}{\mu v L}$</div>
+                        <div class="derivation-step">$= \frac{\rho v L}{\mu} = \frac{v L}{\nu}$</div>
+                    </div>
+                </div>
+
+                <div class="formula-physics">
+                    <div class="physics-title">物理意义：</div>
+                    <div class="physics-meaning">
+                        判断流动状态的重要参数，$Re < 2300$ 为层流。
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 湍流公式 -->
+        <div class="topic-card">
+            <h2><i class="fas fa-wind"></i> 湍流</h2>
+            
+            <div class="formula-container turbulent">
+                <div class="formula-title">RANS方程</div>
+                
+                <div class="formula-display">
+                    <div class="formula-main">$$\frac{\partial \bar{u}_i}{\partial t} + \bar{u}_j\frac{\partial \bar{u}_i}{\partial x_j} = -\frac{1}{\rho}\frac{\partial \bar{p}}{\partial x_i} + \nu\nabla^2\bar{u}_i + \frac{1}{\rho}\frac{\partial \tau_{ij}}{\partial x_j}$$</div>
+                    <div class="formula-explanation">湍流时均运动方程</div>
+                </div>
+
+                <div class="formula-derivation">
+                    <div class="derivation-title">推导过程：</div>
+                    <div class="derivation-steps">
+                        <div class="derivation-step">对N-S方程进行雷诺平均</div>
+                        <div class="derivation-step">得到RANS方程：</div>
+                        <div class="derivation-step">$\frac{\partial \bar{u}_i}{\partial t} + \bar{u}_j\frac{\partial \bar{u}_i}{\partial x_j} = -\frac{1}{\rho}\frac{\partial \bar{p}}{\partial x_i} + \nu\nabla^2\bar{u}_i + \frac{1}{\rho}\frac{\partial \tau_{ij}}{\partial x_j}$</div>
+                    </div>
+                </div>
+
+                <div class="formula-physics">
+                    <div class="physics-title">物理意义：</div>
+                    <div class="physics-meaning">
+                        湍流时均运动方程，包含雷诺应力项。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后重新渲染数学公式
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.MathJax && window.MathJax.typeset) {
+                setTimeout(() => {
+                    MathJax.typeset();
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html> 

@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>流体力学学习平台 - 极致美观版本</title>
-    
-    <!-- MathJax配置 -->
+    <title>极致美观公式展示 - 流体力学学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>
@@ -21,41 +20,6 @@
             }
         };
     </script>
-
-    <!-- Vue.js多CDN加载 -->
-    <script>
-        function loadVue() {
-            const vueSources = [
-                'https://unpkg.com/vue@3/dist/vue.global.js',
-                'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js',
-                'https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.js'
-            ];
-            
-            function tryLoadVue(index = 0) {
-                if (index >= vueSources.length) {
-                    console.error('所有Vue.js CDN都加载失败');
-                    return;
-                }
-                
-                const script = document.createElement('script');
-                script.src = vueSources[index];
-                script.onload = () => {
-                    console.log('Vue.js加载成功:', vueSources[index]);
-                    initApp();
-                };
-                script.onerror = () => {
-                    console.warn('Vue.js加载失败:', vueSources[index]);
-                    tryLoadVue(index + 1);
-                };
-                document.head.appendChild(script);
-            }
-            
-            tryLoadVue();
-        }
-        
-        document.addEventListener('DOMContentLoaded', loadVue);
-    </script>
-
     <style>
         * {
             margin: 0;
@@ -116,7 +80,7 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
             position: relative;
@@ -169,89 +133,50 @@
             margin-bottom: 25px;
         }
 
-        .modules-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-            margin: 40px 0;
-        }
-
-        .module-card {
+        .category-section {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
-            border-radius: 25px;
-            padding: 30px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
-            transition: all 0.4s ease;
-            cursor: pointer;
+            border-radius: 30px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
             border: 2px solid rgba(255, 255, 255, 0.3);
             position: relative;
             overflow: hidden;
         }
 
-        .module-card::before {
+        .category-section::before {
             content: '';
             position: absolute;
             top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transition: left 0.5s;
-        }
-
-        .module-card:hover::before {
-            left: 100%;
-        }
-
-        .module-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
-        }
-
-        .module-icon {
-            font-size: 3em;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .module-title {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 15px;
-        }
-
-        .module-description {
-            color: #7f8c8d;
-            line-height: 1.6;
-            margin-bottom: 20px;
-            font-size: 1.1em;
-        }
-
-        .module-features {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
-
-        .module-features li {
-            color: #555;
-            margin: 8px 0;
-            padding-left: 25px;
-            position: relative;
-            font-size: 1em;
-        }
-
-        .module-features li:before {
-            content: '✨';
-            position: absolute;
             left: 0;
-            color: #27ae60;
-            font-weight: bold;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #667eea, #764ba2, #f093fb);
+        }
+
+        .category-title {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            border-bottom: 4px solid #3498db;
+            padding-bottom: 15px;
+            position: relative;
+        }
+
+        .category-title i {
+            color: #3498db;
+            font-size: 1.2em;
+        }
+
+        .formulas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+            gap: 40px;
+            margin: 40px 0;
         }
 
         /* 极致美观的公式容器样式 */
@@ -289,6 +214,23 @@
         @keyframes borderGlow {
             0% { opacity: 0.7; }
             100% { opacity: 1; }
+        }
+
+        .ultimate-formula-container::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .ultimate-formula-container:hover::after {
+            opacity: 1;
         }
 
         .formula-header {
@@ -649,6 +591,37 @@
             font-size: 1.1em;
         }
 
+        .navigation-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-button {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 15px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .nav-button:hover {
+            background: linear-gradient(135deg, #2980b9, #1abc9c);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(52, 152, 219, 0.4);
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -666,9 +639,14 @@
                 padding: 25px;
             }
             
-            .modules-grid {
+            .formulas-grid {
                 grid-template-columns: 1fr;
                 gap: 25px;
+            }
+            
+            .navigation-buttons {
+                flex-direction: column;
+                align-items: center;
             }
         }
     </style>
@@ -677,10 +655,10 @@
     <!-- 浮动粒子效果 -->
     <div class="particles" id="particles"></div>
 
-    <div id="app" class="container">
+    <div class="container">
         <div class="header">
-            <h1><i class="fas fa-star"></i> 流体力学学习平台</h1>
-            <p>极致美观的流体力学学习资源，包含完整的公式美化系统</p>
+            <h1><i class="fas fa-star"></i> 极致美观公式展示</h1>
+            <p>流体力学学习平台 - 极致的HTML美观公式体验</p>
         </div>
 
         <div class="info-box">
@@ -696,223 +674,265 @@
             </div>
         </div>
 
-        <!-- 核心公式展示 -->
-        <div class="modules-grid">
-            <div class="ultimate-formula-container static">
-                <div class="formula-header">
-                    <div class="formula-title">流体静力学基本方程</div>
-                    <div class="formula-category">流体静力学</div>
-                </div>
-                
-                <div class="formula-display">
-                    <div class="formula-main">$$\nabla p = \rho \vec{g}$$</div>
-                    <div class="formula-explanation">压强梯度等于流体密度与重力加速度的乘积，是流体静力学的基本微分方程</div>
-                </div>
+        <!-- 涡量理论 -->
+        <div class="category-section">
+            <h2 class="category-title">
+                <i class="fas fa-wind"></i> 涡量理论
+            </h2>
+            <div class="formulas-grid">
+                <div class="ultimate-formula-container vorticity">
+                    <div class="formula-header">
+                        <div class="formula-title">涡量定义</div>
+                        <div class="formula-category">涡量理论</div>
+                    </div>
+                    
+                    <div class="formula-display">
+                        <div class="formula-main">$$\vec{\omega} = \nabla \times \vec{v}$$</div>
+                        <div class="formula-explanation">表示流体微团的转动强度，是描述流体旋转运动的重要物理量</div>
+                    </div>
 
-                <div class="formula-derivation">
-                    <div class="derivation-title">推导过程：</div>
-                    <div class="derivation-steps">
-                        <div class="derivation-step">考虑流体微元在重力场中的平衡</div>
-                        <div class="derivation-step">微元受力：重力 $F_g = \rho \vec{g} dV$</div>
-                        <div class="derivation-step">表面力：$F_s = -\nabla p dV$</div>
-                        <div class="derivation-step">平衡条件：$F_g + F_s = 0$</div>
-                        <div class="derivation-step">即：$\rho \vec{g} - \nabla p = 0$</div>
-                        <div class="derivation-step">$\therefore \nabla p = \rho \vec{g}$</div>
+                    <div class="formula-derivation">
+                        <div class="derivation-title">推导过程：</div>
+                        <div class="derivation-steps">
+                            <div class="derivation-step">涡量定义：$\vec{\omega} = \nabla \times \vec{v}$</div>
+                            <div class="derivation-step">其中 $\vec{v}$ 为速度场</div>
+                            <div class="derivation-step">$\nabla \times$ 为旋度算子</div>
+                            <div class="derivation-step">表示流体微团的转动强度</div>
+                            <div class="derivation-step">涡量方向沿转动轴，大小等于角速度的两倍</div>
+                        </div>
+                    </div>
+
+                    <div class="formula-physics">
+                        <div class="physics-title">物理意义：</div>
+                        <div class="physics-meaning">$\vec{\omega}$ 方向沿转动轴，大小等于角速度的两倍。当 $\vec{\omega} = 0$ 时为无旋流动，表示流体微团没有旋转运动。</div>
+                    </div>
+
+                    <div class="formula-footer">
+                        <div class="formula-tags">
+                            <span class="tag">涡量理论</span>
+                            <span class="tag">流体力学</span>
+                            <span class="tag">旋转运动</span>
+                        </div>
                     </div>
                 </div>
 
-                <div class="formula-physics">
-                    <div class="physics-title">物理意义：</div>
-                    <div class="physics-meaning">压强梯度等于流体密度与重力加速度的乘积，这是流体静力学的基本微分方程。它描述了静止流体中压强分布的基本规律。</div>
-                </div>
-
-                <div class="formula-footer">
-                    <div class="formula-tags">
-                        <span class="tag">流体静力学</span>
-                        <span class="tag">流体力学</span>
-                        <span class="tag">压强分布</span>
+                <div class="ultimate-formula-container vorticity">
+                    <div class="formula-header">
+                        <div class="formula-title">涡量方程</div>
+                        <div class="formula-category">涡量理论</div>
                     </div>
-                </div>
-            </div>
-
-            <div class="ultimate-formula-container dynamics">
-                <div class="formula-header">
-                    <div class="formula-title">伯努利方程</div>
-                    <div class="formula-category">流体动力学</div>
-                </div>
-                
-                <div class="formula-display">
-                    <div class="formula-main">$$\frac{p}{\rho g} + \frac{v^2}{2g} + z = H$$</div>
-                    <div class="formula-explanation">沿流线机械能守恒，总水头保持不变</div>
-                </div>
-
-                <div class="formula-derivation">
-                    <div class="derivation-title">推导过程：</div>
-                    <div class="derivation-steps">
-                        <div class="derivation-step">沿流线积分欧拉方程</div>
-                        <div class="derivation-step">$\int[\frac{\partial \vec{v}}{\partial t} + (\vec{v} \cdot \nabla)\vec{v}] \cdot ds = \int[-\frac{1}{\rho}\nabla p + \vec{g}] \cdot ds$</div>
-                        <div class="derivation-step">定常流动：$\frac{\partial \vec{v}}{\partial t} = 0$</div>
-                        <div class="derivation-step">$\therefore \int(\vec{v} \cdot \nabla)\vec{v} \cdot ds = \int[-\frac{1}{\rho}\nabla p + \vec{g}] \cdot ds$</div>
-                        <div class="derivation-step">积分得到：$\frac{v^2}{2} + \frac{p}{\rho} + gz = 常数$</div>
+                    
+                    <div class="formula-display">
+                        <div class="formula-main">$$\frac{D\vec{\omega}}{Dt} = (\vec{\omega} \cdot \nabla)\vec{v} + \nu\nabla^2\vec{\omega}$$</div>
+                        <div class="formula-explanation">涡量的输运方程，描述涡量在流体中的演化规律</div>
                     </div>
-                </div>
 
-                <div class="formula-physics">
-                    <div class="physics-title">物理意义：</div>
-                    <div class="physics-meaning">沿流线机械能守恒，总水头保持不变。这是理想流体运动的基本规律，广泛应用于管道流动和机翼理论。</div>
-                </div>
-
-                <div class="formula-footer">
-                    <div class="formula-tags">
-                        <span class="tag">流体动力学</span>
-                        <span class="tag">流体力学</span>
-                        <span class="tag">能量守恒</span>
+                    <div class="formula-derivation">
+                        <div class="derivation-title">推导过程：</div>
+                        <div class="derivation-steps">
+                            <div class="derivation-step">对N-S方程取旋度得到涡量方程</div>
+                            <div class="derivation-step">$\frac{D\vec{\omega}}{Dt} = (\vec{\omega} \cdot \nabla)\vec{v} + \nu\nabla^2\vec{\omega}$</div>
+                            <div class="derivation-step">其中 $(\vec{\omega} \cdot \nabla)\vec{v}$ 为拉伸项</div>
+                            <div class="derivation-step">$\nu\nabla^2\vec{\omega}$ 为扩散项</div>
+                            <div class="derivation-step">拉伸项表示涡线的拉伸和扭曲</div>
+                            <div class="derivation-step">扩散项表示粘性对涡量的耗散作用</div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            <div class="ultimate-formula-container vorticity">
-                <div class="formula-header">
-                    <div class="formula-title">涡量定义</div>
-                    <div class="formula-category">涡量理论</div>
-                </div>
-                
-                <div class="formula-display">
-                    <div class="formula-main">$$\vec{\omega} = \nabla \times \vec{v}$$</div>
-                    <div class="formula-explanation">表示流体微团的转动强度，是描述流体旋转运动的重要物理量</div>
-                </div>
-
-                <div class="formula-derivation">
-                    <div class="derivation-title">推导过程：</div>
-                    <div class="derivation-steps">
-                        <div class="derivation-step">涡量定义：$\vec{\omega} = \nabla \times \vec{v}$</div>
-                        <div class="derivation-step">其中 $\vec{v}$ 为速度场</div>
-                        <div class="derivation-step">$\nabla \times$ 为旋度算子</div>
-                        <div class="derivation-step">表示流体微团的转动强度</div>
-                        <div class="derivation-step">涡量方向沿转动轴，大小等于角速度的两倍</div>
+                    <div class="formula-physics">
+                        <div class="physics-title">物理意义：</div>
+                        <div class="physics-meaning">涡量的输运方程包含拉伸和扩散项，描述了涡量在流体中的演化规律。拉伸项使涡线发生扭曲，扩散项使涡量逐渐衰减。</div>
                     </div>
-                </div>
 
-                <div class="formula-physics">
-                    <div class="physics-title">物理意义：</div>
-                    <div class="physics-meaning">$\vec{\omega}$ 方向沿转动轴，大小等于角速度的两倍。当 $\vec{\omega} = 0$ 时为无旋流动，表示流体微团没有旋转运动。</div>
-                </div>
-
-                <div class="formula-footer">
-                    <div class="formula-tags">
-                        <span class="tag">涡量理论</span>
-                        <span class="tag">流体力学</span>
-                        <span class="tag">旋转运动</span>
+                    <div class="formula-footer">
+                        <div class="formula-tags">
+                            <span class="tag">涡量理论</span>
+                            <span class="tag">流体力学</span>
+                            <span class="tag">输运方程</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- 学习模块 -->
-        <div class="modules-grid">
-            <div class="module-card" @click="navigateTo('/modules/fluid-statics-dynamic.html')">
-                <div class="module-icon">⚖️</div>
-                <div class="module-title">流体静力学</div>
-                <div class="module-description">学习流体在静止状态下的力学性质</div>
-                <ul class="module-features">
-                    <li>静水压强分布</li>
-                    <li>阿基米德浮力</li>
-                    <li>表面张力效应</li>
-                </ul>
-            </div>
+        <!-- 流体静力学 -->
+        <div class="category-section">
+            <h2 class="category-title">
+                <i class="fas fa-balance-scale"></i> 流体静力学
+            </h2>
+            <div class="formulas-grid">
+                <div class="ultimate-formula-container static">
+                    <div class="formula-header">
+                        <div class="formula-title">流体静力学基本方程</div>
+                        <div class="formula-category">流体静力学</div>
+                    </div>
+                    
+                    <div class="formula-display">
+                        <div class="formula-main">$$\nabla p = \rho \vec{g}$$</div>
+                        <div class="formula-explanation">压强梯度等于流体密度与重力加速度的乘积，是流体静力学的基本微分方程</div>
+                    </div>
 
-            <div class="module-card" @click="navigateTo('/modules/fluid-dynamics-dynamic.html')">
-                <div class="module-icon">🌊</div>
-                <div class="module-title">流体动力学</div>
-                <div class="module-description">研究流体运动规律和能量转换</div>
-                <ul class="module-features">
-                    <li>连续性方程</li>
-                    <li>伯努利方程</li>
-                    <li>动量方程</li>
-                </ul>
-            </div>
+                    <div class="formula-derivation">
+                        <div class="derivation-title">推导过程：</div>
+                        <div class="derivation-steps">
+                            <div class="derivation-step">考虑流体微元在重力场中的平衡</div>
+                            <div class="derivation-step">微元受力：重力 $F_g = \rho \vec{g} dV$</div>
+                            <div class="derivation-step">表面力：$F_s = -\nabla p dV$</div>
+                            <div class="derivation-step">平衡条件：$F_g + F_s = 0$</div>
+                            <div class="derivation-step">即：$\rho \vec{g} - \nabla p = 0$</div>
+                            <div class="derivation-step">$\therefore \nabla p = \rho \vec{g}$</div>
+                        </div>
+                    </div>
 
-            <div class="module-card" @click="navigateTo('/modules/viscous-flow-dynamic.html')">
-                <div class="module-icon">💧</div>
-                <div class="module-title">粘性流动</div>
-                <div class="module-description">分析粘性对流体运动的影响</div>
-                <ul class="module-features">
-                    <li>N-S方程</li>
-                    <li>雷诺数</li>
-                    <li>边界层理论</li>
-                </ul>
-            </div>
+                    <div class="formula-physics">
+                        <div class="physics-title">物理意义：</div>
+                        <div class="physics-meaning">压强梯度等于流体密度与重力加速度的乘积，这是流体静力学的基本微分方程。它描述了静止流体中压强分布的基本规律。</div>
+                    </div>
 
-            <div class="module-card" @click="navigateTo('/modules/vorticity-theory-dynamic.html')">
-                <div class="module-icon">🌀</div>
-                <div class="module-title">涡量理论</div>
-                <div class="module-description">研究流体旋转运动和涡量输运规律</div>
-                <ul class="module-features">
-                    <li>涡量定义</li>
-                    <li>涡量输运方程</li>
-                    <li>Kelvin定理</li>
-                </ul>
-            </div>
+                    <div class="formula-footer">
+                        <div class="formula-tags">
+                            <span class="tag">流体静力学</span>
+                            <span class="tag">流体力学</span>
+                            <span class="tag">压强分布</span>
+                        </div>
+                    </div>
+                </div>
 
-            <div class="module-card" @click="navigateTo('/modules/turbulent-flow-dynamic.html')">
-                <div class="module-icon">🌀</div>
-                <div class="module-title">湍流理论</div>
-                <div class="module-description">深入研究湍流现象和建模</div>
-                <ul class="module-features">
-                    <li>RANS方程</li>
-                    <li>雷诺应力</li>
-                    <li>湍流模型</li>
-                </ul>
-            </div>
+                <div class="ultimate-formula-container static">
+                    <div class="formula-header">
+                        <div class="formula-title">静水压强分布</div>
+                        <div class="formula-category">流体静力学</div>
+                    </div>
+                    
+                    <div class="formula-display">
+                        <div class="formula-main">$$p = p_0 + \rho g h$$</div>
+                        <div class="formula-explanation">对于不可压缩流体，压强随深度线性增加</div>
+                    </div>
 
-            <div class="module-card" @click="navigateTo('/modules/question-bank.html')">
-                <div class="module-icon">📚</div>
-                <div class="module-title">题库系统</div>
-                <div class="module-description">丰富的练习题和真题资源</div>
-                <ul class="module-features">
-                    <li>分类练习</li>
-                    <li>真题解析</li>
-                    <li>智能推荐</li>
-                </ul>
-            </div>
+                    <div class="formula-derivation">
+                        <div class="derivation-title">推导过程：</div>
+                        <div class="derivation-steps">
+                            <div class="derivation-step">对微分方程 $\frac{dp}{dz} = -\rho g$ 积分</div>
+                            <div class="derivation-step">$\int dp = -\rho g \int dz$</div>
+                            <div class="derivation-step">$p - p_0 = -\rho g(z - z_0)$</div>
+                            <div class="derivation-step">令 $h = z_0 - z$ (深度)</div>
+                            <div class="derivation-step">$\therefore p = p_0 + \rho g h$</div>
+                        </div>
+                    </div>
 
-            <div class="module-card" @click="navigateTo('/modules/simulation-dynamic.html')">
-                <div class="module-icon">🎮</div>
-                <div class="module-title">数值模拟</div>
-                <div class="module-description">流体流动的数值仿真</div>
-                <ul class="module-features">
-                    <li>CFD仿真</li>
-                    <li>流场可视化</li>
-                    <li>参数分析</li>
-                </ul>
-            </div>
+                    <div class="formula-physics">
+                        <div class="physics-title">物理意义：</div>
+                        <div class="physics-meaning">对于不可压缩流体，压强随深度线性增加，斜率为 $\rho g$。这是静水压强分布的基本规律，广泛应用于水利工程和海洋工程。</div>
+                    </div>
 
-            <div class="module-card" @click="navigateTo('/ultimate-beautiful-formulas.html')">
-                <div class="module-icon">✨</div>
-                <div class="module-title">极致美观公式</div>
-                <div class="module-description">查看极致美观的HTML公式展示</div>
-                <ul class="module-features">
-                    <li>动态背景效果</li>
-                    <li>浮动粒子动画</li>
-                    <li>极致视觉效果</li>
-                </ul>
+                    <div class="formula-footer">
+                        <div class="formula-tags">
+                            <span class="tag">流体静力学</span>
+                            <span class="tag">流体力学</span>
+                            <span class="tag">静水压强</span>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
 
-            <div class="module-card" @click="navigateTo('/modules/knowledge-detail.html?id=fluid-properties')">
-                <div class="module-icon">🔬</div>
-                <div class="module-title">知识详情</div>
-                <div class="module-description">深入理解流体力学概念</div>
-                <ul class="module-features">
-                    <li>概念详解</li>
-                    <li>公式推导</li>
-                    <li>应用实例</li>
-                </ul>
+        <!-- 流体动力学 -->
+        <div class="category-section">
+            <h2 class="category-title">
+                <i class="fas fa-rocket"></i> 流体动力学
+            </h2>
+            <div class="formulas-grid">
+                <div class="ultimate-formula-container dynamics">
+                    <div class="formula-header">
+                        <div class="formula-title">伯努利方程</div>
+                        <div class="formula-category">流体动力学</div>
+                    </div>
+                    
+                    <div class="formula-display">
+                        <div class="formula-main">$$\frac{p}{\rho g} + \frac{v^2}{2g} + z = H$$</div>
+                        <div class="formula-explanation">沿流线机械能守恒，总水头保持不变</div>
+                    </div>
+
+                    <div class="formula-derivation">
+                        <div class="derivation-title">推导过程：</div>
+                        <div class="derivation-steps">
+                            <div class="derivation-step">沿流线积分欧拉方程</div>
+                            <div class="derivation-step">$\int[\frac{\partial \vec{v}}{\partial t} + (\vec{v} \cdot \nabla)\vec{v}] \cdot ds = \int[-\frac{1}{\rho}\nabla p + \vec{g}] \cdot ds$</div>
+                            <div class="derivation-step">定常流动：$\frac{\partial \vec{v}}{\partial t} = 0$</div>
+                            <div class="derivation-step">$\therefore \int(\vec{v} \cdot \nabla)\vec{v} \cdot ds = \int[-\frac{1}{\rho}\nabla p + \vec{g}] \cdot ds$</div>
+                            <div class="derivation-step">积分得到：$\frac{v^2}{2} + \frac{p}{\rho} + gz = 常数$</div>
+                        </div>
+                    </div>
+
+                    <div class="formula-physics">
+                        <div class="physics-title">物理意义：</div>
+                        <div class="physics-meaning">沿流线机械能守恒，总水头保持不变。这是理想流体运动的基本规律，广泛应用于管道流动和机翼理论。</div>
+                    </div>
+
+                    <div class="formula-footer">
+                        <div class="formula-tags">
+                            <span class="tag">流体动力学</span>
+                            <span class="tag">流体力学</span>
+                            <span class="tag">能量守恒</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ultimate-formula-container dynamics">
+                    <div class="formula-header">
+                        <div class="formula-title">动量方程</div>
+                        <div class="formula-category">流体动力学</div>
+                    </div>
+                    
+                    <div class="formula-display">
+                        <div class="formula-main">$$\vec{F} = \int\int \rho\vec{v}(\vec{v} \cdot \vec{n})\,dA + \int\int p\vec{n}\,dA$$</div>
+                        <div class="formula-explanation">控制体受力等于动量通量与压力之和</div>
+                    </div>
+
+                    <div class="formula-derivation">
+                        <div class="derivation-title">推导过程：</div>
+                        <div class="derivation-steps">
+                            <div class="derivation-step">基于牛顿第二定律</div>
+                            <div class="derivation-step">控制体内动量变化率 = 动量通量 + 表面力</div>
+                            <div class="derivation-step">$\frac{\partial(\rho\vec{v})}{\partial t} + \nabla \cdot (\rho\vec{v}\vec{v}) = -\nabla p + \rho\vec{g}$</div>
+                            <div class="derivation-step">积分得到：</div>
+                            <div class="derivation-step">$\vec{F} = \int\int \rho\vec{v}(\vec{v} \cdot \vec{n})\,dA + \int\int p\vec{n}\,dA$</div>
+                        </div>
+                    </div>
+
+                    <div class="formula-physics">
+                        <div class="physics-title">物理意义：</div>
+                        <div class="physics-meaning">控制体受力等于动量通量与压力之和。这是流体力学中重要的控制体分析方法，广泛应用于工程计算。</div>
+                    </div>
+
+                    <div class="formula-footer">
+                        <div class="formula-tags">
+                            <span class="tag">流体动力学</span>
+                            <span class="tag">流体力学</span>
+                            <span class="tag">动量定理</span>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <!-- 导航按钮 -->
+        <div class="navigation-buttons">
+            <a href="index-dynamic.html" class="nav-button">
+                <i class="fas fa-home"></i> 返回首页
+            </a>
+            <a href="all-beautiful-formulas.html" class="nav-button">
+                <i class="fas fa-eye"></i> 查看完整展示
+            </a>
+            <a href="modules/knowledge-detail.html?id=fluid-properties" class="nav-button">
+                <i class="fas fa-book"></i> 知识详情页
+            </a>
+            <a href="modules/fluid-statics-dynamic.html" class="nav-button">
+                <i class="fas fa-balance-scale"></i> 流体静力学
+            </a>
         </div>
     </div>
 
-    <!-- 加载高级公式美化器 -->
-    <script src="js/components/advancedFormulaBeautifier.js"></script>
     <script>
         // 创建浮动粒子效果
         function createParticles() {
@@ -929,29 +949,16 @@
             }
         }
 
-        // 初始化Vue应用
-        function initApp() {
-            const { createApp } = Vue;
-            
-            createApp({
-                methods: {
-                    navigateTo(url) {
-                        window.location.href = url;
-                    }
-                }
-            }).mount('#app');
-        }
-
-        // 初始化高级公式美化器
+        // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
             
+            // 重新渲染数学公式
             setTimeout(() => {
-                if (window.AdvancedFormulaBeautifier) {
-                    const beautifier = new AdvancedFormulaBeautifier();
-                    beautifier.init();
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typeset();
                 }
-            }, 2000);
+            }, 1000);
         });
     </script>
 </body>

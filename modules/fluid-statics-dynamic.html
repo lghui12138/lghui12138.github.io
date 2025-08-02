@@ -3,189 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚖️ 流体静力学 - 流体力学学习平台</title>
-    
-    <!-- 外部依赖 -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    
-    <!-- 共享组件库 -->
-    <script src="../js/shared-components.js"></script>
-    
+    <title>流体静力学 - 极致美观学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
     <style>
-        body {
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        * {
             margin: 0;
-            font-family: 'SF Pro Display', sans-serif;
-            color: white;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        .statics-container {
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* 浮动粒子效果 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            position: relative;
+            z-index: 2;
         }
 
-        .topic-card {
-            background: rgba(255,255,255,0.95);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 30px;
-            color: #333;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-        }
-
-        .concept-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-
-        .concept-item {
-            background: #f8f9fa;
-            border-left: 5px solid #27ae60;
-            border-radius: 10px;
-            padding: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .concept-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-        }
-
-        .concept-title {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #27ae60;
-            margin-bottom: 10px;
-        }
-
-        .concept-description {
-            color: #666;
-            line-height: 1.6;
-        }
-
-        .formula-box {
-            background: #e8f5e8;
-            border: 2px solid #27ae60;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
             text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
         }
 
-        .formula {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #27ae60;
-            margin-bottom: 10px;
-            font-family: 'Times New Roman', serif;
-        }
-
-        .formula-explanation {
-            color: #555;
-            font-style: italic;
-        }
-
-        .practice-section {
-            background: #fff3cd;
-            border: 2px solid #ffc107;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 30px 0;
-        }
-
-        .practice-title {
-            color: #856404;
-            font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
-
-        .example-problem {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin: 15px 0;
-            border-left: 4px solid #ffc107;
-        }
-
-        .solution-steps {
-            margin-top: 15px;
-        }
-
-        .step {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .step:last-child {
-            border-bottom: none;
-        }
-
-        .step-number {
-            background: #27ae60;
-            color: white;
-            border-radius: 50%;
-            width: 25px;
-            height: 25px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-            font-weight: bold;
-        }
-
-        .interactive-demo {
-            background: #e3f2fd;
-            border: 2px solid #2196f3;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 30px 0;
-        }
-
-        .demo-title {
-            color: #1976d2;
-            font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 1.3em;
-        }
-
-        .slider-container {
-            margin: 20px 0;
-        }
-
-        .slider {
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
             width: 100%;
-            margin: 10px 0;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            animation: shimmer 3s infinite;
         }
 
-        .demo-result {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            margin-top: 20px;
-            text-align: center;
-            font-weight: bold;
-            color: #1976d2;
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 3em;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.3em;
+            margin-bottom: 25px;
         }
 
         .nav-buttons {
             display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
         }
 
         .nav-btn {
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            background: linear-gradient(45deg, #3498db, #2980b9);
             color: white;
             border: none;
             padding: 15px 30px;
             border-radius: 25px;
             cursor: pointer;
-            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
             text-decoration: none;
             display: inline-flex;
             align-items: center;
@@ -194,252 +158,560 @@
 
         .nav-btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(39, 174, 96, 0.4);
+            box-shadow: 0 12px 35px rgba(52, 152, 219, 0.4);
+            background: linear-gradient(45deg, #2980b9, #1abc9c);
+        }
+
+        .topic-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .topic-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .topic-card:hover::before {
+            left: 100%;
+        }
+
+        .topic-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .topic-card h2 {
+            color: #2c3e50;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .topic-card p {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 25px;
+            font-size: 1.1em;
+        }
+
+        /* 极致美观的公式容器样式 */
+        .ultimate-formula-container {
+            border: 4px solid #27ae60;
+            border-radius: 25px;
+            padding: 40px;
+            margin: 30px 0;
+            text-align: center;
+            box-shadow: 0 15px 40px rgba(39, 174, 96, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out;
+            transition: all 0.4s ease;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            backdrop-filter: blur(10px);
+        }
+
+        .ultimate-formula-container:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(39, 174, 96, 0.4);
+        }
+
+        .ultimate-formula-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #27ae60, #2ecc71, #27ae60);
+            animation: borderGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes borderGlow {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .formula-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .formula-title {
+            font-weight: bold;
+            font-size: 1.6em;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .formula-category {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 1em;
+            font-weight: bold;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .formula-display {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 25px 0;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border: 3px solid #e9ecef;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .formula-display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .formula-main {
+            font-size: 2em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-family: 'Times New Roman', serif;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .formula-explanation {
+            color: #555;
+            font-style: italic;
+            text-align: center;
+            margin-bottom: 25px;
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+
+        .formula-derivation {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 6px solid #27ae60;
+            position: relative;
+        }
+
+        .formula-derivation::before {
+            content: '📐';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            font-size: 2em;
+            background: #27ae60;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .derivation-title {
+            color: #27ae60;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .derivation-steps {
+            color: #666;
+            line-height: 1.8;
+            text-align: left;
+        }
+
+        .derivation-step {
+            margin: 12px 0;
+            padding: 10px 0;
+            border-bottom: 1px solid #e9ecef;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .derivation-step::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .derivation-step:last-child {
+            border-bottom: none;
+        }
+
+        .formula-physics {
+            background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 6px solid #ffc107;
+            position: relative;
+        }
+
+        .formula-physics::before {
+            content: '💡';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            font-size: 2em;
+            background: #ffc107;
+            color: white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .physics-title {
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .physics-meaning {
+            color: #856404;
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+
+        .formula-footer {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .formula-tags {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #555;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 流体静力学特定的颜色主题 */
+        .ultimate-formula-container.static {
+            background: linear-gradient(135deg, rgba(232, 245, 232, 0.9), rgba(212, 237, 218, 0.7));
+            border-color: #27ae60;
+        }
+
+        .ultimate-formula-container.static .formula-title {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ultimate-formula-container.static .formula-derivation {
+            border-left-color: #27ae60;
+        }
+
+        .ultimate-formula-container.static .derivation-title {
+            color: #27ae60;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .MathJax {
+            font-size: 1.2em !important;
+        }
+
+        .formula-display .MathJax {
+            font-size: 1.6em !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .formula-main {
+                font-size: 1.6em;
+            }
+            
+            .ultimate-formula-container {
+                padding: 25px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="staticsApp">
-        <!-- 海洋背景 -->
-        <ocean-background></ocean-background>
+    <!-- 浮动粒子效果 -->
+    <div class="particles" id="particles"></div>
 
-        <!-- 通知组件 -->
-        <notification-component :notification="notification" @close="notification = ''"></notification-component>
-
-        <!-- 加载动画 -->
-        <loading-spinner :show="loading" text="正在加载流体静力学内容..."></loading-spinner>
-
-        <div class="statics-container" v-if="!loading">
-            <!-- 页面头部 -->
-            <header style="text-align: center; padding: 40px 0; margin-bottom: 30px;">
-                <h1><i class="fas fa-balance-scale"></i> 流体静力学</h1>
-                <p>静止流体的压强分布、浮力原理与工程应用</p>
-            </header>
-
-            <!-- 基本概念 -->
-            <div class="topic-card">
-                <h2><i class="fas fa-book"></i> 基本概念</h2>
-                
-                <div class="concept-grid">
-                    <div class="concept-item">
-                        <div class="concept-title">流体静压强</div>
-                        <div class="concept-description">
-                            静止流体中任意一点所受到的压强，它垂直作用于所接触的壁面。
-                            静压强具有大小相等、各向同性的特点。
-                        </div>
-                    </div>
-                    
-                    <div class="concept-item">
-                        <div class="concept-title">帕斯卡定律</div>
-                        <div class="concept-description">
-                            在密闭容器中，施加在静止流体上的压强将等值地传递到流体的各个部分。
-                            这是液压传动的理论基础。
-                        </div>
-                    </div>
-                    
-                    <div class="concept-item">
-                        <div class="concept-title">流体平衡微分方程</div>
-                        <div class="concept-description">
-                            描述静止流体中压强分布规律的微分方程，建立了压强与体积力之间的关系。
-                        </div>
-                    </div>
-                    
-                    <div class="concept-item">
-                        <div class="concept-title">阿基米德原理</div>
-                        <div class="concept-description">
-                            浸入流体中的物体受到的浮力等于被物体排开的流体重量。
-                            这是浮体稳定性分析的基础。
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 基本方程 -->
-            <div class="topic-card">
-                <h2><i class="fas fa-calculator"></i> 基本方程</h2>
-                
-                <div class="formula-box">
-                    <div class="formula">p = p₀ + ρgh</div>
-                    <div class="formula-explanation">
-                        流体静力学基本方程：压强随深度线性增加
-                    </div>
-                </div>
-
-                <div class="concept-grid">
-                    <div class="concept-item">
-                        <div class="concept-title">方程说明</div>
-                        <div class="concept-description">
-                            <strong>p</strong> - 深度h处的压强<br>
-                            <strong>p₀</strong> - 液面处的压强<br>
-                            <strong>ρ</strong> - 流体密度<br>
-                            <strong>g</strong> - 重力加速度<br>
-                            <strong>h</strong> - 自由液面以下的深度
-                        </div>
-                    </div>
-                    
-                    <div class="concept-item">
-                        <div class="concept-title">适用条件</div>
-                        <div class="concept-description">
-                            • 流体处于静止状态<br>
-                            • 流体不可压缩<br>
-                            • 只考虑重力作用<br>
-                            • 流体密度均匀
-                        </div>
-                    </div>
-                </div>
-
-                <div class="formula-box">
-                    <div class="formula">F<sub>浮</sub> = ρ<sub>流体</sub> × V<sub>排开</sub> × g</div>
-                    <div class="formula-explanation">
-                        阿基米德原理：浮力计算公式
-                    </div>
-                </div>
-            </div>
-
-            <!-- 交互式演示 -->
-            <div class="topic-card">
-                <h2><i class="fas fa-play"></i> 交互式演示</h2>
-                
-                <div class="interactive-demo">
-                    <div class="demo-title">💧 液体压强计算器</div>
-                    <p>调整参数，观察压强如何随深度变化</p>
-                    
-                    <div class="slider-container">
-                        <label>流体密度 (kg/m³): {{ fluidDensity }}</label>
-                        <input type="range" class="slider" v-model="fluidDensity" min="800" max="1200" step="10">
-                    </div>
-                    
-                    <div class="slider-container">
-                        <label>深度 (m): {{ depth }}</label>
-                        <input type="range" class="slider" v-model="depth" min="0" max="50" step="1">
-                    </div>
-                    
-                    <div class="slider-container">
-                        <label>表面压强 (Pa): {{ surfacePressure }}</label>
-                        <input type="range" class="slider" v-model="surfacePressure" min="101325" max="150000" step="1000">
-                    </div>
-                    
-                    <div class="demo-result">
-                        该深度处的压强：{{ calculatedPressure.toFixed(0) }} Pa
-                        <br>
-                        (约 {{ (calculatedPressure / 101325).toFixed(2) }} 个大气压)
-                    </div>
-                </div>
-            </div>
-
-            <!-- 典型例题 -->
-            <div class="topic-card">
-                <h2><i class="fas fa-lightbulb"></i> 典型例题</h2>
-                
-                <div class="practice-section">
-                    <div class="practice-title">🎯 例题1：水塔压强计算</div>
-                    
-                    <div class="example-problem">
-                        <strong>题目：</strong>某水塔高度为30m，底部接口处的表压强为多少？
-                        （水的密度ρ=1000kg/m³，g=9.8m/s²）
-                        
-                        <div class="solution-steps">
-                            <div class="step">
-                                <span class="step-number">1</span>
-                                确定已知条件：h = 30m, ρ = 1000kg/m³, g = 9.8m/s²
-                            </div>
-                            <div class="step">
-                                <span class="step-number">2</span>
-                                应用流体静力学基本方程：p = ρgh
-                            </div>
-                            <div class="step">
-                                <span class="step-number">3</span>
-                                代入数值：p = 1000 × 9.8 × 30 = 294,000 Pa
-                            </div>
-                            <div class="step">
-                                <span class="step-number">4</span>
-                                <strong>答案：</strong>水塔底部表压强为294 kPa
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="practice-section">
-                    <div class="practice-title">🎯 例题2：浮力计算</div>
-                    
-                    <div class="example-problem">
-                        <strong>题目：</strong>一个体积为0.5m³的物体完全浸没在水中，计算它受到的浮力。
-                        
-                        <div class="solution-steps">
-                            <div class="step">
-                                <span class="step-number">1</span>
-                                确定已知条件：V = 0.5m³, ρ<sub>水</sub> = 1000kg/m³
-                            </div>
-                            <div class="step">
-                                <span class="step-number">2</span>
-                                应用阿基米德原理：F<sub>浮</sub> = ρ<sub>流体</sub> × V<sub>排开</sub> × g
-                            </div>
-                            <div class="step">
-                                <span class="step-number">3</span>
-                                代入数值：F<sub>浮</sub> = 1000 × 0.5 × 9.8 = 4900 N
-                            </div>
-                            <div class="step">
-                                <span class="step-number">4</span>
-                                <strong>答案：</strong>物体受到的浮力为4900 N
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 导航按钮 -->
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-balance-scale"></i> 流体静力学</h1>
+            <p>极致美观的流体静力学学习资源，包含完整的公式美化系统</p>
             <div class="nav-buttons">
-                <a href="../index.html" class="nav-btn">
-                    <i class="fas fa-home"></i> 返回主页
-                </a>
-                <a href="practice-dynamic.html?type=statics" class="nav-btn">
-                    <i class="fas fa-dumbbell"></i> 开始练习
+                <a href="../index-dynamic.html" class="nav-btn">
+                    <i class="fas fa-home"></i> 返回首页
                 </a>
                 <a href="fluid-dynamics-dynamic.html" class="nav-btn">
-                    流体动力学 <i class="fas fa-arrow-right"></i>
+                    <i class="fas fa-water"></i> 流体动力学
                 </a>
+                <a href="viscous-flow-dynamic.html" class="nav-btn">
+                    <i class="fas fa-tint"></i> 粘性流动
+                </a>
+            </div>
+        </div>
+
+        <div class="topic-card">
+            <h2>流体静力学基本概念</h2>
+            <p>流体静力学研究流体在静止状态下的力学性质，包括压强分布、浮力、表面张力等现象。这些现象在工程应用中具有重要意义。</p>
+        </div>
+
+        <!-- 流体静力学基本方程 -->
+        <div class="ultimate-formula-container static">
+            <div class="formula-header">
+                <div class="formula-title">流体静力学基本方程</div>
+                <div class="formula-category">流体静力学</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\nabla p = \rho \vec{g}$$</div>
+                <div class="formula-explanation">压强梯度等于流体密度与重力加速度的乘积，是流体静力学的基本微分方程</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">考虑流体微元在重力场中的平衡</div>
+                    <div class="derivation-step">微元受力：重力 $F_g = \rho \vec{g} dV$</div>
+                    <div class="derivation-step">表面力：$F_s = -\nabla p dV$</div>
+                    <div class="derivation-step">平衡条件：$F_g + F_s = 0$</div>
+                    <div class="derivation-step">即：$\rho \vec{g} - \nabla p = 0$</div>
+                    <div class="derivation-step">$\therefore \nabla p = \rho \vec{g}$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">压强梯度等于流体密度与重力加速度的乘积，这是流体静力学的基本微分方程。它描述了静止流体中压强分布的基本规律，广泛应用于水利工程、海洋工程等领域。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">流体静力学</span>
+                    <span class="tag">压强分布</span>
+                    <span class="tag">基本方程</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 静水压强分布 -->
+        <div class="ultimate-formula-container static">
+            <div class="formula-header">
+                <div class="formula-title">静水压强分布</div>
+                <div class="formula-category">流体静力学</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$p = p_0 + \rho g h$$</div>
+                <div class="formula-explanation">对于不可压缩流体，压强随深度线性增加</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">对微分方程 $\frac{dp}{dz} = -\rho g$ 积分</div>
+                    <div class="derivation-step">$\int dp = -\rho g \int dz$</div>
+                    <div class="derivation-step">$p - p_0 = -\rho g(z - z_0)$</div>
+                    <div class="derivation-step">令 $h = z_0 - z$ (深度)</div>
+                    <div class="derivation-step">$\therefore p = p_0 + \rho g h$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">对于不可压缩流体，压强随深度线性增加，斜率为 $\rho g$。这是静水压强分布的基本规律，广泛应用于水利工程和海洋工程。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">流体静力学</span>
+                    <span class="tag">静水压强</span>
+                    <span class="tag">深度关系</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 阿基米德浮力 -->
+        <div class="ultimate-formula-container static">
+            <div class="formula-header">
+                <div class="formula-title">阿基米德浮力</div>
+                <div class="formula-category">流体静力学</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$F_b = \rho_f g V_{displaced}$$</div>
+                <div class="formula-explanation">浮力等于排开流体的重力</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">考虑浸入流体中的物体</div>
+                    <div class="derivation-step">物体排开流体的体积为 $V_{displaced}$</div>
+                    <div class="derivation-step">排开流体的质量为 $m = \rho_f V_{displaced}$</div>
+                    <div class="derivation-step">排开流体的重力为 $W = \rho_f g V_{displaced}$</div>
+                    <div class="derivation-step">根据阿基米德原理，浮力等于排开流体的重力</div>
+                    <div class="derivation-step">$\therefore F_b = \rho_f g V_{displaced}$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">阿基米德浮力原理指出，浸入流体中的物体受到向上的浮力，其大小等于排开流体的重力。这是船舶设计、潜水器设计的重要理论基础。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">流体静力学</span>
+                    <span class="tag">阿基米德原理</span>
+                    <span class="tag">浮力</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 表面张力 -->
+        <div class="ultimate-formula-container static">
+            <div class="formula-header">
+                <div class="formula-title">表面张力</div>
+                <div class="formula-category">流体静力学</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\Delta p = \frac{2\sigma}{R}$$</div>
+                <div class="formula-explanation">球形液滴内外压强差与表面张力的关系</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">考虑半径为 $R$ 的球形液滴</div>
+                    <div class="derivation-step">表面张力产生的力为 $F = 2\pi R \sigma$</div>
+                    <div class="derivation-step">压强差产生的力为 $F = \Delta p \pi R^2$</div>
+                    <div class="derivation-step">平衡条件：$2\pi R \sigma = \Delta p \pi R^2$</div>
+                    <div class="derivation-step">$\therefore \Delta p = \frac{2\sigma}{R}$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">表面张力使液滴内部压强大于外部压强，压强差与液滴半径成反比。这个现象在微流体、毛细现象中有重要应用。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">流体静力学</span>
+                    <span class="tag">表面张力</span>
+                    <span class="tag">毛细现象</span>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-        const { createApp } = Vue;
+        // 创建浮动粒子效果
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
 
-        createApp({
-            mixins: [SharedMixin],
-            components: {
-                'ocean-background': OceanBackground,
-                'notification-component': NotificationComponent,
-                'loading-spinner': LoadingSpinner
-            },
-            data() {
-                return {
-                    fluidDensity: 1000,
-                    depth: 10,
-                    surfacePressure: 101325,
-                    gravity: 9.8
-                }
-            },
-            computed: {
-                calculatedPressure() {
-                    return parseInt(this.surfacePressure) + (this.fluidDensity * this.gravity * this.depth);
-                }
-            },
-            methods: {
-                startPractice() {
-                    this.navigateToModule('practice-dynamic.html?type=statics');
-                }
-            },
-            mounted() {
-                console.log('⚖️ 流体静力学模块启动！');
-                this.setLoading(true);
-                
-                setTimeout(() => {
-                    this.setLoading(false);
-                    this.showNotification('流体静力学内容加载完成！', 'success');
-                }, 1200);
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                particlesContainer.appendChild(particle);
             }
-        }).mount('#staticsApp');
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            
+            // 重新渲染数学公式
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typeset();
+                }
+            }, 1000);
+        });
     </script>
 </body>
 </html> 
