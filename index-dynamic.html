@@ -5,9 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>流体力学学习平台 - 极致美观版本</title>
     
-    <!-- MathJax配置 -->
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- MathJax配置 - 修复版本 -->
     <script>
         window.MathJax = {
             tex: {
@@ -17,10 +15,35 @@
                 processEnvironments: true
             },
             options: {
-                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                enableMenu: false,
+                menuOptions: {
+                    settings: {
+                        texHints: true,
+                        semantics: false,
+                        zoom: 'NoZoom',
+                        zscale: '200%'
+                    }
+                }
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('MathJax渲染完成');
+                        // 确保公式正确显示
+                        document.querySelectorAll('.formula-main').forEach(el => {
+                            el.style.display = 'block';
+                            el.style.visibility = 'visible';
+                        });
+                    });
+                }
             }
         };
     </script>
+    
+    <!-- MathJax加载 -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <!-- Vue.js多CDN加载 -->
     <script>
@@ -621,10 +644,17 @@
 
         .MathJax {
             font-size: 1.2em !important;
+            display: block !important;
+            text-align: center !important;
         }
 
         .formula-display .MathJax {
             font-size: 1.6em !important;
+        }
+
+        /* 确保公式可点击 */
+        .ultimate-formula-container * {
+            pointer-events: auto;
         }
 
         .info-box {
@@ -946,7 +976,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
             
+            // 确保MathJax正确渲染
             setTimeout(() => {
+                if (window.MathJax) {
+                    MathJax.typesetPromise().then(() => {
+                        console.log('MathJax渲染完成');
+                    }).catch((err) => {
+                        console.error('MathJax渲染错误:', err);
+                    });
+                }
+                
                 if (window.AdvancedFormulaBeautifier) {
                     const beautifier = new AdvancedFormulaBeautifier();
                     beautifier.init();

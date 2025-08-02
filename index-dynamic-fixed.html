@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流体力学学习平台 - 修复版本</title>
+    
+    <!-- MathJax配置 - 修复版本 -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                enableMenu: false,
+                menuOptions: {
+                    settings: {
+                        texHints: true,
+                        semantics: false,
+                        zoom: 'NoZoom',
+                        zscale: '200%'
+                    }
+                }
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('MathJax渲染完成');
+                        // 确保公式正确显示
+                        document.querySelectorAll('.formula-main').forEach(el => {
+                            el.style.display = 'block';
+                            el.style.visibility = 'visible';
+                        });
+                    });
+                }
+            }
+        };
+    </script>
+    
+    <!-- MathJax加载 -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .info-box {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .info-title {
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .info-content {
+            color: #555;
+            line-height: 1.8;
+            font-size: 1.1em;
+        }
+
+        /* 修复的公式容器样式 */
+        .formula-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            z-index: 5;
+        }
+
+        .formula-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .formula-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .formula-title {
+            font-weight: bold;
+            font-size: 1.4em;
+            color: #2c3e50;
+        }
+
+        .formula-category {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .formula-display {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+            border: 2px solid #e9ecef;
+        }
+
+        .formula-main {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-family: 'Times New Roman', serif;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .formula-explanation {
+            color: #555;
+            font-style: italic;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            line-height: 1.6;
+        }
+
+        .formula-derivation {
+            background: linear-gradient(135deg, #e8f5e8, #d4edda);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 5px solid #27ae60;
+        }
+
+        .derivation-title {
+            color: #27ae60;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .derivation-step {
+            color: #666;
+            margin: 8px 0;
+            padding-left: 20px;
+            position: relative;
+            line-height: 1.6;
+        }
+
+        .derivation-step:before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .formula-physics {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 5px solid #2196f3;
+        }
+
+        .physics-title {
+            color: #1976d2;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .physics-meaning {
+            color: #1976d2;
+            line-height: 1.6;
+        }
+
+        .formula-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        /* 模块网格 */
+        .modules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .module-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .module-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            transition: left 0.5s;
+        }
+
+        .module-card:hover::before {
+            left: 100%;
+        }
+
+        .module-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+        }
+
+        .module-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+
+        .module-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .module-description {
+            color: #7f8c8d;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+
+        .module-features {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .module-features li {
+            color: #555;
+            margin: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            font-size: 1em;
+        }
+
+        .module-features li:before {
+            content: '✨';
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        /* MathJax样式修复 */
+        .MathJax {
+            font-size: 1.2em !important;
+            display: block !important;
+            text-align: center !important;
+        }
+
+        .formula-display .MathJax {
+            font-size: 1.6em !important;
+        }
+
+        /* 确保公式可点击 */
+        .formula-container * {
+            pointer-events: auto;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .formula-main {
+                font-size: 1.4em;
+            }
+            
+            .modules-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container">
+        <div class="header">
+            <h1>流体力学学习平台</h1>
+            <p>修复版本 - 公式显示和交互优化</p>
+        </div>
+
+        <div class="info-box">
+            <div class="info-title">🔧 修复内容</div>
+            <div class="info-content">
+                • 修复MathJax公式渲染问题<br>
+                • 优化公式点击交互<br>
+                • 改善CSS样式冲突<br>
+                • 增强公式显示稳定性<br>
+                • 优化移动端适配
+            </div>
+        </div>
+
+        <!-- 修复的公式展示 -->
+        <div class="modules-grid">
+            <div class="formula-container" @click="showFormulaDetail('static')">
+                <div class="formula-header">
+                    <div class="formula-title">流体静力学基本方程</div>
+                    <div class="formula-category">流体静力学</div>
+                </div>
+                
+                <div class="formula-display">
+                    <div class="formula-main">$$\nabla p = \rho \vec{g}$$</div>
+                    <div class="formula-explanation">压强梯度等于流体密度与重力加速度的乘积，是流体静力学的基本微分方程</div>
+                </div>
+
+                <div class="formula-derivation">
+                    <div class="derivation-title">推导过程：</div>
+                    <div class="derivation-step">考虑流体微元在重力场中的平衡</div>
+                    <div class="derivation-step">微元受力：重力 $F_g = \rho \vec{g} dV$</div>
+                    <div class="derivation-step">表面力：$F_s = -\nabla p dV$</div>
+                    <div class="derivation-step">平衡条件：$F_g + F_s = 0$</div>
+                    <div class="derivation-step">即：$\rho \vec{g} - \nabla p = 0$</div>
+                    <div class="derivation-step">$\therefore \nabla p = \rho \vec{g}$</div>
+                </div>
+
+                <div class="formula-physics">
+                    <div class="physics-title">物理意义：</div>
+                    <div class="physics-meaning">压强梯度等于流体密度与重力加速度的乘积，这是流体静力学的基本微分方程。它描述了静止流体中压强分布的基本规律。</div>
+                </div>
+
+                <div class="formula-tags">
+                    <span class="tag">流体静力学</span>
+                    <span class="tag">流体力学</span>
+                    <span class="tag">压强分布</span>
+                </div>
+            </div>
+
+            <div class="formula-container" @click="showFormulaDetail('dynamics')">
+                <div class="formula-header">
+                    <div class="formula-title">伯努利方程</div>
+                    <div class="formula-category">流体动力学</div>
+                </div>
+                
+                <div class="formula-display">
+                    <div class="formula-main">$$\frac{p}{\rho g} + \frac{v^2}{2g} + z = H$$</div>
+                    <div class="formula-explanation">沿流线机械能守恒，总水头保持不变</div>
+                </div>
+
+                <div class="formula-derivation">
+                    <div class="derivation-title">推导过程：</div>
+                    <div class="derivation-step">沿流线积分欧拉方程</div>
+                    <div class="derivation-step">$\int[\frac{\partial \vec{v}}{\partial t} + (\vec{v} \cdot \nabla)\vec{v}] \cdot ds = \int[-\frac{1}{\rho}\nabla p + \vec{g}] \cdot ds$</div>
+                    <div class="derivation-step">定常流动：$\frac{\partial \vec{v}}{\partial t} = 0$</div>
+                    <div class="derivation-step">$\therefore \int(\vec{v} \cdot \nabla)\vec{v} \cdot ds = \int[-\frac{1}{\rho}\nabla p + \vec{g}] \cdot ds$</div>
+                    <div class="derivation-step">积分得到：$\frac{v^2}{2} + \frac{p}{\rho} + gz = 常数$</div>
+                </div>
+
+                <div class="formula-physics">
+                    <div class="physics-title">物理意义：</div>
+                    <div class="physics-meaning">沿流线机械能守恒，总水头保持不变。这是理想流体运动的基本规律，广泛应用于管道流动和机翼理论。</div>
+                </div>
+
+                <div class="formula-tags">
+                    <span class="tag">流体动力学</span>
+                    <span class="tag">流体力学</span>
+                    <span class="tag">能量守恒</span>
+                </div>
+            </div>
+
+            <div class="formula-container" @click="showFormulaDetail('vorticity')">
+                <div class="formula-header">
+                    <div class="formula-title">涡量定义</div>
+                    <div class="formula-category">涡量理论</div>
+                </div>
+                
+                <div class="formula-display">
+                    <div class="formula-main">$$\vec{\omega} = \nabla \times \vec{v}$$</div>
+                    <div class="formula-explanation">表示流体微团的转动强度，是描述流体旋转运动的重要物理量</div>
+                </div>
+
+                <div class="formula-derivation">
+                    <div class="derivation-title">推导过程：</div>
+                    <div class="derivation-step">涡量定义：$\vec{\omega} = \nabla \times \vec{v}$</div>
+                    <div class="derivation-step">其中 $\vec{v}$ 为速度场</div>
+                    <div class="derivation-step">$\nabla \times$ 为旋度算子</div>
+                    <div class="derivation-step">表示流体微团的转动强度</div>
+                    <div class="derivation-step">涡量方向沿转动轴，大小等于角速度的两倍</div>
+                </div>
+
+                <div class="formula-physics">
+                    <div class="physics-title">物理意义：</div>
+                    <div class="physics-meaning">$\vec{\omega}$ 方向沿转动轴，大小等于角速度的两倍。当 $\vec{\omega} = 0$ 时为无旋流动，表示流体微团没有旋转运动。</div>
+                </div>
+
+                <div class="formula-tags">
+                    <span class="tag">涡量理论</span>
+                    <span class="tag">流体力学</span>
+                    <span class="tag">旋转运动</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习模块 -->
+        <div class="modules-grid">
+            <div class="module-card" @click="navigateTo('/modules/fluid-statics-dynamic.html')">
+                <div class="module-icon">⚖️</div>
+                <div class="module-title">流体静力学</div>
+                <div class="module-description">学习流体在静止状态下的力学性质</div>
+                <ul class="module-features">
+                    <li>静水压强分布</li>
+                    <li>阿基米德浮力</li>
+                    <li>表面张力效应</li>
+                </ul>
+            </div>
+
+            <div class="module-card" @click="navigateTo('/modules/fluid-dynamics-dynamic.html')">
+                <div class="module-icon">🌊</div>
+                <div class="module-title">流体动力学</div>
+                <div class="module-description">研究流体运动规律和能量转换</div>
+                <ul class="module-features">
+                    <li>连续性方程</li>
+                    <li>伯努利方程</li>
+                    <li>动量方程</li>
+                </ul>
+            </div>
+
+            <div class="module-card" @click="navigateTo('/modules/viscous-flow-dynamic.html')">
+                <div class="module-icon">💧</div>
+                <div class="module-title">粘性流动</div>
+                <div class="module-description">分析粘性对流体运动的影响</div>
+                <ul class="module-features">
+                    <li>N-S方程</li>
+                    <li>雷诺数</li>
+                    <li>边界层理论</li>
+                </ul>
+            </div>
+
+            <div class="module-card" @click="navigateTo('/modules/vorticity-theory-dynamic.html')">
+                <div class="module-icon">🌀</div>
+                <div class="module-title">涡量理论</div>
+                <div class="module-description">研究流体旋转运动和涡量输运规律</div>
+                <ul class="module-features">
+                    <li>涡量定义</li>
+                    <li>涡量输运方程</li>
+                    <li>Kelvin定理</li>
+                </ul>
+            </div>
+
+            <div class="module-card" @click="navigateTo('/modules/question-bank.html')">
+                <div class="module-icon">📚</div>
+                <div class="module-title">题库系统</div>
+                <div class="module-description">丰富的练习题和真题资源</div>
+                <ul class="module-features">
+                    <li>分类练习</li>
+                    <li>真题解析</li>
+                    <li>智能推荐</li>
+                </ul>
+            </div>
+
+            <div class="module-card" @click="navigateTo('/modules/simulation-dynamic.html')">
+                <div class="module-icon">🎮</div>
+                <div class="module-title">数值模拟</div>
+                <div class="module-description">流体流动的数值仿真</div>
+                <ul class="module-features">
+                    <li>CFD仿真</li>
+                    <li>流场可视化</li>
+                    <li>参数分析</li>
+                </ul>
+            </div>
+
+            <div class="module-card" @click="navigateTo('/ultimate-beautiful-formulas.html')">
+                <div class="module-icon">✨</div>
+                <div class="module-title">极致美观公式</div>
+                <div class="module-description">查看极致美观的HTML公式展示</div>
+                <ul class="module-features">
+                    <li>动态背景效果</li>
+                    <li>浮动粒子动画</li>
+                    <li>极致视觉效果</li>
+                </ul>
+            </div>
+
+            <div class="module-card" @click="navigateTo('/modules/knowledge-detail.html?id=fluid-properties')">
+                <div class="module-icon">🔬</div>
+                <div class="module-title">知识详情</div>
+                <div class="module-description">深入理解流体力学概念</div>
+                <ul class="module-features">
+                    <li>概念详解</li>
+                    <li>公式推导</li>
+                    <li>应用实例</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            methods: {
+                navigateTo(url) {
+                    window.location.href = url;
+                },
+                showFormulaDetail(type) {
+                    console.log('点击了公式:', type);
+                    // 可以在这里添加公式详情展示逻辑
+                    alert('公式详情功能开发中...');
+                }
+            },
+            mounted() {
+                // 确保MathJax正确渲染
+                setTimeout(() => {
+                    if (window.MathJax) {
+                        MathJax.typesetPromise().then(() => {
+                            console.log('MathJax渲染完成');
+                        }).catch((err) => {
+                            console.error('MathJax渲染错误:', err);
+                        });
+                    }
+                }, 1000);
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html> 

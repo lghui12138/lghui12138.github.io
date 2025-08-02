@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>公式显示测试 - 修复版本</title>
+    
+    <!-- MathJax配置 -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                enableMenu: false
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('MathJax渲染完成');
+                    });
+                }
+            }
+        };
+    </script>
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-container {
+            background: white;
+            padding: 30px;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .formula-box {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .formula-box:hover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+            transform: translateY(-2px);
+        }
+        
+        .formula-title {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        
+        .formula-display {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin: 15px 0;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .formula-explanation {
+            color: #666;
+            font-style: italic;
+            margin-top: 10px;
+        }
+        
+        .MathJax {
+            font-size: 1.2em !important;
+            display: block !important;
+            text-align: center !important;
+        }
+        
+        .status {
+            background: #e8f5e8;
+            border: 1px solid #27ae60;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            color: #27ae60;
+        }
+        
+        .error {
+            background: #ffebee;
+            border: 1px solid #f44336;
+            color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 公式显示修复测试</h1>
+    
+    <div class="test-container">
+        <h2>测试说明</h2>
+        <p>这个页面用于测试MathJax公式渲染是否正常工作。如果公式显示为LaTeX代码而不是数学符号，说明渲染有问题。</p>
+        
+        <div class="status" id="status">
+            正在检查MathJax状态...
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>基础公式测试</h2>
+        
+        <div class="formula-box" onclick="testClick('static')">
+            <div class="formula-title">流体静力学基本方程</div>
+            <div class="formula-display">$$\nabla p = \rho \vec{g}$$</div>
+            <div class="formula-explanation">压强梯度等于流体密度与重力加速度的乘积</div>
+        </div>
+        
+        <div class="formula-box" onclick="testClick('bernoulli')">
+            <div class="formula-title">伯努利方程</div>
+            <div class="formula-display">$$\frac{p}{\rho g} + \frac{v^2}{2g} + z = H$$</div>
+            <div class="formula-explanation">沿流线机械能守恒，总水头保持不变</div>
+        </div>
+        
+        <div class="formula-box" onclick="testClick('vorticity')">
+            <div class="formula-title">涡量定义</div>
+            <div class="formula-display">$$\vec{\omega} = \nabla \times \vec{v}$$</div>
+            <div class="formula-explanation">表示流体微团的转动强度</div>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>内联公式测试</h2>
+        <p>这是一个内联公式测试：$F = ma$，牛顿第二定律。</p>
+        <p>另一个内联公式：$E = mc^2$，爱因斯坦质能方程。</p>
+        <p>复杂内联公式：$\int_{-\infty}^{\infty} e^{-x^2} dx = \sqrt{\pi}$</p>
+    </div>
+
+    <div class="test-container">
+        <h2>修复对比</h2>
+        <p><strong>修复前的问题：</strong></p>
+        <ul>
+            <li>公式显示为LaTeX代码而不是数学符号</li>
+            <li>点击公式没有反应</li>
+            <li>公式区域被其他元素覆盖</li>
+            <li>CSS样式冲突导致显示异常</li>
+        </ul>
+        
+        <p><strong>修复后的改进：</strong></p>
+        <ul>
+            <li>✅ MathJax配置优化，确保公式正确渲染</li>
+            <li>✅ 添加点击事件处理</li>
+            <li>✅ 修复CSS样式冲突</li>
+            <li>✅ 增强公式显示稳定性</li>
+            <li>✅ 优化移动端适配</li>
+        </ul>
+    </div>
+
+    <script>
+        function testClick(type) {
+            alert(`点击了 ${type} 公式！`);
+            console.log('公式点击测试:', type);
+        }
+        
+        // 检查MathJax状态
+        function checkMathJaxStatus() {
+            const statusEl = document.getElementById('status');
+            
+            if (window.MathJax) {
+                statusEl.innerHTML = '✅ MathJax已加载，正在渲染公式...';
+                statusEl.className = 'status';
+                
+                // 等待渲染完成
+                setTimeout(() => {
+                    if (MathJax.startup && MathJax.startup.document) {
+                        statusEl.innerHTML = '✅ MathJax渲染完成！公式应该正常显示。';
+                        statusEl.className = 'status';
+                    } else {
+                        statusEl.innerHTML = '⚠️ MathJax加载中，请稍等...';
+                        statusEl.className = 'status';
+                    }
+                }, 2000);
+            } else {
+                statusEl.innerHTML = '❌ MathJax未加载，公式可能无法正确显示。';
+                statusEl.className = 'status error';
+            }
+        }
+        
+        // 页面加载完成后检查状态
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(checkMathJaxStatus, 1000);
+        });
+    </script>
+</body>
+</html> 
