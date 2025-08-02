@@ -6,7 +6,24 @@
     <title>湍流理论 - 极致美观学习平台</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <!-- 移除有问题的polyfill，MathJax 3.x 已经内置了必要的polyfill -->
-    <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
+    <!-- 使用多个CDN备用方案 -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" onerror="loadMathJaxFallback()"></script>
+    <script>
+        function loadMathJaxFallback() {
+            console.log('尝试备用MathJax CDN...');
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js';
+            script.async = true;
+            script.onerror = function() {
+                console.log('尝试第三个MathJax CDN...');
+                const script2 = document.createElement('script');
+                script2.src = 'https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js';
+                script2.async = true;
+                document.head.appendChild(script2);
+            };
+            document.head.appendChild(script);
+        }
+    </script>
     <script>
         window.MathJax = {
             tex: {
@@ -34,6 +51,12 @@
                             el.style.textAlign = 'center !important';
                             el.style.overflow = 'visible !important';
                             el.style.whiteSpace = 'normal !important';
+                        });
+                    }).catch((error) => {
+                        console.error('MathJax加载失败，使用备用方案');
+                        // 如果MathJax完全失败，显示原始LaTeX代码
+                        document.querySelectorAll('.formula-display').forEach(el => {
+                            el.innerHTML = el.innerHTML.replace(/\$\$(.*?)\$\$/g, '<div style="font-family: monospace; background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0;">$$$1$$</div>');
                         });
                     });
                 }
