@@ -415,6 +415,92 @@
             color: #ffffff;
         }
 
+        /* 登录表单样式 */
+        .login-form {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .login-title {
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #27ae60;
+            box-shadow: 0 0 0 3px rgba(39, 174, 96, 0.1);
+        }
+
+        .login-btn {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .user-welcome {
+            color: #2c3e50;
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .logout-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+
         /* MathJax样式 */
         .MathJax {
             font-size: 1em !important;
@@ -462,18 +548,36 @@
             <p>完整版本 - 包含所有功能，题库优先</p>
         </div>
 
-        <div class="info-box">
-            <div class="info-title">🌟 极致美化特性</div>
-            <div class="info-content">
-                • 动态渐变背景和浮动粒子效果<br>
-                • 极致美观的HTML公式结构<br>
-                • 6大类别独特的颜色主题<br>
-                • 详细的推导过程和物理意义<br>
-                • 平滑的动画效果和交互<br>
-                • 响应式设计，支持所有设备<br>
-                • 玻璃态效果和毛玻璃背景
-            </div>
+        <!-- 登录/用户信息区域 -->
+        <div v-if="!isLoggedIn" class="login-form">
+            <div class="login-title">🔐 用户登录</div>
+            <input 
+                type="text" 
+                v-model="loginForm.username"
+                placeholder="用户名"
+                class="login-input"
+                @keyup.enter="handleLogin"
+            >
+            <input 
+                type="password" 
+                v-model="loginForm.password"
+                placeholder="密码"
+                class="login-input"
+                @keyup.enter="handleLogin"
+            >
+            <button @click="handleLogin" class="login-btn">
+                <i class="fas fa-sign-in-alt"></i> 登录
+            </button>
         </div>
+
+        <div v-else class="user-info">
+            <div class="user-welcome">👋 欢迎回来，{{ currentUser.username }}！</div>
+            <button @click="handleLogout" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i> 注销
+            </button>
+        </div>
+
+
 
         <!-- 题库优先展示区域 -->
         <div class="question-bank-hero">
@@ -655,6 +759,16 @@
         const { createApp } = Vue;
         
         createApp({
+            data() {
+                return {
+                    isLoggedIn: false,
+                    currentUser: null,
+                    loginForm: {
+                        username: '',
+                        password: ''
+                    }
+                }
+            },
             methods: {
                 navigateTo(url) {
                     window.location.href = url;
@@ -663,9 +777,48 @@
                     console.log('点击了公式:', type);
                     // 跳转到详细公式页面
                     window.location.href = '/ultimate-beautiful-formulas.html';
+                },
+                async handleLogin() {
+                    if (!this.loginForm.username || !this.loginForm.password) {
+                        alert('请输入用户名和密码');
+                        return;
+                    }
+
+                    try {
+                        // 模拟登录逻辑
+                        if (this.loginForm.username === 'admin' && this.loginForm.password === 'admin') {
+                            this.isLoggedIn = true;
+                            this.currentUser = {
+                                username: this.loginForm.username,
+                                role: 'admin'
+                            };
+                            localStorage.setItem('user', JSON.stringify(this.currentUser));
+                            this.loginForm.username = '';
+                            this.loginForm.password = '';
+                        } else {
+                            alert('用户名或密码错误');
+                        }
+                    } catch (error) {
+                        console.error('登录错误:', error);
+                        alert('登录失败，请重试');
+                    }
+                },
+                handleLogout() {
+                    this.isLoggedIn = false;
+                    this.currentUser = null;
+                    localStorage.removeItem('user');
+                },
+                checkLoginStatus() {
+                    const user = localStorage.getItem('user');
+                    if (user) {
+                        this.currentUser = JSON.parse(user);
+                        this.isLoggedIn = true;
+                    }
                 }
             },
             mounted() {
+                this.checkLoginStatus();
+                
                 // 确保MathJax正确渲染
                 setTimeout(() => {
                     if (window.MathJax) {
