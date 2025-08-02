@@ -1085,7 +1085,7 @@
                             // 清空表单
                             this.loginForm = { username: '', password: '' };
                         } else {
-                            this.loginError = '用户名或密码错误，请检查后重试';
+                            this.loginError = '用户名或密码错误。请检查用户名和密码是否正确，注意大小写。';
                         }
                     } catch (error) {
                         console.error('登录失败:', error);
@@ -1098,12 +1098,29 @@
                 // 用户验证 
                 async validateUser(username, password) {
                     try {
+                        console.log('🔍 开始验证用户:', username);
+                        
                         // 从用户数据文件验证
                         const response = await fetch('data/users.json');
+                        console.log('📡 users.json响应状态:', response.status);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: 无法加载用户数据`);
+                        }
+                        
                         const users = await response.json();
+                        console.log('👥 加载的用户数据:', Object.keys(users));
                         
                         const user = users[username];
+                        console.log('👤 找到用户:', user ? '是' : '否');
+                        
+                        if (user) {
+                            console.log('🔑 密码匹配:', user.password === password ? '是' : '否');
+                            console.log('🔑 预期密码长度:', user.password.length, '输入密码长度:', password.length);
+                        }
+                        
                         if (user && user.password === password) {
+                            console.log('✅ 验证成功:', user.name);
                             return {
                                 username: username,
                                 name: user.name,
@@ -1111,9 +1128,12 @@
                                 color: user.color || 'student'
                             };
                         }
+                        
+                        console.log('❌ 验证失败: 用户不存在或密码错误');
                         return null;
                     } catch (error) {
-                        console.error('验证用户失败:', error);
+                        console.error('❌ 验证用户失败:', error);
+                        this.loginError = `验证失败: ${error.message}`;
                         return null;
                     }
                 },
