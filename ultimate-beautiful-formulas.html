@@ -994,7 +994,7 @@
             
             // 确保MathJax正确渲染
             setTimeout(() => {
-                if (window.MathJax) {
+                if (window.MathJax && window.MathJax.typesetPromise) {
                     MathJax.typesetPromise().then(() => {
                         console.log('MathJax渲染完成');
                         // 确保所有公式都正确显示
@@ -1005,6 +1005,16 @@
                         });
                     }).catch((err) => {
                         console.error('MathJax渲染错误:', err);
+                    });
+                } else if (window.MathJax && window.MathJax.typeset) {
+                    // 兼容旧版本MathJax
+                    MathJax.typeset();
+                    console.log('MathJax渲染完成');
+                    // 确保所有公式都正确显示
+                    document.querySelectorAll('.formula-main').forEach(el => {
+                        el.style.display = 'block';
+                        el.style.visibility = 'visible';
+                        el.style.overflow = 'visible';
                     });
                 }
             }, 2000);

@@ -32,7 +32,7 @@
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 
     <!-- Vue.js -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
 
     <style>
         * {
@@ -891,12 +891,16 @@
                 
                 // 确保MathJax正确渲染
                 setTimeout(() => {
-                    if (window.MathJax) {
+                    if (window.MathJax && window.MathJax.typesetPromise) {
                         MathJax.typesetPromise().then(() => {
                             console.log('MathJax渲染完成');
                         }).catch((err) => {
                             console.error('MathJax渲染错误:', err);
                         });
+                    } else if (window.MathJax && window.MathJax.typeset) {
+                        // 兼容旧版本MathJax
+                        MathJax.typeset();
+                        console.log('MathJax渲染完成');
                     }
                 }, 1000);
             }
