@@ -4838,7 +4838,7 @@
                                 features: ['chat', 'reasoning'],
                                 maxTokens: 1500,
                                 temperature: 0.7,
-                                systemPrompt: '你是一个专业的流体力学教师，善于解答学生的问题。请用详细的文字描述回答，不要提及图片、图示、流程图或任何需要视觉展示的内容。用清晰的文字逐步解释概念，可以使用适当的表情符号和文字符号（如→、∵、∴等）来增强说明效果。'
+                                systemPrompt: '你是一个专业的流体力学教师，善于解答学生的问题。请用详细的文字描述回答，不要提及图片、图示、流程图或任何需要视觉展示的内容。用清晰的文字逐步解释概念，可以使用适当的表情符号和文字符号（如→、∵、∴等）来增强说明效果。重要：请使用HTML标签来格式化文本，如<strong>重点内容</strong>、<em>强调内容</em>、<br/>换行等，不要使用Markdown格式（如**、*等星号）。'
                             });
 
                             console.log('✅ AI回复成功:', result);
@@ -4849,7 +4849,7 @@
                                 
                                 const newMessage = {
                                     type: 'ai',
-                                    content: result.content + '<br><br><small style="color: #888;">🤖 由智能AI提供</small>',
+                                    content: this.convertMarkdownToHtml(result.content) + '<br><br><small style="color: #888;">🤖 由智能AI提供</small>',
                                     timestamp: Date.now()
                                 };
                                 
@@ -4889,7 +4889,7 @@
                         const localResponse = this.getLocalAIResponse(question);
                         const localMessage = {
                             type: 'ai',
-                            content: localResponse + '<br><br><small style="color: #888;">📚 来源：本地知识库</small>',
+                            content: this.convertMarkdownToHtml(localResponse) + '<br><br><small style="color: #888;">📚 来源：本地知识库</small>',
                             timestamp: Date.now()
                         };
                         
@@ -4916,6 +4916,26 @@
                             }
                         });
                     }
+                },
+
+                // 将Markdown格式转换为HTML格式
+                convertMarkdownToHtml(text) {
+                    if (!text) return text;
+                    
+                    // 转换粗体 **text** 为 <strong>text</strong>
+                    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    
+                    // 转换斜体 *text* 为 <em>text</em>
+                    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                    
+                    // 转换行内代码 `code` 为 <code>code</code>
+                    text = text.replace(/`(.*?)`/g, '<code>$1</code>');
+                    
+                    // 转换换行符为 <br/>
+                    text = text.replace(/\n/g, '<br/>');
+                    
+                    console.log('🔄 Markdown转换完成:', text);
+                    return text;
                 },
 
                 getLocalAIResponse(question) {
@@ -5024,7 +5044,7 @@
                                 features: ['reasoning', 'analysis'],
                                 maxTokens: 1000,
                                 temperature: 0.3,
-                                systemPrompt: '你是一位经验丰富的流体力学教师，请客观公正地评价学生答题，并给出建设性建议。请用详细的文字描述进行评价和解释，不要提及图片、图示、流程图等。用清晰的文字逐步分析概念和解题思路。'
+                                systemPrompt: '你是一位经验丰富的流体力学教师，请客观公正地评价学生答题，并给出建设性建议。请用详细的文字描述进行评价和解释，不要提及图片、图示、流程图等。用清晰的文字逐步分析概念和解题思路。重要：请使用HTML标签来格式化文本，如<strong>重点内容</strong>、<em>强调内容</em>、<br/>换行等，不要使用Markdown格式（如**、*等星号）。'
                             });
 
                             console.log('✅ AI批改回复:', result);
@@ -5041,7 +5061,7 @@
                                         score: this.isCorrect ? 85 : 45,
                                         level: this.isCorrect ? '良好' : '需要改进',
                                         summary: this.isCorrect ? '答案正确，理解较好' : '答案有误，需要加强理解',
-                                        feedback: result.content
+                                        feedback: this.convertMarkdownToHtml(result.content)
                                     };
                                 }
                             } else {
