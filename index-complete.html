@@ -485,6 +485,12 @@
             font-size: 1.2em;
         }
 
+        .user-role {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+        }
+
         .logout-btn {
             background: linear-gradient(135deg, #e74c3c, #c0392b);
             color: white;
@@ -608,7 +614,8 @@
         </div>
 
         <div v-else class="user-info">
-            <div class="user-welcome">👋 欢迎回来，{{ currentUser.username }}！</div>
+            <div class="user-welcome">👋 欢迎回来，{{ currentUser.name }}！</div>
+            <div class="user-role">角色：{{ currentUser.role === 'teacher' ? '教师' : '学生' }}</div>
             <button @click="handleLogout" class="logout-btn">
                 <i class="fas fa-sign-out-alt"></i> 注销
             </button>
@@ -839,18 +846,27 @@
                     }
 
                     try {
-                        // 模拟登录逻辑
-                        if (this.loginForm.username === 'admin' && this.loginForm.password === 'admin') {
+                        // 使用原有的账号系统
+                        const accounts = {
+                            'teacher': { name: '教师账号', role: 'teacher', password: 'teacher123' },
+                            'student1': { name: '学生账号', role: 'student', password: '123456' },
+                            'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025' },
+                            'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025' }
+                        };
+
+                        const account = accounts[this.loginForm.username];
+                        if (account && account.password === this.loginForm.password) {
                             this.isLoggedIn = true;
                             this.currentUser = {
                                 username: this.loginForm.username,
-                                role: 'admin'
+                                name: account.name,
+                                role: account.role
                             };
                             localStorage.setItem('user', JSON.stringify(this.currentUser));
                             this.loginForm.username = '';
                             this.loginForm.password = '';
                         } else {
-                            alert('用户名或密码错误');
+                            alert('用户名或密码错误\n\n可用账号：\n教师：teacher / teacher123\n学生：student1 / 123456\n倪文轩：niwenxuan / niwenxuan2025\n韩文旭：hanwenxu / hanwenxu2025');
                         }
                     } catch (error) {
                         console.error('登录错误:', error);
