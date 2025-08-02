@@ -668,6 +668,70 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
         }
+
+        /* 知识点模块样式 */
+        .knowledge-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .knowledge-stats {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .knowledge-stats span {
+            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .point-tags, .app-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .point-tag {
+            background: rgba(52, 152, 219, 0.2);
+            border: 1px solid rgba(52, 152, 219, 0.4);
+            color: #3498db;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .app-tag {
+            background: rgba(46, 204, 113, 0.2);
+            border: 1px solid rgba(46, 204, 113, 0.4);
+            color: #2ecc71;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .traditional-content {
+            flex: 1;
+        }
     </style>
 </head>
 <body>
@@ -827,20 +891,53 @@
                     </div>
                     <div class="module-title">{{ module.title }}</div>
                     <div class="module-desc">{{ module.description }}</div>
-                                         <div class="module-stats">
-                         <span v-if="module.questionCount > 0"><i class="far fa-file-alt"></i> {{ module.questionCount }}题</span>
-                         <span v-if="module.estimatedTime > 0"><i class="far fa-clock"></i> {{ module.estimatedTime }}分钟</span>
-                         <span :style="{ color: getDifficultyColor(module.difficulty) }">
-                             {{ getDifficultyText(module.difficulty) }}
-                         </span>
-                     </div>
-                     <div class="module-features" v-if="module.features">
-                         <div class="feature-tag" v-for="feature in module.features.slice(0, 2)" :key="feature">
-                             {{ feature }}
-                         </div>
-                     </div>
+                    
+                    <!-- 知识点模块显示 -->
+                    <div v-if="module.type === 'knowledge'" class="knowledge-content">
+                        <div class="knowledge-stats">
+                            <span><i class="fas fa-bookmark"></i> {{ module.category }}</span>
+                            <span :style="{ color: getDifficultyColor(module.difficulty) }">
+                                <i class="fas fa-signal"></i> {{ module.difficulty }}
+                            </span>
+                        </div>
+                        
+                        <div class="key-points" v-if="module.keyPoints">
+                            <div class="section-title"><i class="fas fa-lightbulb"></i> 关键要点</div>
+                            <div class="point-tags">
+                                <div class="point-tag" v-for="point in module.keyPoints.slice(0, 3)" :key="point">
+                                    {{ point }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="applications" v-if="module.applications">
+                            <div class="section-title"><i class="fas fa-cogs"></i> 应用领域</div>
+                            <div class="app-tags">
+                                <div class="app-tag" v-for="app in module.applications.slice(0, 2)" :key="app">
+                                    {{ app }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 其他模块显示 -->
+                    <div v-else class="traditional-content">
+                        <div class="module-stats">
+                            <span v-if="module.estimatedTime"><i class="far fa-clock"></i> {{ module.estimatedTime }}</span>
+                            <span :style="{ color: getDifficultyColor(module.difficulty) }">
+                                <i class="fas fa-signal"></i> {{ getDifficultyText(module.difficulty) }}
+                            </span>
+                        </div>
+                        <div class="module-features" v-if="module.features">
+                            <div class="feature-tag" v-for="feature in module.features.slice(0, 2)" :key="feature">
+                                {{ feature }}
+                            </div>
+                        </div>
+                    </div>
                     <button class="start-button" @click.stop="startPractice(module)">
-                        <i class="fas fa-play"></i> 开始练习
+                        <i v-if="module.type === 'knowledge'" class="fas fa-book-open"></i>
+                        <i v-else class="fas fa-play"></i>
+                        {{ module.type === 'knowledge' ? '查看详情' : '开始练习' }}
                     </button>
                 </div>
             </div>
@@ -988,6 +1085,61 @@
                              difficulty: '中等', 
                              keyPoints: ['几何相似', '运动相似', 'π定理应用', '无量纲参数'],
                              applications: ['模型实验设计', '工程放大', '数值模拟验证', '原型预测']
+                         },
+                         {
+                             id: 'pipe-flow',
+                             title: '管道流动',
+                             description: '圆管中流体的流动特性和压力损失计算',
+                             icon: 'fas fa-exchange-alt',
+                             type: 'knowledge',
+                             category: '应用理论',
+                             difficulty: '中等',
+                             keyPoints: ['圆管中的层流', '湍流速度分布', '沿程阻力损失', '局部阻力损失'],
+                             applications: ['供水管网设计', '石油管道输送', '暖通空调系统', '化工管道设计']
+                         },
+                         {
+                             id: 'open-channel-flow',
+                             title: '明渠流动',
+                             description: '自由表面流体的流动规律和水力计算',
+                             icon: 'fas fa-waves',
+                             type: 'knowledge',
+                             category: '应用理论',
+                             difficulty: '中等',
+                             keyPoints: ['明渠均匀流', '临界流深', '水跃现象', '水面线计算'],
+                             applications: ['河道治理', '灌溉渠道设计', '排水系统', '水电站引水渠']
+                         },
+                         {
+                             id: 'boundary-layer',
+                             title: '边界层理论',
+                             description: '粘性流体在固体表面附近的流动特性',
+                             icon: 'fas fa-layer-group',
+                             type: 'knowledge',
+                             category: '高级理论',
+                             difficulty: '困难',
+                             keyPoints: ['边界层概念', '边界层方程', '层流边界层', '湍流边界层'],
+                             applications: ['飞机机翼设计', '船舶阻力计算', '传热强化', '风工程']
+                         },
+                         {
+                             id: 'turbulence',
+                             title: '湍流理论',
+                             description: '湍流的基本特征和工程湍流模型',
+                             icon: 'fas fa-wind',
+                             type: 'knowledge',
+                             category: '高级理论',
+                             difficulty: '困难',
+                             keyPoints: ['湍流的基本特征', '雷诺应力', '湍流模型', 'k-ε模型'],
+                             applications: ['大气边界层', '海洋工程', '燃烧工程', '环境流体力学']
+                         },
+                         {
+                             id: 'compressible-flow',
+                             title: '可压缩流动',
+                             description: '高速流动中的可压缩性效应',
+                             icon: 'fas fa-compress',
+                             type: 'knowledge',
+                             category: '高级理论', 
+                             difficulty: '困难',
+                             keyPoints: ['音速和马赫数', '等熵流动', '激波理论', '喷管流动'],
+                             applications: ['航空发动机', '火箭喷管', '超音速飞行器', '气体输送']
                          }
                     ]
                 }
@@ -1037,29 +1189,17 @@
                 // 用户验证 
                 async validateUser(username, password) {
                     try {
-                        console.log('🔍 开始验证用户:', username);
-                        
                         // 从用户数据文件验证
                         const response = await fetch('data/users.json');
-                        console.log('📡 users.json响应状态:', response.status);
                         
                         if (!response.ok) {
-                            throw new Error(`HTTP ${response.status}: 无法加载用户数据`);
+                            throw new Error(`无法加载用户数据 (HTTP ${response.status})`);
                         }
                         
                         const users = await response.json();
-                        console.log('👥 加载的用户数据:', Object.keys(users));
-                        
                         const user = users[username];
-                        console.log('👤 找到用户:', user ? '是' : '否');
-                        
-                        if (user) {
-                            console.log('🔑 密码匹配:', user.password === password ? '是' : '否');
-                            console.log('🔑 预期密码长度:', user.password.length, '输入密码长度:', password.length);
-                        }
                         
                         if (user && user.password === password) {
-                            console.log('✅ 验证成功:', user.name);
                             return {
                                 username: username,
                                 name: user.name,
@@ -1068,11 +1208,10 @@
                             };
                         }
                         
-                        console.log('❌ 验证失败: 用户不存在或密码错误');
                         return null;
                     } catch (error) {
-                        console.error('❌ 验证用户失败:', error);
-                        this.loginError = `验证失败: ${error.message}`;
+                        console.error('验证用户失败:', error);
+                        this.loginError = `登录失败: ${error.message}`;
                         return null;
                     }
                 },
