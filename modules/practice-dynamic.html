@@ -479,10 +479,7 @@
 
         .ai-modal.fullscreen .ai-chat-container {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            min-height: 0;
-            height: auto; /* 覆盖基础高度 */
+            overflow: hidden;
         }
 
         .ai-modal.fullscreen .ai-chat-messages {
@@ -560,10 +557,11 @@
         }
 
         .ai-chat-container {
-            height: 400px;
+            flex: 1;
             display: flex;
             flex-direction: column;
-            min-height: 300px;
+            min-height: 200px;
+            overflow: hidden;
         }
 
         .ai-chat-messages {
@@ -905,11 +903,11 @@
             }
 
             .ai-chat-container {
-                height: 350px;
+                flex: 1;
+                min-height: 200px;
             }
 
             .ai-modal.fullscreen .ai-chat-container {
-                height: auto;
                 flex: 1;
             }
 
@@ -3141,22 +3139,34 @@
                                         <i class="fas fa-spinner fa-spin"></i> AI正在思考中...
                                     </div>
                                 </div>
-
-                            </div>
-
-                            <div class="ai-chat-input-area">
-                                <div class="ai-input-wrapper">
-                                    <textarea 
-                                        v-model="aiInputText" 
-                                        @keydown.enter.prevent="sendAIMessage"
-                                        class="ai-chat-input" 
-                                        placeholder="向AI询问关于这道题的问题..."></textarea>
-                                    <button @click="sendAIMessage" 
-                                            :disabled="!aiInputText.trim() || aiLoading" 
-                                            class="ai-send-btn">
-                                        <i class="fas fa-paper-plane"></i>
-                                    </button>
+                                <!-- 如果没有消息，显示欢迎信息 -->
+                                <div v-if="aiMessages.length === 0 && !aiLoading" class="ai-message ai">
+                                    <div class="ai-message-avatar">AI</div>
+                                    <div class="ai-message-content">
+                                        👋 欢迎使用AI智能助手！<br>
+                                        我可以帮助您解答题目相关的问题。<br><br>
+                                        🎮 <strong>快捷键说明</strong>：<br>
+                                        • <kbd>Enter</kbd> 提交答案 • <kbd>← →</kbd> 切换题目<br>
+                                        • <kbd>F11</kbd> 全屏切换 • <kbd>ESC</kbd> 退出/返回<br>
+                                        • <kbd>Ctrl+S</kbd> 保存进度 • <kbd>1-4</kbd> 选择选项
+                                    </div>
                                 </div>
+                            </div>
+                        </div>
+                        
+                        <!-- AI输入区域 - 固定在底部 -->
+                        <div class="ai-chat-input-area">
+                            <div class="ai-input-wrapper">
+                                <textarea 
+                                    v-model="aiInputText" 
+                                    @keydown.enter.prevent="sendAIMessage"
+                                    class="ai-chat-input" 
+                                    placeholder="向AI询问关于这道题的问题..."></textarea>
+                                <button @click="sendAIMessage" 
+                                        :disabled="!aiInputText.trim() || aiLoading" 
+                                        class="ai-send-btn">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
                             </div>
                         </div>
 
@@ -4687,11 +4697,10 @@
                     // 直接全屏显示
                     if (this.showAIModal) {
                         this.aiFullscreen = true;
-                        if (this.aiMessages.length === 0) {
-                            this.addWelcomeMessage();
-                        }
+                        console.log('🤖 AI模态框打开，全屏模式');
                     } else {
                         this.aiFullscreen = false;
+                        console.log('🤖 AI模态框关闭');
                     }
                     // 自动滚动到最新消息
                     this.$nextTick(() => {
@@ -4712,19 +4721,8 @@
                 },
 
                 addWelcomeMessage() {
-                    if (this.aiMessages.length === 0) {
-                        this.aiMessages.push({
-                            type: 'ai',
-                            content: `你好！我是AI智能助手 🤖<br><br>我可以帮助你：<br>• 解释题目的解题思路<br>• 分析知识点<br>• 找出易错点<br>• 批改答题情况<br><br>🎮 <strong>快捷键说明</strong>：<br>• <kbd>Enter</kbd> 提交答案<br>• <kbd>← →</kbd> 切换题目<br>• <kbd>F11</kbd> 全屏切换<br>• <kbd>ESC</kbd> 退出/返回<br>• <kbd>Ctrl+S</kbd> 保存进度<br>• <kbd>1-4</kbd> 选择选项<br><br>请随时向我提问！`,
-                            timestamp: Date.now()
-                        });
-                        console.log('📋 欢迎消息添加后消息列表长度:', this.aiMessages.length);
-                        // 强制Vue更新
-                        this.$forceUpdate();
-                        this.$nextTick(() => {
-                            this.scrollAIMessages();
-                        });
-                    }
+                    // 现在使用HTML条件渲染，不需要JS添加欢迎消息
+                    console.log('📋 欢迎消息通过HTML条件渲染显示');
                 },
 
                 async askQuickQuestion(question) {
@@ -4812,24 +4810,17 @@
                             console.log('🔍 AI回复结构:', typeof result, result);
 
                             if (result && result.content && result.content.trim()) {
-                                console.log('📝 添加AI回复到消息列表:', result.content);
+                                console.log('📝 AI回复成功，内容长度:', result.content.length);
                                 this.aiMessages.push({
                                     type: 'ai',
                                     content: result.content + '<br><br><small style="color: #888;">🤖 由智能AI提供</small>',
                                     timestamp: Date.now()
                                 });
-                                console.log('📋 当前消息列表长度:', this.aiMessages.length);
-                                console.log('📋 当前消息列表:', JSON.stringify(this.aiMessages, null, 2));
+                                console.log('📋 消息列表长度:', this.aiMessages.length);
                                 
-                                // 强制Vue更新和滚动
-                                this.$forceUpdate();
+                                // 滚动到底部
                                 this.$nextTick(() => {
-                                    console.log('🎯 尝试滚动到底部');
                                     this.scrollAIMessages();
-                                    // 双重确保滚动
-                                    setTimeout(() => {
-                                        this.scrollAIMessages();
-                                    }, 100);
                                 });
                             } else {
                                 console.warn('⚠️ AI返回内容为空或格式错误:', result);
@@ -4847,16 +4838,11 @@
                             content: localResponse + '<br><br><small style="color: #888;">📚 来源：本地知识库</small>',
                             timestamp: Date.now()
                         });
-                        console.log('📋 本地回复添加后消息列表长度:', this.aiMessages.length);
+                        console.log('📋 本地回复，消息列表长度:', this.aiMessages.length);
                         
-                        // 强制Vue更新和滚动
-                        this.$forceUpdate();
+                        // 滚动到底部
                         this.$nextTick(() => {
-                            console.log('🎯 本地回复滚动到底部');
                             this.scrollAIMessages();
-                            setTimeout(() => {
-                                this.scrollAIMessages();
-                            }, 100);
                         });
                     }
                 },
@@ -4889,18 +4875,17 @@
                 scrollAIMessages() {
                     this.$nextTick(() => {
                         const messagesEl = this.$refs.aiMessages;
-                        console.log('🔍 滚动元素检查:', messagesEl);
                         if (messagesEl) {
-                            console.log('📐 滚动前 scrollTop:', messagesEl.scrollTop, 'scrollHeight:', messagesEl.scrollHeight);
                             messagesEl.scrollTop = messagesEl.scrollHeight;
-                            console.log('📐 滚动后 scrollTop:', messagesEl.scrollTop);
+                            console.log('🎯 滚动到底部，高度:', messagesEl.scrollHeight);
                         } else {
-                            console.warn('⚠️ 找不到AI消息容器元素');
-                            // 尝试通过选择器查找
+                            // 备用查找
                             const fallbackEl = document.querySelector('.ai-chat-messages');
                             if (fallbackEl) {
-                                console.log('✅ 使用备用选择器找到元素');
                                 fallbackEl.scrollTop = fallbackEl.scrollHeight;
+                                console.log('🎯 备用滚动成功');
+                            } else {
+                                console.warn('⚠️ 无法找到消息容器');
                             }
                         }
                     });
