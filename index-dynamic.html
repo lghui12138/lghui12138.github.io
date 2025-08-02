@@ -1189,6 +1189,8 @@
                 // 用户验证 
                 async validateUser(username, password) {
                     try {
+                        console.log('🔍 验证用户:', username);
+                        
                         // 从用户数据文件验证
                         const response = await fetch('data/users.json');
                         
@@ -1197,20 +1199,28 @@
                         }
                         
                         const users = await response.json();
-                        const user = users[username];
+                        console.log('👥 可用用户:', Object.keys(users));
                         
-                        if (user && user.password === password) {
-                            return {
-                                username: username,
-                                name: user.name,
-                                role: user.role,
-                                color: user.color || 'student'
-                            };
+                        const user = users[username];
+                        console.log('👤 找到用户:', !!user);
+                        
+                        if (user) {
+                            console.log('🔑 密码匹配:', user.password === password);
+                            if (user.password === password) {
+                                console.log('✅ 登录成功:', user.name);
+                                return {
+                                    username: username,
+                                    name: user.name,
+                                    role: user.role,
+                                    color: user.color || 'student'
+                                };
+                            }
                         }
                         
+                        console.log('❌ 验证失败');
                         return null;
                     } catch (error) {
-                        console.error('验证用户失败:', error);
+                        console.error('❌ 验证用户失败:', error);
                         this.loginError = `登录失败: ${error.message}`;
                         return null;
                     }
