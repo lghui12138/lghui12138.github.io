@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>湍流理论 - 极致美观学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- 移除有问题的polyfill，MathJax 3.x 已经内置了必要的polyfill -->
+    <script id="MathJax-script" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                enableMenu: false
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('MathJax渲染完成');
+                    });
+                }
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* 浮动粒子效果 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: linear-gradient(90deg, #e74c3c, #c0392b, #e74c3c);
+            animation: borderGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes borderGlow {
+            0% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            font-size: 1.3em;
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 30px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .content-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+        }
+
+        .card-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #e74c3c;
+            text-align: center;
+        }
+
+        .card-content {
+            color: #555;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .formula-display {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: center;
+            border: 2px solid #e74c3c;
+        }
+
+        .formula-display .MathJax {
+            font-size: 1.5em !important;
+            color: #2c3e50;
+        }
+
+        .navigation {
+            text-align: center;
+            margin-top: 40px;
+        }
+
+        .nav-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(231, 76, 60, 0.3);
+        }
+
+        .nav-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(231, 76, 60, 0.4);
+        }
+
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .feature-list li::before {
+            content: '🌪️';
+            position: absolute;
+            left: 0;
+            color: #e74c3c;
+        }
+
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- 浮动粒子效果 -->
+    <div id="particles" class="particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1>🌪️ 湍流理论</h1>
+            <p>深入研究湍流现象、雷诺应力、湍流模型等复杂流体力学问题</p>
+        </div>
+
+        <div class="content-grid">
+            <div class="content-card">
+                <div class="card-title">RANS方程</div>
+                <div class="card-content">
+                    <p>雷诺平均Navier-Stokes方程是湍流建模的基础：</p>
+                    <div class="formula-display">
+                        $$\frac{\partial \bar{u_i}}{\partial t} + \bar{u_j}\frac{\partial \bar{u_i}}{\partial x_j} = -\frac{1}{\rho}\frac{\partial \bar{p}}{\partial x_i} + \nu\frac{\partial^2 \bar{u_i}}{\partial x_j^2} - \frac{\partial \overline{u_i'u_j'}}{\partial x_j}$$
+                    </div>
+                    <p>其中 $\overline{u_i'u_j'}$ 为雷诺应力张量，表示湍流脉动的影响。</p>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="card-title">雷诺应力</div>
+                <div class="card-content">
+                    <p>雷诺应力张量描述了湍流脉动对平均流的影响：</p>
+                    <div class="formula-display">
+                        $$\tau_{ij} = -\rho \overline{u_i'u_j'}$$
+                    </div>
+                    <p>这是湍流建模中的关键物理量，需要通过湍流模型来封闭。</p>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="card-title">k-ε湍流模型</div>
+                <div class="card-content">
+                    <p>k-ε模型是最常用的湍流模型之一：</p>
+                    <div class="formula-display">
+                        $$\frac{\partial k}{\partial t} + \bar{u_j}\frac{\partial k}{\partial x_j} = P_k - \varepsilon + \frac{\partial}{\partial x_j}\left[\left(\nu + \frac{\nu_t}{\sigma_k}\right)\frac{\partial k}{\partial x_j}\right]$$
+                    </div>
+                    <p>其中 $k$ 为湍动能，$\varepsilon$ 为湍流耗散率。</p>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="card-title">湍流特征</div>
+                <div class="card-content">
+                    <ul class="feature-list">
+                        <li><strong>随机性：</strong>湍流具有高度的随机性和不可预测性</li>
+                        <li><strong>三维性：</strong>湍流运动本质上是三维的</li>
+                        <li><strong>扩散性：</strong>湍流具有强烈的混合和扩散能力</li>
+                        <li><strong>耗散性：</strong>湍流能量通过粘性耗散转化为热能</li>
+                        <li><strong>间歇性：</strong>湍流具有间歇性和间歇性结构</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="card-title">湍流尺度</div>
+                <div class="card-content">
+                    <p>湍流包含多个尺度的运动：</p>
+                    <ul class="feature-list">
+                        <li><strong>积分尺度：</strong>最大涡旋的特征尺度</li>
+                        <li><strong>泰勒微尺度：</strong>速度梯度的特征尺度</li>
+                        <li><strong>科尔莫戈罗夫尺度：</strong>最小涡旋的特征尺度</li>
+                    </ul>
+                    <div class="formula-display">
+                        $$\eta = \left(\frac{\nu^3}{\varepsilon}\right)^{1/4}$$
+                    </div>
+                    <p>其中 $\eta$ 为科尔莫戈罗夫尺度。</p>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="card-title">湍流建模方法</div>
+                <div class="card-content">
+                    <ul class="feature-list">
+                        <li><strong>RANS方法：</strong>求解雷诺平均方程</li>
+                        <li><strong>LES方法：</strong>大涡模拟，直接求解大尺度运动</li>
+                        <li><strong>DNS方法：</strong>直接数值模拟，求解所有尺度</li>
+                        <li><strong>混合方法：</strong>结合不同方法的优势</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="navigation">
+            <a href="../index-complete.html" class="nav-button">
+                <i class="fas fa-home"></i> 返回首页
+            </a>
+            <a href="fluid-dynamics-dynamic.html" class="nav-button">
+                <i class="fas fa-water"></i> 流体动力学
+            </a>
+            <a href="viscous-flow-dynamic.html" class="nav-button">
+                <i class="fas fa-tint"></i> 粘性流动
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // 创建浮动粒子效果
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+        });
+    </script>
+</body>
+</html> 
