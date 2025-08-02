@@ -8,6 +8,119 @@
     <meta name="format-detection" content="telephone=no">
     <title>🌊 流体力学学习平台 - 模块化版本</title>
     
+    <!-- 安全保护功能 -->
+    <script>
+        // 防录屏和防复制保护
+        (function() {
+            'use strict';
+            
+            // 禁用右键菜单
+            document.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+                return false;
+            });
+            
+            // 禁用开发者工具快捷键
+            document.addEventListener('keydown', function(e) {
+                // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U
+                if (e.keyCode === 123 || 
+                    (e.ctrlKey && e.shiftKey && (e.keyCode === 73 || e.keyCode === 74)) ||
+                    (e.ctrlKey && e.keyCode === 85)) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // 禁用复制快捷键
+                if (e.ctrlKey && (e.keyCode === 67 || e.keyCode === 65 || e.keyCode === 83)) {
+                    e.preventDefault();
+                    return false;
+                }
+                
+                // 禁用截图快捷键
+                if (e.key === 'PrintScreen') {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+            
+            // 禁用文本选择
+            document.addEventListener('selectstart', function(e) {
+                e.preventDefault();
+                return false;
+            });
+            
+            // 禁用拖拽
+            document.addEventListener('dragstart', function(e) {
+                e.preventDefault();
+                return false;
+            });
+            
+            // 检测录屏软件
+            function detectScreenRecording() {
+                // 检测页面焦点变化（可能表示录屏软件启动）
+                let focusCount = 0;
+                document.addEventListener('visibilitychange', function() {
+                    focusCount++;
+                    if (focusCount > 5) {
+                        alert('检测到可疑录屏行为，系统将自动退出！');
+                        window.location.href = 'about:blank';
+                    }
+                });
+                
+                // 检测窗口大小变化
+                let resizeCount = 0;
+                window.addEventListener('resize', function() {
+                    resizeCount++;
+                    if (resizeCount > 10) {
+                        console.warn('检测到异常窗口操作');
+                    }
+                });
+            }
+            
+            // 页面加载完成后启动保护
+            document.addEventListener('DOMContentLoaded', function() {
+                detectScreenRecording();
+                
+                // 添加版权水印
+                const watermark = document.createElement('div');
+                watermark.innerHTML = '© 刘光辉 - 仅授权访问';
+                watermark.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%) rotate(-45deg);
+                    color: rgba(0,0,0,0.1);
+                    font-size: 48px;
+                    font-weight: bold;
+                    pointer-events: none;
+                    z-index: 9999;
+                    user-select: none;
+                `;
+                document.body.appendChild(watermark);
+            });
+            
+            // 检测开发者工具
+            let devtools = {
+                open: false,
+                orientation: null
+            };
+            
+            const threshold = 160;
+            
+            setInterval(function() {
+                if (window.outerHeight - window.innerHeight > threshold || 
+                    window.outerWidth - window.innerWidth > threshold) {
+                    if (!devtools.open) {
+                        devtools.open = true;
+                        alert('检测到开发者工具，访问被拒绝！');
+                        window.location.href = 'about:blank';
+                    }
+                }
+            }, 500);
+            
+        })();
+    </script>
+    
     <!-- Font Awesome - 使用国内CDN -->
     <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" onerror="loadFallbackFA()">
     
@@ -1707,7 +1820,10 @@
         <div class="login-form">
             <div class="login-header">
                 <h2>🌊 流体力学学习平台</h2>
-                <p>请登录以继续使用</p>
+                <p>本网站需要登录才能访问。</p>
+                <p style="color: #ff6b6b; font-size: 0.9em; margin-top: 10px;">
+                    <i class="fas fa-lock"></i> 仅授权用户可访问
+                </p>
             </div>
             <form onsubmit="performLogin(event)">
                 <div class="form-group">
@@ -2276,33 +2392,18 @@
     <script src="js/core/smart-model-selector.js"></script>
     
     <script>
-        // 用户账号数据 - 从fluid_dynamic_4.html迁移
+        // 用户账号数据 - 仅授权用户可访问
         const USER_ACCOUNTS = {
             'liuguanghui6330156': { 
                 name: '刘光辉', 
-                role: 'teacher', 
+                role: 'admin', 
                 password: 'Ll700306', 
                 avatar: '刘'
-            },
-            'student1': { 
-                name: '学生账号', 
-                role: 'student', 
-                password: '123456', 
-                avatar: '学'
-            },
-            'niwenxuan': { 
-                name: '倪文轩', 
-                role: 'student', 
-                password: 'niwenxuan2025', 
-                avatar: '倪'
-            },
-            'hanwenxu': { 
-                name: '韩文旭', 
-                role: 'student', 
-                password: 'hanwenxu2025', 
-                avatar: '韩'
             }
         };
+        
+        // 授权用户列表
+        const AUTHORIZED_USERS = ['liuguanghui6330156'];
         
         // 分数线数据 - 从fluid_dynamic_4.html迁移
         const scoreData = {
@@ -2350,6 +2451,11 @@
                 // 模拟网络延迟
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 
+                // 验证用户授权
+                if (!AUTHORIZED_USERS.includes(username)) {
+                    throw new Error('访问被拒绝：您没有权限访问此系统');
+                }
+                
                 // 验证用户凭据
                 const user = USER_ACCOUNTS[username];
                 if (!user || user.password !== password) {
@@ -2378,6 +2484,11 @@
                 setupUserModules();
                 
                 showNotification(`登录成功！欢迎 ${currentUser.name}`, 'success');
+                
+                // 显示安全提示
+                setTimeout(() => {
+                    showNotification('安全提示：本系统已启用防复制和防录屏保护', 'info');
+                }, 2000);
                 
                 // 初始化主页
                 initHomePage();
