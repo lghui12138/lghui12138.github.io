@@ -459,6 +459,19 @@
             transform: scale(1) translateY(0);
         }
 
+        /* AI弹窗全屏模式 */
+        .ai-modal.fullscreen {
+            width: 100vw;
+            height: 100vh;
+            max-width: none;
+            max-height: none;
+            border-radius: 0;
+        }
+
+        .ai-modal.fullscreen .ai-chat-container {
+            height: calc(100vh - 200px);
+        }
+
         .ai-modal-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -614,6 +627,35 @@
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
+        }
+
+        /* AI题目显示区域 */
+        .ai-question-display {
+            padding: 15px 20px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+            border-bottom: 1px solid #e9ecef;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .ai-question-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .ai-question-content {
+            font-size: 13px;
+            color: #666;
+            line-height: 1.5;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
         }
 
         /* AI快捷提示 */
@@ -2975,20 +3017,50 @@
 
             <!-- AI助手弹窗 -->
             <div class="ai-modal-overlay" :class="{ show: showAIModal }" @click="closeAIModal">
-                <div class="ai-modal" @click.stop>
+                <div class="ai-modal" :class="{ fullscreen: aiFullscreen }" @click.stop>
                     <!-- AI弹窗头部 -->
                     <div class="ai-modal-header">
                         <div class="ai-modal-title">
                             <i class="fas fa-robot"></i>
                             AI智能助手
                         </div>
-                        <button @click="closeAIModal" class="ai-modal-close">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button @click="toggleAIFullscreen" class="ai-modal-close" :title="aiFullscreen ? '退出全屏' : '全屏显示'">
+                                <i :class="aiFullscreen ? 'fas fa-compress' : 'fas fa-expand'"></i>
+                            </button>
+                            <button @click="closeAIModal" class="ai-modal-close">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- AI弹窗内容 -->
                     <div class="ai-modal-content">
+                        <!-- 当前题目显示 -->
+                        <div v-if="currentQuestion" class="ai-question-display">
+                            <div class="ai-question-title">
+                                <i class="fas fa-question-circle"></i>
+                                当前题目（第 {{ currentQuestionIndex + 1 }} 题）
+                            </div>
+                            <div class="ai-question-content">
+                                <strong>{{ currentQuestion.title }}</strong>
+                                <div v-if="currentQuestion.content" style="margin-top: 8px;">
+                                    {{ currentQuestion.content }}
+                                </div>
+                                <div v-if="currentQuestion.options && currentQuestion.options.length > 0" style="margin-top: 8px;">
+                                    <div v-for="(option, index) in currentQuestion.options" :key="index" style="margin: 4px 0;">
+                                        {{ String.fromCharCode(65 + index) }}. {{ option }}
+                                    </div>
+                                </div>
+                                <div v-if="showResult" style="margin-top: 8px; font-weight: bold;">
+                                    <span :style="{ color: isCorrect ? '#28a745' : '#dc3545' }">
+                                        {{ isCorrect ? '✅ 答题正确' : '❌ 答题错误' }}
+                                        (你的答案: {{ selectedAnswer !== null ? String.fromCharCode(65 + selectedAnswer) : '未选择' }}, 
+                                         正确答案: {{ currentQuestion.answer }})
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                         <!-- AI快捷提示 -->
                         <div class="ai-quick-tips">
                             <h4><i class="fas fa-lightbulb"></i> 智能提问助手</h4>
@@ -3022,6 +3094,13 @@
                                     <div class="ai-message-avatar">AI</div>
                                     <div class="ai-message-content">
                                         <i class="fas fa-spinner fa-spin"></i> AI正在思考中...
+                                    </div>
+                                </div>
+                                <div v-if="aiMessages.length === 0 && !aiLoading" class="ai-message ai">
+                                    <div class="ai-message-avatar">AI</div>
+                                    <div class="ai-message-content">
+                                        👋 欢迎使用AI智能助手！<br>
+                                        我可以帮助您解答题目相关的问题。
                                     </div>
                                 </div>
                             </div>
@@ -3173,6 +3252,7 @@
                     aiMessages: [],
                     aiLoading: false,
                     aiNotification: false,
+                    aiFullscreen: false,
                     smartModelSelectorInstance: null,
                     
                     // AI批改相关
@@ -4566,7 +4646,12 @@
                         if (window.SmartModelSelector && window.AppConfig) {
                             console.log('🤖 初始化AI智能助手...');
                             const smartConfig = window.AppConfig.api.smartAI;
-                            this.smartModelSelectorInstance = await window.SmartModelSelector.init({
+                            
+                            // 创建SmartModelSelector实例
+                            this.smartModelSelectorInstance = new window.SmartModelSelector();
+                            
+                            // 初始化配置
+                            await this.smartModelSelectorInstance.init({
                                 apiKey: smartConfig.apiKey,
                                 apiUrl: smartConfig.endpoint,
                                 defaultStrategy: smartConfig.defaultStrategy,
@@ -4575,9 +4660,12 @@
                                 skipAvailabilityCheck: smartConfig.skipAvailabilityCheck
                             });
                             console.log('✅ AI智能助手初始化完成');
+                        } else {
+                            console.warn('⚠️ SmartModelSelector或AppConfig未加载');
                         }
                     } catch (error) {
                         console.error('❌ AI系统初始化失败:', error);
+                        this.smartModelSelectorInstance = null;
                     }
                 },
 
@@ -4586,18 +4674,32 @@
                     if (this.showAIModal && this.aiMessages.length === 0) {
                         this.addWelcomeMessage();
                     }
+                    // 自动滚动到最新消息
+                    this.$nextTick(() => {
+                        this.scrollAIMessages();
+                    });
                 },
 
                 closeAIModal() {
                     this.showAIModal = false;
+                    this.aiFullscreen = false;
+                },
+
+                toggleAIFullscreen() {
+                    this.aiFullscreen = !this.aiFullscreen;
+                    this.$nextTick(() => {
+                        this.scrollAIMessages();
+                    });
                 },
 
                 addWelcomeMessage() {
-                    this.aiMessages.push({
-                        type: 'ai',
-                        content: '你好！我是AI智能助手 🤖<br><br>我可以帮助你：<br>• 解释题目的解题思路<br>• 分析知识点<br>• 找出易错点<br>• 批改答题情况<br><br>请随时向我提问！',
-                        timestamp: Date.now()
-                    });
+                    if (this.aiMessages.length === 0) {
+                        this.aiMessages.push({
+                            type: 'ai',
+                            content: '你好！我是AI智能助手 🤖<br><br>我可以帮助你：<br>• 解释题目的解题思路<br>• 分析知识点<br>• 找出易错点<br>• 批改答题情况<br><br>请随时向我提问！',
+                            timestamp: Date.now()
+                        });
+                    }
                 },
 
                 async askQuickQuestion(question) {
@@ -4628,13 +4730,16 @@
                         });
                     } finally {
                         this.aiLoading = false;
-                        this.$nextTick(() => {
+                        // 确保消息渲染完成后滚动
+                        setTimeout(() => {
                             this.scrollAIMessages();
-                        });
+                        }, 100);
                     }
                 },
 
                 async callAIForQuestion(question) {
+                    console.log('🤖 开始AI问答:', question);
+                    
                     // 构建上下文信息
                     let contextInfo = '';
                     if (this.currentQuestion) {
@@ -4655,14 +4760,18 @@
                         }
                     }
 
-                    const enhancedPrompt = `${contextInfo}\n用户问题：${question}`;
+                    const enhancedPrompt = `${contextInfo}\n\n用户问题：${question}`;
+                    console.log('🔍 AI请求内容:', enhancedPrompt);
 
                     try {
+                        // 确保AI系统已初始化
                         if (!this.smartModelSelectorInstance) {
+                            console.log('🔄 重新初始化AI系统...');
                             await this.initAISystem();
                         }
 
-                        if (this.smartModelSelectorInstance) {
+                        if (this.smartModelSelectorInstance && typeof this.smartModelSelectorInstance.callAI === 'function') {
+                            console.log('📡 调用AI API...');
                             const result = await this.smartModelSelectorInstance.callAI(enhancedPrompt, {
                                 strategy: 'balanced',
                                 features: ['chat', 'reasoning'],
@@ -4671,22 +4780,36 @@
                                 systemPrompt: '你是一个专业的流体力学教师，善于解答学生的问题。请用简洁易懂的语言回答，可以使用适当的表情符号让回答更生动。'
                             });
 
-                            this.aiMessages.push({
-                                type: 'ai',
-                                content: result.content + '<br><br><small style="color: #888;">🤖 由智能AI提供</small>',
-                                timestamp: Date.now()
-                            });
+                            console.log('✅ AI回复成功:', result);
+
+                            if (result && result.content) {
+                                this.aiMessages.push({
+                                    type: 'ai',
+                                    content: result.content + '<br><br><small style="color: #888;">🤖 由智能AI提供</small>',
+                                    timestamp: Date.now()
+                                });
+                                // 添加消息后自动滚动
+                                this.$nextTick(() => {
+                                    this.scrollAIMessages();
+                                });
+                            } else {
+                                throw new Error('AI返回内容为空');
+                            }
                         } else {
-                            throw new Error('AI系统未初始化');
+                            throw new Error('AI系统未正确初始化');
                         }
                     } catch (error) {
-                        console.error('AI调用失败:', error);
+                        console.error('❌ AI调用失败:', error);
                         // 提供本地回复作为备选
                         const localResponse = this.getLocalAIResponse(question);
                         this.aiMessages.push({
                             type: 'ai',
-                            content: localResponse,
+                            content: localResponse + '<br><br><small style="color: #888;">📚 来源：本地知识库</small>',
                             timestamp: Date.now()
+                        });
+                        // 添加消息后自动滚动
+                        this.$nextTick(() => {
+                            this.scrollAIMessages();
                         });
                     }
                 },
@@ -4717,9 +4840,12 @@
                 },
 
                 scrollAIMessages() {
-                    if (this.$refs.aiMessages) {
-                        this.$refs.aiMessages.scrollTop = this.$refs.aiMessages.scrollHeight;
-                    }
+                    this.$nextTick(() => {
+                        const messagesEl = this.$refs.aiMessages;
+                        if (messagesEl) {
+                            messagesEl.scrollTop = messagesEl.scrollHeight;
+                        }
+                    });
                 },
 
                 // AI批改功能
@@ -4773,7 +4899,8 @@
                             await this.initAISystem();
                         }
 
-                        if (this.smartModelSelectorInstance) {
+                        if (this.smartModelSelectorInstance && typeof this.smartModelSelectorInstance.callAI === 'function') {
+                            console.log('📡 调用AI批改API...');
                             const result = await this.smartModelSelectorInstance.callAI(gradingPrompt, {
                                 strategy: 'quality',
                                 features: ['reasoning', 'analysis'],
@@ -4782,21 +4909,29 @@
                                 systemPrompt: '你是一位经验丰富的流体力学教师，请客观公正地评价学生答题，并给出建设性建议。'
                             });
 
-                            // 尝试解析JSON结果
-                            try {
-                                const gradingData = JSON.parse(result.content);
-                                this.aiGradingResult = gradingData;
-                            } catch (parseError) {
-                                // 如果不是JSON格式，创建默认结果
-                                this.aiGradingResult = {
-                                    score: this.isCorrect ? 85 : 45,
-                                    level: this.isCorrect ? '良好' : '需要改进',
-                                    summary: this.isCorrect ? '答案正确，理解较好' : '答案有误，需要加强理解',
-                                    feedback: result.content
-                                };
+                            console.log('✅ AI批改回复:', result);
+
+                            if (result && result.content) {
+                                // 尝试解析JSON结果
+                                try {
+                                    const gradingData = JSON.parse(result.content);
+                                    this.aiGradingResult = gradingData;
+                                } catch (parseError) {
+                                    console.warn('⚠️ AI返回非JSON格式，使用默认格式');
+                                    // 如果不是JSON格式，创建默认结果
+                                    this.aiGradingResult = {
+                                        score: this.isCorrect ? 85 : 45,
+                                        level: this.isCorrect ? '良好' : '需要改进',
+                                        summary: this.isCorrect ? '答案正确，理解较好' : '答案有误，需要加强理解',
+                                        feedback: result.content
+                                    };
+                                }
+                            } else {
+                                throw new Error('AI批改返回内容为空');
                             }
                         } else {
                             // 提供本地批改结果
+                            console.log('📚 使用本地批改结果');
                             this.aiGradingResult = this.getLocalGradingResult();
                         }
                     } catch (error) {
@@ -4875,8 +5010,9 @@
                 }, 1500);
 
                 // 初始化AI系统
-                setTimeout(() => {
-                    this.initAISystem();
+                setTimeout(async () => {
+                    await this.initAISystem();
+                    console.log('🎉 系统完全就绪！');
                 }, 2000);
 
                 // 绑定键盘事件
