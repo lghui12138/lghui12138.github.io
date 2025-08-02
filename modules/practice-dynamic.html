@@ -4742,11 +4742,16 @@
                     if (!this.aiInputText.trim() || this.aiLoading) return;
 
                     const userMessage = this.aiInputText.trim();
-                    this.aiMessages.push({
+                    const userMessageObj = {
                         type: 'user',
                         content: userMessage,
                         timestamp: Date.now()
-                    });
+                    };
+                    
+                    this.aiMessages.push(userMessageObj);
+                    console.log('👤 用户消息已添加:', userMessageObj);
+                    console.log('👤 当前消息列表长度:', this.aiMessages.length);
+                    console.log('👤 完整消息列表:', this.aiMessages);
 
                     this.aiInputText = '';
                     this.aiLoading = true;
@@ -4819,16 +4824,35 @@
 
                             if (result && result.content && result.content.trim()) {
                                 console.log('📝 AI回复成功，内容长度:', result.content.length);
-                                this.aiMessages.push({
+                                
+                                const newMessage = {
                                     type: 'ai',
                                     content: result.content + '<br><br><small style="color: #888;">🤖 由智能AI提供</small>',
                                     timestamp: Date.now()
-                                });
+                                };
+                                
+                                // 添加消息到数组
+                                this.aiMessages.push(newMessage);
                                 console.log('📋 消息列表长度:', this.aiMessages.length);
+                                console.log('📋 最新消息:', newMessage);
+                                console.log('📋 完整消息列表:', this.aiMessages);
+                                
+                                // 强制Vue更新
+                                this.$forceUpdate();
+                                console.log('🔄 强制Vue更新完成');
                                 
                                 // 滚动到底部
                                 this.$nextTick(() => {
+                                    console.log('🎯 开始滚动到底部');
                                     this.scrollAIMessages();
+                                    
+                                    // 验证DOM是否更新
+                                    const messagesEl = this.$refs.aiMessages;
+                                    if (messagesEl) {
+                                        const messageElements = messagesEl.querySelectorAll('.ai-message');
+                                        console.log('📊 DOM中的消息数量:', messageElements.length);
+                                        console.log('📊 Vue数据中的消息数量:', this.aiMessages.length);
+                                    }
                                 });
                             } else {
                                 console.warn('⚠️ AI返回内容为空或格式错误:', result);
@@ -4841,16 +4865,33 @@
                         console.error('❌ AI调用失败:', error);
                         // 提供本地回复作为备选
                         const localResponse = this.getLocalAIResponse(question);
-                        this.aiMessages.push({
+                        const localMessage = {
                             type: 'ai',
                             content: localResponse + '<br><br><small style="color: #888;">📚 来源：本地知识库</small>',
                             timestamp: Date.now()
-                        });
+                        };
+                        
+                        this.aiMessages.push(localMessage);
                         console.log('📋 本地回复，消息列表长度:', this.aiMessages.length);
+                        console.log('📋 本地回复消息:', localMessage);
+                        console.log('📋 本地回复完整列表:', this.aiMessages);
+                        
+                        // 强制Vue更新
+                        this.$forceUpdate();
+                        console.log('🔄 本地回复强制Vue更新完成');
                         
                         // 滚动到底部
                         this.$nextTick(() => {
+                            console.log('🎯 本地回复开始滚动到底部');
                             this.scrollAIMessages();
+                            
+                            // 验证DOM是否更新
+                            const messagesEl = this.$refs.aiMessages;
+                            if (messagesEl) {
+                                const messageElements = messagesEl.querySelectorAll('.ai-message');
+                                console.log('📊 本地回复DOM中的消息数量:', messageElements.length);
+                                console.log('📊 本地回复Vue数据中的消息数量:', this.aiMessages.length);
+                            }
                         });
                     }
                 },
@@ -5068,6 +5109,34 @@
                 setTimeout(async () => {
                     await this.initAISystem();
                     console.log('🎉 系统完全就绪！');
+                    
+                    // 调试AI消息系统
+                    console.log('🔍 AI消息系统状态检查:');
+                    console.log('📋 aiMessages数组:', this.aiMessages);
+                    console.log('📋 aiMessages长度:', this.aiMessages.length);
+                    console.log('📋 aiMessages类型:', typeof this.aiMessages);
+                    console.log('📋 是否为数组:', Array.isArray(this.aiMessages));
+                    
+                    // 测试添加一条消息
+                    this.aiMessages.push({
+                        type: 'ai',
+                        content: '🔧 系统测试消息 - 如果您看到这条消息，说明Vue响应式系统工作正常',
+                        timestamp: Date.now()
+                    });
+                    console.log('🧪 添加测试消息后，数组长度:', this.aiMessages.length);
+                    
+                    // 强制更新检查
+                    this.$forceUpdate();
+                    this.$nextTick(() => {
+                        const messagesEl = this.$refs.aiMessages;
+                        if (messagesEl) {
+                            const messageElements = messagesEl.querySelectorAll('.ai-message');
+                            console.log('🧪 测试消息DOM检查 - DOM中消息数:', messageElements.length);
+                            console.log('🧪 测试消息DOM检查 - Vue数据中消息数:', this.aiMessages.length);
+                        } else {
+                            console.error('❌ 无法找到AI消息容器元素');
+                        }
+                    });
                 }, 2000);
 
                 // 绑定键盘事件
