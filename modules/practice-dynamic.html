@@ -482,6 +482,7 @@
             display: flex;
             flex-direction: column;
             min-height: 0;
+            height: auto; /* 覆盖基础高度 */
         }
 
         .ai-modal.fullscreen .ai-chat-messages {
@@ -490,8 +491,31 @@
         }
 
         .ai-modal.fullscreen .ai-question-display {
-            max-height: 150px;
+            max-height: 120px;
             overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .ai-modal.fullscreen .ai-quick-tips {
+            padding: 10px 20px;
+            flex-shrink: 0;
+        }
+
+        .ai-modal.fullscreen .ai-tips-grid {
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 6px;
+        }
+
+        .ai-modal.fullscreen .ai-tip-btn {
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+
+        .ai-modal.fullscreen .ai-chat-input-area {
+            flex-shrink: 0;
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
         }
 
 
@@ -3117,13 +3141,7 @@
                                         <i class="fas fa-spinner fa-spin"></i> AI正在思考中...
                                     </div>
                                 </div>
-                                <div v-if="aiMessages.length === 0 && !aiLoading" class="ai-message ai">
-                                    <div class="ai-message-avatar">AI</div>
-                                    <div class="ai-message-content">
-                                        👋 欢迎使用AI智能助手！<br>
-                                        我可以帮助您解答题目相关的问题。
-                                    </div>
-                                </div>
+
                             </div>
 
                             <div class="ai-chat-input-area">
@@ -4700,6 +4718,12 @@
                             content: `你好！我是AI智能助手 🤖<br><br>我可以帮助你：<br>• 解释题目的解题思路<br>• 分析知识点<br>• 找出易错点<br>• 批改答题情况<br><br>🎮 <strong>快捷键说明</strong>：<br>• <kbd>Enter</kbd> 提交答案<br>• <kbd>← →</kbd> 切换题目<br>• <kbd>F11</kbd> 全屏切换<br>• <kbd>ESC</kbd> 退出/返回<br>• <kbd>Ctrl+S</kbd> 保存进度<br>• <kbd>1-4</kbd> 选择选项<br><br>请随时向我提问！`,
                             timestamp: Date.now()
                         });
+                        console.log('📋 欢迎消息添加后消息列表长度:', this.aiMessages.length);
+                        // 强制Vue更新
+                        this.$forceUpdate();
+                        this.$nextTick(() => {
+                            this.scrollAIMessages();
+                        });
                     }
                 },
 
@@ -4794,10 +4818,18 @@
                                     content: result.content + '<br><br><small style="color: #888;">🤖 由智能AI提供</small>',
                                     timestamp: Date.now()
                                 });
-                                console.log('📋 当前消息列表:', this.aiMessages);
-                                // 添加消息后自动滚动
+                                console.log('📋 当前消息列表长度:', this.aiMessages.length);
+                                console.log('📋 当前消息列表:', JSON.stringify(this.aiMessages, null, 2));
+                                
+                                // 强制Vue更新和滚动
+                                this.$forceUpdate();
                                 this.$nextTick(() => {
+                                    console.log('🎯 尝试滚动到底部');
                                     this.scrollAIMessages();
+                                    // 双重确保滚动
+                                    setTimeout(() => {
+                                        this.scrollAIMessages();
+                                    }, 100);
                                 });
                             } else {
                                 console.warn('⚠️ AI返回内容为空或格式错误:', result);
@@ -4815,9 +4847,16 @@
                             content: localResponse + '<br><br><small style="color: #888;">📚 来源：本地知识库</small>',
                             timestamp: Date.now()
                         });
-                        // 添加消息后自动滚动
+                        console.log('📋 本地回复添加后消息列表长度:', this.aiMessages.length);
+                        
+                        // 强制Vue更新和滚动
+                        this.$forceUpdate();
                         this.$nextTick(() => {
+                            console.log('🎯 本地回复滚动到底部');
                             this.scrollAIMessages();
+                            setTimeout(() => {
+                                this.scrollAIMessages();
+                            }, 100);
                         });
                     }
                 },
@@ -4850,8 +4889,19 @@
                 scrollAIMessages() {
                     this.$nextTick(() => {
                         const messagesEl = this.$refs.aiMessages;
+                        console.log('🔍 滚动元素检查:', messagesEl);
                         if (messagesEl) {
+                            console.log('📐 滚动前 scrollTop:', messagesEl.scrollTop, 'scrollHeight:', messagesEl.scrollHeight);
                             messagesEl.scrollTop = messagesEl.scrollHeight;
+                            console.log('📐 滚动后 scrollTop:', messagesEl.scrollTop);
+                        } else {
+                            console.warn('⚠️ 找不到AI消息容器元素');
+                            // 尝试通过选择器查找
+                            const fallbackEl = document.querySelector('.ai-chat-messages');
+                            if (fallbackEl) {
+                                console.log('✅ 使用备用选择器找到元素');
+                                fallbackEl.scrollTop = fallbackEl.scrollHeight;
+                            }
                         }
                     });
                 },
