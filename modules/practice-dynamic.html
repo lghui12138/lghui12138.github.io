@@ -494,9 +494,7 @@
             overflow-y: auto;
         }
 
-        .ai-modal.fullscreen .shortcuts-section {
-            flex-shrink: 0;
-        }
+
 
         .ai-modal-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -598,6 +596,21 @@
         .ai-message.user .ai-message-content {
             background: linear-gradient(135deg, #667eea, #764ba2);
             color: white;
+        }
+
+        /* AI消息中的快捷键样式 */
+        .ai-message-content kbd {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            font-weight: bold;
+            color: #495057;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            display: inline-block;
+            margin: 0 2px;
         }
 
         .ai-chat-input-area {
@@ -836,47 +849,7 @@
             color: #495057;
         }
 
-        /* 快捷键说明样式 */
-        .shortcuts-section {
-            padding: 15px 20px;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border-top: 1px solid #dee2e6;
-        }
 
-        .shortcuts-title {
-            margin: 0 0 12px 0;
-            font-size: 14px;
-            font-weight: 600;
-            color: #495057;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .shortcuts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 8px;
-        }
-
-        .shortcut-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 12px;
-            color: #6c757d;
-        }
-
-        .shortcut-key {
-            background: #fff;
-            border: 1px solid #dee2e6;
-            border-radius: 4px;
-            padding: 2px 6px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            font-weight: bold;
-            color: #495057;
-        }
 
         /* 移动端优化 */
         @media (max-width: 768px) {
@@ -924,9 +897,7 @@
                 grid-template-columns: 1fr;
             }
 
-            .shortcuts-grid {
-                grid-template-columns: 1fr;
-            }
+
 
             .ai-modal.fullscreen .ai-question-display {
                 max-height: 120px;
@@ -3171,38 +3142,7 @@
                             </div>
                         </div>
 
-                        <!-- 快捷键说明 -->
-                        <div class="shortcuts-section">
-                            <h4 class="shortcuts-title">
-                                <i class="fas fa-keyboard"></i> 快捷键说明
-                            </h4>
-                            <div class="shortcuts-grid">
-                                <div class="shortcut-item">
-                                    <span class="shortcut-key">Enter</span>
-                                    <span>提交答案</span>
-                                </div>
-                                <div class="shortcut-item">
-                                    <span class="shortcut-key">← →</span>
-                                    <span>切换题目</span>
-                                </div>
-                                <div class="shortcut-item">
-                                    <span class="shortcut-key">F11</span>
-                                    <span>全屏切换</span>
-                                </div>
-                                <div class="shortcut-item">
-                                    <span class="shortcut-key">ESC</span>
-                                    <span>退出/返回</span>
-                                </div>
-                                <div class="shortcut-item">
-                                    <span class="shortcut-key">Ctrl+S</span>
-                                    <span>保存进度</span>
-                                </div>
-                                <div class="shortcut-item">
-                                    <span class="shortcut-key">1-4</span>
-                                    <span>选择选项</span>
-                                </div>
-                            </div>
-                        </div>
+
                     </div>
                 </div>
             </div>
@@ -4726,8 +4666,14 @@
 
                 toggleAIModal() {
                     this.showAIModal = !this.showAIModal;
-                    if (this.showAIModal && this.aiMessages.length === 0) {
-                        this.addWelcomeMessage();
+                    // 直接全屏显示
+                    if (this.showAIModal) {
+                        this.aiFullscreen = true;
+                        if (this.aiMessages.length === 0) {
+                            this.addWelcomeMessage();
+                        }
+                    } else {
+                        this.aiFullscreen = false;
                     }
                     // 自动滚动到最新消息
                     this.$nextTick(() => {
@@ -4751,7 +4697,7 @@
                     if (this.aiMessages.length === 0) {
                         this.aiMessages.push({
                             type: 'ai',
-                            content: '你好！我是AI智能助手 🤖<br><br>我可以帮助你：<br>• 解释题目的解题思路<br>• 分析知识点<br>• 找出易错点<br>• 批改答题情况<br><br>请随时向我提问！',
+                            content: `你好！我是AI智能助手 🤖<br><br>我可以帮助你：<br>• 解释题目的解题思路<br>• 分析知识点<br>• 找出易错点<br>• 批改答题情况<br><br>🎮 <strong>快捷键说明</strong>：<br>• <kbd>Enter</kbd> 提交答案<br>• <kbd>← →</kbd> 切换题目<br>• <kbd>F11</kbd> 全屏切换<br>• <kbd>ESC</kbd> 退出/返回<br>• <kbd>Ctrl+S</kbd> 保存进度<br>• <kbd>1-4</kbd> 选择选项<br><br>请随时向我提问！`,
                             timestamp: Date.now()
                         });
                     }
@@ -4839,19 +4785,23 @@
                             });
 
                             console.log('✅ AI回复成功:', result);
+                            console.log('🔍 AI回复结构:', typeof result, result);
 
-                            if (result && result.content) {
+                            if (result && result.content && result.content.trim()) {
+                                console.log('📝 添加AI回复到消息列表:', result.content);
                                 this.aiMessages.push({
                                     type: 'ai',
                                     content: result.content + '<br><br><small style="color: #888;">🤖 由智能AI提供</small>',
                                     timestamp: Date.now()
                                 });
+                                console.log('📋 当前消息列表:', this.aiMessages);
                                 // 添加消息后自动滚动
                                 this.$nextTick(() => {
                                     this.scrollAIMessages();
                                 });
                             } else {
-                                throw new Error('AI返回内容为空');
+                                console.warn('⚠️ AI返回内容为空或格式错误:', result);
+                                throw new Error(`AI返回内容为空或格式错误: ${JSON.stringify(result)}`);
                             }
                         } else {
                             throw new Error('AI系统未正确初始化');
