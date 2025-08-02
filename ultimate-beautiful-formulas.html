@@ -16,7 +16,29 @@
                 processEnvironments: true
             },
             options: {
-                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                enableMenu: false,
+                menuOptions: {
+                    settings: {
+                        texHints: true,
+                        semantics: false,
+                        zoom: 'NoZoom',
+                        zscale: '200%'
+                    }
+                }
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('MathJax渲染完成');
+                        // 确保所有公式都正确显示
+                        document.querySelectorAll('.formula-main').forEach(el => {
+                            el.style.display = 'block';
+                            el.style.visibility = 'visible';
+                            el.style.overflow = 'visible';
+                        });
+                    });
+                }
             }
         };
     </script>
@@ -188,11 +210,12 @@
             text-align: center;
             box-shadow: 0 15px 40px rgba(39, 174, 96, 0.3);
             position: relative;
-            overflow: hidden;
+            overflow: visible;
             animation: fadeInUp 0.8s ease-out;
             transition: all 0.4s ease;
             background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
             backdrop-filter: blur(10px);
+            min-height: 200px;
         }
 
         .ultimate-formula-container:hover {
@@ -269,7 +292,8 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
             border: 3px solid #e9ecef;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
+            min-height: 120px;
         }
 
         .formula-display::before {
@@ -290,6 +314,12 @@
             font-family: 'Times New Roman', serif;
             text-align: center;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+            word-wrap: break-word;
         }
 
         .formula-explanation {
@@ -563,10 +593,19 @@
 
         .MathJax {
             font-size: 1.2em !important;
+            display: block !important;
+            text-align: center !important;
+            overflow: visible !important;
         }
 
         .formula-display .MathJax {
             font-size: 1.6em !important;
+        }
+
+        .formula-main .MathJax {
+            font-size: 2em !important;
+            overflow: visible !important;
+            word-wrap: break-word !important;
         }
 
         .info-box {
@@ -953,12 +992,22 @@
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
             
-            // 重新渲染数学公式
+            // 确保MathJax正确渲染
             setTimeout(() => {
-                if (window.MathJax && window.MathJax.typeset) {
-                    MathJax.typeset();
+                if (window.MathJax) {
+                    MathJax.typesetPromise().then(() => {
+                        console.log('MathJax渲染完成');
+                        // 确保所有公式都正确显示
+                        document.querySelectorAll('.formula-main').forEach(el => {
+                            el.style.display = 'block';
+                            el.style.visibility = 'visible';
+                            el.style.overflow = 'visible';
+                        });
+                    }).catch((err) => {
+                        console.error('MathJax渲染错误:', err);
+                    });
                 }
-            }, 1000);
+            }, 2000);
         });
     </script>
 </body>
