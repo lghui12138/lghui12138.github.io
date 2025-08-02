@@ -466,10 +466,36 @@
             max-width: none;
             max-height: none;
             border-radius: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .ai-modal.fullscreen .ai-modal-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
         }
 
         .ai-modal.fullscreen .ai-chat-container {
-            height: calc(100vh - 200px);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        .ai-modal.fullscreen .ai-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .ai-modal.fullscreen .ai-question-display {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .ai-modal.fullscreen .shortcuts-section {
+            flex-shrink: 0;
         }
 
         .ai-modal-header {
@@ -515,6 +541,7 @@
             height: 400px;
             display: flex;
             flex-direction: column;
+            min-height: 300px;
         }
 
         .ai-chat-messages {
@@ -866,6 +893,12 @@
                 max-height: 85vh;
             }
 
+            .ai-modal.fullscreen {
+                width: 100vw;
+                height: 100vh;
+                height: 100dvh; /* 支持动态视口高度 */
+            }
+
             .ai-modal-header {
                 padding: 15px;
             }
@@ -878,6 +911,11 @@
                 height: 350px;
             }
 
+            .ai-modal.fullscreen .ai-chat-container {
+                height: auto;
+                flex: 1;
+            }
+
             .ai-chat-messages {
                 padding: 15px;
             }
@@ -888,6 +926,18 @@
 
             .shortcuts-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .ai-modal.fullscreen .ai-question-display {
+                max-height: 120px;
+            }
+
+            .ai-modal.fullscreen .ai-modal-header {
+                padding: 10px 15px;
+            }
+
+            .ai-modal.fullscreen .ai-chat-messages {
+                padding: 10px;
             }
         }
 
@@ -4647,19 +4697,24 @@
                             console.log('🤖 初始化AI智能助手...');
                             const smartConfig = window.AppConfig.api.smartAI;
                             
-                            // 创建SmartModelSelector实例
-                            this.smartModelSelectorInstance = new window.SmartModelSelector();
+                            // 检查是否已有全局实例
+                            if (!window.smartModelSelectorInstance) {
+                                // 使用正确的静态方法初始化（与AI助手模块保持一致）
+                                window.smartModelSelectorInstance = await window.SmartModelSelector.init({
+                                    apiKey: smartConfig.apiKey,
+                                    apiUrl: smartConfig.endpoint,
+                                    defaultStrategy: smartConfig.defaultStrategy,
+                                    maxRetries: smartConfig.maxRetries,
+                                    requestTimeout: smartConfig.requestTimeout,
+                                    skipAvailabilityCheck: smartConfig.skipAvailabilityCheck
+                                });
+                                console.log('✅ AI智能助手全局初始化完成');
+                            } else {
+                                console.log('✅ 使用已有的AI智能助手实例');
+                            }
                             
-                            // 初始化配置
-                            await this.smartModelSelectorInstance.init({
-                                apiKey: smartConfig.apiKey,
-                                apiUrl: smartConfig.endpoint,
-                                defaultStrategy: smartConfig.defaultStrategy,
-                                maxRetries: smartConfig.maxRetries,
-                                requestTimeout: smartConfig.requestTimeout,
-                                skipAvailabilityCheck: smartConfig.skipAvailabilityCheck
-                            });
-                            console.log('✅ AI智能助手初始化完成');
+                            // 同步到组件实例
+                            this.smartModelSelectorInstance = window.smartModelSelectorInstance;
                         } else {
                             console.warn('⚠️ SmartModelSelector或AppConfig未加载');
                         }
@@ -4765,14 +4820,17 @@
 
                     try {
                         // 确保AI系统已初始化
-                        if (!this.smartModelSelectorInstance) {
+                        if (!window.smartModelSelectorInstance && !this.smartModelSelectorInstance) {
                             console.log('🔄 重新初始化AI系统...');
                             await this.initAISystem();
                         }
 
-                        if (this.smartModelSelectorInstance && typeof this.smartModelSelectorInstance.callAI === 'function') {
+                        // 优先使用全局实例，如果没有则使用组件实例
+                        const aiInstance = window.smartModelSelectorInstance || this.smartModelSelectorInstance;
+                        
+                        if (aiInstance && typeof aiInstance.callAI === 'function') {
                             console.log('📡 调用AI API...');
-                            const result = await this.smartModelSelectorInstance.callAI(enhancedPrompt, {
+                            const result = await aiInstance.callAI(enhancedPrompt, {
                                 strategy: 'balanced',
                                 features: ['chat', 'reasoning'],
                                 maxTokens: 1500,
@@ -4895,13 +4953,17 @@
 请用JSON格式返回：{"score": 分数, "level": "等级", "summary": "总结", "feedback": "反馈"}`;
 
                     try {
-                        if (!this.smartModelSelectorInstance) {
+                        if (!window.smartModelSelectorInstance && !this.smartModelSelectorInstance) {
+                            console.log('🔄 重新初始化AI批改系统...');
                             await this.initAISystem();
                         }
 
-                        if (this.smartModelSelectorInstance && typeof this.smartModelSelectorInstance.callAI === 'function') {
+                        // 优先使用全局实例，如果没有则使用组件实例
+                        const aiInstance = window.smartModelSelectorInstance || this.smartModelSelectorInstance;
+                        
+                        if (aiInstance && typeof aiInstance.callAI === 'function') {
                             console.log('📡 调用AI批改API...');
-                            const result = await this.smartModelSelectorInstance.callAI(gradingPrompt, {
+                            const result = await aiInstance.callAI(gradingPrompt, {
                                 strategy: 'quality',
                                 features: ['reasoning', 'analysis'],
                                 maxTokens: 1000,
