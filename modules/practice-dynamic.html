@@ -613,6 +613,7 @@
 
         .ai-message-content {
             background: white;
+            color: #2d3748;
             padding: 12px 16px;
             border-radius: 15px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -4126,13 +4127,34 @@
                     this.showAnswer = false;
                     this.answerSimilarity = 0;
                     
+                    // 重置题目相关状态
+                    this.currentQuestion = null;
+                    this.questions = [];
+                    this.currentQuestionIndex = -1;
+                    this.selectedBank = null;
+                    
+                    // 重置AI相关状态
+                    this.showAIModal = false;
+                    this.aiMessages = [];
+                    this.aiInputText = '';
+                    this.aiLoading = false;
+                    this.aiGradingResult = null;
+                    this.aiGradingLoading = false;
+                    
                     // 如果是真题模式，也要重置真题相关状态
                     if (this.isRealExamMode) {
                         this.isRealExamMode = false;
+                        this.selectedYear = null;
                         console.log('🔄 从真题练习返回题库选择页面');
                     }
                     
-                    console.log('🔄 返回题库选择页面');
+                    // 重置进度相关状态
+                    this.completedQuestions = 0;
+                    this.correctAnswers = 0;
+                    this.totalQuestions = 0;
+                    
+                    console.log('🔄 返回题库选择页面，所有状态已重置');
+                    this.showNotification('已返回题库选择页面', 'success');
                 },
 
                 previewBank(bankId) {
@@ -5110,33 +5132,8 @@
                     await this.initAISystem();
                     console.log('🎉 系统完全就绪！');
                     
-                    // 调试AI消息系统
-                    console.log('🔍 AI消息系统状态检查:');
-                    console.log('📋 aiMessages数组:', this.aiMessages);
-                    console.log('📋 aiMessages长度:', this.aiMessages.length);
-                    console.log('📋 aiMessages类型:', typeof this.aiMessages);
-                    console.log('📋 是否为数组:', Array.isArray(this.aiMessages));
-                    
-                    // 测试添加一条消息
-                    this.aiMessages.push({
-                        type: 'ai',
-                        content: '🔧 系统测试消息 - 如果您看到这条消息，说明Vue响应式系统工作正常',
-                        timestamp: Date.now()
-                    });
-                    console.log('🧪 添加测试消息后，数组长度:', this.aiMessages.length);
-                    
-                    // 强制更新检查
-                    this.$forceUpdate();
-                    this.$nextTick(() => {
-                        const messagesEl = this.$refs.aiMessages;
-                        if (messagesEl) {
-                            const messageElements = messagesEl.querySelectorAll('.ai-message');
-                            console.log('🧪 测试消息DOM检查 - DOM中消息数:', messageElements.length);
-                            console.log('🧪 测试消息DOM检查 - Vue数据中消息数:', this.aiMessages.length);
-                        } else {
-                            console.error('❌ 无法找到AI消息容器元素');
-                        }
-                    });
+                    // AI消息系统状态检查
+                    console.log('🔍 AI消息系统已初始化，数组长度:', this.aiMessages.length);
                 }, 2000);
 
                 // 绑定键盘事件

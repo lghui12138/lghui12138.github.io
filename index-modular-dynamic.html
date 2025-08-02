@@ -833,11 +833,18 @@
                 initApp() {
                     console.log('🚀 智能学习平台初始化中...');
                     
-                    // 加载用户信息
+                    // 加载用户信息（可选，不强制登录）
                     const savedUser = localStorage.getItem('currentUser');
                     if (savedUser) {
-                        this.currentUser = JSON.parse(savedUser);
-                        console.log('👤 用户已登录:', this.currentUser.name);
+                        try {
+                            this.currentUser = JSON.parse(savedUser);
+                            console.log('👤 用户已登录:', this.currentUser.name);
+                        } catch (error) {
+                            console.log('用户信息解析失败，清除无效数据');
+                            localStorage.removeItem('currentUser');
+                        }
+                    } else {
+                        console.log('👤 游客模式访问');
                     }
                     
                     // 加载统计数据
@@ -852,13 +859,13 @@
                         setTimeout(() => {
                             document.getElementById('loadingOverlay').style.display = 'none';
                         }, 500);
-                    }, 2000);
+                    }, 1500);
                     
                     // 显示欢迎信息
                     setTimeout(() => {
-                        const userName = this.currentUser?.name || '用户';
+                        const userName = this.currentUser?.name || '游客';
                         this.showNotification(`🎉 欢迎 ${userName}！智能学习平台已就绪`, 'success');
-                    }, 2500);
+                    }, 2000);
                     
                     console.log('✅ 智能学习平台初始化完成');
                 }
