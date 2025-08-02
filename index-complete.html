@@ -501,6 +501,43 @@
             box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
         }
 
+        /* 未登录提示样式 */
+        .login-required {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.95), rgba(192, 57, 43, 0.9));
+            border-radius: 25px;
+            padding: 40px;
+            margin: 30px 0;
+            box-shadow: 0 20px 60px rgba(231, 76, 60, 0.3);
+            backdrop-filter: blur(20px);
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .login-required-content {
+            text-align: center;
+            color: white;
+        }
+
+        .login-required-icon {
+            font-size: 4em;
+            margin-bottom: 20px;
+        }
+
+        .login-required-title {
+            font-size: 2em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .login-required-desc {
+            font-size: 1.2em;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
         /* MathJax样式 */
         .MathJax {
             font-size: 1em !important;
@@ -580,7 +617,7 @@
 
 
         <!-- 题库优先展示区域 -->
-        <div class="question-bank-hero">
+        <div v-if="isLoggedIn" class="question-bank-hero">
             <div class="hero-title">📚 题库系统</div>
             <div class="hero-subtitle">
                 丰富的练习题和真题资源，智能推荐系统，助您快速掌握流体力学知识
@@ -619,8 +656,17 @@
             </div>
         </div>
 
+        <!-- 未登录提示 -->
+        <div v-else class="login-required">
+            <div class="login-required-content">
+                <div class="login-required-icon">🔒</div>
+                <div class="login-required-title">需要登录</div>
+                <div class="login-required-desc">请先登录以访问题库系统和其他学习功能</div>
+            </div>
+        </div>
+
         <!-- 紧凑的公式展示 -->
-        <div class="formula-showcase">
+        <div v-if="isLoggedIn" class="formula-showcase">
             <div class="showcase-title">📐 核心公式预览</div>
             <div class="formula-grid">
                 <div class="formula-card" @click="showFormulaDetail('static')">
@@ -647,8 +693,8 @@
         </div>
 
         <!-- AI助手 -->
-        <div class="section-title">🤖 AI智能助手</div>
-        <div class="modules-grid">
+        <div v-if="isLoggedIn" class="section-title">🤖 AI智能助手</div>
+        <div v-if="isLoggedIn" class="modules-grid">
             <div class="module-card ai-assistant" @click="navigateTo('/modules/ai-assistant-dynamic.html')">
                 <div class="module-icon">🤖</div>
                 <div class="module-title">AI智能助手</div>
@@ -663,8 +709,8 @@
         </div>
 
         <!-- 核心学习模块 -->
-        <div class="section-title">📚 核心学习模块</div>
-        <div class="modules-grid">
+        <div v-if="isLoggedIn" class="section-title">📚 核心学习模块</div>
+        <div v-if="isLoggedIn" class="modules-grid">
             <div class="module-card" @click="navigateTo('/modules/fluid-statics-dynamic.html')">
                 <div class="module-icon">⚖️</div>
                 <div class="module-title">流体静力学</div>
@@ -771,9 +817,17 @@
             },
             methods: {
                 navigateTo(url) {
+                    if (!this.isLoggedIn) {
+                        alert('请先登录以访问此功能');
+                        return;
+                    }
                     window.location.href = url;
                 },
                 showFormulaDetail(type) {
+                    if (!this.isLoggedIn) {
+                        alert('请先登录以访问此功能');
+                        return;
+                    }
                     console.log('点击了公式:', type);
                     // 跳转到详细公式页面
                     window.location.href = '/ultimate-beautiful-formulas.html';
