@@ -1,1 +1,378 @@
- 
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识点详情 - 流体力学学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .knowledge-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .knowledge-title {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .knowledge-description {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+            margin-bottom: 20px;
+        }
+
+        .knowledge-meta {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 20px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title i {
+            color: #667eea;
+        }
+
+        .key-points-list {
+            list-style: none;
+        }
+
+        .key-points-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: relative;
+            padding-left: 25px;
+        }
+
+        .key-points-list li:before {
+            content: '•';
+            color: #667eea;
+            font-size: 1.5rem;
+            position: absolute;
+            left: 0;
+            top: 8px;
+        }
+
+        .key-points-list li:last-child {
+            border-bottom: none;
+        }
+
+        .applications-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .application-item {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 500;
+            transition: transform 0.3s ease;
+        }
+
+        .application-item:hover {
+            transform: translateY(-3px);
+        }
+
+        .formulas-list {
+            list-style: none;
+        }
+
+        .formula-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+        }
+
+        .back-button {
+            position: fixed;
+            top: 30px;
+            left: 30px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .back-button:hover {
+            background: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 100px 20px;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .error {
+            text-align: center;
+            padding: 100px 20px;
+            color: #e74c3c;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            margin: 50px auto;
+            max-width: 600px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .knowledge-title {
+                font-size: 2rem;
+            }
+            
+            .knowledge-meta {
+                gap: 15px;
+            }
+            
+            .content-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .back-button {
+                width: 50px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <button class="back-button" @click="goBack" title="返回主页">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+
+        <div class="container">
+            <div v-if="loading" class="loading">
+                <i class="fas fa-spinner fa-spin"></i> 正在加载知识点内容...
+            </div>
+
+            <div v-else-if="error" class="error">
+                <h2><i class="fas fa-exclamation-triangle"></i> 加载失败</h2>
+                <p>{{ error }}</p>
+                <button @click="goBack" style="margin-top: 20px; padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">返回主页</button>
+            </div>
+
+            <div v-else-if="knowledgePoint">
+                <!-- 知识点头部 -->
+                <div class="header">
+                    <div class="knowledge-icon">
+                        <i :class="knowledgePoint.icon"></i>
+                    </div>
+                    <h1 class="knowledge-title">{{ knowledgePoint.title }}</h1>
+                    <p class="knowledge-description">{{ knowledgePoint.description }}</p>
+                    <div class="knowledge-meta">
+                        <div class="meta-item">
+                            <i class="fas fa-bookmark"></i>
+                            {{ knowledgePoint.category }}
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-signal"></i>
+                            {{ knowledgePoint.difficulty }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 知识点内容 -->
+                <div class="content-grid">
+                    <!-- 关键要点 -->
+                    <div class="content-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-lightbulb"></i>
+                            关键要点
+                        </h2>
+                        <ul class="key-points-list">
+                            <li v-for="point in knowledgePoint.keyPoints" :key="point">
+                                {{ point }}
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 应用领域 -->
+                    <div class="content-card">
+                        <h2 class="card-title">
+                            <i class="fas fa-cogs"></i>
+                            应用领域
+                        </h2>
+                        <div class="applications-grid">
+                            <div v-for="app in knowledgePoint.applications" :key="app" class="application-item">
+                                {{ app }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 相关公式 -->
+                    <div class="content-card" v-if="knowledgePoint.formulas && knowledgePoint.formulas.length > 0">
+                        <h2 class="card-title">
+                            <i class="fas fa-calculator"></i>
+                            相关公式
+                        </h2>
+                        <ul class="formulas-list">
+                            <li v-for="formula in knowledgePoint.formulas" :key="formula" class="formula-item">
+                                {{ formula }}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    knowledgePoint: null,
+                    loading: true,
+                    error: null
+                }
+            },
+            async mounted() {
+                await this.loadKnowledgePoint();
+            },
+            methods: {
+                async loadKnowledgePoint() {
+                    try {
+                        this.loading = true;
+                        this.error = null;
+
+                        // 从URL参数获取知识点ID
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const knowledgeId = urlParams.get('id');
+
+                        if (!knowledgeId) {
+                            throw new Error('未指定知识点ID');
+                        }
+
+                        // 加载知识点数据
+                        const response = await fetch('../data/exercises.json');
+                        if (!response.ok) {
+                            throw new Error('无法加载知识点数据');
+                        }
+
+                        const knowledgePoints = await response.json();
+                        const foundPoint = knowledgePoints.find(point => point.id === knowledgeId);
+
+                        if (!foundPoint) {
+                            throw new Error('未找到指定的知识点');
+                        }
+
+                        this.knowledgePoint = foundPoint;
+                        
+                        // 更新页面标题
+                        document.title = `${foundPoint.title} - 流体力学学习平台`;
+
+                    } catch (error) {
+                        console.error('加载知识点失败:', error);
+                        this.error = error.message;
+                    } finally {
+                        this.loading = false;
+                    }
+                },
+                goBack() {
+                    if (window.history.length > 1) {
+                        window.history.back();
+                    } else {
+                        window.location.href = '../index-dynamic.html';
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html> 
