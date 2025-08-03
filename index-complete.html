@@ -1314,7 +1314,8 @@
                     loginForm: {
                         username: '',
                         password: ''
-                    }
+                    },
+                    mathJaxLoaded: false
                 }
             },
             methods: {
@@ -1361,6 +1362,11 @@
                             localStorage.setItem('user', JSON.stringify(this.currentUser));
                             this.loginForm.username = '';
                             this.loginForm.password = '';
+                            
+                            // 登录后重新渲染公式
+                            this.$nextTick(() => {
+                                this.renderMathJax();
+                            });
                         } else {
                             alert('用户名或密码错误\n\n请联系管理员获取登录凭据');
                         }
@@ -1380,25 +1386,77 @@
                         this.currentUser = JSON.parse(user);
                         this.isLoggedIn = true;
                     }
+                },
+                renderMathJax() {
+                    // 确保MathJax正确渲染
+                    const renderMath = () => {
+                        if (window.MathJax && window.MathJax.typesetPromise) {
+                            MathJax.typesetPromise().then(() => {
+                                console.log('MathJax渲染完成');
+                                this.mathJaxLoaded = true;
+                            }).catch((err) => {
+                                console.error('MathJax渲染错误:', err);
+                                this.retryMathJax();
+                            });
+                        } else if (window.MathJax && window.MathJax.typeset) {
+                            // 兼容旧版本MathJax
+                            MathJax.typeset();
+                            console.log('MathJax渲染完成');
+                            this.mathJaxLoaded = true;
+                        } else {
+                            console.log('MathJax未加载，等待加载...');
+                            setTimeout(() => {
+                                this.renderMathJax();
+                            }, 500);
+                        }
+                    };
+
+                    // 延迟渲染，确保DOM更新完成
+                    setTimeout(renderMath, 100);
+                },
+                retryMathJax() {
+                    console.log('重试MathJax渲染...');
+                    setTimeout(() => {
+                        this.renderMathJax();
+                    }, 1000);
+                },
+                // 监听MathJax加载状态
+                watchMathJax() {
+                    const checkMathJax = () => {
+                        if (window.MathJax) {
+                            this.renderMathJax();
+                        } else {
+                            setTimeout(checkMathJax, 100);
+                        }
+                    };
+                    checkMathJax();
                 }
             },
             mounted() {
                 this.checkLoginStatus();
                 
-                // 确保MathJax正确渲染
-                setTimeout(() => {
-                    if (window.MathJax && window.MathJax.typesetPromise) {
-                        MathJax.typesetPromise().then(() => {
-                            console.log('MathJax渲染完成');
-                        }).catch((err) => {
-                            console.error('MathJax渲染错误:', err);
-                        });
-                    } else if (window.MathJax && window.MathJax.typeset) {
-                        // 兼容旧版本MathJax
-                        MathJax.typeset();
-                        console.log('MathJax渲染完成');
+                // 监听MathJax加载
+                this.watchMathJax();
+                
+                // 定期检查公式渲染状态
+                setInterval(() => {
+                    if (this.isLoggedIn && !this.mathJaxLoaded) {
+                        const formulaElements = document.querySelectorAll('.formula-display');
+                        if (formulaElements.length > 0) {
+                            console.log('检测到未渲染的公式，重新渲染...');
+                            this.renderMathJax();
+                        }
                     }
-                }, 2000); // 增加延迟时间
+                }, 3000);
+                
+                // 监听页面可见性变化，重新渲染公式
+                document.addEventListener('visibilitychange', () => {
+                    if (!document.hidden && this.isLoggedIn) {
+                        setTimeout(() => {
+                            this.renderMathJax();
+                        }, 500);
+                    }
+                });
             }
         }).mount('#app');
     </script>
