@@ -14,7 +14,7 @@
     <script src="../js/core/config.js"></script>
     <script src="../js/core/smart-model-selector.js"></script>
     
-    <!-- MathJax配置 -->
+    <!-- MathJax配置和多个CDN备用方案 -->
     <script>
         window.MathJax = {
             tex: {
@@ -30,12 +30,53 @@
                 pageReady: () => {
                     return MathJax.startup.defaultPageReady().then(() => {
                         console.log('MathJax渲染完成');
+                        // 确保所有公式都正确显示
+                        document.querySelectorAll('.math-formula').forEach(el => {
+                            el.style.display = 'block';
+                            el.style.visibility = 'visible';
+                        });
+                    }).catch((error) => {
+                        console.error('MathJax加载失败，使用备用方案');
+                        // 如果MathJax完全失败，显示原始LaTeX代码
+                        document.querySelectorAll('.math-formula').forEach(el => {
+                            el.innerHTML = el.innerHTML.replace(/\$\$(.*?)\$\$/g, '<div style="font-family: monospace; background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0;">$$$1$$</div>');
+                        });
                     });
                 }
             }
         };
     </script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- 使用多个CDN备用方案 -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" onerror="loadMathJaxFallback()"></script>
+    <script>
+        function loadMathJaxFallback() {
+            console.log('尝试备用MathJax CDN...');
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js';
+            script.async = true;
+            script.onerror = function() {
+                console.log('尝试第三个MathJax CDN...');
+                const script2 = document.createElement('script');
+                script2.src = 'https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js';
+                script2.async = true;
+                script2.onerror = function() {
+                    console.log('尝试第四个MathJax CDN...');
+                    const script3 = document.createElement('script');
+                    script3.src = 'https://polyfill.io/v3/polyfill.min.js?features=es6';
+                    script3.onload = function() {
+                        const script4 = document.createElement('script');
+                        script4.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+                        script4.async = true;
+                        document.head.appendChild(script4);
+                    };
+                    document.head.appendChild(script3);
+                };
+                document.head.appendChild(script2);
+            };
+            document.head.appendChild(script);
+        }
+    </script>
 
     <style>
         :root {

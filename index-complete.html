@@ -8,13 +8,14 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>流体力学学习平台 - 完整版本</title>
     
-    <!-- MathJax配置和加载 -->
+    <!-- MathJax配置和多个CDN备用方案 -->
     <script>
         window.MathJax = {
             tex: {
                 inlineMath: [['$', '$'], ['\\(', '\\)']],
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                processEscapes: true
+                processEscapes: true,
+                processEnvironments: true
             },
             options: {
                 skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
@@ -47,7 +48,7 @@
                         console.error('MathJax加载失败，使用备用方案');
                         // 如果MathJax完全失败，显示原始LaTeX代码
                         document.querySelectorAll('.formula-display').forEach(el => {
-                            el.innerHTML = el.innerHTML.replace(/\$\$(.*?)\$\$/g, '<div style="font-family: monospace; background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0;">$$$1$$</div>');
+                            el.innerHTML = el.innerHTML.replace(/\$\$(.*?)\$\$/g, '<div style="font-family: monospace; background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0; text-align: center;">$$$1$$</div>');
                         });
                     });
                 }
@@ -68,10 +69,30 @@
                 const script2 = document.createElement('script');
                 script2.src = 'https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js';
                 script2.async = true;
+                script2.onerror = function() {
+                    console.log('尝试第四个MathJax CDN...');
+                    const script3 = document.createElement('script');
+                    script3.src = 'https://polyfill.io/v3/polyfill.min.js?features=es6';
+                    script3.onload = function() {
+                        const script4 = document.createElement('script');
+                        script4.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+                        script4.async = true;
+                        document.head.appendChild(script4);
+                    };
+                    document.head.appendChild(script3);
+                };
                 document.head.appendChild(script2);
             };
             document.head.appendChild(script);
         }
+        
+        // 立即检查MathJax状态
+        setTimeout(() => {
+            if (!window.MathJax) {
+                console.log('MathJax未加载，尝试重新加载...');
+                loadMathJaxFallback();
+            }
+        }, 2000);
     </script>
 
     <!-- Vue.js -->
@@ -1394,6 +1415,15 @@
                             MathJax.typesetPromise().then(() => {
                                 console.log('MathJax渲染完成');
                                 this.mathJaxLoaded = true;
+                                // 确保所有公式都正确显示
+                                document.querySelectorAll('.formula-display').forEach(el => {
+                                    el.style.display = 'block';
+                                    el.style.visibility = 'visible';
+                                });
+                                document.querySelectorAll('.MathJax').forEach(el => {
+                                    el.style.display = 'block !important';
+                                    el.style.textAlign = 'center !important';
+                                });
                             }).catch((err) => {
                                 console.error('MathJax渲染错误:', err);
                                 this.retryMathJax();
@@ -1438,6 +1468,13 @@
                 // 监听MathJax加载
                 this.watchMathJax();
                 
+                // 立即尝试渲染公式
+                setTimeout(() => {
+                    if (this.isLoggedIn) {
+                        this.renderMathJax();
+                    }
+                }, 100);
+                
                 // 定期检查公式渲染状态
                 setInterval(() => {
                     if (this.isLoggedIn && !this.mathJaxLoaded) {
@@ -1447,7 +1484,7 @@
                             this.renderMathJax();
                         }
                     }
-                }, 3000);
+                }, 2000);
                 
                 // 监听页面可见性变化，重新渲染公式
                 document.addEventListener('visibilitychange', () => {
@@ -1455,6 +1492,15 @@
                         setTimeout(() => {
                             this.renderMathJax();
                         }, 500);
+                    }
+                });
+                
+                // 监听登录状态变化，立即渲染公式
+                this.$watch('isLoggedIn', (newVal) => {
+                    if (newVal) {
+                        setTimeout(() => {
+                            this.renderMathJax();
+                        }, 200);
                     }
                 });
             }
