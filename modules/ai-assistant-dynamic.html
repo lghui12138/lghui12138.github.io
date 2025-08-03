@@ -37,23 +37,24 @@
                 pageReady: () => {
                     return MathJax.startup.defaultPageReady().then(() => {
                         console.log('MathJax渲染完成');
-                        // 确保所有公式都正确显示
-                        document.querySelectorAll('.math-formula').forEach(el => {
-                            el.style.display = 'block';
-                            el.style.visibility = 'visible';
-                        });
-                        // 渲染聊天消息中的公式
-                        document.querySelectorAll('.message-content').forEach(el => {
-                            if (el.innerHTML.includes('$$') || el.innerHTML.includes('\\[')) {
-                                MathJax.typesetPromise([el]).catch(error => {
-                                    console.error('聊天消息公式渲染失败:', error);
+                        // 强制重新渲染所有公式
+                        setTimeout(() => {
+                            MathJax.typesetPromise().then(() => {
+                                console.log('✅ 强制重新渲染完成');
+                                // 确保所有公式都正确显示
+                                document.querySelectorAll('.math-formula').forEach(el => {
+                                    el.style.display = 'block';
+                                    el.style.visibility = 'visible';
                                 });
-                            }
-                        });
-                        // 渲染所有页面中的公式
-                        MathJax.typesetPromise().catch(error => {
-                            console.error('页面公式渲染失败:', error);
-                        });
+                                // 确保MathJax元素可见
+                                document.querySelectorAll('.MathJax').forEach(el => {
+                                    el.style.display = 'block !important';
+                                    el.style.visibility = 'visible !important';
+                                });
+                            }).catch(error => {
+                                console.error('强制重新渲染失败:', error);
+                            });
+                        }, 1000);
                     }).catch((error) => {
                         console.error('MathJax加载失败，使用备用方案');
                         // 如果MathJax完全失败，显示原始LaTeX代码
@@ -64,6 +65,36 @@
                 }
             }
         };
+        
+        // 全局MathJax渲染函数
+        function renderAllMathFormulas() {
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                console.log('开始渲染所有数学公式...');
+                // 先清除所有现有的MathJax元素
+                document.querySelectorAll('.MathJax').forEach(el => {
+                    el.remove();
+                });
+                // 重新渲染
+                MathJax.typesetPromise().then(() => {
+                    console.log('✅ 所有数学公式渲染完成');
+                    // 确保所有公式元素可见
+                    document.querySelectorAll('.MathJax').forEach(el => {
+                        el.style.display = 'block !important';
+                        el.style.visibility = 'visible !important';
+                    });
+                }).catch((error) => {
+                    console.error('❌ 数学公式渲染失败:', error);
+                });
+            } else {
+                console.log('MathJax未加载，延迟重试...');
+                setTimeout(renderAllMathFormulas, 1000);
+            }
+        }
+        
+        // 页面加载完成后自动渲染
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(renderAllMathFormulas, 2000);
+        });
     </script>
     
     <!-- 使用多个CDN备用方案 -->
@@ -100,6 +131,11 @@
         function renderAllMathFormulas() {
             if (window.MathJax && window.MathJax.typesetPromise) {
                 console.log('开始渲染所有数学公式...');
+                // 先清除所有现有的MathJax元素
+                document.querySelectorAll('.MathJax').forEach(el => {
+                    el.remove();
+                });
+                // 重新渲染
                 MathJax.typesetPromise().then(() => {
                     console.log('✅ 所有数学公式渲染完成');
                     // 确保所有公式元素可见
@@ -119,6 +155,16 @@
         // 页面加载完成后自动渲染
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(renderAllMathFormulas, 2000);
+        });
+        
+        // 监听MathJax加载完成
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typesetPromise) {
+                    console.log('页面完全加载，开始渲染公式...');
+                    renderAllMathFormulas();
+                }
+            }, 3000);
         });
     </script>
 
@@ -962,10 +1008,22 @@
         .MathJax {
             font-size: 1.1em !important;
             color: var(--text-primary) !important;
+            display: block !important;
+            visibility: visible !important;
+            margin: 10px 0 !important;
         }
 
         .MathJax_Display {
             margin: 15px 0 !important;
+            display: block !important;
+            visibility: visible !important;
+        }
+        
+        /* 确保公式容器正确显示 */
+        .math-formula .MathJax {
+            display: block !important;
+            visibility: visible !important;
+            text-align: center !important;
         }
 
         /* 响应式设计 */
@@ -1072,6 +1130,9 @@
                 快捷键: Enter-发送 | F11-全屏 | ESC-退出 | Ctrl+L-清空对话
                 <button @click="forceRenderAllMath" style="margin-left: 10px; padding: 5px 10px; background: #4facfe; color: white; border: none; border-radius: 5px; cursor: pointer;">
                     🔄 重新渲染公式
+                </button>
+                <button @click="testMathJax" style="margin-left: 10px; padding: 5px 10px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    🔍 测试MathJax
                 </button>
             </div>
 
@@ -1760,12 +1821,36 @@
                     if (window.renderAllMathFormulas) {
                         window.renderAllMathFormulas();
                     } else if (window.MathJax && window.MathJax.typesetPromise) {
+                        // 先清除所有现有的MathJax元素
+                        document.querySelectorAll('.MathJax').forEach(el => {
+                            el.remove();
+                        });
+                        // 重新渲染
                         MathJax.typesetPromise().then(() => {
                             console.log('✅ 强制重新渲染完成');
+                            // 确保所有公式元素可见
+                            document.querySelectorAll('.MathJax').forEach(el => {
+                                el.style.display = 'block !important';
+                                el.style.visibility = 'visible !important';
+                            });
                         }).catch((error) => {
                             console.error('❌ 强制重新渲染失败:', error);
                         });
                     }
+                },
+                
+                // 测试MathJax是否正常工作
+                testMathJax() {
+                    console.log('测试MathJax状态...');
+                    console.log('MathJax对象:', window.MathJax);
+                    console.log('MathJax.typesetPromise:', window.MathJax?.typesetPromise);
+                    
+                    // 检查页面中的公式
+                    const formulas = document.querySelectorAll('.math-formula');
+                    console.log('找到的公式元素数量:', formulas.length);
+                    formulas.forEach((el, index) => {
+                        console.log(`公式${index + 1}:`, el.innerHTML);
+                    });
                 },
 
                 // 键盘事件处理
