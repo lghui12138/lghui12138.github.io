@@ -1142,6 +1142,9 @@
                 <button @click="forceRenderMathDirect" style="margin-left: 10px; padding: 5px 10px; background: #feca57; color: white; border: none; border-radius: 5px; cursor: pointer;">
                     ⚡ 直接渲染
                 </button>
+                <button @click="renderAIResponseMath" style="margin-left: 10px; padding: 5px 10px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                    🤖 渲染AI回复
+                </button>
             </div>
 
             <!-- AI智能推导功能 -->
@@ -1642,6 +1645,10 @@
                             // 渲染新消息中的数学公式
                             this.$nextTick(() => {
                                 this.renderMathInLatestMessage();
+                                // 延迟再次渲染AI回复中的公式
+                                setTimeout(() => {
+                                    this.renderAIResponseMath();
+                                }, 500);
                             });
                         }
                     }, 1500 + Math.random() * 2000);
@@ -1688,11 +1695,18 @@
                                 temperature: 0.7,
                                 systemPrompt: `你是一个专业的流体力学教师，请用简洁明了的方式回答学生问题。回答要包含：
 1. 核心概念解释
-2. 必要的公式（如果适用）
+2. 必要的公式（如果适用）- 使用$$...$$格式
 3. 实际应用举例
 4. 学习建议
 
-请用HTML格式回复，使用<strong>、<br>等标签，让内容易读易懂。`
+请用HTML格式回复，使用<strong>、<br>等标签，让内容易读易懂。
+
+重要：数学公式必须用$$...$$格式包围，例如：
+- 伯努利方程：$$p + \\frac{1}{2}\\rho v^2 + \\rho gh = \\text{常数}$$
+- 雷诺数：$$Re = \\frac{\\rho VL}{\\mu}$$
+- 欧拉方程：$$\\frac{\\partial \\vec{v}}{\\partial t} + (\\vec{v} \\cdot \\nabla)\\vec{v} = -\\frac{1}{\\rho}\\nabla p + \\vec{g}$$
+
+请确保所有数学公式都使用这种格式。`
                             });
                             
                             console.log('✅ AI回复成功:', result.model);
@@ -1715,19 +1729,27 @@
                     const knowledgeBase = {
                         '伯努利': {
                             keywords: ['伯努利', '伯努利方程', 'bernoulli', '能量守恒'],
-                            content: '🌊 <strong>伯努利方程</strong><br><br><strong>方程：</strong> p + ½ρv² + ρgh = 常数<br><br><strong>物理意义：</strong><br>• 压力能 (p) • 动能 (½ρv²) • 势能 (ρgh)<br><br>体现了<strong>能量守恒定律</strong>在流体中的应用。<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
+                            content: '🌊 <strong>伯努利方程</strong><br><br><strong>方程：</strong> $$p + \\frac{1}{2}\\rho v^2 + \\rho gh = \\text{常数}$$<br><br><strong>物理意义：</strong><br>• 压力能 (p) • 动能 (½ρv²) • 势能 (ρgh)<br><br>体现了<strong>能量守恒定律</strong>在流体中的应用。<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
                         },
                         '层流': {
                             keywords: ['层流', '湍流', 'laminar', 'turbulent'],
-                            content: '🌀 <strong>层流与湍流</strong><br><br><strong>层流：</strong> 分层流动，Re < 2300<br><strong>湍流：</strong> 混合流动，Re > 4000<br><strong>判断：</strong> 雷诺数 Re = ρVD/μ<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
+                            content: '🌀 <strong>层流与湍流</strong><br><br><strong>层流：</strong> 分层流动，Re < 2300<br><strong>湍流：</strong> 混合流动，Re > 4000<br><strong>判断：</strong> 雷诺数 $$Re = \\frac{\\rho VD}{\\mu}$$<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
                         },
                         '雷诺数': {
                             keywords: ['雷诺数', 'reynolds', '雷诺', 're'],
-                            content: '📊 <strong>雷诺数</strong><br><br><strong>公式：</strong> Re = ρVL/μ = VL/ν<br><strong>意义：</strong> 惯性力与粘性力的比值<br><strong>临界值：</strong> 圆管Re < 2300(层流)<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
+                            content: '📊 <strong>雷诺数</strong><br><br><strong>公式：</strong> $$Re = \\frac{\\rho VL}{\\mu} = \\frac{VL}{\\nu}$$<br><strong>意义：</strong> 惯性力与粘性力的比值<br><strong>临界值：</strong> 圆管Re < 2300(层流)<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
                         },
                         '边界层': {
                             keywords: ['边界层', 'boundary layer', '壁面'],
                             content: '🎯 <strong>边界层理论</strong><br><br><strong>定义：</strong> 紧贴壁面的薄层，粘性力显著<br><strong>厚度：</strong> 速度达主流99%处<br><strong>意义：</strong> 决定阻力和传热<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
+                        },
+                        '欧拉方程': {
+                            keywords: ['欧拉方程', 'euler equation', '理想流体'],
+                            content: '🌊 <strong>欧拉方程</strong><br><br><strong>方程：</strong> $$\\frac{\\partial \\vec{v}}{\\partial t} + (\\vec{v} \\cdot \\nabla)\\vec{v} = -\\frac{1}{\\rho}\\nabla p + \\vec{g}$$<br><br><strong>物理意义：</strong><br>• 惯性力项 • 压力梯度力 • 重力<br><br>适用于理想流体（无粘性）的流动。<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
+                        },
+                        '纳维斯托克斯': {
+                            keywords: ['纳维斯托克斯', 'navier stokes', '粘性流体'],
+                            content: '💧 <strong>纳维斯托克斯方程</strong><br><br><strong>方程：</strong> $$\\rho\\frac{D\\vec{v}}{Dt} = -\\nabla p + \\mu\\nabla^2\\vec{v} + \\rho\\vec{g}$$<br><br><strong>物理意义：</strong><br>• 惯性力 • 压力梯度 • 粘性力 • 重力<br><br>适用于粘性流体的完整运动方程。<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
                         }
                     };
                     
@@ -1795,32 +1817,60 @@
                 // 渲染数学公式
                 renderMathInLatestMessage() {
                     if (window.MathJax && window.MathJax.typesetPromise) {
-                        // 获取最新的AI消息
-                        const latestMessage = this.messages[this.messages.length - 1];
-                        if (latestMessage && latestMessage.sender === 'ai') {
-                            // 查找该消息的DOM元素
-                            const messageElement = document.querySelector(`[data-message-id="${latestMessage.id}"]`);
-                            if (messageElement) {
-                                const contentElement = messageElement.querySelector('.message-content');
-                                if (contentElement && (contentElement.innerHTML.includes('$$') || contentElement.innerHTML.includes('\\['))) {
+                        console.log('开始渲染聊天消息中的数学公式...');
+                        
+                        // 获取所有AI消息
+                        const aiMessages = this.messages.filter(msg => msg.sender === 'ai');
+                        if (aiMessages.length === 0) {
+                            console.log('没有找到AI消息');
+                            return;
+                        }
+                        
+                        // 渲染最新的AI消息
+                        const latestAIMessage = aiMessages[aiMessages.length - 1];
+                        const messageElement = document.querySelector(`[data-message-id="${latestAIMessage.id}"]`);
+                        
+                        if (messageElement) {
+                            const contentElement = messageElement.querySelector('.message-content');
+                            if (contentElement) {
+                                console.log('找到AI消息内容元素，检查是否包含公式...');
+                                console.log('内容预览:', contentElement.innerHTML.substring(0, 200));
+                                
+                                // 检查是否包含数学公式
+                                const hasMath = contentElement.innerHTML.includes('$$') || 
+                                               contentElement.innerHTML.includes('\\[') ||
+                                               contentElement.innerHTML.includes('\\(');
+                                
+                                if (hasMath) {
+                                    console.log('发现数学公式，开始渲染...');
                                     MathJax.typesetPromise([contentElement]).then(() => {
-                                        console.log('✅ 聊天消息数学公式渲染完成');
+                                        console.log('✅ AI消息数学公式渲染完成');
                                         // 确保渲染后的公式可见
                                         contentElement.querySelectorAll('.MathJax').forEach(el => {
                                             el.style.display = 'block !important';
                                             el.style.visibility = 'visible !important';
                                         });
                                     }).catch((error) => {
-                                        console.error('❌ 聊天消息数学公式渲染失败:', error);
+                                        console.error('❌ AI消息数学公式渲染失败:', error);
+                                        // 如果渲染失败，延迟重试
+                                        setTimeout(() => {
+                                            this.renderMathInLatestMessage();
+                                        }, 1000);
                                     });
+                                } else {
+                                    console.log('AI消息中没有发现数学公式');
                                 }
+                            } else {
+                                console.log('未找到消息内容元素');
                             }
+                        } else {
+                            console.log('未找到AI消息DOM元素');
                         }
                     } else {
-                        // 如果MathJax未加载，延迟重试
+                        console.log('MathJax未加载，延迟重试...');
                         setTimeout(() => {
                             this.renderMathInLatestMessage();
-                        }, 500);
+                        }, 1000);
                     }
                 },
                 
@@ -1883,6 +1933,59 @@
                         }).catch(error => {
                             console.error(`❌ 公式${index + 1}渲染失败:`, error);
                         });
+                    });
+                },
+                
+                // 专门渲染AI回复中的公式
+                renderAIResponseMath() {
+                    console.log('开始渲染AI回复中的公式...');
+                    
+                    if (!window.MathJax || !window.MathJax.typesetPromise) {
+                        console.log('MathJax未加载，延迟重试...');
+                        setTimeout(() => {
+                            this.renderAIResponseMath();
+                        }, 1000);
+                        return;
+                    }
+                    
+                    // 查找所有AI消息
+                    const aiMessages = document.querySelectorAll('.message.ai');
+                    console.log('找到AI消息数量:', aiMessages.length);
+                    
+                    aiMessages.forEach((messageEl, index) => {
+                        const contentEl = messageEl.querySelector('.message-content');
+                        if (contentEl) {
+                            const hasMath = contentEl.innerHTML.includes('$$') || 
+                                           contentEl.innerHTML.includes('\\[') ||
+                                           contentEl.innerHTML.includes('\\(');
+                            
+                            if (hasMath) {
+                                console.log(`AI消息${index + 1}包含公式，开始渲染...`);
+                                console.log('公式内容预览:', contentEl.innerHTML.substring(0, 300));
+                                
+                                // 先清除该元素中现有的MathJax元素
+                                contentEl.querySelectorAll('.MathJax').forEach(el => {
+                                    el.remove();
+                                });
+                                
+                                MathJax.typesetPromise([contentEl]).then(() => {
+                                    console.log(`✅ AI消息${index + 1}公式渲染完成`);
+                                    // 确保渲染后的公式可见
+                                    contentEl.querySelectorAll('.MathJax').forEach(el => {
+                                        el.style.display = 'block !important';
+                                        el.style.visibility = 'visible !important';
+                                    });
+                                }).catch(error => {
+                                    console.error(`❌ AI消息${index + 1}公式渲染失败:`, error);
+                                    // 如果渲染失败，延迟重试
+                                    setTimeout(() => {
+                                        this.renderAIResponseMath();
+                                    }, 2000);
+                                });
+                            } else {
+                                console.log(`AI消息${index + 1}不包含公式`);
+                            }
+                        }
                     });
                 },
 
