@@ -14,6 +14,29 @@
     <script src="../js/core/config.js"></script>
     <script src="../js/core/smart-model-selector.js"></script>
     
+    <!-- MathJax配置 -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('MathJax渲染完成');
+                    });
+                }
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
         :root {
             --primary-color: #667eea;
@@ -767,6 +790,110 @@
             color: var(--text-secondary);
             margin-bottom: 5px;
         }
+
+        /* 数学公式样式 */
+        .math-formula {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .math-formula::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .math-formula:hover::before {
+            left: 100%;
+        }
+
+        .math-formula:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .formula-label {
+            font-size: 0.9em;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .derivation-step {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 4px solid var(--accent-color);
+            transition: all 0.3s ease;
+        }
+
+        .derivation-step:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateX(5px);
+        }
+
+        .step-number {
+            display: inline-block;
+            background: var(--accent-color);
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 25px;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 0.8em;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 10px;
+        }
+
+        .step-description {
+            color: var(--text-secondary);
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        /* 确保MathJax公式正确显示 */
+        .MathJax {
+            font-size: 1.1em !important;
+            color: var(--text-primary) !important;
+        }
+
+        .MathJax_Display {
+            margin: 15px 0 !important;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .math-formula {
+                padding: 15px;
+                margin: 10px 0;
+            }
+            
+            .MathJax {
+                font-size: 0.9em !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -872,23 +999,65 @@
                         <div class="derivation-example">
                             <div class="example-title">伯努利方程推导</div>
                             <div class="derivation-steps">
-                                <div class="step">步骤1：从欧拉方程出发</div>
-                                <div class="formula">$$\frac{\partial \vec{v}}{\partial t} + (\vec{v} \cdot \nabla)\vec{v} = -\frac{1}{\rho}\nabla p + \vec{g}$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-title">从欧拉方程出发</div>
+                                    <div class="step-description">欧拉方程是理想流体运动的基本方程，描述了流体微元的受力平衡。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">欧拉方程</div>
+                                        $$\frac{\partial \vec{v}}{\partial t} + (\vec{v} \cdot \nabla)\vec{v} = -\frac{1}{\rho}\nabla p + \vec{g}$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step">步骤2：对于定常流动</div>
-                                <div class="formula">$$\frac{\partial \vec{v}}{\partial t} = 0$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-title">对于定常流动</div>
+                                    <div class="step-description">定常流动中，速度场不随时间变化，时间导数项为零。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">定常条件</div>
+                                        $$\frac{\partial \vec{v}}{\partial t} = 0$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step">步骤3：沿流线积分</div>
-                                <div class="formula">$$\int [(\vec{v} \cdot \nabla)\vec{v}] \cdot d\vec{s} = \int [-\frac{1}{\rho}\nabla p + \vec{g}] \cdot d\vec{s}$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-title">沿流线积分</div>
+                                    <div class="step-description">沿流线积分欧拉方程，将矢量方程转化为标量方程。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">积分形式</div>
+                                        $$\int [(\vec{v} \cdot \nabla)\vec{v}] \cdot d\vec{s} = \int [-\frac{1}{\rho}\nabla p + \vec{g}] \cdot d\vec{s}$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step">步骤4：利用向量恒等式</div>
-                                <div class="formula">$$(\vec{v} \cdot \nabla)\vec{v} = \nabla(\frac{v^2}{2}) - \vec{v} \times (\nabla \times \vec{v})$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-title">利用向量恒等式</div>
+                                    <div class="step-description">使用向量分析中的恒等式，将对流项转化为梯度形式。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">向量恒等式</div>
+                                        $$(\vec{v} \cdot \nabla)\vec{v} = \nabla(\frac{v^2}{2}) - \vec{v} \times (\nabla \times \vec{v})$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step">步骤5：对于无旋流动</div>
-                                <div class="formula">$$\nabla \times \vec{v} = 0$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">5</div>
+                                    <div class="step-title">对于无旋流动</div>
+                                    <div class="step-description">无旋流动中，速度场的旋度为零，简化了方程形式。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">无旋条件</div>
+                                        $$\nabla \times \vec{v} = 0$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step">步骤6：积分得到伯努利方程</div>
-                                <div class="formula">$$\frac{v^2}{2} + \frac{p}{\rho} + gz = 常数$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">6</div>
+                                    <div class="step-title">积分得到伯努利方程</div>
+                                    <div class="step-description">最终积分得到伯努利方程，描述了沿流线的机械能守恒。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">伯努利方程</div>
+                                        $$\frac{v^2}{2} + \frac{p}{\rho} + gz = 常数$$
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -902,23 +1071,65 @@
                         <div class="derivation-example">
                             <div class="example-title">Navier-Stokes方程推导</div>
                             <div class="derivation-steps">
-                                <div class="step">步骤1：基于牛顿第二定律</div>
-                                <div class="formula">$$F = ma$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-title">基于牛顿第二定律</div>
+                                    <div class="step-description">流体微元的运动遵循牛顿第二定律，力等于质量乘以加速度。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">牛顿第二定律</div>
+                                        $$F = ma$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step">步骤2：流体微元受力分析</div>
-                                <div class="formula">$$F = \rho dV \frac{D\vec{v}}{Dt}$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-title">流体微元受力分析</div>
+                                    <div class="step-description">流体微元的惯性力等于密度、体积和物质导数的乘积。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">惯性力</div>
+                                        $$F = \rho dV \frac{D\vec{v}}{Dt}$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step">步骤3：表面力（压力梯度）</div>
-                                <div class="formula">$$F_p = -\nabla p dV$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-title">表面力（压力梯度）</div>
+                                    <div class="step-description">压力梯度产生的表面力，方向指向压力降低的方向。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">压力梯度力</div>
+                                        $$F_p = -\nabla p dV$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step">步骤4：体积力（重力）</div>
-                                <div class="formula">$$F_g = \rho \vec{g} dV$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-title">体积力（重力）</div>
+                                    <div class="step-description">重力是作用在流体微元上的体积力，与密度成正比。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">重力</div>
+                                        $$F_g = \rho \vec{g} dV$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step">步骤5：粘性力</div>
-                                <div class="formula">$$F_v = \mu \nabla^2 \vec{v} dV$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">5</div>
+                                    <div class="step-title">粘性力</div>
+                                    <div class="step-description">粘性力由速度梯度的二阶导数产生，与粘性系数成正比。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">粘性力</div>
+                                        $$F_v = \mu \nabla^2 \vec{v} dV$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step">步骤6：力的平衡</div>
-                                <div class="formula">$$\rho \frac{D\vec{v}}{Dt} = -\nabla p + \rho \vec{g} + \mu \nabla^2 \vec{v}$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">6</div>
+                                    <div class="step-title">力的平衡</div>
+                                    <div class="step-description">所有力的平衡得到Navier-Stokes方程，这是粘性流体运动的基本方程。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">Navier-Stokes方程</div>
+                                        $$\rho \frac{D\vec{v}}{Dt} = -\nabla p + \rho \vec{g} + \mu \nabla^2 \vec{v}$$
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -935,7 +1146,10 @@
                                 <div class="hint-content">
                                     <p><strong>关键概念：</strong>质量守恒</p>
                                     <p><strong>物理意义：</strong>流入控制体的质量等于流出控制体的质量</p>
-                                    <p><strong>数学表达：</strong>$\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \vec{v}) = 0$</p>
+                                    <div class="math-formula">
+                                        <div class="formula-label">连续性方程</div>
+                                        $$\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \vec{v}) = 0$$
+                                    </div>
                                     <p><strong>应用场景：</strong>管道流动、流量计算</p>
                                 </div>
                             </div>
@@ -945,7 +1159,10 @@
                                 <div class="hint-content">
                                     <p><strong>关键概念：</strong>机械能守恒</p>
                                     <p><strong>物理意义：</strong>沿流线总水头保持不变</p>
-                                    <p><strong>数学表达：</strong>$\frac{v^2}{2g} + \frac{p}{\rho g} + z = H$</p>
+                                    <div class="math-formula">
+                                        <div class="formula-label">伯努利方程</div>
+                                        $$\frac{v^2}{2g} + \frac{p}{\rho g} + z = H$$
+                                    </div>
                                     <p><strong>应用场景：</strong>文丘里管、机翼升力</p>
                                 </div>
                             </div>
@@ -955,7 +1172,10 @@
                                 <div class="hint-content">
                                     <p><strong>关键概念：</strong>惯性力与粘性力的比值</p>
                                     <p><strong>物理意义：</strong>判断流动状态的重要参数</p>
-                                    <p><strong>数学表达：</strong>$Re = \frac{\rho V L}{\mu}$</p>
+                                    <div class="math-formula">
+                                        <div class="formula-label">雷诺数</div>
+                                        $$Re = \frac{\rho V L}{\mu}$$
+                                    </div>
                                     <p><strong>应用场景：</strong>流动状态判断、相似性分析</p>
                                 </div>
                             </div>
@@ -971,33 +1191,85 @@
                         <div class="interactive-exercise">
                             <div class="exercise-title">练习1：推导静水压强分布</div>
                             <div class="exercise-steps">
-                                <div class="step-prompt">从流体静力学基本方程开始：</div>
-                                <div class="formula">$$\nabla p = \rho \vec{g}$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-title">从流体静力学基本方程开始</div>
+                                    <div class="step-description">流体静力学基本方程描述了静止流体中压强的变化规律。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">静力学基本方程</div>
+                                        $$\nabla p = \rho \vec{g}$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step-prompt">对于重力场，简化为什么形式？</div>
-                                <div class="formula">$$\frac{dp}{dz} = -\rho g$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-title">对于重力场简化</div>
+                                    <div class="step-description">在重力场中，压强梯度主要沿垂直方向变化。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">重力场简化</div>
+                                        $$\frac{dp}{dz} = -\rho g$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step-prompt">积分得到什么结果？</div>
-                                <div class="formula">$$p - p_0 = -\rho g(z - z_0)$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-title">积分得到结果</div>
+                                    <div class="step-description">对压强梯度方程积分，得到压强随高度的变化关系。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">积分结果</div>
+                                        $$p - p_0 = -\rho g(z - z_0)$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step-prompt">最终表达式是什么？</div>
-                                <div class="formula">$$p = p_0 + \rho g h$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-title">最终表达式</div>
+                                    <div class="step-description">令深度h = z₀ - z，得到静水压强分布的最终表达式。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">静水压强分布</div>
+                                        $$p = p_0 + \rho g h$$
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         
                         <div class="interactive-exercise">
                             <div class="exercise-title">练习2：推导层流管道速度分布</div>
                             <div class="exercise-steps">
-                                <div class="step-prompt">从Navier-Stokes方程开始：</div>
-                                <div class="formula">$$\mu \frac{1}{r} \frac{d}{dr}(r \frac{du}{dr}) = \frac{dp}{dx}$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">1</div>
+                                    <div class="step-title">从Navier-Stokes方程开始</div>
+                                    <div class="step-description">圆柱坐标系下的Navier-Stokes方程，描述圆管层流的基本方程。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">Navier-Stokes方程</div>
+                                        $$\mu \frac{1}{r} \frac{d}{dr}(r \frac{du}{dr}) = \frac{dp}{dx}$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step-prompt">第一次积分得到什么？</div>
-                                <div class="formula">$$r \frac{du}{dr} = \frac{r^2}{2\mu} \frac{dp}{dx} + C_1$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">2</div>
+                                    <div class="step-title">第一次积分</div>
+                                    <div class="step-description">对径向坐标r积分，得到速度梯度的表达式。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">第一次积分</div>
+                                        $$r \frac{du}{dr} = \frac{r^2}{2\mu} \frac{dp}{dx} + C_1$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step-prompt">边界条件 $r = 0$ 时 $\frac{du}{dr} = 0$ 得到什么？</div>
-                                <div class="formula">$$C_1 = 0$$</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">3</div>
+                                    <div class="step-title">应用边界条件</div>
+                                    <div class="step-description">在管道中心r=0处，速度梯度为零，确定积分常数。</div>
+                                    <div class="math-formula">
+                                        <div class="formula-label">边界条件</div>
+                                        $$C_1 = 0$$
+                                    </div>
+                                </div>
                                 
-                                <div class="step-prompt">第二次积分得到什么？</div>
+                                <div class="derivation-step">
+                                    <div class="step-number">4</div>
+                                    <div class="step-title">第二次积分</div>
+                                    <div class="step-description">再次积分得到速度分布函数，应用壁面边界条件。</div>
                                 <div class="formula">$$u = \frac{r^2}{4\mu} \frac{dp}{dx} + C_2$$</div>
                                 
                                 <div class="step-prompt">边界条件 $r = R$ 时 $u = 0$ 得到最终结果：</div>
