@@ -1452,14 +1452,39 @@
                 },
                 // 监听MathJax加载状态
                 watchMathJax() {
+                    let attempts = 0;
+                    const maxAttempts = 50; // 最多尝试50次，即5秒
+                    
                     const checkMathJax = () => {
-                        if (window.MathJax) {
+                        attempts++;
+                        if (window.MathJax && window.MathJax.typesetPromise) {
+                            console.log('MathJax已加载，开始渲染...');
                             this.renderMathJax();
-                        } else {
+                        } else if (attempts < maxAttempts) {
+                            console.log(`MathJax未加载，第${attempts}次尝试，等待...`);
                             setTimeout(checkMathJax, 100);
+                        } else {
+                            console.error('MathJax加载超时，使用备用方案');
+                            this.useFallbackMathDisplay();
                         }
                     };
                     checkMathJax();
+                },
+                
+                // 备用数学公式显示方案
+                useFallbackMathDisplay() {
+                    console.log('使用备用数学公式显示方案');
+                    document.querySelectorAll('.formula-display').forEach(el => {
+                        const originalContent = el.innerHTML;
+                        // 将LaTeX公式转换为简单的文本显示
+                        const processedContent = originalContent
+                            .replace(/\$\$(.*?)\$\$/g, '<div style="font-family: monospace; background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0; text-align: center; border: 1px solid #ddd;">$$$1$$</div>')
+                            .replace(/\$(.*?)\$/g, '<span style="font-family: monospace; background: #f5f5f5; padding: 2px 4px; border-radius: 3px;">$$$1$$</span>');
+                        el.innerHTML = processedContent;
+                        el.style.display = 'block';
+                        el.style.visibility = 'visible';
+                    });
+                    this.mathJaxLoaded = true;
                 }
             },
             mounted() {
