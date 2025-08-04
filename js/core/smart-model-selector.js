@@ -281,35 +281,59 @@ window.SmartModelSelector = (function() {
          * @returns {Object} 选择的模型信息
          */
         selectBestModel: async function(message, options = {}) {
+            // 如果指定了preferredModel，直接返回指定的模型
+            if (options.preferredModel) {
+                console.log(`🎯 强制使用指定模型: ${options.preferredModel}`);
+
+                if (options.preferredModel === 'deepseek-r1') {
+                    // 特殊处理deepseek-r1
+                    const model = {
+                        name: "deepseek-ai/DeepSeek-R1",
+                        category: "premium",
+                        complexity: ["complex"],
+                        features: ["reasoning", "research", "deep-analysis"],
+                        priority: 1
+                    };
+                    console.log(`✅ 强制选择deepseek-r1模型: ${model.name}`);
+                    return model;
+                } else if (availableModels.has(options.preferredModel)) {
+                    const model = availableModels.get(options.preferredModel);
+                    console.log(`✅ 强制选择指定模型: ${model.name}`);
+                    return model;
+                } else {
+                    console.warn(`⚠️ 指定模型 ${options.preferredModel} 不可用，回退到智能选择`);
+                }
+            }
+
             // 只有在配置允许时才检查模型可用性
             if (!config.skipAvailabilityCheck) {
                 await this.checkModelAvailability();
             }
-            
+
             if (availableModels.size === 0) {
                 throw new Error('没有可用的AI模型');
             }
-            
+
             // 分析消息复杂度
             const complexity = this.analyzeComplexity(message);
-            
+
             // 根据选项调整选择策略
             const strategy = options.strategy || 'balanced'; // balanced, fast, quality
             const features = options.features || [];
-            
+
             console.log(`🧠 消息复杂度: ${complexity}, 策略: ${strategy}`);
-            
+
             // 获取候选模型
             let candidates = this.getCandidateModels(complexity, features, strategy);
-            
+
             if (candidates.length === 0) {
                 // 回退到任何可用模型
                 candidates = Array.from(availableModels.values());
             }
-            
+
             // 选择最佳模型
             const bestModel = this.selectFromCandidates(candidates, strategy);
-            
+
             console.log(`🎯 选择模型: ${bestModel.name} (${complexity})`);
             
             return bestModel;
@@ -420,34 +444,8 @@ window.SmartModelSelector = (function() {
          * @param {Object} options 调用选项
          */
         callAI: async function(message, options = {}) {
-            let model;
-
-            // 如果指定了preferredModel，优先使用指定的模型
-            if (options.preferredModel) {
-                console.log(`🎯 强制使用指定模型: ${options.preferredModel}`);
-
-                // 查找指定的模型
-                if (options.preferredModel === 'deepseek-r1') {
-                    // 特殊处理deepseek-r1
-                    model = {
-                        name: "deepseek-ai/DeepSeek-R1",
-                        category: "premium",
-                        complexity: ["complex"],
-                        features: ["reasoning", "research", "deep-analysis"],
-                        priority: 1
-                    };
-                    console.log(`✅ 使用deepseek-r1模型: ${model.name}`);
-                } else if (availableModels.has(options.preferredModel)) {
-                    model = availableModels.get(options.preferredModel);
-                    console.log(`✅ 使用指定模型: ${model.name}`);
-                } else {
-                    console.warn(`⚠️ 指定模型 ${options.preferredModel} 不可用，回退到智能选择`);
-                    model = await this.selectBestModel(message, options);
-                }
-            } else {
-                // 使用智能选择
-                model = await this.selectBestModel(message, options);
-            }
+            // selectBestModel现在已经处理了preferredModel逻辑
+            const model = await this.selectBestModel(message, options);
 
             const requestBody = {
                 model: model.name,
