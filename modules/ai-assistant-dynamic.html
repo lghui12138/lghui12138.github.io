@@ -72,168 +72,79 @@
     <script src="../js/core/config.js" onerror="console.warn('config.js加载失败')"></script>
     <script src="../js/core/smart-model-selector.js" onerror="console.warn('smart-model-selector.js加载失败')"></script>
     
-    <!-- MathJax配置 - 简化配置避免错误 -->
+    <!-- 简化的数学公式处理 - 纯CSS方案 -->
     <script>
-        window.MathJax = {
-            tex: {
-                inlineMath: [['$', '$'], ['\\(', '\\)']],
-                displayMath: [['$$', '$$'], ['\\[', '\\]']],
-                processEscapes: true,
-                processEnvironments: true,
-                packages: {'[+]': ['ams', 'newcommand', 'configmacros']}
-            },
-            chtml: {
-                scale: 1.0,
-                minScale: 0.5
-            },
-            options: {
-                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-                enableAssistiveMml: false
-            },
-            startup: {
-                pageReady: () => {
-                    return MathJax.startup.defaultPageReady().then(() => {
-                        console.log('✅ MathJax渲染完成');
-                        document.querySelectorAll('.math-formula').forEach(el => {
-                            el.style.display = 'block';
-                            el.style.visibility = 'visible';
-                        });
-                    }).catch((error) => {
-                        console.warn('⚠️ MathJax加载失败，使用备用方案:', error.message);
-                        // 启用CSS备用方案
-                        document.querySelectorAll('.math-formula').forEach(el => {
-                            const mathContent = el.innerHTML;
-                            el.innerHTML = `<div class="math-fallback">${mathContent}</div>`;
-                            el.style.display = 'block';
-                            el.style.visibility = 'visible';
-                        });
-                    });
-                },
-                ready: () => {
-                    console.log('🔧 MathJax准备就绪');
-                    MathJax.startup.defaultReady();
-                }
-            },
-            loader: {
-                load: ['[tex]/ams']
-            }
-        };
+        // 简单的数学公式处理函数
+        function processMathFormulas() {
+            console.log('🔢 处理数学公式 - 使用CSS方案');
 
-        // 添加数学公式的CSS回退样式
-        const mathFallbackStyle = document.createElement('style');
-        mathFallbackStyle.textContent = `
-            .math-fallback {
-                font-family: 'Times New Roman', 'STIX Two Math', 'Latin Modern Math', serif;
-                font-style: italic;
-                font-size: 1.1em;
-                text-align: center;
-                padding: 10px;
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 8px;
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                margin: 10px 0;
-            }
-            .math-fallback code {
-                font-family: 'Courier New', monospace;
-                background: rgba(0, 0, 0, 0.1);
-                padding: 2px 4px;
-                border-radius: 3px;
-            }
-        `;
-        document.head.appendChild(mathFallbackStyle);
-    </script>
-    
-    <!-- MathJax - 快速加载策略 -->
-    <script>
-        // 快速加载MathJax的策略
-        let mathJaxLoaded = false;
-        let mathJaxTimeout = null;
-
-        function loadMathJaxWithTimeout() {
-            // 清理可能的旧配置
-            if (window.MathJax && window.MathJax.startup) {
-                console.log('🧹 清理旧的MathJax配置');
-                delete window.MathJax.startup;
-            }
-
-            // 设置5秒超时，给更多时间加载
-            mathJaxTimeout = setTimeout(() => {
-                if (!mathJaxLoaded) {
-                    console.warn('⏰ MathJax加载超时，启用备用显示方案');
-                    enableMathFallback();
-                }
-            }, 5000);
-
-            // 尝试加载MathJax
-            const script = document.createElement('script');
-            script.id = 'MathJax-script';
-            script.async = true;
-            script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js'; // 使用更轻量的版本
-
-            script.onload = function() {
-                mathJaxLoaded = true;
-                if (mathJaxTimeout) {
-                    clearTimeout(mathJaxTimeout);
-                }
-                console.log('MathJax加载成功');
-            };
-
-            script.onerror = function() {
-                console.log('主CDN失败，尝试备用CDN...');
-                loadMathJaxFallback();
-            };
-
-            document.head.appendChild(script);
-        }
-
-        function loadMathJaxFallback() {
-            const script = document.createElement('script');
-            script.src = 'https://unpkg.com/mathjax@3/es5/tex-chtml.js';
-            script.async = true;
-            script.onload = function() {
-                mathJaxLoaded = true;
-                if (mathJaxTimeout) {
-                    clearTimeout(mathJaxTimeout);
-                }
-                console.log('备用MathJax加载成功');
-            };
-            script.onerror = function() {
-                console.log('所有MathJax CDN都失败，使用纯CSS方案');
-                enableMathFallback();
-            };
-            document.head.appendChild(script);
-        }
-
-        function enableMathFallback() {
-            mathJaxLoaded = true; // 防止重复调用
-            if (mathJaxTimeout) {
-                clearTimeout(mathJaxTimeout);
-            }
-
-            console.log('启用数学公式CSS备用方案');
             document.querySelectorAll('.math-formula').forEach(el => {
-                const mathContent = el.innerHTML;
-                // 简单的LaTeX到HTML转换
-                let htmlContent = mathContent
-                    .replace(/\$\$(.*?)\$\$/g, '<div class="math-display">$1</div>')
-                    .replace(/\$(.*?)\$/g, '<span class="math-inline">$1</span>')
-                    .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<span class="fraction"><span class="numerator">$1</span><span class="denominator">$2</span></span>')
-                    .replace(/\\sqrt\{([^}]+)\}/g, '<span class="sqrt">√<span class="sqrt-content">$1</span></span>')
-                    .replace(/\^(\w+)/g, '<sup>$1</sup>')
-                    .replace(/_(\w+)/g, '<sub>$1</sub>');
+                let content = el.innerHTML;
 
-                el.innerHTML = htmlContent;
+                // 处理常见的LaTeX符号
+                content = content
+                    // 分数
+                    .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<span class="fraction"><span class="numerator">$1</span><span class="denominator">$2</span></span>')
+                    // 平方根
+                    .replace(/\\sqrt\{([^}]+)\}/g, '<span class="sqrt">√<span class="sqrt-content">$1</span></span>')
+                    // 希腊字母
+                    .replace(/\\rho/g, 'ρ')
+                    .replace(/\\mu/g, 'μ')
+                    .replace(/\\nu/g, 'ν')
+                    .replace(/\\alpha/g, 'α')
+                    .replace(/\\beta/g, 'β')
+                    .replace(/\\gamma/g, 'γ')
+                    .replace(/\\delta/g, 'δ')
+                    .replace(/\\epsilon/g, 'ε')
+                    .replace(/\\theta/g, 'θ')
+                    .replace(/\\lambda/g, 'λ')
+                    .replace(/\\pi/g, 'π')
+                    .replace(/\\sigma/g, 'σ')
+                    .replace(/\\tau/g, 'τ')
+                    .replace(/\\phi/g, 'φ')
+                    .replace(/\\omega/g, 'ω')
+                    .replace(/\\Gamma/g, 'Γ')
+                    .replace(/\\Delta/g, 'Δ')
+                    .replace(/\\Theta/g, 'Θ')
+                    .replace(/\\Lambda/g, 'Λ')
+                    .replace(/\\Pi/g, 'Π')
+                    .replace(/\\Sigma/g, 'Σ')
+                    .replace(/\\Phi/g, 'Φ')
+                    .replace(/\\Omega/g, 'Ω')
+                    // 数学符号
+                    .replace(/\\nabla/g, '∇')
+                    .replace(/\\partial/g, '∂')
+                    .replace(/\\infty/g, '∞')
+                    .replace(/\\approx/g, '≈')
+                    .replace(/\\neq/g, '≠')
+                    .replace(/\\leq/g, '≤')
+                    .replace(/\\geq/g, '≥')
+                    .replace(/\\cdot/g, '·')
+                    .replace(/\\times/g, '×')
+                    .replace(/\\div/g, '÷')
+                    .replace(/\\pm/g, '±')
+                    // 向量
+                    .replace(/\\vec\{([^}]+)\}/g, '<span class="vector">$1⃗</span>')
+                    // 上下标
+                    .replace(/\^(\d+)/g, '<sup>$1</sup>')
+                    .replace(/_(\d+)/g, '<sub>$1</sub>')
+                    .replace(/\^{([^}]+)}/g, '<sup>$1</sup>')
+                    .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
+                    // 移除$$符号
+                    .replace(/\$\$/g, '');
+
+                el.innerHTML = content;
                 el.style.display = 'block';
                 el.style.visibility = 'visible';
             });
+
+            console.log('✅ 数学公式处理完成');
         }
 
-        // 延迟加载MathJax，不阻塞页面
-        setTimeout(() => {
-            console.log('🔄 开始加载MathJax...');
-            loadMathJaxWithTimeout();
-        }, 1000); // 减少延迟时间
+        // 页面加载完成后处理公式
+        document.addEventListener('DOMContentLoaded', processMathFormulas);
     </script>
+
 
     <!-- 数学公式CSS样式 -->
     <style>
@@ -808,48 +719,92 @@
             }
         }
 
-        /* 数学公式样式 */
+        /* 优化的数学公式样式 - 纯CSS方案 */
         .math-formula {
-            margin: 10px 0;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 8px;
-            border-left: 3px solid var(--accent-color);
+            margin: 15px 0;
+            padding: 12px;
+            background: linear-gradient(135deg, rgba(79, 172, 254, 0.1), rgba(0, 242, 254, 0.1));
+            border-radius: 12px;
+            border-left: 4px solid var(--accent-color);
             text-align: center;
-            font-size: 1.1em;
+            font-size: 1.2em;
+            font-family: 'Times New Roman', 'STIX Two Math', 'Latin Modern Math', serif;
             overflow-x: auto;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
 
-        .math-formula mjx-container {
-            margin: 0 !important;
+        /* 分数样式 */
+        .fraction {
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            margin: 0 3px;
+        }
+
+        .numerator {
+            display: block;
+            border-bottom: 1px solid currentColor;
+            padding-bottom: 2px;
+            font-size: 0.9em;
+        }
+
+        .denominator {
+            display: block;
+            padding-top: 2px;
+            font-size: 0.9em;
+        }
+
+        /* 平方根样式 */
+        .sqrt {
+            position: relative;
+            display: inline-block;
+            margin: 0 2px;
+        }
+
+        .sqrt-content {
+            border-top: 1px solid currentColor;
+            padding-left: 2px;
+            margin-left: 2px;
+        }
+
+        /* 向量样式 */
+        .vector {
+            position: relative;
+            font-weight: bold;
+        }
+
+        /* 上标下标优化 */
+        sup, sub {
+            font-size: 0.75em;
+            line-height: 0;
+        }
+
+        /* 希腊字母和特殊符号 */
+        .math-formula .greek {
+            font-style: italic;
+            font-weight: normal;
         }
 
         /* 内联数学公式 */
         .math-inline {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2px 4px;
-            border-radius: 3px;
-            font-family: 'Times New Roman', serif;
-        }
-
-        /* 数学公式备用样式 */
-        .math-fallback-display {
-            font-family: 'Times New Roman', serif;
-            font-size: 1.1em;
-            text-align: center;
-            margin: 10px 0;
-            padding: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-            border-left: 3px solid var(--accent-color);
-        }
-
-        .math-fallback-inline {
+            background: rgba(79, 172, 254, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
             font-family: 'Times New Roman', serif;
             font-style: italic;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 2px 4px;
-            border-radius: 3px;
+            margin: 0 2px;
+        }
+
+        /* 数学显示公式 */
+        .math-display {
+            display: block;
+            text-align: center;
+            margin: 15px 0;
+            font-size: 1.3em;
+            font-family: 'Times New Roman', serif;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
         }
 
         /* 快速建议 */
@@ -2578,9 +2533,9 @@
                             this.isTyping = false;
                             this.scrollToBottom();
 
-                            // 渲染新添加的数学公式
+                            // 处理新添加的数学公式
                             this.$nextTick(() => {
-                                this.forceRenderAllMath();
+                                this.processMathFormulas();
                             });
                         }
                     }, 1500 + Math.random() * 2000);
@@ -3937,116 +3892,71 @@
                     }
                 },
 
-                // MathJax监控
-                monitorMathJax() {
-                    // 监控MathJax加载状态
-                    let mathJaxCheckCount = 0;
-                    const maxMathJaxChecks = 30; // 3秒检查时间
+                // 处理数学公式 - 纯CSS方案
+                processMathFormulas() {
+                    console.log('🔢 处理数学公式 - 使用纯CSS方案');
 
-                    const checkMathJax = () => {
-                        mathJaxCheckCount++;
-
-                        if (typeof window.MathJax !== 'undefined' && window.MathJax.startup) {
-                            console.log('✅ MathJax已加载');
-                            // 重新渲染页面上的数学公式
-                            this.renderMathFormulas();
-                            return;
-                        }
-
-                        if (mathJaxCheckCount < maxMathJaxChecks) {
-                            setTimeout(checkMathJax, 100);
-                        } else {
-                            console.warn('⚠️ MathJax加载超时，使用CSS备用方案');
-                            this.enableMathFallback();
-                        }
-                    };
-
-                    // 延迟开始检查，给MathJax一些加载时间
-                    setTimeout(checkMathJax, 500);
-                },
-
-                renderMathFormulas() {
-                    if (typeof window.MathJax !== 'undefined' && window.MathJax.typesetPromise) {
-                        // 强制重新渲染所有数学公式
-                        window.MathJax.typesetPromise(document.querySelectorAll('.math-formula')).then(() => {
-                            console.log('✅ 数学公式重新渲染完成');
-                            // 确保公式可见
-                            document.querySelectorAll('.math-formula').forEach(el => {
-                                el.style.visibility = 'visible';
-                                el.style.display = 'block';
-                            });
-                        }).catch(error => {
-                            console.warn('⚠️ MathJax渲染失败:', error);
-                            this.enableMathFallback();
-                        });
-                    } else {
-                        // 如果MathJax不可用，立即启用备用方案
-                        console.warn('⚠️ MathJax不可用，启用备用方案');
-                        this.enableMathFallback();
-                    }
-                },
-
-                // 强制渲染页面上的所有公式
-                forceRenderAllMath() {
-                    console.log('🔄 强制渲染所有数学公式');
-
-                    // 等待一小段时间确保DOM更新
-                    setTimeout(() => {
-                        if (typeof window.MathJax !== 'undefined' && window.MathJax.typesetPromise) {
-                            window.MathJax.typesetPromise().then(() => {
-                                console.log('✅ 强制渲染完成');
-                            }).catch(error => {
-                                console.warn('⚠️ 强制渲染失败:', error);
-                                this.enableMathFallback();
-                            });
-                        }
-                    }, 100);
-                },
-
-                enableMathFallback() {
-                    console.log('🔄 启用数学公式备用显示方案');
                     document.querySelectorAll('.math-formula').forEach(el => {
-                        if (el.style.visibility === 'hidden' || !el.textContent.trim()) {
-                            const mathContent = el.innerHTML;
-                            // 简化的数学公式显示
-                            let fallbackContent = mathContent
-                                .replace(/\$\$(.*?)\$\$/g, '<div class="math-fallback-display">$1</div>')
-                                .replace(/\$(.*?)\$/g, '<span class="math-fallback-inline">$1</span>');
+                        let content = el.innerHTML;
 
-                            el.innerHTML = fallbackContent;
-                            el.style.visibility = 'visible';
-                            el.classList.add('math-fallback-enabled');
-                        }
+                        // 处理常见的LaTeX符号
+                        content = content
+                            // 分数
+                            .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<span class="fraction"><span class="numerator">$1</span><span class="denominator">$2</span></span>')
+                            // 平方根
+                            .replace(/\\sqrt\{([^}]+)\}/g, '<span class="sqrt">√<span class="sqrt-content">$1</span></span>')
+                            // 希腊字母
+                            .replace(/\\rho/g, '<span class="greek">ρ</span>')
+                            .replace(/\\mu/g, '<span class="greek">μ</span>')
+                            .replace(/\\nu/g, '<span class="greek">ν</span>')
+                            .replace(/\\alpha/g, '<span class="greek">α</span>')
+                            .replace(/\\beta/g, '<span class="greek">β</span>')
+                            .replace(/\\gamma/g, '<span class="greek">γ</span>')
+                            .replace(/\\delta/g, '<span class="greek">δ</span>')
+                            .replace(/\\epsilon/g, '<span class="greek">ε</span>')
+                            .replace(/\\theta/g, '<span class="greek">θ</span>')
+                            .replace(/\\lambda/g, '<span class="greek">λ</span>')
+                            .replace(/\\pi/g, '<span class="greek">π</span>')
+                            .replace(/\\sigma/g, '<span class="greek">σ</span>')
+                            .replace(/\\tau/g, '<span class="greek">τ</span>')
+                            .replace(/\\phi/g, '<span class="greek">φ</span>')
+                            .replace(/\\omega/g, '<span class="greek">ω</span>')
+                            .replace(/\\Gamma/g, '<span class="greek">Γ</span>')
+                            .replace(/\\Delta/g, '<span class="greek">Δ</span>')
+                            .replace(/\\Theta/g, '<span class="greek">Θ</span>')
+                            .replace(/\\Lambda/g, '<span class="greek">Λ</span>')
+                            .replace(/\\Pi/g, '<span class="greek">Π</span>')
+                            .replace(/\\Sigma/g, '<span class="greek">Σ</span>')
+                            .replace(/\\Phi/g, '<span class="greek">Φ</span>')
+                            .replace(/\\Omega/g, '<span class="greek">Ω</span>')
+                            // 数学符号
+                            .replace(/\\nabla/g, '∇')
+                            .replace(/\\partial/g, '∂')
+                            .replace(/\\infty/g, '∞')
+                            .replace(/\\approx/g, '≈')
+                            .replace(/\\neq/g, '≠')
+                            .replace(/\\leq/g, '≤')
+                            .replace(/\\geq/g, '≥')
+                            .replace(/\\cdot/g, '·')
+                            .replace(/\\times/g, '×')
+                            .replace(/\\div/g, '÷')
+                            .replace(/\\pm/g, '±')
+                            // 向量
+                            .replace(/\\vec\{([^}]+)\}/g, '<span class="vector">$1⃗</span>')
+                            // 上下标
+                            .replace(/\^(\d+)/g, '<sup>$1</sup>')
+                            .replace(/_(\d+)/g, '<sub>$1</sub>')
+                            .replace(/\^{([^}]+)}/g, '<sup>$1</sup>')
+                            .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
+                            // 移除$$符号
+                            .replace(/\$\$/g, '');
+
+                        el.innerHTML = content;
+                        el.style.display = 'block';
+                        el.style.visibility = 'visible';
                     });
 
-                    // 添加备用样式
-                    if (!document.querySelector('#math-fallback-styles')) {
-                        const style = document.createElement('style');
-                        style.id = 'math-fallback-styles';
-                        style.textContent = `
-                            .math-fallback-display {
-                                font-family: 'Times New Roman', serif;
-                                font-size: 1.1em;
-                                text-align: center;
-                                margin: 10px 0;
-                                padding: 8px;
-                                background: rgba(255, 255, 255, 0.1);
-                                border-radius: 6px;
-                                border-left: 3px solid var(--accent-color);
-                            }
-                            .math-fallback-inline {
-                                font-family: 'Times New Roman', serif;
-                                font-style: italic;
-                                background: rgba(255, 255, 255, 0.1);
-                                padding: 2px 4px;
-                                border-radius: 3px;
-                            }
-                            .math-fallback-enabled {
-                                opacity: 0.9;
-                            }
-                        `;
-                        document.head.appendChild(style);
-                    }
+                    console.log('✅ 数学公式处理完成');
                 }
             },
 
@@ -4064,7 +3974,7 @@
                     this.initSmartAI().catch(error => {
                         console.warn('AI系统初始化失败:', error);
                     });
-                    this.monitorMathJax();
+                    this.processMathFormulas(); // 处理数学公式
                     this.enhanceVoiceInput(); // 初始化语音输入增强功能
                 }, 100);
 
