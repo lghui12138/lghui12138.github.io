@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数值方法 - 极致美观学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* 浮动粒子效果 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #673AB7, #9C27B0);
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #673AB7, #9C27B0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: 1.3em;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #673AB7, #9C27B0);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(103, 58, 183, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(103, 58, 183, 0.4);
+        }
+
+        .topic-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .topic-card h2 {
+            color: #673AB7;
+            font-size: 2em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .topic-card p {
+            color: #666;
+            line-height: 1.8;
+            font-size: 1.1em;
+        }
+
+        .ultimate-formula-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ultimate-formula-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #673AB7, #9C27B0);
+        }
+
+        .ultimate-formula-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15);
+        }
+
+        .formula-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .formula-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #673AB7;
+            background: linear-gradient(135deg, #673AB7, #9C27B0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .formula-category {
+            background: linear-gradient(135deg, rgba(103, 58, 183, 0.2), rgba(156, 39, 176, 0.2));
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #673AB7;
+            border: 2px solid rgba(103, 58, 183, 0.3);
+        }
+
+        .formula-display {
+            background: linear-gradient(135deg, rgba(103, 58, 183, 0.1), rgba(156, 39, 176, 0.1));
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+            border: 2px solid rgba(103, 58, 183, 0.2);
+            overflow-x: auto;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .formula-main {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .formula-explanation {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .formula-derivation {
+            background: linear-gradient(135deg, rgba(255, 248, 220, 0.9), rgba(255, 250, 240, 0.7));
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #673AB7;
+        }
+
+        .derivation-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #673AB7;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .derivation-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .derivation-step {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #673AB7;
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .formula-physics {
+            background: linear-gradient(135deg, rgba(255, 255, 224, 0.9), rgba(255, 250, 205, 0.7));
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #FFD700;
+        }
+
+        .physics-title {
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .physics-meaning {
+            color: #856404;
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+
+        .formula-footer {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .formula-tags {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #555;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 数值方法特定的颜色主题 */
+        .ultimate-formula-container.numerical {
+            background: linear-gradient(135deg, rgba(243, 229, 245, 0.9), rgba(225, 190, 231, 0.7));
+            border-color: #673AB7;
+        }
+
+        .ultimate-formula-container.numerical .formula-title {
+            background: linear-gradient(135deg, #512DA8, #673AB7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ultimate-formula-container.numerical .formula-derivation {
+            border-left-color: #673AB7;
+        }
+
+        .ultimate-formula-container.numerical .derivation-title {
+            color: #512DA8;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .MathJax {
+            font-size: 1.2em !important;
+        }
+
+        .formula-display .MathJax {
+            font-size: 1.6em !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .formula-main {
+                font-size: 1.6em;
+            }
+            
+            .ultimate-formula-container {
+                padding: 25px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 浮动粒子效果 -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-calculator"></i> 数值方法</h1>
+            <p>极致美观的数值方法学习资源，包含完整的公式美化系统</p>
+            <div class="nav-buttons">
+                <a href="../index-dynamic.html" class="nav-btn">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+                <a href="fluid-dynamics-dynamic.html" class="nav-btn">
+                    <i class="fas fa-water"></i> 流体动力学
+                </a>
+                <a href="simulation-dynamic.html" class="nav-btn">
+                    <i class="fas fa-cube"></i> 数值模拟
+                </a>
+            </div>
+        </div>
+
+        <div class="topic-card">
+            <h2>数值方法基本概念</h2>
+            <p>数值方法是求解流体力学问题的重要工具，包括有限差分法、有限元法、有限体积法等。这些方法将连续问题离散化，通过计算机求解复杂的流体力学方程。</p>
+        </div>
+
+        <!-- 有限差分法 -->
+        <div class="ultimate-formula-container numerical">
+            <div class="formula-header">
+                <div class="formula-title">有限差分法</div>
+                <div class="formula-category">数值方法</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\frac{\partial u}{\partial x} \approx \frac{u_{i+1} - u_i}{\Delta x}$$</div>
+                <div class="formula-explanation">前向差分近似</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">泰勒展开：$u(x + \Delta x) = u(x) + \Delta x \frac{\partial u}{\partial x} + \frac{(\Delta x)^2}{2!}\frac{\partial^2 u}{\partial x^2} + ...$</div>
+                    <div class="derivation-step">前向差分：$\frac{u_{i+1} - u_i}{\Delta x} = \frac{\partial u}{\partial x} + O(\Delta x)$</div>
+                    <div class="derivation-step">后向差分：$\frac{u_i - u_{i-1}}{\Delta x} = \frac{\partial u}{\partial x} + O(\Delta x)$</div>
+                    <div class="derivation-step">中心差分：$\frac{u_{i+1} - u_{i-1}}{2\Delta x} = \frac{\partial u}{\partial x} + O((\Delta x)^2)$</div>
+                    <div class="derivation-step">二阶导数：$\frac{u_{i+1} - 2u_i + u_{i-1}}{(\Delta x)^2} = \frac{\partial^2 u}{\partial x^2} + O((\Delta x)^2)$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">有限差分法通过差分近似导数，将偏微分方程转化为代数方程组。前向差分精度为一阶，中心差分精度为二阶，是常用的数值方法。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">数值方法</span>
+                    <span class="tag">有限差分</span>
+                    <span class="tag">差分近似</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 有限元法 -->
+        <div class="ultimate-formula-container numerical">
+            <div class="formula-header">
+                <div class="formula-title">有限元法</div>
+                <div class="formula-category">数值方法</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$u(x) = \sum_{i=1}^n N_i(x) u_i$$</div>
+                <div class="formula-explanation">有限元插值函数</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">单元插值：$u = \sum_{i=1}^n N_i u_i, w = N_j$</div>
+                    <div class="derivation-step">形函数：$N_i(x_j) = \delta_{ij}$（克罗内克函数）</div>
+                    <div class="derivation-step">弱形式：$\int_\Omega w \mathcal{L}(u) d\Omega = 0$</div>
+                    <div class="derivation-step">伽辽金法：$w = N_j$</div>
+                    <div class="derivation-step">刚度矩阵：$K_{ij} = \int_\Omega \nabla N_i \cdot \nabla N_j d\Omega$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">有限元法通过单元插值和弱形式求解偏微分方程。形函数在节点处为1，在其他节点处为0，保证了插值的连续性。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">数值方法</span>
+                    <span class="tag">有限元法</span>
+                    <span class="tag">形函数</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 有限体积法 -->
+        <div class="ultimate-formula-container numerical">
+            <div class="formula-header">
+                <div class="formula-title">有限体积法</div>
+                <div class="formula-category">数值方法</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\int_V \frac{\partial \phi}{\partial t} dV + \oint_S \vec{F} \cdot \vec{n} dS = \int_V S dV$$</div>
+                <div class="formula-explanation">有限体积法控制方程</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">控制体积分：$\int_V \frac{\partial \phi}{\partial t} dV + \oint_S \vec{F} \cdot \vec{n} dS = \int_V S dV$</div>
+                    <div class="derivation-step">时间项：$\frac{\partial \phi}{\partial t} V \approx \frac{\phi^{n+1} - \phi^n}{\Delta t} V$</div>
+                    <div class="derivation-step">通量项：$\oint_S \vec{F} \cdot \vec{n} dS \approx \sum_{faces} \vec{F} \cdot \vec{n} A$</div>
+                    <div class="derivation-step">源项：$\int_V S dV \approx S V$</div>
+                    <div class="derivation-step">离散方程：$\frac{\phi^{n+1} - \phi^n}{\Delta t} V + \sum_{faces} \vec{F} \cdot \vec{n} A = S V$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">有限体积法基于控制体积分，保证物理守恒律。通过离散化控制体方程，可以准确处理复杂的几何形状和边界条件。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">数值方法</span>
+                    <span class="tag">有限体积法</span>
+                    <span class="tag">控制体</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 显式时间推进 -->
+        <div class="ultimate-formula-container numerical">
+            <div class="formula-header">
+                <div class="formula-title">显式时间推进</div>
+                <div class="formula-category">数值方法</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$u^{n+1} = u^n + \Delta t f(u^n)$$</div>
+                <div class="formula-explanation">欧拉显式格式</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">微分方程：$\frac{du}{dt} = f(u)$</div>
+                    <div class="derivation-step">泰勒展开：$u(t + \Delta t) = u(t) + \Delta t \frac{du}{dt} + O((\Delta t)^2)$</div>
+                    <div class="derivation-step">显式格式：$u^{n+1} = u^n + \Delta t f(u^n)$</div>
+                    <div class="derivation-step">稳定性条件：$\Delta t \leq \frac{2}{|\lambda|}$</div>
+                    <div class="derivation-step">其中λ为雅可比矩阵的特征值</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">显式时间推进格式简单易实现，但稳定性受时间步长限制。CFL条件限制了最大允许的时间步长，确保数值稳定性。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">数值方法</span>
+                    <span class="tag">显式格式</span>
+                    <span class="tag">时间推进</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 隐式时间推进 -->
+        <div class="ultimate-formula-container numerical">
+            <div class="formula-header">
+                <div class="formula-title">隐式时间推进</div>
+                <div class="formula-category">数值方法</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$u^{n+1} = u^n + \Delta t f(u^{n+1})$$</div>
+                <div class="formula-explanation">欧拉隐式格式</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">微分方程：$\frac{du}{dt} = f(u)$</div>
+                    <div class="derivation-step">隐式格式：$u^{n+1} = u^n + \Delta t f(u^{n+1})$</div>
+                    <div class="derivation-step">需要求解非线性方程</div>
+                    <div class="derivation-step">牛顿迭代：$u^{n+1,k+1} = u^{n+1,k} - \frac{u^{n+1,k} - u^n - \Delta t f(u^{n+1,k})}{1 - \Delta t \frac{\partial f}{\partial u}}$</div>
+                    <div class="derivation-step">无条件稳定，但计算量大</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">隐式时间推进格式具有无条件稳定性，允许更大的时间步长。但需要求解非线性方程，计算成本较高。适用于刚性微分方程。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">数值方法</span>
+                    <span class="tag">隐式格式</span>
+                    <span class="tag">无条件稳定</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crank-Nicolson格式 -->
+        <div class="ultimate-formula-container numerical">
+            <div class="formula-header">
+                <div class="formula-title">Crank-Nicolson格式</div>
+                <div class="formula-category">数值方法</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$u^{n+1} = u^n + \frac{\Delta t}{2}[f(u^n) + f(u^{n+1})]$$</div>
+                <div class="formula-explanation">二阶精度的隐式格式</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">梯形法则：$\int_{t^n}^{t^{n+1}} f(u) dt \approx \frac{\Delta t}{2}[f(u^n) + f(u^{n+1})]$</div>
+                    <div class="derivation-step">积分形式：$u^{n+1} = u^n + \int_{t^n}^{t^{n+1}} f(u) dt$</div>
+                    <div class="derivation-step">Crank-Nicolson格式：$u^{n+1} = u^n + \frac{\Delta t}{2}[f(u^n) + f(u^{n+1})]$</div>
+                    <div class="derivation-step">局部截断误差：$O((\Delta t)^2)$</div>
+                    <div class="derivation-step">无条件稳定</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">Crank-Nicolson格式结合了显式和隐式格式的优点，具有二阶精度和无条件稳定性。适用于对流扩散方程的数值求解。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">数值方法</span>
+                    <span class="tag">Crank-Nicolson</span>
+                    <span class="tag">二阶精度</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 有限差分格式稳定性 -->
+        <div class="ultimate-formula-container numerical">
+            <div class="formula-header">
+                <div class="formula-title">有限差分格式稳定性</div>
+                <div class="formula-category">数值方法</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$CFL = \frac{c\Delta t}{\Delta x} \leq 1$$</div>
+                <div class="formula-explanation">CFL条件，显式格式稳定性条件</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">波动方程：$\frac{\partial u}{\partial t} + c\frac{\partial u}{\partial x} = 0$</div>
+                    <div class="derivation-step">显式格式：$u_i^{n+1} = u_i^n - \frac{c\Delta t}{\Delta x}(u_i^n - u_{i-1}^n)$</div>
+                    <div class="derivation-step">增长因子：$G = 1 - \frac{c\Delta t}{\Delta x}(1 - e^{-ik\Delta x})$</div>
+                    <div class="derivation-step">稳定性条件：$|G| \leq 1$</div>
+                    <div class="derivation-step">CFL条件：$\frac{c\Delta t}{\Delta x} \leq 1$</div>
+                    <div class="derivation-step">物理意义：信息传播速度不能超过数值传播速度</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">CFL条件确保数值解的信息传播速度不超过物理信息传播速度。这是显式格式稳定性的必要条件，限制了最大允许的时间步长。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">数值方法</span>
+                    <span class="tag">稳定性</span>
+                    <span class="tag">CFL条件</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 有限元法详细推导 -->
+        <div class="ultimate-formula-container numerical">
+            <div class="formula-header">
+                <div class="formula-title">有限元法详细推导</div>
+                <div class="formula-category">数值方法</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$Ku = f$$</div>
+                <div class="formula-explanation">有限元线性方程组</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">弱形式：$\int_\Omega \nabla w \cdot \nabla u d\Omega = \int_\Omega w f d\Omega$</div>
+                    <div class="derivation-step">单元插值：$u = \sum_{i=1}^n N_i u_i, w = N_j$</div>
+                    <div class="derivation-step">刚度矩阵：$K_{ij} = \int_\Omega \nabla N_i \cdot \nabla N_j d\Omega$</div>
+                    <div class="derivation-step">载荷向量：$f_i = \int_\Omega N_i f d\Omega$</div>
+                    <div class="derivation-step">线性方程组：$Ku = f$</div>
+                    <div class="derivation-step">求解：$u = K^{-1}f$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">有限元法通过弱形式将偏微分方程转化为线性代数方程组。刚度矩阵描述了系统的刚度特性，载荷向量描述了外部作用。有限元法特别适用于复杂几何形状的问题。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">数值方法</span>
+                    <span class="tag">有限元法</span>
+                    <span class="tag">弱形式</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 有限体积法通量计算 -->
+        <div class="ultimate-formula-container numerical">
+            <div class="formula-header">
+                <div class="formula-title">有限体积法通量计算</div>
+                <div class="formula-category">数值方法</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$F_{i+1/2} = \frac{1}{2}(F_i + F_{i+1}) - \frac{1}{2}|A|_{i+1/2}(u_{i+1} - u_i)$$</div>
+                <div class="formula-explanation">Roe通量分裂格式</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">守恒形式：$\frac{\partial u}{\partial t} + \frac{\partial F}{\partial x} = 0$</div>
+                    <div class="derivation-step">通量分裂：$F = F^+ + F^-$</div>
+                    <div class="derivation-step">Roe平均：$A_{i+1/2} = A(\frac{u_i + u_{i+1}}{2})$</div>
+                    <div class="derivation-step">特征分解：$A = R\Lambda R^{-1}$</div>
+                    <div class="derivation-step">通量格式：$F_{i+1/2} = \frac{1}{2}(F_i + F_{i+1}) - \frac{1}{2}|A|_{i+1/2}(u_{i+1} - u_i)$</div>
+                    <div class="derivation-step">其中：$|A| = R|\Lambda|R^{-1}$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">Roe通量分裂格式通过特征分解将通量分解为正向和负向部分，确保数值格式的稳定性。这种格式特别适用于激波捕捉和守恒律方程的数值求解。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">数值方法</span>
+                    <span class="tag">有限体积法</span>
+                    <span class="tag">通量分裂</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 多重网格方法 -->
+        <div class="ultimate-formula-container numerical">
+            <div class="formula-header">
+                <div class="formula-title">多重网格方法</div>
+                <div class="formula-category">数值方法</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$e^{k+1} = (I - P_h^H A_H^{-1} R_H^h A_h)e^k$$</div>
+                <div class="formula-explanation">多重网格误差传播算子</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">线性方程组：$A_h u_h = f_h$</div>
+                    <div class="derivation-step">误差方程：$A_h e_h = r_h$</div>
+                    <div class="derivation-step">粗网格方程：$A_H e_H = R_H^h r_h$</div>
+                    <div class="derivation-step">误差修正：$e_h^{new} = e_h^{old} + P_h^H e_H$</div>
+                    <div class="derivation-step">误差传播：$e^{k+1} = (I - P_h^H A_H^{-1} R_H^h A_h)e^k$</div>
+                    <div class="derivation-step">收敛性：$\rho(MG) < 1$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">多重网格方法通过在不同网格层次上求解问题，加速迭代收敛。粗网格捕捉低频误差，细网格捕捉高频误差，实现最优的收敛速度。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">数值方法</span>
+                    <span class="tag">多重网格</span>
+                    <span class="tag">迭代加速</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实际应用例题 -->
+        <div class="ultimate-formula-container numerical">
+            <div class="formula-header">
+                <div class="formula-title">实际应用例题</div>
+                <div class="formula-category">数值方法</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">一维热传导方程数值求解</div>
+                <div class="formula-explanation">使用有限差分法求解热传导方程</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">解题过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">热传导方程：$\frac{\partial T}{\partial t} = \alpha\frac{\partial^2 T}{\partial x^2}$</div>
+                    <div class="derivation-step">有限差分格式：$\frac{T_i^{n+1} - T_i^n}{\Delta t} = \alpha\frac{T_{i+1}^n - 2T_i^n + T_{i-1}^n}{(\Delta x)^2}$</div>
+                    <div class="derivation-step">显式格式：$T_i^{n+1} = T_i^n + r(T_{i+1}^n - 2T_i^n + T_{i-1}^n)$</div>
+                    <div class="derivation-step">其中：$r = \frac{\alpha\Delta t}{(\Delta x)^2}$</div>
+                    <div class="derivation-step">稳定性条件：$r \leq \frac{1}{2}$</div>
+                    <div class="derivation-step">数值解：$T(x,t) = \sum_{n=1}^{\infty} A_n \sin(\frac{n\pi x}{L})e^{-\alpha(\frac{n\pi}{L})^2t}$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">结果分析：</div>
+                <div class="physics-meaning">有限差分法成功求解了热传导方程，数值解与解析解吻合良好。稳定性条件限制了时间步长的选择，确保数值解的稳定性。这种方法可以推广到更复杂的偏微分方程。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">数值方法</span>
+                    <span class="tag">实际应用</span>
+                    <span class="tag">热传导</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 创建浮动粒子效果
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            
+            // 重新渲染数学公式
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typeset();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

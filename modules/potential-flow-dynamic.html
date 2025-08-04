@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>势流理论 - 极致美观学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* 浮动粒子效果 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #9C27B0, #E1BEE7);
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #9C27B0, #E1BEE7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: 1.3em;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #9C27B0, #E1BEE7);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(156, 39, 176, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(156, 39, 176, 0.4);
+        }
+
+        .topic-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .topic-card h2 {
+            color: #9C27B0;
+            font-size: 2em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .topic-card p {
+            color: #666;
+            line-height: 1.8;
+            font-size: 1.1em;
+        }
+
+        .ultimate-formula-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ultimate-formula-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #9C27B0, #E1BEE7);
+        }
+
+        .ultimate-formula-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15);
+        }
+
+        .formula-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .formula-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #9C27B0;
+            background: linear-gradient(135deg, #9C27B0, #E1BEE7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .formula-category {
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.2), rgba(225, 190, 231, 0.2));
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #9C27B0;
+            border: 2px solid rgba(156, 39, 176, 0.3);
+        }
+
+        .formula-display {
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.1), rgba(225, 190, 231, 0.1));
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+            border: 2px solid rgba(156, 39, 176, 0.2);
+            overflow-x: auto;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .formula-main {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .formula-explanation {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .formula-derivation {
+            background: linear-gradient(135deg, rgba(255, 248, 220, 0.9), rgba(255, 250, 240, 0.7));
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #9C27B0;
+        }
+
+        .derivation-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #9C27B0;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .derivation-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .derivation-step {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #9C27B0;
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .formula-physics {
+            background: linear-gradient(135deg, rgba(255, 255, 224, 0.9), rgba(255, 250, 205, 0.7));
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #FFD700;
+        }
+
+        .physics-title {
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .physics-meaning {
+            color: #856404;
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+
+        .formula-footer {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .formula-tags {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #555;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 势流特定的颜色主题 */
+        .ultimate-formula-container.potential {
+            background: linear-gradient(135deg, rgba(243, 229, 245, 0.9), rgba(225, 190, 231, 0.7));
+            border-color: #9C27B0;
+        }
+
+        .ultimate-formula-container.potential .formula-title {
+            background: linear-gradient(135deg, #7B1FA2, #9C27B0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ultimate-formula-container.potential .formula-derivation {
+            border-left-color: #9C27B0;
+        }
+
+        .ultimate-formula-container.potential .derivation-title {
+            color: #7B1FA2;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .MathJax {
+            font-size: 1.2em !important;
+        }
+
+        .formula-display .MathJax {
+            font-size: 1.6em !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .formula-main {
+                font-size: 1.6em;
+            }
+            
+            .ultimate-formula-container {
+                padding: 25px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 浮动粒子效果 -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-stream"></i> 势流理论</h1>
+            <p>极致美观的势流理论学习资源，包含完整的公式美化系统</p>
+            <div class="nav-buttons">
+                <a href="../index-dynamic.html" class="nav-btn">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+                <a href="fluid-dynamics-dynamic.html" class="nav-btn">
+                    <i class="fas fa-water"></i> 流体动力学
+                </a>
+                <a href="boundary-layer-dynamic.html" class="nav-btn">
+                    <i class="fas fa-layer-group"></i> 边界层理论
+                </a>
+            </div>
+        </div>
+
+        <div class="topic-card">
+            <h2>势流基本概念</h2>
+            <p>势流理论是理想流体力学的基础，研究无旋、不可压缩流体的流动。势流具有速度势函数和流函数，可以通过叠加基本流动来构造复杂流动。</p>
+        </div>
+
+        <!-- 速度势函数 -->
+        <div class="ultimate-formula-container potential">
+            <div class="formula-header">
+                <div class="formula-title">速度势函数</div>
+                <div class="formula-category">势流理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\vec{v} = \nabla \phi$$</div>
+                <div class="formula-explanation">速度势函数与速度场的关系</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">对于无旋流动：$\nabla \times \vec{v} = 0$</div>
+                    <div class="derivation-step">引入速度势函数：$\vec{v} = \nabla \phi$</div>
+                    <div class="derivation-step">分量形式：$u = \frac{\partial \phi}{\partial x}, v = \frac{\partial \phi}{\partial y}$</div>
+                    <div class="derivation-step">不可压缩条件：$\nabla \cdot \vec{v} = 0$</div>
+                    <div class="derivation-step">代入得到：$\nabla^2 \phi = 0$（拉普拉斯方程）</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">速度势函数是标量函数，其梯度等于速度场。势函数等值线垂直于流线，描述了流体的运动方向。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">势流理论</span>
+                    <span class="tag">速度势</span>
+                    <span class="tag">无旋流动</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 流函数 -->
+        <div class="ultimate-formula-container potential">
+            <div class="formula-header">
+                <div class="formula-title">流函数</div>
+                <div class="formula-category">势流理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$u = \frac{\partial \psi}{\partial y}, \quad v = -\frac{\partial \psi}{\partial x}$$</div>
+                <div class="formula-explanation">流函数与速度分量的关系</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">不可压缩条件：$\frac{\partial u}{\partial x} + \frac{\partial v}{\partial y} = 0$</div>
+                    <div class="derivation-step">引入流函数：$u = \frac{\partial \psi}{\partial y}, v = -\frac{\partial \psi}{\partial x}$</div>
+                    <div class="derivation-step">自动满足不可压缩条件</div>
+                    <div class="derivation-step">对于无旋流动：$\frac{\partial v}{\partial x} - \frac{\partial u}{\partial y} = 0$</div>
+                    <div class="derivation-step">代入得到：$\nabla^2 \psi = 0$（拉普拉斯方程）</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">流函数是标量函数，其等值线表示流线。流函数值相等的点构成流线，描述了流体的运动轨迹。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">势流理论</span>
+                    <span class="tag">流函数</span>
+                    <span class="tag">流线</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 复势函数 -->
+        <div class="ultimate-formula-container potential">
+            <div class="formula-header">
+                <div class="formula-title">复势函数</div>
+                <div class="formula-category">势流理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$W(z) = \phi + i\psi$$</div>
+                <div class="formula-explanation">复势函数，结合速度势和流函数</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">复变量：$z = x + iy$</div>
+                    <div class="derivation-step">复势函数：$W(z) = \phi(x,y) + i\psi(x,y)$</div>
+                    <div class="derivation-step">复速度：$\frac{dW}{dz} = u - iv$</div>
+                    <div class="derivation-step">柯西-黎曼条件：$\frac{\partial \phi}{\partial x} = \frac{\partial \psi}{\partial y}, \frac{\partial \phi}{\partial y} = -\frac{\partial \psi}{\partial x}$</div>
+                    <div class="derivation-step">复势函数是解析函数，满足拉普拉斯方程</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">复势函数是势流理论的重要工具，将速度势和流函数统一在复变函数理论框架下。复速度的模表示速度大小，辐角表示速度方向。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">势流理论</span>
+                    <span class="tag">复势函数</span>
+                    <span class="tag">复变函数</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 均匀流 -->
+        <div class="ultimate-formula-container potential">
+            <div class="formula-header">
+                <div class="formula-title">均匀流</div>
+                <div class="formula-category">势流理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$W(z) = U_\infty z$$</div>
+                <div class="formula-explanation">均匀流的复势函数</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">均匀流速度：$u = U_\infty, v = 0$</div>
+                    <div class="derivation-step">速度势：$\phi = U_\infty x$</div>
+                    <div class="derivation-step">流函数：$\psi = U_\infty y$</div>
+                    <div class="derivation-step">复势函数：$W(z) = U_\infty x + iU_\infty y = U_\infty z$</div>
+                    <div class="derivation-step">复速度：$\frac{dW}{dz} = U_\infty$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">均匀流是最基本的势流，速度场为常数。均匀流可以作为其他复杂流动的基础，通过叠加得到更复杂的流动。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">势流理论</span>
+                    <span class="tag">均匀流</span>
+                    <span class="tag">基本流动</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 点源和点汇 -->
+        <div class="ultimate-formula-container potential">
+            <div class="formula-header">
+                <div class="formula-title">点源和点汇</div>
+                <div class="formula-category">势流理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$W(z) = \frac{m}{2\pi}\ln(z - z_0)$$</div>
+                <div class="formula-explanation">点源（m>0）或点汇（m<0）的复势函数</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">极坐标：$z - z_0 = re^{i\theta}$</div>
+                    <div class="derivation-step">复势函数：$W(z) = \frac{m}{2\pi}\ln(re^{i\theta}) = \frac{m}{2\pi}(\ln r + i\theta)$</div>
+                    <div class="derivation-step">速度势：$\phi = \frac{m}{2\pi}\ln r$</div>
+                    <div class="derivation-step">流函数：$\psi = \frac{m}{2\pi}\theta$</div>
+                    <div class="derivation-step">径向速度：$v_r = \frac{m}{2\pi r}$</div>
+                    <div class="derivation-step">切向速度：$v_\theta = 0$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">点源和点汇是势流理论的基本流动。点源表示流体从一点向外流出，点汇表示流体向一点汇聚。径向速度随距离的倒数衰减，流线为从源点发出的射线。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">势流理论</span>
+                    <span class="tag">点源点汇</span>
+                    <span class="tag">基本流动</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 点涡 -->
+        <div class="ultimate-formula-container potential">
+            <div class="formula-header">
+                <div class="formula-title">点涡</div>
+                <div class="formula-category">势流理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$W(z) = \frac{\Gamma}{2\pi i}\ln(z - z_0)$$</div>
+                <div class="formula-explanation">点涡的复势函数，Γ为环量</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">极坐标：$z - z_0 = re^{i\theta}$</div>
+                    <div class="derivation-step">复势函数：$W(z) = \frac{\Gamma}{2\pi i}\ln(re^{i\theta}) = \frac{\Gamma}{2\pi i}(\ln r + i\theta)$</div>
+                    <div class="derivation-step">速度势：$\phi = -\frac{\Gamma}{2\pi}\theta$</div>
+                    <div class="derivation-step">流函数：$\psi = \frac{\Gamma}{2\pi}\ln r$</div>
+                    <div class="derivation-step">径向速度：$v_r = 0$</div>
+                    <div class="derivation-step">切向速度：$v_\theta = \frac{\Gamma}{2\pi r}$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">点涡表示围绕一点的旋转流动，环量Γ表示旋转强度。切向速度随距离的倒数衰减，径向速度为零。流线为同心圆，等势线为从涡心发出的射线。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">势流理论</span>
+                    <span class="tag">点涡</span>
+                    <span class="tag">环量</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 偶极子 -->
+        <div class="ultimate-formula-container potential">
+            <div class="formula-header">
+                <div class="formula-title">偶极子</div>
+                <div class="formula-category">势流理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$W(z) = \frac{\mu}{2\pi}\frac{1}{z - z_0}$$</div>
+                <div class="formula-explanation">偶极子的复势函数，μ为偶极矩</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">偶极子定义：点源和点汇的极限</div>
+                    <div class="derivation-step">$W(z) = \frac{m}{2\pi}[\ln(z - z_0 + \frac{\delta}{2}) - \ln(z - z_0 - \frac{\delta}{2})]$</div>
+                    <div class="derivation-step">极限过程：$\delta \to 0, m \to \infty, m\delta = \mu$</div>
+                    <div class="derivation-step">$W(z) = \frac{\mu}{2\pi}\frac{1}{z - z_0}$</div>
+                    <div class="derivation-step">速度势：$\phi = \frac{\mu}{2\pi}\frac{x - x_0}{(x - x_0)^2 + (y - y_0)^2}$</div>
+                    <div class="derivation-step">流函数：$\psi = -\frac{\mu}{2\pi}\frac{y - y_0}{(x - x_0)^2 + (y - y_0)^2}$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">偶极子是点源和点汇的极限情况，表示流体从一个点流出并立即流入另一个点。偶极子产生的流场具有方向性，常用于模拟物体的绕流。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">势流理论</span>
+                    <span class="tag">偶极子</span>
+                    <span class="tag">偶极矩</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 圆柱绕流 -->
+        <div class="ultimate-formula-container potential">
+            <div class="formula-header">
+                <div class="formula-title">圆柱绕流</div>
+                <div class="formula-category">势流理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$W(z) = U_\infty\left(z + \frac{a^2}{z}\right) + \frac{\Gamma}{2\pi i}\ln\frac{z}{a}$$</div>
+                <div class="formula-explanation">圆柱绕流的复势函数</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">均匀流：$W_1(z) = U_\infty z$</div>
+                    <div class="derivation-step">偶极子：$W_2(z) = \frac{U_\infty a^2}{z}$</div>
+                    <div class="derivation-step">点涡：$W_3(z) = \frac{\Gamma}{2\pi i}\ln\frac{z}{a}$</div>
+                    <div class="derivation-step">叠加：$W(z) = W_1(z) + W_2(z) + W_3(z)$</div>
+                    <div class="derivation-step">复速度：$\frac{dW}{dz} = U_\infty(1 - \frac{a^2}{z^2}) + \frac{\Gamma}{2\pi i z}$</div>
+                    <div class="derivation-step">驻点位置：$\frac{dW}{dz} = 0$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">圆柱绕流是势流理论的重要应用，通过叠加均匀流、偶极子和点涡得到。偶极子模拟圆柱的存在，点涡产生环量。驻点位置和压力分布可以通过复势函数计算。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">势流理论</span>
+                    <span class="tag">圆柱绕流</span>
+                    <span class="tag">叠加原理</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 库塔条件 -->
+        <div class="ultimate-formula-container potential">
+            <div class="formula-header">
+                <div class="formula-title">库塔条件</div>
+                <div class="formula-category">势流理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\Gamma = 4\pi U_\infty a\sin\alpha$$</div>
+                <div class="formula-explanation">库塔条件，确定环量大小</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">圆柱绕流复速度：$\frac{dW}{dz} = U_\infty(1 - \frac{a^2}{z^2}) + \frac{\Gamma}{2\pi i z}$</div>
+                    <div class="derivation-step">在圆柱表面：$z = ae^{i\theta}$</div>
+                    <div class="derivation-step">切向速度：$v_\theta = -2U_\infty\sin\theta + \frac{\Gamma}{2\pi a}$</div>
+                    <div class="derivation-step">库塔条件：后驻点速度为零</div>
+                    <div class="derivation-step">后驻点：$\theta = \pi$</div>
+                    <div class="derivation-step">得到：$\Gamma = 4\pi U_\infty a\sin\alpha$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">库塔条件确定了环量的大小，使得后驻点位于后缘。这个条件模拟了真实流动中的粘性效应，使得势流理论能够预测升力。库塔条件是连接势流理论与实际流动的桥梁。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">势流理论</span>
+                    <span class="tag">库塔条件</span>
+                    <span class="tag">环量</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 升力定理 -->
+        <div class="ultimate-formula-container potential">
+            <div class="formula-header">
+                <div class="formula-title">升力定理</div>
+                <div class="formula-category">势流理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$L = \rho U_\infty \Gamma$$</div>
+                <div class="formula-explanation">库塔-茹科夫斯基升力定理</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">伯努利方程：$p + \frac{1}{2}\rho v^2 = p_\infty + \frac{1}{2}\rho U_\infty^2$</div>
+                    <div class="derivation-step">压力差：$\Delta p = p - p_\infty = \frac{1}{2}\rho(U_\infty^2 - v^2)$</div>
+                    <div class="derivation-step">切向速度：$v_\theta = -2U_\infty\sin\theta + \frac{\Gamma}{2\pi a}$</div>
+                    <div class="derivation-step">升力：$L = \int_0^{2\pi} -\Delta p a\sin\theta d\theta$</div>
+                    <div class="derivation-step">积分得到：$L = \rho U_\infty \Gamma$</div>
+                    <div class="derivation-step">升力方向：垂直于来流方向</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">升力定理是空气动力学的基本定理，表明升力与环量成正比。这个定理解释了机翼产生升力的原理，是飞机设计的基础。升力方向垂直于来流方向，指向环量方向。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">势流理论</span>
+                    <span class="tag">升力定理</span>
+                    <span class="tag">库塔-茹科夫斯基</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实际应用例题 -->
+        <div class="ultimate-formula-container potential">
+            <div class="formula-header">
+                <div class="formula-title">实际应用例题</div>
+                <div class="formula-category">势流理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">圆柱绕流升力计算</div>
+                <div class="formula-explanation">计算圆柱在均匀流中的升力</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">解题过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">已知：$a = 0.1 \text{ m}, U_\infty = 10 \text{ m/s}, \alpha = 5° = 0.087 \text{ rad}$</div>
+                    <div class="derivation-step">库塔条件：$\Gamma = 4\pi U_\infty a\sin\alpha = 4\pi \times 10 \times 0.1 \times \sin(0.087) = 1.09 \text{ m}^2/\text{s}$</div>
+                    <div class="derivation-step">升力定理：$L = \rho U_\infty \Gamma = 1.225 \times 10 \times 1.09 = 13.4 \text{ N}$</div>
+                    <div class="derivation-step">升力系数：$C_L = \frac{L}{\frac{1}{2}\rho U_\infty^2 \times 2a} = \frac{13.4}{\frac{1}{2} \times 1.225 \times 10^2 \times 0.2} = 1.09$</div>
+                    <div class="derivation-step">理论值：$C_L = 2\pi\sin\alpha = 2\pi \times \sin(0.087) = 0.55$</div>
+                    <div class="derivation-step">差异原因：势流理论忽略粘性效应</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">结果分析：</div>
+                <div class="physics-meaning">圆柱绕流产生13.4N的升力，升力系数为1.09。理论值与实际值存在差异，这是因为势流理论忽略了粘性效应和边界层的影响。实际应用中需要考虑粘性修正。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">势流理论</span>
+                    <span class="tag">实际应用</span>
+                    <span class="tag">升力计算</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 创建浮动粒子效果
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            
+            // 重新渲染数学公式
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typeset();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 

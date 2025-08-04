@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>边界层理论 - 极致美观学习平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* 浮动粒子效果 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float 20s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            font-weight: bold;
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header p {
+            font-size: 1.3em;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.3);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(76, 175, 80, 0.4);
+        }
+
+        .topic-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 45px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .topic-card h2 {
+            color: #4CAF50;
+            font-size: 2em;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .topic-card p {
+            color: #666;
+            line-height: 1.8;
+            font-size: 1.1em;
+        }
+
+        .ultimate-formula-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 35px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ultimate-formula-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+        }
+
+        .ultimate-formula-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.15);
+        }
+
+        .formula-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .formula-title {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #4CAF50;
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .formula-category {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.2), rgba(139, 195, 74, 0.2));
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #4CAF50;
+            border: 2px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .formula-display {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(139, 195, 74, 0.1));
+            border-radius: 20px;
+            padding: 25px;
+            margin: 20px 0;
+            text-align: center;
+            border: 2px solid rgba(76, 175, 80, 0.2);
+            overflow-x: auto;
+            min-height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .formula-main {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .formula-explanation {
+            color: #666;
+            font-size: 1.1em;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .formula-derivation {
+            background: linear-gradient(135deg, rgba(255, 248, 220, 0.9), rgba(255, 250, 240, 0.7));
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #4CAF50;
+        }
+
+        .derivation-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .derivation-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .derivation-step {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+            font-size: 1.1em;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .formula-physics {
+            background: linear-gradient(135deg, rgba(255, 255, 224, 0.9), rgba(255, 250, 205, 0.7));
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border-left: 5px solid #FFD700;
+        }
+
+        .physics-title {
+            color: #856404;
+            font-weight: bold;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            text-align: center;
+        }
+
+        .physics-meaning {
+            color: #856404;
+            line-height: 1.6;
+            font-size: 1.1em;
+        }
+
+        .formula-footer {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .formula-tags {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.2));
+            padding: 8px 16px;
+            border-radius: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #555;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 边界层特定的颜色主题 */
+        .ultimate-formula-container.boundary {
+            background: linear-gradient(135deg, rgba(232, 245, 233, 0.9), rgba(200, 230, 201, 0.7));
+            border-color: #4CAF50;
+        }
+
+        .ultimate-formula-container.boundary .formula-title {
+            background: linear-gradient(135deg, #388E3C, #4CAF50);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .ultimate-formula-container.boundary .formula-derivation {
+            border-left-color: #4CAF50;
+        }
+
+        .ultimate-formula-container.boundary .derivation-title {
+            color: #388E3C;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .MathJax {
+            font-size: 1.2em !important;
+        }
+
+        .formula-display .MathJax {
+            font-size: 1.6em !important;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .formula-main {
+                font-size: 1.6em;
+            }
+            
+            .ultimate-formula-container {
+                padding: 25px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 浮动粒子效果 -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-layer-group"></i> 边界层理论</h1>
+            <p>极致美观的边界层理论学习资源，包含完整的公式美化系统</p>
+            <div class="nav-buttons">
+                <a href="../index-dynamic.html" class="nav-btn">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+                <a href="fluid-dynamics-dynamic.html" class="nav-btn">
+                    <i class="fas fa-water"></i> 流体动力学
+                </a>
+                <a href="viscous-flow-dynamic.html" class="nav-btn">
+                    <i class="fas fa-tint"></i> 粘性流动
+                </a>
+            </div>
+        </div>
+
+        <div class="topic-card">
+            <h2>边界层基本概念</h2>
+            <p>边界层理论是流体力学中的重要概念，描述了固体壁面附近粘性效应起主导作用的薄层区域。边界层内速度梯度很大，粘性力与惯性力相当。</p>
+        </div>
+
+        <!-- 边界层厚度定义 -->
+        <div class="ultimate-formula-container boundary">
+            <div class="formula-header">
+                <div class="formula-title">边界层厚度定义</div>
+                <div class="formula-category">边界层理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\delta = \int_0^\infty \left(1 - \frac{u}{U_\infty}\right) dy$$</div>
+                <div class="formula-explanation">位移厚度，表示边界层对外部流动的影响</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">边界层厚度定义为速度达到外部流动速度99%的位置</div>
+                    <div class="derivation-step">位移厚度：$\delta^* = \int_0^\infty \left(1 - \frac{u}{U_\infty}\right) dy$</div>
+                    <div class="derivation-step">动量厚度：$\theta = \int_0^\infty \frac{u}{U_\infty}\left(1 - \frac{u}{U_\infty}\right) dy$</div>
+                    <div class="derivation-step">能量厚度：$\delta^{**} = \int_0^\infty \frac{u}{U_\infty}\left(1 - \frac{u^2}{U_\infty^2}\right) dy$</div>
+                    <div class="derivation-step">这些厚度参数描述了边界层对外部流动的影响</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">边界层厚度描述了粘性效应影响的范围。位移厚度表示边界层对外部流动的"排挤"效应，动量厚度表示动量损失，能量厚度表示能量损失。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">边界层理论</span>
+                    <span class="tag">厚度定义</span>
+                    <span class="tag">位移厚度</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 平板边界层方程 -->
+        <div class="ultimate-formula-container boundary">
+            <div class="formula-header">
+                <div class="formula-title">平板边界层方程</div>
+                <div class="formula-category">边界层理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$u\frac{\partial u}{\partial x} + v\frac{\partial u}{\partial y} = \nu\frac{\partial^2 u}{\partial y^2}$$</div>
+                <div class="formula-explanation">平板边界层的简化动量方程</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">从Navier-Stokes方程出发</div>
+                    <div class="derivation-step">边界层内：$\frac{\partial}{\partial x} \ll \frac{\partial}{\partial y}$</div>
+                    <div class="derivation-step">压力梯度：$\frac{\partial p}{\partial x} = 0$（平板）</div>
+                    <div class="derivation-step">连续性方程：$\frac{\partial u}{\partial x} + \frac{\partial v}{\partial y} = 0$</div>
+                    <div class="derivation-step">动量方程：$u\frac{\partial u}{\partial x} + v\frac{\partial u}{\partial y} = \nu\frac{\partial^2 u}{\partial y^2}$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">平板边界层方程是边界层理论的基础，描述了边界层内速度分布的变化规律。通过相似性解可以得到Blasius解。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">边界层理论</span>
+                    <span class="tag">平板边界层</span>
+                    <span class="tag">动量方程</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blasius解 -->
+        <div class="ultimate-formula-container boundary">
+            <div class="formula-header">
+                <div class="formula-title">Blasius解</div>
+                <div class="formula-category">边界层理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$f''' + \frac{1}{2}ff'' = 0$$</div>
+                <div class="formula-explanation">Blasius方程，平板边界层的相似性解</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">引入相似性变量：$\eta = y\sqrt{\frac{U_\infty}{\nu x}}$</div>
+                    <div class="derivation-step">流函数：$\psi = \sqrt{\nu U_\infty x} f(\eta)$</div>
+                    <div class="derivation-step">速度分量：$u = U_\infty f'(\eta), v = \frac{1}{2}\sqrt{\frac{\nu U_\infty}{x}}(\eta f' - f)$</div>
+                    <div class="derivation-step">代入边界层方程得到：$f''' + \frac{1}{2}ff'' = 0$</div>
+                    <div class="derivation-step">边界条件：$f(0) = f'(0) = 0, f'(\infty) = 1$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">Blasius解是平板边界层的精确解，通过相似性变换将偏微分方程转化为常微分方程。解得的流函数描述了边界层内的速度分布。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">边界层理论</span>
+                    <span class="tag">Blasius解</span>
+                    <span class="tag">相似性解</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 边界层厚度公式 -->
+        <div class="ultimate-formula-container boundary">
+            <div class="formula-header">
+                <div class="formula-title">边界层厚度公式</div>
+                <div class="formula-category">边界层理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\delta = 5.0\sqrt{\frac{\nu x}{U_\infty}}$$</div>
+                <div class="formula-explanation">平板边界层厚度随距离的平方根增长</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">从Blasius解得到：$\delta = 5.0\sqrt{\frac{\nu x}{U_\infty}}$</div>
+                    <div class="derivation-step">位移厚度：$\delta^* = 1.72\sqrt{\frac{\nu x}{U_\infty}}$</div>
+                    <div class="derivation-step">动量厚度：$\theta = 0.664\sqrt{\frac{\nu x}{U_\infty}}$</div>
+                    <div class="derivation-step">形状因子：$H = \frac{\delta^*}{\theta} = 2.59$</div>
+                    <div class="derivation-step">壁面剪切应力：$\tau_w = 0.332\rho U_\infty^2\sqrt{\frac{\nu}{U_\infty x}}$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">边界层厚度随距离的平方根增长，这是边界层理论的重要特征。壁面剪切应力随距离的平方根减小，反映了边界层发展的规律。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">边界层理论</span>
+                    <span class="tag">厚度公式</span>
+                    <span class="tag">Blasius解</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 压力梯度边界层 -->
+        <div class="ultimate-formula-container boundary">
+            <div class="formula-header">
+                <div class="formula-title">压力梯度边界层</div>
+                <div class="formula-category">边界层理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$u\frac{\partial u}{\partial x} + v\frac{\partial u}{\partial y} = U_e\frac{dU_e}{dx} + \nu\frac{\partial^2 u}{\partial y^2}$$</div>
+                <div class="formula-explanation">考虑压力梯度的边界层方程</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">从Navier-Stokes方程出发</div>
+                    <div class="derivation-step">边界层近似：$\frac{\partial}{\partial x} \ll \frac{\partial}{\partial y}$</div>
+                    <div class="derivation-step">外部流动：$U_e\frac{dU_e}{dx} = -\frac{1}{\rho}\frac{\partial p}{\partial x}$</div>
+                    <div class="derivation-step">边界层方程：$u\frac{\partial u}{\partial x} + v\frac{\partial u}{\partial y} = U_e\frac{dU_e}{dx} + \nu\frac{\partial^2 u}{\partial y^2}$</div>
+                    <div class="derivation-step">连续性方程：$\frac{\partial u}{\partial x} + \frac{\partial v}{\partial y} = 0$</div>
+                    <div class="derivation-step">压力梯度影响边界层发展</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">压力梯度边界层方程考虑了外部流动对边界层的影响。正压力梯度（逆压梯度）会导致边界层增厚，甚至分离；负压力梯度（顺压梯度）会使边界层变薄。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">边界层理论</span>
+                    <span class="tag">压力梯度</span>
+                    <span class="tag">边界层分离</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Falkner-Skan相似性解 -->
+        <div class="ultimate-formula-container boundary">
+            <div class="formula-header">
+                <div class="formula-title">Falkner-Skan相似性解</div>
+                <div class="formula-category">边界层理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$f''' + \frac{m+1}{2}ff'' + m(1-f'^2) = 0$$</div>
+                <div class="formula-explanation">Falkner-Skan方程，考虑压力梯度的相似性解</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">外部速度：$U_e(x) = U_0x^m$</div>
+                    <div class="derivation-step">相似性变量：$\eta = y\sqrt{\frac{(m+1)U_e}{2\nu x}}$</div>
+                    <div class="derivation-step">流函数：$\psi = \sqrt{\frac{2\nu U_e x}{m+1}} f(\eta)$</div>
+                    <div class="derivation-step">速度分量：$u = U_e f'(\eta), v = -\sqrt{\frac{\nu U_e}{2x(m+1)}}[(m+1)f + (m-1)\eta f']$</div>
+                    <div class="derivation-step">代入边界层方程得到：$f''' + \frac{m+1}{2}ff'' + m(1-f'^2) = 0$</div>
+                    <div class="derivation-step">边界条件：$f(0) = f'(0) = 0, f'(\infty) = 1$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">Falkner-Skan解是考虑压力梯度的边界层相似性解。参数m控制压力梯度：m>0为顺压梯度，m<0为逆压梯度，m=0为平板边界层。这种解可以描述楔形流动和圆锥流动。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">边界层理论</span>
+                    <span class="tag">Falkner-Skan</span>
+                    <span class="tag">相似性解</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 边界层分离条件 -->
+        <div class="ultimate-formula-container boundary">
+            <div class="formula-header">
+                <div class="formula-title">边界层分离条件</div>
+                <div class="formula-category">边界层理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\left.\frac{\partial u}{\partial y}\right|_{y=0} = 0$$</div>
+                <div class="formula-explanation">壁面剪切应力为零的分离条件</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">壁面剪切应力：$\tau_w = \mu\left.\frac{\partial u}{\partial y}\right|_{y=0}$</div>
+                    <div class="derivation-step">分离条件：$\tau_w = 0$</div>
+                    <div class="derivation-step">即：$\left.\frac{\partial u}{\partial y}\right|_{y=0} = 0$</div>
+                    <div class="derivation-step">从边界层方程：$u\frac{\partial u}{\partial x} + v\frac{\partial u}{\partial y} = U_e\frac{dU_e}{dx} + \nu\frac{\partial^2 u}{\partial y^2}$</div>
+                    <div class="derivation-step">在壁面：$v = 0, u = 0$</div>
+                    <div class="derivation-step">得到：$\left.\frac{\partial^2 u}{\partial y^2}\right|_{y=0} = \frac{U_e}{\nu}\frac{dU_e}{dx}$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">边界层分离发生在壁面剪切应力为零的位置。分离通常由逆压梯度引起，导致流动从壁面分离，形成回流区。分离点后流动变得复杂，需要特殊处理。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">边界层理论</span>
+                    <span class="tag">边界层分离</span>
+                    <span class="tag">逆压梯度</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 边界层积分方程 -->
+        <div class="ultimate-formula-container boundary">
+            <div class="formula-header">
+                <div class="formula-title">边界层积分方程</div>
+                <div class="formula-category">边界层理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\frac{d\theta}{dx} + (2+H)\frac{\theta}{U_e}\frac{dU_e}{dx} = \frac{C_f}{2}$$</div>
+                <div class="formula-explanation">von Kármán积分方程</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">动量积分：$\int_0^\delta \rho u\frac{\partial u}{\partial x} dy + \int_0^\delta \rho v\frac{\partial u}{\partial y} dy = -\delta\frac{\partial p}{\partial x} - \tau_w$</div>
+                    <div class="derivation-step">利用连续性方程：$\frac{\partial v}{\partial y} = -\frac{\partial u}{\partial x}$</div>
+                    <div class="derivation-step">积分得到：$\frac{d}{dx}\int_0^\delta \rho u(U_e - u) dy = \tau_w$</div>
+                    <div class="derivation-step">定义动量厚度：$\theta = \int_0^\delta \frac{u}{U_e}(1-\frac{u}{U_e}) dy$</div>
+                    <div class="derivation-step">von Kármán方程：$\frac{d\theta}{dx} + (2+H)\frac{\theta}{U_e}\frac{dU_e}{dx} = \frac{C_f}{2}$</div>
+                    <div class="derivation-step">其中：$H = \frac{\delta^*}{\theta}$为形状因子</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">von Kármán积分方程是边界层理论的重要工具，通过积分方法避免了求解偏微分方程的复杂性。形状因子H描述了边界层速度剖面的形状，是判断边界层状态的重要参数。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">边界层理论</span>
+                    <span class="tag">积分方程</span>
+                    <span class="tag">von Kármán</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 湍流边界层 -->
+        <div class="ultimate-formula-container boundary">
+            <div class="formula-header">
+                <div class="formula-title">湍流边界层</div>
+                <div class="formula-category">边界层理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">$$\frac{u}{u_\tau} = \frac{1}{\kappa}\ln\frac{yu_\tau}{\nu} + B$$</div>
+                <div class="formula-explanation">湍流边界层对数律</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">推导过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">摩擦速度：$u_\tau = \sqrt{\frac{\tau_w}{\rho}}$</div>
+                    <div class="derivation-step">壁面律：$\frac{u}{u_\tau} = f(\frac{yu_\tau}{\nu})$</div>
+                    <div class="derivation-step">对数律：$\frac{u}{u_\tau} = \frac{1}{\kappa}\ln\frac{yu_\tau}{\nu} + B$</div>
+                    <div class="derivation-step">卡门常数：$\kappa \approx 0.41$</div>
+                    <div class="derivation-step">常数：$B \approx 5.0$</div>
+                    <div class="derivation-step">适用条件：$30 < \frac{yu_\tau}{\nu} < 0.1\frac{\delta u_\tau}{\nu}$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">物理意义：</div>
+                <div class="physics-meaning">湍流边界层对数律描述了湍流边界层中间区域的通用速度分布。对数律是湍流边界层的核心特征，与层流边界层有本质区别。这种通用性使得对数律成为湍流边界层理论的基础。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">边界层理论</span>
+                    <span class="tag">湍流边界层</span>
+                    <span class="tag">对数律</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 实际应用例题 -->
+        <div class="ultimate-formula-container boundary">
+            <div class="formula-header">
+                <div class="formula-title">实际应用例题</div>
+                <div class="formula-category">边界层理论</div>
+            </div>
+            
+            <div class="formula-display">
+                <div class="formula-main">平板边界层计算</div>
+                <div class="formula-explanation">计算平板边界层的厚度和摩擦系数</div>
+            </div>
+
+            <div class="formula-derivation">
+                <div class="derivation-title">解题过程：</div>
+                <div class="derivation-steps">
+                    <div class="derivation-step">已知：$L = 1 \text{ m}, U_\infty = 10 \text{ m/s}, \nu = 1.5 \times 10^{-5} \text{ m}^2/\text{s}$</div>
+                    <div class="derivation-step">雷诺数：$Re_L = \frac{U_\infty L}{\nu} = \frac{10 \times 1}{1.5 \times 10^{-5}} = 6.67 \times 10^5$</div>
+                    <div class="derivation-step">边界层厚度：$\delta = 5.0\sqrt{\frac{\nu x}{U_\infty}} = 5.0\sqrt{\frac{1.5 \times 10^{-5} \times 1}{10}} = 0.0061 \text{ m}$</div>
+                    <div class="derivation-step">位移厚度：$\delta^* = 1.72\sqrt{\frac{\nu x}{U_\infty}} = 0.0021 \text{ m}$</div>
+                    <div class="derivation-step">动量厚度：$\theta = 0.664\sqrt{\frac{\nu x}{U_\infty}} = 0.0008 \text{ m}$</div>
+                    <div class="derivation-step">摩擦系数：$C_f = \frac{0.664}{\sqrt{Re_x}} = \frac{0.664}{\sqrt{6.67 \times 10^5}} = 0.0026$</div>
+                </div>
+            </div>
+
+            <div class="formula-physics">
+                <div class="physics-title">结果分析：</div>
+                <div class="physics-meaning">平板边界层厚度为6.1mm，位移厚度为2.1mm，动量厚度为0.8mm。摩擦系数为0.0026，表明边界层对平板阻力的贡献。这些参数是空气动力学设计的重要参考。</div>
+            </div>
+
+            <div class="formula-footer">
+                <div class="formula-tags">
+                    <span class="tag">边界层理论</span>
+                    <span class="tag">实际应用</span>
+                    <span class="tag">平板边界层</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 创建浮动粒子效果
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            
+            // 重新渲染数学公式
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typeset();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html> 
