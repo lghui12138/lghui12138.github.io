@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国海洋大学流体力学真题 - 2000-2021</title>
+    
+    <!-- MathJax -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border-radius: 15px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .stat-number {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .filter-label {
+            font-weight: bold;
+            color: #2c3e50;
+            min-width: 80px;
+        }
+
+        .filter-select {
+            padding: 8px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            background: white;
+            font-size: 0.9em;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .exam-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .exam-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .exam-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+        }
+
+        .exam-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f8f9fa;
+        }
+
+        .exam-year {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .exam-score {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+
+        .exam-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c3e50;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+
+        .exam-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .exam-tag {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            color: #667eea;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .exam-type {
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 1.2em;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+            font-size: 1.2em;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .page-btn {
+            padding: 8px 15px;
+            border: 2px solid #667eea;
+            background: white;
+            color: #667eea;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .page-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .page-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .exam-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container">
+        <div class="header">
+            <h1>📚 中国海洋大学流体力学真题</h1>
+            <p>2000-2021年历年真题精选</p>
+            <div class="stats">
+                <div class="stat-item">
+                    <div class="stat-number">{{ totalQuestions }}</div>
+                    <div class="stat-label">总题数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ uniqueYears }}</div>
+                    <div class="stat-label">年份数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">{{ uniqueTypes }}</div>
+                    <div class="stat-label">题型数</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="filter-group">
+                <label class="filter-label">年份：</label>
+                <select v-model="selectedYear" class="filter-select">
+                    <option value="">全部年份</option>
+                    <option v-for="year in availableYears" :key="year" :value="year">{{ year }}年</option>
+                </select>
+
+                <label class="filter-label">题型：</label>
+                <select v-model="selectedType" class="filter-select">
+                    <option value="">全部题型</option>
+                    <option v-for="type in availableTypes" :key="type" :value="type">{{ type }}</option>
+                </select>
+
+                <label class="filter-label">标签：</label>
+                <select v-model="selectedTag" class="filter-select">
+                    <option value="">全部标签</option>
+                    <option v-for="tag in availableTags" :key="tag" :value="tag">{{ tag }}</option>
+                </select>
+
+                <input 
+                    v-model="searchQuery" 
+                    placeholder="搜索题目内容..." 
+                    class="search-box"
+                >
+            </div>
+        </div>
+
+        <div v-if="loading" class="loading">
+            <div>🔄 正在加载真题数据...</div>
+        </div>
+
+        <div v-else-if="filteredQuestions.length === 0" class="no-results">
+            <div>🔍 没有找到符合条件的题目</div>
+            <div style="margin-top: 10px; font-size: 0.9em; color: #999;">
+                请尝试调整筛选条件
+            </div>
+        </div>
+
+        <div v-else>
+            <div class="exam-grid">
+                <div 
+                    v-for="question in paginatedQuestions" 
+                    :key="question.id" 
+                    class="exam-card"
+                >
+                    <div class="exam-header">
+                        <div class="exam-year">{{ question.year }}年</div>
+                        <div v-if="question.score" class="exam-score">{{ question.score }}分</div>
+                        <div v-else class="exam-score">未标注</div>
+                    </div>
+                    
+                    <div class="exam-title">{{ question.title }}</div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                        <div class="exam-type">{{ question.type }}</div>
+                        <div style="font-size: 0.8em; color: #666;">{{ question.school }}</div>
+                    </div>
+                    
+                    <div class="exam-tags">
+                        <span 
+                            v-for="tag in question.tags" 
+                            :key="tag" 
+                            class="exam-tag"
+                        >
+                            {{ tag }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pagination">
+                <button 
+                    @click="prevPage" 
+                    :disabled="currentPage === 1"
+                    class="page-btn"
+                >
+                    上一页
+                </button>
+                
+                <button 
+                    v-for="page in visiblePages" 
+                    :key="page"
+                    @click="goToPage(page)"
+                    :class="['page-btn', { active: page === currentPage }]"
+                >
+                    {{ page }}
+                </button>
+                
+                <button 
+                    @click="nextPage" 
+                    :disabled="currentPage === totalPages"
+                    class="page-btn"
+                >
+                    下一页
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    questions: [],
+                    loading: true,
+                    searchQuery: '',
+                    selectedYear: '',
+                    selectedType: '',
+                    selectedTag: '',
+                    currentPage: 1,
+                    itemsPerPage: 12
+                }
+            },
+            computed: {
+                filteredQuestions() {
+                    return this.questions.filter(question => {
+                        const matchesSearch = !this.searchQuery || 
+                            question.title.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        
+                        const matchesYear = !this.selectedYear || 
+                            question.year == this.selectedYear;
+                        
+                        const matchesType = !this.selectedType || 
+                            question.type === this.selectedType;
+                        
+                        const matchesTag = !this.selectedTag || 
+                            question.tags.includes(this.selectedTag);
+                        
+                        return matchesSearch && matchesYear && matchesType && matchesTag;
+                    });
+                },
+                
+                paginatedQuestions() {
+                    const start = (this.currentPage - 1) * this.itemsPerPage;
+                    const end = start + this.itemsPerPage;
+                    return this.filteredQuestions.slice(start, end);
+                },
+                
+                totalPages() {
+                    return Math.ceil(this.filteredQuestions.length / this.itemsPerPage);
+                },
+                
+                visiblePages() {
+                    const pages = [];
+                    const maxVisible = 5;
+                    let start = Math.max(1, this.currentPage - Math.floor(maxVisible / 2));
+                    let end = Math.min(this.totalPages, start + maxVisible - 1);
+                    
+                    if (end - start + 1 < maxVisible) {
+                        start = Math.max(1, end - maxVisible + 1);
+                    }
+                    
+                    for (let i = start; i <= end; i++) {
+                        pages.push(i);
+                    }
+                    
+                    return pages;
+                },
+                
+                totalQuestions() {
+                    return this.questions.length;
+                },
+                
+                uniqueYears() {
+                    return new Set(this.questions.map(q => q.year)).size;
+                },
+                
+                uniqueTypes() {
+                    return new Set(this.questions.map(q => q.type)).size;
+                },
+                
+                availableYears() {
+                    return [...new Set(this.questions.map(q => q.year))].sort((a, b) => b - a);
+                },
+                
+                availableTypes() {
+                    return [...new Set(this.questions.map(q => q.type))].sort();
+                },
+                
+                availableTags() {
+                    const allTags = this.questions.flatMap(q => q.tags);
+                    return [...new Set(allTags)].sort();
+                }
+            },
+            methods: {
+                async loadQuestions() {
+                    try {
+                        const response = await fetch('/question-banks/真题_中国海洋大学_2000-2021.json');
+                        if (!response.ok) {
+                            throw new Error('Failed to load questions');
+                        }
+                        this.questions = await response.json();
+                        this.loading = false;
+                    } catch (error) {
+                        console.error('Error loading questions:', error);
+                        this.loading = false;
+                    }
+                },
+                
+                prevPage() {
+                    if (this.currentPage > 1) {
+                        this.currentPage--;
+                    }
+                },
+                
+                nextPage() {
+                    if (this.currentPage < this.totalPages) {
+                        this.currentPage++;
+                    }
+                },
+                
+                goToPage(page) {
+                    this.currentPage = page;
+                }
+            },
+            mounted() {
+                this.loadQuestions();
+            },
+            watch: {
+                filteredQuestions() {
+                    this.currentPage = 1;
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html> 
