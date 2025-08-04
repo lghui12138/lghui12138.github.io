@@ -585,9 +585,59 @@
             align-items: flex-end;
         }
 
-        .message-input {
+        .input-wrapper {
             flex: 1;
-            padding: 15px 20px;
+            position: relative;
+        }
+
+        .input-tools {
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            display: flex;
+            gap: 5px;
+            z-index: 10;
+        }
+
+        .voice-btn, .math-btn, .template-btn {
+            background: rgba(79, 172, 254, 0.1);
+            border: 1px solid rgba(79, 172, 254, 0.3);
+            color: var(--accent-color);
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .voice-btn:hover, .math-btn:hover, .template-btn:hover {
+            background: rgba(79, 172, 254, 0.2);
+            transform: scale(1.1);
+        }
+
+        .voice-btn.active {
+            background: var(--error-color);
+            color: white;
+            animation: pulse 1s infinite;
+        }
+
+        .math-btn.active {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .message-input {
+            width: 100%;
+            padding: 15px 60px 15px 20px; /* 右侧留空间给工具按钮 */
             border: 2px solid #e9ecef;
             border-radius: 25px;
             font-size: 1em;
@@ -629,6 +679,104 @@
             opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+        }
+
+        /* 数学输入面板 */
+        .math-input-panel {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(79, 172, 254, 0.05);
+            border-radius: 15px;
+            border: 1px solid rgba(79, 172, 254, 0.2);
+        }
+
+        .math-symbols {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .symbol-btn {
+            background: white;
+            border: 1px solid #ddd;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+        }
+
+        .symbol-btn:hover {
+            background: var(--accent-color);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .math-templates {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .template-btn-small {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.85em;
+            transition: all 0.3s ease;
+        }
+
+        .template-btn-small:hover {
+            background: var(--primary-color);
+            transform: translateY(-2px);
+        }
+
+        /* 语音状态 */
+        .voice-status {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 107, 107, 0.3);
+            color: var(--error-color);
+            font-weight: 500;
+        }
+
+        .voice-animation {
+            display: flex;
+            gap: 3px;
+        }
+
+        .voice-wave {
+            width: 4px;
+            height: 20px;
+            background: var(--error-color);
+            border-radius: 2px;
+            animation: voiceWave 1s ease-in-out infinite;
+        }
+
+        .voice-wave:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .voice-wave:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes voiceWave {
+            0%, 100% { height: 20px; }
+            50% { height: 35px; }
         }
 
         /* 快速建议 */
@@ -1648,17 +1796,60 @@
 
                 <div class="chat-input">
                     <div class="input-container">
-                        <textarea 
-                            v-model="currentMessage"
-                            @keydown.enter="handleEnter"
-                            class="message-input"
-                            placeholder="请输入您的问题..."
-                            :disabled="isTyping"
-                        ></textarea>
+                        <div class="input-wrapper">
+                            <textarea
+                                v-model="currentMessage"
+                                @keydown.enter="handleEnter"
+                                class="message-input"
+                                placeholder="请输入您的问题..."
+                                :disabled="isTyping"
+                            ></textarea>
+                            <div class="input-tools">
+                                <button @click="toggleVoiceInput" :class="['voice-btn', { active: isRecording }]" title="语音输入">
+                                    <i :class="isRecording ? 'fas fa-stop' : 'fas fa-microphone'"></i>
+                                </button>
+                                <button @click="toggleMathInput" :class="['math-btn', { active: mathInputMode }]" title="数学公式输入">
+                                    <i class="fas fa-square-root-alt"></i>
+                                </button>
+                                <button @click="insertTemplate" class="template-btn" title="插入模板">
+                                    <i class="fas fa-file-alt"></i>
+                                </button>
+                            </div>
+                        </div>
                         <button @click="sendMessage" :disabled="!currentMessage.trim() || isTyping" class="send-btn">
                             <i class="fas fa-paper-plane"></i>
                             发送
                         </button>
+                    </div>
+
+                    <!-- 数学公式输入面板 -->
+                    <div v-if="mathInputMode" class="math-input-panel">
+                        <div class="math-symbols">
+                            <button v-for="symbol in mathSymbols" :key="symbol.name"
+                                    @click="insertMathSymbol(symbol.latex)"
+                                    :title="symbol.name"
+                                    class="symbol-btn">
+                                {{ symbol.display }}
+                            </button>
+                        </div>
+                        <div class="math-templates">
+                            <button v-for="template in mathTemplates" :key="template.name"
+                                    @click="insertMathTemplate(template.latex)"
+                                    :title="template.name"
+                                    class="template-btn-small">
+                                {{ template.name }}
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 语音识别状态 -->
+                    <div v-if="isRecording" class="voice-status">
+                        <div class="voice-animation">
+                            <div class="voice-wave"></div>
+                            <div class="voice-wave"></div>
+                            <div class="voice-wave"></div>
+                        </div>
+                        <span>正在听取您的语音...</span>
                     </div>
                 </div>
             </div>
@@ -2176,7 +2367,44 @@
                     isRecording: false,
                     speechRecognition: null,
                     mathInputMode: false,
-                    showAdvancedPanel: false
+                    showAdvancedPanel: false,
+                    // 数学符号和模板
+                    mathSymbols: [
+                        { name: '分数', latex: '\\frac{}{}', display: '½' },
+                        { name: '平方根', latex: '\\sqrt{}', display: '√' },
+                        { name: '积分', latex: '\\int_{}^{}', display: '∫' },
+                        { name: '求和', latex: '\\sum_{}^{}', display: '∑' },
+                        { name: '极限', latex: '\\lim_{}', display: 'lim' },
+                        { name: '偏导数', latex: '\\frac{\\partial}{\\partial}', display: '∂' },
+                        { name: '梯度', latex: '\\nabla', display: '∇' },
+                        { name: '无穷大', latex: '\\infty', display: '∞' },
+                        { name: '约等于', latex: '\\approx', display: '≈' },
+                        { name: '不等于', latex: '\\neq', display: '≠' },
+                        { name: '小于等于', latex: '\\leq', display: '≤' },
+                        { name: '大于等于', latex: '\\geq', display: '≥' },
+                        { name: 'Alpha', latex: '\\alpha', display: 'α' },
+                        { name: 'Beta', latex: '\\beta', display: 'β' },
+                        { name: 'Gamma', latex: '\\gamma', display: 'γ' },
+                        { name: 'Delta', latex: '\\delta', display: 'δ' },
+                        { name: 'Epsilon', latex: '\\epsilon', display: 'ε' },
+                        { name: 'Theta', latex: '\\theta', display: 'θ' },
+                        { name: 'Lambda', latex: '\\lambda', display: 'λ' },
+                        { name: 'Mu', latex: '\\mu', display: 'μ' },
+                        { name: 'Pi', latex: '\\pi', display: 'π' },
+                        { name: 'Rho', latex: '\\rho', display: 'ρ' },
+                        { name: 'Sigma', latex: '\\sigma', display: 'σ' },
+                        { name: 'Tau', latex: '\\tau', display: 'τ' },
+                        { name: 'Phi', latex: '\\phi', display: 'φ' },
+                        { name: 'Omega', latex: '\\omega', display: 'ω' }
+                    ],
+                    mathTemplates: [
+                        { name: '伯努利方程', latex: '\\frac{v^2}{2} + \\frac{p}{\\rho} + gz = \\text{常数}' },
+                        { name: '连续性方程', latex: '\\frac{\\partial \\rho}{\\partial t} + \\nabla \\cdot (\\rho \\vec{v}) = 0' },
+                        { name: 'NS方程', latex: '\\rho \\frac{D\\vec{v}}{Dt} = -\\nabla p + \\rho \\vec{g} + \\mu \\nabla^2 \\vec{v}' },
+                        { name: '雷诺数', latex: 'Re = \\frac{\\rho V L}{\\mu}' },
+                        { name: '欧拉方程', latex: '\\frac{\\partial \\vec{v}}{\\partial t} + (\\vec{v} \\cdot \\nabla)\\vec{v} = -\\frac{1}{\\rho}\\nabla p + \\vec{g}' },
+                        { name: '涡量方程', latex: '\\frac{D\\vec{\\omega}}{Dt} = (\\vec{\\omega} \\cdot \\nabla)\\vec{v} + \\nu\\nabla^2\\vec{\\omega}' }
+                    ]
                 };
             },
 
@@ -2414,6 +2642,197 @@
                         timestamp: new Date()
                     }];
                     this.showNotification('对话已清空', 'success');
+                },
+
+                // 语音输入功能
+                toggleVoiceInput() {
+                    if (!this.isRecording) {
+                        this.startVoiceRecognition();
+                    } else {
+                        this.stopVoiceRecognition();
+                    }
+                },
+
+                startVoiceRecognition() {
+                    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+                        this.showNotification('您的浏览器不支持语音识别功能', 'error');
+                        return;
+                    }
+
+                    try {
+                        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                        this.speechRecognition = new SpeechRecognition();
+
+                        this.speechRecognition.lang = 'zh-CN';
+                        this.speechRecognition.continuous = false;
+                        this.speechRecognition.interimResults = false;
+
+                        this.speechRecognition.onstart = () => {
+                            this.isRecording = true;
+                            this.showNotification('开始语音识别...', 'info');
+                        };
+
+                        this.speechRecognition.onresult = (event) => {
+                            const transcript = event.results[0][0].transcript;
+                            this.currentMessage += transcript;
+                            this.showNotification('语音识别完成', 'success');
+                        };
+
+                        this.speechRecognition.onerror = (event) => {
+                            console.error('语音识别错误:', event.error);
+                            this.showNotification('语音识别失败: ' + event.error, 'error');
+                        };
+
+                        this.speechRecognition.onend = () => {
+                            this.isRecording = false;
+                        };
+
+                        this.speechRecognition.start();
+                    } catch (error) {
+                        console.error('启动语音识别失败:', error);
+                        this.showNotification('启动语音识别失败', 'error');
+                    }
+                },
+
+                stopVoiceRecognition() {
+                    if (this.speechRecognition) {
+                        this.speechRecognition.stop();
+                        this.isRecording = false;
+                    }
+                },
+
+                // 数学输入功能
+                toggleMathInput() {
+                    this.mathInputMode = !this.mathInputMode;
+                    if (this.mathInputMode) {
+                        this.showNotification('数学公式输入模式已开启', 'info');
+                    }
+                },
+
+                insertMathSymbol(latex) {
+                    const textarea = document.querySelector('.message-input');
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+
+                    const before = this.currentMessage.substring(0, start);
+                    const after = this.currentMessage.substring(end);
+
+                    this.currentMessage = before + '$' + latex + '$' + after;
+
+                    // 设置光标位置
+                    this.$nextTick(() => {
+                        const newPos = start + latex.length + 2;
+                        textarea.setSelectionRange(newPos, newPos);
+                        textarea.focus();
+                    });
+                },
+
+                insertMathTemplate(latex) {
+                    const textarea = document.querySelector('.message-input');
+                    const start = textarea.selectionStart;
+                    const end = textarea.selectionEnd;
+
+                    const before = this.currentMessage.substring(0, start);
+                    const after = this.currentMessage.substring(end);
+
+                    this.currentMessage = before + '$$' + latex + '$$' + after;
+
+                    this.$nextTick(() => {
+                        const newPos = start + latex.length + 4;
+                        textarea.setSelectionRange(newPos, newPos);
+                        textarea.focus();
+                    });
+                },
+
+                insertTemplate() {
+                    const templates = [
+                        '请解释一下',
+                        '请推导',
+                        '请计算',
+                        '请分析',
+                        '请比较',
+                        '请举例说明'
+                    ];
+
+                    // 简单的模板选择（可以后续改为下拉菜单）
+                    const template = templates[Math.floor(Math.random() * templates.length)];
+                    this.currentMessage = template + this.currentMessage;
+                },
+
+                // 高级功能面板
+                toggleAdvancedPanel() {
+                    this.showAdvancedPanel = !this.showAdvancedPanel;
+                },
+
+                // 会话管理功能
+                saveCurrentSession() {
+                    const session = {
+                        id: Date.now(),
+                        name: `会话 ${new Date().toLocaleString()}`,
+                        messages: [...this.messages],
+                        timestamp: new Date(),
+                        stats: { ...this.sessionStats }
+                    };
+
+                    this.chatSessions.push(session);
+                    this.currentSessionId = session.id;
+
+                    // 保存到本地存储
+                    localStorage.setItem('aiChatSessions', JSON.stringify(this.chatSessions));
+                    this.showNotification('会话已保存', 'success');
+                },
+
+                loadSessionHistory() {
+                    try {
+                        const saved = localStorage.getItem('aiChatSessions');
+                        if (saved) {
+                            this.chatSessions = JSON.parse(saved);
+                            this.showNotification(`已加载 ${this.chatSessions.length} 个历史会话`, 'info');
+                        }
+                    } catch (error) {
+                        console.error('加载会话历史失败:', error);
+                        this.showNotification('加载会话历史失败', 'error');
+                    }
+                },
+
+                exportChat() {
+                    const chatData = {
+                        messages: this.messages,
+                        timestamp: new Date(),
+                        stats: this.sessionStats
+                    };
+
+                    const blob = new Blob([JSON.stringify(chatData, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `AI对话记录_${new Date().toISOString().slice(0, 10)}.json`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+
+                    this.showNotification('对话记录已导出', 'success');
+                },
+
+                clearAllHistory() {
+                    if (confirm('确定要清空所有历史记录吗？此操作不可撤销。')) {
+                        this.chatSessions = [];
+                        localStorage.removeItem('aiChatSessions');
+                        this.showNotification('所有历史记录已清空', 'success');
+                    }
+                },
+
+                formatDuration(ms) {
+                    const seconds = Math.floor(ms / 1000);
+                    const minutes = Math.floor(seconds / 60);
+                    const hours = Math.floor(minutes / 60);
+
+                    if (hours > 0) {
+                        return `${hours}小时${minutes % 60}分钟`;
+                    } else if (minutes > 0) {
+                        return `${minutes}分钟${seconds % 60}秒`;
+                    } else {
+                        return `${seconds}秒`;
+                    }
                 }
             },
 
