@@ -79,7 +79,8 @@
                 inlineMath: [['$', '$'], ['\\(', '\\)']],
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
                 processEscapes: true,
-                processEnvironments: true
+                processEnvironments: true,
+                packages: {'[+]': ['ams', 'newcommand', 'configmacros']}
             },
             chtml: {
                 scale: 1.0,
@@ -805,6 +806,50 @@
                 opacity: 1;
                 transform: translate(-50%, -50%) scale(1);
             }
+        }
+
+        /* 数学公式样式 */
+        .math-formula {
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid var(--accent-color);
+            text-align: center;
+            font-size: 1.1em;
+            overflow-x: auto;
+        }
+
+        .math-formula mjx-container {
+            margin: 0 !important;
+        }
+
+        /* 内联数学公式 */
+        .math-inline {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Times New Roman', serif;
+        }
+
+        /* 数学公式备用样式 */
+        .math-fallback-display {
+            font-family: 'Times New Roman', serif;
+            font-size: 1.1em;
+            text-align: center;
+            margin: 10px 0;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .math-fallback-inline {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
         }
 
         /* 快速建议 */
@@ -2532,6 +2577,11 @@
                         } finally {
                             this.isTyping = false;
                             this.scrollToBottom();
+
+                            // 渲染新添加的数学公式
+                            this.$nextTick(() => {
+                                this.forceRenderAllMath();
+                            });
                         }
                     }, 1500 + Math.random() * 2000);
                 },
@@ -2651,7 +2701,7 @@
                             • 各向相等<br><br>
 
                             <strong>流体静力学基本方程：</strong><br>
-                            $$\\frac{dp}{dz} = -\\rho g$$<br><br>
+                            <div class="math-formula">$$\\frac{dp}{dz} = -\\rho g$$</div><br>
 
                             <strong>重力场中的压力分布：</strong><br>
                             • 不可压缩流体：p = p₀ + ρgh<br>
@@ -2704,7 +2754,7 @@
                             • 平均流速：v̄ = Q/A<br><br>
 
                             <strong>连续性方程：</strong><br>
-                            $$\\frac{\\partial \\rho}{\\partial t} + \\nabla \\cdot (\\rho \\vec{v}) = 0$$<br><br>
+                            <div class="math-formula">$$\\frac{\\partial \\rho}{\\partial t} + \\nabla \\cdot (\\rho \\vec{v}) = 0$$</div><br>
                             <small style="color: #888;">📚 第三章：流体运动学</small>`
                         },
 
@@ -2713,7 +2763,7 @@
                             keywords: ['伯努利', '伯努利方程', 'bernoulli', '能量守恒'],
                             content: `🌊 <strong>伯努利方程详解</strong><br><br>
                             <strong>理想流体伯努利方程：</strong><br>
-                            $$\\frac{v^2}{2} + \\frac{p}{\\rho} + gz = C$$<br><br>
+                            <div class="math-formula">$$\\frac{v^2}{2} + \\frac{p}{\\rho} + gz = C$$</div><br>
 
                             <strong>物理意义：</strong><br>
                             • 动能项：v²/2 (单位质量动能)<br>
@@ -2774,7 +2824,7 @@
                             &nbsp;&nbsp;- 宾汉流体：存在屈服应力<br><br>
 
                             <strong>Navier-Stokes方程：</strong><br>
-                            $$\\rho \\frac{D\\vec{v}}{Dt} = -\\nabla p + \\rho \\vec{g} + \\mu \\nabla^2 \\vec{v}$$<br><br>
+                            <div class="math-formula">$$\\rho \\frac{D\\vec{v}}{Dt} = -\\nabla p + \\rho \\vec{g} + \\mu \\nabla^2 \\vec{v}$$</div><br>
 
                             <strong>简化形式：</strong><br>
                             • 不可压缩：∇·v = 0<br>
@@ -3917,17 +3967,40 @@
 
                 renderMathFormulas() {
                     if (typeof window.MathJax !== 'undefined' && window.MathJax.typesetPromise) {
-                        window.MathJax.typesetPromise().then(() => {
+                        // 强制重新渲染所有数学公式
+                        window.MathJax.typesetPromise(document.querySelectorAll('.math-formula')).then(() => {
                             console.log('✅ 数学公式重新渲染完成');
                             // 确保公式可见
                             document.querySelectorAll('.math-formula').forEach(el => {
                                 el.style.visibility = 'visible';
+                                el.style.display = 'block';
                             });
                         }).catch(error => {
                             console.warn('⚠️ MathJax渲染失败:', error);
                             this.enableMathFallback();
                         });
+                    } else {
+                        // 如果MathJax不可用，立即启用备用方案
+                        console.warn('⚠️ MathJax不可用，启用备用方案');
+                        this.enableMathFallback();
                     }
+                },
+
+                // 强制渲染页面上的所有公式
+                forceRenderAllMath() {
+                    console.log('🔄 强制渲染所有数学公式');
+
+                    // 等待一小段时间确保DOM更新
+                    setTimeout(() => {
+                        if (typeof window.MathJax !== 'undefined' && window.MathJax.typesetPromise) {
+                            window.MathJax.typesetPromise().then(() => {
+                                console.log('✅ 强制渲染完成');
+                            }).catch(error => {
+                                console.warn('⚠️ 强制渲染失败:', error);
+                                this.enableMathFallback();
+                            });
+                        }
+                    }, 100);
                 },
 
                 enableMathFallback() {
