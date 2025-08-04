@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MathJax简单测试</title>
+    
+    <!-- MathJax配置 -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                enableMenu: false
+            }
+        };
+    </script>
+    
+    <!-- MathJax脚本 -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+    
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .test-section {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .formula {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="status" id="status">MathJax状态: 加载中...</div>
+    
+    <h1>🧪 MathJax渲染测试</h1>
+    
+    <div class="test-section">
+        <h2>测试1: 简单公式</h2>
+        <div class="formula">
+            <strong>欧拉方程:</strong><br>
+            $$\frac{\partial \vec{v}}{\partial t} + (\vec{v} \cdot \nabla)\vec{v} = -\frac{1}{\rho}\nabla p + \vec{g}$$
+        </div>
+        
+        <div class="formula">
+            <strong>伯努利方程:</strong><br>
+            $$\frac{v^2}{2} + \frac{p}{\rho} + gz = 常数$$
+        </div>
+        
+        <div class="formula">
+            <strong>雷诺数:</strong><br>
+            $$Re = \frac{\rho V L}{\mu}$$
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试2: 复杂公式</h2>
+        <div class="formula">
+            <strong>Navier-Stokes方程:</strong><br>
+            $$\rho \frac{D\vec{v}}{Dt} = -\nabla p + \rho \vec{g} + \mu \nabla^2 \vec{v}$$
+        </div>
+        
+        <div class="formula">
+            <strong>连续性方程:</strong><br>
+            $$\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \vec{v}) = 0$$
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>测试3: 内联公式</h2>
+        <p>这是一个内联公式测试：当 $Re < 2300$ 时，流动为层流；当 $Re > 4000$ 时，流动为湍流。</p>
+        <p>压力 $p$ 与密度 $\rho$ 和重力加速度 $g$ 的关系为：$p = \rho g h$</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>控制按钮</h2>
+        <button onclick="checkMathJaxStatus()">检查MathJax状态</button>
+        <button onclick="forceRender()">强制重新渲染</button>
+        <button onclick="reloadMathJax()">重新加载MathJax</button>
+        <button onclick="testSimpleFormula()">测试简单公式</button>
+    </div>
+    
+    <script>
+        // 状态更新函数
+        function updateStatus(message) {
+            document.getElementById('status').textContent = 'MathJax状态: ' + message;
+        }
+        
+        // 检查MathJax状态
+        function checkMathJaxStatus() {
+            console.log('=== MathJax状态检查 ===');
+            console.log('MathJax对象存在:', !!window.MathJax);
+            if (window.MathJax) {
+                console.log('MathJax版本:', window.MathJax.version);
+                console.log('MathJax.typesetPromise存在:', !!window.MathJax.typesetPromise);
+                updateStatus('已加载 - 版本: ' + (window.MathJax.version || '未知'));
+            } else {
+                updateStatus('未加载');
+            }
+        }
+        
+        // 强制重新渲染
+        function forceRender() {
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                console.log('强制重新渲染...');
+                updateStatus('重新渲染中...');
+                MathJax.typesetPromise().then(() => {
+                    console.log('✅ 重新渲染完成');
+                    updateStatus('渲染完成');
+                }).catch(error => {
+                    console.error('❌ 渲染失败:', error);
+                    updateStatus('渲染失败');
+                });
+            } else {
+                console.log('MathJax未加载');
+                updateStatus('MathJax未加载');
+            }
+        }
+        
+        // 重新加载MathJax
+        function reloadMathJax() {
+            console.log('重新加载MathJax...');
+            updateStatus('重新加载中...');
+            
+            // 移除现有脚本
+            const scripts = document.querySelectorAll('script[src*="mathjax"]');
+            scripts.forEach(script => script.remove());
+            
+            // 重新加载
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
+            script.async = true;
+            script.onload = () => {
+                console.log('✅ MathJax重新加载完成');
+                updateStatus('重新加载完成');
+                setTimeout(checkMathJaxStatus, 1000);
+            };
+            document.head.appendChild(script);
+        }
+        
+        // 测试简单公式
+        function testSimpleFormula() {
+            const testDiv = document.createElement('div');
+            testDiv.className = 'formula';
+            testDiv.innerHTML = '<strong>测试公式:</strong><br>$$E = mc^2$$';
+            
+            document.querySelector('.test-section:last-child').appendChild(testDiv);
+            
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise([testDiv]).then(() => {
+                    console.log('✅ 测试公式渲染完成');
+                });
+            }
+        }
+        
+        // 页面加载完成后检查状态
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(checkMathJaxStatus, 1000);
+        });
+        
+        // 监听MathJax加载
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typesetPromise) {
+                    updateStatus('加载完成');
+                    console.log('✅ MathJax加载完成');
+                } else {
+                    updateStatus('加载失败');
+                    console.log('❌ MathJax加载失败');
+                }
+            }, 3000);
+        });
+    </script>
+</body>
+</html> 
