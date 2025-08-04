@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>禁用 Service Worker - 流体力学学习平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 40px;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+
+        .status {
+            background: #e8f5e8;
+            border: 2px solid #4caf50;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .button {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(39, 174, 96, 0.3);
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(39, 174, 96, 0.4);
+        }
+
+        .button.primary {
+            background: linear-gradient(135deg, #2196f3, #1976d2);
+            box-shadow: 0 10px 30px rgba(33, 150, 243, 0.3);
+        }
+
+        .button.primary:hover {
+            box-shadow: 0 15px 40px rgba(33, 150, 243, 0.4);
+        }
+
+        .step {
+            background: #e3f2fd;
+            border: 2px solid #2196f3;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            text-align: left;
+        }
+
+        .step h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .countdown {
+            font-size: 2em;
+            font-weight: bold;
+            color: #e74c3c;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Service Worker 问题修复</h1>
+        
+        <div class="warning">
+            <h3>⚠️ 检测到 Service Worker 问题</h3>
+            <p>您的页面遇到了 "Failed to fetch" 错误，这通常是由于 Service Worker 缓存问题导致的。我们正在为您自动修复这个问题。</p>
+        </div>
+
+        <div class="status">
+            <h3>📊 修复进度</h3>
+            <div id="progress">正在卸载 Service Worker...</div>
+        </div>
+
+        <div class="countdown" id="countdown">5</div>
+
+        <div class="step">
+            <h3>🔍 问题原因</h3>
+            <ul>
+                <li>Service Worker 缓存了错误的响应</li>
+                <li>网络请求被 Service Worker 拦截并失败</li>
+                <li>浏览器缓存与服务器内容不匹配</li>
+            </ul>
+        </div>
+
+        <div class="step">
+            <h3>💡 解决方案</h3>
+            <ol>
+                <li><strong>卸载 Service Worker</strong> - 完全移除有问题的 Service Worker</li>
+                <li><strong>清除缓存</strong> - 清除所有相关的浏览器缓存</li>
+                <li><strong>重新加载</strong> - 刷新页面以应用修复</li>
+            </ol>
+        </div>
+
+        <a href="ultimate-beautiful-formulas.html" class="button primary" id="goButton" style="display: none;">🚀 前往公式展示页面</a>
+        <a href="index.html" class="button">🏠 返回首页</a>
+        <a href="fix-service-worker.html" class="button">🔧 更多修复选项</a>
+    </div>
+
+    <script>
+        let countdown = 5;
+        const countdownElement = document.getElementById('countdown');
+        const progressElement = document.getElementById('progress');
+        const goButton = document.getElementById('goButton');
+
+        async function disableServiceWorker() {
+            try {
+                // 检查是否支持 Service Worker
+                if ('serviceWorker' in navigator) {
+                    progressElement.innerHTML = '正在检查 Service Worker 注册...';
+                    
+                    // 获取所有 Service Worker 注册
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    progressElement.innerHTML = `找到 ${registrations.length} 个 Service Worker 注册`;
+                    
+                    // 卸载所有 Service Worker
+                    for (const registration of registrations) {
+                        const unregistered = await registration.unregister();
+                        progressElement.innerHTML = `Service Worker 卸载结果: ${unregistered ? '成功' : '失败'}`;
+                    }
+                    
+                    // 清除所有缓存
+                    progressElement.innerHTML = '正在清除缓存...';
+                    const cacheNames = await caches.keys();
+                    for (const cacheName of cacheNames) {
+                        await caches.delete(cacheName);
+                    }
+                    progressElement.innerHTML = `已清除 ${cacheNames.length} 个缓存`;
+                    
+                } else {
+                    progressElement.innerHTML = '浏览器不支持 Service Worker';
+                }
+                
+                progressElement.innerHTML = '✅ 修复完成！正在重定向...';
+                
+                // 开始倒计时
+                const timer = setInterval(() => {
+                    countdown--;
+                    countdownElement.textContent = countdown;
+                    
+                    if (countdown <= 0) {
+                        clearInterval(timer);
+                        goButton.style.display = 'inline-block';
+                        countdownElement.style.display = 'none';
+                        progressElement.innerHTML = '🎉 修复完成！您现在可以正常访问页面了。';
+                    }
+                }, 1000);
+                
+            } catch (error) {
+                progressElement.innerHTML = `❌ 修复过程中出错: ${error.message}`;
+                goButton.style.display = 'inline-block';
+                countdownElement.style.display = 'none';
+            }
+        }
+
+        // 页面加载时自动开始修复
+        window.addEventListener('load', () => {
+            disableServiceWorker();
+        });
+
+        // 添加页面可见性检测
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) {
+                // 页面重新可见时，重新检查
+                disableServiceWorker();
+            }
+        });
+    </script>
+</body>
+</html> 

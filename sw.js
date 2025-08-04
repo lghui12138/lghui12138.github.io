@@ -1,7 +1,7 @@
 // Service Worker for GitHub Pages HTTP Headers
 // This adds security headers that GitHub Pages doesn't support natively
 
-const CACHE_NAME = 'fluid-dynamics-v5';
+const CACHE_NAME = 'fluid-dynamics-v6';
 const STATIC_CACHE_TIME = 31536000; // 1 year in seconds
 
 // Security headers to add
@@ -114,12 +114,49 @@ async function handleRequest(request) {
       return addSecurityHeaders(cachedResponse, pathname);
     }
     
-    // Return original response if available
+    // 简化错误处理，直接返回网络请求
     try {
-      const fallbackResponse = await fetch(request);
+      const fallbackResponse = await fetch(request, {
+        mode: 'no-cors', // 添加no-cors模式
+        credentials: 'omit' // 不发送凭据
+      });
       return addSecurityHeaders(fallbackResponse, pathname);
     } catch (fallbackError) {
       console.error('🚨 Fallback fetch also failed:', fallbackError);
+      
+      // 对于HTML文件，返回一个简单的错误页面
+      if (HTML_FILES.test(pathname) || pathname.endsWith('/') || !pathname.includes('.')) {
+        return new Response(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Service Temporarily Unavailable</title>
+            <meta charset="UTF-8">
+            <style>
+              body { font-family: Arial, sans-serif; text-align: center; padding: 50px; }
+              .error { color: #d32f2f; margin: 20px 0; }
+              .retry { margin: 20px 0; }
+              button { padding: 10px 20px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer; }
+            </style>
+          </head>
+          <body>
+            <h1>Service Temporarily Unavailable</h1>
+            <div class="error">The page is currently unavailable. Please try again later.</div>
+            <div class="retry">
+              <button onclick="window.location.reload()">Retry</button>
+            </div>
+          </body>
+          </html>
+        `, { 
+          status: 503,
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            ...SECURITY_HEADERS
+          }
+        });
+      }
+      
+      // 对于其他文件，返回原始错误
       return new Response('Service temporarily unavailable', { 
         status: 503,
         headers: SECURITY_HEADERS 
