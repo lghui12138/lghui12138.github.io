@@ -5,14 +5,72 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🤖 AI学习助手 - 全屏支持</title>
     
-    <!-- 外部依赖 -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- 外部依赖 - 添加错误处理 -->
+    <script>
+        // 资源加载错误处理
+        window.resourceErrors = [];
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK') {
+                console.warn('资源加载失败:', e.target.src || e.target.href);
+                window.resourceErrors.push(e.target.src || e.target.href);
+            }
+        });
+    </script>
     
-    <!-- 智能AI系统 -->
-    <script src="../js/core/config.js"></script>
-    <script src="../js/core/smart-model-selector.js"></script>
+    <!-- Vue.js - 主要CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js" 
+            onerror="loadVueFallback()"></script>
+    <script>
+        function loadVueFallback() {
+            console.log('Vue.js加载失败，尝试备用CDN...');
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js';
+            script.onerror = function() {
+                console.error('Vue.js所有CDN都失败，使用本地备用方案');
+                // 可以在这里添加本地Vue.js文件
+            };
+            document.head.appendChild(script);
+        }
+    </script>
+    
+    <!-- Font Awesome - 主要CDN -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" 
+          rel="stylesheet" 
+          onerror="loadFontAwesomeFallback()">
+    <script>
+        function loadFontAwesomeFallback() {
+            console.log('Font Awesome加载失败，使用Unicode图标');
+            // 添加CSS来使用Unicode图标作为备用
+            const style = document.createElement('style');
+            style.textContent = `
+                .fas.fa-circle::before { content: "●"; }
+                .fas.fa-arrow-up::before { content: "↑"; }
+                .fas.fa-home::before { content: "🏠"; }
+                .fas.fa-expand::before { content: "⛶"; }
+                .fas.fa-compress::before { content: "⛶"; }
+            `;
+            document.head.appendChild(style);
+        }
+    </script>
+    
+    <!-- Google Fonts - 主要CDN -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" 
+          rel="stylesheet" 
+          onerror="loadFontFallback()">
+    <script>
+        function loadFontFallback() {
+            console.log('Google Fonts加载失败，使用系统字体');
+            const style = document.createElement('style');
+            style.textContent = `
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+            `;
+            document.head.appendChild(style);
+        }
+    </script>
+    
+    <!-- 智能AI系统 - 本地文件 -->
+    <script src="../js/core/config.js" onerror="console.warn('config.js加载失败')"></script>
+    <script src="../js/core/smart-model-selector.js" onerror="console.warn('smart-model-selector.js加载失败')"></script>
     
     <!-- MathJax配置和多个CDN备用方案 -->
     <script>
@@ -47,7 +105,7 @@
         };
     </script>
     
-    <!-- 使用多个CDN备用方案 -->
+    <!-- MathJax - 多个CDN备用方案 -->
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" onerror="loadMathJaxFallback()"></script>
     <script>
         function loadMathJaxFallback() {
@@ -61,16 +119,11 @@
                 script2.src = 'https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js';
                 script2.async = true;
                 script2.onerror = function() {
-                    console.log('尝试第四个MathJax CDN...');
-                    const script3 = document.createElement('script');
-                    script3.src = 'https://polyfill.io/v3/polyfill.min.js?features=es6';
-                    script3.onload = function() {
-                        const script4 = document.createElement('script');
-                        script4.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
-                        script4.async = true;
-                        document.head.appendChild(script4);
-                    };
-                    document.head.appendChild(script3);
+                    console.log('所有MathJax CDN都失败，使用本地备用方案');
+                    // 显示原始LaTeX代码
+                    document.querySelectorAll('.math-formula').forEach(el => {
+                        el.innerHTML = el.innerHTML.replace(/\$\$(.*?)\$\$/g, '<div style="font-family: monospace; background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0;">$$$1$$</div>');
+                    });
                 };
                 document.head.appendChild(script2);
             };
@@ -585,33 +638,72 @@
             }
         }
 
-        /* 加载动画 */
+        /* 网络状态提示 */
+        .network-status {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 107, 107, 0.9);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .network-status.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
+            to { transform: translateX(-50%) translateY(0); opacity: 1; }
+        }
+
+        /* 加载状态 */
         .loading-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
             display: flex;
-            align-items: center;
+            flex-direction: column;
             justify-content: center;
+            align-items: center;
             z-index: 9999;
             transition: opacity 0.5s ease;
         }
 
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
         .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 3px solid rgba(255,255,255,0.3);
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-top: 3px solid white;
             border-radius: 50%;
             animation: spin 1s linear infinite;
+            margin-bottom: 20px;
         }
 
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            font-size: 18px;
+            font-weight: 500;
         }
 
         /* 浮动粒子效果 */
@@ -961,6 +1053,11 @@
         <!-- 通知组件 -->
         <div v-if="notification.show" :class="['notification', notification.type, {show: notification.show}]">
             {{ notification.message }}
+        </div>
+
+        <!-- 网络状态提示 -->
+        <div v-if="networkStatus" :class="['network-status', { show: networkStatus.show }]" :title="networkStatus.message">
+            <i :class="networkStatus.icon"></i> {{ networkStatus.message }}
         </div>
 
         <!-- 全屏控制按钮 -->

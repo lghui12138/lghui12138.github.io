@@ -7,6 +7,12 @@ createApp({
             isFullscreen: false,
             isTyping: false,
             currentMessage: '',
+            networkStatus: {
+                show: false,
+                message: '',
+                icon: 'fas fa-wifi',
+                type: 'warning'
+            },
             notification: {
                 show: false,
                 message: '',
@@ -33,6 +39,34 @@ createApp({
         }
     },
     methods: {
+        // 网络状态检测
+        checkNetworkStatus() {
+            if (!navigator.onLine) {
+                this.showNetworkStatus('网络连接已断开', 'fas fa-wifi-slash', 'error');
+            } else {
+                this.hideNetworkStatus();
+            }
+        },
+
+        showNetworkStatus(message, icon = 'fas fa-wifi', type = 'warning') {
+            this.networkStatus = {
+                show: true,
+                message,
+                icon,
+                type
+            };
+        },
+
+        hideNetworkStatus() {
+            this.networkStatus.show = false;
+        },
+
+        // 资源加载错误处理
+        handleResourceError(error) {
+            console.warn('资源加载失败:', error);
+            this.showNetworkStatus('部分资源加载失败，功能可能受限', 'fas fa-exclamation-triangle', 'warning');
+        },
+
         // 显示通知
         showNotification(message, type = 'info') {
             this.notification = { show: true, message, type };
@@ -503,6 +537,23 @@ $$\\frac{dp}{dx} > 0$$
 
     mounted() {
         console.log('🤖 AI学习助手启动！');
+        
+        // 网络状态检测
+        this.checkNetworkStatus();
+        window.addEventListener('online', () => {
+            this.hideNetworkStatus();
+            this.showNotification('网络连接已恢复', 'success');
+        });
+        window.addEventListener('offline', () => {
+            this.showNetworkStatus('网络连接已断开', 'fas fa-wifi-slash', 'error');
+        });
+        
+        // 资源加载错误监听
+        window.addEventListener('error', (e) => {
+            if (e.target.tagName === 'SCRIPT' || e.target.tagName === 'LINK') {
+                this.handleResourceError(e.target.src || e.target.href);
+            }
+        });
         
         // 初始化
         setTimeout(() => {
