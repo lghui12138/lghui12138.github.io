@@ -145,11 +145,25 @@ function showRawLatex() {
 
 // 5. 添加手动渲染按钮
 function addManualRenderButton() {
+    // 确保DOM已加载
+    if (!document.body) {
+        console.log('⏳ DOM未加载，延迟添加按钮...');
+        setTimeout(addManualRenderButton, 500);
+        return;
+    }
+    
+    // 检查按钮是否已存在
+    if (document.getElementById('manual-render-button')) {
+        console.log('✅ 手动渲染按钮已存在');
+        return;
+    }
+    
     const button = document.createElement('button');
+    button.id = 'manual-render-button';
     button.innerHTML = '🔧 手动渲染公式';
     button.style.cssText = `
         position: fixed;
-        top: 20px;
+        top: 80px;
         right: 20px;
         z-index: 10000;
         background: linear-gradient(135deg, #667eea, #764ba2);
@@ -182,23 +196,25 @@ function addManualRenderButton() {
         button.style.transform = 'scale(1)';
     };
     
-    document.body.appendChild(button);
+    try {
+        document.body.appendChild(button);
+        console.log('✅ 手动渲染按钮已添加');
+    } catch (error) {
+        console.error('❌ 添加按钮失败:', error);
+    }
 }
 
 // 6. 主执行函数
 function fixMathJaxRendering() {
     console.log('🚀 开始修复MathJax渲染问题...');
     
-    // 添加手动渲染按钮
-    addManualRenderButton();
-    
-    // 检查当前状态
-    checkMathJaxStatus();
-    
-    // 等待页面完全加载
+    // 等待页面完全加载后再添加按钮
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => {
+                addManualRenderButton();
+                checkMathJaxStatus();
+                
                 if (!window.MathJax || !window.MathJax.typesetPromise) {
                     console.log('🔄 MathJax未加载，重新加载...');
                     reloadMathJax();
@@ -206,10 +222,13 @@ function fixMathJaxRendering() {
                     console.log('✅ MathJax已加载，开始渲染...');
                     forceRenderAllFormulas();
                 }
-            }, 2000);
+            }, 3000);
         });
     } else {
         setTimeout(() => {
+            addManualRenderButton();
+            checkMathJaxStatus();
+            
             if (!window.MathJax || !window.MathJax.typesetPromise) {
                 console.log('🔄 MathJax未加载，重新加载...');
                 reloadMathJax();
@@ -217,7 +236,7 @@ function fixMathJaxRendering() {
                 console.log('✅ MathJax已加载，开始渲染...');
                 forceRenderAllFormulas();
             }
-        }, 2000);
+        }, 3000);
     }
 }
 
