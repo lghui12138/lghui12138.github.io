@@ -2469,8 +2469,9 @@
                     this.sessionStats.questionsAsked++;
                     this.sessionStats.lastActivity = new Date();
 
-                    // 分析话题
+                    // 分析话题和更新学习进度
                     this.analyzeUserQuestion(this.currentMessage);
+                    this.updateLearningProgress(this.currentMessage);
                     const messageText = this.currentMessage;
                     this.currentMessage = '';
                     this.scrollToBottom();
@@ -2613,7 +2614,170 @@
 
                 selectSuggestion(suggestion) {
                     this.currentMessage = suggestion;
+
+                    // 如果启用智能建议，更新建议列表
+                    if (this.advancedFeatures.smartSuggestions) {
+                        this.updateSmartSuggestions(suggestion);
+                    }
+
+                    // 自动发送消息
                     this.sendMessage();
+                },
+
+                // 更新智能建议
+                updateSmartSuggestions(selectedSuggestion) {
+                    const relatedSuggestions = {
+                        '什么是伯努利方程？': [
+                            '伯努利方程的应用实例',
+                            '如何推导伯努利方程？',
+                            '伯努利方程的适用条件'
+                        ],
+                        '层流和湍流的区别是什么？': [
+                            '如何判断流动状态？',
+                            '雷诺数的计算方法',
+                            '湍流的特征和影响'
+                        ],
+                        '如何计算雷诺数？': [
+                            '雷诺数的物理意义',
+                            '临界雷诺数的确定',
+                            '不同几何形状的雷诺数'
+                        ],
+                        '边界层理论的基本概念': [
+                            '边界层厚度的计算',
+                            '边界层分离现象',
+                            '边界层对阻力的影响'
+                        ],
+                        '流体粘性的物理意义': [
+                            '粘性系数的测量',
+                            '温度对粘性的影响',
+                            '牛顿流体与非牛顿流体'
+                        ],
+                        '连续性方程的推导过程': [
+                            '质量守恒定律的应用',
+                            '连续性方程的应用实例',
+                            '可压缩流体的连续性方程'
+                        ]
+                    };
+
+                    const related = relatedSuggestions[selectedSuggestion];
+                    if (related) {
+                        // 将相关建议添加到当前建议列表的前面
+                        this.suggestions = [...related, ...this.suggestions.filter(s => !related.includes(s))].slice(0, 12);
+                        console.log('💡 智能建议已更新:', related);
+                    }
+                },
+
+                // 刷新建议
+                refreshSuggestions() {
+                    const allSuggestions = [
+                        '什么是伯努利方程？',
+                        '层流和湍流的区别是什么？',
+                        '如何计算雷诺数？',
+                        '边界层理论的基本概念',
+                        '流体粘性的物理意义',
+                        '连续性方程的推导过程',
+                        '推导Navier-Stokes方程',
+                        '解释涡量输运方程',
+                        '分析管道流动的速度分布',
+                        '计算绕圆柱流动的阻力系数',
+                        '设计文丘里流量计',
+                        '分析机翼升力产生机理',
+                        '什么是压力损失？',
+                        '如何测量流体流量？',
+                        '流体静力学基本原理',
+                        '理想流体与实际流体的区别',
+                        '流线、迹线和流线的区别',
+                        '什么是流函数和势函数？',
+                        '管道摩擦损失计算',
+                        '泵的性能曲线分析'
+                    ];
+
+                    // 随机选择12个建议
+                    const shuffled = allSuggestions.sort(() => 0.5 - Math.random());
+                    this.suggestions = shuffled.slice(0, 12);
+
+                    this.showNotification('🔄 建议已刷新', 'success');
+                },
+
+                // 学习进度跟踪
+                updateLearningProgress(question) {
+                    const topics = {
+                        '伯努利': { name: '伯努利方程', difficulty: 'basic' },
+                        '雷诺': { name: '雷诺数', difficulty: 'basic' },
+                        '层流': { name: '流动状态', difficulty: 'basic' },
+                        '湍流': { name: '流动状态', difficulty: 'intermediate' },
+                        '边界层': { name: '边界层理论', difficulty: 'intermediate' },
+                        'NS方程': { name: 'Navier-Stokes方程', difficulty: 'advanced' },
+                        '涡量': { name: '涡量理论', difficulty: 'advanced' },
+                        '连续性': { name: '连续性方程', difficulty: 'basic' }
+                    };
+
+                    for (const [keyword, topicInfo] of Object.entries(topics)) {
+                        if (question.toLowerCase().includes(keyword.toLowerCase())) {
+                            // 更新学习路径
+                            if (!this.learningPath.some(item => item.name === topicInfo.name)) {
+                                this.learningPath.push({
+                                    name: topicInfo.name,
+                                    difficulty: topicInfo.difficulty,
+                                    timestamp: new Date(),
+                                    questions: 1
+                                });
+                            } else {
+                                // 增加问题计数
+                                const existingTopic = this.learningPath.find(item => item.name === topicInfo.name);
+                                if (existingTopic) {
+                                    existingTopic.questions++;
+                                    existingTopic.timestamp = new Date();
+                                }
+                            }
+
+                            // 计算学习进度
+                            this.calculateLearningProgress();
+                            break;
+                        }
+                    }
+                },
+
+                // 计算学习进度
+                calculateLearningProgress() {
+                    const totalTopics = 8; // 总共8个主要话题
+                    const completedTopics = this.learningPath.length;
+                    const progressPercentage = Math.round((completedTopics / totalTopics) * 100);
+
+                    // 更新会话统计
+                    this.sessionStats.learningProgress = progressPercentage;
+                    this.sessionStats.topicsExplored = completedTopics;
+
+                    // 显示进度提示
+                    if (completedTopics > 0 && completedTopics % 3 === 0) {
+                        this.showNotification(`🎉 学习进度: ${progressPercentage}% (已探索${completedTopics}个话题)`, 'success');
+                    }
+                },
+
+                // 获取学习建议
+                getLearningRecommendations() {
+                    const basicTopics = ['伯努利方程', '连续性方程', '雷诺数'];
+                    const intermediateTopics = ['边界层理论', '流动状态', '压力分析'];
+                    const advancedTopics = ['Navier-Stokes方程', '涡量理论'];
+
+                    const exploredTopics = this.learningPath.map(item => item.name);
+                    const unexploredBasic = basicTopics.filter(topic => !exploredTopics.includes(topic));
+                    const unexploredIntermediate = intermediateTopics.filter(topic => !exploredTopics.includes(topic));
+                    const unexploredAdvanced = advancedTopics.filter(topic => !exploredTopics.includes(topic));
+
+                    let recommendations = [];
+
+                    if (unexploredBasic.length > 0) {
+                        recommendations.push(`建议先学习基础概念: ${unexploredBasic.join(', ')}`);
+                    } else if (unexploredIntermediate.length > 0) {
+                        recommendations.push(`可以学习中级概念: ${unexploredIntermediate.join(', ')}`);
+                    } else if (unexploredAdvanced.length > 0) {
+                        recommendations.push(`挑战高级概念: ${unexploredAdvanced.join(', ')}`);
+                    } else {
+                        recommendations.push('恭喜！您已经探索了所有主要话题，可以深入研究具体应用。');
+                    }
+
+                    return recommendations;
                 },
 
                 formatTime(date) {
