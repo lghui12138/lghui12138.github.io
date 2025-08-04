@@ -59,31 +59,91 @@
     <!-- 使用多个CDN备用方案 -->
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" onerror="loadMathJaxFallback()"></script>
     <script>
+        // 改进的MathJax加载机制
+        let mathJaxLoadAttempts = 0;
+        const maxLoadAttempts = 5;
+        
         function loadMathJaxFallback() {
-            console.log('尝试备用MathJax CDN...');
-            const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js';
-            script.async = true;
-            script.onerror = function() {
-                console.log('尝试第三个MathJax CDN...');
-                const script2 = document.createElement('script');
-                script2.src = 'https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js';
-                script2.async = true;
-                script2.onerror = function() {
-                    console.log('尝试第四个MathJax CDN...');
-                    const script3 = document.createElement('script');
-                    script3.src = 'https://polyfill.io/v3/polyfill.min.js?features=es6';
-                    script3.onload = function() {
-                        const script4 = document.createElement('script');
-                        script4.src = 'https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js';
-                        script4.async = true;
-                        document.head.appendChild(script4);
-                    };
-                    document.head.appendChild(script3);
+            mathJaxLoadAttempts++;
+            console.log(`尝试第${mathJaxLoadAttempts}个MathJax CDN...`);
+            
+            const cdnUrls = [
+                'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js',
+                'https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js',
+                'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js',
+                'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js'
+            ];
+            
+            if (mathJaxLoadAttempts <= maxLoadAttempts && mathJaxLoadAttempts <= cdnUrls.length) {
+                const script = document.createElement('script');
+                script.src = cdnUrls[mathJaxLoadAttempts - 1];
+                script.async = true;
+                script.onerror = loadMathJaxFallback;
+                script.onload = function() {
+                    console.log(`MathJax从CDN ${mathJaxLoadAttempts} 加载成功`);
+                    initializeMathJax();
                 };
-                document.head.appendChild(script2);
+                document.head.appendChild(script);
+            } else {
+                console.log('所有CDN都失败，使用本地备用方案');
+                loadLocalMathJax();
+            }
+        }
+        
+        function loadLocalMathJax() {
+            console.log('加载本地MathJax备用方案...');
+            // 创建一个简化的数学公式渲染器
+            window.MathJax = {
+                typesetPromise: function(elements) {
+                    return new Promise((resolve) => {
+                        setTimeout(() => {
+                            if (elements && elements.length > 0) {
+                                elements.forEach(el => {
+                                    // 简单的LaTeX到HTML转换
+                                    const content = el.innerHTML;
+                                    const processed = content
+                                        .replace(/\$\$(.*?)\$\$/g, '<div style="font-family: \'Courier New\', monospace; background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0; text-align: center; border: 2px solid #e9ecef; font-size: 16px; line-height: 1.5; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">$$$1$$</div>')
+                                        .replace(/\$(.*?)\$/g, '<span style="font-family: \'Courier New\', monospace; background: #f1f3f4; padding: 3px 6px; border-radius: 4px; font-size: 14px; border: 1px solid #dadce0;">$$$1$$</span>');
+                                    el.innerHTML = processed;
+                                    el.style.display = 'block';
+                                    el.style.visibility = 'visible';
+                                });
+                            }
+                            resolve();
+                        }, 100);
+                    });
+                },
+                typeset: function(elements) {
+                    this.typesetPromise(elements || document.querySelectorAll('.formula-display'));
+                }
             };
-            document.head.appendChild(script);
+            console.log('本地MathJax备用方案加载完成');
+        }
+        
+        function initializeMathJax() {
+            if (window.MathJax) {
+                window.MathJax = {
+                    tex: {
+                        inlineMath: [['$', '$'], ['\\(', '\\)']],
+                        displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                        processEscapes: true,
+                        processEnvironments: true
+                    },
+                    options: {
+                        ignoreHtmlClass: 'tex2jax_ignore',
+                        processHtmlClass: 'tex2jax_process'
+                    },
+                    startup: {
+                        pageReady: function() {
+                            return MathJax.startup.defaultPageReady().then(function() {
+                                console.log('MathJax初始化完成');
+                                // 触发自定义事件
+                                window.dispatchEvent(new CustomEvent('mathjax-ready'));
+                            });
+                        }
+                    }
+                };
+            }
         }
         
         // 立即检查MathJax状态
@@ -1435,9 +1495,17 @@
                             this.mathJaxLoaded = true;
                         } else {
                             console.log('MathJax未加载，等待加载...');
-                            setTimeout(() => {
-                                this.renderMathJax();
-                            }, 500);
+                            // 增加重试次数限制
+                            if (!this.mathJaxRetryCount) this.mathJaxRetryCount = 0;
+                            if (this.mathJaxRetryCount < 10) {
+                                this.mathJaxRetryCount++;
+                                setTimeout(() => {
+                                    this.renderMathJax();
+                                }, 1000);
+                            } else {
+                                console.log('MathJax重试次数过多，使用备用方案');
+                                this.useFallbackMathDisplay();
+                            }
                         }
                     };
 
@@ -1453,12 +1521,15 @@
                 // 监听MathJax加载状态
                 watchMathJax() {
                     let attempts = 0;
-                    const maxAttempts = 50; // 最多尝试50次，即5秒
+                    const maxAttempts = 30; // 减少到30次，即3秒
                     
                     const checkMathJax = () => {
                         attempts++;
                         if (window.MathJax && window.MathJax.typesetPromise) {
                             console.log('MathJax已加载，开始渲染...');
+                            this.renderMathJax();
+                        } else if (window.MathJax && window.MathJax.typeset) {
+                            console.log('MathJax已加载(旧版本)，开始渲染...');
                             this.renderMathJax();
                         } else if (attempts < maxAttempts) {
                             console.log(`MathJax未加载，第${attempts}次尝试，等待...`);
@@ -1476,15 +1547,17 @@
                     console.log('使用备用数学公式显示方案');
                     document.querySelectorAll('.formula-display').forEach(el => {
                         const originalContent = el.innerHTML;
-                        // 将LaTeX公式转换为简单的文本显示
+                        // 将LaTeX公式转换为更美观的HTML显示
                         const processedContent = originalContent
-                            .replace(/\$\$(.*?)\$\$/g, '<div style="font-family: monospace; background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0; text-align: center; border: 1px solid #ddd;">$$$1$$</div>')
-                            .replace(/\$(.*?)\$/g, '<span style="font-family: monospace; background: #f5f5f5; padding: 2px 4px; border-radius: 3px;">$$$1$$</span>');
+                            .replace(/\$\$(.*?)\$\$/g, '<div style="font-family: \'Courier New\', \'Consolas\', monospace; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 20px; border-radius: 12px; margin: 20px 0; text-align: center; border: 2px solid #dee2e6; font-size: 16px; line-height: 1.6; box-shadow: 0 4px 6px rgba(0,0,0,0.1); color: #495057; font-weight: 500;">$$$1$$</div>')
+                            .replace(/\$(.*?)\$/g, '<span style="font-family: \'Courier New\', \'Consolas\', monospace; background: linear-gradient(135deg, #f1f3f4 0%, #e8eaed 100%); padding: 4px 8px; border-radius: 6px; font-size: 14px; border: 1px solid #dadce0; color: #3c4043; font-weight: 500;">$$$1$$</span>');
                         el.innerHTML = processedContent;
                         el.style.display = 'block';
                         el.style.visibility = 'visible';
+                        el.style.opacity = '1';
                     });
                     this.mathJaxLoaded = true;
+                    console.log('备用数学公式显示方案应用完成');
                 }
             },
             mounted() {
@@ -1492,6 +1565,14 @@
                 
                 // 监听MathJax加载
                 this.watchMathJax();
+                
+                // 监听MathJax就绪事件
+                window.addEventListener('mathjax-ready', () => {
+                    console.log('收到MathJax就绪事件');
+                    if (this.isLoggedIn) {
+                        this.renderMathJax();
+                    }
+                });
                 
                 // 立即尝试渲染公式
                 setTimeout(() => {
