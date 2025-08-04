@@ -2833,6 +2833,126 @@
                     } else {
                         return `${seconds}秒`;
                     }
+                },
+
+                // 高级功能面板
+                toggleAdvancedPanel() {
+                    this.showAdvancedPanel = !this.showAdvancedPanel;
+                    if (this.showAdvancedPanel) {
+                        this.showNotification('高级功能面板已打开', 'info');
+                    }
+                },
+
+                // 初始化智能AI系统
+                async initSmartAI() {
+                    try {
+                        if (window.SmartModelSelector && window.AppConfig) {
+                            console.log('🔧 初始化智能AI系统...');
+                            const smartConfig = window.AppConfig.api.smartAI;
+
+                            window.smartModelSelectorInstance = await window.SmartModelSelector.init({
+                                apiKey: smartConfig.apiKey,
+                                apiUrl: smartConfig.endpoint,
+                                defaultStrategy: smartConfig.defaultStrategy,
+                                maxRetries: smartConfig.maxRetries,
+                                requestTimeout: smartConfig.requestTimeout,
+                                skipAvailabilityCheck: smartConfig.skipAvailabilityCheck
+                            });
+
+                            console.log('✅ 智能AI系统初始化完成');
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ 智能AI系统初始化失败:', error);
+                    }
+                },
+
+                // MathJax监控
+                monitorMathJax() {
+                    // 监控MathJax加载状态
+                    let mathJaxCheckCount = 0;
+                    const maxMathJaxChecks = 30; // 3秒检查时间
+
+                    const checkMathJax = () => {
+                        mathJaxCheckCount++;
+
+                        if (typeof window.MathJax !== 'undefined' && window.MathJax.startup) {
+                            console.log('✅ MathJax已加载');
+                            // 重新渲染页面上的数学公式
+                            this.renderMathFormulas();
+                            return;
+                        }
+
+                        if (mathJaxCheckCount < maxMathJaxChecks) {
+                            setTimeout(checkMathJax, 100);
+                        } else {
+                            console.warn('⚠️ MathJax加载超时，使用CSS备用方案');
+                            this.enableMathFallback();
+                        }
+                    };
+
+                    // 延迟开始检查，给MathJax一些加载时间
+                    setTimeout(checkMathJax, 500);
+                },
+
+                renderMathFormulas() {
+                    if (typeof window.MathJax !== 'undefined' && window.MathJax.typesetPromise) {
+                        window.MathJax.typesetPromise().then(() => {
+                            console.log('✅ 数学公式重新渲染完成');
+                            // 确保公式可见
+                            document.querySelectorAll('.math-formula').forEach(el => {
+                                el.style.visibility = 'visible';
+                            });
+                        }).catch(error => {
+                            console.warn('⚠️ MathJax渲染失败:', error);
+                            this.enableMathFallback();
+                        });
+                    }
+                },
+
+                enableMathFallback() {
+                    console.log('🔄 启用数学公式备用显示方案');
+                    document.querySelectorAll('.math-formula').forEach(el => {
+                        if (el.style.visibility === 'hidden' || !el.textContent.trim()) {
+                            const mathContent = el.innerHTML;
+                            // 简化的数学公式显示
+                            let fallbackContent = mathContent
+                                .replace(/\$\$(.*?)\$\$/g, '<div class="math-fallback-display">$1</div>')
+                                .replace(/\$(.*?)\$/g, '<span class="math-fallback-inline">$1</span>');
+
+                            el.innerHTML = fallbackContent;
+                            el.style.visibility = 'visible';
+                            el.classList.add('math-fallback-enabled');
+                        }
+                    });
+
+                    // 添加备用样式
+                    if (!document.querySelector('#math-fallback-styles')) {
+                        const style = document.createElement('style');
+                        style.id = 'math-fallback-styles';
+                        style.textContent = `
+                            .math-fallback-display {
+                                font-family: 'Times New Roman', serif;
+                                font-size: 1.1em;
+                                text-align: center;
+                                margin: 10px 0;
+                                padding: 8px;
+                                background: rgba(255, 255, 255, 0.1);
+                                border-radius: 6px;
+                                border-left: 3px solid var(--accent-color);
+                            }
+                            .math-fallback-inline {
+                                font-family: 'Times New Roman', serif;
+                                font-style: italic;
+                                background: rgba(255, 255, 255, 0.1);
+                                padding: 2px 4px;
+                                border-radius: 3px;
+                            }
+                            .math-fallback-enabled {
+                                opacity: 0.9;
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
                 }
             },
 
@@ -2847,7 +2967,9 @@
 
                 // 异步初始化其他功能（不阻塞界面）
                 setTimeout(() => {
-                    this.initSmartAI().catch(console.warn);
+                    this.initSmartAI().catch(error => {
+                        console.warn('AI系统初始化失败:', error);
+                    });
                     this.monitorMathJax();
                 }, 100);
 
@@ -2858,177 +2980,6 @@
                 // 清理事件监听器
                 document.removeEventListener('keydown', this.handleKeyboard);
                 document.body.style.overflow = '';
-            },
-
-            async initSmartAI() {
-                try {
-                    if (window.SmartModelSelector && window.AppConfig) {
-                        console.log('🔧 初始化智能AI系统...');
-                        const smartConfig = window.AppConfig.api.smartAI;
-
-                        window.smartModelSelectorInstance = await window.SmartModelSelector.init({
-                            apiKey: smartConfig.apiKey,
-                            apiUrl: smartConfig.endpoint,
-                            defaultStrategy: smartConfig.defaultStrategy,
-                            maxRetries: smartConfig.maxRetries,
-                            requestTimeout: smartConfig.requestTimeout,
-                            skipAvailabilityCheck: smartConfig.skipAvailabilityCheck
-                        });
-
-                        console.log('✅ 智能AI系统初始化完成');
-                    }
-                } catch (error) {
-                    console.warn('⚠️ 智能AI系统初始化失败:', error);
-                }
-            },
-
-            monitorMathJax() {
-                // 监控MathJax加载状态
-                let mathJaxCheckCount = 0;
-                const maxMathJaxChecks = 30; // 3秒检查时间
-
-                const checkMathJax = () => {
-                    mathJaxCheckCount++;
-
-                    if (typeof window.MathJax !== 'undefined' && window.MathJax.startup) {
-                        console.log('✅ MathJax已加载');
-                        // 重新渲染页面上的数学公式
-                        this.renderMathFormulas();
-                        return;
-                    }
-
-                    if (mathJaxCheckCount < maxMathJaxChecks) {
-                        setTimeout(checkMathJax, 100);
-                    } else {
-                        console.warn('⚠️ MathJax加载超时，使用CSS备用方案');
-                        this.enableMathFallback();
-                    }
-                };
-
-                // 延迟开始检查，给MathJax一些加载时间
-                setTimeout(checkMathJax, 500);
-            },
-
-            renderMathFormulas() {
-                if (typeof window.MathJax !== 'undefined' && window.MathJax.typesetPromise) {
-                    window.MathJax.typesetPromise().then(() => {
-                        console.log('✅ 数学公式重新渲染完成');
-                        // 确保公式可见
-                        document.querySelectorAll('.math-formula').forEach(el => {
-                            el.style.visibility = 'visible';
-                        });
-                    }).catch(error => {
-                        console.warn('⚠️ MathJax渲染失败:', error);
-                        this.enableMathFallback();
-                    });
-                }
-            },
-
-            enableMathFallback() {
-                console.log('🔄 启用数学公式备用显示方案');
-                document.querySelectorAll('.math-formula').forEach(el => {
-                    if (el.style.visibility === 'hidden' || !el.textContent.trim()) {
-                        const mathContent = el.innerHTML;
-                        // 简化的数学公式显示
-                        let fallbackContent = mathContent
-                            .replace(/\$\$(.*?)\$\$/g, '<div class="math-fallback-display">$1</div>')
-                            .replace(/\$(.*?)\$/g, '<span class="math-fallback-inline">$1</span>');
-
-                        el.innerHTML = fallbackContent;
-                        el.style.visibility = 'visible';
-                        el.classList.add('math-fallback-enabled');
-                    }
-                });
-
-                // 添加备用样式
-                if (!document.querySelector('#math-fallback-styles')) {
-                    const style = document.createElement('style');
-                    style.id = 'math-fallback-styles';
-                    style.textContent = `
-                        .math-fallback-display {
-                            font-family: 'Times New Roman', serif;
-                            font-size: 1.1em;
-                            text-align: center;
-                            margin: 10px 0;
-                            padding: 8px;
-                            background: rgba(255, 255, 255, 0.1);
-                            border-radius: 6px;
-                            border-left: 3px solid var(--accent-color);
-                        }
-                        .math-fallback-inline {
-                            font-family: 'Times New Roman', serif;
-                            font-style: italic;
-                            background: rgba(255, 255, 255, 0.1);
-                            padding: 2px 4px;
-                            border-radius: 3px;
-                        }
-                        .math-fallback-enabled {
-                            opacity: 0.9;
-                        }
-                    `;
-                    document.head.appendChild(style);
-                }
-            },
-
-            async initializeApp() {
-                console.log('🚀 初始化应用...');
-
-                // 快速初始化策略 - 不等待MathJax
-                const checkCoreResources = () => {
-                    return new Promise((resolve) => {
-                        let checks = 0;
-                        const maxChecks = 20; // 最多检查2秒
-
-                        const checkInterval = setInterval(() => {
-                            checks++;
-
-                            // 只检查核心资源
-                            const vueReady = typeof Vue !== 'undefined';
-                            const configReady = typeof window.AppConfig !== 'undefined';
-
-                            if (vueReady && configReady) {
-                                clearInterval(checkInterval);
-                                console.log('✅ 核心资源加载完成');
-                                resolve();
-                            } else if (checks >= maxChecks) {
-                                clearInterval(checkInterval);
-                                console.warn('⚠️ 核心资源加载超时，强制启动应用');
-                                resolve();
-                            }
-                        }, 100);
-                    });
-                };
-
-                try {
-                    // 快速检查核心资源
-                    await checkCoreResources();
-
-                    // 异步初始化AI系统（不阻塞界面显示）
-                    this.initSmartAI().catch(error => {
-                        console.warn('⚠️ AI系统初始化失败:', error);
-                    });
-
-                    // 清除超时定时器
-                    if (this.loadingTimeout) {
-                        clearTimeout(this.loadingTimeout);
-                        this.loadingTimeout = null;
-                    }
-
-                    // 立即显示界面
-                    this.loading = false;
-                    console.log('🎉 应用快速启动完成');
-
-                    // 显示启动通知
-                    setTimeout(() => {
-                        this.showNotification('AI学习助手已就绪！', 'success');
-                    }, 500);
-
-                } catch (error) {
-                    console.error('❌ 应用初始化失败:', error);
-                    // 即使失败也要隐藏加载界面
-                    this.loading = false;
-                    this.showNotification('应用启动完成，部分功能可能受限', 'warning');
-                }
             }
         });
 
