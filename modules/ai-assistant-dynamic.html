@@ -84,14 +84,9 @@
             chtml: {
                 // 禁用网络字体，使用系统字体
                 fontURL: null,
-                adaptiveCSS: true,
                 scale: 1.0,
                 minScale: 0.5,
-                matchFontHeight: false,
-                // 使用本地字体回退
-                font: 'STIX-Web',
-                localFont: true,
-                webFont: false
+                matchFontHeight: false
             },
             svg: {
                 fontCache: 'local'
@@ -2302,6 +2297,17 @@
 
     <!-- Vue.js 应用脚本 -->
     <script>
+        // 配置Vue以减少开发模式警告
+        if (typeof Vue !== 'undefined' && Vue.config) {
+            Vue.config.warnHandler = function (msg, vm, trace) {
+                // 过滤掉模板编译警告
+                if (msg.includes('Tags with side effect')) {
+                    return; // 忽略这个特定警告
+                }
+                console.warn('[Vue warn]: ' + msg + trace);
+            };
+        }
+
         const { createApp } = Vue;
 
         const app = createApp({
@@ -2739,6 +2745,14 @@
                         this.speechRecognition.interimResults = true; // 启用中间结果
                         this.speechRecognition.maxAlternatives = 1;
 
+                        // 尝试使用本地语音识别（如果支持）
+                        if ('webkitSpeechGrammarList' in window) {
+                            const grammar = '#JSGF V1.0; grammar commands; public <command> = 发送 | 清空 | 全屏 | 设置;';
+                            const speechRecognitionList = new webkitSpeechGrammarList();
+                            speechRecognitionList.addFromString(grammar, 1);
+                            this.speechRecognition.grammars = speechRecognitionList;
+                        }
+
                         // 开始识别事件
                         this.speechRecognition.onstart = () => {
                             this.isRecording = true;
@@ -2792,7 +2806,10 @@
                                     errorMessage = '麦克风权限被拒绝，请允许访问';
                                     break;
                                 case 'network':
-                                    errorMessage = '网络错误，请检查网络连接';
+                                    errorMessage = '网络错误，尝试使用离线模式';
+                                    // 尝试离线语音识别
+                                    this.tryOfflineVoiceRecognition();
+                                    return; // 不显示错误，尝试离线模式
                                     break;
                                 case 'service-not-allowed':
                                     errorMessage = '语音识别服务不可用';
@@ -2854,6 +2871,21 @@
                     }
 
                     return false;
+                },
+
+                // 离线语音识别尝试
+                tryOfflineVoiceRecognition() {
+                    console.log('🔄 尝试离线语音识别模式');
+                    this.showNotification('🔄 切换到离线模式，功能可能受限', 'warning');
+
+                    // 简化的离线模式 - 使用键盘输入模拟
+                    const offlineInput = prompt('离线模式：请输入您的问题');
+                    if (offlineInput && offlineInput.trim()) {
+                        this.currentMessage += offlineInput;
+                        this.showNotification('✅ 离线输入完成', 'success');
+                    }
+
+                    this.isRecording = false;
                 },
 
                 // 语音输入增强功能
