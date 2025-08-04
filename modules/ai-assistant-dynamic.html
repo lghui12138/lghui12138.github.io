@@ -253,8 +253,10 @@
             });
         }
 
-        // 立即开始加载
-        loadMathJaxWithTimeout();
+        // 延迟加载MathJax，不阻塞页面
+        setTimeout(() => {
+            loadMathJaxWithTimeout();
+        }, 2000);
     </script>
 
     <!-- 数学公式CSS样式 -->
@@ -2061,7 +2063,7 @@
         const app = createApp({
             data() {
                 return {
-                    loading: true,
+                    loading: false, // 直接设置为false，不显示加载界面
                     isFullscreen: false,
                     isTyping: false,
                     currentMessage: '',
@@ -2179,24 +2181,8 @@
             },
 
             created() {
-                // 设置强制超时，防止无限加载
-                this.loadingTimeout = setTimeout(() => {
-                    if (this.loading) {
-                        console.warn('⚠️ 加载超时，强制显示页面');
-                        this.loading = false;
-                        this.showNotification('页面加载完成', 'info');
-                    }
-                }, 3000); // 3秒超时，更短
-
-                // 立即检查是否可以显示页面
-                this.$nextTick(() => {
-                    setTimeout(() => {
-                        if (this.loading) {
-                            console.log('🚀 立即显示页面，不等待其他资源');
-                            this.loading = false;
-                        }
-                    }, 1000); // 1秒后强制显示
-                });
+                console.log('🎯 Vue应用创建完成');
+                // 简化创建逻辑，不设置复杂的超时
             },
 
             methods: {
@@ -2432,30 +2418,19 @@
             },
 
             mounted() {
-                // 等待所有资源加载完成后隐藏加载覆盖层
-                this.initializeApp();
+                console.log('🚀 Vue应用已挂载');
+
+                // 立即显示欢迎消息
+                this.showNotification('AI学习助手已就绪！', 'success');
 
                 // 添加键盘事件监听
                 document.addEventListener('keydown', this.handleKeyboard);
 
-                // 网络状态监听
-                window.addEventListener('online', () => {
-                    this.networkStatus = { show: false };
-                });
-
-                window.addEventListener('offline', () => {
-                    this.networkStatus = {
-                        show: true,
-                        message: '网络连接已断开',
-                        icon: 'fas fa-wifi'
-                    };
-                });
-
-                // 初始化智能模型选择器（如果可用）
-                this.initSmartAI();
-
-                // 监控MathJax状态
-                this.monitorMathJax();
+                // 异步初始化其他功能（不阻塞界面）
+                setTimeout(() => {
+                    this.initSmartAI().catch(console.warn);
+                    this.monitorMathJax();
+                }, 100);
 
                 console.log('🤖 AI学习助手已启动');
             },
