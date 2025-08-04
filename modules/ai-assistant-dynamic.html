@@ -14,9 +14,6 @@
     <script src="../js/core/config.js"></script>
     <script src="../js/core/smart-model-selector.js"></script>
     
-    <!-- MathJax渲染修复脚本 -->
-    <script src="../fix-mathjax-rendering.js"></script>
-    
     <!-- MathJax配置和多个CDN备用方案 -->
     <script>
         window.MathJax = {
@@ -24,40 +21,28 @@
                 inlineMath: [['$', '$'], ['\\(', '\\)']],
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
                 processEscapes: true,
-                processEnvironments: true,
-                packages: ['base', 'ams', 'noerrors', 'noundefined']
+                processEnvironments: true
             },
             options: {
-                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-                ignoreHtmlClass: 'tex2jax_ignore',
-                processHtmlClass: 'tex2jax_process',
-                enableMenu: false
-            },
-            loader: {
-                load: ['[tex]/ams', '[tex]/noerrors', '[tex]/noundefined']
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
             },
             startup: {
                 pageReady: () => {
                     return MathJax.startup.defaultPageReady().then(() => {
                         console.log('MathJax渲染完成');
-                        // 强制重新渲染所有公式
-                        setTimeout(() => {
-                            MathJax.typesetPromise().then(() => {
-                                console.log('✅ 强制重新渲染完成');
-                                // 确保所有公式都正确显示
-                                document.querySelectorAll('.math-formula').forEach(el => {
-                                    el.style.display = 'block';
-                                    el.style.visibility = 'visible';
+                        // 确保所有公式都正确显示
+                        document.querySelectorAll('.math-formula').forEach(el => {
+                            el.style.display = 'block';
+                            el.style.visibility = 'visible';
+                        });
+                        // 渲染聊天消息中的公式
+                        document.querySelectorAll('.message-content').forEach(el => {
+                            if (el.innerHTML.includes('$$') || el.innerHTML.includes('\\[')) {
+                                MathJax.typesetPromise([el]).catch(error => {
+                                    console.error('聊天消息公式渲染失败:', error);
                                 });
-                                // 确保MathJax元素可见
-                                document.querySelectorAll('.MathJax').forEach(el => {
-                                    el.style.display = 'block !important';
-                                    el.style.visibility = 'visible !important';
-                                });
-                            }).catch(error => {
-                                console.error('强制重新渲染失败:', error);
-                            });
-                        }, 1000);
+                            }
+                        });
                     }).catch((error) => {
                         console.error('MathJax加载失败，使用备用方案');
                         // 如果MathJax完全失败，显示原始LaTeX代码
@@ -68,78 +53,6 @@
                 }
             }
         };
-        
-        // 全局MathJax渲染函数
-        function renderAllMathFormulas() {
-            if (window.MathJax && window.MathJax.typesetPromise) {
-                console.log('开始渲染所有数学公式...');
-                // 先清除所有现有的MathJax元素
-                document.querySelectorAll('.MathJax').forEach(el => {
-                    el.remove();
-                });
-                // 重新渲染
-                MathJax.typesetPromise().then(() => {
-                    console.log('✅ 所有数学公式渲染完成');
-                    // 确保所有公式元素可见
-                    document.querySelectorAll('.MathJax').forEach(el => {
-                        el.style.display = 'block !important';
-                        el.style.visibility = 'visible !important';
-                    });
-                }).catch((error) => {
-                    console.error('❌ 数学公式渲染失败:', error);
-                });
-            } else {
-                console.log('MathJax未加载，延迟重试...');
-                setTimeout(renderAllMathFormulas, 1000);
-            }
-        }
-        
-        // 页面加载完成后自动渲染
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(renderAllMathFormulas, 2000);
-        });
-        
-        // 监听MathJax加载完成
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                if (window.MathJax && window.MathJax.typesetPromise) {
-                    console.log('页面完全加载，开始渲染公式...');
-                    renderAllMathFormulas();
-                }
-            }, 3000);
-        });
-        
-        // 添加一个简单的测试函数
-        function testMathJaxSimple() {
-            console.log('=== MathJax简单测试 ===');
-            console.log('MathJax对象存在:', !!window.MathJax);
-            console.log('MathJax.typesetPromise存在:', !!(window.MathJax && window.MathJax.typesetPromise));
-            
-            // 检查页面中的公式
-            const formulas = document.querySelectorAll('.math-formula');
-            console.log('找到公式元素数量:', formulas.length);
-            
-            formulas.forEach((el, index) => {
-                const hasMath = el.innerHTML.includes('$$');
-                console.log(`公式${index + 1}: 包含$$符号 = ${hasMath}`);
-                if (hasMath) {
-                    console.log(`公式${index + 1}内容:`, el.innerHTML);
-                }
-            });
-            
-            // 尝试手动渲染
-            if (window.MathJax && window.MathJax.typesetPromise) {
-                console.log('尝试手动渲染...');
-                MathJax.typesetPromise().then(() => {
-                    console.log('✅ 手动渲染成功');
-                }).catch(error => {
-                    console.error('❌ 手动渲染失败:', error);
-                });
-            }
-        }
-        
-        // 将测试函数暴露到全局
-        window.testMathJaxSimple = testMathJaxSimple;
     </script>
     
     <!-- 使用多个CDN备用方案 -->
@@ -1013,22 +926,10 @@
         .MathJax {
             font-size: 1.1em !important;
             color: var(--text-primary) !important;
-            display: block !important;
-            visibility: visible !important;
-            margin: 10px 0 !important;
         }
 
         .MathJax_Display {
             margin: 15px 0 !important;
-            display: block !important;
-            visibility: visible !important;
-        }
-        
-        /* 确保公式容器正确显示 */
-        .math-formula .MathJax {
-            display: block !important;
-            visibility: visible !important;
-            text-align: center !important;
         }
 
         /* 响应式设计 */
@@ -1133,21 +1034,6 @@
             <div class="shortcuts-hint">
                 <i class="fas fa-keyboard"></i> 
                 快捷键: Enter-发送 | F11-全屏 | ESC-退出 | Ctrl+L-清空对话
-                <button @click="forceRenderAllMath" style="margin-left: 10px; padding: 5px 10px; background: #4facfe; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                    🔄 重新渲染公式
-                </button>
-                <button @click="testMathJax" style="margin-left: 10px; padding: 5px 10px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                    🔍 测试MathJax
-                </button>
-                <button onclick="testMathJaxSimple()" style="margin-left: 10px; padding: 5px 10px; background: #43e97b; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                    🧪 简单测试
-                </button>
-                <button @click="forceRenderMathDirect" style="margin-left: 10px; padding: 5px 10px; background: #feca57; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                    ⚡ 直接渲染
-                </button>
-                <button @click="renderAIResponseMath" style="margin-left: 10px; padding: 5px 10px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                    🤖 渲染AI回复
-                </button>
             </div>
 
             <!-- AI智能推导功能 -->
@@ -1648,10 +1534,6 @@
                             // 渲染新消息中的数学公式
                             this.$nextTick(() => {
                                 this.renderMathInLatestMessage();
-                                // 延迟再次渲染AI回复中的公式
-                                setTimeout(() => {
-                                    this.renderAIResponseMath();
-                                }, 500);
                             });
                         }
                     }, 1500 + Math.random() * 2000);
@@ -1698,18 +1580,11 @@
                                 temperature: 0.7,
                                 systemPrompt: `你是一个专业的流体力学教师，请用简洁明了的方式回答学生问题。回答要包含：
 1. 核心概念解释
-2. 必要的公式（如果适用）- 使用$$...$$格式
+2. 必要的公式（如果适用）
 3. 实际应用举例
 4. 学习建议
 
-请用HTML格式回复，使用<strong>、<br>等标签，让内容易读易懂。
-
-重要：数学公式必须用$$...$$格式包围，例如：
-- 伯努利方程：$$p + \\frac{1}{2}\\rho v^2 + \\rho gh = \\text{常数}$$
-- 雷诺数：$$Re = \\frac{\\rho VL}{\\mu}$$
-- 欧拉方程：$$\\frac{\\partial \\vec{v}}{\\partial t} + (\\vec{v} \\cdot \\nabla)\\vec{v} = -\\frac{1}{\\rho}\\nabla p + \\vec{g}$$
-
-请确保所有数学公式都使用这种格式。`
+请用HTML格式回复，使用<strong>、<br>等标签，让内容易读易懂。`
                             });
                             
                             console.log('✅ AI回复成功:', result.model);
@@ -1732,27 +1607,19 @@
                     const knowledgeBase = {
                         '伯努利': {
                             keywords: ['伯努利', '伯努利方程', 'bernoulli', '能量守恒'],
-                            content: '🌊 <strong>伯努利方程</strong><br><br><strong>方程：</strong> $$p + \\frac{1}{2}\\rho v^2 + \\rho gh = \\text{常数}$$<br><br><strong>物理意义：</strong><br>• 压力能 (p) • 动能 (½ρv²) • 势能 (ρgh)<br><br>体现了<strong>能量守恒定律</strong>在流体中的应用。<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
+                            content: '🌊 <strong>伯努利方程</strong><br><br><strong>方程：</strong> p + ½ρv² + ρgh = 常数<br><br><strong>物理意义：</strong><br>• 压力能 (p) • 动能 (½ρv²) • 势能 (ρgh)<br><br>体现了<strong>能量守恒定律</strong>在流体中的应用。<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
                         },
                         '层流': {
                             keywords: ['层流', '湍流', 'laminar', 'turbulent'],
-                            content: '🌀 <strong>层流与湍流</strong><br><br><strong>层流：</strong> 分层流动，Re < 2300<br><strong>湍流：</strong> 混合流动，Re > 4000<br><strong>判断：</strong> 雷诺数 $$Re = \\frac{\\rho VD}{\\mu}$$<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
+                            content: '🌀 <strong>层流与湍流</strong><br><br><strong>层流：</strong> 分层流动，Re < 2300<br><strong>湍流：</strong> 混合流动，Re > 4000<br><strong>判断：</strong> 雷诺数 Re = ρVD/μ<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
                         },
                         '雷诺数': {
                             keywords: ['雷诺数', 'reynolds', '雷诺', 're'],
-                            content: '📊 <strong>雷诺数</strong><br><br><strong>公式：</strong> $$Re = \\frac{\\rho VL}{\\mu} = \\frac{VL}{\\nu}$$<br><strong>意义：</strong> 惯性力与粘性力的比值<br><strong>临界值：</strong> 圆管Re < 2300(层流)<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
+                            content: '📊 <strong>雷诺数</strong><br><br><strong>公式：</strong> Re = ρVL/μ = VL/ν<br><strong>意义：</strong> 惯性力与粘性力的比值<br><strong>临界值：</strong> 圆管Re < 2300(层流)<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
                         },
                         '边界层': {
                             keywords: ['边界层', 'boundary layer', '壁面'],
                             content: '🎯 <strong>边界层理论</strong><br><br><strong>定义：</strong> 紧贴壁面的薄层，粘性力显著<br><strong>厚度：</strong> 速度达主流99%处<br><strong>意义：</strong> 决定阻力和传热<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
-                        },
-                        '欧拉方程': {
-                            keywords: ['欧拉方程', 'euler equation', '理想流体'],
-                            content: '🌊 <strong>欧拉方程</strong><br><br><strong>方程：</strong> $$\\frac{\\partial \\vec{v}}{\\partial t} + (\\vec{v} \\cdot \\nabla)\\vec{v} = -\\frac{1}{\\rho}\\nabla p + \\vec{g}$$<br><br><strong>物理意义：</strong><br>• 惯性力项 • 压力梯度力 • 重力<br><br>适用于理想流体（无粘性）的流动。<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
-                        },
-                        '纳维斯托克斯': {
-                            keywords: ['纳维斯托克斯', 'navier stokes', '粘性流体'],
-                            content: '💧 <strong>纳维斯托克斯方程</strong><br><br><strong>方程：</strong> $$\\rho\\frac{D\\vec{v}}{Dt} = -\\nabla p + \\mu\\nabla^2\\vec{v} + \\rho\\vec{g}$$<br><br><strong>物理意义：</strong><br>• 惯性力 • 压力梯度 • 粘性力 • 重力<br><br>适用于粘性流体的完整运动方程。<br><br><small style="color: #888;">📚 来源：本地知识库</small>'
                         }
                     };
                     
@@ -1820,176 +1687,28 @@
                 // 渲染数学公式
                 renderMathInLatestMessage() {
                     if (window.MathJax && window.MathJax.typesetPromise) {
-                        console.log('开始渲染聊天消息中的数学公式...');
-                        
-                        // 获取所有AI消息
-                        const aiMessages = this.messages.filter(msg => msg.sender === 'ai');
-                        if (aiMessages.length === 0) {
-                            console.log('没有找到AI消息');
-                            return;
-                        }
-                        
-                        // 渲染最新的AI消息
-                        const latestAIMessage = aiMessages[aiMessages.length - 1];
-                        const messageElement = document.querySelector(`[data-message-id="${latestAIMessage.id}"]`);
-                        
-                        if (messageElement) {
-                            const contentElement = messageElement.querySelector('.message-content');
-                            if (contentElement) {
-                                console.log('找到AI消息内容元素，检查是否包含公式...');
-                                console.log('内容预览:', contentElement.innerHTML.substring(0, 200));
-                                
-                                // 检查是否包含数学公式
-                                const hasMath = contentElement.innerHTML.includes('$$') || 
-                                               contentElement.innerHTML.includes('\\[') ||
-                                               contentElement.innerHTML.includes('\\(');
-                                
-                                if (hasMath) {
-                                    console.log('发现数学公式，开始渲染...');
+                        // 获取最新的AI消息
+                        const latestMessage = this.messages[this.messages.length - 1];
+                        if (latestMessage && latestMessage.sender === 'ai') {
+                            // 查找该消息的DOM元素
+                            const messageElement = document.querySelector(`[data-message-id="${latestMessage.id}"]`);
+                            if (messageElement) {
+                                const contentElement = messageElement.querySelector('.message-content');
+                                if (contentElement && (contentElement.innerHTML.includes('$$') || contentElement.innerHTML.includes('\\['))) {
                                     MathJax.typesetPromise([contentElement]).then(() => {
-                                        console.log('✅ AI消息数学公式渲染完成');
-                                        // 确保渲染后的公式可见
-                                        contentElement.querySelectorAll('.MathJax').forEach(el => {
-                                            el.style.display = 'block !important';
-                                            el.style.visibility = 'visible !important';
-                                        });
+                                        console.log('✅ 聊天消息数学公式渲染完成');
                                     }).catch((error) => {
-                                        console.error('❌ AI消息数学公式渲染失败:', error);
-                                        // 如果渲染失败，延迟重试
-                                        setTimeout(() => {
-                                            this.renderMathInLatestMessage();
-                                        }, 1000);
+                                        console.error('❌ 聊天消息数学公式渲染失败:', error);
                                     });
-                                } else {
-                                    console.log('AI消息中没有发现数学公式');
                                 }
-                            } else {
-                                console.log('未找到消息内容元素');
                             }
-                        } else {
-                            console.log('未找到AI消息DOM元素');
                         }
                     } else {
-                        console.log('MathJax未加载，延迟重试...');
+                        // 如果MathJax未加载，延迟重试
                         setTimeout(() => {
                             this.renderMathInLatestMessage();
-                        }, 1000);
+                        }, 500);
                     }
-                },
-                
-                // 强制重新渲染所有公式
-                forceRenderAllMath() {
-                    if (window.renderAllMathFormulas) {
-                        window.renderAllMathFormulas();
-                    } else if (window.MathJax && window.MathJax.typesetPromise) {
-                        // 先清除所有现有的MathJax元素
-                        document.querySelectorAll('.MathJax').forEach(el => {
-                            el.remove();
-                        });
-                        // 重新渲染
-                        MathJax.typesetPromise().then(() => {
-                            console.log('✅ 强制重新渲染完成');
-                            // 确保所有公式元素可见
-                            document.querySelectorAll('.MathJax').forEach(el => {
-                                el.style.display = 'block !important';
-                                el.style.visibility = 'visible !important';
-                            });
-                        }).catch((error) => {
-                            console.error('❌ 强制重新渲染失败:', error);
-                        });
-                    }
-                },
-                
-                // 测试MathJax是否正常工作
-                testMathJax() {
-                    console.log('测试MathJax状态...');
-                    console.log('MathJax对象:', window.MathJax);
-                    console.log('MathJax.typesetPromise:', window.MathJax?.typesetPromise);
-                    
-                    // 检查页面中的公式
-                    const formulas = document.querySelectorAll('.math-formula');
-                    console.log('找到的公式元素数量:', formulas.length);
-                    formulas.forEach((el, index) => {
-                        console.log(`公式${index + 1}:`, el.innerHTML);
-                    });
-                },
-                
-                // 强制重新渲染所有公式（更直接的方法）
-                forceRenderMathDirect() {
-                    console.log('开始直接强制渲染...');
-                    
-                    // 检查MathJax是否可用
-                    if (!window.MathJax || !window.MathJax.typesetPromise) {
-                        console.error('MathJax不可用');
-                        return;
-                    }
-                    
-                    // 查找所有包含$$的元素
-                    const mathElements = document.querySelectorAll('.math-formula');
-                    console.log('找到数学公式元素:', mathElements.length);
-                    
-                    // 对每个元素进行渲染
-                    mathElements.forEach((el, index) => {
-                        console.log(`渲染公式${index + 1}:`, el.innerHTML);
-                        MathJax.typesetPromise([el]).then(() => {
-                            console.log(`✅ 公式${index + 1}渲染成功`);
-                        }).catch(error => {
-                            console.error(`❌ 公式${index + 1}渲染失败:`, error);
-                        });
-                    });
-                },
-                
-                // 专门渲染AI回复中的公式
-                renderAIResponseMath() {
-                    console.log('开始渲染AI回复中的公式...');
-                    
-                    if (!window.MathJax || !window.MathJax.typesetPromise) {
-                        console.log('MathJax未加载，延迟重试...');
-                        setTimeout(() => {
-                            this.renderAIResponseMath();
-                        }, 1000);
-                        return;
-                    }
-                    
-                    // 查找所有AI消息
-                    const aiMessages = document.querySelectorAll('.message.ai');
-                    console.log('找到AI消息数量:', aiMessages.length);
-                    
-                    aiMessages.forEach((messageEl, index) => {
-                        const contentEl = messageEl.querySelector('.message-content');
-                        if (contentEl) {
-                            const hasMath = contentEl.innerHTML.includes('$$') || 
-                                           contentEl.innerHTML.includes('\\[') ||
-                                           contentEl.innerHTML.includes('\\(');
-                            
-                            if (hasMath) {
-                                console.log(`AI消息${index + 1}包含公式，开始渲染...`);
-                                console.log('公式内容预览:', contentEl.innerHTML.substring(0, 300));
-                                
-                                // 先清除该元素中现有的MathJax元素
-                                contentEl.querySelectorAll('.MathJax').forEach(el => {
-                                    el.remove();
-                                });
-                                
-                                MathJax.typesetPromise([contentEl]).then(() => {
-                                    console.log(`✅ AI消息${index + 1}公式渲染完成`);
-                                    // 确保渲染后的公式可见
-                                    contentEl.querySelectorAll('.MathJax').forEach(el => {
-                                        el.style.display = 'block !important';
-                                        el.style.visibility = 'visible !important';
-                                    });
-                                }).catch(error => {
-                                    console.error(`❌ AI消息${index + 1}公式渲染失败:`, error);
-                                    // 如果渲染失败，延迟重试
-                                    setTimeout(() => {
-                                        this.renderAIResponseMath();
-                                    }, 2000);
-                                });
-                            } else {
-                                console.log(`AI消息${index + 1}不包含公式`);
-                            }
-                        }
-                    });
                 },
 
                 // 键盘事件处理
@@ -2033,11 +1752,6 @@
                 document.addEventListener('fullscreenchange', () => {
                     this.isFullscreen = !!document.fullscreenElement;
                 });
-                
-                // 延迟渲染数学公式
-                setTimeout(() => {
-                    this.forceRenderAllMath();
-                }, 3000);
             },
 
             beforeUnmount() {
