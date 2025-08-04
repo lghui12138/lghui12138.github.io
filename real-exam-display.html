@@ -307,7 +307,7 @@
     <div id="app" class="container">
         <div class="header">
             <h1>📚 中国海洋大学流体力学真题</h1>
-            <p>2000-2021年历年真题精选（已清理优化）</p>
+            <p>2000-2021年历年真题精选（智能合并，保留完整题目）</p>
             <div class="stats">
                 <div class="stat-item">
                     <div class="stat-number">{{ totalQuestions }}</div>
@@ -514,13 +514,17 @@
             methods: {
                 async loadQuestions() {
                     try {
-                        // 优先尝试加载清理后的数据
-                        let response = await fetch('/question-banks/真题_中国海洋大学_2000-2021_cleaned.json');
+                        // 优先尝试加载保守合并的数据
+                        let response = await fetch('/question-banks/真题_中国海洋大学_2000-2021_conservative.json');
                         if (!response.ok) {
-                            // 如果清理后的数据不存在，使用原始数据
-                            response = await fetch('/question-banks/真题_中国海洋大学_2000-2021.json');
+                            // 如果保守合并的数据不存在，尝试清理后的数据
+                            response = await fetch('/question-banks/真题_中国海洋大学_2000-2021_cleaned.json');
                             if (!response.ok) {
-                                throw new Error('Failed to load questions');
+                                // 最后使用原始数据
+                                response = await fetch('/question-banks/真题_中国海洋大学_2000-2021.json');
+                                if (!response.ok) {
+                                    throw new Error('Failed to load questions');
+                                }
                             }
                         }
                         this.questions = await response.json();
