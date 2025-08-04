@@ -3730,6 +3730,7 @@
                 // 智能模型选择器
                 selectOptimalModel(question) {
                     const lowerQuestion = question.toLowerCase();
+                    console.log('🧠 智能模型选择 - 分析问题:', question);
 
                     // 检测是否涉及数学推导
                     const derivationKeywords = [
@@ -3758,9 +3759,17 @@
                         lowerQuestion.includes(keyword)
                     );
 
+                    console.log('🔍 关键词检测结果:', {
+                        hasDerivation,
+                        hasComplexMath,
+                        matchedDerivation: derivationKeywords.filter(k => lowerQuestion.includes(k)),
+                        matchedComplexMath: complexMathKeywords.filter(k => lowerQuestion.includes(k))
+                    });
+
                     if (hasDerivation || hasComplexMath) {
+                        console.log('🎯 选择deepseek-r1模型进行数学推导');
                         // 使用deepseek-r1进行数学推导
-                        return {
+                        const config = {
                             strategy: 'reasoning',
                             features: ['reasoning', 'math', 'derivation'],
                             maxTokens: 2000,
@@ -3778,9 +3787,12 @@
 
 确保推导过程严谨、逻辑清晰，便于学生理解。`
                         };
+                        console.log('📋 deepseek-r1配置:', config);
+                        return config;
                     } else {
+                        console.log('🎯 选择通用模型进行概念解释');
                         // 使用通用模型进行概念解释
-                        return {
+                        const config = {
                             strategy: 'balanced',
                             features: ['chat', 'explanation'],
                             maxTokens: 1000,
@@ -3796,48 +3808,12 @@
 请使用LaTeX语法表示数学公式，用$$包围显示公式，用$包围内联公式。
 请用HTML格式回复，使用<strong>、<br>等标签，让内容易读易懂。`
                         };
+                        console.log('📋 通用模型配置:', config);
+                        return config;
                     }
                 },
 
-                // 智能回复生成
-                async generateAIResponse(userMessage) {
-                    this.isTyping = true;
-
-                    try {
-                        // 使用智能模型选择器
-                        if (window.smartModelSelectorInstance) {
-                            // 使用正确的方法名 callAI
-                            const response = await window.smartModelSelectorInstance.callAI(userMessage, {
-                                strategy: 'balanced',
-                                features: ['chat', 'reasoning'],
-                                maxTokens: 1000,
-                                temperature: 0.7,
-                                systemPrompt: `你是一个专业的流体力学教师，请用简洁明了的方式回答学生问题。回答要包含：
-1. 核心概念解释
-2. 必要的公式（如果适用）
-3. 实际应用举例
-4. 学习建议
-
-请用HTML格式回复，使用<strong>、<br>等标签，让内容易读易懂。`
-                            });
-
-                            if (response && response.content) {
-                                console.log('✅ AI回复生成成功:', response.model);
-                                return response.content + '<br><br><small style="color: #888;">🤖 由智能AI提供</small>';
-                            }
-
-                            return response;
-                        } else {
-                            // 备用回复系统
-                            return this.generateFallbackResponse(userMessage);
-                        }
-                    } catch (error) {
-                        console.error('AI回复生成失败:', error);
-                        return this.generateFallbackResponse(userMessage);
-                    } finally {
-                        this.isTyping = false;
-                    }
-                },
+                // 智能回复生成（已删除重复方法，使用上面的主要方法）
 
                 // 备用回复系统
                 generateFallbackResponse(userMessage) {
@@ -4045,14 +4021,25 @@
                     if (!el) return;
                     let content = el.innerHTML;
 
-                    // 只处理包含数学符号的内容
-                    if (!content.includes('\\') && !content.includes('$$') && !content.includes('$')) {
+                    // 检查是否包含LaTeX公式
+                    const hasLatex = content.includes('\\') || content.includes('$$') || content.includes('$');
+                    if (!hasLatex) {
                         return;
                     }
 
-                    // 首先处理$$包围的公式，转换为公式容器
-                    content = content.replace(/\$\$(.*?)\$\$/g, '<div class="math-display">$1</div>');
-                    content = content.replace(/\$([^$]+)\$/g, '<span class="math-inline">$1</span>');
+                    console.log('🔢 处理LaTeX公式:', content.substring(0, 100) + '...');
+
+                    // 首先处理$$包围的显示公式
+                    content = content.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
+                        console.log('📐 处理显示公式:', formula);
+                        return `<div class="math-display">${formula}</div>`;
+                    });
+
+                    // 处理$包围的内联公式
+                    content = content.replace(/\$([^$\n]+)\$/g, (match, formula) => {
+                        console.log('📏 处理内联公式:', formula);
+                        return `<span class="math-inline">${formula}</span>`;
+                    });
 
                     // 处理常见的LaTeX符号和特殊字符
                     content = content
