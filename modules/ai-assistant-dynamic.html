@@ -775,8 +775,61 @@
         }
 
         @keyframes voiceWave {
-            0%, 100% { height: 20px; }
-            50% { height: 35px; }
+            0%, 100% {
+                height: 20px;
+                background: var(--error-color);
+            }
+            50% {
+                height: 35px;
+                background: #ff8a80;
+            }
+        }
+
+        /* 语音输入增强样式 */
+        .voice-btn.recording {
+            background: linear-gradient(45deg, #ff6b6b, #ff8a80);
+            color: white;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+            animation: recordingPulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes recordingPulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 30px rgba(255, 107, 107, 0.8);
+            }
+        }
+
+        /* 语音权限提示 */
+        .voice-permission-hint {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            z-index: 10004;
+            text-align: center;
+            color: #333;
+            max-width: 400px;
+            animation: slideInScale 0.3s ease-out;
+        }
+
+        @keyframes slideInScale {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.8);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
         }
 
         /* 快速建议 */
@@ -2654,43 +2707,116 @@
                 },
 
                 startVoiceRecognition() {
+                    // 检查浏览器支持
                     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-                        this.showNotification('您的浏览器不支持语音识别功能', 'error');
+                        this.showNotification('您的浏览器不支持语音识别功能。请使用Chrome、Edge或Safari浏览器。', 'error');
                         return;
                     }
 
+                    // 检查麦克风权限
+                    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                        navigator.mediaDevices.getUserMedia({ audio: true })
+                            .then(() => {
+                                this.initSpeechRecognition();
+                            })
+                            .catch((error) => {
+                                console.error('麦克风权限被拒绝:', error);
+                                this.showNotification('请允许访问麦克风以使用语音输入功能', 'error');
+                            });
+                    } else {
+                        this.initSpeechRecognition();
+                    }
+                },
+
+                initSpeechRecognition() {
                     try {
                         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
                         this.speechRecognition = new SpeechRecognition();
 
+                        // 配置语音识别
                         this.speechRecognition.lang = 'zh-CN';
                         this.speechRecognition.continuous = false;
-                        this.speechRecognition.interimResults = false;
+                        this.speechRecognition.interimResults = true; // 启用中间结果
+                        this.speechRecognition.maxAlternatives = 1;
 
+                        // 开始识别事件
                         this.speechRecognition.onstart = () => {
                             this.isRecording = true;
-                            this.showNotification('开始语音识别...', 'info');
+                            this.showNotification('🎤 开始语音识别，请说话...', 'info');
+                            console.log('🎤 语音识别已启动');
                         };
 
+                        // 识别结果事件
                         this.speechRecognition.onresult = (event) => {
-                            const transcript = event.results[0][0].transcript;
-                            this.currentMessage += transcript;
-                            this.showNotification('语音识别完成', 'success');
+                            let transcript = '';
+                            let isFinal = false;
+
+                            // 处理识别结果
+                            for (let i = event.resultIndex; i < event.results.length; i++) {
+                                const result = event.results[i];
+                                transcript += result[0].transcript;
+                                if (result.isFinal) {
+                                    isFinal = true;
+                                }
+                            }
+
+                            if (isFinal) {
+                                // 最终结果
+                                if (transcript.trim()) {
+                                    this.currentMessage += transcript;
+                                    this.showNotification(`✅ 识别完成: "${transcript}"`, 'success');
+                                    console.log('✅ 语音识别结果:', transcript);
+                                } else {
+                                    this.showNotification('⚠️ 未识别到有效语音，请重试', 'warning');
+                                }
+                            } else {
+                                // 中间结果（实时显示）
+                                console.log('🔄 实时识别:', transcript);
+                            }
                         };
 
+                        // 错误处理
                         this.speechRecognition.onerror = (event) => {
                             console.error('语音识别错误:', event.error);
-                            this.showNotification('语音识别失败: ' + event.error, 'error');
+                            this.isRecording = false;
+
+                            let errorMessage = '语音识别失败';
+                            switch (event.error) {
+                                case 'no-speech':
+                                    errorMessage = '未检测到语音，请重试';
+                                    break;
+                                case 'audio-capture':
+                                    errorMessage = '无法访问麦克风，请检查设备';
+                                    break;
+                                case 'not-allowed':
+                                    errorMessage = '麦克风权限被拒绝，请允许访问';
+                                    break;
+                                case 'network':
+                                    errorMessage = '网络错误，请检查网络连接';
+                                    break;
+                                case 'service-not-allowed':
+                                    errorMessage = '语音识别服务不可用';
+                                    break;
+                                default:
+                                    errorMessage = `语音识别错误: ${event.error}`;
+                            }
+
+                            this.showNotification(errorMessage, 'error');
                         };
 
+                        // 识别结束事件
                         this.speechRecognition.onend = () => {
                             this.isRecording = false;
+                            console.log('🔚 语音识别已结束');
                         };
 
+                        // 启动识别
                         this.speechRecognition.start();
+
                     } catch (error) {
-                        console.error('启动语音识别失败:', error);
-                        this.showNotification('启动语音识别失败', 'error');
+                        console.error('初始化语音识别失败:', error);
+                        this.showNotification('语音识别初始化失败: ' + error.message, 'error');
+                        this.isRecording = false;
                     }
                 },
 
@@ -2698,7 +2824,57 @@
                     if (this.speechRecognition) {
                         this.speechRecognition.stop();
                         this.isRecording = false;
+                        this.showNotification('🛑 语音识别已停止', 'info');
+                        console.log('🛑 手动停止语音识别');
                     }
+                },
+
+                // 语音命令处理
+                processVoiceCommand(transcript) {
+                    const command = transcript.toLowerCase().trim();
+
+                    // 语音命令映射
+                    const voiceCommands = {
+                        '发送': () => this.sendMessage(),
+                        '清空': () => this.clearChat(),
+                        '全屏': () => this.toggleFullscreen(),
+                        '设置': () => this.toggleAdvancedPanel(),
+                        '数学模式': () => this.toggleMathInput(),
+                        '保存会话': () => this.saveCurrentSession(),
+                        '导出对话': () => this.exportChat()
+                    };
+
+                    // 检查是否为语音命令
+                    for (const [cmd, action] of Object.entries(voiceCommands)) {
+                        if (command.includes(cmd)) {
+                            action();
+                            this.showNotification(`✨ 执行语音命令: ${cmd}`, 'success');
+                            return true;
+                        }
+                    }
+
+                    return false;
+                },
+
+                // 语音输入增强功能
+                enhanceVoiceInput() {
+                    // 添加语音输入快捷键
+                    document.addEventListener('keydown', (event) => {
+                        // Ctrl + Shift + V 启动语音输入
+                        if (event.ctrlKey && event.shiftKey && event.key === 'V') {
+                            event.preventDefault();
+                            this.toggleVoiceInput();
+                        }
+
+                        // 空格键停止录音（当正在录音时）
+                        if (event.code === 'Space' && this.isRecording) {
+                            event.preventDefault();
+                            this.stopVoiceRecognition();
+                        }
+                    });
+
+                    // 添加语音输入提示
+                    this.showNotification('💡 语音输入提示: Ctrl+Shift+V 快速启动，空格键停止录音', 'info');
                 },
 
                 // 数学输入功能
@@ -2971,6 +3147,7 @@
                         console.warn('AI系统初始化失败:', error);
                     });
                     this.monitorMathJax();
+                    this.enhanceVoiceInput(); // 初始化语音输入增强功能
                 }, 100);
 
                 console.log('🤖 AI学习助手已启动');
