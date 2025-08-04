@@ -35,14 +35,6 @@
                             el.style.display = 'block';
                             el.style.visibility = 'visible';
                         });
-                        // 渲染聊天消息中的公式
-                        document.querySelectorAll('.message-content').forEach(el => {
-                            if (el.innerHTML.includes('$$') || el.innerHTML.includes('\\[')) {
-                                MathJax.typesetPromise([el]).catch(error => {
-                                    console.error('聊天消息公式渲染失败:', error);
-                                });
-                            }
-                        });
                     }).catch((error) => {
                         console.error('MathJax加载失败，使用备用方案');
                         // 如果MathJax完全失败，显示原始LaTeX代码
@@ -997,7 +989,7 @@
                 </div>
 
                 <div class="chat-messages" ref="chatMessages">
-                    <div v-for="message in messages" :key="message.id" :class="['message', message.sender]" :data-message-id="message.id">
+                    <div v-for="message in messages" :key="message.id" :class="['message', message.sender]">
                         <div class="message-content" v-html="message.content"></div>
                         <div class="message-time">{{ formatTime(message.timestamp) }}</div>
                     </div>
@@ -1530,11 +1522,6 @@
                         } finally {
                             this.isTyping = false;
                             this.scrollToBottom();
-                            
-                            // 渲染新消息中的数学公式
-                            this.$nextTick(() => {
-                                this.renderMathInLatestMessage();
-                            });
                         }
                     }, 1500 + Math.random() * 2000);
                 },
@@ -1682,33 +1669,6 @@
                         }
                     ];
                     this.showNotification('对话记录已清空', 'info');
-                },
-
-                // 渲染数学公式
-                renderMathInLatestMessage() {
-                    if (window.MathJax && window.MathJax.typesetPromise) {
-                        // 获取最新的AI消息
-                        const latestMessage = this.messages[this.messages.length - 1];
-                        if (latestMessage && latestMessage.sender === 'ai') {
-                            // 查找该消息的DOM元素
-                            const messageElement = document.querySelector(`[data-message-id="${latestMessage.id}"]`);
-                            if (messageElement) {
-                                const contentElement = messageElement.querySelector('.message-content');
-                                if (contentElement && (contentElement.innerHTML.includes('$$') || contentElement.innerHTML.includes('\\['))) {
-                                    MathJax.typesetPromise([contentElement]).then(() => {
-                                        console.log('✅ 聊天消息数学公式渲染完成');
-                                    }).catch((error) => {
-                                        console.error('❌ 聊天消息数学公式渲染失败:', error);
-                                    });
-                                }
-                            }
-                        }
-                    } else {
-                        // 如果MathJax未加载，延迟重试
-                        setTimeout(() => {
-                            this.renderMathInLatestMessage();
-                        }, 500);
-                    }
                 },
 
                 // 键盘事件处理
