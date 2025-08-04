@@ -728,9 +728,12 @@
             border-left: 4px solid var(--accent-color);
             text-align: center;
             font-size: 1.2em;
-            font-family: 'Times New Roman', 'STIX Two Math', 'Latin Modern Math', serif;
+            font-family: 'Times New Roman', 'STIX Two Math', 'Latin Modern Math', 'Cambria Math', 'Lucida Bright Math', 'DejaVu Math', serif;
             overflow-x: auto;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            /* 确保Unicode字符正确显示 */
+            unicode-bidi: embed;
+            direction: ltr;
         }
 
         /* 分数样式 */
@@ -805,6 +808,26 @@
             padding: 10px;
             background: rgba(255, 255, 255, 0.05);
             border-radius: 8px;
+        }
+
+        /* 特殊数学符号样式 */
+        .math-symbol {
+            font-family: 'Segoe UI Symbol', 'Symbol', 'Times New Roman', serif;
+            font-size: 1.1em;
+        }
+
+        /* 积分符号特殊处理 */
+        .integral {
+            font-size: 1.4em;
+            vertical-align: middle;
+            margin: 0 2px;
+        }
+
+        /* 求和符号特殊处理 */
+        .summation {
+            font-size: 1.3em;
+            vertical-align: middle;
+            margin: 0 2px;
         }
 
         /* 快速建议 */
@@ -1612,15 +1635,7 @@
             line-height: 1.5;
         }
 
-        /* 确保MathJax公式正确显示 */
-        .MathJax {
-            font-size: 1.1em !important;
-            color: var(--text-primary) !important;
-        }
 
-        .MathJax_Display {
-            margin: 15px 0 !important;
-        }
 
         /* 响应式设计 */
         @media (max-width: 768px) {
@@ -1628,10 +1643,7 @@
                 padding: 15px;
                 margin: 10px 0;
             }
-            
-            .MathJax {
-                font-size: 0.9em !important;
-            }
+
         }
     </style>
 </head>
@@ -1936,7 +1948,7 @@
                                     <div class="step-description">沿流线积分欧拉方程，将矢量方程转化为标量方程。</div>
                                     <div class="math-formula">
                                         <div class="formula-label">积分形式</div>
-                                        $$\int [(\vec{v} \cdot \nabla)\vec{v}] \cdot d\vec{s} = \int [-\frac{1}{\rho}\nabla p + \vec{g}] \cdot d\vec{s}$$
+                                        ∫[(v⃗ · ∇)v⃗] · ds⃗ = ∫[-<span class="fraction"><span class="numerator">1</span><span class="denominator">ρ</span></span>∇p + g⃗] · ds⃗
                                     </div>
                                 </div>
                                 
@@ -1946,7 +1958,7 @@
                                     <div class="step-description">使用向量分析中的恒等式，将对流项转化为梯度形式。</div>
                                     <div class="math-formula">
                                         <div class="formula-label">向量恒等式</div>
-                                        $$(\vec{v} \cdot \nabla)\vec{v} = \nabla(\frac{v^2}{2}) - \vec{v} \times (\nabla \times \vec{v})$$
+                                        (v⃗ · ∇)v⃗ = ∇(<span class="fraction"><span class="numerator">v²</span><span class="denominator">2</span></span>) - v⃗ × (∇ × v⃗)
                                     </div>
                                 </div>
                                 
@@ -3899,12 +3911,20 @@
                     document.querySelectorAll('.math-formula').forEach(el => {
                         let content = el.innerHTML;
 
-                        // 处理常见的LaTeX符号
+                        // 处理常见的LaTeX符号和特殊字符
                         content = content
                             // 分数
                             .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<span class="fraction"><span class="numerator">$1</span><span class="denominator">$2</span></span>')
                             // 平方根
                             .replace(/\\sqrt\{([^}]+)\}/g, '<span class="sqrt">√<span class="sqrt-content">$1</span></span>')
+                            // 积分符号
+                            .replace(/\\int/g, '<span class="integral math-symbol">∫</span>')
+                            .replace(/\\oint/g, '<span class="integral math-symbol">∮</span>')
+                            .replace(/\\iint/g, '<span class="integral math-symbol">∬</span>')
+                            .replace(/\\iiint/g, '<span class="integral math-symbol">∭</span>')
+                            // 求和符号
+                            .replace(/\\sum/g, '<span class="summation math-symbol">∑</span>')
+                            .replace(/\\prod/g, '<span class="summation math-symbol">∏</span>')
                             // 希腊字母
                             .replace(/\\rho/g, '<span class="greek">ρ</span>')
                             .replace(/\\mu/g, '<span class="greek">μ</span>')
@@ -3941,6 +3961,21 @@
                             .replace(/\\times/g, '×')
                             .replace(/\\div/g, '÷')
                             .replace(/\\pm/g, '±')
+                            .replace(/\\mp/g, '∓')
+                            .replace(/\\in/g, '∈')
+                            .replace(/\\notin/g, '∉')
+                            .replace(/\\subset/g, '⊂')
+                            .replace(/\\supset/g, '⊃')
+                            .replace(/\\cap/g, '∩')
+                            .replace(/\\cup/g, '∪')
+                            .replace(/\\forall/g, '∀')
+                            .replace(/\\exists/g, '∃')
+                            .replace(/\\rightarrow/g, '→')
+                            .replace(/\\leftarrow/g, '←')
+                            .replace(/\\leftrightarrow/g, '↔')
+                            .replace(/\\Rightarrow/g, '⇒')
+                            .replace(/\\Leftarrow/g, '⇐')
+                            .replace(/\\Leftrightarrow/g, '⇔')
                             // 向量
                             .replace(/\\vec\{([^}]+)\}/g, '<span class="vector">$1⃗</span>')
                             // 上下标
@@ -3948,6 +3983,9 @@
                             .replace(/_(\d+)/g, '<sub>$1</sub>')
                             .replace(/\^{([^}]+)}/g, '<sup>$1</sup>')
                             .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
+                            // 清理方框符号（可能是编码问题）
+                            .replace(/□/g, '')
+                            .replace(/\uFFFD/g, '') // 替换字符
                             // 移除$$符号
                             .replace(/\$\$/g, '');
 
