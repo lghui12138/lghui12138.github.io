@@ -155,13 +155,13 @@
                 delete window.MathJax.startup;
             }
 
-            // 设置3秒超时
+            // 设置5秒超时，给更多时间加载
             mathJaxTimeout = setTimeout(() => {
                 if (!mathJaxLoaded) {
                     console.warn('⏰ MathJax加载超时，启用备用显示方案');
                     enableMathFallback();
                 }
-            }, 3000);
+            }, 5000);
 
             // 尝试加载MathJax
             const script = document.createElement('script');
@@ -2278,15 +2278,17 @@
     <!-- Vue.js 应用脚本 -->
     <script>
         // 配置Vue以减少开发模式警告
-        if (typeof Vue !== 'undefined' && Vue.config) {
-            Vue.config.warnHandler = function (msg, vm, trace) {
-                // 过滤掉模板编译警告
-                if (msg.includes('Tags with side effect')) {
-                    return; // 忽略这个特定警告
-                }
-                console.warn('[Vue warn]: ' + msg + trace);
-            };
-        }
+        const originalWarn = console.warn;
+        console.warn = function(message, ...args) {
+            // 过滤掉Vue模板编译警告
+            if (typeof message === 'string' && message.includes('Tags with side effect')) {
+                return; // 忽略这个特定警告
+            }
+            if (typeof message === 'string' && message.includes('Template compilation error')) {
+                return; // 忽略模板编译错误
+            }
+            originalWarn.apply(console, [message, ...args]);
+        };
 
         const { createApp } = Vue;
 
@@ -3668,12 +3670,25 @@
                     try {
                         // 使用智能模型选择器
                         if (window.smartModelSelectorInstance) {
-                            const response = await window.smartModelSelectorInstance.generateResponse({
-                                message: userMessage,
-                                context: this.messages.slice(-5), // 最近5条消息作为上下文
-                                topic: this.currentTopic,
-                                preferences: this.userPreferences
+                            // 使用正确的方法名 callAI
+                            const response = await window.smartModelSelectorInstance.callAI(userMessage, {
+                                strategy: 'balanced',
+                                features: ['chat', 'reasoning'],
+                                maxTokens: 1000,
+                                temperature: 0.7,
+                                systemPrompt: `你是一个专业的流体力学教师，请用简洁明了的方式回答学生问题。回答要包含：
+1. 核心概念解释
+2. 必要的公式（如果适用）
+3. 实际应用举例
+4. 学习建议
+
+请用HTML格式回复，使用<strong>、<br>等标签，让内容易读易懂。`
                             });
+
+                            if (response && response.content) {
+                                console.log('✅ AI回复生成成功:', response.model);
+                                return response.content + '<br><br><small style="color: #888;">🤖 由智能AI提供</small>';
+                            }
 
                             return response;
                         } else {
