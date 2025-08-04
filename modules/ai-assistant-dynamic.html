@@ -770,28 +770,49 @@
             margin-left: 2px;
         }
 
-        /* 向量样式 - 修复箭头对齐 */
+        /* 向量样式 - 精确箭头对齐 */
         .vector {
             position: relative;
             font-weight: bold;
             display: inline-block;
+            margin: 0 1px; /* 给箭头留出空间 */
         }
 
         .vector::after {
             content: '→';
             position: absolute;
-            top: -0.3em;
+            top: -0.4em; /* 调整垂直位置 */
             left: 50%;
             transform: translateX(-50%);
-            font-size: 0.8em;
+            font-size: 0.7em; /* 稍微缩小箭头 */
             font-weight: normal;
+            line-height: 1;
+            z-index: 1;
         }
 
-        /* 备用向量样式（使用Unicode组合字符） */
-        .vector-alt {
-            position: relative;
-            font-weight: bold;
+        /* 单字母向量优化 */
+        .vector.single-letter {
+            min-width: 0.8em;
+            text-align: center;
+        }
+
+        .vector.single-letter::after {
+            top: -0.35em;
+            font-size: 0.65em;
+        }
+
+        /* 多字母向量优化 */
+        .vector.multi-letter::after {
+            top: -0.45em;
+            font-size: 0.75em;
+        }
+
+        /* 备用向量样式（使用上划线） */
+        .vector-overline {
             text-decoration: overline;
+            text-decoration-thickness: 1px;
+            text-underline-offset: -0.2em;
+            font-weight: bold;
         }
 
         /* 上标下标优化 */
@@ -1966,7 +1987,7 @@
                                     <div class="step-description">沿流线积分欧拉方程，将矢量方程转化为标量方程。</div>
                                     <div class="math-formula">
                                         <div class="formula-label">积分形式</div>
-                                        ∫[(v⃗ · ∇)v⃗] · ds⃗ = ∫[-<span class="fraction"><span class="numerator">1</span><span class="denominator">ρ</span></span>∇p + g⃗] · ds⃗
+                                        ∫[(<span class="vector single-letter">v</span> · ∇)<span class="vector single-letter">v</span>] · d<span class="vector single-letter">s</span> = ∫[-<span class="fraction"><span class="numerator">1</span><span class="denominator">ρ</span></span>∇p + <span class="vector single-letter">g</span>] · d<span class="vector single-letter">s</span>
                                     </div>
                                 </div>
                                 
@@ -1976,7 +1997,7 @@
                                     <div class="step-description">使用向量分析中的恒等式，将对流项转化为梯度形式。</div>
                                     <div class="math-formula">
                                         <div class="formula-label">向量恒等式</div>
-                                        (v⃗ · ∇)v⃗ = ∇(<span class="fraction"><span class="numerator">v²</span><span class="denominator">2</span></span>) - v⃗ × (∇ × v⃗)
+                                        (<span class="vector single-letter">v</span> · ∇)<span class="vector single-letter">v</span> = ∇(<span class="fraction"><span class="numerator">v²</span><span class="denominator">2</span></span>) - <span class="vector single-letter">v</span> × (∇ × <span class="vector single-letter">v</span>)
                                     </div>
                                 </div>
                                 
@@ -2614,19 +2635,17 @@
                                 });
                             }
                             
+                            // 智能模型选择
+                            const modelConfig = this.selectOptimalModel(question);
+
                             // 调用智能AI
                             const result = await window.smartModelSelectorInstance.callAI(question, {
-                                strategy: 'balanced',
-                                features: ['chat', 'reasoning'],
-                                maxTokens: 1000,
-                                temperature: 0.7,
-                                systemPrompt: `你是一个专业的流体力学教师，请用简洁明了的方式回答学生问题。回答要包含：
-1. 核心概念解释
-2. 必要的公式（如果适用）
-3. 实际应用举例
-4. 学习建议
-
-请用HTML格式回复，使用<strong>、<br>等标签，让内容易读易懂。`
+                                strategy: modelConfig.strategy,
+                                features: modelConfig.features,
+                                maxTokens: modelConfig.maxTokens,
+                                temperature: modelConfig.temperature,
+                                preferredModel: modelConfig.preferredModel,
+                                systemPrompt: modelConfig.systemPrompt
                             });
                             
                             console.log('✅ AI回复成功:', result.model);
@@ -3708,6 +3727,78 @@
                     return topicMap[currentTopic] || [];
                 },
 
+                // 智能模型选择器
+                selectOptimalModel(question) {
+                    const lowerQuestion = question.toLowerCase();
+
+                    // 检测是否涉及数学推导
+                    const derivationKeywords = [
+                        '推导', '证明', '求解', '计算', '解析', '分析',
+                        '如何得到', '怎么推出', '为什么等于', '步骤',
+                        '公式推导', '数学推导', '理论推导',
+                        'derive', 'proof', 'calculate', 'solve',
+                        '∂', '∇', '∫', '积分', '微分', '偏导数',
+                        '欧拉方程', '纳维-斯托克斯', '伯努利',
+                        '连续性方程', '动量方程', '能量方程'
+                    ];
+
+                    // 检测是否涉及复杂数学
+                    const complexMathKeywords = [
+                        '向量', '梯度', '散度', '旋度', '拉普拉斯',
+                        '雷诺数', '马赫数', '普朗特数',
+                        '湍流', '层流', '边界层',
+                        '有限元', '数值模拟', 'CFD'
+                    ];
+
+                    const hasDerivation = derivationKeywords.some(keyword =>
+                        lowerQuestion.includes(keyword)
+                    );
+
+                    const hasComplexMath = complexMathKeywords.some(keyword =>
+                        lowerQuestion.includes(keyword)
+                    );
+
+                    if (hasDerivation || hasComplexMath) {
+                        // 使用deepseek-r1进行数学推导
+                        return {
+                            strategy: 'reasoning',
+                            features: ['reasoning', 'math', 'derivation'],
+                            maxTokens: 2000,
+                            temperature: 0.3,
+                            preferredModel: 'deepseek-r1',
+                            systemPrompt: `你是一位资深的流体力学教授，擅长数学推导和理论分析。请详细回答学生的问题，包括：
+
+1. **理论基础**：相关的基本原理和假设
+2. **数学推导**：完整的推导过程，每一步都要清晰
+3. **公式解释**：每个符号和项的物理意义
+4. **结果分析**：推导结果的物理意义和应用
+
+请使用LaTeX语法表示数学公式，用$$包围显示公式，用$包围内联公式。
+例如：$$\\frac{\\partial \\vec{v}}{\\partial t} + (\\vec{v} \\cdot \\nabla)\\vec{v} = -\\frac{1}{\\rho}\\nabla p + \\vec{g}$$
+
+确保推导过程严谨、逻辑清晰，便于学生理解。`
+                        };
+                    } else {
+                        // 使用通用模型进行概念解释
+                        return {
+                            strategy: 'balanced',
+                            features: ['chat', 'explanation'],
+                            maxTokens: 1000,
+                            temperature: 0.7,
+                            preferredModel: 'auto',
+                            systemPrompt: `你是一个专业的流体力学教师，请用简洁明了的方式回答学生问题。回答要包含：
+
+1. **核心概念解释**：用通俗易懂的语言解释
+2. **必要的公式**：如果适用，用LaTeX语法表示
+3. **实际应用举例**：联系实际生活或工程应用
+4. **学习建议**：给出进一步学习的方向
+
+请使用LaTeX语法表示数学公式，用$$包围显示公式，用$包围内联公式。
+请用HTML格式回复，使用<strong>、<br>等标签，让内容易读易懂。`
+                        };
+                    }
+                },
+
                 // 智能回复生成
                 async generateAIResponse(userMessage) {
                     this.isTyping = true;
@@ -4028,10 +4119,18 @@
                             .replace(/\\Rightarrow/g, '⇒')
                             .replace(/\\Leftarrow/g, '⇐')
                             .replace(/\\Leftrightarrow/g, '⇔')
-                            // 向量 - 使用CSS定位的箭头
-                            .replace(/\\vec\{([^}]+)\}/g, '<span class="vector">$1</span>')
+                            // 向量 - 智能样式选择
+                            .replace(/\\vec\{([^}]+)\}/g, (match, content) => {
+                                const className = content.length === 1 ? 'vector single-letter' : 'vector multi-letter';
+                                return `<span class="${className}">${content}</span>`;
+                            })
                             // 处理已有的向量符号
-                            .replace(/([a-zA-Z])⃗/g, '<span class="vector">$1</span>')
+                            .replace(/([a-zA-Z]+)⃗/g, (match, content) => {
+                                const className = content.length === 1 ? 'vector single-letter' : 'vector multi-letter';
+                                return `<span class="${className}">${content}</span>`;
+                            })
+                            // 处理单独的向量符号
+                            .replace(/([a-zA-Z])\s*→/g, '<span class="vector single-letter">$1</span>')
                             // 上下标
                             .replace(/\^(\d+)/g, '<sup>$1</sup>')
                             .replace(/_(\d+)/g, '<sub>$1</sub>')
