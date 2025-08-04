@@ -815,6 +815,27 @@
             font-weight: bold;
         }
 
+        /* 完美向量对齐样式 */
+        .vector-perfect {
+            position: relative;
+            font-weight: bold;
+            display: inline-block;
+            margin: 0 2px;
+        }
+
+        .vector-perfect::after {
+            content: '→';
+            position: absolute;
+            top: -0.4em;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7em;
+            font-weight: normal;
+            line-height: 1;
+            color: currentColor;
+            z-index: 1;
+        }
+
         /* 上标下标优化 */
         sup, sub {
             font-size: 0.75em;
@@ -4029,20 +4050,9 @@
 
                     console.log('🔢 处理LaTeX公式:', content.substring(0, 100) + '...');
 
-                    // 首先处理$$包围的显示公式
-                    content = content.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
-                        console.log('📐 处理显示公式:', formula);
-                        return `<div class="math-display">${formula}</div>`;
-                    });
-
-                    // 处理$包围的内联公式
-                    content = content.replace(/\$([^$\n]+)\$/g, (match, formula) => {
-                        console.log('📏 处理内联公式:', formula);
-                        return `<span class="math-inline">${formula}</span>`;
-                    });
-
-                    // 处理常见的LaTeX符号和特殊字符
-                    content = content
+                    // 首先处理LaTeX符号转换
+                    const processLatexSymbols = (formula) => {
+                        return formula
                             // 分数
                             .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<span class="fraction"><span class="numerator">$1</span><span class="denominator">$2</span></span>')
                             // 平方根
@@ -4051,34 +4061,30 @@
                             .replace(/\\int/g, '<span class="integral math-symbol">∫</span>')
                             .replace(/\\oint/g, '<span class="integral math-symbol">∮</span>')
                             .replace(/\\iint/g, '<span class="integral math-symbol">∬</span>')
-                            .replace(/\\iiint/g, '<span class="integral math-symbol">∭</span>')
-                            // 求和符号
-                            .replace(/\\sum/g, '<span class="summation math-symbol">∑</span>')
-                            .replace(/\\prod/g, '<span class="summation math-symbol">∏</span>')
                             // 希腊字母
-                            .replace(/\\rho/g, '<span class="greek">ρ</span>')
-                            .replace(/\\mu/g, '<span class="greek">μ</span>')
-                            .replace(/\\nu/g, '<span class="greek">ν</span>')
-                            .replace(/\\alpha/g, '<span class="greek">α</span>')
-                            .replace(/\\beta/g, '<span class="greek">β</span>')
-                            .replace(/\\gamma/g, '<span class="greek">γ</span>')
-                            .replace(/\\delta/g, '<span class="greek">δ</span>')
-                            .replace(/\\epsilon/g, '<span class="greek">ε</span>')
-                            .replace(/\\theta/g, '<span class="greek">θ</span>')
-                            .replace(/\\lambda/g, '<span class="greek">λ</span>')
-                            .replace(/\\pi/g, '<span class="greek">π</span>')
-                            .replace(/\\sigma/g, '<span class="greek">σ</span>')
-                            .replace(/\\tau/g, '<span class="greek">τ</span>')
-                            .replace(/\\phi/g, '<span class="greek">φ</span>')
-                            .replace(/\\omega/g, '<span class="greek">ω</span>')
-                            .replace(/\\Gamma/g, '<span class="greek">Γ</span>')
-                            .replace(/\\Delta/g, '<span class="greek">Δ</span>')
-                            .replace(/\\Theta/g, '<span class="greek">Θ</span>')
-                            .replace(/\\Lambda/g, '<span class="greek">Λ</span>')
-                            .replace(/\\Pi/g, '<span class="greek">Π</span>')
-                            .replace(/\\Sigma/g, '<span class="greek">Σ</span>')
-                            .replace(/\\Phi/g, '<span class="greek">Φ</span>')
-                            .replace(/\\Omega/g, '<span class="greek">Ω</span>')
+                            .replace(/\\rho/g, 'ρ')
+                            .replace(/\\mu/g, 'μ')
+                            .replace(/\\nu/g, 'ν')
+                            .replace(/\\alpha/g, 'α')
+                            .replace(/\\beta/g, 'β')
+                            .replace(/\\gamma/g, 'γ')
+                            .replace(/\\delta/g, 'δ')
+                            .replace(/\\epsilon/g, 'ε')
+                            .replace(/\\theta/g, 'θ')
+                            .replace(/\\lambda/g, 'λ')
+                            .replace(/\\pi/g, 'π')
+                            .replace(/\\sigma/g, 'σ')
+                            .replace(/\\tau/g, 'τ')
+                            .replace(/\\phi/g, 'φ')
+                            .replace(/\\omega/g, 'ω')
+                            .replace(/\\Gamma/g, 'Γ')
+                            .replace(/\\Delta/g, 'Δ')
+                            .replace(/\\Theta/g, 'Θ')
+                            .replace(/\\Lambda/g, 'Λ')
+                            .replace(/\\Pi/g, 'Π')
+                            .replace(/\\Sigma/g, 'Σ')
+                            .replace(/\\Phi/g, 'Φ')
+                            .replace(/\\Omega/g, 'Ω')
                             // 数学符号
                             .replace(/\\nabla/g, '∇')
                             .replace(/\\partial/g, '∂')
@@ -4090,6 +4096,31 @@
                             .replace(/\\cdot/g, '·')
                             .replace(/\\times/g, '×')
                             .replace(/\\div/g, '÷')
+                            .replace(/\\pm/g, '±')
+                            // 向量 - 完美对齐
+                            .replace(/\\vec\{([^}]+)\}/g, '<span class="vector-perfect">$1</span>')
+                            // 上下标
+                            .replace(/\^(\w+)/g, '<sup>$1</sup>')
+                            .replace(/_(\w+)/g, '<sub>$1</sub>')
+                            .replace(/\^{([^}]+)}/g, '<sup>$1</sup>')
+                            .replace(/_{([^}]+)}/g, '<sub>$1</sub>');
+                    };
+
+                    // 处理$$包围的显示公式
+                    content = content.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
+                        console.log('📐 处理显示公式:', formula);
+                        const processedFormula = processLatexSymbols(formula);
+                        return `<div class="math-display">${processedFormula}</div>`;
+                    });
+
+                    // 处理$包围的内联公式
+                    content = content.replace(/\$([^$\n]+)\$/g, (match, formula) => {
+                        console.log('📏 处理内联公式:', formula);
+                        const processedFormula = processLatexSymbols(formula);
+                        return `<span class="math-inline">${processedFormula}</span>`;
+                    });
+
+                    // LaTeX符号已在上面的processLatexSymbols函数中处理，这里不需要重复处理
                             .replace(/\\pm/g, '±')
                             .replace(/\\mp/g, '∓')
                             .replace(/\\in/g, '∈')

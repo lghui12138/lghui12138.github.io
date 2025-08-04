@@ -420,8 +420,35 @@ window.SmartModelSelector = (function() {
          * @param {Object} options 调用选项
          */
         callAI: async function(message, options = {}) {
-            const model = await this.selectBestModel(message, options);
-            
+            let model;
+
+            // 如果指定了preferredModel，优先使用指定的模型
+            if (options.preferredModel) {
+                console.log(`🎯 强制使用指定模型: ${options.preferredModel}`);
+
+                // 查找指定的模型
+                if (options.preferredModel === 'deepseek-r1') {
+                    // 特殊处理deepseek-r1
+                    model = {
+                        name: "deepseek-ai/DeepSeek-R1",
+                        category: "premium",
+                        complexity: ["complex"],
+                        features: ["reasoning", "research", "deep-analysis"],
+                        priority: 1
+                    };
+                    console.log(`✅ 使用deepseek-r1模型: ${model.name}`);
+                } else if (availableModels.has(options.preferredModel)) {
+                    model = availableModels.get(options.preferredModel);
+                    console.log(`✅ 使用指定模型: ${model.name}`);
+                } else {
+                    console.warn(`⚠️ 指定模型 ${options.preferredModel} 不可用，回退到智能选择`);
+                    model = await this.selectBestModel(message, options);
+                }
+            } else {
+                // 使用智能选择
+                model = await this.selectBestModel(message, options);
+            }
+
             const requestBody = {
                 model: model.name,
                 messages: options.messages || [
