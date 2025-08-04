@@ -72,7 +72,7 @@
     <script src="../js/core/config.js" onerror="console.warn('config.js加载失败')"></script>
     <script src="../js/core/smart-model-selector.js" onerror="console.warn('smart-model-selector.js加载失败')"></script>
     
-    <!-- MathJax配置 - 优化加载速度 -->
+    <!-- MathJax配置 - 简化配置避免错误 -->
     <script>
         window.MathJax = {
             tex: {
@@ -82,45 +82,24 @@
                 processEnvironments: true
             },
             chtml: {
-                // 禁用网络字体，使用系统字体
-                fontURL: null,
                 scale: 1.0,
-                minScale: 0.5,
-                matchFontHeight: false
-            },
-            svg: {
-                fontCache: 'local'
+                minScale: 0.5
             },
             options: {
                 skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-                renderActions: {
-                    addMenu: [0, '', '']
-                },
-                // 快速渲染模式
-                enableAssistiveMml: false,
-                enableExplorer: false
+                enableAssistiveMml: false
             },
             startup: {
-                // 设置超时时间
-                timeout: 3000,
                 pageReady: () => {
-                    // 设置快速超时
-                    const timeoutPromise = new Promise((_, reject) => {
-                        setTimeout(() => reject(new Error('MathJax加载超时')), 3000);
-                    });
-
-                    return Promise.race([
-                        MathJax.startup.defaultPageReady(),
-                        timeoutPromise
-                    ]).then(() => {
-                        console.log('MathJax渲染完成');
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('✅ MathJax渲染完成');
                         document.querySelectorAll('.math-formula').forEach(el => {
                             el.style.display = 'block';
                             el.style.visibility = 'visible';
                         });
                     }).catch((error) => {
-                        console.warn('MathJax加载超时或失败，使用备用方案:', error.message);
-                        // 使用CSS样式的数学公式显示
+                        console.warn('⚠️ MathJax加载失败，使用备用方案:', error.message);
+                        // 启用CSS备用方案
                         document.querySelectorAll('.math-formula').forEach(el => {
                             const mathContent = el.innerHTML;
                             el.innerHTML = `<div class="math-fallback">${mathContent}</div>`;
@@ -130,18 +109,12 @@
                     });
                 },
                 ready: () => {
-                    console.log('MathJax准备就绪');
-                    try {
-                        MathJax.startup.defaultReady();
-                    } catch (error) {
-                        console.warn('MathJax初始化警告:', error);
-                    }
+                    console.log('🔧 MathJax准备就绪');
+                    MathJax.startup.defaultReady();
                 }
             },
             loader: {
-                load: ['[tex]/ams'],
-                // 减少加载的扩展
-                timeout: 3000
+                load: ['[tex]/ams']
             }
         };
 
@@ -176,10 +149,16 @@
         let mathJaxTimeout = null;
 
         function loadMathJaxWithTimeout() {
+            // 清理可能的旧配置
+            if (window.MathJax && window.MathJax.startup) {
+                console.log('🧹 清理旧的MathJax配置');
+                delete window.MathJax.startup;
+            }
+
             // 设置3秒超时
             mathJaxTimeout = setTimeout(() => {
                 if (!mathJaxLoaded) {
-                    console.warn('MathJax加载超时，启用备用显示方案');
+                    console.warn('⏰ MathJax加载超时，启用备用显示方案');
                     enableMathFallback();
                 }
             }, 3000);
@@ -250,8 +229,9 @@
 
         // 延迟加载MathJax，不阻塞页面
         setTimeout(() => {
+            console.log('🔄 开始加载MathJax...');
             loadMathJaxWithTimeout();
-        }, 2000);
+        }, 1000); // 减少延迟时间
     </script>
 
     <!-- 数学公式CSS样式 -->
@@ -2484,6 +2464,13 @@
                     };
 
                     this.messages.push(userMessage);
+
+                    // 更新统计
+                    this.sessionStats.questionsAsked++;
+                    this.sessionStats.lastActivity = new Date();
+
+                    // 分析话题
+                    this.analyzeUserQuestion(this.currentMessage);
                     const messageText = this.currentMessage;
                     this.currentMessage = '';
                     this.scrollToBottom();
@@ -2907,6 +2894,105 @@
 
                     // 添加语音输入提示
                     this.showNotification('💡 语音输入提示: Ctrl+Shift+V 快速启动，空格键停止录音', 'info');
+                },
+
+                // 智能话题分析
+                analyzeUserQuestion(question) {
+                    const topics = {
+                        '伯努利': '伯努利方程',
+                        '雷诺': '雷诺数',
+                        '层流': '流动状态',
+                        '湍流': '流动状态',
+                        '粘性': '流体性质',
+                        '边界层': '边界层理论',
+                        '涡量': '涡量理论',
+                        '连续性': '连续性方程',
+                        'NS方程': 'Navier-Stokes方程',
+                        '压力': '压力分析',
+                        '速度': '速度分布',
+                        '阻力': '阻力分析',
+                        '升力': '升力理论'
+                    };
+
+                    for (const [keyword, topic] of Object.entries(topics)) {
+                        if (question.includes(keyword)) {
+                            this.currentTopic = topic;
+                            this.updateLearningPath(topic);
+                            break;
+                        }
+                    }
+                },
+
+                // 更新学习路径
+                updateLearningPath(topic) {
+                    if (!this.learningPath.includes(topic)) {
+                        this.learningPath.push(topic);
+
+                        // 推荐相关话题
+                        const recommendations = this.getTopicRecommendations(topic);
+                        if (recommendations.length > 0) {
+                            this.showNotification(`💡 相关话题推荐: ${recommendations.join(', ')}`, 'info');
+                        }
+                    }
+                },
+
+                // 获取话题推荐
+                getTopicRecommendations(currentTopic) {
+                    const topicMap = {
+                        '伯努利方程': ['连续性方程', '压力分析'],
+                        '雷诺数': ['层流湍流', '边界层理论'],
+                        '流动状态': ['雷诺数', '边界层理论'],
+                        'Navier-Stokes方程': ['涡量理论', '边界层理论'],
+                        '边界层理论': ['阻力分析', '升力理论']
+                    };
+
+                    return topicMap[currentTopic] || [];
+                },
+
+                // 智能回复生成
+                async generateAIResponse(userMessage) {
+                    this.isTyping = true;
+
+                    try {
+                        // 使用智能模型选择器
+                        if (window.smartModelSelectorInstance) {
+                            const response = await window.smartModelSelectorInstance.generateResponse({
+                                message: userMessage,
+                                context: this.messages.slice(-5), // 最近5条消息作为上下文
+                                topic: this.currentTopic,
+                                preferences: this.userPreferences
+                            });
+
+                            return response;
+                        } else {
+                            // 备用回复系统
+                            return this.generateFallbackResponse(userMessage);
+                        }
+                    } catch (error) {
+                        console.error('AI回复生成失败:', error);
+                        return this.generateFallbackResponse(userMessage);
+                    } finally {
+                        this.isTyping = false;
+                    }
+                },
+
+                // 备用回复系统
+                generateFallbackResponse(userMessage) {
+                    const responses = [
+                        '这是一个很好的流体力学问题！让我来为您详细解答...',
+                        '根据流体力学原理，我们可以从以下几个方面来分析...',
+                        '这个问题涉及到流体力学的核心概念，让我为您逐步解释...',
+                        '在流体力学中，这是一个经典问题。我们可以这样理解...'
+                    ];
+
+                    const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+
+                    // 根据话题添加具体内容
+                    if (this.currentTopic) {
+                        return `${randomResponse}\n\n关于${this.currentTopic}，这里有一些关键要点需要注意...`;
+                    }
+
+                    return randomResponse;
                 },
 
                 // 数学输入功能
