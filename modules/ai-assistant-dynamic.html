@@ -941,6 +941,76 @@
             color: inherit;
         }
 
+        /* Markdown转换后的HTML样式 */
+        .message-content h1, .message-content h2, .message-content h3,
+        .message-content h4, .message-content h5, .message-content h6 {
+            margin: 10px 0 5px 0;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .message-content h1 { font-size: 1.5em; }
+        .message-content h2 { font-size: 1.3em; }
+        .message-content h3 { font-size: 1.2em; }
+        .message-content h4 { font-size: 1.1em; }
+        .message-content h5 { font-size: 1.05em; }
+        .message-content h6 { font-size: 1em; }
+
+        .message-content strong {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .message-content em {
+            font-style: italic;
+            color: #34495e;
+        }
+
+        .message-content code {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 3px;
+            padding: 2px 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #e74c3c;
+        }
+
+        .message-content pre {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        .message-content pre code {
+            background: none;
+            border: none;
+            padding: 0;
+            color: #2c3e50;
+        }
+
+        .message-content ul, .message-content ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .message-content li {
+            margin: 5px 0;
+            list-style-type: disc;
+        }
+
+        .message-content a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .message-content a:hover {
+            text-decoration: underline;
+        }
+
         /* 平方根样式 */
         .sqrt {
             position: relative;
@@ -2795,10 +2865,12 @@
 
                         try {
                             const aiResponse = await this.generateAIResponse(messageText);
+                            // 转换Markdown到HTML
+                            const htmlContent = this.convertMarkdownToHtml(aiResponse);
                             this.messages.push({
                                 id: Date.now() + 1,
                                 sender: 'ai',
-                                content: aiResponse,
+                                content: htmlContent,
                                 timestamp: new Date()
                             });
 
@@ -4557,6 +4629,34 @@
                             .replace(/\\operatorname\{([^}]+)\}/g, '<span class="math-operator">$1</span>');
                     };
 
+                    // Markdown转HTML函数
+                    const convertMarkdownToHtml = (text) => {
+                        return text
+                            // 标题
+                            .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                            .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                            .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                            .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
+                            .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
+                            .replace(/^###### (.*$)/gm, '<h6>$1</h6>')
+                            // 粗体和斜体
+                            .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                            // 代码块（先处理，避免与其他规则冲突）
+                            .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+                            .replace(/`([^`]+)`/g, '<code>$1</code>')
+                            // 链接
+                            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                            // 无序列表
+                            .replace(/^[\s]*[-*+] (.+)$/gm, '<li>$1</li>')
+                            // 有序列表
+                            .replace(/^[\s]*\d+\. (.+)$/gm, '<li>$1</li>')
+                            // 换行
+                            .replace(/\n\n/g, '</p><p>')
+                            .replace(/\n/g, '<br>');
+                    };
+
                     // 处理$$包围的显示公式
                     content = content.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
                         console.log('📐 处理显示公式:', formula);
@@ -4591,6 +4691,34 @@
                         el.style.visibility = 'visible';
                     }
                 }
+            },
+
+            // Markdown转HTML方法
+            convertMarkdownToHtml(text) {
+                return text
+                    // 标题
+                    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                    .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                    .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                    .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
+                    .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
+                    .replace(/^###### (.*$)/gm, '<h6>$1</h6>')
+                    // 粗体和斜体
+                    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                    // 代码块（先处理，避免与其他规则冲突）
+                    .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+                    .replace(/`([^`]+)`/g, '<code>$1</code>')
+                    // 链接
+                    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                    // 无序列表
+                    .replace(/^[\s]*[-*+] (.+)$/gm, '<li>$1</li>')
+                    // 有序列表
+                    .replace(/^[\s]*\d+\. (.+)$/gm, '<li>$1</li>')
+                    // 换行
+                    .replace(/\n\n/g, '</p><p>')
+                    .replace(/\n/g, '<br>');
             },
 
             mounted() {
