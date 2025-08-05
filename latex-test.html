@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaTeX 公式测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .vector-perfect {
+            position: relative;
+            font-weight: bold;
+            display: inline-block;
+            margin: 0 2px;
+        }
+        .vector-perfect::after {
+            content: '→';
+            position: absolute;
+            top: -0.4em;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7em;
+            font-weight: normal;
+            line-height: 1;
+            color: currentColor;
+            z-index: 1;
+        }
+        .math-display {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 1.2em;
+            font-family: 'Times New Roman', serif;
+        }
+        .math-inline {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+        }
+        .fraction {
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            margin: 0 2px;
+        }
+        .numerator {
+            display: block;
+            border-bottom: 1px solid currentColor;
+            padding-bottom: 2px;
+            font-size: 0.9em;
+        }
+        .denominator {
+            display: block;
+            padding-top: 2px;
+            font-size: 0.9em;
+        }
+        .sqrt {
+            position: relative;
+            display: inline-block;
+        }
+        .sqrt-content {
+            border-top: 1px solid currentColor;
+            padding-left: 2px;
+            margin-left: 2px;
+        }
+        .text-normal {
+            font-style: normal;
+            font-family: Arial, sans-serif;
+        }
+        .boxed-formula {
+            border: 2px solid #333;
+            padding: 8px 12px;
+            margin: 0 4px;
+            display: inline-block;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+        sup, sub {
+            font-size: 0.75em;
+            line-height: 0;
+            position: relative;
+        }
+        sup {
+            vertical-align: super;
+        }
+        sub {
+            vertical-align: sub;
+        }
+    </style>
+</head>
+<body>
+    <h1>LaTeX 公式渲染测试</h1>
+    
+    <div class="test-section">
+        <h2>原始LaTeX代码</h2>
+        <pre>
+纳维-斯托克斯方程（Navier-Stokes Equations, NS方程）是描述粘性流体运动的基本方程：
+
+质量守恒（连续性方程）：
+\[ \boxed{\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \vec{v}) = 0} \]
+
+动量守恒方程：
+\[ \rho \left( \frac{\partial \vec{v}}{\partial t} + (\vec{v} \cdot \nabla) \vec{v} \right) = -\nabla p + \mu \nabla^2 \vec{v} + \frac{\mu}{3} \nabla (\nabla \cdot \vec{v}) + \rho \vec{f} \]
+
+其中 \(\frac{D}{Dt} = \frac{\partial}{\partial t} + \vec{v} \cdot \nabla\) 是物质导数。
+        </pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>处理后的效果</h2>
+        <div id="processed-content"></div>
+    </div>
+
+    <script>
+        // 复制AI助手中的LaTeX处理函数
+        function processFractions(formula) {
+            let result = formula;
+            const fracRegex = /\\d?frac\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}/g;
+            let maxIterations = 10;
+            let iteration = 0;
+
+            while (fracRegex.test(result) && iteration < maxIterations) {
+                result = result.replace(fracRegex, (match, numerator, denominator) => {
+                    return `<span class="fraction"><span class="numerator">${numerator}</span><span class="denominator">${denominator}</span></span>`;
+                });
+                fracRegex.lastIndex = 0;
+                iteration++;
+            }
+            return result;
+        }
+
+        function processLatexSymbols(formula) {
+            let result = formula;
+            result = processFractions(result);
+            
+            result = result
+                .replace(/\^{([^}]+)}/g, '<sup>$1</sup>')
+                .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
+                .replace(/\^(\w+)/g, '<sup>$1</sup>')
+                .replace(/_(\w+)/g, '<sub>$1</sub>')
+                .replace(/\\sqrt\{([^}]+)\}/g, '<span class="sqrt">√<span class="sqrt-content">$1</span></span>')
+                // 希腊字母
+                .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+                .replace(/\\epsilon/g, 'ε').replace(/\\zeta/g, 'ζ').replace(/\\eta/g, 'η').replace(/\\theta/g, 'θ')
+                .replace(/\\iota/g, 'ι').replace(/\\kappa/g, 'κ').replace(/\\lambda/g, 'λ').replace(/\\mu/g, 'μ')
+                .replace(/\\nu/g, 'ν').replace(/\\xi/g, 'ξ').replace(/\\pi/g, 'π').replace(/\\rho/g, 'ρ')
+                .replace(/\\sigma/g, 'σ').replace(/\\tau/g, 'τ').replace(/\\upsilon/g, 'υ').replace(/\\phi/g, 'φ')
+                .replace(/\\chi/g, 'χ').replace(/\\psi/g, 'ψ').replace(/\\omega/g, 'ω')
+                .replace(/\\Gamma/g, 'Γ').replace(/\\Delta/g, 'Δ').replace(/\\Theta/g, 'Θ').replace(/\\Lambda/g, 'Λ')
+                .replace(/\\Xi/g, 'Ξ').replace(/\\Pi/g, 'Π').replace(/\\Sigma/g, 'Σ').replace(/\\Upsilon/g, 'Υ')
+                .replace(/\\Phi/g, 'Φ').replace(/\\Psi/g, 'Ψ').replace(/\\Omega/g, 'Ω')
+                // 数学符号
+                .replace(/\\nabla/g, '∇').replace(/\\partial/g, '∂').replace(/\\infty/g, '∞')
+                .replace(/\\approx/g, '≈').replace(/\\neq/g, '≠').replace(/\\leq/g, '≤').replace(/\\geq/g, '≥')
+                .replace(/\\cdot/g, '·').replace(/\\times/g, '×').replace(/\\pm/g, '±').replace(/\\equiv/g, '≡')
+                // 点符号
+                .replace(/\\dot\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">˙</span></span>')
+                .replace(/\\ddot\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">¨</span></span>')
+                .replace(/\\hat\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">^</span></span>')
+                .replace(/\\tilde\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">~</span></span>')
+                .replace(/\\bar\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.3em;left:0;right:0;height:1px;background:currentColor;"></span></span>')
+                // 积分求和
+                .replace(/\\int/g, '∫').replace(/\\sum/g, '∑').replace(/\\prod/g, '∏')
+                // 集合符号
+                .replace(/\\in/g, '∈').replace(/\\notin/g, '∉').replace(/\\subset/g, '⊂').replace(/\\supset/g, '⊃')
+                .replace(/\\cap/g, '∩').replace(/\\cup/g, '∪').replace(/\\forall/g, '∀').replace(/\\exists/g, '∃')
+                // 逻辑符号
+                .replace(/\\land/g, '∧').replace(/\\lor/g, '∨').replace(/\\neg/g, '¬')
+                // 箭头
+                .replace(/\\rightarrow/g, '→').replace(/\\leftarrow/g, '←').replace(/\\leftrightarrow/g, '↔')
+                .replace(/\\Rightarrow/g, '⇒').replace(/\\Leftarrow/g, '⇐').replace(/\\Leftrightarrow/g, '⇔')
+                .replace(/\\top/g, 'ᵀ')
+                // 向量和矩阵
+                .replace(/\\vec\{([^}]+)\}/g, '<span class="vector-perfect">$1</span>')
+                .replace(/\\mathbf\{([^}]+)\}/g, '<strong>$1</strong>')
+                .replace(/\\boldsymbol\{([^}]+)\}/g, '<strong>$1</strong>')
+                // 特殊函数
+                .replace(/\\text\{([^}]+)\}/g, '<span class="text-normal">$1</span>')
+                .replace(/\\mathrm\{([^}]+)\}/g, '<span class="text-normal">$1</span>')
+                .replace(/\\boxed\{([^}]+)\}/g, '<span class="boxed-formula">$1</span>')
+                // 大括号
+                .replace(/\\left\(/g, '(').replace(/\\right\)/g, ')')
+                .replace(/\\left\[/g, '[').replace(/\\right\]/g, ']')
+                .replace(/\\left\{/g, '{').replace(/\\right\}/g, '}');
+
+            return result;
+        }
+
+        function processFormulas(content) {
+            content = content.replace(/\\\[([\s\S]*?)\\\]/g, (match, formula) => {
+                const processedFormula = processLatexSymbols(formula.trim());
+                return `<div class="math-display">${processedFormula}</div>`;
+            });
+            
+            content = content.replace(/\\\(([\s\S]*?)\\\)/g, (match, formula) => {
+                const processedFormula = processLatexSymbols(formula.trim());
+                return `<span class="math-inline">${processedFormula}</span>`;
+            });
+
+            content = content.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
+                const processedFormula = processLatexSymbols(formula.trim());
+                return `<div class="math-display">${processedFormula}</div>`;
+            });
+
+            content = content.replace(/\$([^$\n]+)\$/g, (match, formula) => {
+                const processedFormula = processLatexSymbols(formula);
+                return `<span class="math-inline">${processedFormula}</span>`;
+            });
+
+            return content;
+        }
+
+        // 测试内容
+        const testContent = `
+        <strong>纳维-斯托克斯方程LaTeX符号测试：</strong><br><br>
+
+        <strong>1. 质量守恒（连续性方程）：</strong><br>
+        \\[ \\boxed{\\frac{\\partial \\rho}{\\partial t} + \\nabla \\cdot (\\rho \\vec{v}) = 0} \\]<br>
+
+        <strong>2. 动量守恒方程：</strong><br>
+        \\[ \\rho \\left( \\frac{\\partial \\vec{v}}{\\partial t} + (\\vec{v} \\cdot \\nabla) \\vec{v} \\right) = -\\nabla p + \\mu \\nabla^2 \\vec{v} + \\frac{\\mu}{3} \\nabla (\\nabla \\cdot \\vec{v}) + \\rho \\vec{f} \\]<br>
+
+        <strong>3. 应力张量：</strong><br>
+        \\[ \\boldsymbol{\\sigma} = -p \\mathbf{I} + \\boldsymbol{\\tau} \\]<br>
+        \\[ \\boldsymbol{\\tau} = 2\\mu \\mathbf{S} + \\lambda (\\nabla \\cdot \\vec{v}) \\mathbf{I} \\]<br>
+
+        <strong>4. 应变率张量：</strong><br>
+        \\[ \\mathbf{S} = \\frac{1}{2} \\left( \\nabla \\vec{v} + (\\nabla \\vec{v})^\\top \\right) \\]<br>
+
+        <strong>5. 物质导数：</strong><br>
+        \\[ \\frac{D}{Dt} = \\frac{\\partial}{\\partial t} + \\vec{v} \\cdot \\nabla \\]<br>
+
+        <strong>6. 希腊字母测试：</strong><br>
+        \\( \\alpha, \\beta, \\gamma, \\delta, \\epsilon, \\zeta, \\eta, \\theta, \\iota, \\kappa, \\lambda, \\mu, \\nu, \\xi, \\pi, \\rho, \\sigma, \\tau, \\upsilon, \\phi, \\chi, \\psi, \\omega \\)<br>
+        \\( \\Gamma, \\Delta, \\Theta, \\Lambda, \\Xi, \\Pi, \\Sigma, \\Upsilon, \\Phi, \\Psi, \\Omega \\)<br><br>
+
+        <strong>7. 点符号测试：</strong><br>
+        \\( \\dot{\\gamma}, \\ddot{x}, \\hat{y}, \\tilde{z}, \\bar{u} \\)<br><br>
+
+        <strong>8. 数学运算符：</strong><br>
+        \\( \\nabla, \\partial, \\infty, \\approx, \\neq, \\leq, \\geq, \\cdot, \\times, \\pm, \\equiv \\)<br><br>
+
+        <strong>9. 积分和求和：</strong><br>
+        \\[ \\int_0^\\infty f(x) dx, \\quad \\sum_{i=1}^n a_i, \\quad \\prod_{j=1}^m b_j \\]<br>
+
+        <strong>10. 集合和逻辑符号：</strong><br>
+        \\( \\in, \\notin, \\subset, \\supset, \\cap, \\cup, \\forall, \\exists, \\land, \\lor, \\neg \\)<br><br>
+
+        <strong>11. 箭头：</strong><br>
+        \\( \\rightarrow, \\leftarrow, \\leftrightarrow, \\Rightarrow, \\Leftarrow, \\Leftrightarrow \\)
+        `;
+
+        // 处理并显示结果
+        document.getElementById('processed-content').innerHTML = processFormulas(testContent);
+    </script>
+</body>
+</html>

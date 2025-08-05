@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI助手LaTeX修复测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .test-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        .test-title {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+        
+        .latex-test {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-size: 1.2em;
+        }
+        
+        .ai-test {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .result {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            min-height: 50px;
+        }
+        
+        .vector-perfect {
+            position: relative;
+            font-weight: bold;
+            display: inline-block;
+            margin: 0 2px;
+        }
+        
+        .vector-perfect::after {
+            content: '→';
+            position: absolute;
+            top: -0.4em;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7em;
+            font-weight: normal;
+            line-height: 1;
+            color: currentColor;
+            z-index: 1;
+        }
+        
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+            margin: 0 3px;
+        }
+        
+        .numerator {
+            display: block;
+            border-bottom: 1px solid currentColor;
+            padding-bottom: 2px;
+            font-size: 0.9em;
+        }
+        
+        .denominator {
+            display: block;
+            padding-top: 2px;
+            font-size: 0.9em;
+        }
+        
+        .sqrt {
+            position: relative;
+            display: inline-block;
+            margin: 0 2px;
+        }
+        
+        .sqrt-content {
+            border-top: 1px solid currentColor;
+            padding-left: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 AI助手LaTeX符号修复测试</h1>
+    
+    <div class="test-container">
+        <div class="test-title">📐 LaTeX符号渲染测试</div>
+        
+        <div class="latex-test" id="latex-test-1">
+            测试希腊字母：\alpha, \beta, \gamma, \delta, \lambda, \mu, \rho, \sigma, \omega
+        </div>
+        
+        <div class="latex-test" id="latex-test-2">
+            测试点符号：\dot{γ}, \ddot{x}, \hat{y}, \tilde{z}, \bar{u}
+        </div>
+        
+        <div class="latex-test" id="latex-test-3">
+            测试向量：\vec{v}, \vec{F}, \nabla \cdot \vec{v} = 0
+        </div>
+        
+        <div class="latex-test" id="latex-test-4">
+            测试分数：\frac{\partial \rho}{\partial t} + \nabla \cdot (\rho \vec{v}) = 0
+        </div>
+        
+        <button onclick="processLatexTests()">🔄 处理LaTeX符号</button>
+    </div>
+    
+    <div class="test-container">
+        <div class="test-title">🤖 AI调用测试</div>
+        
+        <div class="ai-test">
+            <button onclick="testSimpleAI()">测试简单问答</button>
+            <button onclick="testComplexMath()">测试数学推导</button>
+            <button onclick="testLatexResponse()">测试LaTeX响应</button>
+        </div>
+        
+        <div class="result" id="ai-result">
+            点击按钮测试AI功能...
+        </div>
+    </div>
+    
+    <script src="js/core/smart-model-selector.js"></script>
+    <script>
+        // LaTeX符号处理函数
+        function processLatexSymbols(text) {
+            return text
+                // 希腊字母
+                .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ')
+                .replace(/\\delta/g, 'δ').replace(/\\lambda/g, 'λ').replace(/\\mu/g, 'μ')
+                .replace(/\\rho/g, 'ρ').replace(/\\sigma/g, 'σ').replace(/\\omega/g, 'ω')
+                // 点符号
+                .replace(/\\dot\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">˙</span></span>')
+                .replace(/\\ddot\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">¨</span></span>')
+                .replace(/\\hat\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">^</span></span>')
+                .replace(/\\tilde\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">~</span></span>')
+                .replace(/\\bar\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.3em;left:0;right:0;height:1px;background:currentColor;"></span></span>')
+                // 向量
+                .replace(/\\vec\{([^}]+)\}/g, '<span class="vector-perfect">$1</span>')
+                // 数学符号
+                .replace(/\\nabla/g, '∇').replace(/\\partial/g, '∂').replace(/\\cdot/g, '·')
+                // 分数
+                .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<span class="fraction"><span class="numerator">$1</span><span class="denominator">$2</span></span>');
+        }
+        
+        function processLatexTests() {
+            console.log('🔄 开始处理LaTeX符号...');
+            
+            for (let i = 1; i <= 4; i++) {
+                const element = document.getElementById(`latex-test-${i}`);
+                const originalText = element.textContent;
+                const processedText = processLatexSymbols(originalText);
+                element.innerHTML = processedText;
+                console.log(`✅ 处理测试${i}:`, originalText, '->', processedText);
+            }
+        }
+        
+        async function testSimpleAI() {
+            const resultDiv = document.getElementById('ai-result');
+            resultDiv.innerHTML = '🔄 测试简单AI问答...';
+            
+            try {
+                const response = await window.SmartModelSelector.callAI('什么是流体力学？', {
+                    maxTokens: 200,
+                    temperature: 0.7,
+                    requestTimeout: 60000
+                });
+                
+                resultDiv.innerHTML = `✅ 简单问答成功：<br>${response}`;
+            } catch (error) {
+                resultDiv.innerHTML = `❌ 简单问答失败：${error.message}`;
+                console.error('简单AI测试失败:', error);
+            }
+        }
+        
+        async function testComplexMath() {
+            const resultDiv = document.getElementById('ai-result');
+            resultDiv.innerHTML = '🔄 测试数学推导（DeepSeek-R1）...';
+            
+            try {
+                const response = await window.SmartModelSelector.callAI('请推导纳维-斯托克斯方程', {
+                    strategy: 'reasoning',
+                    features: ['reasoning', 'math', 'derivation'],
+                    maxTokens: 1000,
+                    temperature: 0.3,
+                    preferredModel: 'deepseek-r1',
+                    requestTimeout: 180000,
+                    systemPrompt: '你是流体力学专家，请用LaTeX语法表示数学公式。'
+                });
+                
+                resultDiv.innerHTML = `✅ 数学推导成功：<br>${response}`;
+            } catch (error) {
+                resultDiv.innerHTML = `❌ 数学推导失败：${error.message}`;
+                console.error('数学推导测试失败:', error);
+            }
+        }
+        
+        async function testLatexResponse() {
+            const resultDiv = document.getElementById('ai-result');
+            resultDiv.innerHTML = '🔄 测试LaTeX响应处理...';
+            
+            try {
+                const response = await window.SmartModelSelector.callAI('用LaTeX格式写出连续性方程', {
+                    maxTokens: 300,
+                    temperature: 0.5,
+                    requestTimeout: 60000,
+                    systemPrompt: '请用LaTeX语法回答，使用$$包围公式。'
+                });
+                
+                // 处理响应中的LaTeX符号
+                const processedResponse = processLatexSymbols(response);
+                resultDiv.innerHTML = `✅ LaTeX响应成功：<br>${processedResponse}`;
+            } catch (error) {
+                resultDiv.innerHTML = `❌ LaTeX响应失败：${error.message}`;
+                console.error('LaTeX响应测试失败:', error);
+            }
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 初始化测试页面...');
+            
+            try {
+                await window.SmartModelSelector.init({
+                    apiKey: "sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis",
+                    apiUrl: "https://api.siliconflow.cn/v1/chat/completions",
+                    maxRetries: 3,
+                    requestTimeout: 120000
+                });
+                console.log('✅ SmartModelSelector初始化完成');
+            } catch (error) {
+                console.error('❌ SmartModelSelector初始化失败:', error);
+            }
+        });
+    </script>
+</body>
+</html>

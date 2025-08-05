@@ -33,6 +33,68 @@
             font-family: 'Times New Roman', serif;
             font-style: italic;
         }
+
+        /* 分数样式 */
+        .fraction {
+            display: inline-block;
+            text-align: center;
+            vertical-align: middle;
+            margin: 0 2px;
+        }
+        .numerator {
+            display: block;
+            border-bottom: 1px solid currentColor;
+            padding-bottom: 2px;
+            font-size: 0.9em;
+        }
+        .denominator {
+            display: block;
+            padding-top: 2px;
+            font-size: 0.9em;
+        }
+
+        /* 平方根样式 */
+        .sqrt {
+            position: relative;
+            display: inline-block;
+        }
+        .sqrt-content {
+            border-top: 1px solid currentColor;
+            padding-left: 2px;
+            margin-left: 2px;
+        }
+
+        /* 文本样式 */
+        .text-normal {
+            font-style: normal;
+            font-family: Arial, sans-serif;
+        }
+
+        /* 框住的公式样式 */
+        .boxed-formula {
+            border: 2px solid #333;
+            padding: 8px 12px;
+            margin: 0 4px;
+            display: inline-block;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+
+        /* 改善上下标显示 */
+        sup, sub {
+            font-size: 0.75em;
+            line-height: 0;
+            position: relative;
+        }
+
+        sup {
+            vertical-align: super;
+        }
+
+        sub {
+            vertical-align: sub;
+        }
     </style>
 </head>
 <body>
@@ -91,21 +153,262 @@
                     }
                 },
 
-                // LaTeX符号处理
+                // LaTeX符号处理 - 增强版本
                 processLatexSymbols(formula) {
-                    return formula
-                        .replace(/\\rho/g, 'ρ')
+                    // 首先处理复杂的嵌套结构
+                    let result = formula;
+
+                    // 处理分数 - 支持嵌套
+                    result = this.processFractions(result);
+
+                    // 处理上下标 - 在分数处理后
+                    result = result
+                        .replace(/\^{([^}]+)}/g, '<sup>$1</sup>')
+                        .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
+                        .replace(/\^(\w+)/g, '<sup>$1</sup>')
+                        .replace(/_(\w+)/g, '<sub>$1</sub>');
+
+                    // 处理其他LaTeX命令
+                    result = result
+                        // 平方根
+                        .replace(/\\sqrt\{([^}]+)\}/g, '<span class="sqrt">√<span class="sqrt-content">$1</span></span>')
+                        // 希腊字母 - 小写
+                        .replace(/\\alpha/g, 'α')
+                        .replace(/\\beta/g, 'β')
+                        .replace(/\\gamma/g, 'γ')
+                        .replace(/\\delta/g, 'δ')
+                        .replace(/\\epsilon/g, 'ε')
+                        .replace(/\\varepsilon/g, 'ε')
+                        .replace(/\\zeta/g, 'ζ')
+                        .replace(/\\eta/g, 'η')
+                        .replace(/\\theta/g, 'θ')
+                        .replace(/\\vartheta/g, 'ϑ')
+                        .replace(/\\iota/g, 'ι')
+                        .replace(/\\kappa/g, 'κ')
+                        .replace(/\\lambda/g, 'λ')
                         .replace(/\\mu/g, 'μ')
+                        .replace(/\\nu/g, 'ν')
+                        .replace(/\\xi/g, 'ξ')
+                        .replace(/\\pi/g, 'π')
+                        .replace(/\\varpi/g, 'ϖ')
+                        .replace(/\\rho/g, 'ρ')
+                        .replace(/\\varrho/g, 'ϱ')
+                        .replace(/\\sigma/g, 'σ')
+                        .replace(/\\varsigma/g, 'ς')
+                        .replace(/\\tau/g, 'τ')
+                        .replace(/\\upsilon/g, 'υ')
+                        .replace(/\\phi/g, 'φ')
+                        .replace(/\\varphi/g, 'φ')
+                        .replace(/\\chi/g, 'χ')
+                        .replace(/\\psi/g, 'ψ')
+                        .replace(/\\omega/g, 'ω')
+                        // 希腊字母 - 大写
+                        .replace(/\\Gamma/g, 'Γ')
+                        .replace(/\\Delta/g, 'Δ')
+                        .replace(/\\Theta/g, 'Θ')
+                        .replace(/\\Lambda/g, 'Λ')
+                        .replace(/\\Xi/g, 'Ξ')
+                        .replace(/\\Pi/g, 'Π')
+                        .replace(/\\Sigma/g, 'Σ')
+                        .replace(/\\Upsilon/g, 'Υ')
+                        .replace(/\\Phi/g, 'Φ')
+                        .replace(/\\Psi/g, 'Ψ')
+                        .replace(/\\Omega/g, 'Ω')
+                        // 数学符号
                         .replace(/\\nabla/g, '∇')
                         .replace(/\\partial/g, '∂')
-                        .replace(/\\vec\{([^}]+)\}/g, '<span class="vector-perfect">$1</span>');
+                        .replace(/\\infty/g, '∞')
+                        .replace(/\\approx/g, '≈')
+                        .replace(/\\neq/g, '≠')
+                        .replace(/\\leq/g, '≤')
+                        .replace(/\\geq/g, '≥')
+                        .replace(/\\ll/g, '≪')
+                        .replace(/\\gg/g, '≫')
+                        .replace(/\\cdot/g, '·')
+                        .replace(/\\times/g, '×')
+                        .replace(/\\otimes/g, '⊗')
+                        .replace(/\\oplus/g, '⊕')
+                        .replace(/\\div/g, '÷')
+                        .replace(/\\pm/g, '±')
+                        .replace(/\\mp/g, '∓')
+                        .replace(/\\equiv/g, '≡')
+                        .replace(/\\sim/g, '∼')
+                        .replace(/\\simeq/g, '≃')
+                        .replace(/\\cong/g, '≅')
+                        .replace(/\\propto/g, '∝')
+                        // 点符号
+                        .replace(/\\dot\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">˙</span></span>')
+                        .replace(/\\ddot\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">¨</span></span>')
+                        .replace(/\\hat\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">^</span></span>')
+                        .replace(/\\tilde\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">~</span></span>')
+                        .replace(/\\bar\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.3em;left:0;right:0;height:1px;background:currentColor;"></span></span>')
+                        // 向量和矩阵
+                        .replace(/\\vec\{([^}]+)\}/g, '<span class="vector-perfect">$1</span>')
+                        .replace(/\\mathbf\{([^}]+)\}/g, '<strong>$1</strong>')
+                        .replace(/\\boldsymbol\{([^}]+)\}/g, '<strong>$1</strong>')
+                        .replace(/\\mathbb\{([^}]+)\}/g, '<span style="font-weight:bold;font-family:serif;">$1</span>')
+                        .replace(/\\mathcal\{([^}]+)\}/g, '<span style="font-family:cursive;font-style:italic;">$1</span>')
+                        .replace(/\\mathfrak\{([^}]+)\}/g, '<span style="font-family:serif;font-weight:bold;">$1</span>')
+                        // 微分符号
+                        .replace(/\\mathrm\{d\}/g, 'd')
+                        .replace(/\\,\s*d/g, ' d')
+                        // 常用常数
+                        .replace(/\\mathbf\{I\}/g, '<strong>I</strong>')
+                        .replace(/\\mathbf\{0\}/g, '<strong>0</strong>')
+                        // 更多运算符
+                        .replace(/\\ast/g, '∗')
+                        .replace(/\\star/g, '⋆')
+                        .replace(/\\circ/g, '∘')
+                        .replace(/\\bullet/g, '•')
+                        .replace(/\\diamond/g, '⋄')
+                        .replace(/\\triangle/g, '△')
+                        .replace(/\\triangledown/g, '▽')
+                        .replace(/\\square/g, '□')
+                        .replace(/\\blacksquare/g, '■')
+                        .replace(/\\bigcirc/g, '○')
+                        .replace(/\\bigtriangleup/g, '△')
+                        .replace(/\\bigtriangledown/g, '▽')
+                        // 关系符号
+                        .replace(/\\parallel/g, '∥')
+                        .replace(/\\perp/g, '⊥')
+                        .replace(/\\angle/g, '∠')
+                        .replace(/\\sphericalangle/g, '∢')
+                        .replace(/\\measuredangle/g, '∡')
+                        // 其他符号
+                        .replace(/\\hbar/g, 'ℏ')
+                        .replace(/\\ell/g, 'ℓ')
+                        .replace(/\\wp/g, '℘')
+                        .replace(/\\Re/g, 'ℜ')
+                        .replace(/\\Im/g, 'ℑ')
+                        .replace(/\\aleph/g, 'ℵ')
+                        .replace(/\\beth/g, 'ℶ')
+                        .replace(/\\gimel/g, 'ℷ')
+                        .replace(/\\daleth/g, 'ℸ')
+                        // 积分符号
+                        .replace(/\\int/g, '∫')
+                        .replace(/\\iint/g, '∬')
+                        .replace(/\\iiint/g, '∭')
+                        .replace(/\\oint/g, '∮')
+                        // 求和符号
+                        .replace(/\\sum/g, '∑')
+                        .replace(/\\prod/g, '∏')
+                        .replace(/\\coprod/g, '∐')
+                        // 极限符号
+                        .replace(/\\lim/g, 'lim')
+                        .replace(/\\limsup/g, 'lim sup')
+                        .replace(/\\liminf/g, 'lim inf')
+                        .replace(/\\max/g, 'max')
+                        .replace(/\\min/g, 'min')
+                        .replace(/\\sup/g, 'sup')
+                        .replace(/\\inf/g, 'inf')
+                        // 三角函数
+                        .replace(/\\sin/g, 'sin')
+                        .replace(/\\cos/g, 'cos')
+                        .replace(/\\tan/g, 'tan')
+                        .replace(/\\cot/g, 'cot')
+                        .replace(/\\sec/g, 'sec')
+                        .replace(/\\csc/g, 'csc')
+                        .replace(/\\arcsin/g, 'arcsin')
+                        .replace(/\\arccos/g, 'arccos')
+                        .replace(/\\arctan/g, 'arctan')
+                        .replace(/\\sinh/g, 'sinh')
+                        .replace(/\\cosh/g, 'cosh')
+                        .replace(/\\tanh/g, 'tanh')
+                        // 对数函数
+                        .replace(/\\log/g, 'log')
+                        .replace(/\\ln/g, 'ln')
+                        .replace(/\\lg/g, 'lg')
+                        .replace(/\\exp/g, 'exp')
+                        // 箭头
+                        .replace(/\\rightarrow/g, '→')
+                        .replace(/\\leftarrow/g, '←')
+                        .replace(/\\leftrightarrow/g, '↔')
+                        .replace(/\\Rightarrow/g, '⇒')
+                        .replace(/\\Leftarrow/g, '⇐')
+                        .replace(/\\Leftrightarrow/g, '⇔')
+                        .replace(/\\uparrow/g, '↑')
+                        .replace(/\\downarrow/g, '↓')
+                        .replace(/\\updownarrow/g, '↕')
+                        .replace(/\\nearrow/g, '↗')
+                        .replace(/\\searrow/g, '↘')
+                        .replace(/\\swarrow/g, '↙')
+                        .replace(/\\nwarrow/g, '↖')
+                        .replace(/\\top/g, 'ᵀ')
+                        // 集合符号
+                        .replace(/\\in/g, '∈')
+                        .replace(/\\notin/g, '∉')
+                        .replace(/\\subset/g, '⊂')
+                        .replace(/\\supset/g, '⊃')
+                        .replace(/\\subseteq/g, '⊆')
+                        .replace(/\\supseteq/g, '⊇')
+                        .replace(/\\cap/g, '∩')
+                        .replace(/\\cup/g, '∪')
+                        .replace(/\\setminus/g, '∖')
+                        .replace(/\\emptyset/g, '∅')
+                        .replace(/\\varnothing/g, '∅')
+                        // 逻辑符号
+                        .replace(/\\forall/g, '∀')
+                        .replace(/\\exists/g, '∃')
+                        .replace(/\\nexists/g, '∄')
+                        .replace(/\\land/g, '∧')
+                        .replace(/\\lor/g, '∨')
+                        .replace(/\\lnot/g, '¬')
+                        .replace(/\\neg/g, '¬')
+                        // 特殊函数
+                        .replace(/\\text\{([^}]+)\}/g, '<span class="text-normal">$1</span>')
+                        .replace(/\\mathrm\{([^}]+)\}/g, '<span class="text-normal">$1</span>')
+                        // 框住公式
+                        .replace(/\\boxed\{([^}]+)\}/g, '<span class="boxed-formula">$1</span>')
+                        // 大括号
+                        .replace(/\\left\(/g, '(')
+                        .replace(/\\right\)/g, ')')
+                        .replace(/\\left\[/g, '[')
+                        .replace(/\\right\]/g, ']')
+                        .replace(/\\left\{/g, '{')
+                        .replace(/\\right\}/g, '}');
+
+                    return result;
+                },
+
+                // 专门处理分数的函数
+                processFractions(formula) {
+                    // 处理 \frac 和 \dfrac
+                    let result = formula;
+
+                    // 使用递归方法处理嵌套的分数
+                    const fracRegex = /\\d?frac\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}\{([^{}]*(?:\{[^{}]*\}[^{}]*)*)\}/g;
+
+                    let maxIterations = 10; // 防止无限循环
+                    let iteration = 0;
+
+                    while (fracRegex.test(result) && iteration < maxIterations) {
+                        result = result.replace(fracRegex, (match, numerator, denominator) => {
+                            return `<span class="fraction"><span class="numerator">${numerator}</span><span class="denominator">${denominator}</span></span>`;
+                        });
+                        fracRegex.lastIndex = 0; // 重置正则表达式
+                        iteration++;
+                    }
+
+                    return result;
                 },
 
                 // 处理公式
                 processFormulas(content) {
+                    // 处理 \[ ... \] 行间公式
+                    content = content.replace(/\\\[([\s\S]*?)\\\]/g, (match, formula) => {
+                        const processedFormula = this.processLatexSymbols(formula.trim());
+                        return `<div class="math-display">${processedFormula}</div>`;
+                    });
+
+                    // 处理 \( ... \) 行内公式
+                    content = content.replace(/\\\(([\s\S]*?)\\\)/g, (match, formula) => {
+                        const processedFormula = this.processLatexSymbols(formula.trim());
+                        return `<span class="math-inline">${processedFormula}</span>`;
+                    });
+
                     // 处理$$包围的显示公式
                     content = content.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
-                        const processedFormula = this.processLatexSymbols(formula);
+                        const processedFormula = this.processLatexSymbols(formula.trim());
                         return `<div class="math-display">${processedFormula}</div>`;
                     });
 
@@ -171,9 +474,37 @@
                         } else {
                             // 使用模拟回复作为备用
                             let aiResponse = `
-                            <strong>概念解释回复（通用模型）：</strong><br><br>
-                            这是一个很好的流体力学问题！让我为您详细解答...<br>
-                            流体力学是研究流体运动规律的科学。
+                            <strong>纳维-斯托克斯方程推导（完整LaTeX测试版本）：</strong><br><br>
+
+                            纳维-斯托克斯方程是描述粘性流体运动的基本方程。以下是详细推导：<br><br>
+
+                            <strong>1. 质量守恒（连续性方程）</strong><br>
+                            \\[ \\boxed{\\frac{\\partial \\rho}{\\partial t} + \\nabla \\cdot (\\rho \\vec{v}) = 0} \\]<br><br>
+
+                            <strong>2. 动量守恒方程</strong><br>
+                            对于牛顿流体，动量方程为：<br>
+                            \\[ \\rho \\frac{D \\vec{v}}{Dt} = -\\nabla p + \\mu \\nabla^2 \\vec{v} + \\frac{\\mu}{3} \\nabla (\\nabla \\cdot \\vec{v}) + \\rho \\vec{f} \\]<br><br>
+
+                            <strong>3. 应力张量</strong><br>
+                            \\[ \\boldsymbol{\\sigma} = -p \\mathbf{I} + \\boldsymbol{\\tau} \\]<br>
+                            其中 \\(\\boldsymbol{\\tau} = 2\\mu \\mathbf{S} + \\lambda (\\nabla \\cdot \\vec{v}) \\mathbf{I}\\)<br><br>
+
+                            <strong>4. 应变率张量</strong><br>
+                            \\[ \\mathbf{S} = \\frac{1}{2} \\left( \\nabla \\vec{v} + (\\nabla \\vec{v})^\\top \\right) \\]<br><br>
+
+                            <strong>5. 物质导数</strong><br>
+                            \\[ \\frac{D}{Dt} = \\frac{\\partial}{\\partial t} + \\vec{v} \\cdot \\nabla \\]<br><br>
+
+                            <strong>6. 希腊字母示例</strong><br>
+                            流体密度 \\(\\rho\\)，动力粘度 \\(\\mu\\)，应变率 \\(\\dot{\\gamma}\\)，雷诺数 \\(Re = \\frac{\\rho V L}{\\mu}\\)<br><br>
+
+                            <strong>7. 不可压缩流体简化</strong><br>
+                            当 \\(\\nabla \\cdot \\vec{v} = 0\\) 时，方程简化为：<br>
+                            \\[ \\boxed{\\rho \\left( \\frac{\\partial \\vec{v}}{\\partial t} + (\\vec{v} \\cdot \\nabla) \\vec{v} \\right) = -\\nabla p + \\mu \\nabla^2 \\vec{v} + \\rho \\vec{f}} \\]<br><br>
+
+                            <strong>8. 边界条件</strong><br>
+                            无滑移条件：\\(\\vec{v} = \\vec{0}\\) 在固体壁面上<br>
+                            自由表面：\\(\\hat{n} \\cdot \\boldsymbol{\\sigma} \\cdot \\hat{n} = 0\\)
                             `;
                             this.response = this.processFormulas(aiResponse);
                         }

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI助手测试</title>
+</head>
+<body>
+    <div id="app">
+        <h1>AI助手语法测试</h1>
+        <div>{{ message }}</div>
+        <button @click="testFunction">测试函数</button>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    message: '准备测试...'
+                }
+            },
+            methods: {
+                testFunction() {
+                    console.log('🧪 开始测试processLatexSymbols函数');
+                    
+                    // 测试LaTeX符号处理函数
+                    const processLatexSymbols = (formula) => {
+                        return formula
+                            .replace(/\\rho/g, 'ρ')
+                            .replace(/\\mu/g, 'μ')
+                            .replace(/\\nabla/g, '∇')
+                            .replace(/\\partial/g, '∂')
+                            .replace(/\\vec\{([^}]+)\}/g, '<span class="vector-perfect">$1</span>');
+                    };
+                    
+                    const testFormula = '\\rho \\nabla \\vec{v}';
+                    const result = processLatexSymbols(testFormula);
+                    
+                    console.log('✅ 测试成功:', result);
+                    this.message = `测试成功: ${result}`;
+                },
+                
+                // 测试模型选择逻辑
+                selectOptimalModel(question) {
+                    const lowerQuestion = question.toLowerCase();
+                    console.log('🧠 智能模型选择 - 分析问题:', question);
+
+                    const derivationKeywords = ['推导', '证明', '求解'];
+                    const hasDerivation = derivationKeywords.some(keyword =>
+                        lowerQuestion.includes(keyword)
+                    );
+
+                    if (hasDerivation) {
+                        console.log('🎯 选择deepseek-r1模型进行数学推导');
+                        return {
+                            preferredModel: 'deepseek-r1',
+                            systemPrompt: '使用LaTeX语法表示数学公式'
+                        };
+                    } else {
+                        console.log('🎯 选择通用模型');
+                        return {
+                            preferredModel: 'auto'
+                        };
+                    }
+                }
+            },
+            mounted() {
+                console.log('🚀 Vue应用已挂载');
+                this.message = 'Vue应用加载成功！';
+                
+                // 测试模型选择
+                const config = this.selectOptimalModel('请推导伯努利方程');
+                console.log('📋 模型配置:', config);
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

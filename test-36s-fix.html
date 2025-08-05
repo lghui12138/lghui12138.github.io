@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>36秒超时修复测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .test-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 15px 0;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            width: 0%;
+            transition: width 1s ease;
+            border-radius: 15px;
+        }
+        
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        
+        .timer-display {
+            font-size: 32px;
+            font-weight: bold;
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            margin: 15px 0;
+            color: #ffc107;
+            font-family: monospace;
+        }
+        
+        .milestone-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .milestone {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .milestone.passed {
+            background: rgba(40, 167, 69, 0.3);
+            color: #28a745;
+            transform: scale(1.05);
+        }
+        
+        .milestone.current {
+            background: rgba(255, 193, 7, 0.3);
+            color: #ffc107;
+            animation: pulse 2s infinite;
+            transform: scale(1.1);
+        }
+        
+        .milestone.critical {
+            border: 2px solid #dc3545;
+            background: rgba(220, 53, 69, 0.2);
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .status.loading { background: rgba(255, 193, 7, 0.2); color: #ffc107; }
+        .status.success { background: rgba(40, 167, 69, 0.2); color: #28a745; }
+        .status.error { background: rgba(220, 53, 69, 0.2); color: #dc3545; }
+        .status.warning { background: rgba(255, 152, 0, 0.2); color: #ff9800; }
+        
+        .result {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        button:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        
+        .heartbeat {
+            display: inline-block;
+            animation: heartbeat 2s infinite;
+        }
+        
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 36秒超时修复测试</h1>
+    
+    <div class="test-container">
+        <h2>📊 测试进度</h2>
+        
+        <div class="timer-display" id="timer">⏱️ 00:00</div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+            <div class="progress-text" id="progress-text">准备开始</div>
+        </div>
+        
+        <div class="milestone-grid">
+            <div class="milestone critical" id="milestone-20">
+                <div>⚠️ 20秒</div>
+                <div>原超时点</div>
+            </div>
+            <div class="milestone critical" id="milestone-36">
+                <div>🔥 36秒</div>
+                <div>当前超时点</div>
+            </div>
+            <div class="milestone" id="milestone-60">
+                <div>🎯 60秒</div>
+                <div>目标突破点</div>
+            </div>
+            <div class="milestone" id="milestone-120">
+                <div>🚀 2分钟</div>
+                <div>稳定运行</div>
+            </div>
+            <div class="milestone" id="milestone-300">
+                <div>💪 5分钟</div>
+                <div>长时间推理</div>
+            </div>
+            <div class="milestone" id="milestone-600">
+                <div>🏆 10分钟</div>
+                <div>最大超时</div>
+            </div>
+        </div>
+        
+        <button onclick="testDeepSeekR1Extended()" id="test-btn">🧪 测试36秒突破</button>
+        <button onclick="testWithHeartbeat()" id="heartbeat-btn">💓 心跳机制测试</button>
+        <button onclick="stopTest()" id="stop-btn" disabled>⏹️ 停止测试</button>
+        
+        <div class="status" id="status">准备测试36秒超时修复</div>
+        <div class="result" id="result">测试结果将显示在这里...</div>
+        
+        <div id="heartbeat-display" style="display: none;">
+            <h3>💓 心跳监控</h3>
+            <div id="heartbeat-log"></div>
+        </div>
+    </div>
+    
+    <script src="js/core/smart-model-selector.js"></script>
+    <script>
+        let testStartTime = null;
+        let timerInterval = null;
+        let currentTest = null;
+        let milestones = [20, 36, 60, 120, 300, 600];
+        let passedMilestones = new Set();
+        
+        function updateTimer() {
+            if (!testStartTime) return;
+            
+            const elapsed = Math.floor((Date.now() - testStartTime) / 1000);
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = elapsed % 60;
+            
+            document.getElementById('timer').textContent = 
+                `⏱️ ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // 更新进度条 (以10分钟为100%)
+            const progress = Math.min((elapsed / 600) * 100, 100);
+            document.getElementById('progress-fill').style.width = `${progress}%`;
+            document.getElementById('progress-text').textContent = `${elapsed}秒 / 600秒`;
+            
+            // 检查里程碑
+            milestones.forEach(milestone => {
+                if (elapsed >= milestone && !passedMilestones.has(milestone)) {
+                    passedMilestones.add(milestone);
+                    const milestoneEl = document.getElementById(`milestone-${milestone}`);
+                    milestoneEl.classList.remove('current');
+                    milestoneEl.classList.add('passed');
+                    
+                    if (milestone === 20) {
+                        updateStatus('🎉 成功超过20秒！', 'success');
+                    } else if (milestone === 36) {
+                        updateStatus('🚀 突破36秒！修复成功！', 'success');
+                    } else if (milestone === 60) {
+                        updateStatus('💪 达到1分钟！稳定运行！', 'success');
+                    }
+                }
+            });
+            
+            // 高亮当前里程碑
+            const nextMilestone = milestones.find(m => elapsed < m && !passedMilestones.has(m));
+            if (nextMilestone) {
+                const nextEl = document.getElementById(`milestone-${nextMilestone}`);
+                if (!nextEl.classList.contains('current')) {
+                    document.querySelectorAll('.milestone.current').forEach(el => {
+                        el.classList.remove('current');
+                    });
+                    nextEl.classList.add('current');
+                }
+            }
+        }
+        
+        function startTimer() {
+            testStartTime = Date.now();
+            passedMilestones.clear();
+            
+            // 重置里程碑显示
+            milestones.forEach(milestone => {
+                const el = document.getElementById(`milestone-${milestone}`);
+                el.className = milestone <= 36 ? 'milestone critical' : 'milestone';
+            });
+            
+            timerInterval = setInterval(updateTimer, 1000);
+            updateTimer();
+        }
+        
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+        
+        function updateStatus(message, type = 'loading') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+        
+        function updateResult(content) {
+            document.getElementById('result').innerHTML = content;
+        }
+        
+        function addHeartbeatLog(message) {
+            const logDiv = document.getElementById('heartbeat-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `<div>[${timestamp}] <span class="heartbeat">💓</span> ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function disableButtons() {
+            document.getElementById('test-btn').disabled = true;
+            document.getElementById('heartbeat-btn').disabled = true;
+            document.getElementById('stop-btn').disabled = false;
+        }
+        
+        function enableButtons() {
+            document.getElementById('test-btn').disabled = false;
+            document.getElementById('heartbeat-btn').disabled = false;
+            document.getElementById('stop-btn').disabled = true;
+        }
+        
+        function stopTest() {
+            if (currentTest) {
+                currentTest.abort();
+                currentTest = null;
+            }
+            stopTimer();
+            enableButtons();
+            updateStatus('测试已停止', 'error');
+        }
+        
+        async function testDeepSeekR1Extended() {
+            disableButtons();
+            currentTest = new AbortController();
+            
+            try {
+                updateStatus('初始化系统...', 'loading');
+                await window.SmartModelSelector.init({
+                    apiKey: "sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis",
+                    apiUrl: "https://api.siliconflow.cn/v1/chat/completions",
+                    maxRetries: 1,
+                    requestTimeout: 600000
+                });
+                
+                updateStatus('开始36秒突破测试...', 'loading');
+                updateResult('正在调用DeepSeek-R1模型...<br><small>目标：突破36秒限制</small>');
+                
+                startTimer();
+                
+                const result = await window.SmartModelSelector.callAI('请详细推导流体力学中的纳维-斯托克斯方程，包括连续性方程、动量方程和能量方程的完整推导过程', {
+                    preferredModel: 'deepseek-r1',
+                    maxTokens: 2000,
+                    temperature: 0.3,
+                    requestTimeout: 600000,
+                    systemPrompt: '你是流体力学专家，请进行详细的数学推导，使用LaTeX语法表示公式，每个步骤都要详细说明。',
+                    signal: currentTest.signal
+                });
+                
+                const elapsed = Math.floor((Date.now() - testStartTime) / 1000);
+                updateStatus(`✅ DeepSeek-R1调用成功！总耗时: ${elapsed}秒`, 'success');
+                updateResult(`<strong>🎉 36秒突破成功！</strong><br><br><strong>DeepSeek-R1回复:</strong><br>${result.content}<br><br><small>模型: ${result.model} | 总耗时: ${elapsed}秒</small>`);
+                
+            } catch (error) {
+                const elapsed = testStartTime ? Math.floor((Date.now() - testStartTime) / 1000) : 0;
+                
+                if (elapsed > 36) {
+                    updateStatus(`🎉 成功突破36秒！(${elapsed}秒)`, 'success');
+                    updateResult(`<strong>🎉 36秒突破成功！</strong><br><br>虽然最终失败，但成功运行了${elapsed}秒，突破了36秒限制！<br><br><strong>错误信息:</strong><br>${error.message}`);
+                } else {
+                    updateStatus(`❌ 仍在${elapsed}秒时终止`, 'error');
+                    updateResult(`<strong>❌ 36秒突破失败</strong><br><br>仍然在${elapsed}秒时被终止。<br><br><strong>错误信息:</strong><br>${error.message}`);
+                }
+                
+                console.error('36秒突破测试失败:', error);
+            } finally {
+                stopTimer();
+                enableButtons();
+                currentTest = null;
+            }
+        }
+        
+        async function testWithHeartbeat() {
+            document.getElementById('heartbeat-display').style.display = 'block';
+            document.getElementById('heartbeat-log').innerHTML = '';
+            addHeartbeatLog('启动心跳机制测试');
+            
+            await testDeepSeekR1Extended();
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 36秒超时修复测试页面加载完成');
+            updateStatus('页面加载完成，准备测试36秒突破', 'success');
+        });
+    </script>
+</body>
+</html>

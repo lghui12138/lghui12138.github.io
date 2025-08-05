@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek-R1最终测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .test-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        .status {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .status.loading {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+        
+        .status.success {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+        
+        .status.error {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+        
+        .result {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .config-info {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .timer {
+            font-family: monospace;
+            font-size: 18px;
+            color: #ffc107;
+            text-align: center;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 DeepSeek-R1最终测试</h1>
+    
+    <div class="test-container">
+        <h2>⚙️ 当前配置</h2>
+        <div class="config-info" id="config-info">
+            超时时间: 10分钟 (600秒)<br>
+            重试次数: 1次<br>
+            模型名称: deepseek-ai/DeepSeek-R1<br>
+            API地址: https://api.siliconflow.cn/v1/chat/completions
+        </div>
+        
+        <button onclick="testDeepSeekR1Simple()" id="simple-btn">🧪 简单测试</button>
+        <button onclick="testDeepSeekR1Math()" id="math-btn">📐 数学推导测试</button>
+        <button onclick="stopTest()" id="stop-btn" disabled>⏹️ 停止测试</button>
+        
+        <div class="timer" id="timer" style="display: none;">⏱️ 已用时间: 0秒</div>
+        <div class="status" id="status">准备就绪</div>
+        <div class="result" id="result">测试结果将显示在这里...</div>
+    </div>
+    
+    <script src="js/core/smart-model-selector.js"></script>
+    <script>
+        let currentTest = null;
+        let startTime = null;
+        let timerInterval = null;
+        
+        function updateStatus(message, type = 'loading') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+        
+        function updateResult(content) {
+            document.getElementById('result').innerHTML = content;
+        }
+        
+        function startTimer() {
+            startTime = Date.now();
+            const timerDiv = document.getElementById('timer');
+            timerDiv.style.display = 'block';
+            
+            timerInterval = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                timerDiv.textContent = `⏱️ 已用时间: ${elapsed}秒`;
+            }, 1000);
+        }
+        
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            document.getElementById('timer').style.display = 'none';
+        }
+        
+        function disableButtons() {
+            document.getElementById('simple-btn').disabled = true;
+            document.getElementById('math-btn').disabled = true;
+            document.getElementById('stop-btn').disabled = false;
+        }
+        
+        function enableButtons() {
+            document.getElementById('simple-btn').disabled = false;
+            document.getElementById('math-btn').disabled = false;
+            document.getElementById('stop-btn').disabled = true;
+        }
+        
+        function stopTest() {
+            if (currentTest) {
+                currentTest.abort();
+                currentTest = null;
+            }
+            stopTimer();
+            enableButtons();
+            updateStatus('测试已停止', 'error');
+        }
+        
+        async function initializeSmartModelSelector() {
+            try {
+                await window.SmartModelSelector.init({
+                    apiKey: "sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis",
+                    apiUrl: "https://api.siliconflow.cn/v1/chat/completions",
+                    maxRetries: 1,
+                    requestTimeout: 600000 // 10分钟
+                });
+                console.log('✅ SmartModelSelector初始化完成');
+                return true;
+            } catch (error) {
+                console.error('❌ SmartModelSelector初始化失败:', error);
+                updateStatus(`初始化失败: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testDeepSeekR1Simple() {
+            disableButtons();
+            currentTest = new AbortController();
+            
+            try {
+                updateStatus('初始化系统...', 'loading');
+                const initialized = await initializeSmartModelSelector();
+                if (!initialized) return;
+                
+                updateStatus('调用DeepSeek-R1模型 (简单测试)...', 'loading');
+                updateResult('正在等待DeepSeek-R1响应...<br><small>这可能需要几分钟时间，请耐心等待</small>');
+                startTimer();
+                
+                const result = await window.SmartModelSelector.callAI('请简单解释什么是流体力学', {
+                    preferredModel: 'deepseek-r1',
+                    maxTokens: 300,
+                    temperature: 0.3,
+                    requestTimeout: 600000, // 10分钟
+                    signal: currentTest.signal
+                });
+                
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                updateStatus(`✅ DeepSeek-R1调用成功! (${elapsed}秒)`, 'success');
+                updateResult(`<strong>DeepSeek-R1回复:</strong><br>${result.content}<br><br><small>模型: ${result.model} | 耗时: ${elapsed}秒</small>`);
+                
+            } catch (error) {
+                const elapsed = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+                updateStatus(`❌ DeepSeek-R1调用失败 (${elapsed}秒)`, 'error');
+                updateResult(`<strong>错误信息:</strong><br>${error.message}<br><br><strong>可能的原因:</strong><br>1. 模型响应时间超过10分钟<br>2. 模型名称不正确<br>3. API限制或网络问题`);
+                console.error('DeepSeek-R1测试失败:', error);
+            } finally {
+                stopTimer();
+                enableButtons();
+                currentTest = null;
+            }
+        }
+        
+        async function testDeepSeekR1Math() {
+            disableButtons();
+            currentTest = new AbortController();
+            
+            try {
+                updateStatus('初始化系统...', 'loading');
+                const initialized = await initializeSmartModelSelector();
+                if (!initialized) return;
+                
+                updateStatus('调用DeepSeek-R1模型 (数学推导)...', 'loading');
+                updateResult('正在进行数学推导...<br><small>DeepSeek-R1正在进行复杂推理，这可能需要更长时间</small>');
+                startTimer();
+                
+                const result = await window.SmartModelSelector.callAI('请推导纳维-斯托克斯方程中的连续性方程', {
+                    strategy: 'reasoning',
+                    features: ['reasoning', 'math', 'derivation'],
+                    maxTokens: 1500,
+                    temperature: 0.3,
+                    preferredModel: 'deepseek-r1',
+                    requestTimeout: 600000, // 10分钟
+                    systemPrompt: '你是流体力学专家，请详细推导数学公式，使用LaTeX语法表示数学符号。',
+                    signal: currentTest.signal
+                });
+                
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                updateStatus(`✅ DeepSeek-R1数学推导成功! (${elapsed}秒)`, 'success');
+                updateResult(`<strong>DeepSeek-R1数学推导:</strong><br>${result.content}<br><br><small>模型: ${result.model} | 耗时: ${elapsed}秒</small>`);
+                
+            } catch (error) {
+                const elapsed = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+                updateStatus(`❌ DeepSeek-R1数学推导失败 (${elapsed}秒)`, 'error');
+                updateResult(`<strong>错误信息:</strong><br>${error.message}<br><br><strong>建议:</strong><br>1. 检查模型是否真的可用<br>2. 尝试使用其他模型如DeepSeek-V3<br>3. 联系API提供商确认模型状态`);
+                console.error('DeepSeek-R1数学推导失败:', error);
+            } finally {
+                stopTimer();
+                enableButtons();
+                currentTest = null;
+            }
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DeepSeek-R1最终测试页面加载完成');
+            updateStatus('页面加载完成，准备测试DeepSeek-R1', 'success');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DeepSeek-R1模型名称测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .test-container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+        }
+        
+        .model-test {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .model-name {
+            font-family: monospace;
+            font-weight: bold;
+            color: #4facfe;
+            margin-bottom: 10px;
+        }
+        
+        .test-result {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 5px 0;
+            font-size: 14px;
+        }
+        
+        .success {
+            background: rgba(40, 167, 69, 0.2);
+            color: #28a745;
+        }
+        
+        .error {
+            background: rgba(220, 53, 69, 0.2);
+            color: #dc3545;
+        }
+        
+        .loading {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px;
+        }
+        
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 DeepSeek-R1模型名称测试</h1>
+    
+    <div class="test-container">
+        <h2>📋 可能的DeepSeek-R1模型名称</h2>
+        <button onclick="testAllModels()">🚀 测试所有模型</button>
+        <button onclick="clearResults()">🧹 清除结果</button>
+        
+        <div id="model-tests">
+            <!-- 模型测试结果将在这里显示 -->
+        </div>
+    </div>
+    
+    <script>
+        const possibleModels = [
+            "deepseek-ai/DeepSeek-R1",
+            "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+            "deepseek-ai/deepseek-r1",
+            "DeepSeek-R1",
+            "deepseek-r1",
+            "deepseek-ai/DeepSeek-R1-Preview",
+            "deepseek-ai/DeepSeek-R1-Base",
+            "deepseek-ai/DeepSeek-R1-Chat",
+            "deepseek-ai/DeepSeek-R1-Instruct",
+            "deepseek-ai/DeepSeek-R1-32B",
+            "deepseek-ai/DeepSeek-R1-7B",
+            "deepseek-ai/DeepSeek-R1-Lite"
+        ];
+        
+        async function testSingleModel(modelName) {
+            const testDiv = document.getElementById(`test-${modelName.replace(/[^a-zA-Z0-9]/g, '-')}`);
+            const resultDiv = testDiv.querySelector('.test-result');
+            
+            resultDiv.className = 'test-result loading';
+            resultDiv.textContent = '测试中...';
+            
+            try {
+                const startTime = Date.now();
+                
+                const response = await fetch('https://api.siliconflow.cn/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis'
+                    },
+                    body: JSON.stringify({
+                        model: modelName,
+                        messages: [
+                            {
+                                role: "user",
+                                content: "Hello"
+                            }
+                        ],
+                        max_tokens: 10,
+                        temperature: 0.1
+                    }),
+                    signal: AbortSignal.timeout(30000) // 30秒测试超时
+                });
+                
+                const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    resultDiv.className = 'test-result success';
+                    resultDiv.textContent = `✅ 可用 (${duration}s) - ${result.choices?.[0]?.message?.content || '响应成功'}`;
+                } else {
+                    const errorText = await response.text();
+                    resultDiv.className = 'test-result error';
+                    resultDiv.textContent = `❌ HTTP ${response.status}: ${response.statusText} - ${errorText}`;
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'test-result error';
+                resultDiv.textContent = `❌ 错误: ${error.message}`;
+            }
+        }
+        
+        function createModelTestDiv(modelName) {
+            const testId = modelName.replace(/[^a-zA-Z0-9]/g, '-');
+            return `
+                <div class="model-test" id="test-${testId}">
+                    <div class="model-name">${modelName}</div>
+                    <div class="test-result">等待测试...</div>
+                    <button onclick="testSingleModel('${modelName}')">单独测试</button>
+                </div>
+            `;
+        }
+        
+        async function testAllModels() {
+            const container = document.getElementById('model-tests');
+            
+            // 创建所有模型的测试界面
+            container.innerHTML = possibleModels.map(createModelTestDiv).join('');
+            
+            // 逐个测试模型（避免并发过多）
+            for (const modelName of possibleModels) {
+                await testSingleModel(modelName);
+                // 每个测试之间稍微延迟，避免API限制
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+        
+        function clearResults() {
+            document.getElementById('model-tests').innerHTML = '<p>点击"测试所有模型"开始测试...</p>';
+        }
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DeepSeek-R1模型测试页面加载完成');
+            clearResults();
+        });
+    </script>
+</body>
+</html>

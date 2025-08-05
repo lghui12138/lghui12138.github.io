@@ -10,8 +10,8 @@ window.SmartModelSelector = (function() {
     let config = {
         apiKey: "sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis",
         apiUrl: "https://api.siliconflow.cn/v1/chat/completions",
-        maxRetries: 3,
-        requestTimeout: 30000,
+        maxRetries: 1, // 减少重试次数，给单次调用更多时间
+        requestTimeout: 600000, // 增加到10分钟，专门适应DeepSeek-R1的长推理时间
         rateLimitDelay: 1000
     };
     
@@ -27,7 +27,7 @@ window.SmartModelSelector = (function() {
                 priority: 1
             },
             {
-                name: "deepseek-ai/DeepSeek-R1", 
+                name: "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B", // 使用可用的R1变体
                 category: "premium",
                 complexity: ["complex"],
                 features: ["reasoning", "research", "deep-analysis"],
@@ -235,7 +235,7 @@ window.SmartModelSelector = (function() {
                         max_tokens: 10,
                         temperature: 0.1
                     }),
-                    signal: AbortSignal.timeout(config.requestTimeout)
+                    signal: AbortSignal.timeout(10000) // 模型检查使用较短的超时时间
                 });
                 
                 const responseTime = Date.now() - startTime;
@@ -286,15 +286,33 @@ window.SmartModelSelector = (function() {
                 console.log(`🎯 强制使用指定模型: ${options.preferredModel}`);
 
                 if (options.preferredModel === 'deepseek-r1') {
-                    // 特殊处理deepseek-r1
+                    // 特殊处理deepseek-r1 - 尝试多个可能的模型名称
+                    const possibleModels = [
+                        "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
+                        "deepseek-ai/DeepSeek-R1",
+                        "deepseek-ai/deepseek-r1"
+                    ];
+
+                    // 使用第一个可能的模型名称
                     const model = {
-                        name: "deepseek-ai/DeepSeek-R1",
+                        name: possibleModels[0],
                         category: "premium",
                         complexity: ["complex"],
                         features: ["reasoning", "research", "deep-analysis"],
                         priority: 1
                     };
                     console.log(`✅ 强制选择deepseek-r1模型: ${model.name}`);
+                    return model;
+                } else if (options.preferredModel === 'deepseek-v3') {
+                    // 特殊处理deepseek-v3
+                    const model = {
+                        name: "deepseek-ai/DeepSeek-V3",
+                        category: "premium",
+                        complexity: ["complex", "medium"],
+                        features: ["reasoning", "analysis", "problem-solving"],
+                        priority: 1
+                    };
+                    console.log(`✅ 强制选择deepseek-v3模型: ${model.name}`);
                     return model;
                 } else if (availableModels.has(options.preferredModel)) {
                     const model = availableModels.get(options.preferredModel);
@@ -457,8 +475,21 @@ window.SmartModelSelector = (function() {
                 ],
                 max_tokens: options.maxTokens || 1500,
                 temperature: options.temperature || 0.7,
+                stream: false, // 确保不使用流式响应
                 ...options.modelParams
             };
+
+            // 对于DeepSeek-R1，添加特殊优化参数
+            if (model.name.includes('DeepSeek-R1')) {
+                requestBody.temperature = Math.min(requestBody.temperature, 0.3); // 降低随机性
+                requestBody.top_p = 0.8; // 限制采样范围，提高稳定性
+                requestBody.frequency_penalty = 0.1; // 减少重复
+                console.log('🎯 为DeepSeek-R1优化请求参数:', {
+                    temperature: requestBody.temperature,
+                    top_p: requestBody.top_p,
+                    frequency_penalty: requestBody.frequency_penalty
+                });
+            }
             
             // 添加系统提示词
             if (options.systemPrompt && !requestBody.messages.find(m => m.role === 'system')) {
@@ -472,18 +503,53 @@ window.SmartModelSelector = (function() {
             
             // 重试机制
             for (let retry = 0; retry < config.maxRetries; retry++) {
+                const timeoutValue = options.requestTimeout || config.requestTimeout;
+                console.log(`🚀 调用AI模型: ${model.name} (尝试 ${retry + 1}/${config.maxRetries}) - 超时: ${timeoutValue/1000}秒`);
+
+                // 创建AbortController来手动控制超时
+                const controller = new AbortController();
+                let timeoutId = null;
+                let heartbeatInterval = null; // 移到外层作用域
+
                 try {
-                    console.log(`🚀 调用AI模型: ${model.name} (尝试 ${retry + 1}/${config.maxRetries})`);
-                    
+                    // 为DeepSeek-R1实现心跳机制
+                    if (model.name.includes('DeepSeek-R1') && timeoutValue > 60000) {
+                        console.log('💓 启动DeepSeek-R1心跳机制');
+                        heartbeatInterval = setInterval(() => {
+                            console.log('💓 DeepSeek-R1心跳 - 连接保持活跃');
+                        }, 30000); // 每30秒心跳一次
+                    }
+
+                    timeoutId = setTimeout(() => {
+                        console.warn(`⏰ 模型 ${model.name} 超时 (${timeoutValue/1000}秒)，主动取消请求`);
+                        if (heartbeatInterval) {
+                            clearInterval(heartbeatInterval);
+                        }
+                        controller.abort();
+                    }, timeoutValue);
+
                     const response = await fetch(config.apiUrl, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${config.apiKey}`
+                            'Authorization': `Bearer ${config.apiKey}`,
+                            'Keep-Alive': 'timeout=600, max=1000', // 保持连接
+                            'Connection': 'keep-alive'
                         },
                         body: JSON.stringify(requestBody),
-                        signal: AbortSignal.timeout(config.requestTimeout)
+                        signal: controller.signal,
+                        keepalive: true // 浏览器保持连接
                     });
+
+                    // 清除超时计时器和心跳
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                        timeoutId = null;
+                    }
+                    if (heartbeatInterval) {
+                        clearInterval(heartbeatInterval);
+                        heartbeatInterval = null;
+                    }
                     
                     if (!response.ok) {
                         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
@@ -506,6 +572,16 @@ window.SmartModelSelector = (function() {
                     };
                     
                 } catch (error) {
+                    // 确保清除超时计时器和心跳
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                        timeoutId = null;
+                    }
+                    if (heartbeatInterval) {
+                        clearInterval(heartbeatInterval);
+                        heartbeatInterval = null;
+                    }
+
                     lastError = error;
                     console.warn(`⚠️ 模型 ${model.name} 调用失败 (尝试 ${retry + 1}): ${error.message}`);
                     

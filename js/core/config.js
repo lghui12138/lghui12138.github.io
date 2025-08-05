@@ -28,8 +28,8 @@ window.AppConfig = {
             enabled: true,
             endpoint: 'https://api.siliconflow.cn/v1/chat/completions',
             apiKey: 'sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis',
-            maxRetries: 3,
-            requestTimeout: 30000,
+            maxRetries: 1, // 减少重试次数，给单次调用更多时间
+            requestTimeout: 600000, // 10分钟超时，支持DeepSeek-R1长时间推理
             rateLimitDelay: 1000,
             modelCheckInterval: 10 * 60 * 1000, // 10分钟检查一次模型可用性（仅在需要时）
             defaultStrategy: 'balanced', // balanced, fast, quality
