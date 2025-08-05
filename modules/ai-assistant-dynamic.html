@@ -4822,38 +4822,28 @@
 
                 console.log('✅ Markdown转换完成:', result.substring(0, 200) + '...');
                 return result;
-            },
+            }
+        },
 
-            mounted() {
-                console.log('🚀 Vue应用已挂载');
-                console.log('🔍 检查convertMarkdownToHtml方法是否存在:', typeof this.convertMarkdownToHtml);
-                console.log('🔍 Vue组件methods:', Object.keys(this.$options.methods || {}));
-                console.log('🔍 Vue实例所有属性:', Object.getOwnPropertyNames(this));
+        mounted() {
+            console.log('🚀 Vue应用已挂载');
 
-                // 测试方法调用
-                try {
-                    const testResult = this.convertMarkdownToHtml('# 测试标题\n这是一个测试。');
-                    console.log('✅ convertMarkdownToHtml测试成功:', testResult);
-                } catch (error) {
-                    console.error('❌ convertMarkdownToHtml测试失败:', error);
-                }
+            // 立即显示欢迎消息
+            this.showNotification('AI学习助手已就绪！', 'success');
 
-                // 立即显示欢迎消息
-                this.showNotification('AI学习助手已就绪！', 'success');
+            // 添加键盘事件监听
+            document.addEventListener('keydown', this.handleKeyboard);
 
-                // 添加键盘事件监听
-                document.addEventListener('keydown', this.handleKeyboard);
+            // 异步初始化其他功能（不阻塞界面）
+            setTimeout(() => {
+                this.initSmartAI().catch(error => {
+                    console.warn('AI系统初始化失败:', error);
+                });
+                this.processMathFormulas(); // 处理数学公式
+                this.enhanceVoiceInput(); // 初始化语音输入增强功能
+            }, 100);
 
-                // 异步初始化其他功能（不阻塞界面）
-                setTimeout(() => {
-                    this.initSmartAI().catch(error => {
-                        console.warn('AI系统初始化失败:', error);
-                    });
-                    this.processMathFormulas(); // 处理数学公式
-                    this.enhanceVoiceInput(); // 初始化语音输入增强功能
-                }, 100);
-
-                console.log('🤖 AI学习助手已启动');
+            console.log('🤖 AI学习助手已启动');
             },
 
             beforeUnmount() {
