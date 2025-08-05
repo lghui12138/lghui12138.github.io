@@ -922,25 +922,30 @@
             direction: ltr;
         }
 
-        /* 分数样式 */
+        /* 分数样式 - 改进版本 */
         .fraction {
             display: inline-block;
             text-align: center;
             vertical-align: middle;
-            margin: 0 3px;
+            margin: 0 4px;
+            position: relative;
         }
 
         .numerator {
             display: block;
             border-bottom: 1px solid currentColor;
-            padding-bottom: 2px;
-            font-size: 0.9em;
+            padding-bottom: 3px;
+            font-size: 0.85em;
+            line-height: 1.2;
+            min-height: 1em;
         }
 
         .denominator {
             display: block;
-            padding-top: 2px;
-            font-size: 0.9em;
+            padding-top: 3px;
+            font-size: 0.85em;
+            line-height: 1.2;
+            min-height: 1em;
         }
 
         /* 框选样式 */
@@ -4789,6 +4794,14 @@
                             .replace(/\\negmedspace/g, '<span class="math-space-negmedium"></span>')
                             .replace(/\\negthickspace/g, '<span class="math-space-negthick"></span>');
                     };
+
+                    // 处理\(...\)包围的行内公式
+                    content = content.replace(/\\\(([\s\S]*?)\\\)/g, (match, formula) => {
+                        console.log('📏 处理\\(...\\)行内公式:', formula);
+                        const processedFormula = processLatexSymbols(formula);
+                        console.log('✅ \\(...\\)公式处理结果:', processedFormula);
+                        return `<span class="math-inline">${processedFormula}</span>`;
+                    });
 
                     // 处理$$包围的显示公式
                     content = content.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
