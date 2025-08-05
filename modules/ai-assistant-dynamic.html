@@ -80,7 +80,7 @@
                 displayMath: [['$$', '$$'], ['\\[', '\\]']],
                 processEscapes: true,
                 processEnvironments: true,
-                packages: ['base', 'ams', 'noerrors', 'noundefined']
+                packages: ['base']
             },
             options: {
                 skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
@@ -89,7 +89,7 @@
                 enableMenu: false
             },
             loader: {
-                load: ['[tex]/ams', '[tex]/noerrors', '[tex]/noundefined']
+                load: ['[tex]/base']
             },
             startup: {
                 pageReady: () => {
@@ -4100,6 +4100,14 @@
                     const lowerQuestion = question.toLowerCase();
                     console.log('🧠 智能模型选择 - 分析问题:', question);
 
+                    // 检测简单问题（优先使用快速模型）
+                    const simpleKeywords = [
+                        '是什么', '什么是', '定义', '概念', '简单解释',
+                        '基本', '基础', '入门', '简介', '概述',
+                        '你好', '谢谢', '再见', '帮助', '功能',
+                        'what is', 'define', 'basic', 'simple', 'introduction'
+                    ];
+
                     // 检测是否涉及数学推导
                     const derivationKeywords = [
                         '推导', '证明', '求解', '计算', '解析', '分析',
@@ -4119,6 +4127,10 @@
                         '有限元', '数值模拟', 'CFD'
                     ];
 
+                    const isSimpleQuestion = simpleKeywords.some(keyword =>
+                        lowerQuestion.includes(keyword)
+                    ) || question.length < 20; // 短问题通常是简单问题
+
                     const hasDerivation = derivationKeywords.some(keyword =>
                         lowerQuestion.includes(keyword)
                     );
@@ -4128,13 +4140,30 @@
                     );
 
                     console.log('🔍 关键词检测结果:', {
+                        isSimpleQuestion,
                         hasDerivation,
                         hasComplexMath,
+                        questionLength: question.length,
+                        matchedSimple: simpleKeywords.filter(k => lowerQuestion.includes(k)),
                         matchedDerivation: derivationKeywords.filter(k => lowerQuestion.includes(k)),
                         matchedComplexMath: complexMathKeywords.filter(k => lowerQuestion.includes(k))
                     });
 
-                    if (hasDerivation || hasComplexMath) {
+                    if (isSimpleQuestion && !hasDerivation && !hasComplexMath) {
+                        console.log('🚀 选择快速模型处理简单问题');
+                        // 使用快速模型处理简单问题
+                        const config = {
+                            strategy: 'fast',
+                            features: ['chat', 'basic'],
+                            maxTokens: 500,
+                            temperature: 0.5,
+                            preferredModel: 'auto',
+                            requestTimeout: 15000, // 15秒快速响应
+                            systemPrompt: `你是一个友好的AI助手，请简洁明了地回答问题。对于基础概念，用通俗易懂的语言解释。`
+                        };
+                        console.log('📋 快速模型配置:', config);
+                        return config;
+                    } else if (hasDerivation || hasComplexMath) {
                         console.log('🎯 选择DeepSeek-R1模型进行数学推导');
                         // 使用DeepSeek-R1进行数学推导，增加超时时间和重试机制
                         const config = {
@@ -4826,24 +4855,35 @@
         },
 
         mounted() {
-            console.log('🚀 Vue应用已挂载');
+                console.log('🚀 Vue应用已挂载');
+                console.log('🔍 检查convertMarkdownToHtml方法是否存在:', typeof this.convertMarkdownToHtml);
+                console.log('🔍 Vue组件methods:', Object.keys(this.$options.methods || {}));
+                console.log('🔍 Vue实例所有属性:', Object.getOwnPropertyNames(this));
 
-            // 立即显示欢迎消息
-            this.showNotification('AI学习助手已就绪！', 'success');
+                // 测试方法调用
+                try {
+                    const testResult = this.convertMarkdownToHtml('# 测试标题\n这是一个测试。');
+                    console.log('✅ convertMarkdownToHtml测试成功:', testResult);
+                } catch (error) {
+                    console.error('❌ convertMarkdownToHtml测试失败:', error);
+                }
 
-            // 添加键盘事件监听
-            document.addEventListener('keydown', this.handleKeyboard);
+                // 立即显示欢迎消息
+                this.showNotification('AI学习助手已就绪！', 'success');
 
-            // 异步初始化其他功能（不阻塞界面）
-            setTimeout(() => {
-                this.initSmartAI().catch(error => {
-                    console.warn('AI系统初始化失败:', error);
-                });
-                this.processMathFormulas(); // 处理数学公式
-                this.enhanceVoiceInput(); // 初始化语音输入增强功能
-            }, 100);
+                // 添加键盘事件监听
+                document.addEventListener('keydown', this.handleKeyboard);
 
-            console.log('🤖 AI学习助手已启动');
+                // 异步初始化其他功能（不阻塞界面）
+                setTimeout(() => {
+                    this.initSmartAI().catch(error => {
+                        console.warn('AI系统初始化失败:', error);
+                    });
+                    this.processMathFormulas(); // 处理数学公式
+                    this.enhanceVoiceInput(); // 初始化语音输入增强功能
+                }, 100);
+
+                console.log('🤖 AI学习助手已启动');
             },
 
             beforeUnmount() {
