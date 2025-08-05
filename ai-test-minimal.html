@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI助手测试版</title>
+    
+    <!-- Vue.js -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    
+    <!-- MathJax配置 - 简化版 -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true,
+                packages: ['base']
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process',
+                enableMenu: false
+            },
+            loader: {
+                load: ['[tex]/base']
+            }
+        };
+    </script>
+    
+    <!-- MathJax CDN -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+    <div id="app">
+        <h1>AI助手测试版</h1>
+        <div>
+            <input v-model="message" @keyup.enter="sendMessage" placeholder="输入消息">
+            <button @click="sendMessage">发送</button>
+        </div>
+        <div v-for="msg in messages" :key="msg.id">
+            <strong>{{ msg.sender }}:</strong> {{ msg.content }}
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        const app = createApp({
+            data() {
+                return {
+                    message: '',
+                    messages: [
+                        { id: 1, sender: 'AI', content: '你好！我是AI助手。' }
+                    ]
+                };
+            },
+            methods: {
+                sendMessage() {
+                    if (!this.message.trim()) return;
+                    
+                    this.messages.push({
+                        id: Date.now(),
+                        sender: '用户',
+                        content: this.message
+                    });
+                    
+                    // 简单的AI回复
+                    setTimeout(() => {
+                        this.messages.push({
+                            id: Date.now() + 1,
+                            sender: 'AI',
+                            content: '收到您的消息：' + this.message
+                        });
+                    }, 1000);
+                    
+                    this.message = '';
+                }
+            },
+            mounted() {
+                console.log('Vue应用已挂载');
+            }
+        });
+
+        app.mount('#app');
+    </script>
+</body>
+</html>
