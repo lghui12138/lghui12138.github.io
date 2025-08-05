@@ -68,39 +68,9 @@
         }
     </script>
     
-    <!-- 缓存清除脚本 -->
-    <script>
-        // 强制清除缓存的函数
-        function clearCache() {
-            if ('caches' in window) {
-                caches.keys().then(function(names) {
-                    names.forEach(function(name) {
-                        caches.delete(name);
-                    });
-                });
-            }
-            // 清除localStorage中的缓存
-            Object.keys(localStorage).forEach(key => {
-                if (key.startsWith('ai-assistant-cache')) {
-                    localStorage.removeItem(key);
-                }
-            });
-            console.log('🧹 缓存已清除');
-        }
-
-        // 检查版本并清除缓存
-        const currentVersion = '4.1.0';
-        const lastVersion = localStorage.getItem('ai-assistant-version');
-        if (lastVersion !== currentVersion) {
-            console.log(`🔄 版本更新: ${lastVersion} → ${currentVersion}`);
-            clearCache();
-            localStorage.setItem('ai-assistant-version', currentVersion);
-        }
-    </script>
-
-    <!-- 智能AI系统 - 本地文件 (添加版本号强制刷新缓存) -->
-    <script src="../js/core/config.js?v=4.1.0&t=20250105" onerror="console.warn('config.js加载失败')"></script>
-    <script src="../js/core/smart-model-selector.js?v=4.1.0&t=20250105" onerror="console.warn('smart-model-selector.js加载失败')"></script>
+    <!-- 智能AI系统 - 本地文件 -->
+    <script src="../js/core/config.js" onerror="console.warn('config.js加载失败')"></script>
+    <script src="../js/core/smart-model-selector.js" onerror="console.warn('smart-model-selector.js加载失败')"></script>
     
     <!-- 简化的数学公式处理 - 纯CSS方案 -->
     <script>
@@ -304,6 +274,24 @@
                     .replace(/\\beth/g, 'ℶ')
                     .replace(/\\gimel/g, 'ℷ')
                     .replace(/\\daleth/g, 'ℸ')
+                    // 处理 \left 和 \right 命令
+                    .replace(/\\left\s*\(/g, '(')
+                    .replace(/\\right\s*\)/g, ')')
+                    .replace(/\\left\s*\[/g, '[')
+                    .replace(/\\right\s*\]/g, ']')
+                    .replace(/\\left\s*\{/g, '{')
+                    .replace(/\\right\s*\}/g, '}')
+                    .replace(/\\left\s*\|/g, '|')
+                    .replace(/\\right\s*\|/g, '|')
+                    .replace(/\\left\s*\\langle/g, '⟨')
+                    .replace(/\\right\s*\\rangle/g, '⟩')
+                    .replace(/\\left\s*\\lceil/g, '⌈')
+                    .replace(/\\right\s*\\rceil/g, '⌉')
+                    .replace(/\\left\s*\\lfloor/g, '⌊')
+                    .replace(/\\right\s*\\rfloor/g, '⌋')
+                    // 处理单独的 \left 和 \right（移除它们）
+                    .replace(/\\left\s*/g, '')
+                    .replace(/\\right\s*/g, '')
                     // 移除$$符号
                     .replace(/\$\$/g, '');
 
@@ -4513,7 +4501,25 @@
                             .replace(/\\aleph/g, 'ℵ')
                             .replace(/\\beth/g, 'ℶ')
                             .replace(/\\gimel/g, 'ℷ')
-                            .replace(/\\daleth/g, 'ℸ');
+                            .replace(/\\daleth/g, 'ℸ')
+                            // 处理 \left 和 \right 命令
+                            .replace(/\\left\s*\(/g, '(')
+                            .replace(/\\right\s*\)/g, ')')
+                            .replace(/\\left\s*\[/g, '[')
+                            .replace(/\\right\s*\]/g, ']')
+                            .replace(/\\left\s*\{/g, '{')
+                            .replace(/\\right\s*\}/g, '}')
+                            .replace(/\\left\s*\|/g, '|')
+                            .replace(/\\right\s*\|/g, '|')
+                            .replace(/\\left\s*\\langle/g, '⟨')
+                            .replace(/\\right\s*\\rangle/g, '⟩')
+                            .replace(/\\left\s*\\lceil/g, '⌈')
+                            .replace(/\\right\s*\\rceil/g, '⌉')
+                            .replace(/\\left\s*\\lfloor/g, '⌊')
+                            .replace(/\\right\s*\\rfloor/g, '⌋')
+                            // 处理单独的 \left 和 \right（移除它们）
+                            .replace(/\\left\s*/g, '')
+                            .replace(/\\right\s*/g, '');
                     };
 
                     // 处理$$包围的显示公式
