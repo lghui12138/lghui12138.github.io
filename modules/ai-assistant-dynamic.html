@@ -292,6 +292,13 @@
                     // 处理单独的 \left 和 \right（移除它们）
                     .replace(/\\left\s*/g, '')
                     .replace(/\\right\s*/g, '')
+                    // 处理文本命令
+                    .replace(/\\text\{([^}]+)\}/g, '<span class="math-text">$1</span>')
+                    .replace(/\\mathrm\{([^}]+)\}/g, '<span class="math-text">$1</span>')
+                    .replace(/\\textbf\{([^}]+)\}/g, '<strong>$1</strong>')
+                    .replace(/\\textit\{([^}]+)\}/g, '<em>$1</em>')
+                    // 处理常见的数学环境标识符
+                    .replace(/\\operatorname\{([^}]+)\}/g, '<span class="math-operator">$1</span>')
                     // 移除$$符号
                     .replace(/\$\$/g, '');
 
@@ -917,6 +924,21 @@
             display: block;
             padding-top: 2px;
             font-size: 0.9em;
+        }
+
+        /* 数学文本样式 */
+        .math-text {
+            font-family: 'Times New Roman', serif;
+            font-style: normal;
+            font-weight: normal;
+            color: inherit;
+        }
+
+        .math-operator {
+            font-family: 'Times New Roman', serif;
+            font-style: normal;
+            font-weight: normal;
+            color: inherit;
         }
 
         /* 平方根样式 */
@@ -4525,7 +4547,14 @@
                             .replace(/\\right\s*\\rfloor/g, '⌋')
                             // 处理单独的 \left 和 \right（移除它们）
                             .replace(/\\left\s*/g, '')
-                            .replace(/\\right\s*/g, '');
+                            .replace(/\\right\s*/g, '')
+                            // 处理文本命令
+                            .replace(/\\text\{([^}]+)\}/g, '<span class="math-text">$1</span>')
+                            .replace(/\\mathrm\{([^}]+)\}/g, '<span class="math-text">$1</span>')
+                            .replace(/\\textbf\{([^}]+)\}/g, '<strong>$1</strong>')
+                            .replace(/\\textit\{([^}]+)\}/g, '<em>$1</em>')
+                            // 处理常见的数学环境标识符
+                            .replace(/\\operatorname\{([^}]+)\}/g, '<span class="math-operator">$1</span>');
                     };
 
                     // 处理$$包围的显示公式
