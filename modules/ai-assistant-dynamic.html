@@ -72,263 +72,109 @@
     <script src="../js/core/config.js" onerror="console.warn('config.js加载失败')"></script>
     <script src="../js/core/smart-model-selector.js" onerror="console.warn('smart-model-selector.js加载失败')"></script>
     
-    <!-- 简化的数学公式处理 - 纯CSS方案 -->
+    <!-- MathJax配置 - 恢复原有配置 -->
     <script>
-        // 简单的数学公式处理函数
-        function processMathFormulas() {
-            console.log('🔢 处理数学公式 - 使用CSS方案');
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true,
+                packages: ['base', 'ams', 'noerrors']
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process',
+                enableMenu: false
+            },
+            loader: {
+                load: ['[tex]/ams', '[tex]/noerrors']
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('✅ MathJax渲染完成');
+                        // 强制重新渲染所有公式
+                        setTimeout(() => {
+                            MathJax.typesetPromise().then(() => {
+                                console.log('✅ 强制重新渲染完成');
+                                // 确保所有公式都正确显示
+                                document.querySelectorAll('.math-formula').forEach(el => {
+                                    el.style.display = 'block';
+                                    el.style.visibility = 'visible';
+                                });
+                                // 确保MathJax元素可见
+                                document.querySelectorAll('.MathJax').forEach(el => {
+                                    el.style.display = 'block !important';
+                                    el.style.visibility = 'visible !important';
+                                });
+                            }).catch(error => {
+                                console.error('强制重新渲染失败:', error);
+                            });
+                        }, 1000);
+                    });
+                }
+            }
+        };
+    </script>
 
-            document.querySelectorAll('.math-formula').forEach(el => {
-                let content = el.innerHTML;
-
-                // 处理常见的LaTeX符号 - 完整版本
-                content = content
-                    // 分数
-                    .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<span class="fraction"><span class="numerator">$1</span><span class="denominator">$2</span></span>')
-                    // 平方根
-                    .replace(/\\sqrt\{([^}]+)\}/g, '<span class="sqrt">√<span class="sqrt-content">$1</span></span>')
-                    // 上下标（改进版本，更好地处理各种情况）
-                    .replace(/\^{([^}]+)}/g, '<sup>$1</sup>')
-                    .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
-                    .replace(/\^(\w+)/g, '<sup>$1</sup>')
-                    .replace(/\^(\d+)/g, '<sup>$1</sup>')
-                    .replace(/\^(\*)/g, '<sup>*</sup>')
-                    .replace(/\^(-?\d+)/g, '<sup>$1</sup>')
-                    .replace(/_(\w+)/g, '<sub>$1</sub>')
-                    .replace(/_(\d+)/g, '<sub>$1</sub>')
-                    // 希腊字母 - 小写
-                    .replace(/\\alpha/g, 'α')
-                    .replace(/\\beta/g, 'β')
-                    .replace(/\\gamma/g, 'γ')
-                    .replace(/\\delta/g, 'δ')
-                    .replace(/\\epsilon/g, 'ε')
-                    .replace(/\\varepsilon/g, 'ε')
-                    .replace(/\\zeta/g, 'ζ')
-                    .replace(/\\eta/g, 'η')
-                    .replace(/\\theta/g, 'θ')
-                    .replace(/\\vartheta/g, 'ϑ')
-                    .replace(/\\iota/g, 'ι')
-                    .replace(/\\kappa/g, 'κ')
-                    .replace(/\\lambda/g, 'λ')
-                    .replace(/\\mu/g, 'μ')
-                    .replace(/\\nu/g, 'ν')
-                    .replace(/\\xi/g, 'ξ')
-                    .replace(/\\pi/g, 'π')
-                    .replace(/\\varpi/g, 'ϖ')
-                    .replace(/\\rho/g, 'ρ')
-                    .replace(/\\varrho/g, 'ϱ')
-                    .replace(/\\sigma/g, 'σ')
-                    .replace(/\\varsigma/g, 'ς')
-                    .replace(/\\tau/g, 'τ')
-                    .replace(/\\upsilon/g, 'υ')
-                    .replace(/\\phi/g, 'φ')
-                    .replace(/\\varphi/g, 'φ')
-                    .replace(/\\chi/g, 'χ')
-                    .replace(/\\psi/g, 'ψ')
-                    .replace(/\\omega/g, 'ω')
-                    // 希腊字母 - 大写
-                    .replace(/\\Gamma/g, 'Γ')
-                    .replace(/\\Delta/g, 'Δ')
-                    .replace(/\\Theta/g, 'Θ')
-                    .replace(/\\Lambda/g, 'Λ')
-                    .replace(/\\Xi/g, 'Ξ')
-                    .replace(/\\Pi/g, 'Π')
-                    .replace(/\\Sigma/g, 'Σ')
-                    .replace(/\\Upsilon/g, 'Υ')
-                    .replace(/\\Phi/g, 'Φ')
-                    .replace(/\\Psi/g, 'Ψ')
-                    .replace(/\\Omega/g, 'Ω')
-                    // 数学符号
-                    .replace(/\\nabla/g, '∇')
-                    .replace(/\\partial/g, '∂')
-                    .replace(/\\infty/g, '∞')
-                    .replace(/\\approx/g, '≈')
-                    .replace(/\\neq/g, '≠')
-                    .replace(/\\leq/g, '≤')
-                    .replace(/\\geq/g, '≥')
-                    .replace(/\\ll/g, '≪')
-                    .replace(/\\gg/g, '≫')
-                    .replace(/\\cdot/g, '·')
-                    .replace(/\\times/g, '×')
-                    .replace(/\\otimes/g, '⊗')
-                    .replace(/\\oplus/g, '⊕')
-                    .replace(/\\div/g, '÷')
-                    .replace(/\\pm/g, '±')
-                    .replace(/\\mp/g, '∓')
-                    .replace(/\\equiv/g, '≡')
-                    .replace(/\\sim/g, '∼')
-                    .replace(/\\simeq/g, '≃')
-                    .replace(/\\cong/g, '≅')
-                    .replace(/\\propto/g, '∝')
-                    // 点符号
-                    .replace(/\\dot\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">˙</span></span>')
-                    .replace(/\\ddot\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">¨</span></span>')
-                    .replace(/\\hat\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">^</span></span>')
-                    .replace(/\\tilde\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.5em;left:50%;transform:translateX(-50%);font-size:0.8em;">~</span></span>')
-                    .replace(/\\bar\{([^}]+)\}/g, '<span style="position:relative;">$1<span style="position:absolute;top:-0.3em;left:0;right:0;height:1px;background:currentColor;"></span></span>')
-                    // 积分符号
-                    .replace(/\\int/g, '∫')
-                    .replace(/\\iint/g, '∬')
-                    .replace(/\\iiint/g, '∭')
-                    .replace(/\\oint/g, '∮')
-                    // 求和符号
-                    .replace(/\\sum/g, '∑')
-                    .replace(/\\prod/g, '∏')
-                    .replace(/\\coprod/g, '∐')
-                    // 极限符号
-                    .replace(/\\lim/g, 'lim')
-                    .replace(/\\limsup/g, 'lim sup')
-                    .replace(/\\liminf/g, 'lim inf')
-                    .replace(/\\max/g, 'max')
-                    .replace(/\\min/g, 'min')
-                    .replace(/\\sup/g, 'sup')
-                    .replace(/\\inf/g, 'inf')
-                    // 三角函数
-                    .replace(/\\sin/g, 'sin')
-                    .replace(/\\cos/g, 'cos')
-                    .replace(/\\tan/g, 'tan')
-                    .replace(/\\cot/g, 'cot')
-                    .replace(/\\sec/g, 'sec')
-                    .replace(/\\csc/g, 'csc')
-                    .replace(/\\arcsin/g, 'arcsin')
-                    .replace(/\\arccos/g, 'arccos')
-                    .replace(/\\arctan/g, 'arctan')
-                    .replace(/\\sinh/g, 'sinh')
-                    .replace(/\\cosh/g, 'cosh')
-                    .replace(/\\tanh/g, 'tanh')
-                    // 对数函数
-                    .replace(/\\log/g, 'log')
-                    .replace(/\\ln/g, 'ln')
-                    .replace(/\\lg/g, 'lg')
-                    .replace(/\\exp/g, 'exp')
-                    // 箭头
-                    .replace(/\\rightarrow/g, '→')
-                    .replace(/\\leftarrow/g, '←')
-                    .replace(/\\leftrightarrow/g, '↔')
-                    .replace(/\\Rightarrow/g, '⇒')
-                    .replace(/\\Leftarrow/g, '⇐')
-                    .replace(/\\Leftrightarrow/g, '⇔')
-                    .replace(/\\uparrow/g, '↑')
-                    .replace(/\\downarrow/g, '↓')
-                    .replace(/\\updownarrow/g, '↕')
-                    .replace(/\\nearrow/g, '↗')
-                    .replace(/\\searrow/g, '↘')
-                    .replace(/\\swarrow/g, '↙')
-                    .replace(/\\nwarrow/g, '↖')
-                    .replace(/\\top/g, 'ᵀ')
-                    // 集合符号
-                    .replace(/\\in/g, '∈')
-                    .replace(/\\notin/g, '∉')
-                    .replace(/\\subset/g, '⊂')
-                    .replace(/\\supset/g, '⊃')
-                    .replace(/\\subseteq/g, '⊆')
-                    .replace(/\\supseteq/g, '⊇')
-                    .replace(/\\cap/g, '∩')
-                    .replace(/\\cup/g, '∪')
-                    .replace(/\\setminus/g, '∖')
-                    .replace(/\\emptyset/g, '∅')
-                    .replace(/\\varnothing/g, '∅')
-                    // 逻辑符号
-                    .replace(/\\forall/g, '∀')
-                    .replace(/\\exists/g, '∃')
-                    .replace(/\\nexists/g, '∄')
-                    .replace(/\\land/g, '∧')
-                    .replace(/\\lor/g, '∨')
-                    .replace(/\\lnot/g, '¬')
-                    .replace(/\\neg/g, '¬')
-                    // 向量和矩阵
-                    .replace(/\\vec\{([^}]+)\}/g, '<span class="vector-perfect">$1</span>')
-                    .replace(/\\mathbf\{([^}]+)\}/g, '<strong>$1</strong>')
-                    .replace(/\\boldsymbol\{([^}]+)\}/g, '<strong>$1</strong>')
-                    .replace(/\\mathbb\{([^}]+)\}/g, '<span style="font-weight:bold;font-family:serif;">$1</span>')
-                    .replace(/\\mathcal\{([^}]+)\}/g, '<span style="font-family:cursive;font-style:italic;">$1</span>')
-                    .replace(/\\mathfrak\{([^}]+)\}/g, '<span style="font-family:serif;font-weight:bold;">$1</span>')
-                    // 微分符号
-                    .replace(/\\mathrm\{d\}/g, 'd')
-                    .replace(/\\,\s*d/g, ' d')
-                    // 常用常数
-                    .replace(/\\mathbf\{I\}/g, '<strong>I</strong>')
-                    .replace(/\\mathbf\{0\}/g, '<strong>0</strong>')
-                    // 更多运算符
-                    .replace(/\\ast/g, '∗')
-                    .replace(/\\star/g, '⋆')
-                    .replace(/\\circ/g, '∘')
-                    .replace(/\\bullet/g, '•')
-                    .replace(/\\diamond/g, '⋄')
-                    .replace(/\\triangle/g, '△')
-                    .replace(/\\triangledown/g, '▽')
-                    .replace(/\\square/g, '□')
-                    .replace(/\\blacksquare/g, '■')
-                    .replace(/\\bigcirc/g, '○')
-                    .replace(/\\bigtriangleup/g, '△')
-                    .replace(/\\bigtriangledown/g, '▽')
-                    // 关系符号
-                    .replace(/\\parallel/g, '∥')
-                    .replace(/\\perp/g, '⊥')
-                    .replace(/\\angle/g, '∠')
-                    .replace(/\\sphericalangle/g, '∢')
-                    .replace(/\\measuredangle/g, '∡')
-                    // 其他符号
-                    .replace(/\\hbar/g, 'ℏ')
-                    .replace(/\\ell/g, 'ℓ')
-                    .replace(/\\wp/g, '℘')
-                    .replace(/\\Re/g, 'ℜ')
-                    .replace(/\\Im/g, 'ℑ')
-                    .replace(/\\aleph/g, 'ℵ')
-                    .replace(/\\beth/g, 'ℶ')
-                    .replace(/\\gimel/g, 'ℷ')
-                    .replace(/\\daleth/g, 'ℸ')
-                    // 处理 \left 和 \right 命令
-                    .replace(/\\left\s*\(/g, '(')
-                    .replace(/\\right\s*\)/g, ')')
-                    .replace(/\\left\s*\[/g, '[')
-                    .replace(/\\right\s*\]/g, ']')
-                    .replace(/\\left\s*\{/g, '{')
-                    .replace(/\\right\s*\}/g, '}')
-                    .replace(/\\left\s*\|/g, '|')
-                    .replace(/\\right\s*\|/g, '|')
-                    .replace(/\\left\s*\\langle/g, '⟨')
-                    .replace(/\\right\s*\\rangle/g, '⟩')
-                    .replace(/\\left\s*\\lceil/g, '⌈')
-                    .replace(/\\right\s*\\rceil/g, '⌉')
-                    .replace(/\\left\s*\\lfloor/g, '⌊')
-                    .replace(/\\right\s*\\rfloor/g, '⌋')
-                    // 处理单独的 \left 和 \right（移除它们）
-                    .replace(/\\left\s*/g, '')
-                    .replace(/\\right\s*/g, '')
-                    // 处理文本命令
-                    .replace(/\\text\{([^}]+)\}/g, '<span class="math-text">$1</span>')
-                    .replace(/\\mathrm\{([^}]+)\}/g, '<span class="math-text">$1</span>')
-                    .replace(/\\textbf\{([^}]+)\}/g, '<strong>$1</strong>')
-                    .replace(/\\textit\{([^}]+)\}/g, '<em>$1</em>')
-                    // 处理常见的数学环境标识符
-                    .replace(/\\operatorname\{([^}]+)\}/g, '<span class="math-operator">$1</span>')
-                    // 处理LaTeX间距命令
-                    .replace(/\\quad/g, '<span class="math-space-quad">&nbsp;&nbsp;&nbsp;&nbsp;</span>')
-                    .replace(/\\qquad/g, '<span class="math-space-qquad">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>')
-                    .replace(/\\,/g, '<span class="math-space-thin">&nbsp;</span>')
-                    .replace(/\\:/g, '<span class="math-space-medium">&nbsp;&nbsp;</span>')
-                    .replace(/\\;/g, '<span class="math-space-thick">&nbsp;&nbsp;&nbsp;</span>')
-                    .replace(/\\!/g, '<span class="math-space-negative"></span>')
-                    .replace(/\\enspace/g, '<span class="math-space-en">&nbsp;&nbsp;</span>')
-                    .replace(/\\thinspace/g, '<span class="math-space-thin">&nbsp;</span>')
-                    .replace(/\\medspace/g, '<span class="math-space-medium">&nbsp;&nbsp;</span>')
-                    .replace(/\\thickspace/g, '<span class="math-space-thick">&nbsp;&nbsp;&nbsp;</span>')
-                    .replace(/\\negmedspace/g, '<span class="math-space-negmedium"></span>')
-                    .replace(/\\negthickspace/g, '<span class="math-space-negthick"></span>')
-                    // 移除$$符号
-                    .replace(/\$\$/g, '');
-
-                el.innerHTML = content;
-                el.style.display = 'block';
-                el.style.visibility = 'visible';
-            });
-
-            console.log('✅ 数学公式处理完成');
+    <!-- MathJax CDN加载 -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" onerror="loadMathJaxFallback()"></script>
+    <script>
+        function loadMathJaxFallback() {
+            console.log('主CDN失败，尝试备用CDN...');
+            const script = document.createElement('script');
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js';
+            script.async = true;
+            script.onerror = function() {
+                console.log('第二个CDN失败，尝试第三个CDN...');
+                const script2 = document.createElement('script');
+                script2.src = 'https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js';
+                script2.async = true;
+                script2.onerror = function() {
+                    console.log('MathJax加载超时，启用备用显示方案');
+                    enableFallbackMathDisplay();
+                };
+                document.head.appendChild(script2);
+            };
+            document.head.appendChild(script);
         }
 
+        function enableFallbackMathDisplay() {
+            console.log('启用数学公式CSS备用方案');
+            // 这里可以添加CSS备用方案的代码
+        }
+    </script>
+
+    <script>
+        // 全局MathJax渲染函数
+        function renderAllMathFormulas() {
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                console.log('开始渲染所有数学公式...');
+                MathJax.typesetPromise().then(() => {
+                    console.log('✅ 所有数学公式渲染完成');
+                    // 确保所有公式元素可见
+                    document.querySelectorAll('.MathJax').forEach(el => {
+                        el.style.display = 'block !important';
+                        el.style.visibility = 'visible !important';
+                    });
+                }).catch((error) => {
+                    console.error('❌ 数学公式渲染失败:', error);
+                });
+            } else {
+                console.log('MathJax未加载，延迟重试...');
+                setTimeout(renderAllMathFormulas, 1000);
+            }
+        }
+
+
+
+
         // 页面加载完成后处理公式
-        document.addEventListener('DOMContentLoaded', processMathFormulas);
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(renderAllMathFormulas, 2000);
+        });
     </script>
 
 
@@ -3627,7 +3473,15 @@
                         for (const keyword of topic.keywords) {
                             if (questionLower.includes(keyword.toLowerCase())) {
                                 console.log(`✅ 本地知识库匹配: ${topicKey}`);
-                                return topic.content;
+                                let content = topic.content;
+
+                                // 处理内容中的LaTeX代码
+                                if (content.includes('$$') || content.includes('\\')) {
+                                    console.log('🔢 处理知识库内容中的LaTeX代码');
+                                    content = this.processLatexInContent(content);
+                                }
+
+                                return content;
                             }
                         }
                     }
@@ -4519,9 +4373,34 @@
                     }
                 },
 
-                // 处理数学公式 - 纯CSS方案
+                // 处理数学公式 - 使用MathJax
                 processMathFormulas() {
-                    console.log('🔢 处理数学公式 - 使用纯CSS方案');
+                    console.log('🔢 处理数学公式 - 使用MathJax');
+
+                    if (window.MathJax && window.MathJax.typesetPromise) {
+                        MathJax.typesetPromise().then(() => {
+                            console.log('✅ MathJax数学公式渲染完成');
+                            // 确保所有公式元素可见
+                            document.querySelectorAll('.MathJax').forEach(el => {
+                                el.style.display = 'block !important';
+                                el.style.visibility = 'visible !important';
+                            });
+                        }).catch((error) => {
+                            console.error('❌ MathJax数学公式渲染失败:', error);
+                            // 如果MathJax失败，使用备用方案
+                            this.processMathFormulasBackup();
+                        });
+                    } else {
+                        console.log('MathJax未加载，延迟重试...');
+                        setTimeout(() => {
+                            this.processMathFormulas();
+                        }, 1000);
+                    }
+                },
+
+                // 备用数学公式处理方案
+                processMathFormulasBackup() {
+                    console.log('🔢 使用备用数学公式处理方案');
 
                     // 处理知识库中的公式容器
                     document.querySelectorAll('.math-formula').forEach(el => {
@@ -4533,7 +4412,71 @@
                         this.processFormulaElement(el);
                     });
 
-                    console.log('✅ 数学公式处理完成');
+                    console.log('✅ 备用数学公式处理完成');
+                },
+
+                // 处理内容中的LaTeX代码（用于知识库内容）
+                processLatexInContent(content) {
+                    console.log('🔢 处理内容中的LaTeX代码');
+
+                    // 处理双美元符号包围的显示公式
+                    content = content.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
+                        console.log('📐 处理显示公式:', formula);
+                        const processedFormula = this.processLatexSymbols(formula);
+                        return `<div class="math-display">${processedFormula}</div>`;
+                    });
+
+                    // 处理单美元符号包围的内联公式
+                    content = content.replace(/\$([^$\n]+)\$/g, (match, formula) => {
+                        console.log('📏 处理内联公式:', formula);
+                        const processedFormula = this.processLatexSymbols(formula);
+                        return `<span class="math-inline">${processedFormula}</span>`;
+                    });
+
+                    return content;
+                },
+
+                // 处理LaTeX符号的方法
+                processLatexSymbols(formula) {
+                    return formula
+                        // 分数
+                        .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<span class="fraction"><span class="numerator">$1</span><span class="denominator">$2</span></span>')
+                        // 平方根
+                        .replace(/\\sqrt\{([^}]+)\}/g, '<span class="sqrt">√<span class="sqrt-content">$1</span></span>')
+                        // 上下标
+                        .replace(/\^{([^}]+)}/g, '<sup>$1</sup>')
+                        .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
+                        .replace(/\^(\w+)/g, '<sup>$1</sup>')
+                        .replace(/\^(\d+)/g, '<sup>$1</sup>')
+                        .replace(/_(\w+)/g, '<sub>$1</sub>')
+                        .replace(/_(\d+)/g, '<sub>$1</sub>')
+                        // 希腊字母
+                        .replace(/\\alpha/g, 'α').replace(/\\beta/g, 'β').replace(/\\gamma/g, 'γ').replace(/\\delta/g, 'δ')
+                        .replace(/\\epsilon/g, 'ε').replace(/\\zeta/g, 'ζ').replace(/\\eta/g, 'η').replace(/\\theta/g, 'θ')
+                        .replace(/\\lambda/g, 'λ').replace(/\\mu/g, 'μ').replace(/\\nu/g, 'ν').replace(/\\pi/g, 'π')
+                        .replace(/\\rho/g, 'ρ').replace(/\\sigma/g, 'σ').replace(/\\tau/g, 'τ').replace(/\\phi/g, 'φ')
+                        .replace(/\\chi/g, 'χ').replace(/\\psi/g, 'ψ').replace(/\\omega/g, 'ω')
+                        .replace(/\\Gamma/g, 'Γ').replace(/\\Delta/g, 'Δ').replace(/\\Theta/g, 'Θ').replace(/\\Lambda/g, 'Λ')
+                        .replace(/\\Pi/g, 'Π').replace(/\\Sigma/g, 'Σ').replace(/\\Phi/g, 'Φ').replace(/\\Psi/g, 'Ψ').replace(/\\Omega/g, 'Ω')
+                        // 数学符号
+                        .replace(/\\nabla/g, '∇').replace(/\\partial/g, '∂').replace(/\\infty/g, '∞')
+                        .replace(/\\cdot/g, '·').replace(/\\times/g, '×').replace(/\\pm/g, '±')
+                        // 积分和求和
+                        .replace(/\\int/g, '∫').replace(/\\oint/g, '∮').replace(/\\sum/g, '∑').replace(/\\prod/g, '∏')
+                        // 向量
+                        .replace(/\\vec\{([^}]+)\}/g, '<span class="vector-perfect">$1</span>')
+                        .replace(/\\mathbf\{([^}]+)\}/g, '<strong>$1</strong>')
+                        // 矩阵环境
+                        .replace(/\\begin\{vmatrix\}/g, '<span class="matrix-vmatrix">')
+                        .replace(/\\end\{vmatrix\}/g, '</span>')
+                        .replace(/\\\\/g, '<br>')
+                        .replace(/&/g, '&nbsp;&nbsp;&nbsp;')
+                        // 处理 \left 和 \right
+                        .replace(/\\left\s*\(/g, '(').replace(/\\right\s*\)/g, ')')
+                        .replace(/\\left\s*\[/g, '[').replace(/\\right\s*\]/g, ']')
+                        .replace(/\\left\s*\{/g, '{').replace(/\\right\s*\}/g, '}')
+                        .replace(/\\left\s*\|/g, '|').replace(/\\right\s*\|/g, '|')
+                        .replace(/\\left\s*/g, '').replace(/\\right\s*/g, '');
                 },
 
                 // 处理单个元素中的公式
@@ -4881,39 +4824,28 @@
                 return result;
             },
 
-            mounted() {
-                console.log('🚀 Vue应用已挂载');
-                console.log('🔍 检查convertMarkdownToHtml方法是否存在:', typeof this.convertMarkdownToHtml);
-                console.log('🔍 Vue组件methods:', Object.keys(this.$options.methods || {}));
-                console.log('🔍 Vue实例所有属性:', Object.getOwnPropertyNames(this));
+        mounted() {
+            console.log('🚀 Vue应用已挂载');
 
-                // 测试方法调用
-                try {
-                    const testResult = this.convertMarkdownToHtml('# 测试标题\n这是一个测试。');
-                    console.log('✅ convertMarkdownToHtml测试成功:', testResult);
-                } catch (error) {
-                    console.error('❌ convertMarkdownToHtml测试失败:', error);
-                }
+            // 立即显示欢迎消息
+            this.showNotification('AI学习助手已就绪！', 'success');
 
-                // 立即显示欢迎消息
-                this.showNotification('AI学习助手已就绪！', 'success');
+            // 添加键盘事件监听
+            document.addEventListener('keydown', this.handleKeyboard);
 
-                // 添加键盘事件监听
-                document.addEventListener('keydown', this.handleKeyboard);
+            // 异步初始化其他功能（不阻塞界面）
+            setTimeout(() => {
+                this.initSmartAI().catch(error => {
+                    console.warn('AI系统初始化失败:', error);
+                });
+                this.processMathFormulas(); // 处理数学公式
+                this.enhanceVoiceInput(); // 初始化语音输入增强功能
+            }, 100);
 
-                // 异步初始化其他功能（不阻塞界面）
-                setTimeout(() => {
-                    this.initSmartAI().catch(error => {
-                        console.warn('AI系统初始化失败:', error);
-                    });
-                    this.processMathFormulas(); // 处理数学公式
-                    this.enhanceVoiceInput(); // 初始化语音输入增强功能
-                }, 100);
+            console.log('🤖 AI学习助手已启动');
+        },
 
-                console.log('🤖 AI学习助手已启动');
-            },
-
-            beforeUnmount() {
+        beforeUnmount() {
                 // 清理事件监听器
                 document.removeEventListener('keydown', this.handleKeyboard);
                 document.body.style.overflow = '';
