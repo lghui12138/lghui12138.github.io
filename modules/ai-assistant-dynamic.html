@@ -87,11 +87,15 @@
                     .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<span class="fraction"><span class="numerator">$1</span><span class="denominator">$2</span></span>')
                     // 平方根
                     .replace(/\\sqrt\{([^}]+)\}/g, '<span class="sqrt">√<span class="sqrt-content">$1</span></span>')
-                    // 上下标
+                    // 上下标（改进版本，更好地处理各种情况）
                     .replace(/\^{([^}]+)}/g, '<sup>$1</sup>')
                     .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
                     .replace(/\^(\w+)/g, '<sup>$1</sup>')
+                    .replace(/\^(\d+)/g, '<sup>$1</sup>')
+                    .replace(/\^(\*)/g, '<sup>*</sup>')
+                    .replace(/\^(-?\d+)/g, '<sup>$1</sup>')
                     .replace(/_(\w+)/g, '<sub>$1</sub>')
+                    .replace(/_(\d+)/g, '<sub>$1</sub>')
                     // 希腊字母 - 小写
                     .replace(/\\alpha/g, 'α')
                     .replace(/\\beta/g, 'β')
@@ -918,25 +922,30 @@
             direction: ltr;
         }
 
-        /* 分数样式 */
+        /* 分数样式 - 改进版本 */
         .fraction {
             display: inline-block;
             text-align: center;
             vertical-align: middle;
-            margin: 0 3px;
+            margin: 0 4px;
+            position: relative;
         }
 
         .numerator {
             display: block;
             border-bottom: 1px solid currentColor;
-            padding-bottom: 2px;
-            font-size: 0.9em;
+            padding-bottom: 3px;
+            font-size: 0.85em;
+            line-height: 1.2;
+            min-height: 1em;
         }
 
         .denominator {
             display: block;
-            padding-top: 2px;
-            font-size: 0.9em;
+            padding-top: 3px;
+            font-size: 0.85em;
+            line-height: 1.2;
+            min-height: 1em;
         }
 
         /* 框选样式 */
@@ -961,6 +970,25 @@
             font-style: normal;
             font-weight: normal;
             color: inherit;
+        }
+
+        /* 上下标样式 */
+        sup {
+            font-size: 0.75em;
+            line-height: 0;
+            position: relative;
+            vertical-align: baseline;
+            top: -0.5em;
+            font-weight: normal;
+        }
+
+        sub {
+            font-size: 0.75em;
+            line-height: 0;
+            position: relative;
+            vertical-align: baseline;
+            bottom: -0.25em;
+            font-weight: normal;
         }
 
         /* Markdown转换后的HTML样式 */
@@ -2886,6 +2914,9 @@
                 async sendMessage() {
                     if (!this.currentMessage.trim() || this.isTyping) return;
 
+                    // 保存this上下文，避免在异步回调中丢失
+                    const self = this;
+
                     const userMessage = {
                         id: Date.now(),
                         sender: 'user',
@@ -2937,11 +2968,11 @@
                         try {
                             const aiResponse = await this.generateAIResponse(messageText);
                             // 转换Markdown到HTML
-                            console.log('🔍 准备调用convertMarkdownToHtml，方法类型:', typeof this.convertMarkdownToHtml);
+                            console.log('🔍 准备调用convertMarkdownToHtml，方法类型:', typeof self.convertMarkdownToHtml);
 
                             let htmlContent;
-                            if (typeof this.convertMarkdownToHtml === 'function') {
-                                htmlContent = this.convertMarkdownToHtml(aiResponse);
+                            if (typeof self.convertMarkdownToHtml === 'function') {
+                                htmlContent = self.convertMarkdownToHtml(aiResponse);
                             } else {
                                 console.warn('⚠️ convertMarkdownToHtml方法不存在，使用临时转换函数');
                                 // 临时Markdown转换函数
@@ -3070,31 +3101,36 @@
                             } catch (primaryError) {
                                 console.warn('⚠️ 首选模型失败，尝试备选模型:', primaryError.message);
 
-                                // 如果是数学推导失败，尝试备选模型
+                                // DeepSeek-R1失败时的梯度降级策略
                                 if (modelConfig.preferredModel === 'deepseek-r1') {
                                     try {
-                                        console.log('🔄 DeepSeek-R1失败，尝试DeepSeek-V3');
+                                        console.log('🔄 DeepSeek-R1失败，尝试简单快速的模型');
                                         result = await window.smartModelSelectorInstance.callAI(question, {
-                                            strategy: 'reasoning',
-                                            features: ['reasoning', 'math', 'analysis'],
-                                            maxTokens: 1500,
-                                            temperature: 0.4,
-                                            preferredModel: 'deepseek-v3',
+                                            strategy: 'fast',
+                                            features: ['reasoning', 'math'],
+                                            maxTokens: 1200,
+                                            temperature: 0.3,
+                                            preferredModel: 'auto', // 让系统选择最稳定的简单模型
                                             systemPrompt: modelConfig.systemPrompt,
-                                            requestTimeout: 180000 // 3分钟
+                                            requestTimeout: 60000 // 1分钟，更快响应
                                         });
-                                        console.log('✅ 备选DeepSeek-V3回复成功:', result.model);
+                                        console.log('✅ 备选简单模型回复成功:', result.model);
                                     } catch (fallbackError) {
-                                        console.error('❌ DeepSeek-V3也失败，使用自动选择:', fallbackError.message);
-                                        // 最后尝试自动选择可用模型
-                                        result = await window.smartModelSelectorInstance.callAI(question, {
-                                            strategy: 'balanced',
-                                            maxTokens: 1000,
-                                            temperature: 0.5,
-                                            systemPrompt: '你是流体力学专家，请详细回答问题。',
-                                            requestTimeout: 120000 // 2分钟
-                                        });
-                                        console.log('✅ 自动选择模型回复成功:', result.model);
+                                        console.error('❌ 简单模型也失败，尝试最基础模型:', fallbackError.message);
+                                        // 最后尝试最基础的模型
+                                        try {
+                                            result = await window.smartModelSelectorInstance.callAI(question, {
+                                                strategy: 'basic',
+                                                maxTokens: 800,
+                                                temperature: 0.5,
+                                                systemPrompt: '你是一个AI助手，请简洁地回答问题。',
+                                                requestTimeout: 30000 // 30秒
+                                            });
+                                            console.log('✅ 基础模型回复成功:', result.model);
+                                        } catch (basicError) {
+                                            console.error('❌ 所有模型都失败了:', basicError.message);
+                                            throw new Error('所有AI模型都暂时不可用，请稍后再试');
+                                        }
                                     }
                                 } else if (modelConfig.preferredModel === 'deepseek-v3') {
                                     try {
@@ -4528,11 +4564,15 @@
                             .replace(/\\sqrt\{([^}]+)\}/g, '<span class="sqrt">√<span class="sqrt-content">$1</span></span>')
                             // 框选
                             .replace(/\\boxed\{([^}]+)\}/g, '<span class="boxed">$1</span>')
-                            // 上下标
+                            // 上下标（改进版本，更好地处理各种情况）
                             .replace(/\^{([^}]+)}/g, '<sup>$1</sup>')
                             .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
                             .replace(/\^(\w+)/g, '<sup>$1</sup>')
+                            .replace(/\^(\d+)/g, '<sup>$1</sup>')
+                            .replace(/\^(\*)/g, '<sup>*</sup>')
+                            .replace(/\^(-?\d+)/g, '<sup>$1</sup>')
                             .replace(/_(\w+)/g, '<sub>$1</sub>')
+                            .replace(/_(\d+)/g, '<sub>$1</sub>')
                             // 希腊字母 - 小写
                             .replace(/\\alpha/g, 'α')
                             .replace(/\\beta/g, 'β')
@@ -4754,6 +4794,14 @@
                             .replace(/\\negmedspace/g, '<span class="math-space-negmedium"></span>')
                             .replace(/\\negthickspace/g, '<span class="math-space-negthick"></span>');
                     };
+
+                    // 处理\(...\)包围的行内公式
+                    content = content.replace(/\\\(([\s\S]*?)\\\)/g, (match, formula) => {
+                        console.log('📏 处理\\(...\\)行内公式:', formula);
+                        const processedFormula = processLatexSymbols(formula);
+                        console.log('✅ \\(...\\)公式处理结果:', processedFormula);
+                        return `<span class="math-inline">${processedFormula}</span>`;
+                    });
 
                     // 处理$$包围的显示公式
                     content = content.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
