@@ -2929,9 +2929,29 @@
                             const aiResponse = await this.generateAIResponse(messageText);
                             // 转换Markdown到HTML
                             console.log('🔍 准备调用convertMarkdownToHtml，方法类型:', typeof this.convertMarkdownToHtml);
-                            console.log('🔍 this对象:', this);
-                            console.log('🔍 Vue实例方法:', Object.getOwnPropertyNames(this).filter(name => typeof this[name] === 'function'));
-                            const htmlContent = this.convertMarkdownToHtml(aiResponse);
+
+                            let htmlContent;
+                            if (typeof this.convertMarkdownToHtml === 'function') {
+                                htmlContent = this.convertMarkdownToHtml(aiResponse);
+                            } else {
+                                console.warn('⚠️ convertMarkdownToHtml方法不存在，使用临时转换函数');
+                                // 临时Markdown转换函数
+                                htmlContent = aiResponse
+                                    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
+                                    .replace(/^## (.*$)/gm, '<h2>$1</h2>')
+                                    .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                                    .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+                                    .replace(/`([^`]+)`/g, '<code>$1</code>')
+                                    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                                    .replace(/\n\n/g, '</p><p>')
+                                    .replace(/\n/g, '<br>');
+
+                                if (htmlContent && !htmlContent.startsWith('<')) {
+                                    htmlContent = '<p>' + htmlContent + '</p>';
+                                }
+                            }
                             this.messages.push({
                                 id: Date.now() + 1,
                                 sender: 'ai',
