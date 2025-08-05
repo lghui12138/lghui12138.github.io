@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>最小化测试 - Vue应用</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .panel {
+            background: #e3f2fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #2196f3;
+        }
+        .btn {
+            background: #2196f3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .btn:hover {
+            background: #1976d2;
+        }
+        .close-btn {
+            background: #f44336;
+            float: right;
+        }
+        .close-btn:hover {
+            background: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <h1>🧪 Vue应用最小化测试</h1>
+            
+            <div class="panel">
+                <h3>📊 应用状态</h3>
+                <p>Vue应用已挂载: {{ mounted ? '✅ 是' : '❌ 否' }}</p>
+                <p>高级面板显示: {{ showAdvancedPanel ? '✅ 是' : '❌ 否' }}</p>
+                <p>当前时间: {{ currentTime }}</p>
+            </div>
+
+            <div>
+                <button class="btn" @click="togglePanel">
+                    {{ showAdvancedPanel ? '关闭' : '打开' }}高级面板
+                </button>
+                <button class="btn" @click="testMethod">测试方法</button>
+                <button class="btn" @click="updateTime">更新时间</button>
+            </div>
+
+            <!-- 高级面板 -->
+            <div v-if="showAdvancedPanel" class="panel" style="background: #fff3e0; border-left-color: #ff9800;">
+                <h3>⚙️ 高级功能面板</h3>
+                <button class="close-btn" @click="closePanel">❌ 关闭</button>
+                <p>这是一个测试面板，用于验证Vue应用的基本功能。</p>
+                <ul>
+                    <li>✅ Vue 3.x 应用创建</li>
+                    <li>✅ 响应式数据绑定</li>
+                    <li>✅ 事件处理</li>
+                    <li>✅ 条件渲染 (v-if)</li>
+                    <li>✅ 方法调用</li>
+                </ul>
+            </div>
+
+            <div class="panel">
+                <h3>🔍 调试信息</h3>
+                <p>打开浏览器控制台查看详细日志</p>
+                <div style="background: #f5f5f5; padding: 10px; border-radius: 5px; font-family: monospace; font-size: 12px;">
+                    <div>Vue版本: {{ vueVersion }}</div>
+                    <div>组件方法数量: {{ methodCount }}</div>
+                    <div>最后操作: {{ lastAction }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        const app = createApp({
+            data() {
+                return {
+                    mounted: false,
+                    showAdvancedPanel: false,
+                    currentTime: new Date().toLocaleTimeString(),
+                    vueVersion: Vue.version || '3.x',
+                    methodCount: 0,
+                    lastAction: '应用初始化'
+                };
+            },
+
+            methods: {
+                togglePanel() {
+                    this.showAdvancedPanel = !this.showAdvancedPanel;
+                    this.lastAction = this.showAdvancedPanel ? '打开面板' : '关闭面板';
+                    console.log('🔧 切换面板状态:', this.showAdvancedPanel);
+                },
+
+                closePanel() {
+                    this.showAdvancedPanel = false;
+                    this.lastAction = '关闭面板';
+                    console.log('❌ 关闭面板');
+                },
+
+                testMethod() {
+                    this.lastAction = '测试方法调用';
+                    console.log('🧪 测试方法被调用');
+                    alert('测试方法调用成功！');
+                },
+
+                updateTime() {
+                    this.currentTime = new Date().toLocaleTimeString();
+                    this.lastAction = '更新时间';
+                    console.log('⏰ 时间已更新:', this.currentTime);
+                }
+            },
+
+            mounted() {
+                this.mounted = true;
+                this.methodCount = Object.keys(this.$options.methods || {}).length;
+                this.lastAction = 'Vue应用已挂载';
+                
+                console.log('🚀 Vue应用已挂载');
+                console.log('📊 组件状态:', {
+                    mounted: this.mounted,
+                    showAdvancedPanel: this.showAdvancedPanel,
+                    methodCount: this.methodCount
+                });
+
+                // 添加键盘事件监听
+                document.addEventListener('keydown', (event) => {
+                    if (event.key === 'Escape' && this.showAdvancedPanel) {
+                        this.closePanel();
+                    }
+                });
+
+                console.log('✅ 最小化测试应用启动完成');
+            }
+        });
+
+        // 挂载应用
+        app.mount('#app');
+        console.log('🎯 Vue应用挂载完成');
+    </script>
+</body>
+</html>

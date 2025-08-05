@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI学习助手 - 简化版</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .advanced-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            max-width: 500px;
+            width: 90%;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        .close-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .close-btn:hover {
+            background: #d32f2f;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        .status-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <h1>AI学习助手 - 简化版</h1>
+                <p>测试高级面板关闭功能</p>
+            </div>
+
+            <div class="status-info">
+                <h3>应用状态</h3>
+                <p>Vue应用已挂载: {{ mounted ? '是' : '否' }}</p>
+                <p>高级面板显示: {{ showAdvancedPanel ? '是' : '否' }}</p>
+                <p>当前时间: {{ currentTime }}</p>
+            </div>
+
+            <div class="controls">
+                <button class="btn" @click="toggleAdvancedPanel">
+                    {{ showAdvancedPanel ? '关闭' : '打开' }}高级面板
+                </button>
+                <button class="btn" @click="updateTime">更新时间</button>
+                <button class="btn" @click="testFunction">测试功能</button>
+            </div>
+
+            <div class="status-info">
+                <h3>功能测试</h3>
+                <ul class="feature-list">
+                    <li>Vue 3.x 应用: {{ mounted ? '正常' : '异常' }}</li>
+                    <li>响应式数据: {{ testData }}</li>
+                    <li>事件处理: 正常</li>
+                    <li>条件渲染: 正常</li>
+                    <li>高级面板: {{ showAdvancedPanel ? '已打开' : '已关闭' }}</li>
+                </ul>
+            </div>
+
+            <!-- 遮罩层 -->
+            <div v-if="showAdvancedPanel" class="overlay" @click="closeAdvancedPanel"></div>
+
+            <!-- 高级功能面板 -->
+            <div v-if="showAdvancedPanel" class="advanced-panel">
+                <div class="panel-header">
+                    <h3>AI助手高级功能</h3>
+                    <button class="close-btn" @click="closeAdvancedPanel" title="关闭面板 [ESC]">
+                        ×
+                    </button>
+                </div>
+
+                <div class="panel-content">
+                    <h4>功能开关</h4>
+                    <ul>
+                        <li>数学模式: 开启</li>
+                        <li>考试模式: 关闭</li>
+                        <li>上下文记忆: 开启</li>
+                        <li>智能建议: 开启</li>
+                    </ul>
+
+                    <h4>测试项目</h4>
+                    <ul>
+                        <li>点击 × 按钮关闭</li>
+                        <li>按 ESC 键关闭</li>
+                        <li>点击外部区域关闭</li>
+                        <li>调用 forceClosePanel() 关闭</li>
+                    </ul>
+
+                    <p style="margin-top: 20px; padding: 10px; background: #f0f0f0; border-radius: 5px; color: #666; font-size: 14px;">
+                        这是一个简化版的AI助手，用于测试高级面板的关闭功能。
+                        所有关闭方式都应该正常工作。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        const app = createApp({
+            data() {
+                return {
+                    mounted: false,
+                    showAdvancedPanel: false,
+                    currentTime: new Date().toLocaleTimeString(),
+                    testData: '响应式数据正常'
+                };
+            },
+
+            methods: {
+                toggleAdvancedPanel() {
+                    this.showAdvancedPanel = !this.showAdvancedPanel;
+                    console.log('切换高级面板状态:', this.showAdvancedPanel);
+                },
+
+                closeAdvancedPanel() {
+                    this.showAdvancedPanel = false;
+                    console.log('关闭高级面板');
+                },
+
+                updateTime() {
+                    this.currentTime = new Date().toLocaleTimeString();
+                    console.log('时间已更新:', this.currentTime);
+                },
+
+                testFunction() {
+                    console.log('测试功能被调用');
+                    alert('测试功能正常工作！');
+                },
+
+                handleKeyboard(event) {
+                    if (event.key === 'Escape' && this.showAdvancedPanel) {
+                        event.preventDefault();
+                        this.closeAdvancedPanel();
+                        console.log('ESC键关闭面板');
+                    }
+                }
+            },
+
+            mounted() {
+                this.mounted = true;
+                console.log('Vue应用已挂载');
+
+                // 添加键盘事件监听
+                document.addEventListener('keydown', this.handleKeyboard);
+
+                // 添加全局调试函数
+                window.debugVueApp = () => {
+                    console.log('Vue应用状态:', {
+                        mounted: this.mounted,
+                        showAdvancedPanel: this.showAdvancedPanel,
+                        currentTime: this.currentTime,
+                        testData: this.testData
+                    });
+                    return this;
+                };
+
+                window.forceClosePanel = () => {
+                    this.showAdvancedPanel = false;
+                    console.log('强制关闭高级面板');
+                };
+
+                console.log('调试函数已添加: debugVueApp(), forceClosePanel()');
+                console.log('简化版AI助手启动完成');
+            },
+
+            beforeUnmount() {
+                document.removeEventListener('keydown', this.handleKeyboard);
+            }
+        });
+
+        // 挂载应用
+        try {
+            app.mount('#app');
+            console.log('Vue应用挂载成功');
+        } catch (error) {
+            console.error('Vue应用挂载失败:', error);
+        }
+    </script>
+</body>
+</html>

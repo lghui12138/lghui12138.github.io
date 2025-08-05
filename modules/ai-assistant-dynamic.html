@@ -119,31 +119,75 @@
         };
     </script>
 
-    <!-- MathJax CDN加载 -->
+    <!-- MathJax CDN加载 - 改进的错误处理 -->
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" onerror="loadMathJaxFallback()"></script>
     <script>
+        let mathJaxLoadAttempts = 0;
+        const maxMathJaxAttempts = 3;
+
         function loadMathJaxFallback() {
-            console.log('主CDN失败，尝试备用CDN...');
+            mathJaxLoadAttempts++;
+            console.log(`MathJax加载失败 (尝试 ${mathJaxLoadAttempts}/${maxMathJaxAttempts})，尝试备用CDN...`);
+
+            if (mathJaxLoadAttempts >= maxMathJaxAttempts) {
+                console.log('所有MathJax CDN都失败，启用备用显示方案');
+                enableFallbackMathDisplay();
+                return;
+            }
+
+            const cdnUrls = [
+                'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js',
+                'https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js'
+            ];
+
             const script = document.createElement('script');
-            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-mml-chtml.js';
+            script.src = cdnUrls[mathJaxLoadAttempts - 1];
             script.async = true;
-            script.onerror = function() {
-                console.log('第二个CDN失败，尝试第三个CDN...');
-                const script2 = document.createElement('script');
-                script2.src = 'https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js';
-                script2.async = true;
-                script2.onerror = function() {
-                    console.log('MathJax加载超时，启用备用显示方案');
-                    enableFallbackMathDisplay();
-                };
-                document.head.appendChild(script2);
+            script.onerror = loadMathJaxFallback;
+            script.onload = function() {
+                console.log('✅ MathJax备用CDN加载成功');
             };
             document.head.appendChild(script);
         }
 
         function enableFallbackMathDisplay() {
             console.log('启用数学公式CSS备用方案');
-            // 这里可以添加CSS备用方案的代码
+
+            // 创建一个简单的数学公式渲染器
+            window.MathJax = {
+                typesetPromise: function() {
+                    return Promise.resolve();
+                },
+                startup: {
+                    defaultPageReady: function() {
+                        return Promise.resolve();
+                    }
+                }
+            };
+
+            // 添加备用样式
+            const style = document.createElement('style');
+            style.textContent = `
+                .math-formula {
+                    font-family: 'Times New Roman', serif;
+                    font-style: italic;
+                    background: #f8f9fa;
+                    padding: 2px 4px;
+                    border-radius: 3px;
+                    border: 1px solid #dee2e6;
+                }
+                .math-display {
+                    display: block;
+                    text-align: center;
+                    margin: 10px 0;
+                    padding: 10px;
+                    background: #f8f9fa;
+                    border-radius: 5px;
+                }
+            `;
+            document.head.appendChild(style);
+
+            console.log('✅ 备用数学公式显示方案已启用');
         }
     </script>
 
@@ -1396,6 +1440,12 @@
             gap: 10px;
         }
 
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .close-btn {
             background: none;
             border: none;
@@ -1956,12 +2006,14 @@
         </div>
 
         <!-- 高级功能面板 -->
-        <div v-if="showAdvancedPanel" class="advanced-panel">
+        <div v-if="showAdvancedPanel" class="advanced-panel" @click.self="showAdvancedPanel = false">
             <div class="panel-header">
                 <h3><i class="fas fa-brain"></i> AI助手高级功能</h3>
-                <button @click="showAdvancedPanel = false" class="close-btn">
-                    <i class="fas fa-times"></i>
-                </button>
+                <div class="header-controls">
+                    <button @click="forceCloseAdvancedPanel" class="close-btn" title="关闭面板 [ESC]">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
 
             <div class="panel-content">
@@ -3805,7 +3857,11 @@
                         event.preventDefault();
                         this.toggleFullscreen();
                     } else if (event.key === 'Escape') {
-                        if (this.isFullscreen) {
+                        // 优先级：高级面板 > 全屏模式 > 返回主页
+                        if (this.showAdvancedPanel) {
+                            event.preventDefault();
+                            this.forceCloseAdvancedPanel();
+                        } else if (this.isFullscreen) {
                             this.toggleFullscreen();
                         } else {
                             window.location.href = '../index.html';
@@ -3813,6 +3869,9 @@
                     } else if (event.ctrlKey && event.key === 'l') {
                         event.preventDefault();
                         this.clearChat();
+                    } else if (event.ctrlKey && event.key === 's') {
+                        event.preventDefault();
+                        this.toggleAdvancedPanel();
                     }
                 },
 
@@ -4370,10 +4429,27 @@
 
                 // 高级功能面板
                 toggleAdvancedPanel() {
+                    console.log('切换高级面板状态，当前:', this.showAdvancedPanel);
                     this.showAdvancedPanel = !this.showAdvancedPanel;
+                    console.log('切换后状态:', this.showAdvancedPanel);
+
                     if (this.showAdvancedPanel) {
                         this.showNotification('高级功能面板已打开', 'info');
+                    } else {
+                        this.showNotification('高级功能面板已关闭', 'info');
                     }
+
+                    // 强制更新DOM
+                    this.$nextTick(() => {
+                        console.log('高级面板状态更新完成');
+                    });
+                },
+
+                // 强制关闭高级面板
+                forceCloseAdvancedPanel() {
+                    console.log('强制关闭高级面板');
+                    this.showAdvancedPanel = false;
+                    this.showNotification('高级功能面板已关闭', 'success');
                 },
 
                 // 初始化智能AI系统
@@ -4809,103 +4885,121 @@
             },
 
             // Markdown转HTML方法
-            convertMarkdownToHtml: function(text) {
-                console.log('🔄 开始转换Markdown到HTML:', text.substring(0, 100) + '...');
+            convertMarkdownToHtml(text) {
+                console.log('开始转换Markdown到HTML:', text.substring(0, 100) + '...');
 
-                let result = text
-                    // 标题（按层级从深到浅处理，避免冲突）
-                    .replace(/^\s*###### (.*$)/gm, '<h6>$1</h6>')
-                    .replace(/^\s*##### (.*$)/gm, '<h5>$1</h5>')
-                    .replace(/^\s*#### (.*$)/gm, '<h4>$1</h4>')
-                    .replace(/^\s*### (.*$)/gm, '<h3>$1</h3>')
-                    .replace(/^\s*## (.*$)/gm, '<h2>$1</h2>')
-                    .replace(/^\s*# (.*$)/gm, '<h1>$1</h1>')
-                    // 粗体和斜体
-                    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                    // 代码块（先处理，避免与其他规则冲突）
-                    .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-                    .replace(/`([^`]+)`/g, '<code>$1</code>')
-                    // 链接
-                    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
-                    // 引用块
-                    .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
-                    // 无序列表
-                    .replace(/^[\s]*[-*+] (.+)$/gm, '<li>$1</li>')
-                    // 有序列表
-                    .replace(/^[\s]*\d+\. (.+)$/gm, '<li>$1</li>')
-                    // 分隔线
-                    .replace(/^---$/gm, '<hr>')
-                    // 换行处理
-                    .replace(/\n\n/g, '</p><p>')
-                    .replace(/\n/g, '<br>');
+                let result = text;
+
+                // 标题处理
+                result = result.replace(/^\s*###### (.*$)/gm, '<h6>$1</h6>');
+                result = result.replace(/^\s*##### (.*$)/gm, '<h5>$1</h5>');
+                result = result.replace(/^\s*#### (.*$)/gm, '<h4>$1</h4>');
+                result = result.replace(/^\s*### (.*$)/gm, '<h3>$1</h3>');
+                result = result.replace(/^\s*## (.*$)/gm, '<h2>$1</h2>');
+                result = result.replace(/^\s*# (.*$)/gm, '<h1>$1</h1>');
+
+                // 粗体和斜体
+                result = result.replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>');
+                result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                result = result.replace(/\*(.*?)\*/g, '<em>$1</em>');
+
+                // 代码块
+                result = result.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+                result = result.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+                // 链接
+                result = result.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+                // 引用块
+                result = result.replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>');
+
+                // 列表
+                result = result.replace(/^[\s]*[-*+] (.+)$/gm, '<li>$1</li>');
+                result = result.replace(/^[\s]*\d+\. (.+)$/gm, '<li>$1</li>');
+
+                // 分隔线
+                result = result.replace(/^---$/gm, '<hr>');
+
+                // 换行处理
+                result = result.replace(/\n\n/g, '</p><p>');
+                result = result.replace(/\n/g, '<br>');
 
                 // 确保内容被包装在段落标签中
                 if (result && !result.startsWith('<')) {
                     result = '<p>' + result + '</p>';
                 }
 
-                console.log('✅ Markdown转换完成:', result.substring(0, 200) + '...');
+                console.log('Markdown转换完成:', result.substring(0, 200) + '...');
                 return result;
             }
         },
 
         mounted() {
-                console.log('🚀 Vue应用已挂载');
-                console.log('🔍 检查convertMarkdownToHtml方法是否存在:', typeof this.convertMarkdownToHtml);
-                console.log('🔍 Vue组件methods:', Object.keys(this.$options.methods || {}));
-                console.log('🔍 Vue实例所有属性:', Object.getOwnPropertyNames(this));
+            console.log('Vue应用已挂载');
 
-                // 测试方法调用
+            // 立即显示欢迎消息
+            this.showNotification('AI学习助手已就绪', 'success');
+
+            // 添加键盘事件监听
+            document.addEventListener('keydown', this.handleKeyboard);
+
+            // 异步初始化其他功能（不阻塞界面）
+            setTimeout(() => {
                 try {
-                    const testResult = this.convertMarkdownToHtml('# 测试标题\n这是一个测试。');
-                    console.log('✅ convertMarkdownToHtml测试成功:', testResult);
-                } catch (error) {
-                    console.error('❌ convertMarkdownToHtml测试失败:', error);
-                }
-
-                // 立即显示欢迎消息
-                this.showNotification('AI学习助手已就绪！', 'success');
-
-                // 添加键盘事件监听
-                document.addEventListener('keydown', this.handleKeyboard);
-
-                // 异步初始化其他功能（不阻塞界面）
-                setTimeout(() => {
                     this.initSmartAI().catch(error => {
                         console.warn('AI系统初始化失败:', error);
                     });
-                    this.processMathFormulas(); // 处理数学公式
-                    this.enhanceVoiceInput(); // 初始化语音输入增强功能
-                }, 100);
+                    this.processMathFormulas();
+                    this.enhanceVoiceInput();
+                } catch (error) {
+                    console.error('初始化功能失败:', error);
+                }
+            }, 100);
 
-                console.log('🤖 AI学习助手已启动');
-            },
+            console.log('AI学习助手已启动');
+        },
 
-            beforeUnmount() {
-                // 清理事件监听器
-                document.removeEventListener('keydown', this.handleKeyboard);
-                document.body.style.overflow = '';
-            }
+        beforeUnmount() {
+            // 清理事件监听器
+            document.removeEventListener('keydown', this.handleKeyboard);
+            document.body.style.overflow = '';
+        }
         });
 
-        // 立即隐藏加载界面的紧急措施
-        setTimeout(() => {
-            const loadingOverlay = document.querySelector('.loading-overlay');
-            if (loadingOverlay) {
-                console.log('🚨 紧急隐藏加载界面');
-                loadingOverlay.style.display = 'none';
+        // Vue应用挂载标志
+        let vueAppMounted = false;
+
+        // 确保Vue已加载并挂载应用
+        function mountVueApp() {
+            if (vueAppMounted) {
+                console.log('⚠️ Vue应用已经挂载，跳过重复挂载');
+                return;
             }
-        }, 2000); // 2秒后强制隐藏
 
-        // 确保在DOM加载完成后挂载Vue应用
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM加载完成，开始挂载Vue应用');
+            if (typeof Vue === 'undefined') {
+                console.warn('⚠️ Vue未加载，等待中...');
+                setTimeout(mountVueApp, 100);
+                return;
+            }
 
-            // 挂载Vue应用
+            console.log('📄 开始挂载Vue应用');
+
             try {
+                const appElement = document.getElementById('app');
+                if (!appElement) {
+                    console.error('❌ 找不到#app元素');
+                    return;
+                }
+
+                // 检查是否已经挂载
+                if (appElement.__vueParentComponent) {
+                    console.log('⚠️ Vue应用已经挂载到#app元素');
+                    vueAppMounted = true;
+                    return;
+                }
+
                 app.mount('#app');
+                vueAppMounted = true;
                 console.log('✅ Vue应用挂载成功');
 
                 // 挂载成功后立即隐藏加载界面
@@ -4913,12 +5007,59 @@
                     const loadingOverlay = document.querySelector('.loading-overlay');
                     if (loadingOverlay) {
                         loadingOverlay.style.display = 'none';
+                        console.log('✅ 加载界面已隐藏');
+                    }
+                }, 100);
+
+                // 验证Vue应用状态
+                setTimeout(() => {
+                    const vueInstance = appElement.__vueParentComponent;
+                    if (vueInstance && vueInstance.ctx) {
+                        console.log('✅ Vue应用状态验证成功');
+                        console.log('🔍 showAdvancedPanel状态:', vueInstance.ctx.showAdvancedPanel);
+                        console.log('🔍 notification状态:', vueInstance.ctx.notification);
+                        console.log('🔍 networkStatus状态:', vueInstance.ctx.networkStatus);
+
+                        // 测试模板渲染
+                        const testElements = document.querySelectorAll('[v-if], [v-for], :class');
+                        console.log('🔍 找到Vue指令元素数量:', testElements.length);
+
+                        // 检查是否有未渲染的模板语法
+                        const unrenderedTemplates = document.body.innerHTML.match(/\{\{[^}]+\}\}/g);
+                        if (unrenderedTemplates) {
+                            console.warn('⚠️ 发现未渲染的模板语法:', unrenderedTemplates);
+                        } else {
+                            console.log('✅ 所有模板语法已正确渲染');
+                        }
+
+                        // 强制触发Vue响应式更新
+                        vueInstance.ctx.$forceUpdate && vueInstance.ctx.$forceUpdate();
+                    } else {
+                        console.error('❌ Vue实例验证失败');
                     }
                 }, 500);
 
             } catch (error) {
                 console.error('❌ Vue应用挂载失败:', error);
-                // 如果Vue挂载失败，至少隐藏加载界面
+
+                // 挂载失败时的备用方案
+                const appContainer = document.getElementById('app');
+                if (appContainer && !appContainer.__vueParentComponent) {
+                    appContainer.innerHTML = `
+                        <div style="text-align: center; padding: 50px; color: #666; font-family: Arial, sans-serif;">
+                            <h2 style="color: #ff6b6b;">🚫 应用加载失败</h2>
+                            <p>Vue应用挂载失败，请刷新页面重试</p>
+                            <p style="font-size: 12px; color: #999;">错误信息: ${error.message}</p>
+                            <button onclick="location.reload()"
+                                    style="padding: 10px 20px; margin-top: 20px; background: #007bff;
+                                           color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                🔄 刷新页面
+                            </button>
+                        </div>
+                    `;
+                }
+
+                // 隐藏加载界面
                 setTimeout(() => {
                     const loadingOverlay = document.querySelector('.loading-overlay');
                     if (loadingOverlay) {
@@ -4926,16 +5067,26 @@
                     }
                 }, 1000);
             }
-        });
+        }
 
-        // 页面加载完成后的额外检查
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM内容加载完成');
-        });
+        // DOM加载完成后挂载Vue应用
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', mountVueApp);
+        } else {
+            mountVueApp();
+        }
 
+        // 页面完全加载后的检查
         window.addEventListener('load', function() {
             console.log('🌐 页面完全加载完成');
-            // 如果此时还在加载状态，强制完成
+
+            // 确保Vue应用已挂载
+            if (!vueAppMounted) {
+                console.warn('⚠️ 页面加载完成但Vue应用未挂载，尝试挂载');
+                mountVueApp();
+            }
+
+            // 最终检查加载界面
             setTimeout(() => {
                 const loadingOverlay = document.querySelector('.loading-overlay');
                 if (loadingOverlay && getComputedStyle(loadingOverlay).display !== 'none') {
@@ -4945,98 +5096,97 @@
             }, 1000);
         });
 
-        // 额外的安全措施：如果5秒后还在加载，强制隐藏加载界面
+        // 最终安全网：确保加载界面被隐藏
         setTimeout(() => {
             const loadingOverlay = document.querySelector('.loading-overlay');
             if (loadingOverlay && getComputedStyle(loadingOverlay).display !== 'none') {
-                console.warn('⚠️ 超时强制隐藏加载界面');
+                console.warn('⚠️ 安全网激活 - 强制隐藏加载界面');
                 loadingOverlay.style.display = 'none';
-                // 显示错误提示
-                const errorDiv = document.createElement('div');
-                errorDiv.innerHTML = `
-                    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                                background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 10px;
-                                box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 10001; text-align: center;
-                                color: #333; max-width: 400px;">
-                        <h3 style="color: #ff6b6b; margin-bottom: 10px;">⚠️ 加载提示</h3>
-                        <p>页面加载完成，但某些资源可能仍在后台加载中。</p>
-                        <p>您可以正常使用AI助手功能。</p>
-                        <button onclick="this.parentElement.parentElement.remove()"
-                                style="margin-top: 15px; padding: 8px 16px; background: #4facfe;
-                                       color: white; border: none; border-radius: 5px; cursor: pointer;">
-                            知道了
-                        </button>
-                    </div>
-                `;
-                document.body.appendChild(errorDiv);
 
-                // 3秒后自动移除提示
-                setTimeout(() => {
-                    if (errorDiv.parentElement) {
-                        errorDiv.remove();
-                    }
-                }, 3000);
-            }
-        }, 5000);
-    </script>
-
-    <!-- 紧急加载完成脚本 -->
-    <script>
-        // 页面加载完成后的紧急处理
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('📄 DOM加载完成，开始紧急处理');
-
-            // 3秒后强制隐藏加载界面
-            setTimeout(function() {
-                const loadingOverlay = document.querySelector('.loading-overlay');
-                if (loadingOverlay && getComputedStyle(loadingOverlay).display !== 'none') {
-                    console.log('🚨 DOM加载完成后强制隐藏加载界面');
-                    loadingOverlay.style.display = 'none';
-
-                    // 显示紧急提示
-                    const emergencyNotice = document.createElement('div');
-                    emergencyNotice.innerHTML = `
-                        <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-                                    background: linear-gradient(135deg, #4facfe, #00f2fe); color: white;
-                                    padding: 15px 25px; border-radius: 25px; z-index: 10003;
-                                    box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideDown 0.3s ease;">
-                            <i class="fas fa-check-circle"></i> AI学习助手已就绪！
+                // 如果Vue应用仍未挂载，显示错误提示
+                if (!vueAppMounted) {
+                    const errorDiv = document.createElement('div');
+                    errorDiv.innerHTML = `
+                        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                                    background: rgba(255, 255, 255, 0.95); padding: 20px; border-radius: 10px;
+                                    box-shadow: 0 10px 30px rgba(0,0,0,0.3); z-index: 10001; text-align: center;
+                                    color: #333; max-width: 400px; font-family: Arial, sans-serif;">
+                            <h3 style="color: #ff6b6b; margin-bottom: 10px;">⚠️ 应用状态异常</h3>
+                            <p>Vue应用可能未正确加载，建议刷新页面。</p>
+                            <button onclick="location.reload()"
+                                    style="margin-top: 15px; padding: 8px 16px; background: #4facfe;
+                                           color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                🔄 刷新页面
+                            </button>
+                            <button onclick="this.parentElement.parentElement.remove()"
+                                    style="margin-top: 15px; margin-left: 10px; padding: 8px 16px;
+                                           background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                                忽略
+                            </button>
                         </div>
                     `;
-                    document.body.appendChild(emergencyNotice);
-
-                    // 3秒后移除提示
-                    setTimeout(() => {
-                        if (emergencyNotice.parentElement) {
-                            emergencyNotice.remove();
-                        }
-                    }, 3000);
+                    document.body.appendChild(errorDiv);
                 }
-            }, 3000);
-        });
-
-        // 窗口加载完成的处理
-        window.addEventListener('load', function() {
-            console.log('🌐 窗口完全加载完成');
-            setTimeout(function() {
-                const loadingOverlay = document.querySelector('.loading-overlay');
-                if (loadingOverlay && getComputedStyle(loadingOverlay).display !== 'none') {
-                    console.log('🚨 窗口加载完成后强制隐藏加载界面');
-                    loadingOverlay.style.display = 'none';
-                }
-            }, 1000);
-        });
-
-        // 最终的安全网 - 5秒后无论如何都隐藏加载界面
-        setTimeout(function() {
-            const loadingOverlay = document.querySelector('.loading-overlay');
-            if (loadingOverlay) {
-                console.log('🛡️ 安全网激活 - 强制隐藏加载界面');
-                loadingOverlay.style.display = 'none';
-                loadingOverlay.style.opacity = '0';
-                loadingOverlay.style.pointerEvents = 'none';
             }
         }, 5000);
+
+        // 调试信息输出
+        console.log('AI学习助手初始化脚本加载完成');
+        console.log('Vue版本:', typeof Vue !== 'undefined' ? Vue.version : '未加载');
+        console.log('当前时间:', new Date().toLocaleString());
+
+        // 添加全局调试函数
+        window.debugVueApp = function() {
+            const appElement = document.getElementById('app');
+            if (appElement && appElement.__vueParentComponent) {
+                const vueInstance = appElement.__vueParentComponent.ctx;
+                console.log('Vue应用状态:');
+                console.log('  - showAdvancedPanel:', vueInstance.showAdvancedPanel);
+                console.log('  - notification:', vueInstance.notification);
+                console.log('  - networkStatus:', vueInstance.networkStatus);
+                console.log('  - isFullscreen:', vueInstance.isFullscreen);
+                console.log('  - messages数量:', vueInstance.messages.length);
+                return vueInstance;
+            } else {
+                console.error('Vue应用未找到或未挂载');
+                return null;
+            }
+        };
+
+        window.forceClosePanel = function() {
+            const appElement = document.getElementById('app');
+            if (appElement && appElement.__vueParentComponent) {
+                const vueInstance = appElement.__vueParentComponent.ctx;
+                vueInstance.showAdvancedPanel = false;
+                console.log('强制关闭高级面板');
+            }
+        };
+
+        console.log('调试函数已添加: debugVueApp(), forceClosePanel()');
+        console.log('在控制台输入 debugVueApp() 查看Vue应用状态');
+        console.log('在控制台输入 forceClosePanel() 强制关闭高级面板');
+
+        // 页面加载完成后的状态检查
+        setTimeout(() => {
+            console.log('🔍 页面加载状态检查:');
+            console.log('  - Vue已加载:', typeof Vue !== 'undefined');
+            console.log('  - Vue应用已挂载:', vueAppMounted);
+            console.log('  - MathJax已加载:', typeof window.MathJax !== 'undefined');
+
+            // 检查模板语法是否被渲染
+            const unrenderedTemplates = document.body.innerHTML.match(/\{\{[^}]+\}\}/g);
+            if (unrenderedTemplates) {
+                console.warn('⚠️ 发现未渲染的模板语法:', unrenderedTemplates.slice(0, 5));
+            } else {
+                console.log('✅ 所有模板语法已正确渲染');
+            }
+
+            // 检查高级面板状态
+            const advancedPanel = document.querySelector('.advanced-panel');
+            if (advancedPanel) {
+                console.log('🔍 高级面板状态:', getComputedStyle(advancedPanel).display !== 'none' ? '显示' : '隐藏');
+            }
+        }, 3000);
     </script>
 </body>
 </html>

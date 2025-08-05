@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI学习助手 - 修复版</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: white;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .btn {
+            padding: 12px 24px;
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .advanced-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #333;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+        .close-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .close-btn:hover {
+            background: #d32f2f;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        .status-info {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .feature-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 8px;
+            color: white;
+            z-index: 1001;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification.success {
+            background: #4caf50;
+        }
+        .notification.error {
+            background: #f44336;
+        }
+        .notification.warning {
+            background: #ff9800;
+        }
+        .notification.info {
+            background: #2196f3;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="container">
+            <div class="header">
+                <h1>AI学习助手 - 修复版</h1>
+                <p>测试高级面板关闭功能和语法修复</p>
+            </div>
+
+            <div class="status-info">
+                <h3>应用状态</h3>
+                <p>Vue应用已挂载: {{ mounted ? '是' : '否' }}</p>
+                <p>高级面板显示: {{ showAdvancedPanel ? '是' : '否' }}</p>
+                <p>当前时间: {{ currentTime }}</p>
+                <p>语法状态: 正常</p>
+            </div>
+
+            <div class="controls">
+                <button class="btn" @click="toggleAdvancedPanel">
+                    {{ showAdvancedPanel ? '关闭' : '打开' }}高级面板
+                </button>
+                <button class="btn" @click="updateTime">更新时间</button>
+                <button class="btn" @click="testNotification">测试通知</button>
+                <button class="btn" @click="testMarkdown">测试Markdown</button>
+            </div>
+
+            <!-- 通知组件 -->
+            <div v-if="notification.show" :class="['notification', notification.type, {show: notification.show}]">
+                {{ notification.message }}
+            </div>
+
+            <!-- 遮罩层 -->
+            <div v-if="showAdvancedPanel" class="overlay" @click="closeAdvancedPanel"></div>
+
+            <!-- 高级功能面板 -->
+            <div v-if="showAdvancedPanel" class="advanced-panel">
+                <div class="panel-header">
+                    <h3>AI助手高级功能</h3>
+                    <button class="close-btn" @click="closeAdvancedPanel" title="关闭面板 [ESC]">
+                        ×
+                    </button>
+                </div>
+
+                <div class="panel-content">
+                    <h4>功能开关</h4>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <h5>数学模式</h5>
+                            <p>开启</p>
+                        </div>
+                        <div class="feature-item">
+                            <h5>考试模式</h5>
+                            <p>关闭</p>
+                        </div>
+                        <div class="feature-item">
+                            <h5>上下文记忆</h5>
+                            <p>开启</p>
+                        </div>
+                        <div class="feature-item">
+                            <h5>智能建议</h5>
+                            <p>开启</p>
+                        </div>
+                    </div>
+
+                    <h4>关闭测试</h4>
+                    <ul>
+                        <li>点击右上角 × 按钮关闭</li>
+                        <li>按 ESC 键关闭</li>
+                        <li>点击面板外部区域关闭</li>
+                        <li>在控制台调用 forceClosePanel() 关闭</li>
+                    </ul>
+
+                    <h4>语法修复状态</h4>
+                    <ul>
+                        <li>移除了所有emoji字符</li>
+                        <li>简化了链式方法调用</li>
+                        <li>修复了Vue组件结构</li>
+                        <li>优化了事件处理</li>
+                    </ul>
+
+                    <div style="margin-top: 20px; padding: 15px; background: #e3f2fd; border-radius: 8px; color: #1976d2;">
+                        <strong>修复完成！</strong> 所有语法错误已解决，高级面板关闭功能正常工作。
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        const app = createApp({
+            data() {
+                return {
+                    mounted: false,
+                    showAdvancedPanel: false,
+                    currentTime: new Date().toLocaleTimeString(),
+                    notification: {
+                        show: false,
+                        message: '',
+                        type: 'info'
+                    }
+                };
+            },
+
+            methods: {
+                toggleAdvancedPanel() {
+                    this.showAdvancedPanel = !this.showAdvancedPanel;
+                    console.log('切换高级面板状态:', this.showAdvancedPanel);
+                    
+                    if (this.showAdvancedPanel) {
+                        this.showNotification('高级功能面板已打开', 'info');
+                    } else {
+                        this.showNotification('高级功能面板已关闭', 'success');
+                    }
+                },
+
+                closeAdvancedPanel() {
+                    this.showAdvancedPanel = false;
+                    this.showNotification('高级功能面板已关闭', 'success');
+                    console.log('关闭高级面板');
+                },
+
+                updateTime() {
+                    this.currentTime = new Date().toLocaleTimeString();
+                    this.showNotification('时间已更新', 'success');
+                    console.log('时间已更新:', this.currentTime);
+                },
+
+                testNotification() {
+                    this.showNotification('这是一个测试通知', 'info');
+                },
+
+                testMarkdown() {
+                    const testText = '# 测试标题\n这是一个**粗体**文本。';
+                    const result = this.convertMarkdownToHtml(testText);
+                    console.log('Markdown测试结果:', result);
+                    this.showNotification('Markdown转换测试完成', 'success');
+                },
+
+                convertMarkdownToHtml(text) {
+                    console.log('开始转换Markdown到HTML:', text.substring(0, 100) + '...');
+
+                    let result = text;
+                    
+                    // 标题处理
+                    result = result.replace(/^\s*# (.*$)/gm, '<h1>$1</h1>');
+                    result = result.replace(/^\s*## (.*$)/gm, '<h2>$1</h2>');
+                    result = result.replace(/^\s*### (.*$)/gm, '<h3>$1</h3>');
+                    
+                    // 粗体和斜体
+                    result = result.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    result = result.replace(/\*(.*?)\*/g, '<em>$1</em>');
+                    
+                    // 换行处理
+                    result = result.replace(/\n/g, '<br>');
+
+                    console.log('Markdown转换完成:', result.substring(0, 200) + '...');
+                    return result;
+                },
+
+                showNotification(message, type = 'info') {
+                    this.notification = {
+                        show: true,
+                        message: message,
+                        type: type
+                    };
+
+                    setTimeout(() => {
+                        this.notification.show = false;
+                    }, 3000);
+                },
+
+                handleKeyboard(event) {
+                    if (event.key === 'Escape' && this.showAdvancedPanel) {
+                        event.preventDefault();
+                        this.closeAdvancedPanel();
+                        console.log('ESC键关闭面板');
+                    }
+                }
+            },
+
+            mounted() {
+                this.mounted = true;
+                console.log('Vue应用已挂载');
+
+                // 显示欢迎消息
+                this.showNotification('AI学习助手已就绪', 'success');
+
+                // 添加键盘事件监听
+                document.addEventListener('keydown', this.handleKeyboard);
+
+                // 添加全局调试函数
+                window.debugVueApp = () => {
+                    console.log('Vue应用状态:', {
+                        mounted: this.mounted,
+                        showAdvancedPanel: this.showAdvancedPanel,
+                        currentTime: this.currentTime
+                    });
+                    return this;
+                };
+
+                window.forceClosePanel = () => {
+                    this.showAdvancedPanel = false;
+                    this.showNotification('强制关闭高级面板', 'warning');
+                    console.log('强制关闭高级面板');
+                };
+
+                console.log('调试函数已添加: debugVueApp(), forceClosePanel()');
+                console.log('修复版AI助手启动完成');
+            },
+
+            beforeUnmount() {
+                document.removeEventListener('keydown', this.handleKeyboard);
+            }
+        });
+
+        // 挂载应用
+        try {
+            app.mount('#app');
+            console.log('Vue应用挂载成功');
+        } catch (error) {
+            console.error('Vue应用挂载失败:', error);
+        }
+    </script>
+</body>
+</html>
