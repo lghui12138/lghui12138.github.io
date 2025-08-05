@@ -87,11 +87,15 @@
                     .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<span class="fraction"><span class="numerator">$1</span><span class="denominator">$2</span></span>')
                     // 平方根
                     .replace(/\\sqrt\{([^}]+)\}/g, '<span class="sqrt">√<span class="sqrt-content">$1</span></span>')
-                    // 上下标
+                    // 上下标（改进版本，更好地处理各种情况）
                     .replace(/\^{([^}]+)}/g, '<sup>$1</sup>')
                     .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
                     .replace(/\^(\w+)/g, '<sup>$1</sup>')
+                    .replace(/\^(\d+)/g, '<sup>$1</sup>')
+                    .replace(/\^(\*)/g, '<sup>*</sup>')
+                    .replace(/\^(-?\d+)/g, '<sup>$1</sup>')
                     .replace(/_(\w+)/g, '<sub>$1</sub>')
+                    .replace(/_(\d+)/g, '<sub>$1</sub>')
                     // 希腊字母 - 小写
                     .replace(/\\alpha/g, 'α')
                     .replace(/\\beta/g, 'β')
@@ -961,6 +965,25 @@
             font-style: normal;
             font-weight: normal;
             color: inherit;
+        }
+
+        /* 上下标样式 */
+        sup {
+            font-size: 0.75em;
+            line-height: 0;
+            position: relative;
+            vertical-align: baseline;
+            top: -0.5em;
+            font-weight: normal;
+        }
+
+        sub {
+            font-size: 0.75em;
+            line-height: 0;
+            position: relative;
+            vertical-align: baseline;
+            bottom: -0.25em;
+            font-weight: normal;
         }
 
         /* Markdown转换后的HTML样式 */
@@ -2886,6 +2909,9 @@
                 async sendMessage() {
                     if (!this.currentMessage.trim() || this.isTyping) return;
 
+                    // 保存this上下文，避免在异步回调中丢失
+                    const self = this;
+
                     const userMessage = {
                         id: Date.now(),
                         sender: 'user',
@@ -2937,11 +2963,11 @@
                         try {
                             const aiResponse = await this.generateAIResponse(messageText);
                             // 转换Markdown到HTML
-                            console.log('🔍 准备调用convertMarkdownToHtml，方法类型:', typeof this.convertMarkdownToHtml);
+                            console.log('🔍 准备调用convertMarkdownToHtml，方法类型:', typeof self.convertMarkdownToHtml);
 
                             let htmlContent;
-                            if (typeof this.convertMarkdownToHtml === 'function') {
-                                htmlContent = this.convertMarkdownToHtml(aiResponse);
+                            if (typeof self.convertMarkdownToHtml === 'function') {
+                                htmlContent = self.convertMarkdownToHtml(aiResponse);
                             } else {
                                 console.warn('⚠️ convertMarkdownToHtml方法不存在，使用临时转换函数');
                                 // 临时Markdown转换函数
@@ -4533,11 +4559,15 @@
                             .replace(/\\sqrt\{([^}]+)\}/g, '<span class="sqrt">√<span class="sqrt-content">$1</span></span>')
                             // 框选
                             .replace(/\\boxed\{([^}]+)\}/g, '<span class="boxed">$1</span>')
-                            // 上下标
+                            // 上下标（改进版本，更好地处理各种情况）
                             .replace(/\^{([^}]+)}/g, '<sup>$1</sup>')
                             .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
                             .replace(/\^(\w+)/g, '<sup>$1</sup>')
+                            .replace(/\^(\d+)/g, '<sup>$1</sup>')
+                            .replace(/\^(\*)/g, '<sup>*</sup>')
+                            .replace(/\^(-?\d+)/g, '<sup>$1</sup>')
                             .replace(/_(\w+)/g, '<sub>$1</sub>')
+                            .replace(/_(\d+)/g, '<sub>$1</sub>')
                             // 希腊字母 - 小写
                             .replace(/\\alpha/g, 'α')
                             .replace(/\\beta/g, 'β')
