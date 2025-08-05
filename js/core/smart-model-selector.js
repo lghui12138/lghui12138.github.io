@@ -143,8 +143,13 @@ window.SmartModelSelector = (function() {
         init: async function(options = {}) {
             // 合并配置
             Object.assign(config, options);
-            
+
             console.log('🤖 智能AI模型选择器初始化中...');
+            console.log('⚙️ 当前配置:', {
+                maxRetries: config.maxRetries,
+                requestTimeout: config.requestTimeout,
+                version: '4.1.0'
+            });
             
             // 如果配置了跳过可用性检查，则不检查模型
             if (!config.skipAvailabilityCheck) {

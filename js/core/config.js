@@ -3,9 +3,10 @@ window.AppConfig = {
     // 应用信息
     app: {
         name: '流体力学学习平台',
-        version: '4.0.0',
-        environment: 'development', // development, staging, production
-        debug: true
+        version: '4.1.0', // 更新版本号强制刷新缓存
+        environment: 'production', // 切换到生产环境
+        debug: false, // 生产环境关闭调试
+        cacheVersion: '20250105' // 缓存版本控制
     },
     
     // API配置
