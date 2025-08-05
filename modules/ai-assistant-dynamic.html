@@ -4770,7 +4770,9 @@
 
             // Markdown转HTML方法
             convertMarkdownToHtml(text) {
-                return text
+                console.log('🔄 开始转换Markdown到HTML:', text.substring(0, 100) + '...');
+
+                let result = text
                     // 标题
                     .replace(/^### (.*$)/gm, '<h3>$1</h3>')
                     .replace(/^## (.*$)/gm, '<h2>$1</h2>')
@@ -4791,9 +4793,17 @@
                     .replace(/^[\s]*[-*+] (.+)$/gm, '<li>$1</li>')
                     // 有序列表
                     .replace(/^[\s]*\d+\. (.+)$/gm, '<li>$1</li>')
-                    // 换行
+                    // 换行处理
                     .replace(/\n\n/g, '</p><p>')
                     .replace(/\n/g, '<br>');
+
+                // 确保内容被包装在段落标签中
+                if (result && !result.startsWith('<')) {
+                    result = '<p>' + result + '</p>';
+                }
+
+                console.log('✅ Markdown转换完成:', result.substring(0, 200) + '...');
+                return result;
             },
 
             mounted() {
