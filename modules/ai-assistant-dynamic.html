@@ -2937,14 +2937,31 @@
                                 console.warn('⚠️ convertMarkdownToHtml方法不存在，使用临时转换函数');
                                 // 临时Markdown转换函数
                                 htmlContent = aiResponse
+                                    // 标题（按层级从深到浅处理，避免冲突）
+                                    .replace(/^###### (.*$)/gm, '<h6>$1</h6>')
+                                    .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
+                                    .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
                                     .replace(/^### (.*$)/gm, '<h3>$1</h3>')
                                     .replace(/^## (.*$)/gm, '<h2>$1</h2>')
                                     .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                                    // 粗体和斜体
+                                    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
                                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                                     .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                                    // 代码块
                                     .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
                                     .replace(/`([^`]+)`/g, '<code>$1</code>')
+                                    // 链接
                                     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                                    // 引用块
+                                    .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
+                                    // 无序列表
+                                    .replace(/^[\s]*[-*+] (.+)$/gm, '<li>$1</li>')
+                                    // 有序列表
+                                    .replace(/^[\s]*\d+\. (.+)$/gm, '<li>$1</li>')
+                                    // 分隔线
+                                    .replace(/^---$/gm, '<hr>')
+                                    // 换行处理
                                     .replace(/\n\n/g, '</p><p>')
                                     .replace(/\n/g, '<br>');
 
@@ -4768,13 +4785,13 @@
                 console.log('🔄 开始转换Markdown到HTML:', text.substring(0, 100) + '...');
 
                 let result = text
-                    // 标题
+                    // 标题（按层级从深到浅处理，避免冲突）
+                    .replace(/^###### (.*$)/gm, '<h6>$1</h6>')
+                    .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
+                    .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
                     .replace(/^### (.*$)/gm, '<h3>$1</h3>')
                     .replace(/^## (.*$)/gm, '<h2>$1</h2>')
                     .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-                    .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
-                    .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
-                    .replace(/^###### (.*$)/gm, '<h6>$1</h6>')
                     // 粗体和斜体
                     .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -4784,10 +4801,14 @@
                     .replace(/`([^`]+)`/g, '<code>$1</code>')
                     // 链接
                     .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                    // 引用块
+                    .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
                     // 无序列表
                     .replace(/^[\s]*[-*+] (.+)$/gm, '<li>$1</li>')
                     // 有序列表
                     .replace(/^[\s]*\d+\. (.+)$/gm, '<li>$1</li>')
+                    // 分隔线
+                    .replace(/^---$/gm, '<hr>')
                     // 换行处理
                     .replace(/\n\n/g, '</p><p>')
                     .replace(/\n/g, '<br>');
