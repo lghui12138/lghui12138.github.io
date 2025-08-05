@@ -11,7 +11,7 @@ window.SmartModelSelector = (function() {
         apiKey: "sk-dhseqxecuwwotodiskfdgwdjahnbexcgdotkfsovbgajxnis",
         apiUrl: "https://api.siliconflow.cn/v1/chat/completions",
         maxRetries: 1, // 减少重试次数，给单次调用更多时间
-        requestTimeout: 600000, // 增加到10分钟，专门适应DeepSeek-R1的长推理时间
+        requestTimeout: 900000, // 增加到15分钟，专门适应DeepSeek-R1的长推理时间
         rateLimitDelay: 1000
     };
     
@@ -27,7 +27,7 @@ window.SmartModelSelector = (function() {
                 priority: 1
             },
             {
-                name: "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B", // 使用可用的R1变体
+                name: "deepseek-ai/DeepSeek-R1", // 真正的DeepSeek-R1模型
                 category: "premium",
                 complexity: ["complex"],
                 features: ["reasoning", "research", "deep-analysis"],
@@ -291,22 +291,15 @@ window.SmartModelSelector = (function() {
                 console.log(`🎯 强制使用指定模型: ${options.preferredModel}`);
 
                 if (options.preferredModel === 'deepseek-r1') {
-                    // 特殊处理deepseek-r1 - 尝试多个可能的模型名称
-                    const possibleModels = [
-                        "deepseek-ai/DeepSeek-R1-Distill-Qwen-32B",
-                        "deepseek-ai/DeepSeek-R1",
-                        "deepseek-ai/deepseek-r1"
-                    ];
-
-                    // 使用第一个可能的模型名称
+                    // 特殊处理deepseek-r1 - 使用真正的DeepSeek-R1模型
                     const model = {
-                        name: possibleModels[0],
+                        name: "deepseek-ai/DeepSeek-R1", // 使用真正的DeepSeek-R1
                         category: "premium",
                         complexity: ["complex"],
                         features: ["reasoning", "research", "deep-analysis"],
                         priority: 1
                     };
-                    console.log(`✅ 强制选择deepseek-r1模型: ${model.name}`);
+                    console.log(`✅ 强制选择真正的DeepSeek-R1模型: ${model.name}`);
                     return model;
                 } else if (options.preferredModel === 'deepseek-v3') {
                     // 特殊处理deepseek-v3
@@ -588,11 +581,29 @@ window.SmartModelSelector = (function() {
                     }
 
                     lastError = error;
-                    console.warn(`⚠️ 模型 ${model.name} 调用失败 (尝试 ${retry + 1}): ${error.message}`);
-                    
+                    console.error(`❌ 模型 ${model.name} 调用失败 (尝试 ${retry + 1}/${config.maxRetries}):`, {
+                        error: error.message,
+                        stack: error.stack,
+                        modelName: model.name,
+                        apiUrl: config.apiUrl,
+                        timeout: timeoutValue
+                    });
+
+                    // 特殊处理DeepSeek-R1的错误
+                    if (model.name.includes('DeepSeek-R1')) {
+                        console.error('🔍 DeepSeek-R1调用失败详情:', {
+                            isTimeout: error.message.includes('timeout') || error.message.includes('超时'),
+                            isNetworkError: error.message.includes('fetch') || error.message.includes('network'),
+                            isAPIError: error.message.includes('HTTP'),
+                            errorType: error.name
+                        });
+                    }
+
                     // 如果不是最后一次重试，等待后重试
                     if (retry < config.maxRetries - 1) {
-                        await this.sleep(1000 * (retry + 1)); // 递增延迟
+                        const delay = 2000 * (retry + 1); // 增加延迟时间
+                        console.log(`⏳ ${delay/1000}秒后重试...`);
+                        await this.sleep(delay);
                     }
                 }
             }

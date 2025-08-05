@@ -4048,7 +4048,7 @@
                             maxTokens: 2000,
                             temperature: 0.3,
                             preferredModel: 'deepseek-r1',
-                            requestTimeout: 600000, // 10分钟超时，给R1充足的推理时间
+                            requestTimeout: 900000, // 15分钟超时，给R1充足的推理时间
                             systemPrompt: `你是一位资深的流体力学教授，擅长数学推导和理论分析。请详细回答学生的问题，包括：
 
 1. **理论基础**：相关的基本原理和假设
@@ -4306,7 +4306,13 @@
                         return;
                     }
 
-                    console.log('🔢 处理LaTeX公式:', content.substring(0, 100) + '...');
+                    console.log('🔢 处理LaTeX公式:', content.substring(0, 200) + '...');
+                    console.log('🔍 检测到的LaTeX符号:', {
+                        hasFrac: content.includes('\\frac'),
+                        hasLeft: content.includes('\\left'),
+                        hasRight: content.includes('\\right'),
+                        hasGreek: content.includes('\\rho') || content.includes('\\mu') || content.includes('\\nabla')
+                    });
 
                     // 首先处理LaTeX符号转换
                     const processLatexSymbols = (formula) => {
@@ -4536,9 +4542,19 @@
                         return `<span class="math-inline">${processedFormula}</span>`;
                     });
 
+                    // 额外处理：直接处理未包装在$符号中的LaTeX代码
+                    // 这是为了处理AI回复中可能存在的裸露LaTeX代码
+                    if (content.includes('\\frac') || content.includes('\\left') || content.includes('\\right')) {
+                        console.log('🔧 检测到裸露的LaTeX代码，进行额外处理');
+                        content = processLatexSymbols(content);
+                    }
+
                     // LaTeX符号已在上面的processLatexSymbols函数中处理，这里不需要重复处理
 
                     el.innerHTML = content;
+
+                    console.log('✅ LaTeX处理完成，结果:', content.substring(0, 200) + '...');
+                    console.log('🎯 是否包含分数元素:', content.includes('<span class="fraction">'));
 
                     // 只对公式容器设置显示样式
                     if (el.classList.contains('math-formula')) {
