@@ -4918,24 +4918,48 @@
                     }
                 },
 
-                // 将Markdown格式转换为HTML格式
+                // 将Markdown格式转换为HTML格式（完整版本）
                 convertMarkdownToHtml(text) {
                     if (!text) return text;
-                    
-                    // 转换粗体 **text** 为 <strong>text</strong>
-                    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                    
-                    // 转换斜体 *text* 为 <em>text</em>
-                    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-                    
-                    // 转换行内代码 `code` 为 <code>code</code>
-                    text = text.replace(/`(.*?)`/g, '<code>$1</code>');
-                    
-                    // 转换换行符为 <br/>
-                    text = text.replace(/\n/g, '<br/>');
-                    
-                    console.log('🔄 Markdown转换完成:', text);
-                    return text;
+
+                    console.log('🔄 开始转换Markdown到HTML:', text.substring(0, 100) + '...');
+
+                    let result = text
+                        // 标题（按层级从深到浅处理，避免冲突）
+                        .replace(/^\s*###### (.*$)/gm, '<h6>$1</h6>')
+                        .replace(/^\s*##### (.*$)/gm, '<h5>$1</h5>')
+                        .replace(/^\s*#### (.*$)/gm, '<h4>$1</h4>')
+                        .replace(/^\s*### (.*$)/gm, '<h3>$1</h3>')
+                        .replace(/^\s*## (.*$)/gm, '<h2>$1</h2>')
+                        .replace(/^\s*# (.*$)/gm, '<h1>$1</h1>')
+                        // 粗体和斜体
+                        .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
+                        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                        // 代码块（先处理，避免与其他规则冲突）
+                        .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
+                        .replace(/`([^`]+)`/g, '<code>$1</code>')
+                        // 链接
+                        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+                        // 引用块
+                        .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
+                        // 无序列表
+                        .replace(/^[\s]*[-*+] (.+)$/gm, '<li>$1</li>')
+                        // 有序列表
+                        .replace(/^[\s]*\d+\. (.+)$/gm, '<li>$1</li>')
+                        // 分隔线
+                        .replace(/^---$/gm, '<hr>')
+                        // 换行处理
+                        .replace(/\n\n/g, '</p><p>')
+                        .replace(/\n/g, '<br>');
+
+                    // 确保内容被包装在段落标签中
+                    if (result && !result.startsWith('<')) {
+                        result = '<p>' + result + '</p>';
+                    }
+
+                    console.log('✅ Markdown转换完成:', result.substring(0, 200) + '...');
+                    return result;
                 },
 
                 getLocalAIResponse(question) {
