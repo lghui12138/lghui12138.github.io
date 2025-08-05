@@ -343,8 +343,23 @@ window.SmartModelSelector = (function() {
             let candidates = this.getCandidateModels(complexity, features, strategy);
 
             if (candidates.length === 0) {
-                // 回退到任何可用模型
-                candidates = Array.from(availableModels.values());
+                console.warn('⚠️ 没有符合条件的候选模型，使用回退策略');
+
+                if (strategy === 'basic') {
+                    // 基础策略回退：优先选择轻量级模型
+                    candidates = Array.from(availableModels.values()).filter(m => m.category === 'lightweight');
+                    if (candidates.length === 0) {
+                        // 如果没有轻量级模型，选择最简单的平衡模型
+                        candidates = Array.from(availableModels.values()).filter(m =>
+                            m.category === 'balanced' && m.complexity.includes('simple')
+                        );
+                    }
+                }
+
+                if (candidates.length === 0) {
+                    // 最终回退到任何可用模型
+                    candidates = Array.from(availableModels.values());
+                }
             }
 
             // 选择最佳模型
@@ -423,6 +438,16 @@ window.SmartModelSelector = (function() {
             switch (strategy) {
                 case 'fast':
                     candidates.sort((a, b) => a.responseTime - b.responseTime);
+                    break;
+                case 'basic':
+                    // 基础策略：优先选择轻量级模型，按优先级排序
+                    candidates.sort((a, b) => {
+                        // 轻量级模型优先
+                        if (a.category === 'lightweight' && b.category !== 'lightweight') return -1;
+                        if (b.category === 'lightweight' && a.category !== 'lightweight') return 1;
+                        // 同类别按优先级排序
+                        return a.priority - b.priority;
+                    });
                     break;
                 case 'quality':
                     candidates.sort((a, b) => a.priority - b.priority);
