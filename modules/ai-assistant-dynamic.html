@@ -4704,34 +4704,6 @@
                             .replace(/\\negthickspace/g, '<span class="math-space-negthick"></span>');
                     };
 
-                    // Markdown转HTML函数
-                    const convertMarkdownToHtml = (text) => {
-                        return text
-                            // 标题
-                            .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-                            .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-                            .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-                            .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
-                            .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
-                            .replace(/^###### (.*$)/gm, '<h6>$1</h6>')
-                            // 粗体和斜体
-                            .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                            .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                            // 代码块（先处理，避免与其他规则冲突）
-                            .replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-                            .replace(/`([^`]+)`/g, '<code>$1</code>')
-                            // 链接
-                            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
-                            // 无序列表
-                            .replace(/^[\s]*[-*+] (.+)$/gm, '<li>$1</li>')
-                            // 有序列表
-                            .replace(/^[\s]*\d+\. (.+)$/gm, '<li>$1</li>')
-                            // 换行
-                            .replace(/\n\n/g, '</p><p>')
-                            .replace(/\n/g, '<br>');
-                    };
-
                     // 处理$$包围的显示公式
                     content = content.replace(/\$\$([\s\S]*?)\$\$/g, (match, formula) => {
                         console.log('📐 处理显示公式:', formula);
@@ -4843,29 +4815,34 @@
             }
         }, 2000); // 2秒后强制隐藏
 
-        // 挂载Vue应用
-        try {
-            app.mount('#app');
-            console.log('✅ Vue应用挂载成功');
+        // 确保在DOM加载完成后挂载Vue应用
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📄 DOM加载完成，开始挂载Vue应用');
 
-            // 挂载成功后立即隐藏加载界面
-            setTimeout(() => {
-                const loadingOverlay = document.querySelector('.loading-overlay');
-                if (loadingOverlay) {
-                    loadingOverlay.style.display = 'none';
-                }
-            }, 500);
+            // 挂载Vue应用
+            try {
+                app.mount('#app');
+                console.log('✅ Vue应用挂载成功');
 
-        } catch (error) {
-            console.error('❌ Vue应用挂载失败:', error);
-            // 如果Vue挂载失败，至少隐藏加载界面
-            setTimeout(() => {
-                const loadingOverlay = document.querySelector('.loading-overlay');
-                if (loadingOverlay) {
-                    loadingOverlay.style.display = 'none';
-                }
-            }, 1000);
-        }
+                // 挂载成功后立即隐藏加载界面
+                setTimeout(() => {
+                    const loadingOverlay = document.querySelector('.loading-overlay');
+                    if (loadingOverlay) {
+                        loadingOverlay.style.display = 'none';
+                    }
+                }, 500);
+
+            } catch (error) {
+                console.error('❌ Vue应用挂载失败:', error);
+                // 如果Vue挂载失败，至少隐藏加载界面
+                setTimeout(() => {
+                    const loadingOverlay = document.querySelector('.loading-overlay');
+                    if (loadingOverlay) {
+                        loadingOverlay.style.display = 'none';
+                    }
+                }, 1000);
+            }
+        });
 
         // 页面加载完成后的额外检查
         document.addEventListener('DOMContentLoaded', function() {
