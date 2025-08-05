@@ -23,6 +23,36 @@
     <script src="../js/core/config.js"></script>
     <script src="../js/core/smart-model-selector.js"></script>
 
+    <!-- MathJax数学公式支持 -->
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true,
+                packages: {'[+]': ['ams', 'noerrors', 'noundefined']}
+            },
+            options: {
+                ignoreHtmlClass: 'tex2jax_ignore',
+                processHtmlClass: 'tex2jax_process',
+                enableMenu: false
+            },
+            loader: {
+                load: ['[tex]/ams', '[tex]/noerrors', '[tex]/noundefined']
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        console.log('✅ MathJax渲染完成');
+                    });
+                }
+            }
+        };
+    </script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
     <style>
         :root {
             /* 海洋主题色彩 */
@@ -621,6 +651,39 @@
             word-wrap: break-word;
             font-size: 14px;
             line-height: 1.5;
+        }
+
+        /* 数学公式样式 */
+        .ai-message-content .math-display,
+        .ai-message-content .math-inline {
+            font-family: 'Times New Roman', serif;
+            color: #2d3748;
+        }
+
+        .ai-message-content .math-display {
+            display: block;
+            text-align: center;
+            margin: 10px 0;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .ai-message-content .math-inline {
+            display: inline;
+            padding: 2px 4px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 4px;
+        }
+
+        /* MathJax渲染后的样式调整 */
+        .ai-message-content .MathJax {
+            font-size: 1em !important;
+        }
+
+        .ai-message-content .MathJax_Display {
+            margin: 10px 0 !important;
         }
 
         .ai-message.user .ai-message-content {
@@ -4918,13 +4981,18 @@
                     }
                 },
 
-                // 将Markdown格式转换为HTML格式（完整版本）
+                // 将Markdown格式转换为HTML格式（完整版本，支持数学公式）
                 convertMarkdownToHtml(text) {
                     if (!text) return text;
 
                     console.log('🔄 开始转换Markdown到HTML:', text.substring(0, 100) + '...');
 
                     let result = text
+                        // 保护数学公式（先处理，避免被其他规则影响）
+                        .replace(/\$\$([\s\S]*?)\$\$/g, '<span class="math-display">$$$$1$$</span>')
+                        .replace(/\$([^$\n]+)\$/g, '<span class="math-inline">$$$1$$</span>')
+                        .replace(/\\\[([\s\S]*?)\\\]/g, '<span class="math-display">\\[$$1\\]</span>')
+                        .replace(/\\\(([^)]+)\\\)/g, '<span class="math-inline">\\($$1\\)</span>')
                         // 标题（按层级从深到浅处理，避免冲突）
                         .replace(/^\s*###### (.*$)/gm, '<h6>$1</h6>')
                         .replace(/^\s*##### (.*$)/gm, '<h5>$1</h5>')
@@ -4959,7 +5027,25 @@
                     }
 
                     console.log('✅ Markdown转换完成:', result.substring(0, 200) + '...');
+
+                    // 延迟触发MathJax重新渲染
+                    this.$nextTick(() => {
+                        this.renderMathJax();
+                    });
+
                     return result;
+                },
+
+                // 触发MathJax重新渲染
+                renderMathJax() {
+                    if (window.MathJax && window.MathJax.typesetPromise) {
+                        console.log('🔢 开始MathJax渲染...');
+                        window.MathJax.typesetPromise().then(() => {
+                            console.log('✅ MathJax渲染完成');
+                        }).catch((err) => {
+                            console.warn('⚠️ MathJax渲染失败:', err);
+                        });
+                    }
                 },
 
                 getLocalAIResponse(question) {
