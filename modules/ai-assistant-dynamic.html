@@ -939,6 +939,15 @@
             font-size: 0.9em;
         }
 
+        /* 框选样式 */
+        .boxed {
+            border: 2px solid currentColor;
+            padding: 4px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin: 0 2px;
+        }
+
         /* 数学文本样式 */
         .math-text {
             font-family: 'Times New Roman', serif;
@@ -2938,12 +2947,12 @@
                                 // 临时Markdown转换函数
                                 htmlContent = aiResponse
                                     // 标题（按层级从深到浅处理，避免冲突）
-                                    .replace(/^###### (.*$)/gm, '<h6>$1</h6>')
-                                    .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
-                                    .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
-                                    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-                                    .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-                                    .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                                    .replace(/^\s*###### (.*$)/gm, '<h6>$1</h6>')
+                                    .replace(/^\s*##### (.*$)/gm, '<h5>$1</h5>')
+                                    .replace(/^\s*#### (.*$)/gm, '<h4>$1</h4>')
+                                    .replace(/^\s*### (.*$)/gm, '<h3>$1</h3>')
+                                    .replace(/^\s*## (.*$)/gm, '<h2>$1</h2>')
+                                    .replace(/^\s*# (.*$)/gm, '<h1>$1</h1>')
                                     // 粗体和斜体
                                     .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
                                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -4517,6 +4526,8 @@
                             .replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, '<span class="fraction"><span class="numerator">$1</span><span class="denominator">$2</span></span>')
                             // 平方根
                             .replace(/\\sqrt\{([^}]+)\}/g, '<span class="sqrt">√<span class="sqrt-content">$1</span></span>')
+                            // 框选
+                            .replace(/\\boxed\{([^}]+)\}/g, '<span class="boxed">$1</span>')
                             // 上下标
                             .replace(/\^{([^}]+)}/g, '<sup>$1</sup>')
                             .replace(/_{([^}]+)}/g, '<sub>$1</sub>')
@@ -4786,12 +4797,12 @@
 
                 let result = text
                     // 标题（按层级从深到浅处理，避免冲突）
-                    .replace(/^###### (.*$)/gm, '<h6>$1</h6>')
-                    .replace(/^##### (.*$)/gm, '<h5>$1</h5>')
-                    .replace(/^#### (.*$)/gm, '<h4>$1</h4>')
-                    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-                    .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-                    .replace(/^# (.*$)/gm, '<h1>$1</h1>')
+                    .replace(/^\s*###### (.*$)/gm, '<h6>$1</h6>')
+                    .replace(/^\s*##### (.*$)/gm, '<h5>$1</h5>')
+                    .replace(/^\s*#### (.*$)/gm, '<h4>$1</h4>')
+                    .replace(/^\s*### (.*$)/gm, '<h3>$1</h3>')
+                    .replace(/^\s*## (.*$)/gm, '<h2>$1</h2>')
+                    .replace(/^\s*# (.*$)/gm, '<h1>$1</h1>')
                     // 粗体和斜体
                     .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
                     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
