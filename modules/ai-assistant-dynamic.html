@@ -2928,6 +2928,9 @@
                         try {
                             const aiResponse = await this.generateAIResponse(messageText);
                             // 转换Markdown到HTML
+                            console.log('🔍 准备调用convertMarkdownToHtml，方法类型:', typeof this.convertMarkdownToHtml);
+                            console.log('🔍 this对象:', this);
+                            console.log('🔍 Vue实例方法:', Object.getOwnPropertyNames(this).filter(name => typeof this[name] === 'function'));
                             const htmlContent = this.convertMarkdownToHtml(aiResponse);
                             this.messages.push({
                                 id: Date.now() + 1,
@@ -4741,7 +4744,7 @@
             },
 
             // Markdown转HTML方法
-            convertMarkdownToHtml(text) {
+            convertMarkdownToHtml: function(text) {
                 console.log('🔄 开始转换Markdown到HTML:', text.substring(0, 100) + '...');
 
                 let result = text
@@ -4780,6 +4783,8 @@
 
             mounted() {
                 console.log('🚀 Vue应用已挂载');
+                console.log('🔍 检查convertMarkdownToHtml方法是否存在:', typeof this.convertMarkdownToHtml);
+                console.log('🔍 Vue组件methods:', Object.keys(this.$options.methods || {}));
 
                 // 立即显示欢迎消息
                 this.showNotification('AI学习助手已就绪！', 'success');
