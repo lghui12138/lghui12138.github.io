@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>互动工具 - 地理学科知识与教学能力</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 50% 100%; }
+            75% { background-position: 0% 100%; }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            animation: float 25s infinite linear;
+        }
+
+        .particle.tool {
+            width: 6px;
+            height: 6px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(102, 126, 234, 0.5);
+        }
+
+        .particle.gear {
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            box-shadow: 0 0 8px rgba(240, 147, 251, 0.5);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(150px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(25px);
+            border-radius: 35px;
+            padding: 50px;
+            margin-bottom: 50px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
+            animation: shimmer 4s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(45deg, #764ba2, #f093fb);
+        }
+
+        /* 工具卡片样式 */
+        .tool-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tool-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .tool-container:hover::before {
+            left: 100%;
+        }
+
+        .tool-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .tool-title {
+            color: #667eea;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .tool-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .tool-item {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .tool-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .tool-item h4 {
+            color: #667eea;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .tool-item p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1.05em;
+            margin-bottom: 15px;
+        }
+
+        .tool-item ul {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1.05em;
+            padding-left: 20px;
+        }
+
+        .tool-item li {
+            margin-bottom: 8px;
+        }
+
+        .use-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .use-btn:hover {
+            background: linear-gradient(45deg, #764ba2, #f093fb);
+            transform: translateY(-2px);
+        }
+
+        /* 演示区域样式 */
+        .demo-area {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .demo-area h5 {
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .demo-placeholder {
+            color: #999;
+            font-style: italic;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2.8em;
+            }
+            
+            .tool-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 互动工具主题粒子效果 -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-tools"></i> 互动工具</h1>
+            <p>地图工具、图表绘制、地理实验模拟、教学媒体使用指南和多媒体教学资源</p>
+            <div class="nav-buttons">
+                <a href="../index.html" class="nav-btn">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+                <a href="geography-knowledge.html" class="nav-btn">
+                    <i class="fas fa-globe"></i> 地理科学知识
+                </a>
+                <a href="teaching-knowledge.html" class="nav-btn">
+                    <i class="fas fa-book-open"></i> 教学知识与运用
+                </a>
+                <a href="teaching-design.html" class="nav-btn">
+                    <i class="fas fa-pencil-ruler"></i> 教学设计
+                </a>
+                <a href="exam-practice.html" class="nav-btn">
+                    <i class="fas fa-clipboard-check"></i> 考试练习
+                </a>
+                <a href="case-studies.html" class="nav-btn">
+                    <i class="fas fa-microscope"></i> 案例分析
+                </a>
+            </div>
+        </div>
+
+        <!-- 地图工具 -->
+        <div class="tool-container">
+            <div class="tool-title">
+                <i class="fas fa-map"></i>
+                地图工具
+            </div>
+            <div class="tool-grid">
+                <div class="tool-item" onclick="useTool('worldMap')">
+                    <h4><i class="fas fa-globe-americas"></i> 世界地图</h4>
+                    <p>交互式世界地图，支持缩放、标注和信息查询</p>
+                    <ul>
+                        <li>国家和地区信息查询</li>
+                        <li>地形地貌显示</li>
+                        <li>气候带分布</li>
+                        <li>人口密度显示</li>
+                    </ul>
+                    <button class="use-btn">使用工具</button>
+                </div>
+                
+                <div class="tool-item" onclick="useTool('chinaMap')">
+                    <h4><i class="fas fa-map-marked-alt"></i> 中国地图</h4>
+                    <p>详细的中国地图，包含省份、城市和地理要素</p>
+                    <ul>
+                        <li>省份行政区划</li>
+                        <li>主要城市分布</li>
+                        <li>地形地貌特征</li>
+                        <li>河流湖泊水系</li>
+                    </ul>
+                    <button class="use-btn">使用工具</button>
+                </div>
+                
+                <div class="tool-item" onclick="useTool('contourMap')">
+                    <h4><i class="fas fa-mountain"></i> 等高线地图</h4>
+                    <p>等高线地形图绘制和分析工具</p>
+                    <ul>
+                        <li>等高线绘制</li>
+                        <li>地形剖面图</li>
+                        <li>坡度计算</li>
+                        <li>流域分析</li>
+                    </ul>
+                    <button class="use-btn">使用工具</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图表绘制工具 -->
+        <div class="tool-container">
+            <div class="tool-title">
+                <i class="fas fa-chart-line"></i>
+                图表绘制工具
+            </div>
+            <div class="tool-grid">
+                <div class="tool-item" onclick="useTool('climateChart')">
+                    <h4><i class="fas fa-thermometer-half"></i> 气候图表</h4>
+                    <p>绘制气温降水图、风向玫瑰图等气候图表</p>
+                    <ul>
+                        <li>气温曲线图</li>
+                        <li>降水柱状图</li>
+                        <li>风向玫瑰图</li>
+                        <li>气候类型判断</li>
+                    </ul>
+                    <div class="demo-area">
+                        <h5>气候图表演示</h5>
+                        <div class="demo-placeholder">点击"使用工具"开始绘制气候图表</div>
+                    </div>
+                    <button class="use-btn">使用工具</button>
+                </div>
+
+                <div class="tool-item" onclick="useTool('populationChart')">
+                    <h4><i class="fas fa-users"></i> 人口图表</h4>
+                    <p>人口金字塔、人口增长曲线等人口统计图表</p>
+                    <ul>
+                        <li>人口金字塔</li>
+                        <li>人口增长曲线</li>
+                        <li>人口密度分布图</li>
+                        <li>城市化水平图</li>
+                    </ul>
+                    <div class="demo-area">
+                        <h5>人口图表演示</h5>
+                        <div class="demo-placeholder">点击"使用工具"开始绘制人口图表</div>
+                    </div>
+                    <button class="use-btn">使用工具</button>
+                </div>
+
+                <div class="tool-item" onclick="useTool('economicChart')">
+                    <h4><i class="fas fa-chart-pie"></i> 经济图表</h4>
+                    <p>产业结构图、贸易流向图等经济地理图表</p>
+                    <ul>
+                        <li>产业结构饼图</li>
+                        <li>GDP增长曲线</li>
+                        <li>贸易流向图</li>
+                        <li>区域发展对比</li>
+                    </ul>
+                    <div class="demo-area">
+                        <h5>经济图表演示</h5>
+                        <div class="demo-placeholder">点击"使用工具"开始绘制经济图表</div>
+                    </div>
+                    <button class="use-btn">使用工具</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 地理实验模拟 -->
+        <div class="tool-container">
+            <div class="tool-title">
+                <i class="fas fa-flask"></i>
+                地理实验模拟
+            </div>
+            <div class="tool-grid">
+                <div class="tool-item" onclick="useTool('earthMotion')">
+                    <h4><i class="fas fa-globe"></i> 地球运动模拟</h4>
+                    <p>模拟地球自转和公转，观察昼夜变化和季节变化</p>
+                    <ul>
+                        <li>地球自转演示</li>
+                        <li>地球公转演示</li>
+                        <li>昼夜长短变化</li>
+                        <li>太阳高度角变化</li>
+                    </ul>
+                    <div class="demo-area">
+                        <h5>地球运动模拟器</h5>
+                        <div class="demo-placeholder">3D地球运动模拟演示区域</div>
+                    </div>
+                    <button class="use-btn">启动模拟</button>
+                </div>
+
+                <div class="tool-item" onclick="useTool('waterCycle')">
+                    <h4><i class="fas fa-tint"></i> 水循环模拟</h4>
+                    <p>模拟水循环过程，理解蒸发、降水、径流等环节</p>
+                    <ul>
+                        <li>蒸发过程模拟</li>
+                        <li>云的形成过程</li>
+                        <li>降水类型演示</li>
+                        <li>地表径流模拟</li>
+                    </ul>
+                    <div class="demo-area">
+                        <h5>水循环模拟器</h5>
+                        <div class="demo-placeholder">水循环动态演示区域</div>
+                    </div>
+                    <button class="use-btn">启动模拟</button>
+                </div>
+
+                <div class="tool-item" onclick="useTool('plateMotion')">
+                    <h4><i class="fas fa-layer-group"></i> 板块运动模拟</h4>
+                    <p>模拟板块构造运动，理解地震、火山等地质现象</p>
+                    <ul>
+                        <li>板块边界类型</li>
+                        <li>地震成因模拟</li>
+                        <li>火山活动演示</li>
+                        <li>山脉形成过程</li>
+                    </ul>
+                    <div class="demo-area">
+                        <h5>板块运动模拟器</h5>
+                        <div class="demo-placeholder">板块构造动态演示区域</div>
+                    </div>
+                    <button class="use-btn">启动模拟</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 教学媒体资源 -->
+        <div class="tool-container">
+            <div class="tool-title">
+                <i class="fas fa-play-circle"></i>
+                教学媒体资源
+            </div>
+            <div class="tool-grid">
+                <div class="tool-item" onclick="useTool('videoLibrary')">
+                    <h4><i class="fas fa-video"></i> 视频资源库</h4>
+                    <p>精选地理教学视频，包含纪录片、动画和实验演示</p>
+                    <ul>
+                        <li>BBC地理纪录片</li>
+                        <li>地理现象动画</li>
+                        <li>实验操作视频</li>
+                        <li>名师课堂实录</li>
+                    </ul>
+                    <button class="use-btn">浏览资源</button>
+                </div>
+
+                <div class="tool-item" onclick="useTool('imageLibrary')">
+                    <h4><i class="fas fa-images"></i> 图片资源库</h4>
+                    <p>高质量地理图片素材，支持分类检索和下载</p>
+                    <ul>
+                        <li>地形地貌图片</li>
+                        <li>气候现象图片</li>
+                        <li>城市景观图片</li>
+                        <li>卫星遥感图像</li>
+                    </ul>
+                    <button class="use-btn">浏览资源</button>
+                </div>
+
+                <div class="tool-item" onclick="useTool('pptTemplates')">
+                    <h4><i class="fas fa-file-powerpoint"></i> PPT模板库</h4>
+                    <p>专业的地理教学PPT模板，可直接使用或修改</p>
+                    <ul>
+                        <li>课件设计模板</li>
+                        <li>图表制作模板</li>
+                        <li>动画效果模板</li>
+                        <li>互动课件模板</li>
+                    </ul>
+                    <button class="use-btn">下载模板</button>
+                </div>
+
+                <div class="tool-item" onclick="useTool('vrResources')">
+                    <h4><i class="fas fa-vr-cardboard"></i> VR/AR资源</h4>
+                    <p>虚拟现实和增强现实地理教学资源</p>
+                    <ul>
+                        <li>虚拟地理实地考察</li>
+                        <li>3D地形模型</li>
+                        <li>AR地图应用</li>
+                        <li>沉浸式学习体验</li>
+                    </ul>
+                    <button class="use-btn">体验VR</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 在线工具集成 -->
+        <div class="tool-container">
+            <div class="tool-title">
+                <i class="fas fa-link"></i>
+                在线工具集成
+            </div>
+            <div class="tool-grid">
+                <div class="tool-item" onclick="useTool('googleEarth')">
+                    <h4><i class="fas fa-satellite"></i> Google Earth</h4>
+                    <p>集成Google Earth，进行全球地理探索</p>
+                    <ul>
+                        <li>卫星影像浏览</li>
+                        <li>地形3D显示</li>
+                        <li>历史影像对比</li>
+                        <li>测量工具使用</li>
+                    </ul>
+                    <button class="use-btn">打开Google Earth</button>
+                </div>
+
+                <div class="tool-item" onclick="useTool('weatherMap')">
+                    <h4><i class="fas fa-cloud-sun"></i> 实时天气图</h4>
+                    <p>实时天气数据和气象图表分析</p>
+                    <ul>
+                        <li>实时天气数据</li>
+                        <li>卫星云图</li>
+                        <li>雷达降水图</li>
+                        <li>天气预报图</li>
+                    </ul>
+                    <button class="use-btn">查看天气图</button>
+                </div>
+
+                <div class="tool-item" onclick="useTool('gisOnline')">
+                    <h4><i class="fas fa-map-marked"></i> 在线GIS</h4>
+                    <p>基于Web的地理信息系统工具</p>
+                    <ul>
+                        <li>空间数据分析</li>
+                        <li>专题地图制作</li>
+                        <li>缓冲区分析</li>
+                        <li>叠加分析</li>
+                    </ul>
+                    <button class="use-btn">使用GIS</button>
+                </div>
+
+                <div class="tool-item" onclick="useTool('dataPortal')">
+                    <h4><i class="fas fa-database"></i> 地理数据门户</h4>
+                    <p>权威地理统计数据查询和下载</p>
+                    <ul>
+                        <li>人口统计数据</li>
+                        <li>经济发展数据</li>
+                        <li>环境监测数据</li>
+                        <li>自然资源数据</li>
+                    </ul>
+                    <button class="use-btn">查询数据</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 创建互动工具主题粒子效果
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 50;
+            const particleTypes = ['tool', 'gear'];
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                const type = particleTypes[Math.floor(Math.random() * particleTypes.length)];
+                particle.className = `particle ${type}`;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 25 + 's';
+                particle.style.animationDuration = (Math.random() * 15 + 20) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 使用工具
+        function useTool(toolId) {
+            const toolNames = {
+                'worldMap': '世界地图工具',
+                'chinaMap': '中国地图工具',
+                'contourMap': '等高线地图工具',
+                'climateChart': '气候图表绘制工具',
+                'populationChart': '人口图表绘制工具',
+                'economicChart': '经济图表绘制工具',
+                'earthMotion': '地球运动模拟器',
+                'waterCycle': '水循环模拟器',
+                'plateMotion': '板块运动模拟器',
+                'videoLibrary': '视频资源库',
+                'imageLibrary': '图片资源库',
+                'pptTemplates': 'PPT模板库',
+                'vrResources': 'VR/AR资源',
+                'googleEarth': 'Google Earth',
+                'weatherMap': '实时天气图',
+                'gisOnline': '在线GIS工具',
+                'dataPortal': '地理数据门户'
+            };
+
+            alert(`启动${toolNames[toolId]}！\n\n这里将打开相应的工具界面，提供完整的功能体验。`);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+
+            // 重新渲染数学公式
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typeset();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

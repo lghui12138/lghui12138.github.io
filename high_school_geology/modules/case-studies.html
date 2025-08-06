@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>案例分析 - 地理学科知识与教学能力</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 25%, #d299c2 50%, #fef9d7 75%, #a8edea 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 50% 100%; }
+            75% { background-position: 0% 100%; }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            animation: float 25s infinite linear;
+        }
+
+        .particle.case {
+            width: 6px;
+            height: 8px;
+            background: linear-gradient(135deg, #a8edea, #fed6e3);
+            border-radius: 3px;
+            box-shadow: 0 0 8px rgba(168, 237, 234, 0.5);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(150px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(25px);
+            border-radius: 35px;
+            padding: 50px;
+            margin-bottom: 50px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(168, 237, 234, 0.3), transparent);
+            animation: shimmer 4s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #a8edea, #fed6e3, #d299c2, #fef9d7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #a8edea, #fed6e3);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(168, 237, 234, 0.3);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(168, 237, 234, 0.4);
+            background: linear-gradient(45deg, #fed6e3, #d299c2);
+        }
+
+        /* 案例分析卡片样式 */
+        .case-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .case-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(168, 237, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .case-container:hover::before {
+            left: 100%;
+        }
+
+        .case-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .case-title {
+            color: #4ecdc4;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .case-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .case-item {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(76, 205, 196, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .case-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-color: #4ecdc4;
+        }
+
+        .case-item h4 {
+            color: #4ecdc4;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .case-item p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1.05em;
+            margin-bottom: 15px;
+        }
+
+        .case-item ul {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1.05em;
+            padding-left: 20px;
+        }
+
+        .case-item li {
+            margin-bottom: 8px;
+        }
+
+        /* 案例详情样式 */
+        .case-detail {
+            background: linear-gradient(135deg, rgba(76, 205, 196, 0.1), rgba(254, 214, 227, 0.1));
+            border: 2px solid rgba(76, 205, 196, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .case-detail h5 {
+            color: #4ecdc4;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .case-detail .case-content {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .case-detail .case-analysis {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+
+        .case-detail .case-analysis h6 {
+            color: #4ecdc4;
+            font-size: 1.1em;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .view-btn {
+            background: linear-gradient(45deg, #4ecdc4, #44a08d);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .view-btn:hover {
+            background: linear-gradient(45deg, #44a08d, #093637);
+            transform: translateY(-2px);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2.8em;
+            }
+            
+            .case-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 案例分析主题粒子效果 -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-microscope"></i> 案例分析</h1>
+            <p>典型地理现象分析、教学案例研究、优秀教学设计示例和实际问题解决方案</p>
+            <div class="nav-buttons">
+                <a href="../index.html" class="nav-btn">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+                <a href="geography-knowledge.html" class="nav-btn">
+                    <i class="fas fa-globe"></i> 地理科学知识
+                </a>
+                <a href="teaching-knowledge.html" class="nav-btn">
+                    <i class="fas fa-book-open"></i> 教学知识与运用
+                </a>
+                <a href="teaching-design.html" class="nav-btn">
+                    <i class="fas fa-pencil-ruler"></i> 教学设计
+                </a>
+                <a href="exam-practice.html" class="nav-btn">
+                    <i class="fas fa-clipboard-check"></i> 考试练习
+                </a>
+            </div>
+        </div>
+
+        <!-- 地理现象案例 -->
+        <div class="case-container">
+            <div class="case-title">
+                <i class="fas fa-globe-americas"></i>
+                典型地理现象案例
+            </div>
+            <div class="case-grid">
+                <div class="case-item" onclick="viewCase('climate')">
+                    <h4><i class="fas fa-cloud-sun"></i> 气候变化案例</h4>
+                    <p>全球变暖对极地冰川融化的影响，以及对海平面上升和沿海地区的威胁</p>
+                    <div class="case-detail">
+                        <h5>案例背景</h5>
+                        <div class="case-content">
+                            近年来，北极海冰面积持续减少，格陵兰冰盖加速融化，南极冰架出现大规模崩塌现象。
+                        </div>
+                        <div class="case-analysis">
+                            <h6>分析要点</h6>
+                            <p>1. 温室效应机制<br>2. 冰川融化过程<br>3. 海平面变化趋势<br>4. 对人类社会的影响</p>
+                        </div>
+                    </div>
+                    <button class="view-btn">查看详细分析</button>
+                </div>
+                
+                <div class="case-item" onclick="viewCase('urbanization')">
+                    <h4><i class="fas fa-city"></i> 城市化案例</h4>
+                    <p>中国城市化进程中的问题与挑战，以深圳特区发展为例</p>
+                    <div class="case-detail">
+                        <h5>案例背景</h5>
+                        <div class="case-content">
+                            深圳从1980年的小渔村发展为现代化大都市，城市化率从不足20%提升到100%。
+                        </div>
+                        <div class="case-analysis">
+                            <h6>分析要点</h6>
+                            <p>1. 城市化动力机制<br>2. 产业结构变化<br>3. 人口迁移特征<br>4. 城市问题与对策</p>
+                        </div>
+                    </div>
+                    <button class="view-btn">查看详细分析</button>
+                </div>
+                
+                <div class="case-item" onclick="viewCase('disaster')">
+                    <h4><i class="fas fa-exclamation-triangle"></i> 自然灾害案例</h4>
+                    <p>2008年汶川地震的成因、影响及防灾减灾措施</p>
+                    <div class="case-detail">
+                        <h5>案例背景</h5>
+                        <div class="case-content">
+                            2008年5月12日，四川汶川发生8.0级地震，造成重大人员伤亡和财产损失。
+                        </div>
+                        <div class="case-analysis">
+                            <h6>分析要点</h6>
+                            <p>1. 地震成因机制<br>2. 地质构造背景<br>3. 灾害影响评估<br>4. 防灾减灾体系</p>
+                        </div>
+                    </div>
+                    <button class="view-btn">查看详细分析</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 教学案例研究 -->
+        <div class="case-container">
+            <div class="case-title">
+                <i class="fas fa-chalkboard-teacher"></i>
+                教学案例研究
+            </div>
+            <div class="case-grid">
+                <div class="case-item" onclick="viewCase('teaching1')">
+                    <h4><i class="fas fa-globe-stand"></i> 地球运动教学案例</h4>
+                    <p>运用地球仪和多媒体技术，突破地球自转和公转教学难点</p>
+                    <div class="case-detail">
+                        <h5>教学片段</h5>
+                        <div class="case-content">
+                            教师利用地球仪配合手电筒，模拟太阳光照射地球，让学生观察昼夜现象的形成...
+                        </div>
+                        <div class="case-analysis">
+                            <h6>教学亮点</h6>
+                            <p>1. 直观演示抽象概念<br>2. 学生参与度高<br>3. 多感官学习体验<br>4. 理论联系实际</p>
+                        </div>
+                    </div>
+                    <button class="view-btn">查看完整案例</button>
+                </div>
+
+                <div class="case-item" onclick="viewCase('teaching2')">
+                    <h4><i class="fas fa-map"></i> 区域地理教学案例</h4>
+                    <p>以"长江三角洲"为例，运用案例教学法培养区域认知能力</p>
+                    <div class="case-detail">
+                        <h5>教学设计</h5>
+                        <div class="case-content">
+                            通过分析长三角的地理位置、自然条件、经济发展等要素，培养学生的区域分析能力...
+                        </div>
+                        <div class="case-analysis">
+                            <h6>设计特色</h6>
+                            <p>1. 问题导向学习<br>2. 小组合作探究<br>3. 多元评价方式<br>4. 核心素养培养</p>
+                        </div>
+                    </div>
+                    <button class="view-btn">查看完整案例</button>
+                </div>
+
+                <div class="case-item" onclick="viewCase('teaching3')">
+                    <h4><i class="fas fa-leaf"></i> 环境保护教学案例</h4>
+                    <p>结合当地环境问题，开展地理实践活动，培养环保意识</p>
+                    <div class="case-detail">
+                        <h5>实践活动</h5>
+                        <div class="case-content">
+                            组织学生调查当地水污染情况，分析污染原因，提出治理建议...
+                        </div>
+                        <div class="case-analysis">
+                            <h6>活动价值</h6>
+                            <p>1. 理论联系实际<br>2. 培养实践能力<br>3. 增强环保意识<br>4. 提升社会责任感</p>
+                        </div>
+                    </div>
+                    <button class="view-btn">查看完整案例</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 优秀教学设计示例 -->
+        <div class="case-container">
+            <div class="case-title">
+                <i class="fas fa-award"></i>
+                优秀教学设计示例
+            </div>
+            <div class="case-grid">
+                <div class="case-item" onclick="viewCase('design1')">
+                    <h4><i class="fas fa-water"></i> 《水循环》教学设计</h4>
+                    <p>运用实验演示和动画模拟，帮助学生理解水循环过程</p>
+                    <div class="case-detail">
+                        <h5>设计亮点</h5>
+                        <div class="case-content">
+                            <strong>教学目标：</strong>理解水循环的过程、动力和地理意义<br>
+                            <strong>教学方法：</strong>实验演示法、多媒体教学法、小组讨论法<br>
+                            <strong>教学过程：</strong>情境导入→实验观察→过程分析→意义探讨→总结提升
+                        </div>
+                        <div class="case-analysis">
+                            <h6>创新之处</h6>
+                            <p>1. 自制实验装置<br>2. 动画演示过程<br>3. 生活实例分析<br>4. 跨学科整合</p>
+                        </div>
+                    </div>
+                    <button class="view-btn">查看完整设计</button>
+                </div>
+
+                <div class="case-item" onclick="viewCase('design2')">
+                    <h4><i class="fas fa-industry"></i> 《工业区位》教学设计</h4>
+                    <p>以具体工业为例，分析区位因素的变化和影响</p>
+                    <div class="case-detail">
+                        <h5>设计思路</h5>
+                        <div class="case-content">
+                            <strong>教学目标：</strong>掌握工业区位因素，分析区位选择<br>
+                            <strong>教学方法：</strong>案例分析法、问题探究法、对比分析法<br>
+                            <strong>教学过程：</strong>案例引入→因素分析→类型归纳→变化探讨→应用拓展
+                        </div>
+                        <div class="case-analysis">
+                            <h6>设计特色</h6>
+                            <p>1. 真实案例分析<br>2. 时空对比研究<br>3. 理论实践结合<br>4. 思维能力培养</p>
+                        </div>
+                    </div>
+                    <button class="view-btn">查看完整设计</button>
+                </div>
+
+                <div class="case-item" onclick="viewCase('design3')">
+                    <h4><i class="fas fa-chart-line"></i> 《人口增长》教学设计</h4>
+                    <p>运用图表分析，理解人口增长模式和影响因素</p>
+                    <div class="case-detail">
+                        <h5>设计框架</h5>
+                        <div class="case-content">
+                            <strong>教学目标：</strong>分析人口增长模式，理解影响因素<br>
+                            <strong>教学方法：</strong>图表分析法、数据统计法、比较分析法<br>
+                            <strong>教学过程：</strong>数据展示→模式识别→因素分析→问题探讨→对策思考
+                        </div>
+                        <div class="case-analysis">
+                            <h6>方法创新</h6>
+                            <p>1. 数据可视化<br>2. 统计分析法<br>3. 国际比较<br>4. 政策解读</p>
+                        </div>
+                    </div>
+                    <button class="view-btn">查看完整设计</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 问题解决方案 -->
+        <div class="case-container">
+            <div class="case-title">
+                <i class="fas fa-lightbulb"></i>
+                实际问题解决方案
+            </div>
+            <div class="case-grid">
+                <div class="case-item" onclick="viewCase('solution1')">
+                    <h4><i class="fas fa-question-circle"></i> 学生学习困难问题</h4>
+                    <p>针对地理概念抽象、空间思维薄弱等问题的解决策略</p>
+                    <ul>
+                        <li><strong>问题表现：</strong>概念理解困难、空间定位不准</li>
+                        <li><strong>原因分析：</strong>缺乏生活经验、思维方式单一</li>
+                        <li><strong>解决策略：</strong>直观教学、生活化教学、多元化评价</li>
+                        <li><strong>实施效果：</strong>学习兴趣提高、理解能力增强</li>
+                    </ul>
+                    <button class="view-btn">查看详细方案</button>
+                </div>
+
+                <div class="case-item" onclick="viewCase('solution2')">
+                    <h4><i class="fas fa-users"></i> 课堂管理问题</h4>
+                    <p>如何在地理课堂中有效组织小组活动和讨论</p>
+                    <ul>
+                        <li><strong>问题表现：</strong>讨论效率低、参与度不均</li>
+                        <li><strong>原因分析：</strong>组织不当、评价缺失</li>
+                        <li><strong>解决策略：</strong>合理分组、明确任务、及时评价</li>
+                        <li><strong>实施效果：</strong>参与度提高、合作能力增强</li>
+                    </ul>
+                    <button class="view-btn">查看详细方案</button>
+                </div>
+
+                <div class="case-item" onclick="viewCase('solution3')">
+                    <h4><i class="fas fa-desktop"></i> 技术应用问题</h4>
+                    <p>地理信息技术在教学中的有效应用策略</p>
+                    <ul>
+                        <li><strong>问题表现：</strong>技术与教学脱节、操作复杂</li>
+                        <li><strong>原因分析：</strong>技术掌握不足、应用方式不当</li>
+                        <li><strong>解决策略：</strong>简化操作、突出重点、循序渐进</li>
+                        <li><strong>实施效果：</strong>教学效率提高、学生兴趣增强</li>
+                    </ul>
+                    <button class="view-btn">查看详细方案</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 创建案例分析主题粒子效果
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 40;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle case';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 25 + 's';
+                particle.style.animationDuration = (Math.random() * 15 + 20) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 查看案例详情
+        function viewCase(caseId) {
+            const caseNames = {
+                'climate': '气候变化案例',
+                'urbanization': '城市化案例',
+                'disaster': '自然灾害案例',
+                'teaching1': '地球运动教学案例',
+                'teaching2': '区域地理教学案例',
+                'teaching3': '环境保护教学案例',
+                'design1': '《水循环》教学设计',
+                'design2': '《工业区位》教学设计',
+                'design3': '《人口增长》教学设计',
+                'solution1': '学习困难问题解决方案',
+                'solution2': '课堂管理问题解决方案',
+                'solution3': '技术应用问题解决方案'
+            };
+
+            alert(`查看${caseNames[caseId]}！\n\n这里将显示完整的案例分析内容，包括详细的背景介绍、分析过程、解决方案和实施效果。`);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+
+            // 重新渲染数学公式
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typeset();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

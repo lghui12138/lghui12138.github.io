@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习计划 - 地理学科知识与教学能力</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 50% 100%; }
+            75% { background-position: 0% 100%; }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            animation: float 25s infinite linear;
+        }
+
+        .particle.plan {
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(102, 126, 234, 0.5);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(150px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(25px);
+            border-radius: 35px;
+            padding: 50px;
+            margin-bottom: 50px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
+            animation: shimmer 4s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(45deg, #764ba2, #f093fb);
+        }
+
+        /* 学习计划卡片样式 */
+        .plan-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .plan-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .plan-container:hover::before {
+            left: 100%;
+        }
+
+        .plan-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .plan-title {
+            color: #667eea;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .plan-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .plan-item {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .plan-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .plan-item h4 {
+            color: #667eea;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .plan-item p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1.05em;
+            margin-bottom: 15px;
+        }
+
+        .plan-item ul {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1.05em;
+            padding-left: 20px;
+        }
+
+        .plan-item li {
+            margin-bottom: 8px;
+        }
+
+        .select-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .select-btn:hover {
+            background: linear-gradient(45deg, #764ba2, #f093fb);
+            transform: translateY(-2px);
+        }
+
+        /* 时间轴样式 */
+        .timeline {
+            position: relative;
+            margin: 30px 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(to bottom, #667eea, #764ba2);
+            transform: translateX(-50%);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin: 30px 0;
+            width: 45%;
+        }
+
+        .timeline-item:nth-child(odd) {
+            left: 0;
+            text-align: right;
+        }
+
+        .timeline-item:nth-child(even) {
+            left: 55%;
+            text-align: left;
+        }
+
+        .timeline-content {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            width: 20px;
+            height: 20px;
+            background: #667eea;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
+        }
+
+        .timeline-item:nth-child(odd)::before {
+            right: -60px;
+        }
+
+        .timeline-item:nth-child(even)::before {
+            left: -60px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2.8em;
+            }
+            
+            .plan-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .timeline::before {
+                left: 20px;
+            }
+
+            .timeline-item {
+                width: calc(100% - 40px);
+                left: 40px !important;
+                text-align: left !important;
+            }
+
+            .timeline-item::before {
+                left: -30px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 学习计划主题粒子效果 -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-calendar-alt"></i> 学习计划</h1>
+            <p>制定个性化的学习计划，科学安排复习进度，高效备考教师资格考试</p>
+            <div class="nav-buttons">
+                <a href="../index.html" class="nav-btn">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+                <a href="resources.html" class="nav-btn">
+                    <i class="fas fa-book-open"></i> 学习资源
+                </a>
+            </div>
+        </div>
+
+        <!-- 学习计划模板 -->
+        <div class="plan-container">
+            <div class="plan-title">
+                <i class="fas fa-clipboard-list"></i>
+                学习计划模板
+            </div>
+            <div class="plan-grid">
+                <div class="plan-item" onclick="selectPlan('intensive')">
+                    <h4><i class="fas fa-rocket"></i> 30天冲刺计划</h4>
+                    <p>适合有一定基础，需要快速提升的考生</p>
+                    <ul>
+                        <li>第1-10天：地理科学知识强化</li>
+                        <li>第11-20天：教学知识与技能</li>
+                        <li>第21-25天：教学设计专项</li>
+                        <li>第26-30天：模拟考试冲刺</li>
+                    </ul>
+                    <button class="select-btn">选择此计划</button>
+                </div>
+
+                <div class="plan-item" onclick="selectPlan('standard')">
+                    <h4><i class="fas fa-calendar-check"></i> 60天标准计划</h4>
+                    <p>适合零基础或基础薄弱的考生</p>
+                    <ul>
+                        <li>第1-20天：地理基础知识学习</li>
+                        <li>第21-35天：教学理论与方法</li>
+                        <li>第36-45天：教学设计训练</li>
+                        <li>第46-60天：综合练习提升</li>
+                    </ul>
+                    <button class="select-btn">选择此计划</button>
+                </div>
+
+                <div class="plan-item" onclick="selectPlan('extended')">
+                    <h4><i class="fas fa-hourglass-half"></i> 90天全面计划</h4>
+                    <p>适合时间充裕，追求高分的考生</p>
+                    <ul>
+                        <li>第1-30天：地理知识体系构建</li>
+                        <li>第31-50天：教学能力培养</li>
+                        <li>第51-70天：案例分析训练</li>
+                        <li>第71-90天：考前综合冲刺</li>
+                    </ul>
+                    <button class="select-btn">选择此计划</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习进度时间轴 -->
+        <div class="plan-container">
+            <div class="plan-title">
+                <i class="fas fa-route"></i>
+                学习进度时间轴
+            </div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>第1阶段：基础知识学习</h4>
+                        <p>掌握地理科学基本概念和原理</p>
+                        <small>预计用时：20-30天</small>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>第2阶段：教学理论学习</h4>
+                        <p>学习地理教学方法和技能</p>
+                        <small>预计用时：15-20天</small>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>第3阶段：教学设计训练</h4>
+                        <p>练习教学设计和案例分析</p>
+                        <small>预计用时：15-20天</small>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>第4阶段：综合练习</h4>
+                        <p>模拟考试和查漏补缺</p>
+                        <small>预计用时：10-15天</small>
+                    </div>
+                </div>
+
+                <div class="timeline-item">
+                    <div class="timeline-content">
+                        <h4>第5阶段：考前冲刺</h4>
+                        <p>重点复习和心理调适</p>
+                        <small>预计用时：5-7天</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 每日学习安排 -->
+        <div class="plan-container">
+            <div class="plan-title">
+                <i class="fas fa-clock"></i>
+                每日学习安排建议
+            </div>
+            <div class="plan-grid">
+                <div class="plan-item">
+                    <h4><i class="fas fa-sun"></i> 上午时段（9:00-11:30）</h4>
+                    <p>精力充沛，适合学习新知识</p>
+                    <ul>
+                        <li>地理科学知识学习</li>
+                        <li>重点难点攻克</li>
+                        <li>理论知识理解</li>
+                    </ul>
+                </div>
+
+                <div class="plan-item">
+                    <h4><i class="fas fa-cloud-sun"></i> 下午时段（14:00-17:00）</h4>
+                    <p>思维活跃，适合练习应用</p>
+                    <ul>
+                        <li>教学设计练习</li>
+                        <li>案例分析训练</li>
+                        <li>题目练习</li>
+                    </ul>
+                </div>
+
+                <div class="plan-item">
+                    <h4><i class="fas fa-moon"></i> 晚上时段（19:00-21:00）</h4>
+                    <p>记忆力佳，适合复习巩固</p>
+                    <ul>
+                        <li>当日内容复习</li>
+                        <li>知识点记忆</li>
+                        <li>错题整理</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习建议 -->
+        <div class="plan-container">
+            <div class="plan-title">
+                <i class="fas fa-lightbulb"></i>
+                学习建议与技巧
+            </div>
+            <div class="plan-grid">
+                <div class="plan-item">
+                    <h4><i class="fas fa-target"></i> 目标设定</h4>
+                    <ul>
+                        <li>制定明确的学习目标</li>
+                        <li>分解大目标为小目标</li>
+                        <li>设定合理的时间节点</li>
+                        <li>定期检查完成情况</li>
+                    </ul>
+                </div>
+
+                <div class="plan-item">
+                    <h4><i class="fas fa-brain"></i> 学习方法</h4>
+                    <ul>
+                        <li>理论联系实际</li>
+                        <li>多种感官并用</li>
+                        <li>及时复习巩固</li>
+                        <li>主动思考总结</li>
+                    </ul>
+                </div>
+
+                <div class="plan-item">
+                    <h4><i class="fas fa-heart"></i> 心理调节</h4>
+                    <ul>
+                        <li>保持积极心态</li>
+                        <li>适度放松休息</li>
+                        <li>寻求支持帮助</li>
+                        <li>相信自己能力</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 创建学习计划主题粒子效果
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 40;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle plan';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 25 + 's';
+                particle.style.animationDuration = (Math.random() * 15 + 20) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 选择学习计划
+        function selectPlan(planType) {
+            const planNames = {
+                'intensive': '30天冲刺计划',
+                'standard': '60天标准计划',
+                'extended': '90天全面计划'
+            };
+
+            alert(`选择${planNames[planType]}！\n\n系统将为您生成详细的学习计划，包括：\n• 每日学习任务\n• 进度跟踪\n• 提醒设置\n• 调整建议`);
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+
+            // 重新渲染数学公式
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typeset();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

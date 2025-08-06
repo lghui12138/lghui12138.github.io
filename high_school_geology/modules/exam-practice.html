@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考试练习 - 地理学科知识与教学能力</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 25%, #f093fb 50%, #f5576c 75%, #4facfe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 50% 100%; }
+            75% { background-position: 0% 100%; }
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            animation: float 25s infinite linear;
+        }
+
+        .particle.exam {
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(102, 126, 234, 0.5);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(150px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(25px);
+            border-radius: 35px;
+            padding: 50px;
+            margin-bottom: 50px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.3), transparent);
+            animation: shimmer 4s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #667eea, #764ba2, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+            background: linear-gradient(45deg, #764ba2, #f093fb);
+        }
+
+        /* 考试练习卡片样式 */
+        .exam-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .exam-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+            transition: left 0.5s;
+        }
+
+        .exam-container:hover::before {
+            left: 100%;
+        }
+
+        .exam-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+        }
+
+        .exam-title {
+            color: #667eea;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .exam-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .exam-item {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            border-radius: 15px;
+            padding: 25px;
+            border: 2px solid rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .exam-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-color: #667eea;
+        }
+
+        .exam-item h4 {
+            color: #667eea;
+            font-size: 1.4em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .exam-item p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 1.05em;
+            margin-bottom: 15px;
+        }
+
+        .exam-item .exam-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .exam-stats span {
+            font-size: 0.9em;
+            color: #777;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+
+        .start-btn:hover {
+            background: linear-gradient(45deg, #764ba2, #f093fb);
+            transform: translateY(-2px);
+        }
+
+        /* 题型示例样式 */
+        .question-example {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .question-example h5 {
+            color: #667eea;
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .question-example .question-text {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .question-example .options {
+            list-style: none;
+            padding: 0;
+        }
+
+        .question-example .options li {
+            color: #555;
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .question-example .options li::before {
+            content: attr(data-option);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2.8em;
+            }
+            
+            .exam-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 考试练习主题粒子效果 -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-clipboard-check"></i> 考试练习</h1>
+            <p>单项选择题、简答题、材料分析题、教学设计题等各类题型的专项练习和模拟考试</p>
+            <div class="nav-buttons">
+                <a href="../index.html" class="nav-btn">
+                    <i class="fas fa-home"></i> 返回首页
+                </a>
+                <a href="geography-knowledge.html" class="nav-btn">
+                    <i class="fas fa-globe"></i> 地理科学知识
+                </a>
+                <a href="teaching-knowledge.html" class="nav-btn">
+                    <i class="fas fa-book-open"></i> 教学知识与运用
+                </a>
+                <a href="teaching-design.html" class="nav-btn">
+                    <i class="fas fa-pencil-ruler"></i> 教学设计
+                </a>
+            </div>
+        </div>
+
+        <!-- 题型练习 -->
+        <div class="exam-container">
+            <div class="exam-title">
+                <i class="fas fa-tasks"></i>
+                题型专项练习
+            </div>
+            <div class="exam-grid">
+                <div class="exam-item" onclick="startPractice('choice')">
+                    <h4><i class="fas fa-check-circle"></i> 单项选择题</h4>
+                    <p>地理科学知识与运用模块的主要题型，考查基础知识掌握和应用能力</p>
+                    <div class="exam-stats">
+                        <span>题目数量：50题</span>
+                        <button class="start-btn">开始练习</button>
+                    </div>
+                </div>
+                
+                <div class="exam-item" onclick="startPractice('short')">
+                    <h4><i class="fas fa-edit"></i> 简答题</h4>
+                    <p>教学知识与运用、教学设计模块的重要题型，考查理论理解和表达能力</p>
+                    <div class="exam-stats">
+                        <span>题目数量：30题</span>
+                        <button class="start-btn">开始练习</button>
+                    </div>
+                </div>
+                
+                <div class="exam-item" onclick="startPractice('analysis')">
+                    <h4><i class="fas fa-search"></i> 材料分析题</h4>
+                    <p>综合性题型，考查材料阅读、分析问题和解决问题的能力</p>
+                    <div class="exam-stats">
+                        <span>题目数量：25题</span>
+                        <button class="start-btn">开始练习</button>
+                    </div>
+                </div>
+                
+                <div class="exam-item" onclick="startPractice('design')">
+                    <h4><i class="fas fa-drafting-compass"></i> 教学设计题</h4>
+                    <p>教学设计模块的核心题型，考查教学设计的完整性和规范性</p>
+                    <div class="exam-stats">
+                        <span>题目数量：20题</span>
+                        <button class="start-btn">开始练习</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 题型示例 -->
+        <div class="exam-container">
+            <div class="exam-title">
+                <i class="fas fa-lightbulb"></i>
+                题型示例
+            </div>
+            <div class="exam-grid">
+                <div class="exam-item">
+                    <h4><i class="fas fa-check-circle"></i> 单项选择题示例</h4>
+                    <div class="question-example">
+                        <h5>例题1：</h5>
+                        <div class="question-text">
+                            读图，完成下题。图中反映反气旋过境时气压变化的曲线是
+                        </div>
+                        <ul class="options">
+                            <li data-option="A.">①</li>
+                            <li data-option="B.">②</li>
+                            <li data-option="C.">③</li>
+                            <li data-option="D.">④</li>
+                        </ul>
+                        <p style="color: #667eea; font-weight: bold; margin-top: 10px;">答案：C</p>
+                        <p style="color: #777; font-size: 0.9em;">解析：反气旋是高压系统，过境时气压先升高后降低，曲线③符合这一特征。</p>
+                    </div>
+                </div>
+
+                <div class="exam-item">
+                    <h4><i class="fas fa-edit"></i> 简答题示例</h4>
+                    <div class="question-example">
+                        <h5>例题2：</h5>
+                        <div class="question-text">
+                            以人口增长曲线为例，说明如何利用曲线图培养学生的读图能力。
+                        </div>
+                        <p style="color: #667eea; font-weight: bold; margin-top: 10px;">参考答案：</p>
+                        <p style="color: #777; font-size: 0.9em;">
+                            1. 引导学生观察曲线的基本要素：横轴（时间）、纵轴（人口数量）、曲线走向<br>
+                            2. 分析曲线的变化特点：增长速度的变化、拐点的意义<br>
+                            3. 结合实际案例，理解曲线反映的地理现象和规律<br>
+                            4. 培养学生从图中提取信息、分析问题的能力
+                        </p>
+                    </div>
+                </div>
+
+                <div class="exam-item">
+                    <h4><i class="fas fa-search"></i> 材料分析题示例</h4>
+                    <div class="question-example">
+                        <h5>例题3：</h5>
+                        <div class="question-text">
+                            阅读图甲、图乙和文字资料，回答问题。<br>
+                            麻涌镇地处珠江入海口，广州市与东莞市的交界处，以麻涌为中心，一小时即可到达珠江三角洲各大城市...
+                        </div>
+                        <p style="color: #667eea; font-weight: bold; margin-top: 10px;">问题：</p>
+                        <p style="color: #555;">
+                            ①比较说明广州、东莞、麻涌三个城镇的等级与服务范围的大小。<br>
+                            ②简述麻涌建设外向型工业新城的优势条件。
+                        </p>
+                    </div>
+                </div>
+
+                <div class="exam-item">
+                    <h4><i class="fas fa-drafting-compass"></i> 教学设计题示例</h4>
+                    <div class="question-example">
+                        <h5>例题4：</h5>
+                        <div class="question-text">
+                            阅读关于"工业的影响因素"的图文资料，回答问题。<br>
+                            材料一：高中地理课程标准的内容要求是："分析工业区位因素"。
+                        </div>
+                        <p style="color: #667eea; font-weight: bold; margin-top: 10px;">问题：</p>
+                        <p style="color: #555;">
+                            （1）根据材料，写出"工业的影响因素"教学设计中的教学目标、教学方法和主要教学环节。<br>
+                            （2）说明设计意图。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模拟考试 -->
+        <div class="exam-container">
+            <div class="exam-title">
+                <i class="fas fa-graduation-cap"></i>
+                模拟考试
+            </div>
+            <div class="exam-grid">
+                <div class="exam-item" onclick="startExam('mock1')">
+                    <h4><i class="fas fa-file-alt"></i> 模拟考试一</h4>
+                    <p>完整的教师资格考试模拟试卷，包含所有题型，严格按照考试时间和要求</p>
+                    <div class="exam-stats">
+                        <span>考试时间：120分钟</span>
+                        <button class="start-btn">开始考试</button>
+                    </div>
+                </div>
+
+                <div class="exam-item" onclick="startExam('mock2')">
+                    <h4><i class="fas fa-file-alt"></i> 模拟考试二</h4>
+                    <p>第二套完整模拟试卷，题目难度适中，适合巩固提高阶段使用</p>
+                    <div class="exam-stats">
+                        <span>考试时间：120分钟</span>
+                        <button class="start-btn">开始考试</button>
+                    </div>
+                </div>
+
+                <div class="exam-item" onclick="startExam('mock3')">
+                    <h4><i class="fas fa-file-alt"></i> 模拟考试三</h4>
+                    <p>第三套完整模拟试卷，题目难度较高，适合考前冲刺阶段使用</p>
+                    <div class="exam-stats">
+                        <span>考试时间：120分钟</span>
+                        <button class="start-btn">开始考试</button>
+                    </div>
+                </div>
+
+                <div class="exam-item" onclick="viewResults()">
+                    <h4><i class="fas fa-chart-line"></i> 成绩分析</h4>
+                    <p>查看历次考试成绩，分析薄弱环节，制定针对性的复习计划</p>
+                    <div class="exam-stats">
+                        <span>已完成：0次</span>
+                        <button class="start-btn">查看成绩</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 考试技巧 -->
+        <div class="exam-container">
+            <div class="exam-title">
+                <i class="fas fa-brain"></i>
+                考试技巧
+            </div>
+            <div class="exam-grid">
+                <div class="exam-item">
+                    <h4><i class="fas fa-clock"></i> 时间管理</h4>
+                    <ul style="color: #555; line-height: 1.6; padding-left: 20px;">
+                        <li>单项选择题：每题1-2分钟</li>
+                        <li>简答题：每题8-10分钟</li>
+                        <li>材料分析题：每题15-20分钟</li>
+                        <li>教学设计题：25-30分钟</li>
+                        <li>预留5-10分钟检查</li>
+                    </ul>
+                </div>
+
+                <div class="exam-item">
+                    <h4><i class="fas fa-lightbulb"></i> 答题策略</h4>
+                    <ul style="color: #555; line-height: 1.6; padding-left: 20px;">
+                        <li>先易后难，确保基础分</li>
+                        <li>仔细审题，抓住关键词</li>
+                        <li>条理清晰，分点作答</li>
+                        <li>字迹工整，卷面整洁</li>
+                        <li>合理分配答题空间</li>
+                    </ul>
+                </div>
+
+                <div class="exam-item">
+                    <h4><i class="fas fa-exclamation-triangle"></i> 注意事项</h4>
+                    <ul style="color: #555; line-height: 1.6; padding-left: 20px;">
+                        <li>带齐考试用品和证件</li>
+                        <li>提前到达考场熟悉环境</li>
+                        <li>保持良好的心理状态</li>
+                        <li>遵守考场纪律</li>
+                        <li>检查答题卡填涂</li>
+                    </ul>
+                </div>
+
+                <div class="exam-item">
+                    <h4><i class="fas fa-star"></i> 高分技巧</h4>
+                    <ul style="color: #555; line-height: 1.6; padding-left: 20px;">
+                        <li>熟练掌握地理基础知识</li>
+                        <li>理解教学理论和方法</li>
+                        <li>练习教学设计写作</li>
+                        <li>关注时事和教育热点</li>
+                        <li>多做真题和模拟题</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 创建考试练习主题粒子效果
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 40;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle exam';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 25 + 's';
+                particle.style.animationDuration = (Math.random() * 15 + 20) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 开始练习
+        function startPractice(type) {
+            alert(`开始${getTypeName(type)}练习！\n\n这里将跳转到具体的练习页面。`);
+        }
+
+        // 开始考试
+        function startExam(examId) {
+            alert(`开始${examId}！\n\n这里将跳转到考试页面，请准备好120分钟的考试时间。`);
+        }
+
+        // 查看成绩
+        function viewResults() {
+            alert('查看成绩分析！\n\n这里将显示历次考试的详细成绩和分析报告。');
+        }
+
+        // 获取题型名称
+        function getTypeName(type) {
+            const typeNames = {
+                'choice': '单项选择题',
+                'short': '简答题',
+                'analysis': '材料分析题',
+                'design': '教学设计题'
+            };
+            return typeNames[type] || '练习';
+        }
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+
+            // 重新渲染数学公式
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typeset();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
