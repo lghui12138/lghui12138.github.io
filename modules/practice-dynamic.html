@@ -4016,27 +4016,25 @@
                         branch: 'main',
                         rawBaseUrl: 'https://raw.githubusercontent.com/lghui12138/lghui12138.github.io/main'
                     };
-                    
-                    const files = [
-                        { file: '易错题集.json', category: '易错', name: '易错题集', description: '高频易错题目专项训练' },
-                        { file: '真题_中国海洋大学_2000-2021_cleaned.json', category: '真题', name: '真题合集(精选)', description: '中国海洋大学历年真题精选版', year: '2000-2021' },
-                        { file: '真题_中国海洋大学_2000-2021.json', category: '真题', name: '真题合集(完整)', description: '中国海洋大学历年真题完整版', year: '2000-2021' },
-                        { file: '分类_动量方程.json', category: '分类', name: '动量方程', description: '动量方程专题练习' },
-                        { file: '分类_势流.json', category: '分类', name: '势流', description: '势流理论专题练习' },
-                        { file: '分类_压力.json', category: '分类', name: '压力', description: '流体压力专题练习' },
-                        { file: '分类_实验与量纲.json', category: '分类', name: '实验与量纲', description: '实验方法与量纲分析' },
-                        { file: '分类_流体力学基础.json', category: '分类', name: '流体力学基础', description: '流体力学基础知识' },
-                        { file: '分类_流体性质.json', category: '分类', name: '流体性质', description: '流体物理性质专题' },
-                        { file: '分类_流线轨迹.json', category: '分类', name: '流线轨迹', description: '流线与轨迹线专题' },
-                        { file: '分类_涡度.json', category: '分类', name: '涡度', description: '涡度与旋转流动' },
-                        { file: '分类_湍流.json', category: '分类', name: '湍流', description: '湍流理论与应用' },
-                        { file: '分类_管道流动.json', category: '分类', name: '管道流动', description: '管道内流动专题' },
-                        { file: '分类_粘性.json', category: '分类', name: '粘性', description: '粘性流体力学' },
-                        { file: '分类_能量方程.json', category: '分类', name: '能量方程', description: '能量方程专题练习' },
-                        { file: '分类_自由面.json', category: '分类', name: '自由面', description: '自由表面流动' },
-                        { file: '分类_边界层.json', category: '分类', name: '边界层', description: '边界层理论专题' },
-                        { file: '分类_雷诺数.json', category: '分类', name: '雷诺数', description: '雷诺数与流动状态' }
-                    ];
+
+                    const indexUrl = `${GITHUB_CONFIG.rawBaseUrl}/question-banks/index.json`;
+                    const indexResponse = await fetch(indexUrl);
+                    if (!indexResponse.ok) {
+                        throw new Error(`题库索引加载失败: HTTP ${indexResponse.status}`);
+                    }
+
+                    const indexData = await indexResponse.json();
+                    const files = (indexData.questionBanks || [])
+                        .filter(bank => bank && bank.filename)
+                        .map(bank => ({
+                            file: bank.filename,
+                            category: bank.category || '未分类',
+                            name: bank.name || bank.filename.replace('.json', ''),
+                            description: bank.description || '',
+                            year: bank.year || null,
+                            difficulty: bank.difficulty || 'medium',
+                            bankId: bank.id || bank.filename.replace('.json', '')
+                        }));
                     
                     let loadedQuestions = [];
                     let loadedBanks = [];
@@ -4056,32 +4054,32 @@
                                 
                                 if (questions && questions.length > 0) {
                                     const convertedQuestions = questions.map((q, index) => ({
-                                        id: `${fileInfo.file}_${index}`,
+                                        id: q.id || `${fileInfo.file}_${index}`,
                                         title: q.title || q.question || `题目${totalLoaded + index + 1}`,
                                         content: q.content || '',
-                                        options: q.options || ['A', 'B', 'C', 'D'],
-                                        answer: q.answer || 0,
+                                        options: Array.isArray(q.options) ? q.options : [],
+                                        answer: q.answer ?? q.correct ?? '',
                                         explanation: q.explanation || '暂无解析',
                                         category: q.category || fileInfo.category,
-                                        difficulty: q.difficulty || 'medium',
+                                        difficulty: q.difficulty || fileInfo.difficulty || 'medium',
                                         year: q.year || fileInfo.year || null,
                                         school: q.school || '中国海洋大学',
                                         bank: fileInfo.name,
-                                        bankId: fileInfo.file
+                                        bankId: fileInfo.bankId,
+                                        knowledgePoints: q.knowledgePoints || q.tags || []
                                     }));
                                     
                                     loadedQuestions = loadedQuestions.concat(convertedQuestions);
                                     totalLoaded += convertedQuestions.length;
                                     
-                                    // 记录题库信息
                                     loadedBanks.push({
-                                        id: fileInfo.file,
+                                        id: fileInfo.bankId,
                                         name: fileInfo.name,
                                         description: fileInfo.description,
                                         category: fileInfo.category,
                                         year: fileInfo.year,
                                         questionCount: convertedQuestions.length,
-                                        difficulty: 'medium', // 默认难度
+                                        difficulty: fileInfo.difficulty || 'medium',
                                         file: fileInfo.file
                                     });
                                     
@@ -5257,14 +5255,19 @@
                 this.handleUrlParameters();
                 
                 // 初始化
-                setTimeout(() => {
+                setTimeout(async () => {
                     this.loadProgress();
                     this.loading = false;
                     
                     if (this.isRealExamMode) {
                         this.showNotification('真题练习模式已启动！', 'success');
                     } else {
-                        this.showNotification('欢迎来到智能题库！点击"批量加载所有题库"开始', 'info');
+                        this.showNotification('欢迎来到智能题库，正在自动加载题库...', 'info');
+                        try {
+                            await this.loadAllQuestionBanks();
+                        } catch (error) {
+                            console.error('自动加载题库失败:', error);
+                        }
                     }
                 }, 1500);
 
