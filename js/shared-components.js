@@ -77,7 +77,8 @@ window.SharedMixin = {
         // 严格检查是否是指定教师账号
         isAuthorizedTeacher() {
             const currentUser = this.loadFromStorage('currentUser', {});
-            return currentUser.username === 'liuguanghui6330156' && currentUser.authorized === true;
+            const teacherUsers = ['liuguanghui6330156', 'lgh', 'lgh6330156'];
+            return teacherUsers.includes(currentUser.username) && currentUser.authorized === true;
         },
         
         // 检查是否是教师账号（兼容旧方法）
@@ -96,8 +97,9 @@ window.SharedMixin = {
         
         // 登录方法（强化权限控制）
         login(username, password) {
+            const teacherUsers = ['liuguanghui6330156', 'lgh', 'lgh6330156'];
             // 指定教师账号验证
-            if (username === 'liuguanghui6330156') {
+            if (teacherUsers.includes(username)) {
                 const user = {
                     username: username,
                     role: 'teacher',

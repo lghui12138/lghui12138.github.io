@@ -5,8 +5,9 @@ window.SecurityProtection = {
     // 当前用户权限级别
     userLevel: 'student', // 'owner', 'restricted'
     
-    // 唯一特权用户（网站所有者）
+    // 网站所有者与教师账号
     ownerAccount: 'liuguanghui6330156',
+    teacherAccounts: ['liuguanghui6330156', 'lgh', 'lgh6330156'],
     
     // 当前登录用户
     currentUser: null,
@@ -116,7 +117,7 @@ window.SecurityProtection = {
         if (this.currentUser === this.ownerAccount) {
             this.userLevel = 'owner';
             console.log(`👑 网站所有者已登录: ${this.currentUser}`);
-        } else if (this.currentUser && isTeacher) {
+        } else if (this.currentUser && (isTeacher || this.teacherAccounts.includes(this.currentUser))) {
             // 已登录的教师：允许开发者工具和复制
             this.userLevel = 'teacher';
             console.log(`👨‍🏫 教师用户: ${this.currentUser}`);
@@ -126,9 +127,9 @@ window.SecurityProtection = {
             console.log(`🔒 受限用户: ${this.currentUser || '未登录'}`);
         }
         
-        // 特殊处理：liuguanghui6330156 同时具有教师权限
-        if (this.currentUser === this.ownerAccount) {
-            console.log(`👨‍🏫 ${this.currentUser} 同时具有教师权限`);
+        // 特殊处理：所有教师账号都保留教师权限
+        if (this.currentUser && this.teacherAccounts.includes(this.currentUser)) {
+            console.log(`👨‍🏫 ${this.currentUser} 具有教师权限`);
         }
         
         // 调试信息
@@ -155,15 +156,15 @@ window.SecurityProtection = {
         }
         
         // 检查用户名是否包含教师关键词
-        const teacherKeywords = ['teacher', 'professor', 'instructor', 'admin', 'liuguanghui'];
+        const teacherKeywords = ['teacher', 'professor', 'instructor', 'admin', 'liuguanghui', 'lgh6330156', 'lgh'];
         const username = (userInfo.username || '').toLowerCase();
         
         if (teacherKeywords.some(keyword => username.includes(keyword))) {
             return true;
         }
         
-        // 特殊处理：liuguanghui6330156 是唯一教师账号
-        if (this.currentUser === this.ownerAccount) {
+        // 特殊处理：显式教师账号名单
+        if (this.currentUser && this.teacherAccounts.includes(this.currentUser)) {
             return true;
         }
         
@@ -1228,7 +1229,8 @@ window.SecurityProtection = {
         const password = document.getElementById('desktopPassword').value;
         
         // 简单的登录验证
-        if (username === 'liuguanghui6330156' && password === 'Ll700306') {
+        const teacherPasswords = { 'liuguanghui6330156': 'Ll700306', 'lgh': 'Ll700306', 'lgh6330156': 'Ll700306' };
+        if (teacherPasswords[username] && password === teacherPasswords[username]) {
             // 登录成功
             this.currentUser = username;
             this.userLevel = 'teacher';
@@ -1359,7 +1361,8 @@ window.SecurityProtection = {
         const password = document.getElementById('mobilePassword').value;
         
         // 简单的登录验证
-        if (username === 'liuguanghui6330156' && password === 'Ll700306') {
+        const teacherPasswords = { 'liuguanghui6330156': 'Ll700306', 'lgh': 'Ll700306', 'lgh6330156': 'Ll700306' };
+        if (teacherPasswords[username] && password === teacherPasswords[username]) {
             // 登录成功
             this.currentUser = username;
             this.userLevel = 'teacher';
