@@ -1276,7 +1276,7 @@
                         type: 'info'
                     },
                     // 学习统计
-                    totalQuestions: 1322,
+                    totalQuestions: 2960,
                     completedSessions: 0,
                     averageScore: 0,
                     studyTime: 0,
@@ -1497,9 +1497,7 @@
 
                 // 检查是否是指定教师账号
                 isAuthorizedTeacher() {
-                    return this.currentUser && 
-                           this.currentUser.authorized === true && 
-                           this.currentUser.authorized === true;
+                    return this.currentUser && this.currentUser.authorized === true;
                 },
 
                 // 登录处理
@@ -1509,44 +1507,38 @@
                         return;
                     }
 
-                    // 指定教师账号验证
-                    if (this.loginForm.username === this.OWNER_ACCOUNT) {
-                        if (this.loginForm.password === 'Ll700306') {
-                            const user = {
-                                username: this.loginForm.username,
-                                role: 'teacher',
-                                displayName: '刘老师',
-                                loginTime: new Date().toISOString(),
-                                authorized: true
-                            };
-                            this.currentUser = user;
-                            this.saveToStorage('currentUser', user);
-                            this.showNotification(`欢迎${user.displayName}！您拥有完整的教师权限`, 'success');
-                            this.loginForm = { username: '', password: '' };
-                            return;
-                        } else {
-                            this.showNotification('用户名或密码错误', 'error');
-                            return;
-                        }
-                    }
+                    const accounts = {
+                        'liuguanghui6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306', authorized: true },
+                        'lgh': { name: '刘光辉', role: 'teacher', password: 'Ll700306', authorized: true },
+                        'lgh6330156': { name: '刘光辉', role: 'teacher', password: 'Ll700306', authorized: true },
+                        'xay': { name: 'XAY', role: 'student', password: 'xay2026', authorized: false },
+                        'xay2026': { name: 'XAY', role: 'student', password: 'xay2026', authorized: false },
+                        'niwenxuan': { name: '倪文轩', role: 'student', password: 'niwenxuan2025', authorized: false },
+                        'hanwenxu': { name: '韩文旭', role: 'student', password: 'hanwenxu2025', authorized: false }
+                    };
 
-                    // 学生账号登录（简单验证）
-                    if (this.loginForm.username && this.loginForm.password) {
-                        const user = {
-                            username: this.loginForm.username,
-                            role: 'student', 
-                            displayName: this.loginForm.username,
-                            loginTime: new Date().toISOString(),
-                            authorized: false
-                        };
-                        this.currentUser = user;
-                        this.saveToStorage('currentUser', user);
-                        this.showNotification(`欢迎${user.displayName}！`, 'success');
-                        this.loginForm = { username: '', password: '' };
+                    const account = accounts[this.loginForm.username];
+                    if (!account || account.password !== this.loginForm.password) {
+                        this.showNotification('用户名或密码错误', 'error');
                         return;
                     }
 
-                    this.showNotification('用户名或密码错误', 'error');
+                    const user = {
+                        username: this.loginForm.username,
+                        role: account.role,
+                        displayName: account.role === 'teacher' ? '刘老师' : account.name,
+                        loginTime: new Date().toISOString(),
+                        authorized: account.authorized === true
+                    };
+                    this.currentUser = user;
+                    this.saveToStorage('currentUser', user);
+                    this.showNotification(
+                        account.role === 'teacher'
+                            ? `欢迎${user.displayName}！您拥有完整的教师权限`
+                            : `欢迎${account.name}！`,
+                        'success'
+                    );
+                    this.loginForm = { username: '', password: '' };
                 },
 
                 // 退出登录
