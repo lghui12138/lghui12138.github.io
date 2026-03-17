@@ -2947,8 +2947,8 @@
                                 'option-label', 
                                 { 
                                     selected: selectedAnswer === index,
-                                    correct: showResult && index === currentQuestion.answer,
-                                    incorrect: showResult && selectedAnswer === index && selectedAnswer !== currentQuestion.answer
+                                    correct: showResult && index === getCorrectOptionIndex(currentQuestion),
+                                    incorrect: showResult && selectedAnswer === index && selectedAnswer !== getCorrectOptionIndex(currentQuestion)
                                 }
                             ]">
                                 <div class="option-letter">{{ String.fromCharCode(65 + index) }}</div>
@@ -3054,7 +3054,7 @@
                         <i :class="['result-icon', isCorrect ? 'fas fa-check-circle' : 'fas fa-times-circle']"></i>
                         <strong>{{ isCorrect ? '回答正确！' : '回答错误！' }}</strong>
                         <span v-if="!isCorrect && currentQuestion.options">
-                            正确答案是：{{ String.fromCharCode(65 + currentQuestion.answer) }}. {{ currentQuestion.options[currentQuestion.answer] }}
+                            正确答案是：{{ String.fromCharCode(65 + getCorrectOptionIndex(currentQuestion)) }}. {{ currentQuestion.options[getCorrectOptionIndex(currentQuestion)] }}
                         </span>
                     </div>
                     
@@ -3803,6 +3803,34 @@
                     this.showNotification('已显示标准答案，可以对比学习', 'info');
                 },
 
+                getCorrectOptionIndex(question) {
+                    if (!question || !Array.isArray(question.options) || question.options.length === 0) {
+                        return 0;
+                    }
+
+                    const rawAnswer = question.answer;
+                    if (typeof rawAnswer === 'number' && rawAnswer >= 0 && rawAnswer < question.options.length) {
+                        return rawAnswer;
+                    }
+
+                    if (typeof rawAnswer === 'string') {
+                        const trimmed = rawAnswer.trim();
+                        if (/^[A-Za-z]$/.test(trimmed)) {
+                            const idx = trimmed.toUpperCase().charCodeAt(0) - 65;
+                            if (idx >= 0 && idx < question.options.length) return idx;
+                        }
+
+                        const directIndex = question.options.findIndex(opt => String(opt).trim() === trimmed);
+                        if (directIndex !== -1) return directIndex;
+
+                        const normalized = trimmed.replace(/^[A-Za-z][\.、\s]*/, '').trim();
+                        const normalizedIndex = question.options.findIndex(opt => String(opt).replace(/^[A-Za-z][\.、\s]*/, '').trim() === normalized);
+                        if (normalizedIndex !== -1) return normalizedIndex;
+                    }
+
+                    return 0;
+                },
+
                 calculateSimilarity(userAnswer, standardAnswer) {
                     if (!userAnswer || !standardAnswer) return 0;
                     
@@ -4383,10 +4411,9 @@
                         return;
                     }
 
-                    // 检查答案是否正确
-                    // 将数字索引转换为字母选项进行比较
-                    const selectedOption = String.fromCharCode(65 + this.selectedAnswer); // 0->A, 1->B, 2->C, 3->D
-                    this.isCorrect = selectedOption === this.currentQuestion.answer;
+                    // 检查答案是否正确（兼容 answer 为数字索引、字母或选项文本）
+                    const correctIndex = this.getCorrectOptionIndex(this.currentQuestion);
+                    this.isCorrect = this.selectedAnswer === correctIndex;
                     this.showResult = true;
                     
                     if (this.isCorrect) {
