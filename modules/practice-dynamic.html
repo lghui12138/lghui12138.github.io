@@ -3986,9 +3986,9 @@
                     this.loadingText = '正在批量加载所有题库...';
                     
                     try {
-                        await this.loadFromGitHub();
+                        await this.loadFromLocal();
                         if (this.totalQuestions === 0) {
-                            await this.loadFromLocal();
+                            await this.loadFromGitHub();
                         }
                         
                         if (this.totalQuestions > 0) {
@@ -4105,9 +4105,149 @@
                 async loadFromLocal() {
                     console.log('📁 开始从本地加载题目...');
                     this.loadingText = '正在从本地加载题库...';
-                    
-                    // 这里可以添加本地加载逻辑
-                    // 目前作为备用方案
+
+                    const indexResponse = await fetch('../question-banks/index.json');
+                    if (!indexResponse.ok) {
+                        throw new Error(`本地题库索引加载失败: HTTP ${indexResponse.status}`);
+                    }
+
+                    const indexData = await indexResponse.json();
+                    const files = (indexData.questionBanks || [])
+                        .filter(bank => bank && bank.filename)
+                        .map(bank => ({
+                            file: bank.filename,
+                            category: bank.category || '未分类',
+                            name: bank.name || bank.filename.replace('.json', ''),
+                            description: bank.description || '',
+                            year: bank.year || null,
+                            difficulty: bank.difficulty || 'medium',
+                            bankId: bank.id || bank.filename.replace('.json', '')
+                        }));
+
+                    let loadedQuestions = [];
+                    let loadedBanks = [];
+                    let totalLoaded = 0;
+
+                    for (const fileInfo of files) {
+                        try {
+                            this.loadingText = `正在加载: ${fileInfo.name}...`;
+                            const response = await fetch(`../question-banks/${fileInfo.file}`);
+                            if (!response.ok) continue;
+
+                            const data = await response.json();
+                            const questions = Array.isArray(data) ? data : (data.questions ? data.questions : []);
+                            if (!questions.length) continue;
+
+                            const convertedQuestions = questions.map((q, index) => ({
+                                id: q.id || `${fileInfo.file}_${index}`,
+                                title: q.title || q.question || `题目${totalLoaded + index + 1}`,
+                                content: q.content || '',
+                                options: Array.isArray(q.options) ? q.options : [],
+                                answer: q.answer ?? q.correct ?? '',
+                                explanation: q.explanation || '暂无解析',
+                                category: q.category || fileInfo.category,
+                                difficulty: q.difficulty || fileInfo.difficulty || 'medium',
+                                year: q.year || fileInfo.year || null,
+                                school: q.school || '中国海洋大学',
+                                bank: fileInfo.name,
+                                bankId: fileInfo.bankId,
+                                knowledgePoints: q.knowledgePoints || q.tags || []
+                            }));
+
+                            loadedQuestions = loadedQuestions.concat(convertedQuestions);
+                            totalLoaded += convertedQuestions.length;
+
+                            loadedBanks.push({
+                                id: fileInfo.bankId,
+                                name: fileInfo.name,
+                                description: fileInfo.description,
+                                category: fileInfo.category,
+                                year: fileInfo.year,
+                                questionCount: convertedQuestions.length,
+                                difficulty: fileInfo.difficulty || 'medium',
+                                file: fileInfo.file
+                            });
+                        } catch (error) {
+                            console.warn(`⚠️ 本地加载失败: ${fileInfo.file}`, error.message);
+                        }
+                    }
+
+                    if (loadedQuestions.length > 0) {
+                        this.questions = loadedQuestions;
+                        this.availableBanks = loadedBanks;
+                        this.totalQuestions = loadedQuestions.length;
+                        console.log(`🎉 本地加载完成！总共: ${loadedQuestions.length} 道题目，${loadedBanks.length} 个题库`);
+                    }
+                },
+
+                // 只加载一个指定题库（用于首页直达）
+                async handleSingleBankPractice(bankId, examMode = 'normal') {
+                    this.loading = true;
+                    this.loadingText = '正在加载指定题库...';
+
+                    try {
+                        const indexResponse = await fetch('../question-banks/index.json');
+                        if (!indexResponse.ok) {
+                            throw new Error(`题库索引加载失败: HTTP ${indexResponse.status}`);
+                        }
+
+                        const indexData = await indexResponse.json();
+                        const bank = (indexData.questionBanks || []).find(item => item.id === bankId);
+                        if (!bank) {
+                            throw new Error(`未找到题库：${bankId}`);
+                        }
+
+                        const response = await fetch(`../question-banks/${bank.filename}`);
+                        if (!response.ok) {
+                            throw new Error(`题库文件加载失败: ${bank.filename}`);
+                        }
+
+                        const data = await response.json();
+                        const questions = Array.isArray(data) ? data : (data.questions ? data.questions : []);
+                        if (!questions.length) {
+                            throw new Error('题库没有可用题目');
+                        }
+
+                        this.availableBanks = [{
+                            id: bank.id,
+                            name: bank.name,
+                            description: bank.description || '',
+                            category: bank.category || '未分类',
+                            year: bank.year || null,
+                            questionCount: questions.length,
+                            difficulty: bank.difficulty || 'medium',
+                            file: bank.filename
+                        }];
+
+                        this.questions = questions.map((q, index) => ({
+                            id: q.id || `${bank.filename}_${index}`,
+                            title: q.title || q.question || `题目${index + 1}`,
+                            content: q.content || '',
+                            options: Array.isArray(q.options) ? q.options : [],
+                            answer: q.answer ?? q.correct ?? '',
+                            explanation: q.explanation || '暂无解析',
+                            category: q.category || bank.category || '未分类',
+                            difficulty: q.difficulty || bank.difficulty || 'medium',
+                            year: q.year || bank.year || null,
+                            school: q.school || '中国海洋大学',
+                            bank: bank.name,
+                            bankId: bank.id,
+                            knowledgePoints: q.knowledgePoints || q.tags || []
+                        }));
+
+                        this.totalQuestions = this.questions.length;
+                        if (examMode === 'random') {
+                            this.questions = [...this.questions].sort(() => Math.random() - 0.5);
+                        }
+
+                        this.startPractice();
+                    } catch (error) {
+                        console.error('❌ 指定题库加载失败:', error);
+                        this.showNotification('指定题库加载失败: ' + error.message, 'error');
+                        this.currentView = 'selector';
+                    } finally {
+                        this.loading = false;
+                    }
                 },
 
                 // 题库选择功能
@@ -4357,11 +4497,21 @@
                     const examId = urlParams.get('exam');
                     const examYear = urlParams.get('year');
                     const examMode = urlParams.get('mode');
+                    const bankId = urlParams.get('bank');
                     
                     if (examType === 'real') {
                         console.log('📚 检测到真题练习请求:', { examType, examId, examYear, examMode });
                         this.handleRealExamPractice(examId, examYear, examMode);
+                        return true;
                     }
+
+                    if (bankId) {
+                        console.log('🌊 检测到指定题库练习请求:', { bankId, examMode });
+                        this.handleSingleBankPractice(bankId, examMode || 'normal');
+                        return true;
+                    }
+
+                    return false;
                 },
 
                 // 真题练习处理
@@ -5251,23 +5401,20 @@
                     this.applyFontSize();
                 }
                 
-                // 检查URL参数，处理真题模式
-                this.handleUrlParameters();
+                // 检查URL参数，处理真题模式 / 指定题库模式
+                const hasDirectRoute = this.handleUrlParameters();
                 
                 // 初始化
-                setTimeout(async () => {
+                setTimeout(() => {
                     this.loadProgress();
                     this.loading = false;
                     
                     if (this.isRealExamMode) {
                         this.showNotification('真题练习模式已启动！', 'success');
+                    } else if (hasDirectRoute) {
+                        this.showNotification('已进入指定题库', 'success');
                     } else {
-                        this.showNotification('欢迎来到智能题库，正在自动加载题库...', 'info');
-                        try {
-                            await this.loadAllQuestionBanks();
-                        } catch (error) {
-                            console.error('自动加载题库失败:', error);
-                        }
+                        this.showNotification('欢迎来到智能题库！可从首页直接进入物理海洋学题库', 'info');
                     }
                 }, 1500);
 
