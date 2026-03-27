@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>海赛专题：海洋气象 · 海洋生态 · 海洋资源</title>
+  <style>
+    :root {
+      --bg: linear-gradient(135deg, #083344 0%, #0f766e 42%, #1d4ed8 100%);
+      --card: rgba(255,255,255,0.97);
+      --text: #123247;
+      --muted: #5a7186;
+      --line: rgba(8, 145, 178, 0.18);
+      --teal: #0f766e;
+      --sky: #0369a1;
+      --blue: #2563eb;
+      --emerald: #059669;
+      --amber: #d97706;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+      background: var(--bg);
+      color: white;
+    }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 18px 48px; }
+    .hero, .panel {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 18px 48px rgba(0,0,0,.12);
+    }
+    .hero { padding: 28px 24px; margin-bottom: 22px; }
+    .hero h1 { margin: 0 0 12px; font-size: 2rem; }
+    .hero p { margin: 0; line-height: 1.85; color: rgba(255,255,255,.92); }
+    .hero .actions { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn {
+      display: inline-block;
+      padding: 11px 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      font-weight: 700;
+      color: white;
+      transition: transform .18s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-sky { background: linear-gradient(135deg, #0ea5e9, #2563eb); }
+    .btn-emerald { background: linear-gradient(135deg, #10b981, #059669); }
+    .btn-amber { background: linear-gradient(135deg, #f59e0b, #d97706); }
+    .btn-light { background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.2); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 18px;
+      margin-bottom: 22px;
+    }
+    .card {
+      background: var(--card);
+      color: var(--text);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 14px 30px rgba(0,0,0,.10);
+    }
+    .card h2, .card h3 { margin: 0 0 10px; }
+    .eyebrow {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 999px;
+      font-size: .84rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+      background: rgba(14,165,233,.12);
+      color: var(--sky);
+    }
+    .eyebrow.green { background: rgba(16,185,129,.14); color: var(--emerald); }
+    .eyebrow.amber { background: rgba(245,158,11,.16); color: var(--amber); }
+    .muted { color: var(--muted); line-height: 1.78; }
+    .panel { padding: 20px; margin-bottom: 22px; }
+    .panel h2 { margin: 0 0 16px; font-size: 1.28rem; }
+    .memory-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 14px;
+    }
+    .memory-box {
+      background: var(--card);
+      color: var(--text);
+      border-radius: 18px;
+      padding: 16px 16px 14px;
+      border: 1px solid var(--line);
+    }
+    .memory-box strong { display: block; margin-bottom: 8px; color: var(--teal); }
+    .table-wrap {
+      overflow-x: auto;
+      border-radius: 18px;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 840px;
+      background: var(--card);
+      color: var(--text);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+    th, td {
+      padding: 14px 12px;
+      text-align: left;
+      vertical-align: top;
+      border-bottom: 1px solid #e6eef4;
+      line-height: 1.72;
+    }
+    th {
+      background: linear-gradient(135deg, #dbeafe, #ecfeff);
+      color: #0c4a6e;
+      font-size: .95rem;
+    }
+    .timeline { display: grid; gap: 12px; }
+    .time-item {
+      background: var(--card);
+      color: var(--text);
+      border-radius: 18px;
+      padding: 15px 16px;
+      border-left: 5px solid #0ea5e9;
+    }
+    .time-item.green { border-left-color: #10b981; }
+    .time-item.amber { border-left-color: #f59e0b; }
+    .time-item span { font-weight: 800; color: var(--sky); }
+    .diagram {
+      background: var(--card);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 14px 30px rgba(0,0,0,.10);
+    }
+    .tight { margin: 0; padding-left: 20px; line-height: 1.78; }
+    .footer-note {
+      text-align: center;
+      color: rgba(255,255,255,.88);
+      margin-top: 12px;
+      line-height: 1.8;
+    }
+    @media (max-width: 720px) {
+      .hero h1 { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <section class="hero">
+      <h1>⛅ 海赛专题：海洋气象 · 海洋生态 · 海洋资源</h1>
+      <p>这一页把海赛里三块最容易“背成名词表”的材料重新串成逻辑链：<strong>海洋气象看海气耦合与灾害天气，海洋生态看系统结构与异常过程，海洋资源看渔业—矿产—能源怎么分布、为什么重要</strong>。做题时别只盯一个名词，最好先判断它属于“过程、系统还是资源类型”。</p>
+      <div class="actions">
+        <a class="btn btn-sky" href="../practice-dynamic.html?bank=sea-contest-meteorology">刷海洋气象题库</a>
+        <a class="btn btn-emerald" href="../practice-dynamic.html?bank=sea-contest-ecology">刷海洋生态题库</a>
+        <a class="btn btn-amber" href="../practice-dynamic.html?bank=sea-contest-resources">刷海洋资源题库</a>
+        <a class="btn btn-light" href="../index.html">返回首页</a>
+      </div>
+    </section>
+
+    <div class="grid">
+      <article class="card">
+        <div class="eyebrow">气象主线</div>
+        <h2>先问“海气怎么耦合”</h2>
+        <p class="muted">海洋气象题真正爱考的不是孤立天气名词，而是<strong>太阳辐射—蒸发输送—环流调整—海洋响应</strong>这条链。风暴潮、ENSO、海雾、ITCZ、SOI 都是耦合系统中的不同切面。</p>
+      </article>
+      <article class="card">
+        <div class="eyebrow green">生态主线</div>
+        <h2>先问“谁在供能、谁在放大风险”</h2>
+        <p class="muted">海洋生态题别只背“赤潮、红树林、湿地、冷泉”几个词，最好总是追问：<strong>能量从哪来、营养怎么传、环境为什么失衡、系统如何缓冲</strong>。</p>
+      </article>
+      <article class="card">
+        <div class="eyebrow amber">资源主线</div>
+        <h2>先分“生物 / 矿产 / 能源”</h2>
+        <p class="muted">海洋资源题最容易混，是把渔场、油气、可燃冰、多金属结核、潮汐能混成一锅。先分资源类别，再抓<strong>分布环境、形成机制和开发方式</strong>，会稳很多。</p>
+      </article>
+    </div>
+
+    <section class="panel">
+      <h2>🌬️ 海洋气象：从海气交换到大尺度振荡</h2>
+      <div class="grid">
+        <div class="diagram">
+          <svg viewBox="0 0 760 220" width="100%" role="img" aria-label="海洋气象耦合链示意图">
+            <defs>
+              <linearGradient id="mg1" x1="0" x2="1">
+                <stop offset="0%" stop-color="#dbeafe"></stop>
+                <stop offset="100%" stop-color="#ccfbf1"></stop>
+              </linearGradient>
+            </defs>
+            <rect x="20" y="60" rx="20" ry="20" width="160" height="100" fill="url(#mg1)"></rect>
+            <rect x="210" y="60" rx="20" ry="20" width="160" height="100" fill="url(#mg1)"></rect>
+            <rect x="400" y="60" rx="20" ry="20" width="160" height="100" fill="url(#mg1)"></rect>
+            <rect x="590" y="60" rx="20" ry="20" width="150" height="100" fill="url(#mg1)"></rect>
+            <text x="100" y="97" text-anchor="middle" font-size="22" fill="#0c4a6e">☀️ 辐射供能</text>
+            <text x="100" y="127" text-anchor="middle" font-size="16" fill="#155e75">海洋吸热与蒸发</text>
+            <text x="290" y="97" text-anchor="middle" font-size="22" fill="#0c4a6e">🌫️ 水汽交换</text>
+            <text x="290" y="127" text-anchor="middle" font-size="16" fill="#155e75">海雾 / 降水 / 潜热</text>
+            <text x="480" y="97" text-anchor="middle" font-size="22" fill="#0c4a6e">🌀 环流调整</text>
+            <text x="480" y="127" text-anchor="middle" font-size="16" fill="#155e75">台风 / ITCZ / ENSO</text>
+            <text x="665" y="97" text-anchor="middle" font-size="22" fill="#0c4a6e">🌊 海面响应</text>
+            <text x="665" y="127" text-anchor="middle" font-size="16" fill="#155e75">风暴潮 / 航道窗口</text>
+            <path d="M180 110 H210" stroke="#0284c7" stroke-width="6" stroke-linecap="round"></path>
+            <path d="M370 110 H400" stroke="#0284c7" stroke-width="6" stroke-linecap="round"></path>
+            <path d="M560 110 H590" stroke="#0284c7" stroke-width="6" stroke-linecap="round"></path>
+          </svg>
+        </div>
+        <section class="panel" style="margin-bottom:0;">
+          <h2>🗂️ 四组最常考的“成对记忆”</h2>
+          <div class="timeline">
+            <div class="time-item"><span>风暴潮</span> 强风 + 气压骤变，不是地震海啸。</div>
+            <div class="time-item"><span>ENSO</span> 东中太平洋海温异常 + 南方涛动，不是单纯海温题。</div>
+            <div class="time-item"><span>海雾</span> 最常见且最影响航海的是平流雾，暖湿空气过冷海面是关键。</div>
+            <div class="time-item"><span>北极航道</span> 7—10 月海冰少，9 月最利通航。</div>
+          </div>
+        </section>
+      </div>
+      <div class="memory-grid" style="margin-top:14px;">
+        <div class="memory-box"><strong>SOI 记两站</strong> 塔希提对达尔文，本质是热带太平洋东西两侧气压跷跷板。</div>
+        <div class="memory-box"><strong>台风看海盆</strong> 西太叫台风，大西洋叫飓风；同类天气系统，名称随海域变。</div>
+        <div class="memory-box"><strong>天气在对流层</strong> 题目一旦问“云雨雷暴主要在哪层”，首选对流层。</div>
+        <div class="memory-box"><strong>风向看来向</strong> 风向是风吹来的方向，不是吹去的方向。</div>
+      </div>
+      <div class="table-wrap" style="margin-top:18px;">
+        <table>
+          <thead>
+            <tr>
+              <th>补充考点</th>
+              <th>材料里的硬信息</th>
+              <th>为什么爱出题</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>新仙女木</td>
+              <td>末次冰期最后一次显著寒冷事件，约 12.5 kaBP—11.5 kaBP，之后进入全新世</td>
+              <td>容易把“寒冷回摆”误记成增暖事件，时间尺度也常被混淆</td>
+            </tr>
+            <tr>
+              <td>海上丝路季风海域</td>
+              <td>21 世纪海上丝绸之路航线中，夏季风浪最大的海域在北印度洋</td>
+              <td>考的是“航线 + 季风 + 海况”三者配对，不只是背地名</td>
+            </tr>
+            <tr>
+              <td>气候系统驱动</td>
+              <td>大气-海洋信号最强，太阳辐射提供几乎全部驱动能量</td>
+              <td>最容易和“地热主导”之类错误说法对冲出题</td>
+            </tr>
+            <tr>
+              <td>海市蜃楼</td>
+              <td>海面近冷上暖的空气密度差导致光线折射，形成虚像</td>
+              <td>常把光学折射错写成海浪反射或发光现象</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>🌿 海洋生态：系统结构、异常现象与生态缓冲</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>主题</th>
+              <th>核心知识点</th>
+              <th>为什么重要</th>
+              <th>易错点</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>赤潮</td>
+              <td>营养盐输入 + 闷热少雨 + 弱风缓流，20℃—30℃ 更易高发</td>
+              <td>考的是“富营养化如何转成生态异常”</td>
+              <td>别把赤潮当成任何高温海水都必然出现的现象</td>
+            </tr>
+            <tr>
+              <td>冷泉生态</td>
+              <td>甲烷释放后发生缺氧甲烷氧化反应（AOM），构成特殊化能生态系统基础</td>
+              <td>帮助区分“靠阳光”与“靠化学能”两类生态系统</td>
+              <td>别把冷泉说成靠表层植物光合作用维持</td>
+            </tr>
+            <tr>
+              <td>红树林</td>
+              <td>热带、亚热带低能海岸潮间带木本群落，兼具护岸、促淤和育幼场功能</td>
+              <td>是陆海过渡带的典型生态缓冲系统</td>
+              <td>别把它误记成纯淡水森林或单纯木材资源</td>
+            </tr>
+            <tr>
+              <td>湿地碳库</td>
+              <td>全球面积仅占陆地 4%—6%，却积累了约 10%—35% 的陆地碳</td>
+              <td>考“面积小但功能强”的生态直觉反差</td>
+              <td>别只记面积，不记碳汇贡献</td>
+            </tr>
+            <tr>
+              <td>海雪</td>
+              <td>表层高生产力形成的大量有机聚集体沉降，给深海生物供食</td>
+              <td>连接表层生产与深海生态</td>
+              <td>别按字面理解成真正的雪或冰</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="grid" style="margin-top:18px; margin-bottom:0;">
+        <div class="card">
+          <div class="eyebrow green">生态系统骨架</div>
+          <h3>生产者 → 消费者 → 分解者</h3>
+          <p class="muted">浮游藻类、底栖藻类和海洋种子植物等自养生物是生产者；鱼类、贝类、浮游动物等多为消费者；细菌和真菌承担分解。题目常通过“谁固定有机质、谁传递能量、谁回收物质”来反复设问。</p>
+        </div>
+        <div class="card">
+          <div class="eyebrow green">高频角色</div>
+          <h3>桡足类为何总被单拎出来</h3>
+          <p class="muted">因为它是浮游动物中的关键类群，正好卡在“初级生产—高营养级利用”之间，既影响能量上传，也影响物质循环，是海洋食物网里的经典“中间轴”。</p>
+        </div>
+        <div class="card">
+          <div class="eyebrow green">全球变化钩子</div>
+          <h3>“热斑”不是所有海流都升温</h3>
+          <p class="muted">材料强调的是副热带西边界流区的增暖热点：黑潮、湾流、东澳大利亚流、厄加勒斯海流、巴西海流等；利文流属于东边界流，最爱被拿来做反例。</p>
+        </div>
+      </div>
+      <div class="table-wrap" style="margin-top:18px;">
+        <table>
+          <thead>
+            <tr>
+              <th>补充生态卡</th>
+              <th>记什么</th>
+              <th>刷题提醒</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>红树排盐</td>
+              <td>红树能把盐分输送到叶片、把相对淡水留在体内，因此被称为“植物海水淡化器”</td>
+              <td>别把它理解成“完全不接触海水”的淡水植物</td>
+            </tr>
+            <tr>
+              <td>广西红树林</td>
+              <td>我国红树林资源最丰富的省级行政区是广西壮族自治区</td>
+              <td>题目常用海南、广东做干扰项</td>
+            </tr>
+            <tr>
+              <td>滨海湿地</td>
+              <td>范围从低潮时水深不超过 6 m 的永久性水域、潮间带到沿岸浸湿地带</td>
+              <td>别把它缩窄成“只有潮间带”，也别扩张成所有临海人工设施</td>
+            </tr>
+            <tr>
+              <td>海洋生物普查</td>
+              <td>2010 年国际海洋生物普查材料里，物种数量前四位是澳大利亚、日本、中国、地中海</td>
+              <td>高频陷阱是改顺序或把墨西哥湾、北极海域换进去</td>
+            </tr>
+            <tr>
+              <td>浅海渔业承载</td>
+              <td>在不破坏海洋生态前提下，海洋每年约可提供 2 亿吨鱼类，且绝大多数来自浅海</td>
+              <td>这是“资源量 + 生态边界 + 海区来源”三合一考点</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>⛏️ 海洋资源：渔场、矿产与海洋能源的三张表</h2>
+      <div class="grid">
+        <section class="panel" style="margin-bottom:0;">
+          <h2>🎣 渔业资源速记</h2>
+          <div class="timeline">
+            <div class="time-item amber"><span>北海道渔场</span> 千岛寒流 + 日本暖流。</div>
+            <div class="time-item amber"><span>纽芬兰渔场</span> 墨西哥湾暖流 + 拉布拉多寒流。</div>
+            <div class="time-item amber"><span>北海渔场</span> 北大西洋暖流 + 东格陵兰寒流。</div>
+            <div class="time-item amber"><span>秘鲁渔场</span> 秘鲁寒流上升流，典型上升流渔场。</div>
+          </div>
+        </section>
+        <div class="diagram">
+          <svg viewBox="0 0 760 240" width="100%" role="img" aria-label="海洋资源三分图">
+            <defs>
+              <linearGradient id="rg1" x1="0" x2="1">
+                <stop offset="0%" stop-color="#fef3c7"></stop>
+                <stop offset="100%" stop-color="#dbeafe"></stop>
+              </linearGradient>
+            </defs>
+            <rect x="18" y="64" rx="22" ry="22" width="170" height="110" fill="url(#rg1)"></rect>
+            <rect x="208" y="64" rx="22" ry="22" width="170" height="110" fill="url(#rg1)"></rect>
+            <rect x="398" y="64" rx="22" ry="22" width="170" height="110" fill="url(#rg1)"></rect>
+            <rect x="588" y="64" rx="22" ry="22" width="150" height="110" fill="url(#rg1)"></rect>
+            <text x="103" y="103" text-anchor="middle" font-size="22" fill="#92400e">🐟 生物资源</text>
+            <text x="103" y="133" text-anchor="middle" font-size="16" fill="#92400e">渔场 / 磷虾 / 海产</text>
+            <text x="293" y="103" text-anchor="middle" font-size="22" fill="#92400e">🛢️ 油气资源</text>
+            <text x="293" y="133" text-anchor="middle" font-size="16" fill="#92400e">大陆架 / 可燃冰</text>
+            <text x="483" y="103" text-anchor="middle" font-size="22" fill="#92400e">🔩 固体矿产</text>
+            <text x="483" y="133" text-anchor="middle" font-size="16" fill="#92400e">结核 / 结壳 / 热液</text>
+            <text x="663" y="103" text-anchor="middle" font-size="22" fill="#92400e">⚡ 海洋能</text>
+            <text x="663" y="133" text-anchor="middle" font-size="16" fill="#92400e">潮汐 / 风电 / 温差</text>
+            <path d="M188 118 H208" stroke="#d97706" stroke-width="6" stroke-linecap="round"></path>
+            <path d="M378 118 H398" stroke="#d97706" stroke-width="6" stroke-linecap="round"></path>
+            <path d="M568 118 H588" stroke="#d97706" stroke-width="6" stroke-linecap="round"></path>
+          </svg>
+        </div>
+      </div>
+      <div class="table-wrap" style="margin-top:18px;">
+        <table>
+          <thead>
+            <tr>
+              <th>资源类型</th>
+              <th>高频事实</th>
+              <th>常见命题方向</th>
+              <th>别混淆的点</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>海洋油气</td>
+              <td>大陆架约占全部海洋油气资源 60%，大陆坡深水和超深水约占 30%</td>
+              <td>“为什么陆架重要、深水为何仍有潜力”</td>
+              <td>别误判成“几乎全在海沟”</td>
+            </tr>
+            <tr>
+              <td>天然气水合物</td>
+              <td>主要成分为甲烷，单位体积水合物可释放大量天然气</td>
+              <td>资源效应、环境效应、灾害效应三效应</td>
+              <td>别把可燃冰说成纯冰或纯石油</td>
+            </tr>
+            <tr>
+              <td>多金属结核</td>
+              <td>3500—6000 米海底表层，常呈土豆状</td>
+              <td>识别赋存深度、形态和元素组成</td>
+              <td>别和富钴结壳、热液硫化物混为一类</td>
+            </tr>
+            <tr>
+              <td>富钴结壳</td>
+              <td>海山斜坡与顶部最富集，属战略金属资源</td>
+              <td>考“在哪儿长、富什么元素”</td>
+              <td>不是漂浮物，也不是滨海沙矿</td>
+            </tr>
+            <tr>
+              <td>海洋能</td>
+              <td>潮汐能开发最现实；东海大桥附近建有我国首个海上风电场；温差发电设想可追到 1881 年</td>
+              <td>时间—地点—技术路线配对</td>
+              <td>别把海上风电、潮汐能、温差能当成同一种装置</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="memory-grid" style="margin-top:18px;">
+        <div class="memory-box"><strong>“油气”先想陆架</strong> 这是最稳的第一反应，再考虑深水潜力。</div>
+        <div class="memory-box"><strong>“结核”在深海平原</strong> 多金属结核偏海底表层；“结壳”更靠海山岩面。</div>
+        <div class="memory-box"><strong>“可燃冰”先想甲烷</strong> 既是资源，也有环境与灾害风险。</div>
+        <div class="memory-box"><strong>“海洋能”分五兄弟</strong> 潮汐、波浪、海流、温差、盐差，命题最爱让你分类型。</div>
+      </div>
+      <div class="grid" style="margin-top:18px; margin-bottom:0;">
+        <div class="card">
+          <div class="eyebrow amber">油气分布卡</div>
+          <h3>记住“三湾两海两湖”</h3>
+          <p class="muted">波斯湾、墨西哥湾、几内亚湾；北海、南海；里海、马拉开波湖。这不是随机地名堆砌，而是海上石油开发的高频分布骨架。</p>
+        </div>
+        <div class="card">
+          <div class="eyebrow amber">南海勘探卡</div>
+          <h3>海南近海三大盆地</h3>
+          <p class="muted">北部湾、莺歌海、琼东南盆地是材料里的固定组合；题目常把珠江口或渤海盆地混进来，专门考你是否按原文配套记忆。</p>
+        </div>
+        <div class="card">
+          <div class="eyebrow amber">深海矿产卡</div>
+          <h3>黑烟囱 ≠ 结核 ≠ 结壳</h3>
+          <p class="muted">热液硫化物在洋中脊和断裂带，结核在 3500—6000 m 海底表层，结壳则贴着海山岩面长。刷题时先认赋存环境，再认元素组成。</p>
+        </div>
+      </div>
+      <div class="table-wrap" style="margin-top:18px;">
+        <table>
+          <thead>
+            <tr>
+              <th>补充资源考点</th>
+              <th>材料里的硬信息</th>
+              <th>易错点</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>蓝色圈地运动</td>
+              <td>本质是各国围绕深海与公海资源展开竞争</td>
+              <td>别写成围海造陆或防灾工程</td>
+            </tr>
+            <tr>
+              <td>热液硫化物</td>
+              <td>约 2000 m 水深的大洋中脊和断裂活动带，是“黑烟囱”成矿环境</td>
+              <td>别和河口泥滩、红树林矿化混为一类</td>
+            </tr>
+            <tr>
+              <td>天然气水合物三效应</td>
+              <td>资源、环境、灾害效应并存，高能量密度与高风险一起考</td>
+              <td>别只记“能烧”，忽略温室和地质风险</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>🧩 本轮补强：把“易混知识点”压成可刷卡片</h2>
+      <div class="grid">
+        <article class="card">
+          <div class="eyebrow">气象补丁</div>
+          <h3>从“名词”补到“系统”</h3>
+          <ul class="tight">
+            <li><strong>气候系统五圈层：</strong>大气圈、水圈、岩石圈、冰冻圈、生物圈；太阳辐射是主驱动。</li>
+            <li><strong>沃克环流：</strong>热带太平洋上空的东西向大气环流，异常时常和 ENSO 一起考。</li>
+            <li><strong>台风暖心：</strong>关键不是“海水很热”四个字，而是低层辐合 + 凝结潜热释放的正反馈。</li>
+            <li><strong>海洋的气候角色：</strong>既供水汽，也储热，不是被动背景板。</li>
+          </ul>
+        </article>
+        <article class="card">
+          <div class="eyebrow green">生态补丁</div>
+          <h3>从“景观”补到“生境”</h3>
+          <ul class="tight">
+            <li><strong>红树林底质：</strong>细质冲积土、有机碎屑多、黑色软泥，是低能海岸的典型环境。</li>
+            <li><strong>国际重要湿地：</strong>双台河口、大山包这类例子提醒你：湿地不只在海边。</li>
+            <li><strong>泥质滩与贝类：</strong>胶州湾红岛周边适合蛤蜊，考的是“底质—生物”匹配。</li>
+            <li><strong>生态系统六要素：</strong>生物 + 有机碎屑 + 无机物 + 水文物理条件，不能只背生物名单。</li>
+          </ul>
+        </article>
+        <article class="card">
+          <div class="eyebrow amber">资源补丁</div>
+          <h3>从“资源名”补到“开发逻辑”</h3>
+          <ul class="tight">
+            <li><strong>海洋能五兄弟：</strong>潮汐、波浪、海流、温差、盐差；海上风能不算“海洋特有能”。</li>
+            <li><strong>温差能主战场：</strong>我国 90% 以上温差能分布在南海海域。</li>
+            <li><strong>江厦电站：</strong>浙江温岭江厦港，我国最大潮汐能电站与试验基地。</li>
+            <li><strong>深海勘探权：</strong>结核、硫化物、富钴结壳三类资源要分清，不要全叫“海底矿”。</li>
+          </ul>
+        </article>
+      </div>
+      <div class="table-wrap" style="margin-top:18px;">
+        <table>
+          <thead>
+            <tr>
+              <th>新增速记卡</th>
+              <th>核心句</th>
+              <th>刷题时最容易错在哪</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>气候系统 vs 天气现象</td>
+              <td>气候系统看五圈层和长期能量收支；天气现象主要仍落在对流层里展开。</td>
+              <td>把“气候系统”误缩成只有大气，把“天气”误扩成全圈层都同权重。</td>
+            </tr>
+            <tr>
+              <td>沃克环流 vs 哈德雷环流</td>
+              <td>沃克偏热带太平洋东西向，哈德雷偏南北向直接环流。</td>
+              <td>看到“热带环流”就全写成同一个名词，方向和作用范围一混就丢分。</td>
+            </tr>
+            <tr>
+              <td>红树林生境 vs 红树林功能</td>
+              <td>先认低能潮滩细泥环境，再记护岸、育幼、净化和候鸟栖息功能。</td>
+              <td>只记“红树林很重要”，却说不出它为什么能长、为什么能护岸。</td>
+            </tr>
+            <tr>
+              <td>泥质滩贝类题</td>
+              <td>蛤蜊这类滩涂贝类常和底质、潮汐、沉积环境一并出现。</td>
+              <td>把近岸泥滩生境误判成深海、热液或珊瑚礁环境。</td>
+            </tr>
+            <tr>
+              <td>海洋能分类题</td>
+              <td>先判断是不是“海洋所特有”的能，再判断具体属于潮汐、波浪、海流、温差还是盐差。</td>
+              <td>把海上风能因为“在海上”就直接归成海洋特有能。</td>
+            </tr>
+            <tr>
+              <td>深海矿产与工程题</td>
+              <td>结核在深海表层，结壳贴海山岩面，黑烟囱在洋中脊；勘探权题考的是资源分类与国家布局。</td>
+              <td>只记“都在海底”，忽略赋存环境和资源类型差异。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="grid">
+      <article class="card">
+        <div class="eyebrow">记忆钩子</div>
+        <h2>气象题别只背天气名词</h2>
+        <p class="muted">把辐射、蒸发、环流、海面响应串起来，风暴潮、海雾、ENSO 才不会碎成三个孤立考点。</p>
+      </article>
+      <article class="card">
+        <div class="eyebrow green">记忆钩子</div>
+        <h2>生态题先看“系统在怎么运转”</h2>
+        <p class="muted">看到赤潮就想营养盐和环境条件，看到红树林就想缓冲和育幼，看到冷泉就想化能生态。</p>
+      </article>
+      <article class="card">
+        <div class="eyebrow amber">记忆钩子</div>
+        <h2>资源题先分资源类型</h2>
+        <p class="muted">渔场看生产力与洋流，矿产看赋存环境，能源看装置路线。先分类，再背细节，题会简单一半。</p>
+      </article>
+    </div>
+
+    <section class="panel">
+      <h2>🚩 冲刺加餐：三组最容易丢分的易混点</h2>
+      <div class="grid" style="margin-bottom:18px;">
+        <article class="card">
+          <div class="eyebrow">气象易混</div>
+          <h3>ENSO 后续效应别断链</h3>
+          <p class="muted">厄尔尼诺不是考完东太平洋增暖就结束。材料还提醒：<strong>热带印度洋海盆增暖</strong>常出现在厄尔尼诺后的春夏季，它会继续调节南亚高压和副热带高压，进而影响我国夏季降水格局。</p>
+        </article>
+        <article class="card">
+          <div class="eyebrow green">生态易混</div>
+          <h3>围涂是工程，不是生态修复</h3>
+          <p class="muted">围海造陆（围涂）本质是<strong>修堤—阻海—排水—成陆</strong>的工程行为，常和红树林保护、湿地修复放在同一张卷子里做对比。看到“围堤”和“排干积水”，就别再往生态修复上套。</p>
+        </article>
+        <article class="card">
+          <div class="eyebrow amber">资源易混</div>
+          <h3>黑烟囱不是颜色 trivia</h3>
+          <p class="muted">黑、黄、白烟囱背后考的是<strong>成矿物质差异</strong>：黑烟囱偏硫化物，黄烟囱偏自然硫，白烟囱常见硫酸盐和非晶态二氧化硅。记颜色时要连着成分一起记。</p>
+        </article>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>冲刺主题</th>
+              <th>高频事实</th>
+              <th>怎么判断不容易错</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>热带印度洋海盆增暖</td>
+              <td>多出现在厄尔尼诺后的春、夏季，可加强南亚高压和副热带高压，增加长江中下游夏季降水</td>
+              <td>看到“ENSO 之后还有什么遥相关影响”，优先想它，不要把影响链只停在东太平洋海温异常上</td>
+            </tr>
+            <tr>
+              <td>红树林与候鸟</td>
+              <td>红树林是陆海过渡带复合生境，潮沟发达、食物多，既是海洋动物育幼场，也是候鸟越冬场和迁徙中转站</td>
+              <td>不要只背“护岸植物”；题目一问鸟类或栖息地功能，就要想到它的食物链和栖息功能</td>
+            </tr>
+            <tr>
+              <td>围海造陆（围涂）</td>
+              <td>在海滩和浅海修筑围堤、阻隔海水、排干围区积水，使其成为陆地；荷兰、日本是典型国家</td>
+              <td>关键词是“围堤”“排水”“成陆”，这是一类人类工程行为，不是自然沉积过程，也不是单纯植被恢复</td>
+            </tr>
+            <tr>
+              <td>黑 / 黄 / 白烟囱</td>
+              <td>黑烟囱偏硫化物，黄烟囱偏自然硫，白烟囱偏硫酸盐矿物和非晶态二氧化硅</td>
+              <td>颜色不是装饰信息，而是成分和热液沉淀环境的提示词</td>
+            </tr>
+            <tr>
+              <td>浙江潮流能</td>
+              <td>浙江沿岸可开发潮流能资源量占全国一半以上，具开发价值的潮流水道约 37 条</td>
+              <td>一看到“哪省潮流能最强”或“哪省岛多水道多”，优先排浙江，不要和潮汐能、海上风电混答</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <p class="footer-note">这一轮继续把海洋气象、海洋生态、海洋资源补强到“题库 + 卡片”双线：新增了热带印度洋海盆增暖、围海造陆与候鸟生境、黑/黄/白烟囱和浙江潮流能等冲刺卡；继续往下可以接着刷 <a href="ocean-competition-physical-chemistry-biology.html" style="color:#fff;font-weight:800;">物理·化学·生物页</a>。</p>
+  </div>
+</body>
+</html>
