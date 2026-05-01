@@ -1,0 +1,2372 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a1a2e">
+<meta name="robots" content="noindex,nofollow,noarchive">
+<title>教师后台 · 流体力学学习平台</title>
+<style>html[data-auth-pending="1"] body{visibility:hidden!important}</style>
+<script>document.documentElement.setAttribute('data-auth-pending','1');</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Manrope:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&family=Noto+Sans+SC:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+--ink-900:#04111f;--ink-800:#0a1a2e;--ink-700:#0f2238;--ink-600:#172e47;--ink-500:#1e3a5f;--ink-400:#35577c;--ink-300:#6e88a8;--ink-200:#a8bcd1;--ink-100:#d6e0eb;
+--tide-700:#064e3b;--tide-600:#0b6b57;--tide-500:#14b8a6;--tide-400:#2dd4bf;--tide-300:#5eead4;
+--coral-600:#ea580c;--coral-500:#f97316;--coral-400:#fb923c;--amber-400:#fbbf24;
+--ok:#10b981;--warn:#f59e0b;--err:#ef4444;--info:#3b82f6;
+--bg:#f6f8fb;--bg-soft:#eef2f7;--surface:#fff;--surface-2:#fbfcfe;
+--text:#0a1628;--text-soft:#3b516d;--text-muted:#6e88a8;
+--border:rgba(15,34,56,.08);--border-strong:rgba(15,34,56,.14);
+--fd:'Fraunces','Noto Serif SC',serif;--fb:'Manrope','Noto Sans SC',-apple-system,sans-serif;--fm:'JetBrains Mono','Consolas',monospace;
+--sm:0 1px 2px rgba(4,17,31,.06),0 1px 3px rgba(4,17,31,.04);
+--md:0 4px 12px rgba(4,17,31,.08),0 2px 4px rgba(4,17,31,.04);
+--lg:0 12px 28px rgba(4,17,31,.12),0 4px 10px rgba(4,17,31,.06);
+--xl:0 24px 60px rgba(4,17,31,.18),0 8px 20px rgba(4,17,31,.08);
+--eo:cubic-bezier(.22,1,.36,1);--ei:cubic-bezier(.65,0,.35,1);--es:cubic-bezier(.34,1.56,.64,1);
+}
+[data-theme="dark"]{--bg:#05111f;--bg-soft:#0a1a2e;--surface:#0e2239;--surface-2:#112a45;--text:#e6eef9;--text-soft:#a8bcd1;--text-muted:#6e88a8;--border:rgba(168,188,209,.1);--border-strong:rgba(168,188,209,.18);--sm:0 1px 2px rgba(0,0,0,.4);--md:0 4px 14px rgba(0,0,0,.4);--lg:0 14px 36px rgba(0,0,0,.5);--xl:0 30px 80px rgba(0,0,0,.6);}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--fb);color:var(--text);background:var(--bg);line-height:1.65;-webkit-font-smoothing:antialiased;min-height:100dvh;overflow-x:hidden;font-feature-settings:"ss01"}
+h1,h2,h3,h4{font-family:var(--fd);font-weight:600;letter-spacing:-.02em;color:var(--text);margin:0}
+p{margin:0;color:var(--text-soft)}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+::selection{background:rgba(20,184,166,.25)}
+*:focus-visible{outline:2px solid var(--tide-500);outline-offset:2px;border-radius:4px}
+
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:radial-gradient(ellipse 80% 60% at 20% 0%,rgba(20,184,166,.12),transparent 60%),radial-gradient(ellipse 70% 50% at 80% 30%,rgba(249,115,22,.1),transparent 60%),radial-gradient(ellipse 60% 80% at 50% 100%,rgba(30,58,95,.14),transparent 60%),var(--bg)}
+.bg::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(15,34,56,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(15,34,56,.04) 1px,transparent 1px);background-size:48px 48px;mask-image:radial-gradient(ellipse at center,black 30%,transparent 75%)}
+
+.wrap{max-width:1400px;margin:0 auto;padding:clamp(16px,3vw,36px)}
+
+.top{position:sticky;top:0;z-index:50;backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);background:color-mix(in srgb,var(--surface) 75%,transparent);border-bottom:1px solid var(--border)}
+.top-in{max-width:1400px;margin:0 auto;padding:14px clamp(16px,3vw,36px);display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{display:inline-flex;align-items:center;gap:10px;font-family:var(--fd);font-weight:600;font-size:1.05rem;letter-spacing:-.01em}
+.mark{width:32px;height:32px;border-radius:10px;background:conic-gradient(from 220deg,var(--tide-500),var(--coral-500),var(--ink-500),var(--tide-500));position:relative;box-shadow:0 2px 10px rgba(20,184,166,.35),inset 0 0 0 1.5px rgba(255,255,255,.5)}
+.mark::after{content:'';position:absolute;inset:5px;border-radius:6px;background:var(--surface)}
+.mark::before{content:'';position:absolute;inset:9px;border-radius:3px;background:linear-gradient(135deg,var(--tide-500),var(--coral-500));z-index:1}
+.top-r{display:flex;gap:10px;align-items:center}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:9px 18px;font-family:var(--fb);font-weight:600;font-size:.9rem;border-radius:999px;border:1px solid transparent;transition:all 220ms var(--eo);white-space:nowrap;text-decoration:none;cursor:pointer;background:transparent;color:inherit}
+.btn-p{background:linear-gradient(135deg,var(--tide-500),var(--tide-600));color:#fff;box-shadow:var(--md)}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 10px 30px rgba(20,184,166,.3)}
+.btn-g{border-color:var(--border-strong);color:var(--text)}
+.btn-g:hover{background:var(--bg-soft);border-color:var(--ink-300)}
+.btn-d{border-color:rgba(239,68,68,.3);color:var(--err)}
+.btn-d:hover{background:rgba(239,68,68,.08)}
+.btn-sm{padding:6px 12px;font-size:.82rem}
+
+/* 布局 */
+.layout{display:grid;grid-template-columns:256px 1fr;gap:28px;margin-top:28px;min-height:calc(100vh - 120px)}
+@media (max-width:960px){.layout{grid-template-columns:1fr}}
+
+.side{position:sticky;top:88px;align-self:start;padding:22px;background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--sm);height:fit-content}
+.side h3{font-family:var(--fd);font-size:1.1rem;margin-bottom:16px;padding-bottom:12px;border-bottom:1px dashed var(--border-strong)}
+.navl{display:flex;flex-direction:column;gap:4px}
+.navl a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;font-size:.92rem;color:var(--text-soft);cursor:pointer;transition:all 160ms}
+.navl a:hover{background:var(--bg-soft);color:var(--text)}
+.navl a.on{background:linear-gradient(90deg,rgba(20,184,166,.12),transparent);color:var(--tide-700);font-weight:600}
+.navl a.on::before{content:'';width:3px;height:18px;background:var(--tide-500);border-radius:3px;margin-right:-7px}
+.navl svg{width:16px;height:16px;flex-shrink:0}
+.side-foot{margin-top:20px;padding-top:18px;border-top:1px solid var(--border);font-size:.8rem;color:var(--text-muted);line-height:1.6}
+.side-foot strong{color:var(--text-soft);display:block;margin-bottom:6px}
+
+.main{min-width:0}
+.head{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:24px;gap:20px;flex-wrap:wrap}
+.head h1{font-family:var(--fd);font-size:clamp(1.8rem,3vw,2.3rem);letter-spacing:-.02em}
+.head p{color:var(--text-muted);font-size:.92rem;margin-top:4px;max-width:620px}
+
+/* KPI */
+.kpi-g{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+@media (max-width:900px){.kpi-g{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:520px){.kpi-g{grid-template-columns:1fr}}
+.kpi{padding:20px 22px;background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--sm);position:relative;overflow:hidden;transition:all 280ms}
+.kpi:hover{box-shadow:var(--md);transform:translateY(-2px)}
+.kpi .ic{position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:10px;background:var(--kpiBg,rgba(20,184,166,.12));color:var(--kpiFg,var(--tide-600));display:grid;place-items:center}
+.kpi .ic svg{width:18px;height:18px}
+.kpi .l{font-size:.76rem;color:var(--text-muted);letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+.kpi .v{font-family:var(--fd);font-size:2.2rem;font-weight:600;line-height:1.1;margin-top:6px;letter-spacing:-.02em;color:var(--text)}
+.kpi .s{font-size:.84rem;color:var(--text-soft);margin-top:8px}
+
+/* 面板 */
+.pan{background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--sm);margin-bottom:24px;overflow:hidden}
+.pan-h{padding:20px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.pan-h h2{font-family:var(--fd);font-size:1.25rem;letter-spacing:-.01em}
+.pan-h .act{display:flex;gap:8px;flex-wrap:wrap}
+.pan-b{padding:20px 24px}
+
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.78rem;font-weight:600;background:var(--bg-soft);color:var(--text-soft);border:1px solid var(--border)}
+.chip-t{background:rgba(20,184,166,.1);color:var(--tide-600);border-color:rgba(20,184,166,.25)}
+
+/* 搜索/排序 */
+.srch{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.inp{padding:10px 14px;font-family:var(--fb);font-size:.92rem;color:var(--text);background:var(--surface-2);border:1.5px solid var(--border-strong);border-radius:12px;outline:none;transition:all 180ms}
+.inp:focus{border-color:var(--tide-500);background:var(--surface);box-shadow:0 0 0 4px rgba(20,184,166,.14)}
+.inp-srch{max-width:340px;flex:1}
+.sel{max-width:220px}
+
+/* 表格 */
+.tw{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tb{width:100%;border-collapse:collapse;font-size:.92rem;min-width:720px}
+.tb th,.tb td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--border);vertical-align:middle}
+.tb th{font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:var(--text-muted);background:var(--bg-soft);position:sticky;top:0;cursor:pointer;user-select:none;transition:color 120ms}
+.tb th:hover{color:var(--text)}
+.tb th.sr{color:var(--tide-600)}
+.tb tbody tr{transition:background 140ms;cursor:pointer}
+.tb tbody tr:hover{background:var(--bg-soft)}
+.uc{display:flex;align-items:center;gap:10px}
+.uc .ava{width:32px;height:32px;border-radius:999px;background:linear-gradient(135deg,var(--tide-500),var(--coral-500));color:#fff;display:grid;place-items:center;font-family:var(--fd);font-weight:700;font-size:.88rem;box-shadow:inset 0 0 0 2px rgba(255,255,255,.3)}
+.uc .meta strong{display:block;font-size:.96rem;color:var(--text)}
+.uc .meta small{font-size:.78rem;color:var(--text-muted)}
+.rb{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:rgba(20,184,166,.12);color:var(--tide-600)}
+.rb.s{background:rgba(59,130,246,.12);color:var(--info)}
+
+/* 环形进度 */
+.ring{position:relative;width:40px;height:40px}
+.ring svg{transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:4}
+.ring .bg-c{stroke:var(--border-strong)}
+.ring .fg{stroke:var(--tide-500);stroke-linecap:round;transition:stroke-dashoffset 600ms}
+.ring .t{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--fm);font-size:.7rem;font-weight:700;color:var(--text)}
+
+/* 图表 */
+.ch-g{display:grid;grid-template-columns:1.4fr 1fr;gap:18px;margin-bottom:24px}
+@media (max-width:900px){.ch-g{grid-template-columns:1fr}}
+.tchart text{font-family:var(--fm);font-size:10px;fill:var(--text-muted)}
+.tchart .axis{stroke:var(--border-strong);stroke-width:1}
+.tchart .line{fill:none;stroke:url(#lg);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.tchart .area{fill:url(#ag);opacity:.6}
+.tchart .dot{fill:var(--tide-500);stroke:var(--surface);stroke-width:2}
+.tchart .grid{stroke:var(--border);stroke-dasharray:2 3}
+.dchart rect{transition:all 280ms var(--eo)}
+.dchart rect:hover{filter:brightness(1.1)}
+
+/* 时间轴 */
+.tl{position:relative;padding-left:28px}
+.tl::before{content:'';position:absolute;top:0;bottom:0;left:8px;width:2px;background:linear-gradient(180deg,var(--tide-500),transparent);border-radius:2px}
+.tli{position:relative;padding:10px 0}
+.tli::before{content:'';position:absolute;left:-24px;top:17px;width:10px;height:10px;border-radius:50%;background:var(--surface);border:2px solid var(--tide-500);box-shadow:0 0 0 3px var(--surface)}
+.tli.fl::before{border-color:var(--err)}
+.tli.lg::before{border-color:var(--ok)}
+.tlr{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.tlt{font-family:var(--fm);font-size:.8rem;color:var(--text-muted);flex-shrink:0;min-width:140px}
+.tlb{font-size:.92rem;flex:1;min-width:200px}
+.tlb strong{color:var(--text);font-weight:600}
+.tlb .p{color:var(--text-muted);font-size:.82rem;font-family:var(--fm)}
+
+/* 抽屉 */
+.drw{position:fixed;top:0;right:0;bottom:0;width:min(580px,100vw);z-index:100;background:var(--surface);border-left:1px solid var(--border);box-shadow:-10px 0 40px rgba(4,17,31,.2);transform:translateX(100%);transition:transform 400ms var(--eo);overflow-y:auto;display:flex;flex-direction:column}
+.drw.on{transform:translateX(0)}
+.drw-h{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:var(--surface);z-index:2}
+.drw-h h2{font-family:var(--fd);font-size:1.3rem}
+.drw-b{padding:22px 24px}
+.drw-bd{position:fixed;inset:0;z-index:99;background:rgba(4,17,31,.5);backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity 300ms}
+.drw-bd.on{opacity:1;pointer-events:auto}
+
+.det-s{margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
+.det-s h3{font-family:var(--fd);font-size:1.05rem;margin-bottom:12px}
+.mod-r{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;margin-bottom:8px;background:var(--bg-soft);border-radius:10px;font-size:.9rem;gap:10px}
+.mod-r .nm{font-weight:600;color:var(--text);flex-shrink:0}
+.bar{flex:1;height:6px;background:var(--border-strong);border-radius:999px;overflow:hidden;max-width:200px}
+.bar-f{height:100%;background:linear-gradient(90deg,var(--tide-500),var(--coral-500));transition:width 600ms var(--eo);border-radius:999px}
+.mod-r .pct{font-family:var(--fm);color:var(--text-soft);min-width:40px;text-align:right;font-size:.82rem}
+.sr-r{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed var(--border);font-size:.88rem;gap:12px}
+.sr-r .mt{color:var(--text-soft);flex:1}
+.sr-r .sc{font-family:var(--fm);font-weight:700;flex-shrink:0}
+.sr-r .sc.gd{color:var(--ok)}.sr-r .sc.wn{color:var(--warn)}.sr-r .sc.bd{color:var(--err)}
+.sr-r .dt{font-family:var(--fm);color:var(--text-muted);font-size:.78rem}
+
+/* 空状态 */
+.emp{padding:48px 24px;text-align:center;color:var(--text-muted)}
+.emp svg{width:44px;height:44px;color:var(--ink-300);margin-bottom:12px}
+
+/* 视图 */
+.view{display:none;animation:rv 420ms var(--eo)}
+.view.on{display:block}
+@keyframes rv{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* 设置 */
+.set-r{display:grid;grid-template-columns:1fr auto;gap:16px;padding:16px 0;border-bottom:1px solid var(--border);align-items:center}
+.set-r:last-child{border-bottom:0}
+.set-r .info strong{display:block;font-size:.96rem;color:var(--text)}
+.set-r .info p{font-size:.86rem;color:var(--text-muted);margin-top:4px;max-width:560px}
+
+.tst-s{position:fixed;top:20px;right:20px;z-index:10000;display:flex;flex-direction:column;gap:10px;pointer-events:none;max-width:min(360px,calc(100vw - 40px))}
+.tst{pointer-events:auto;padding:14px 16px 14px 18px;background:var(--surface);border:1px solid var(--border);border-left:3px solid var(--info);border-radius:14px;box-shadow:var(--lg);display:flex;align-items:flex-start;gap:12px;font-size:.92rem;color:var(--text);animation:tin 380ms var(--es);transform-origin:top right}
+.tst.out{animation:tout 260ms var(--ei) forwards}
+.tst-ok{border-left-color:var(--ok)}.tst-w{border-left-color:var(--warn)}.tst-e{border-left-color:var(--err)}
+.tst .i{flex-shrink:0;width:18px;height:18px;margin-top:2px}
+.tst .b{flex:1;line-height:1.45}
+.tst .x{background:none;border:none;color:var(--text-muted);cursor:pointer;padding:0;font-size:18px;line-height:1}
+@keyframes tin{from{opacity:0;transform:translateX(20px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes tout{to{opacity:0;transform:translateX(20px) scale(.95)}}
+
+html.navout body{opacity:.5;transform:translateY(-6px) scale(.997);filter:blur(2px);transition:all 220ms var(--ei)}
+.load{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:color-mix(in srgb,var(--bg) 70%,transparent);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity 200ms var(--eo)}
+.load.on{opacity:1;pointer-events:auto}
+.ring-l{width:48px;height:48px;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,var(--tide-500) 360deg);mask:radial-gradient(circle at center,transparent 58%,black 60%);-webkit-mask:radial-gradient(circle at center,transparent 58%,black 60%);animation:spin 800ms linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+::view-transition-old(root){animation:vto 320ms var(--ei) forwards}
+::view-transition-new(root){animation:vti 420ms var(--eo) forwards}
+@keyframes vto{to{opacity:0;transform:translateY(-8px) scale(.995);filter:blur(4px)}}
+@keyframes vti{from{opacity:0;transform:translateY(10px) scale(.99);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+
+.mn{font-family:var(--fm)}
+
+/* Phase 2 教师端样式 */
+/* 时间段筛选 */
+.tfilt{display:inline-flex;padding:3px;background:var(--bg-soft);border:1px solid var(--border);border-radius:999px;gap:2px}
+.tfilt button{padding:6px 14px;font-family:var(--fb);font-size:.82rem;font-weight:600;color:var(--text-muted);background:none;border:none;cursor:pointer;border-radius:999px;transition:all 180ms}
+.tfilt button:hover{color:var(--text)}
+.tfilt button.on{background:var(--surface);color:var(--tide-600);box-shadow:var(--sm)}
+
+/* 风险预警 */
+.risks{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin-bottom:24px}
+.risk{padding:18px 20px;background:var(--surface);border:1px solid var(--border);border-left:4px solid var(--risk-c,var(--warn));border-radius:14px;box-shadow:var(--sm);position:relative;overflow:hidden;cursor:pointer;transition:all 240ms var(--eo)}
+.risk:hover{transform:translateY(-2px);box-shadow:var(--md)}
+.risk.high{--risk-c:var(--err)}
+.risk.med{--risk-c:var(--warn)}
+.risk.low{--risk-c:var(--info)}
+.risk-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.risk-hd strong{font-size:.96rem;color:var(--text)}
+.risk-lv{font-family:var(--fm);font-size:.7rem;padding:2px 8px;border-radius:999px;background:color-mix(in srgb,var(--risk-c) 12%,transparent);color:var(--risk-c);font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.risk-b{font-size:.86rem;color:var(--text-soft);line-height:1.55}
+.risk-b strong{color:var(--text);font-weight:600}
+
+/* 热力图教师版（横向周×竖向日） */
+.theat{overflow-x:auto;padding:4px;margin:14px 0}
+.theat-g{display:grid;grid-template-rows:repeat(7,14px);grid-auto-flow:column;grid-auto-columns:14px;gap:3px;min-width:fit-content}
+.theat-c{width:14px;height:14px;border-radius:3px;background:var(--bg-soft);border:1px solid var(--border);transition:all 180ms;cursor:pointer}
+.theat-c:hover{transform:scale(1.4);z-index:2;position:relative}
+.theat-c.l1{background:rgba(20,184,166,.25)}
+.theat-c.l2{background:rgba(20,184,166,.5)}
+.theat-c.l3{background:rgba(20,184,166,.75)}
+.theat-c.l4{background:var(--tide-500)}
+
+/* 模块钻取列表 */
+.mod-l-c{display:flex;align-items:center;gap:14px;padding:14px;border-radius:12px;background:var(--bg-soft);border:1px solid var(--border);margin-bottom:10px;cursor:pointer;transition:all 180ms}
+.mod-l-c:hover{background:var(--surface);box-shadow:var(--sm);border-color:var(--border-strong)}
+.mod-l-c .ni{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,rgba(20,184,166,.12),rgba(249,115,22,.08));color:var(--tide-600);display:grid;place-items:center;flex-shrink:0}
+.mod-l-c .ni svg{width:18px;height:18px}
+.mod-l-c .mb{flex:1;min-width:0}
+.mod-l-c .mb strong{display:block;color:var(--text);font-size:.96rem}
+.mod-l-c .mb span{font-size:.8rem;color:var(--text-muted);font-family:var(--fm)}
+.mod-l-c .ba{width:140px;max-width:30vw;flex-shrink:0}
+.mod-l-c .pct{font-family:var(--fm);font-weight:700;color:var(--text);min-width:52px;text-align:right;flex-shrink:0}
+
+/* 对比视图 */
+.cmp-w{display:grid;grid-template-columns:240px 1fr;gap:24px}
+@media (max-width:960px){.cmp-w{grid-template-columns:1fr}}
+.cmp-pick{padding:18px;background:var(--bg-soft);border-radius:14px;border:1px solid var(--border);max-height:520px;overflow-y:auto}
+.cmp-pick h4{font-family:var(--fd);font-size:.92rem;margin-bottom:12px}
+.cmp-opt{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;transition:background 140ms;font-size:.88rem}
+.cmp-opt:hover{background:var(--surface)}
+.cmp-opt input{accent-color:var(--tide-500)}
+.cmp-grid{display:grid;gap:12px}
+.cmp-row-h{display:grid;grid-template-columns:120px repeat(var(--cols,3),1fr);gap:12px;padding:10px 14px;font-size:.74rem;color:var(--text-muted);font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.cmp-row{display:grid;grid-template-columns:120px repeat(var(--cols,3),1fr);gap:12px;padding:12px 14px;border-bottom:1px dashed var(--border);align-items:center;font-size:.9rem}
+.cmp-row .lab{color:var(--text-soft);font-weight:600}
+.cmp-row .v{font-family:var(--fm);font-weight:700;color:var(--text)}
+.cmp-row .bar{height:8px;background:var(--border-strong);border-radius:999px;overflow:hidden}
+
+/* 班级 / 学生选择 */
+.stu-pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.stu-p{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;background:var(--bg-soft);border:1px solid var(--border);border-radius:999px;font-size:.85rem;cursor:pointer;transition:all 160ms}
+.stu-p:hover{border-color:var(--ink-300)}
+.stu-p.on{background:rgba(20,184,166,.12);border-color:rgba(20,184,166,.35);color:var(--tide-700)}
+.stu-p.on .ava{background:var(--tide-500)}
+.stu-p .ava{width:22px;height:22px;border-radius:999px;background:linear-gradient(135deg,var(--tide-500),var(--coral-500));color:#fff;display:grid;place-items:center;font-family:var(--fd);font-weight:700;font-size:.74rem}
+
+/* 导出面板 */
+.exp-p{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:800px){.exp-p{grid-template-columns:1fr}}
+.exp-col h5{font-family:var(--fd);font-size:.94rem;margin-bottom:10px;color:var(--text)}
+.exp-chk{display:flex;align-items:center;gap:10px;padding:7px 10px;font-size:.88rem;cursor:pointer;border-radius:6px;transition:background 140ms}
+.exp-chk:hover{background:var(--bg-soft)}
+.exp-chk input{accent-color:var(--tide-500)}
+
+/* 雷达图（教师版复用） */
+.rad-wrap{position:relative;width:100%;max-width:320px;margin:0 auto}
+.rad-wrap svg{width:100%;height:auto;display:block}
+.rad-poly{fill:rgba(20,184,166,.2);stroke:var(--tide-500);stroke-width:2;stroke-linejoin:round}
+.rad-grid{fill:none;stroke:var(--border-strong);stroke-width:1}
+.rad-ax{stroke:var(--border);stroke-width:1}
+.rad-lab{font-family:var(--fb);font-size:11px;font-weight:600;fill:var(--text-soft)}
+.rad-dot{fill:var(--tide-500);stroke:var(--surface);stroke-width:2}
+.rad-val{font-family:var(--fm);font-size:9px;fill:var(--text-muted)}
+
+/* 空状态共用 */
+.emp-tall{padding:60px 20px;text-align:center;color:var(--text-muted)}
+.emp-tall svg{width:52px;height:52px;color:var(--ink-300);margin-bottom:12px}
+.emp-tall h4{color:var(--text-soft);font-family:var(--fd);font-size:1.05rem;margin-bottom:6px}
+.emp-tall p{font-size:.88rem}
+
+/* 工具提示 */
+[data-tip]{position:relative}
+[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--ink-800);color:#fff;font-size:.74rem;padding:5px 10px;border-radius:6px;white-space:nowrap;pointer-events:none;z-index:100;font-family:var(--fb);font-weight:500}
+
+/* Phase 3 教师端样式 */
+/* 自定义滚动条 */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:999px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:var(--ink-300)}
+html{scrollbar-color:var(--border-strong) transparent;scrollbar-width:thin}
+
+/* 公告编辑器 */
+.ann-ed{display:grid;gap:14px;max-width:720px}
+.ann-ed label{display:block;font-size:.78rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.ann-ed input,.ann-ed textarea,.ann-ed select{width:100%;padding:11px 14px;font-family:var(--fb);font-size:.94rem;background:var(--surface-2);border:1.5px solid var(--border-strong);border-radius:12px;color:var(--text);outline:none;transition:all 180ms}
+.ann-ed textarea{resize:vertical;min-height:100px;line-height:1.6;font-family:var(--fb)}
+.ann-ed input:focus,.ann-ed textarea:focus,.ann-ed select:focus{border-color:var(--tide-500);box-shadow:0 0 0 3px rgba(20,184,166,.14)}
+.ann-preview{padding:14px 18px;border-radius:14px;background:linear-gradient(90deg,rgba(20,184,166,.08),rgba(249,115,22,.04));border:1px solid rgba(20,184,166,.22);font-size:.92rem}
+.ann-preview .ttl{font-weight:700;color:var(--text);margin-bottom:4px}
+.ann-preview .bd{color:var(--text-soft);line-height:1.6}
+.ann-preview .lvl{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.72rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;background:rgba(20,184,166,.14);color:var(--tide-600);margin-bottom:8px}
+.ann-preview.info .lvl{background:rgba(59,130,246,.14);color:var(--info)}
+.ann-preview.warn .lvl{background:rgba(245,158,11,.14);color:var(--warn)}
+.ann-preview.imp .lvl{background:rgba(239,68,68,.14);color:var(--err)}
+.ann-list{margin-top:22px;border-top:1px solid var(--border);padding-top:18px}
+.ann-row{display:grid;grid-template-columns:auto 1fr auto;gap:14px;padding:14px 0;border-bottom:1px dashed var(--border);align-items:flex-start}
+.ann-row:last-child{border-bottom:0}
+.ann-row .sw{width:40px;height:22px;flex-shrink:0;position:relative;cursor:pointer}
+.ann-row .sw input{opacity:0;width:0;height:0;position:absolute}
+.ann-row .sw .sl{position:absolute;inset:0;background:var(--border-strong);border-radius:22px;transition:all 220ms}
+.ann-row .sw .sl::before{content:'';position:absolute;width:16px;height:16px;top:3px;left:3px;border-radius:50%;background:#fff;transition:all 220ms;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.ann-row .sw input:checked+.sl{background:var(--tide-500)}
+.ann-row .sw input:checked+.sl::before{transform:translateX(18px)}
+.ann-row .ar-b strong{display:block;color:var(--text);font-size:.94rem;font-weight:600}
+.ann-row .ar-b p{font-size:.86rem;color:var(--text-soft);margin-top:4px;line-height:1.55}
+.ann-row .ar-b .meta{font-size:.76rem;color:var(--text-muted);margin-top:6px;font-family:var(--fm);display:flex;gap:10px}
+
+/* 学生画像 */
+.port-w{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+@media (max-width:860px){.port-w{grid-template-columns:1fr}}
+.port{padding:22px;background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:var(--sm)}
+.port h3{font-family:var(--fd);font-size:1.05rem;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.port h3 svg{width:16px;height:16px;color:var(--tide-500)}
+.port .ttl-w{color:var(--warn)}.port .ttl-e{color:var(--err)}.port .ttl-o{color:var(--ok)}
+.port-ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.port-ul li{padding:10px 14px;background:var(--bg-soft);border-radius:10px;font-size:.9rem;color:var(--text-soft);line-height:1.55;border-left:3px solid var(--border-strong)}
+.port-ul li.good{border-left-color:var(--ok)}
+.port-ul li.warn{border-left-color:var(--warn)}
+.port-ul li.bad{border-left-color:var(--err)}
+.port-ul li strong{color:var(--text)}
+.port-hd{display:flex;align-items:center;gap:14px;margin-bottom:18px;padding-bottom:16px;border-bottom:1px dashed var(--border)}
+.port-hd .ava-lg{width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,var(--tide-500),var(--coral-500));color:#fff;display:grid;place-items:center;font-family:var(--fd);font-weight:700;font-size:1.4rem;box-shadow:inset 0 0 0 2px rgba(255,255,255,.3)}
+.port-hd .nm strong{display:block;font-family:var(--fd);font-size:1.3rem;color:var(--text)}
+.port-hd .nm span{font-size:.84rem;color:var(--text-muted)}
+.port-select{margin-bottom:18px}
+.port-select select{padding:10px 14px;font-family:var(--fb);font-size:.94rem;background:var(--surface);border:1.5px solid var(--border-strong);border-radius:12px;color:var(--text);outline:none;min-width:260px}
+
+/* 知识掌握度热图 */
+.khm{overflow-x:auto;margin:14px 0;padding:4px}
+.khm-tb{border-collapse:separate;border-spacing:4px;font-size:.84rem;min-width:600px}
+.khm-tb th{padding:8px 10px;font-size:.74rem;letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);font-weight:700;text-align:center;writing-mode:horizontal-tb}
+.khm-tb th:first-child{text-align:left;min-width:110px}
+.khm-tb td{padding:0;text-align:center}
+.khm-tb td:first-child{text-align:left;padding:8px 10px;font-weight:600;color:var(--text);white-space:nowrap}
+.khm-cell{display:grid;place-items:center;width:58px;height:46px;border-radius:8px;font-family:var(--fm);font-weight:700;font-size:.82rem;color:#fff;cursor:pointer;transition:all 200ms;border:1px solid transparent;position:relative}
+.khm-cell:hover{transform:scale(1.05);box-shadow:var(--md);z-index:2}
+.khm-cell.na{background:var(--bg-soft);color:var(--text-muted);font-weight:500;border-color:var(--border)}
+.khm-cell .sub{position:absolute;bottom:3px;right:4px;font-size:.62rem;opacity:.82;font-weight:500}
+.khm-lg{display:flex;align-items:center;gap:6px;margin-top:12px;font-size:.78rem;color:var(--text-muted);flex-wrap:wrap}
+.khm-lg-c{width:14px;height:14px;border-radius:4px;display:inline-block}
+
+/* 难题分析 */
+.dif-l{display:flex;flex-direction:column;gap:8px}
+.dif-r{display:grid;grid-template-columns:200px 1fr auto auto;gap:14px;padding:12px 14px;background:var(--bg-soft);border-radius:10px;align-items:center;font-size:.9rem;border-left:4px solid var(--dif-c,var(--border-strong))}
+.dif-r.bad{--dif-c:var(--err)}
+.dif-r.warn{--dif-c:var(--warn)}
+.dif-r.ok{--dif-c:var(--ok)}
+.dif-r .nm{font-weight:600;color:var(--text)}
+.dif-r .ba{height:8px;background:var(--border-strong);border-radius:999px;overflow:hidden;min-width:120px}
+.dif-r .ba-f{height:100%;border-radius:999px;transition:width 600ms var(--eo);background:var(--dif-c)}
+.dif-r .v{font-family:var(--fm);font-weight:700;min-width:60px;text-align:right}
+.dif-r .n{font-family:var(--fm);color:var(--text-muted);font-size:.84rem;min-width:60px;text-align:right}
+
+/* 活动 feed */
+.feed{display:flex;flex-direction:column;gap:8px}
+.feed-r{display:grid;grid-template-columns:auto 1fr auto;gap:12px;padding:12px 14px;background:var(--surface);border:1px solid var(--border);border-radius:12px;align-items:center;transition:all 180ms}
+.feed-r:hover{box-shadow:var(--sm);border-color:var(--border-strong)}
+.feed-ic{width:36px;height:36px;border-radius:10px;background:var(--fd-bg,rgba(20,184,166,.12));color:var(--fd-fg,var(--tide-600));display:grid;place-items:center}
+.feed-ic svg{width:16px;height:16px}
+.feed-ic.l-login{--fd-bg:rgba(16,185,129,.14);--fd-fg:var(--ok)}
+.feed-ic.l-score{--fd-bg:rgba(249,115,22,.14);--fd-fg:var(--coral-600)}
+.feed-ic.l-view{--fd-bg:rgba(59,130,246,.14);--fd-fg:var(--info)}
+.feed-ic.l-fail{--fd-bg:rgba(239,68,68,.14);--fd-fg:var(--err)}
+.feed-b strong{color:var(--text);font-weight:600;font-size:.94rem}
+.feed-b .d{color:var(--text-soft);font-size:.86rem}
+.feed-b .p{font-family:var(--fm);color:var(--text-muted);font-size:.76rem;margin-top:2px}
+.feed-t{font-family:var(--fm);color:var(--text-muted);font-size:.78rem;flex-shrink:0}
+
+/* 学生批注标签 */
+.tag-bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tag{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.76rem;font-weight:600;background:var(--tag-bg,rgba(20,184,166,.12));color:var(--tag-fg,var(--tide-600));border:1px solid var(--tag-br,rgba(20,184,166,.25))}
+.tag button{background:none;border:none;padding:0;cursor:pointer;color:inherit;opacity:.6;font-size:14px;line-height:1}
+.tag button:hover{opacity:1}
+.tag.pri{--tag-bg:rgba(239,68,68,.12);--tag-fg:var(--err);--tag-br:rgba(239,68,68,.28)}
+.tag.sec{--tag-bg:rgba(245,158,11,.12);--tag-fg:var(--warn);--tag-br:rgba(245,158,11,.28)}
+.tag.tri{--tag-bg:rgba(59,130,246,.12);--tag-fg:var(--info);--tag-br:rgba(59,130,246,.28)}
+.tag-add{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;font-size:.76rem;font-weight:600;background:var(--bg-soft);color:var(--text-muted);border:1px dashed var(--border-strong);cursor:pointer;transition:all 160ms}
+.tag-add:hover{color:var(--text);border-color:var(--ink-300);background:var(--surface)}
+.note-box{margin-top:14px;padding:14px;background:var(--bg-soft);border-radius:12px;border:1px solid var(--border)}
+.note-box textarea{width:100%;min-height:72px;padding:10px 12px;font-family:var(--fb);font-size:.88rem;background:var(--surface);border:1px solid var(--border-strong);border-radius:8px;color:var(--text);outline:none;resize:vertical;line-height:1.55}
+.note-box textarea:focus{border-color:var(--tide-500);box-shadow:0 0 0 3px rgba(20,184,166,.14)}
+
+/* 命令面板（教师端通用） */
+.cmdk{position:fixed;inset:0;z-index:300;background:rgba(4,17,31,.72);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);opacity:0;pointer-events:none;transition:opacity 260ms var(--eo);display:flex;align-items:flex-start;justify-content:center;padding-top:12vh}
+.cmdk.on{opacity:1;pointer-events:auto}
+.cmdk-box{width:min(620px,94vw);background:var(--surface);border:1px solid var(--border);border-radius:20px;box-shadow:0 40px 120px rgba(0,0,0,.4);overflow:hidden;transform:translateY(-16px) scale(.97);transition:transform 300ms var(--es)}
+.cmdk.on .cmdk-box{transform:none}
+.cmdk-hd{display:flex;align-items:center;gap:12px;padding:18px 22px;border-bottom:1px solid var(--border)}
+.cmdk-hd svg{width:18px;height:18px;color:var(--tide-500)}
+.cmdk-in{flex:1;border:none;outline:none;background:transparent;font-family:var(--fb);font-size:1.05rem;color:var(--text);padding:0}
+.cmdk-r{max-height:60vh;overflow-y:auto;padding:6px}
+.cmdk-sec{padding:8px 14px 4px;font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted)}
+.cmdk-i{display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:10px;cursor:pointer;transition:background 120ms}
+.cmdk-i:hover,.cmdk-i.sel{background:linear-gradient(90deg,rgba(20,184,166,.1),rgba(20,184,166,.04))}
+.cmdk-ico{width:28px;height:28px;border-radius:8px;background:rgba(20,184,166,.12);display:grid;place-items:center;flex-shrink:0;font-size:14px}
+.cmdk-b strong{display:block;font-size:.92rem;color:var(--text)}
+.cmdk-b span{font-size:.78rem;color:var(--text-muted)}
+
+/* 错误提示 */
+.err-br{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:1000;padding:14px 20px;background:var(--err);color:#fff;border-radius:12px;box-shadow:var(--lg);font-size:.88rem;opacity:0;pointer-events:none;transition:all 280ms var(--eo);max-width:90vw}
+.err-br.on{opacity:.95;pointer-events:auto}
+
+/* 数字滚动 */
+.num-roll{font-variant-numeric:tabular-nums;display:inline-block}
+
+/* Phase 4 教师端样式 */
+/* 时段分布 */
+.hr-chart{padding:14px 0;overflow-x:auto}
+.hr-bars{display:flex;align-items:flex-end;gap:3px;height:160px;min-width:600px;padding:0 4px}
+.hr-b{flex:1;background:linear-gradient(to top,var(--tide-500),var(--tide-400));border-radius:4px 4px 0 0;position:relative;min-height:3px;transition:all 200ms;cursor:pointer}
+.hr-b:hover{background:linear-gradient(to top,var(--coral-500),var(--coral-400));transform:scaleY(1.05);transform-origin:bottom}
+.hr-b .v{position:absolute;bottom:100%;left:50%;transform:translateX(-50%) translateY(-4px);font-family:var(--fm);font-size:.7rem;color:var(--text-muted);white-space:nowrap;opacity:0;transition:opacity 160ms}
+.hr-b:hover .v{opacity:1}
+.hr-lbls{display:flex;gap:3px;margin-top:8px;min-width:600px;padding:0 4px}
+.hr-lbl{flex:1;text-align:center;font-family:var(--fm);font-size:.7rem;color:var(--text-muted)}
+.hr-peak{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:999px;background:rgba(249,115,22,.12);color:var(--coral-600);border:1px solid rgba(249,115,22,.25);font-size:.82rem;font-weight:600}
+
+/* 考勤视图 */
+.atd-w{margin:14px 0;overflow-x:auto}
+.atd-tb{border-collapse:separate;border-spacing:3px;font-size:.8rem;min-width:700px}
+.atd-tb th{padding:6px 4px;font-size:.68rem;letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted);font-weight:700;font-family:var(--fm);text-align:center}
+.atd-tb th:first-child{text-align:left;padding:6px 10px;min-width:110px}
+.atd-tb td{padding:0;text-align:center}
+.atd-tb td:first-child{text-align:left;padding:6px 10px;font-weight:600;color:var(--text);white-space:nowrap}
+.atd-c{display:inline-grid;place-items:center;width:28px;height:28px;border-radius:6px;font-family:var(--fm);font-size:.72rem;font-weight:700;transition:transform 160ms;cursor:default}
+.atd-c:hover{transform:scale(1.2);z-index:2;position:relative}
+.atd-c.p{background:var(--tide-500);color:#fff}
+.atd-c.q{background:var(--coral-500);color:#fff}
+.atd-c.a{background:var(--bg-soft);color:var(--text-muted);border:1px solid var(--border)}
+.atd-c.w{background:var(--bg-soft);color:var(--text-muted);border:1px dashed var(--border);opacity:.5}
+.atd-lg{display:flex;align-items:center;gap:14px;margin-top:12px;font-size:.78rem;color:var(--text-muted);flex-wrap:wrap}
+.atd-lg-c{width:14px;height:14px;border-radius:4px;display:inline-block;vertical-align:middle;margin-right:5px}
+
+/* 班级简报 */
+.rpt-pre{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px 28px;max-height:60vh;overflow-y:auto;font-family:var(--fb);font-size:.94rem;line-height:1.75;color:var(--text-soft);white-space:pre-wrap;word-break:break-word;letter-spacing:.01em;font-variant-numeric:tabular-nums}
+.rpt-pre h2{font-family:var(--fd);font-size:1.3rem;color:var(--text);margin:0 0 12px}
+.rpt-pre h3{font-family:var(--fd);font-size:1.08rem;color:var(--text);margin:18px 0 8px;padding-bottom:6px;border-bottom:1px dashed var(--border)}
+.rpt-pre ul{margin:8px 0 14px;padding-left:22px}
+.rpt-pre li{margin:4px 0}
+.rpt-pre strong{color:var(--text);font-weight:700}
+.rpt-pre em{font-style:normal;color:var(--tide-600);font-weight:600;background:rgba(20,184,166,.08);padding:0 4px;border-radius:3px}
+.rpt-act{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.rpt-meta{display:flex;gap:16px;padding:10px 14px;background:var(--bg-soft);border-radius:10px;margin-bottom:14px;font-size:.82rem;color:var(--text-muted);flex-wrap:wrap}
+.rpt-meta strong{color:var(--text)}
+
+/* 顶部加铃铛（教师端也支持） */
+.bell{position:relative;width:40px;height:40px;border-radius:50%;background:var(--surface);border:1px solid var(--border);display:grid;place-items:center;cursor:pointer;transition:all 180ms;color:var(--text-soft)}
+.bell:hover{color:var(--text);border-color:var(--border-strong)}
+.bell svg{width:18px;height:18px}
+
+/* ══════════════════════════════════════════════════════════════
+   ░  APPLE-GRADE AESTHETIC LAYER  ░  教师端极致美学
+   ══════════════════════════════════════════════════════════════ */
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;font-feature-settings:"kern","liga","calt","ss01"}
+body{font-feature-settings:"kern","liga","calt"}
+h1,h2,h3,h4,.head h1,.pan-h h2{text-wrap:balance;letter-spacing:-.025em}
+p{text-wrap:pretty}
+::selection{background:rgba(20,184,166,.3);color:var(--text)}
+
+/* 顶部滚动进度条 */
+.sc-pg{position:fixed;top:0;left:0;height:2px;z-index:400;background:linear-gradient(90deg,var(--tide-500),var(--coral-500),var(--tide-500));background-size:200% 100%;transform-origin:left;transform:scaleX(0);transition:transform 140ms linear;animation:scPgFlow 3s linear infinite;box-shadow:0 0 12px rgba(20,184,166,.5);pointer-events:none}
+@keyframes scPgFlow{to{background-position:200% 0}}
+
+/* 光标 spotlight */
+.cur-glow{position:fixed;top:0;left:0;width:480px;height:480px;border-radius:50%;background:radial-gradient(circle at center,rgba(20,184,166,.12),rgba(249,115,22,.05) 35%,transparent 65%);pointer-events:none;z-index:2;opacity:0;transition:opacity 500ms var(--eo);transform:translate(-50%,-50%);mix-blend-mode:screen;will-change:transform,opacity}
+[data-theme="light"] .cur-glow{mix-blend-mode:multiply;background:radial-gradient(circle at center,rgba(20,184,166,.06),rgba(249,115,22,.03) 35%,transparent 65%)}
+body:hover .cur-glow,body.cur-on .cur-glow{opacity:1}
+@media (pointer:coarse){.cur-glow{display:none}}
+
+/* Scroll reveal */
+[data-rv]{opacity:0;transform:translateY(24px) scale(.985);filter:blur(3px);transition:opacity 850ms var(--eo),transform 850ms var(--eo),filter 650ms var(--eo)}
+[data-rv].in{opacity:1;transform:none;filter:none}
+
+/* 顶栏毛玻璃 */
+.bar{backdrop-filter:blur(20px) saturate(1.4);-webkit-backdrop-filter:blur(20px) saturate(1.4);transition:background 400ms var(--eo),box-shadow 400ms var(--eo)}
+.bar.scrolled{background:color-mix(in srgb,var(--bg) 80%,transparent);box-shadow:0 1px 0 var(--border),0 10px 30px rgba(4,17,31,.06)}
+[data-theme="dark"] .bar.scrolled{box-shadow:0 1px 0 var(--border),0 10px 30px rgba(0,0,0,.3)}
+
+/* 侧栏 liquid glass */
+.side{backdrop-filter:blur(20px) saturate(1.3);-webkit-backdrop-filter:blur(20px) saturate(1.3);background:color-mix(in srgb,var(--surface) 80%,transparent)}
+
+/* head 标题超大精致 */
+.head h1{font-family:var(--fd);font-size:clamp(2rem,3.8vw,2.8rem);font-weight:500;letter-spacing:-.03em;line-height:1.08;background:linear-gradient(135deg,var(--text) 40%,var(--tide-600));-webkit-background-clip:text;background-clip:text;color:transparent}
+.head p{font-size:1rem;line-height:1.65;margin-top:8px;color:var(--text-soft);max-width:68ch}
+
+/* 面板：精致阴影 + hover */
+.pan{border-radius:24px;background:var(--surface);box-shadow:0 10px 40px rgba(4,17,31,.05),0 1px 0 rgba(255,255,255,.4) inset;border:1px solid var(--border);transition:transform 420ms var(--eo),box-shadow 420ms var(--eo)}
+.pan:hover{transform:translateY(-2px);box-shadow:0 20px 60px rgba(4,17,31,.08),0 1px 0 rgba(255,255,255,.5) inset}
+[data-theme="dark"] .pan{box-shadow:0 10px 40px rgba(0,0,0,.25),0 1px 0 rgba(255,255,255,.04) inset}
+[data-theme="dark"] .pan:hover{box-shadow:0 20px 60px rgba(0,0,0,.35),0 1px 0 rgba(255,255,255,.05) inset}
+.pan-h{padding:20px 24px}
+.pan-h h2{font-family:var(--fd);font-size:1.15rem;font-weight:500;letter-spacing:-.02em}
+
+/* KPI 卡大号数字 */
+.kpi{transition:transform 380ms var(--eo),box-shadow 380ms var(--eo);will-change:transform;backface-visibility:hidden}
+.kpi .v{font-family:var(--fd);font-size:2.2rem;font-weight:500;letter-spacing:-.035em;line-height:1;background:linear-gradient(135deg,var(--text),var(--tide-600));-webkit-background-clip:text;background-clip:text;color:transparent}
+.kpi .l{font-size:.76rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted);font-weight:600;margin-top:6px}
+
+/* 按钮：苹果弹簧感 */
+.btn{transition:transform 220ms cubic-bezier(0.34,1.56,0.64,1),box-shadow 300ms var(--eo),background 240ms var(--eo);letter-spacing:.005em}
+.btn:hover:not(:disabled){transform:translateY(-2px)}
+.btn:active:not(:disabled){transform:translateY(0) scale(.985);transition-duration:120ms}
+.btn-p{box-shadow:0 8px 24px -6px rgba(20,184,166,.55),0 0 0 1px rgba(255,255,255,.15) inset,0 -1px 0 rgba(0,0,0,.2) inset}
+.btn-p:hover:not(:disabled){box-shadow:0 14px 34px -6px rgba(20,184,166,.65)}
+
+/* 自定义滚动条 */
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:999px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:var(--ink-300)}
+
+/* focus-visible 精致 */
+:focus-visible{outline:2px solid var(--tide-500);outline-offset:3px;border-radius:6px}
+button:focus-visible,a:focus-visible{outline-offset:4px}
+input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none}
+
+@media (prefers-reduced-motion:reduce){
+  [data-rv]{opacity:1!important;transform:none!important;filter:none!important}
+  .cur-glow{display:none!important}
+  *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
+/* 流体主题 + 丝滑优化 */
+.head{position:relative}
+.head::before{content:'';position:absolute;top:0;left:0;width:60px;height:2px;background:linear-gradient(90deg,var(--tide-500),var(--coral-500));border-radius:2px;box-shadow:0 0 12px rgba(20,184,166,.5)}
+
+/* GPU 加速 */
+.pan,.kpi,.btn,.chip,.risk-card,.tag,.atd-c,.khm-cell{will-change:transform;transform:translateZ(0)}
+.pan,.kpi{contain:layout style}
+.cmdk-box,.msg-pnl,.drw{contain:layout style paint}
+
+/* 滚动顺滑 */
+html,body{scroll-behavior:smooth;overscroll-behavior:none}
+.khm,.atd-w,.rpt-pre,.drw-b,.cmp-box{-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+
+/* tap highlight */
+*{-webkit-tap-highlight-color:transparent}
+
+/* 字体精细 */
+h1,h2,h3{font-optical-sizing:auto;text-wrap:balance}
+.kpi .v,.feed-r,.atd-c,.khm-cell,.rpt-meta,.dif-r .v,.dif-r .n{font-variant-numeric:tabular-nums lining-nums;font-feature-settings:"tnum","lnum"}
+
+/* 侧栏项悬停顺滑 */
+.side a{transition:background 220ms var(--eo),color 220ms var(--eo),border-color 220ms var(--eo)}
+
+/* 视图切换柔滑 */
+.view{opacity:0;transform:translateY(6px);pointer-events:none;display:none}
+.view.on{opacity:1;transform:none;pointer-events:auto;display:block;animation:viewFade 420ms var(--eo)}
+@keyframes viewFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+@media (pointer:coarse){.cur-glow{display:none!important}.cmdk-box,.msg-pnl{backdrop-filter:blur(12px)!important}}
+@media (prefers-reduced-motion:reduce){.view.on{animation:none}}
+</style>
+</head>
+<body>
+<div class="sc-pg" id="scPg"></div>
+<div class="cur-glow" id="curGlow" aria-hidden="true"></div>
+
+<div class="bg" aria-hidden="true"></div>
+
+<header class="top">
+<div class="top-in">
+<a class="brand" href="/index-complete.html"><span class="mark" aria-hidden="true"></span><span>流体力学 · 教师后台</span></a>
+<div class="top-r">
+<a class="btn btn-g btn-sm" href="/index-complete.html"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M9 21V9h6v12"/></svg>回首页</a>
+<button class="btn btn-g btn-sm" id="themeT" title="切换主题"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg></button>
+<button class="btn btn-d btn-sm" id="logoutBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>退出</button>
+</div>
+</div>
+</header>
+
+<main class="wrap">
+<div class="layout">
+
+<aside class="side">
+<h3>教师控制台</h3>
+<nav class="navl" id="navL">
+<a data-v="overview" class="on"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>总览</a>
+<a data-v="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>学生管理</a>
+<a data-v="activity"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>活动时间轴</a>
+<a data-v="alerts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>风险预警</a>
+<a data-v="announce"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l18-5v12L3 14v-3zM11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg>公告管理</a>
+<a data-v="heatmap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>活跃度热力</a>
+<a data-v="knowhm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>知识掌握度</a>
+<a data-v="difficult"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>难点分析</a>
+<a data-v="feed"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M4 15h.01M4 20h.01"/></svg>班级 Feed</a>
+<a data-v="hourly"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>时段分布</a>
+<a data-v="attend"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>考勤视图</a>
+<a data-v="report"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>班级简报</a>
+<a data-v="portrait"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>学生画像</a>
+<a data-v="compare"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>学生对比</a>
+<a data-v="analytics"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>成绩分析</a>
+<a data-v="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M4.22 4.22l4.24 4.24M15.54 15.54l4.24 4.24M1 12h6M17 12h6M4.22 19.78l4.24-4.24M15.54 8.46l4.24-4.24"/></svg>设置</a>
+</nav>
+<div class="side-foot">
+<strong>数据来源</strong>
+当前聚合本设备 localStorage 记录。若需跨设备汇总所有学生数据，可配置后端上传端点（见"设置"）。
+</div>
+</aside>
+
+<section class="main">
+
+<!-- 总览 -->
+<div class="view on" data-v="overview">
+<div class="head">
+<div>
+<h1>总览</h1>
+<p>从这里快速了解整体学习情况：访问次数、在线时长、平均分、活跃学生。</p>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+<div class="tfilt" id="tFilt">
+<button data-f="1">今日</button>
+<button data-f="7">7日</button>
+<button data-f="30" class="on">30日</button>
+<button data-f="90">90日</button>
+<button data-f="0">全部</button>
+</div>
+<button class="btn btn-g btn-sm" id="refBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>刷新</button>
+<button class="btn btn-p btn-sm" id="expBtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>导出 CSV</button>
+</div>
+</div>
+
+<div class="kpi-g">
+<div class="kpi" style="--kpiBg:rgba(20,184,166,.12);--kpiFg:var(--tide-600)">
+<div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+<div class="l">学生总数</div>
+<div class="v" id="kS">—</div>
+<div class="s"><span id="kA">—</span> 名近 7 日活跃</div>
+</div>
+<div class="kpi" style="--kpiBg:rgba(249,115,22,.12);--kpiFg:var(--coral-600)">
+<div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+<div class="l">累计访问</div>
+<div class="v" id="kV">—</div>
+<div class="s">累计时长 <strong id="kT">—</strong></div>
+</div>
+<div class="kpi" style="--kpiBg:rgba(16,185,129,.12);--kpiFg:var(--ok)">
+<div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+<div class="l">测验次数</div>
+<div class="v" id="kE">—</div>
+<div class="s">平均分 <strong id="kG">—</strong></div>
+</div>
+<div class="kpi" style="--kpiBg:rgba(59,130,246,.12);--kpiFg:var(--info)">
+<div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+<div class="l">今日活跃</div>
+<div class="v" id="kD">—</div>
+<div class="s">最近一次登录 <span id="kL">—</span></div>
+</div>
+</div>
+
+<div class="ch-g">
+<div class="pan">
+<div class="pan-h"><h2>近 14 日访问趋势</h2><span class="chip chip-t" id="trN">—</span></div>
+<div class="pan-b">
+<svg class="tchart" id="trCh" viewBox="0 0 720 220" preserveAspectRatio="none" style="width:100%;height:220px">
+<defs>
+<linearGradient id="lg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#14b8a6"/><stop offset="100%" stop-color="#f97316"/></linearGradient>
+<linearGradient id="ag" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#14b8a6" stop-opacity=".35"/><stop offset="100%" stop-color="#14b8a6" stop-opacity="0"/></linearGradient>
+</defs>
+</svg>
+</div>
+</div>
+<div class="pan">
+<div class="pan-h"><h2>分数分布</h2><span class="chip" id="dsN">—</span></div>
+<div class="pan-b">
+<svg class="dchart" id="dsCh" viewBox="0 0 360 220" preserveAspectRatio="none" style="width:100%;height:220px"></svg>
+</div>
+</div>
+</div>
+
+<div class="pan">
+<div class="pan-h"><h2>最活跃学生 Top 5</h2><a class="btn btn-g btn-sm" data-go="students" style="cursor:pointer">查看全部 →</a></div>
+<div class="pan-b">
+<div class="tw">
+<table class="tb" id="topTb">
+<thead><tr><th>学生</th><th>访问次数</th><th>累计时长</th><th>平均分</th><th>最后访问</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 学生 -->
+<div class="view" data-v="students">
+<div class="head">
+<div><h1>学生管理</h1><p>查看每位学生的访问次数、累计时长、测验成绩。点击任一行打开详情抽屉。</p></div>
+</div>
+<div class="pan">
+<div class="pan-b">
+<div class="srch">
+<input class="inp inp-srch" type="text" id="sSrch" placeholder="🔍 搜索学生姓名或用户名…">
+<select class="inp sel" id="sSort">
+<option value="lastSeen">按最后访问排序</option>
+<option value="visits">按访问次数排序</option>
+<option value="duration">按累计时长排序</option>
+<option value="avg">按平均分排序</option>
+<option value="name">按姓名排序</option>
+</select>
+</div>
+<div class="tw">
+<table class="tb" id="stuTb">
+<thead><tr><th>学生</th><th>访问</th><th>时长</th><th>测验</th><th>平均分</th><th>最后访问</th><th>进度</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 活动 -->
+<div class="view" data-v="activity">
+<div class="head">
+<div><h1>活动时间轴</h1><p>按时间顺序查看登录、访问、测验等事件（来自安全模块的活动日志）。</p></div>
+</div>
+<div class="pan"><div class="pan-b"><div id="tlBx" class="tl"></div></div></div>
+</div>
+
+<!-- 分析 -->
+<div class="view" data-v="analytics">
+<div class="head">
+<div><h1>成绩分析</h1><p>按模块聚合分数，看哪些章节掌握得好、哪些需要补强。</p></div>
+</div>
+<div class="pan">
+<div class="pan-h"><h2>按模块平均分</h2></div>
+<div class="pan-b"><div id="mAnl"></div></div>
+</div>
+</div>
+
+<!-- 设置 -->
+<!-- 风险预警 -->
+<div class="view" data-v="alerts">
+<div class="head">
+<div><h1>风险预警</h1><p>自动识别需要关注的学生：长期未访问、成绩偏低、缺测验、异常事件等。</p></div>
+<div class="tfilt" id="aFilt">
+<button class="on" data-f="all">全部</button>
+<button data-f="high">高危</button>
+<button data-f="med">中风险</button>
+<button data-f="low">提示</button>
+</div>
+</div>
+<div id="riskL" class="risks"></div>
+<div class="pan">
+<div class="pan-h"><h2>最近的异常事件</h2></div>
+<div class="pan-b"><div id="evtL" class="tl"></div></div>
+</div>
+</div>
+
+<!-- 活跃度热力 -->
+<div class="view" data-v="heatmap">
+<div class="head">
+<div><h1>全班活跃度热力</h1><p>近 90 天每日登录访问的累计次数，颜色越深说明活跃度越高。</p></div>
+</div>
+<div class="pan">
+<div class="pan-h"><h2>班级累计</h2><span class="chip chip-t" id="thN">—</span></div>
+<div class="pan-b">
+<div class="theat"><div class="theat-g" id="theatG"></div></div>
+<div style="display:flex;gap:8px;align-items:center;font-size:.78rem;color:var(--text-muted);margin-top:14px">
+<span>少</span>
+<span class="theat-c" style="width:12px;height:12px"></span>
+<span class="theat-c l1" style="width:12px;height:12px"></span>
+<span class="theat-c l2" style="width:12px;height:12px"></span>
+<span class="theat-c l3" style="width:12px;height:12px"></span>
+<span class="theat-c l4" style="width:12px;height:12px"></span>
+<span>多</span>
+</div>
+</div>
+</div>
+<div class="pan">
+<div class="pan-h"><h2>按学生的打卡连续情况</h2></div>
+<div class="pan-b">
+<div class="tw">
+<table class="tb" id="stkTb">
+<thead><tr><th>学生</th><th>最长连续</th><th>本月活跃天</th><th>最后访问</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 学生对比 -->
+<div class="view" data-v="compare">
+<div class="head">
+<div><h1>学生对比</h1><p>勾选 2-4 位学生，并排看关键指标。适合对比学习情况。</p></div>
+</div>
+<div class="pan">
+<div class="pan-b">
+<div class="cmp-w">
+<div class="cmp-pick">
+<h4>选择学生（最多 4 位）</h4>
+<div id="cmpPick"></div>
+</div>
+<div id="cmpOut"><div class="emp-tall"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="7" r="4"/><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/></svg><h4>请先勾选学生</h4><p>从左侧列表勾选 2-4 位学生以开始对比</p></div></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 公告管理 -->
+<div class="view" data-v="announce">
+<div class="head">
+<div><h1>公告管理</h1><p>向全体学生发布公告。保存后，学生端首页会显示，可被单独关闭。</p></div>
+</div>
+<div class="pan">
+<div class="pan-h"><h2>发布新公告</h2></div>
+<div class="pan-b">
+<div class="ann-ed">
+<div><label>标题</label><input id="annTtl" type="text" placeholder="例：本周三晚上有答疑" maxlength="60"></div>
+<div><label>正文</label><textarea id="annBdy" placeholder="写几句想告诉大家的话…" maxlength="400"></textarea></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<div><label>重要级别</label><select id="annLvl"><option value="info">信息（蓝）</option><option value="default" selected>默认（青）</option><option value="warn">提醒（橙）</option><option value="imp">重要（红）</option></select></div>
+<div><label>到期时间（可选）</label><input id="annExp" type="date"></div>
+</div>
+<div class="ann-preview" id="annPrv"><span class="lvl" id="annPrvL">默认</span><div class="ttl" id="annPrvT">预览标题会显示在这里</div><div class="bd" id="annPrvB">正文内容 · 学生端打开首页就会看到这条公告。</div></div>
+<div style="display:flex;gap:10px">
+<button class="btn btn-p btn-sm" id="annSave">保存并发布</button>
+<button class="btn btn-g btn-sm" id="annClear">清空</button>
+</div>
+</div>
+<div class="ann-list" id="annList"><h3 style="font-family:var(--fd);font-size:1.05rem;margin-bottom:10px">历史公告</h3><div id="annHist"></div></div>
+</div>
+</div>
+</div>
+
+<!-- 知识掌握度 -->
+<div class="view" data-v="knowhm">
+<div class="head">
+<div><h1>知识掌握度热图</h1><p>纵轴学生，横轴模块。格子颜色反映该学生在该模块的平均分。空格代表没测过。</p></div>
+</div>
+<div class="pan">
+<div class="pan-h"><h2>学生 × 模块矩阵</h2><span class="chip" id="khmN">—</span></div>
+<div class="pan-b">
+<div class="khm"><table class="khm-tb" id="khmTb"></table></div>
+<div class="khm-lg">
+<span>分数：</span>
+<span class="khm-lg-c" style="background:#ef4444"></span><span>&lt;60</span>
+<span class="khm-lg-c" style="background:#f59e0b"></span><span>60-69</span>
+<span class="khm-lg-c" style="background:#fbbf24"></span><span>70-79</span>
+<span class="khm-lg-c" style="background:#14b8a6"></span><span>80-89</span>
+<span class="khm-lg-c" style="background:#10b981"></span><span>≥90</span>
+<span class="khm-lg-c" style="background:var(--bg-soft);border:1px solid var(--border)"></span><span>未测验</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 难点分析 -->
+<div class="view" data-v="difficult">
+<div class="head">
+<div><h1>难点分析</h1><p>按模块看班级掌握情况。平均分低、做题少的模块往往是教学难点。</p></div>
+</div>
+<div class="pan">
+<div class="pan-h"><h2>各模块班级平均分（由难到易）</h2><span class="chip" id="difN">—</span></div>
+<div class="pan-b"><div id="difL" class="dif-l"></div></div>
+</div>
+</div>
+
+<!-- 班级 Feed -->
+<div class="view" data-v="feed">
+<div class="head">
+<div><h1>班级活动 Feed</h1><p>实时显示班级最近的登录、测验、访问事件（按时间倒序，最多 80 条）。</p></div>
+<button class="btn btn-g btn-sm" id="feedRef"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>刷新</button>
+</div>
+<div class="pan"><div class="pan-b"><div id="feedL" class="feed"></div></div></div>
+</div>
+
+<!-- 时段分布 -->
+<div class="view" data-v="hourly">
+<div class="head">
+<div><h1>时段活跃分布</h1><p>学生在一天 24 小时中哪些时段最活跃。颜色越深代表访问越多。</p></div>
+</div>
+<div class="pan">
+<div class="pan-h"><h2>0 时 — 23 时 · 全班累计访问次数</h2><span class="chip" id="hrPeak">—</span></div>
+<div class="pan-b">
+<div class="hr-chart">
+<div class="hr-bars" id="hrBars"></div>
+<div class="hr-lbls" id="hrLbls"></div>
+</div>
+<p style="margin-top:14px;font-size:.84rem;color:var(--text-muted)" id="hrTip">—</p>
+</div>
+</div>
+</div>
+
+<!-- 考勤视图 -->
+<div class="view" data-v="attend">
+<div class="head">
+<div><h1>考勤视图</h1><p>过去 14 天每个学生的出勤情况 · 绿色登录 · 橙色做过题 · 灰色未到</p></div>
+</div>
+<div class="pan">
+<div class="pan-h"><h2>学生 × 日期 矩阵</h2><span class="chip" id="atdN">—</span></div>
+<div class="pan-b">
+<div class="atd-w"><table class="atd-tb" id="atdTb"></table></div>
+<div class="atd-lg">
+<span><span class="atd-lg-c" style="background:var(--tide-500)"></span>登录</span>
+<span><span class="atd-lg-c" style="background:var(--coral-500)"></span>做过题</span>
+<span><span class="atd-lg-c" style="background:var(--bg-soft);border:1px solid var(--border)"></span>未到</span>
+<span><span class="atd-lg-c" style="background:var(--bg-soft);border:1px dashed var(--border);opacity:.5"></span>周末</span>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 班级简报 -->
+<div class="view" data-v="report">
+<div class="head">
+<div><h1>班级简报</h1><p>一键生成班级整体表现的自然语言摘要 · 可复制到聊天群或邮件</p></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<select id="rptPeriod" style="padding:8px 12px;font-family:var(--fb);font-size:.88rem;background:var(--surface);border:1.5px solid var(--border-strong);border-radius:10px;color:var(--text);outline:none">
+<option value="7">最近 7 天</option>
+<option value="14">最近 14 天</option>
+<option value="30" selected>最近 30 天</option>
+<option value="90">最近 90 天</option>
+<option value="0">全部</option>
+</select>
+<button class="btn btn-p btn-sm" id="rptGen"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>生成</button>
+</div>
+</div>
+<div class="pan">
+<div class="pan-b">
+<div class="rpt-meta" id="rptMeta">点击右上「生成」按钮，自动汇总班级数据</div>
+<div class="rpt-pre" id="rptOut"><div class="emp-tall"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><h4>暂未生成简报</h4><p>选择统计周期，然后点击「生成」</p></div></div>
+<div class="rpt-act" id="rptAct" hidden>
+<button class="btn btn-p btn-sm" id="rptCopy"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>复制文本</button>
+<button class="btn btn-g btn-sm" id="rptDl"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>下载 Markdown</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 学生画像 -->
+<div class="view" data-v="portrait">
+<div class="head">
+<div><h1>学生画像</h1><p>选择一位学生，自动生成基于数据的学习画像：优势、弱点、建议。</p></div>
+</div>
+<div class="pan">
+<div class="pan-b">
+<div class="port-select"><select id="portSel"><option value="">— 请选择学生 —</option></select></div>
+<div id="portOut"></div>
+</div>
+</div>
+</div>
+
+<!-- 设置 -->
+<div class="view" data-v="settings">
+<div class="head">
+<div><h1>设置</h1><p>管理数据同步、导出、清除。敏感操作需要确认。</p></div>
+</div>
+<div class="pan">
+<div class="pan-h"><h2>数据与同步</h2></div>
+<div class="pan-b">
+<div class="set-r">
+<div class="info"><strong>导入学生数据快照</strong><p>从学生设备导出的 JSON 可以在教师端导入合并，用于线下汇总。格式为 FMAnalytics.exportSnapshot() 的输出。</p></div>
+<label class="btn btn-g btn-sm" style="cursor:pointer">选择文件 <input type="file" accept="application/json" id="impF" hidden></label>
+</div>
+<div class="set-r">
+<div class="info"><strong>导出当前聚合数据</strong><p>下载本设备聚合到的全部学生数据 CSV，含访问、时长、平均分、最高分。</p></div>
+<button class="btn btn-g btn-sm" id="expBtn2">导出 CSV</button>
+</div>
+<div class="set-r">
+<div class="info"><strong>导出 JSON 快照</strong><p>导出完整 JSON 数据，方便备份或迁移到其他设备。</p></div>
+<button class="btn btn-g btn-sm" id="expJ">导出 JSON</button>
+</div>
+<div class="set-r">
+<div class="info"><strong>清空本设备分析数据</strong><p>清除 sessions/scores/progress 三类记录。<strong style="color:var(--err)">不可恢复</strong>。登录账户不受影响。</p></div>
+<button class="btn btn-d btn-sm" id="clrBtn">清空数据</button>
+</div>
+</div>
+</div>
+</div>
+
+</section>
+</div>
+</main>
+
+<div class="drw-bd" id="drwBd"></div>
+<aside class="drw" id="drw">
+<div class="drw-h"><h2 id="drwT">学生详情</h2><button class="btn btn-g btn-sm" id="drwX">关闭</button></div>
+<div class="drw-b" id="drwB"></div>
+</aside>
+
+<script>
+/* ============ FMToast ============ */
+(function(){
+let stk=null;
+function st(){if(stk&&document.body.contains(stk))return stk;stk=document.createElement('div');stk.className='tst-s';stk.setAttribute('role','status');stk.setAttribute('aria-live','polite');document.body.appendChild(stk);return stk;}
+const ICO={info:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M10 7v.01M10 10v3"/></svg>',ok:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M5 10.5l3.5 3.5L15 7"/></svg>',warn:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 2l8.5 15H1.5L10 2z"/><path d="M10 8v4M10 15v.01"/></svg>',err:'<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="8"/><path d="M7 7l6 6M13 7l-6 6"/></svg>'};
+const CLR={info:'var(--info)',ok:'var(--ok)',warn:'var(--warn)',err:'var(--err)'};
+function sh(m,k,o){o=o||{};const d=o.duration!=null?o.duration:(k==='err'?5200:3500);const h=st();const t=document.createElement('div');t.className='tst '+(k==='ok'?'tst-ok':k==='warn'?'tst-w':k==='err'?'tst-e':'');t.innerHTML='<span class="i" style="color:'+(CLR[k]||CLR.info)+'">'+(ICO[k]||ICO.info)+'</span><div class="b"></div><button class="x">×</button>';t.querySelector('.b').textContent=String(m||'');h.appendChild(t);const r=()=>{if(!t.parentNode)return;t.classList.add('out');setTimeout(()=>{t.parentNode&&t.parentNode.removeChild(t)},260)};t.querySelector('.x').addEventListener('click',r);if(d>0)setTimeout(r,d);return r;}
+window.FMToast={info:(m,o)=>sh(m,'info',o),ok:(m,o)=>sh(m,'ok',o),warn:(m,o)=>sh(m,'warn',o),err:(m,o)=>sh(m,'err',o)};
+})();
+
+/* ============ FMSecurity ============ */
+(function(){
+const K={ses:'fm_session_v2',lgc:'fluidMechanicsUser',nxt:'fm_next_target',rt:'fm_rate_limit',act:'fm_activity_log',fp:'fm_device_fp'};
+const C={ttl:12*60*60*1000,idle:45*60*1000,max:6,win:10*60*1000,lock:15*60*1000,logM:300};
+const now=()=>Date.now();
+const b2b=b=>{const a=new Uint8Array(b);let s='';for(let i=0;i<a.length;i++)s+=String.fromCharCode(a[i]);return btoa(s)};
+const b2a=b=>{const n=atob(b);const a=new Uint8Array(n.length);for(let i=0;i<n.length;i++)a[i]=n.charCodeAt(i);return a.buffer};
+async function sh(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return b2b(b)}
+const G=k=>{try{return localStorage.getItem(k)}catch(e){return null}};
+const S=(k,v)=>{try{localStorage.setItem(k,v);return true}catch(e){return false}};
+const D=k=>{try{localStorage.removeItem(k)}catch(e){}};
+const rJ=k=>{const r=G(k);if(!r)return null;try{return JSON.parse(r)}catch(e){return null}};
+const wJ=(k,o)=>S(k,JSON.stringify(o));
+async function fp(){let x=G(K.fp);if(x)return x;const p=[navigator.userAgent,navigator.language,screen.width+'x'+screen.height,new Date().getTimezoneOffset(),navigator.hardwareConcurrency||'',navigator.platform||''].join('|');x=await sh(p);S(K.fp,x);return x}
+function lg(t,d){const l=rJ(K.act)||[];l.push({t:now(),type:t,data:d||{},path:location.pathname+location.search});if(l.length>C.logM)l.splice(0,l.length-C.logM);wJ(K.act,l);try{window.dispatchEvent(new CustomEvent('fm:activity',{detail:{type:t,data:d}}))}catch(e){}}
+function loadSync(){const s=rJ(K.ses);if(!s||!s.payload)return null;if(s.payload.expiresAt<=now())return null;if(s.payload.lastActive&&now()-s.payload.lastActive>C.idle)return null;return s}
+async function loadA(){const s=rJ(K.ses);if(!s||!s.payload||!s.sig)return null;if(s.payload.expiresAt<=now()){clearSession('expired');return null}if(s.payload.lastActive&&now()-s.payload.lastActive>C.idle){clearSession('idle');return null}const f=await fp();if(s.payload.fp!==f){clearSession('fp_mismatch');return null}const e=await sh(JSON.stringify(s.payload)+'::'+f);if(e!==s.sig){clearSession('tamper');return null}return s}
+function touch(){const s=rJ(K.ses);if(!s||!s.payload)return;s.payload.lastActive=now();wJ(K.ses,s)}
+function clearSession(r){if(r)lg('logout',{reason:r});D(K.ses);D(K.lgc)}
+function isAuth(){return !!loadSync()}
+function isTeacher(){const s=loadSync();return !!(s&&s.payload&&s.payload.user&&s.payload.user.role==='teacher')}
+function getUser(){const s=loadSync();return s&&s.payload?s.payload.user:null}
+function stashNext(t){if(!t)return;try{const u=new URL(t,location.origin);if(u.origin!==location.origin)return;S(K.nxt,u.pathname+u.search+u.hash)}catch(e){}}
+function guardPage(o){o=o||{};const lp=o.loginPage||'/index-complete.html';const to=!!o.teacherOnly;const s=loadSync();if(!s){stashNext(location.pathname+location.search);location.replace(lp+(lp.includes('?')?'&':'?')+'auth=required');return false}if(to&&s.payload.user.role!=='teacher'){lg('access_denied',{path:location.pathname});stashNext(location.pathname+location.search);location.replace(lp+'?auth=teacher_required');return false}loadA().then(x=>{if(!x){stashNext(location.pathname+location.search);location.replace(lp+'?auth=required')}else{touch();document.documentElement.removeAttribute('data-auth-pending')}}).catch(()=>location.replace(lp+'?auth=required'));return true}
+function idle(){let last=now();const b=()=>{last=now();touch()};['click','keydown','scroll','touchstart','mousemove'].forEach(e=>window.addEventListener(e,b,{passive:true}));setInterval(()=>{const s=loadSync();if(!s)return;if(now()-last>C.idle){clearSession('idle');lg('auto_logout',{reason:'idle'});if(window.FMToast)FMToast.warn('长时间未操作，已自动退出');setTimeout(()=>location.reload(),1500)}},30000)}
+window.FMSecurity={clearSession,isAuthenticated:isAuth,getUser,isTeacher,guardPage,loadSession:loadA,touchSession:touch,logActivity:lg,stashNextTarget:stashNext,CONFIG:C};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',idle);else idle();
+})();
+
+/* ============ FMAnalytics ============ */
+(function(){
+const K='fm_learning_data_v2',KS='fm_scores',KV='fm_sessions';
+const r=(k,f)=>{try{const x=localStorage.getItem(k);if(!x)return f===undefined?null:f;const v=JSON.parse(x);if(Array.isArray(f)&&!Array.isArray(v))return f;if(f&&typeof f==='object'&&!Array.isArray(f)&&(v===null||typeof v!=='object'||Array.isArray(v)))return f;return v}catch(e){return f===undefined?null:f}};
+const w=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}};
+function u(){if(window.FMSecurity&&FMSecurity.getUser)return FMSecurity.getUser();try{return JSON.parse(localStorage.getItem('fluidMechanicsUser'))}catch(e){return null}}
+function start(){const x=u();if(!x)return;const t=Date.now();const s=r(KV,[]);s.push({id:'s_'+t+'_'+Math.random().toString(36).slice(2,7),user:x.username||x.name,userDisplay:x.name,role:x.role,startedAt:t,endedAt:null,pages:[{path:location.pathname,title:document.title,t}],duration:0});w(KV,s)}
+function hb(){const x=u();if(!x)return;const s=r(KV,[]);if(!s.length)return start();const c=s[s.length-1];c.endedAt=Date.now();c.duration=c.endedAt-c.startedAt;w(KV,s)}
+function pv(){const x=u();if(!x)return;const s=r(KV,[]);if(!s.length)return start();const c=s[s.length-1];const l=c.pages[c.pages.length-1];if(!l||l.path!==location.pathname){c.pages.push({path:location.pathname,title:document.title,t:Date.now()});w(KV,s)}}
+function agg(){const ss=r(KV,[]),sc=r(KS,[]),pg=r(K,{});const b={};ss.forEach(s=>{const k=s.user;if(!b[k])b[k]={user:k,name:s.userDisplay||k,role:s.role,visits:0,totalDuration:0,lastSeen:0,sessions:[],scores:[],modules:{}};b[k].visits++;b[k].totalDuration+=s.duration||0;b[k].lastSeen=Math.max(b[k].lastSeen,s.endedAt||s.startedAt);b[k].sessions.push(s);if(s.userDisplay)b[k].name=s.userDisplay});sc.forEach(x=>{const k=x.user;if(!b[k])b[k]={user:k,name:x.userDisplay||k,role:'student',visits:0,totalDuration:0,lastSeen:0,sessions:[],scores:[],modules:{}};b[k].scores.push(x);b[k].lastSeen=Math.max(b[k].lastSeen,x.at)});Object.keys(pg).forEach(k=>{if(!b[k])b[k]={user:k,name:pg[k].name||k,role:'student',visits:0,totalDuration:0,lastSeen:0,sessions:[],scores:[],modules:{}};b[k].modules=pg[k].modules||{};if(pg[k].name)b[k].name=pg[k].name});Object.values(b).forEach(x=>{if(x.scores.length){const s=x.scores.reduce((a,r)=>a+r.score,0);x.avgScore=Math.round(s/x.scores.length);x.maxScore=Math.max.apply(null,x.scores.map(r=>r.score));x.minScore=Math.min.apply(null,x.scores.map(r=>r.score))}else x.avgScore=null});return b}
+let h=null;
+function init(){if(!u())return;start();pv();h=setInterval(()=>{if(document.visibilityState==='visible')hb()},20000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')hb()});window.addEventListener('pagehide',hb);window.addEventListener('beforeunload',hb)}
+window.FMAnalytics={recordPageView:pv,aggregateByUser:agg,getSessions:()=>r(KV,[]),getScores:()=>r(KS,[]),getProgress:()=>r(K,{}),exportSnapshot:()=>({sessions:r(KV,[]),scores:r(KS,[]),progress:r(K,{})}),importSnapshot:(s)=>{if(!s||typeof s!=='object')return false;if(Array.isArray(s.sessions))w(KV,r(KV,[]).concat(s.sessions));if(Array.isArray(s.scores))w(KS,r(KS,[]).concat(s.scores));if(s.progress&&typeof s.progress==='object'){const c=r(K,{});Object.keys(s.progress).forEach(k=>{c[k]=Object.assign({},c[k]||{},s.progress[k])});w(K,c)}return true},clearAll:()=>{try{localStorage.removeItem(K);localStorage.removeItem(KS);localStorage.removeItem(KV);return true}catch(e){return false}}};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+
+/* ============ FMTransitions ============ */
+(function(){
+const VT=typeof document.startViewTransition==='function';
+const CH=new Map();let ov=null,tm=null;
+function eo(){if(ov&&document.body.contains(ov))return ov;ov=document.createElement('div');ov.className='load';ov.innerHTML='<div class="ring-l"></div>';document.body.appendChild(ov);return ov}
+function sl(d){clearTimeout(tm);const e=eo();tm=setTimeout(()=>e.classList.add('on'),d||180)}
+function hl(){clearTimeout(tm);if(ov)ov.classList.remove('on')}
+function pf(u){if(!u||CH.has(u))return;if(!/^\//.test(u)&&!u.startsWith(location.origin))return;const l=document.createElement('link');l.rel='prefetch';l.href=u;l.as='document';document.head.appendChild(l);CH.set(u,true)}
+function si(a,e){if(!a||!a.href)return false;if(e&&(e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey))return false;if(a.target&&a.target!==''&&a.target!=='_self')return false;if(a.hasAttribute('download'))return false;if(a.dataset.nt==='1')return false;const u=new URL(a.href,location.href);if(u.origin!==location.origin)return false;if(/\.(png|jpg|jpeg|gif|svg|webp|pdf|zip|mp4|mp3|css|js|json)($|\?)/i.test(u.pathname))return false;return true}
+function pr(){return !!(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches)}
+function nav(h,rp){const d=()=>{if(rp)location.replace(h);else location.assign(h)};if(!VT||pr()){sl();d();return}try{const v=document.startViewTransition(()=>new Promise(r=>{document.documentElement.classList.add('navout');setTimeout(r,220)}));v.finished.finally(()=>{sl(0);d()})}catch(e){sl();d()}}
+function oh(e){const a=e.target.closest&&e.target.closest('a[href]');if(!a||!si(a))return;const u=new URL(a.href,location.href);pf(u.pathname+u.search)}
+function oc(e){const a=e.target.closest&&e.target.closest('a[href]');if(!a||!si(a,e))return;e.preventDefault();const u=new URL(a.href,location.href);if(u.pathname===location.pathname&&u.search===location.search&&u.hash){location.hash=u.hash;return}nav(u.pathname+u.search+u.hash)}
+function os(e){if(e.persisted){document.documentElement.classList.remove('navout');hl()}}
+function init(){document.addEventListener('click',oc,false);let t=null;document.addEventListener('mouseover',e=>{clearTimeout(t);t=setTimeout(()=>oh(e),80)});document.addEventListener('touchstart',oh,{passive:true});window.addEventListener('pageshow',os);document.documentElement.classList.remove('navout');hl()}
+window.FMTransitions={navigate:nav,prefetch:pf,supportsVT:VT,showLoader:sl,hideLoader:hl};
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+
+/* ============ 主题 ============ */
+(function(){
+const K='fm_theme';
+function ap(t){document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem(K,t)}catch(e){}}
+const s=(()=>{try{return localStorage.getItem(K)}catch(e){return null}})()||((window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches)?'dark':'light');
+ap(s);
+document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('themeT');if(b)b.addEventListener('click',()=>{const c=document.documentElement.getAttribute('data-theme');ap(c==='dark'?'light':'dark')})});
+})();
+</script>
+<script>
+/* ============ 教师端业务逻辑 ============ */
+(function(){
+
+/* --- 启动守卫 --- */
+if (!window.FMSecurity || !FMSecurity.guardPage({ teacherOnly: true, loginPage: '/index-complete.html' })) {
+  return;
+}
+
+/* --- 通用工具 --- */
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function fmtDur(ms){const m=Math.round((ms||0)/60000);if(m<1)return '<1 分';if(m<60)return m+' 分';const h=m/60;return (h<10?h.toFixed(1):Math.round(h))+' 时'}
+function fmtDate(ts){if(!ts)return '—';const d=new Date(ts),now=Date.now(),diff=now-ts;if(diff<60000)return '刚才';if(diff<3600000)return Math.floor(diff/60000)+' 分钟前';if(diff<86400000)return Math.floor(diff/3600000)+' 小时前';if(diff<7*86400000)return Math.floor(diff/86400000)+' 天前';return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function fmtDT(ts){if(!ts)return '—';const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
+function initials(n){return String(n||'?').slice(0,1).toUpperCase()}
+function dl(name, blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500)}
+
+const MODULE_NAMES = {
+  'fluid-statics': '流体静力学', 'fluid-dynamics': '流体动力学',
+  'viscous-flow': '粘性流动', 'vorticity-theory': '涡量理论',
+  'turbulent-flow': '湍流理论', 'simulation': '数值模拟',
+  'physical-oceanography': '物理海洋学', 'real-exams': '历年真题',
+  'question-bank': '综合题库', 'ai-assistant': 'AI 助手'
+};
+function moduleName(k){return MODULE_NAMES[k] || k}
+
+/* --- 视图路由 --- */
+function showView(v){
+  document.querySelectorAll('.view').forEach(el => el.classList.toggle('on', el.dataset.v === v));
+  document.querySelectorAll('#navL a').forEach(el => el.classList.toggle('on', el.dataset.v === v));
+  window.scrollTo({top:0, behavior:'smooth'});
+  try { localStorage.setItem('fm_tp_view', v); } catch(e){}
+  // 按视图懒渲染
+  if (v === 'students') renderStudents();
+  else if (v === 'activity') renderActivity();
+  else if (v === 'analytics') renderAnalytics();
+  else if (v === 'alerts') renderAlerts();
+  else if (v === 'heatmap') renderHeatmap();
+  else if (v === 'compare') renderCompare();
+  else if (v === 'announce') renderAnnounce();
+  else if (v === 'knowhm') renderKnowHM();
+  else if (v === 'difficult') renderDifficult();
+  else if (v === 'feed') renderFeed();
+  else if (v === 'portrait') renderPortrait();
+  else if (v === 'hourly') renderHourly();
+  else if (v === 'attend') renderAttend();
+  else if (v === 'report') renderReportView();
+}
+document.getElementById('navL').addEventListener('click', e => {
+  const a = e.target.closest('a[data-v]');
+  if (!a) return;
+  e.preventDefault();
+  showView(a.dataset.v);
+});
+document.addEventListener('click', e => {
+  const g = e.target.closest('[data-go]');
+  if (g) { e.preventDefault(); showView(g.dataset.go); }
+});
+
+/* --- 数据 --- */
+let AGG = {};
+let SORT_KEY = 'lastSeen';
+let FILTER_Q = '';
+let TIME_WIN = 30;  // 默认 30 天
+let ALERT_FILT = 'all';
+let CMP_SEL = [];  // 对比视图选中的学生
+
+function refresh(){
+  try { AGG = (window.FMAnalytics && FMAnalytics.aggregateByUser && FMAnalytics.aggregateByUser()) || {}; }
+  catch(e){ AGG = {}; }
+  renderOverview();
+  const cur = document.querySelector('.view.on')?.dataset.v || 'overview';
+  if (cur === 'students') renderStudents();
+  else if (cur === 'activity') renderActivity();
+  else if (cur === 'analytics') renderAnalytics();
+  else if (cur === 'alerts') renderAlerts();
+  else if (cur === 'heatmap') renderHeatmap();
+  else if (cur === 'compare') renderCompare();
+  else if (cur === 'announce') renderAnnounce();
+  else if (cur === 'knowhm') renderKnowHM();
+  else if (cur === 'difficult') renderDifficult();
+  else if (cur === 'feed') renderFeed();
+  else if (cur === 'portrait') renderPortrait();
+  else if (cur === 'hourly') renderHourly();
+  else if (cur === 'attend') renderAttend();
+}
+
+/* --- 总览 --- */
+function renderOverview(){
+  const users = Object.values(AGG).filter(u => u.role !== 'teacher');
+  const totalVisits = users.reduce((a,u)=>a+u.visits,0);
+  const totalDur = users.reduce((a,u)=>a+u.totalDuration,0);
+  const allScores = users.reduce((a,u)=>a.concat(u.scores),[]);
+  const avgAll = allScores.length ? Math.round(allScores.reduce((a,r)=>a+r.score,0)/allScores.length) : null;
+  const weekAgo = Date.now() - 7*86400000, dayAgo = Date.now() - 86400000;
+  const activeWeek = users.filter(u => u.lastSeen > weekAgo).length;
+  const activeDay = users.filter(u => u.lastSeen > dayAgo).length;
+  const lastSeen = users.length ? Math.max.apply(null, users.map(u=>u.lastSeen||0)) : 0;
+
+  document.getElementById('kS').textContent = users.length || 0;
+  document.getElementById('kA').textContent = activeWeek;
+  document.getElementById('kV').textContent = totalVisits;
+  document.getElementById('kT').textContent = fmtDur(totalDur);
+  document.getElementById('kE').textContent = allScores.length;
+  document.getElementById('kG').textContent = avgAll != null ? avgAll+' 分' : '—';
+  document.getElementById('kD').textContent = activeDay;
+  document.getElementById('kL').textContent = lastSeen ? fmtDate(lastSeen) : '—';
+
+  renderTrend(users);
+  renderDist(allScores);
+  renderTop5(users);
+}
+
+function renderTrend(users){
+  const sessions = users.reduce((a,u)=>a.concat(u.sessions||[]),[]);
+  const days = 14, buckets = new Array(days).fill(0);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const startMs = today.getTime() - (days-1)*86400000;
+  sessions.forEach(s => {
+    const t = s.startedAt || 0;
+    if (t < startMs) return;
+    const idx = Math.floor((t - startMs) / 86400000);
+    if (idx >= 0 && idx < days) buckets[idx]++;
+  });
+  const max = Math.max.apply(null, buckets.concat([1]));
+  const W = 720, H = 220, P = 30;
+  const innerW = W - P*2, innerH = H - P*2;
+  const step = innerW / (days - 1 || 1);
+  const svg = document.getElementById('trCh');
+  let g = '';
+  // 水平网格线
+  for (let i = 0; i <= 4; i++){
+    const y = P + innerH * i / 4;
+    g += `<line class="grid" x1="${P}" x2="${W-P}" y1="${y}" y2="${y}"/>`;
+    g += `<text x="${P-8}" y="${y+3}" text-anchor="end">${Math.round(max * (4-i) / 4)}</text>`;
+  }
+  // 折线路径
+  const pts = buckets.map((v,i)=>[P+i*step, P+innerH-(innerH*v/max)]);
+  const d = pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ');
+  const area = d + ` L${W-P},${H-P} L${P},${H-P} Z`;
+  g += `<path class="area" d="${area}"/>`;
+  g += `<path class="line" d="${d}"/>`;
+  // 点 + 日期轴
+  pts.forEach((p,i)=>{
+    g += `<circle class="dot" cx="${p[0]}" cy="${p[1]}" r="3.5"/>`;
+    if (i % 2 === 0 || i === days-1){
+      const dt = new Date(startMs + i*86400000);
+      g += `<text x="${p[0]}" y="${H-8}" text-anchor="middle">${dt.getMonth()+1}/${dt.getDate()}</text>`;
+    }
+  });
+  // 保留 <defs>
+  const defs = svg.querySelector('defs');
+  svg.innerHTML = '';
+  if (defs) svg.appendChild(defs);
+  svg.insertAdjacentHTML('beforeend', g);
+  document.getElementById('trN').textContent = buckets.reduce((a,v)=>a+v,0) + ' 次访问';
+}
+
+function renderDist(scores){
+  const ranges = [
+    {l:'0-20', c:'#ef4444', min:0, max:20},
+    {l:'21-40', c:'#f59e0b', min:21, max:40},
+    {l:'41-60', c:'#fbbf24', min:41, max:60},
+    {l:'61-80', c:'#14b8a6', min:61, max:80},
+    {l:'81-100', c:'#10b981', min:81, max:100}
+  ];
+  const counts = ranges.map(r => scores.filter(s => s.score >= r.min && s.score <= r.max).length);
+  const max = Math.max.apply(null, counts.concat([1]));
+  const W = 360, H = 220, P = 28;
+  const innerW = W - P*2, innerH = H - P*2;
+  const barW = innerW / ranges.length - 10;
+  let g = '';
+  counts.forEach((c,i) => {
+    const x = P + i * (innerW / ranges.length) + 5;
+    const h = innerH * c / max;
+    const y = P + innerH - h;
+    g += `<rect x="${x}" y="${y}" width="${barW}" height="${h}" rx="4" fill="${ranges[i].c}" opacity="0.85"/>`;
+    g += `<text x="${x+barW/2}" y="${H-8}" text-anchor="middle">${ranges[i].l}</text>`;
+    if (c > 0) g += `<text x="${x+barW/2}" y="${y-4}" text-anchor="middle" style="fill:var(--text);font-weight:700">${c}</text>`;
+  });
+  document.getElementById('dsCh').innerHTML = g;
+  document.getElementById('dsN').textContent = scores.length + ' 次测验';
+}
+
+function renderTop5(users){
+  const top = users.slice().sort((a,b) => (b.visits||0) - (a.visits||0)).slice(0, 5);
+  const tb = document.querySelector('#topTb tbody');
+  if (!top.length){
+    tb.innerHTML = '<tr><td colspan="5" class="emp">暂无数据</td></tr>';
+    return;
+  }
+  tb.innerHTML = top.map(u => `<tr data-u="${esc(u.user)}">
+    <td><div class="uc"><div class="ava">${esc(initials(u.name))}</div><div class="meta"><strong>${esc(u.name)}</strong><small>@${esc(u.user)}</small></div></div></td>
+    <td class="mn">${u.visits}</td>
+    <td>${fmtDur(u.totalDuration)}</td>
+    <td class="mn">${u.avgScore != null ? u.avgScore+' 分' : '—'}</td>
+    <td>${fmtDate(u.lastSeen)}</td>
+  </tr>`).join('');
+}
+
+/* --- 学生表 --- */
+function renderStudents(){
+  const users = Object.values(AGG).filter(u => u.role !== 'teacher');
+  const q = FILTER_Q.toLowerCase();
+  const filtered = !q ? users : users.filter(u =>
+    (u.name||'').toLowerCase().includes(q) || (u.user||'').toLowerCase().includes(q));
+  filtered.sort((a,b) => {
+    if (SORT_KEY === 'visits') return (b.visits||0) - (a.visits||0);
+    if (SORT_KEY === 'duration') return (b.totalDuration||0) - (a.totalDuration||0);
+    if (SORT_KEY === 'avg') return (b.avgScore||-1) - (a.avgScore||-1);
+    if (SORT_KEY === 'name') return (a.name||'').localeCompare(b.name||'', 'zh');
+    return (b.lastSeen||0) - (a.lastSeen||0);
+  });
+  const tb = document.querySelector('#stuTb tbody');
+  if (!filtered.length){
+    tb.innerHTML = '<tr><td colspan="7" class="emp">没有匹配的学生</td></tr>';
+    return;
+  }
+  tb.innerHTML = filtered.map(u => {
+    const mods = u.modules || {};
+    const mKeys = Object.keys(mods);
+    const avgProg = mKeys.length ? Math.round(mKeys.reduce((a,k)=>a+(mods[k].progress||0),0)/mKeys.length*100) : 0;
+    const circ = 2*Math.PI*16;
+    const off = circ - circ*avgProg/100;
+    return `<tr data-u="${esc(u.user)}">
+      <td><div class="uc"><div class="ava">${esc(initials(u.name))}</div><div class="meta"><strong>${esc(u.name)}</strong><small>@${esc(u.user)}</small></div></div></td>
+      <td class="mn">${u.visits}</td>
+      <td>${fmtDur(u.totalDuration)}</td>
+      <td class="mn">${u.scores.length}</td>
+      <td class="mn">${u.avgScore != null ? u.avgScore+' 分' : '—'}</td>
+      <td>${fmtDate(u.lastSeen)}</td>
+      <td><div class="ring"><svg width="40" height="40"><circle class="bg-c" cx="20" cy="20" r="16"/><circle class="fg" cx="20" cy="20" r="16" stroke-dasharray="${circ.toFixed(2)}" stroke-dashoffset="${off.toFixed(2)}"/></svg><div class="t">${avgProg}%</div></div></td>
+    </tr>`;
+  }).join('');
+}
+
+document.getElementById('stuTb').addEventListener('click', e => {
+  const tr = e.target.closest('tr[data-u]');
+  if (tr) openDrawer(tr.dataset.u);
+});
+document.getElementById('topTb').addEventListener('click', e => {
+  const tr = e.target.closest('tr[data-u]');
+  if (tr) openDrawer(tr.dataset.u);
+});
+document.getElementById('sSrch').addEventListener('input', e => { FILTER_Q = e.target.value; renderStudents(); });
+document.getElementById('sSort').addEventListener('change', e => { SORT_KEY = e.target.value; renderStudents(); });
+
+/* --- 学生详情抽屉 --- */
+function openDrawer(uk){
+  const u = AGG[uk];
+  if (!u) return;
+  const drw = document.getElementById('drw'), bd = document.getElementById('drwBd');
+  document.getElementById('drwT').textContent = u.name + ' · 详情';
+
+  // 会话
+  const sessions = (u.sessions||[]).slice().sort((a,b)=>b.startedAt-a.startedAt).slice(0, 10);
+  const sessHtml = sessions.length ? sessions.map(s =>
+    `<div class="sr-r"><span class="mt">访问 · ${s.pages ? s.pages.length : 1} 个页面</span><span class="dt">${fmtDT(s.startedAt)}</span><span class="sc gd">${fmtDur(s.duration||0)}</span></div>`
+  ).join('') : '<p style="color:var(--text-muted);font-size:.88rem">暂无会话记录</p>';
+
+  // 分数
+  const scores = (u.scores||[]).slice().sort((a,b)=>b.at-a.at).slice(0, 15);
+  const scoreHtml = scores.length ? scores.map(s => {
+    const cls = s.score >= 80 ? 'gd' : s.score >= 60 ? 'wn' : 'bd';
+    return `<div class="sr-r"><span class="mt">${esc(s.module)} · ${s.correct}/${s.total}</span><span class="dt">${fmtDate(s.at)}</span><span class="sc ${cls}">${s.score} 分</span></div>`;
+  }).join('') : '<p style="color:var(--text-muted);font-size:.88rem">暂无测验记录</p>';
+
+  // 模块进度
+  const mods = u.modules || {};
+  const modEntries = Object.entries(mods);
+  const modHtml = modEntries.length ? modEntries.map(([k, v]) => {
+    const pct = Math.round((v.progress||0)*100);
+    return `<div class="mod-r"><span class="nm">${esc(moduleName(k))}</span><div class="bar"><div class="bar-f" style="width:${pct}%"></div></div><span class="pct">${pct}%</span></div>`;
+  }).join('') : '<p style="color:var(--text-muted);font-size:.88rem">暂无学习进度记录</p>';
+
+  document.getElementById('drwB').innerHTML = `
+    <div class="uc" style="gap:14px;margin-bottom:18px">
+      <div class="ava" style="width:52px;height:52px;font-size:1.3rem">${esc(initials(u.name))}</div>
+      <div class="meta"><strong style="font-size:1.15rem">${esc(u.name)}</strong><small>@${esc(u.user)} · <span class="rb ${u.role==='teacher'?'':'s'}">${u.role==='teacher'?'教师':'学生'}</span></small></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:6px">
+      <div class="kpi" style="padding:14px"><div class="l">访问次数</div><div class="v" style="font-size:1.4rem">${u.visits}</div></div>
+      <div class="kpi" style="padding:14px"><div class="l">累计时长</div><div class="v" style="font-size:1.4rem">${fmtDur(u.totalDuration)}</div></div>
+      <div class="kpi" style="padding:14px"><div class="l">平均分</div><div class="v" style="font-size:1.4rem">${u.avgScore != null ? u.avgScore : '—'}</div></div>
+    </div>
+    <div class="det-s"><h3>📚 模块进度</h3>${modHtml}</div>
+    <div class="det-s"><h3>🎯 近期测验</h3>${scoreHtml}</div>
+    <div class="det-s"><h3>🕐 近期会话</h3>${sessHtml}</div>
+  `;
+  drw.classList.add('on');
+  bd.classList.add('on');
+}
+function closeDrawer(){ document.getElementById('drw').classList.remove('on'); document.getElementById('drwBd').classList.remove('on'); }
+document.getElementById('drwX').addEventListener('click', closeDrawer);
+document.getElementById('drwBd').addEventListener('click', closeDrawer);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+/* --- 活动时间轴 --- */
+function renderActivity(){
+  const log = (()=>{try{return JSON.parse(localStorage.getItem('fm_activity_log'))||[]}catch(e){return[]}})();
+  const items = log.slice().reverse().slice(0, 120);
+  const box = document.getElementById('tlBx');
+  if (!items.length){ box.innerHTML = '<div class="emp">暂无活动记录</div>'; return; }
+  const EVENT_LABELS = {
+    login: ['登录成功', 'lg'], logout: ['退出登录', ''],
+    login_fail: ['登录失败', 'fl'], login_blocked: ['登录被锁定', 'fl'],
+    access_denied: ['权限拒绝', 'fl'], auto_logout: ['自动退出', ''],
+    page_view: ['页面访问', '']
+  };
+  box.innerHTML = items.map(e => {
+    const lab = EVENT_LABELS[e.type] || [e.type, ''];
+    let desc = '';
+    if (e.type === 'login') desc = (e.data.role === 'teacher' ? '👨‍🏫 ' : '👤 ') + (e.data.user||'');
+    else if (e.type === 'login_fail') desc = '尝试: '+(e.data.username||'')+' · '+(e.data.reason||'');
+    else if (e.type === 'access_denied') desc = (e.path||'');
+    else if (e.type === 'logout' || e.type === 'auto_logout') desc = '原因: '+(e.data.reason||'');
+    return `<div class="tli ${lab[1]}"><div class="tlr"><span class="tlt">${fmtDT(e.t)}</span><div class="tlb"><strong>${esc(lab[0])}</strong><span class="p"> · ${esc(desc)}</span></div></div></div>`;
+  }).join('');
+}
+
+/* --- 成绩分析（按模块） --- */
+function renderAnalytics(){
+  const users = Object.values(AGG).filter(u => u.role !== 'teacher');
+  const allScores = users.reduce((a,u)=>a.concat(u.scores),[]);
+  const byMod = {};
+  allScores.forEach(s => { if (!byMod[s.module]) byMod[s.module] = []; byMod[s.module].push(s.score); });
+  const mods = Object.entries(byMod).map(([k, arr]) => ({
+    name: k, count: arr.length,
+    avg: Math.round(arr.reduce((a,b)=>a+b,0)/arr.length),
+    max: Math.max.apply(null, arr), min: Math.min.apply(null, arr)
+  })).sort((a,b) => b.count - a.count);
+  const box = document.getElementById('mAnl');
+  if (!mods.length){ box.innerHTML = '<div class="emp">暂无测验记录</div>'; return; }
+  box.innerHTML = mods.map(m => `
+    <div class="mod-r" style="padding:14px 16px;margin-bottom:10px">
+      <span class="nm" style="min-width:140px">${esc(m.name)}</span>
+      <div class="bar" style="max-width:none"><div class="bar-f" style="width:${m.avg}%"></div></div>
+      <span class="pct" style="min-width:auto">${m.avg} 分 · ${m.count} 次 · 最高 ${m.max} / 最低 ${m.min}</span>
+    </div>
+  `).join('');
+}
+
+/* --- 导出/导入/清空 --- */
+function exportCSV(){
+  const users = Object.values(AGG).filter(u => u.role !== 'teacher');
+  const rows = [['用户名','姓名','访问次数','累计时长(分钟)','测验次数','平均分','最高分','最低分','最后访问']];
+  users.forEach(u => rows.push([
+    u.user, u.name, u.visits, Math.round((u.totalDuration||0)/60000), u.scores.length,
+    u.avgScore!=null?u.avgScore:'', u.maxScore!=null?u.maxScore:'', u.minScore!=null?u.minScore:'',
+    u.lastSeen ? fmtDT(u.lastSeen) : ''
+  ]));
+  const csv = rows.map(r => r.map(c => {
+    const s = String(c==null?'':c);
+    return /[",\n]/.test(s) ? '"'+s.replace(/"/g,'""')+'"' : s;
+  }).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  dl('学生数据_'+new Date().toISOString().slice(0,10)+'.csv', blob);
+  FMToast.ok('CSV 已导出（共 '+users.length+' 条）');
+}
+function exportJSON(){
+  const snap = FMAnalytics.exportSnapshot();
+  const blob = new Blob([JSON.stringify(snap, null, 2)], { type: 'application/json' });
+  dl('学生数据快照_'+new Date().toISOString().slice(0,10)+'.json', blob);
+  FMToast.ok('JSON 快照已导出');
+}
+document.getElementById('expBtn').addEventListener('click', exportCSV);
+document.getElementById('expBtn2').addEventListener('click', exportCSV);
+document.getElementById('expJ').addEventListener('click', exportJSON);
+
+document.getElementById('impF').addEventListener('change', e => {
+  const f = e.target.files && e.target.files[0];
+  if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const d = JSON.parse(rd.result);
+      const ok = FMAnalytics.importSnapshot(d);
+      if (ok) { FMToast.ok('导入成功，已合并'); refresh(); }
+      else FMToast.err('导入失败：数据格式错误');
+    } catch(err) { FMToast.err('JSON 解析失败: '+err.message); }
+    e.target.value = '';
+  };
+  rd.readAsText(f);
+});
+
+document.getElementById('clrBtn').addEventListener('click', () => {
+  if (!confirm('确认清空本设备所有学生分析数据？\n\n此操作不可恢复。登录账户与活动日志不受影响。')) return;
+  FMAnalytics.clearAll();
+  FMToast.ok('已清空分析数据');
+  refresh();
+});
+
+document.getElementById('refBtn').addEventListener('click', () => { refresh(); FMToast.info('已刷新数据'); });
+
+/* --- 退出 --- */
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  if (!confirm('确认退出登录？')) return;
+  FMSecurity.clearSession('user');
+  FMToast.ok('已退出');
+  setTimeout(() => FMTransitions.navigate('/index-complete.html', true), 300);
+});
+
+/* --- 启动 --- */
+window.addEventListener('DOMContentLoaded', () => {
+  // 恢复上次视图
+  let lastView = 'overview';
+  try { const v = localStorage.getItem('fm_tp_view'); if (v && document.querySelector('.view[data-v="'+v+'"]')) lastView = v; } catch(e){}
+  refresh();
+  if (lastView !== 'overview') showView(lastView);
+  // 周期刷新
+  setInterval(refresh, 30000);
+  // 监听活动事件
+  /* ====== Phase 2 渲染函数 ====== */
+
+  /* --- 时间筛选 --- */
+  document.addEventListener('click', e => {
+    const b = e.target.closest('#tFilt button');
+    if (b) {
+      TIME_WIN = +b.dataset.f;
+      document.querySelectorAll('#tFilt button').forEach(x => x.classList.toggle('on', x===b));
+      refresh();
+    }
+    const af = e.target.closest('#aFilt button');
+    if (af) {
+      ALERT_FILT = af.dataset.f;
+      document.querySelectorAll('#aFilt button').forEach(x => x.classList.toggle('on', x===af));
+      renderAlerts();
+    }
+  });
+
+  /* --- 风险预警 --- */
+  function renderAlerts(){
+    const users = Object.values(AGG).filter(u => u.role !== 'teacher');
+    const now = Date.now();
+    const alerts = [];
+    users.forEach(u => {
+      const daysSince = u.lastSeen ? Math.floor((now - u.lastSeen)/86400000) : 9999;
+      if (daysSince >= 14) alerts.push({ user:u, level:'high', title:'长期未访问', desc:'已经 '+(daysSince>30?'超过 30':daysSince)+' 天没有登录' });
+      else if (daysSince >= 7) alerts.push({ user:u, level:'med', title:'近期未访问', desc:daysSince+' 天没有登录' });
+      if (u.avgScore != null && u.avgScore < 60) alerts.push({ user:u, level:'high', title:'成绩偏低', desc:'平均分 '+u.avgScore+' 分，建议针对性辅导' });
+      else if (u.avgScore != null && u.avgScore < 70) alerts.push({ user:u, level:'med', title:'成绩待提升', desc:'平均分 '+u.avgScore+' 分' });
+      if (u.scores.length === 0 && u.visits > 0) alerts.push({ user:u, level:'low', title:'缺少测验', desc:'已访问 '+u.visits+' 次但没有任何测验记录' });
+      if (u.visits > 0 && u.totalDuration < 600000) alerts.push({ user:u, level:'low', title:'停留时间短', desc:'累计不足 10 分钟，可能需要引导' });
+    });
+    // 异常事件
+    const log = (function(){ try{return JSON.parse(localStorage.getItem('fm_activity_log')||'[]')}catch(e){return[]} })();
+    const recent = log.filter(e => now - e.t < 7*86400000);
+    const failCount = recent.filter(e => e.type === 'login_fail').length;
+    if (failCount >= 5) alerts.unshift({ user:{name:'全局',user:'_'}, level:'high', title:'登录失败激增', desc:'近 7 天有 '+failCount+' 次登录失败，注意账户安全' });
+    const blockedCount = recent.filter(e => e.type === 'login_blocked' || e.type === 'access_denied').length;
+    if (blockedCount >= 3) alerts.unshift({ user:{name:'全局',user:'_'}, level:'med', title:'异常访问尝试', desc:'近 7 天有 '+blockedCount+' 次被拒绝访问' });
+
+    const filt = ALERT_FILT === 'all' ? alerts : alerts.filter(a => a.level === ALERT_FILT);
+    const L = document.getElementById('riskL');
+    if (!filt.length) {
+      L.innerHTML = '<div class="emp-tall" style="grid-column:1/-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg><h4>'+(alerts.length?'当前筛选下无预警':'一切正常')+'</h4><p>'+(alerts.length?'切换筛选条件看其他级别':'没有检测到需要关注的问题')+'</p></div>';
+    } else {
+      L.innerHTML = filt.map(a => `<div class="risk ${a.level}" data-u="${esc(a.user.user)}"><div class="risk-hd"><strong>${esc(a.user.name)}</strong><span class="risk-lv">${a.level==='high'?'高危':a.level==='med'?'中风险':'提示'}</span></div><div class="risk-b"><strong>${esc(a.title)}</strong> · ${esc(a.desc)}</div></div>`).join('');
+    }
+
+    // 异常事件时间轴
+    const evts = recent.filter(e => ['login_fail','login_blocked','access_denied','auto_logout'].includes(e.type)).slice(-30).reverse();
+    const E = document.getElementById('evtL');
+    if (!evts.length) {
+      E.innerHTML = '<div class="emp" style="padding:24px">近 7 天没有异常事件</div>';
+    } else {
+      E.innerHTML = evts.map(e => {
+        const names = { login_fail:'登录失败', login_blocked:'登录被阻止', access_denied:'访问被拒', auto_logout:'自动退出' };
+        const who = (e.data && (e.data.user || e.data.username)) ? esc(e.data.user || e.data.username)+' · ' : '';
+        const reason = e.data && e.data.reason ? '（'+esc(e.data.reason)+'）' : '';
+        return `<div class="tli fl"><div class="tlr"><div class="tlt">${fmtDT(e.t)}</div><div class="tlb"><strong>${who}${names[e.type]||e.type}</strong>${reason}<div class="p">${esc(e.path||'')}</div></div></div></div>`;
+      }).join('');
+    }
+  }
+
+  /* --- 班级活跃度热力 --- */
+  function renderHeatmap(){
+    const users = Object.values(AGG).filter(u => u.role !== 'teacher');
+    const days = 91;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const cnt = {};
+    users.forEach(u => {
+      u.sessions.forEach(s => {
+        const d = new Date(s.startedAt); d.setHours(0,0,0,0);
+        const k = d.getTime();
+        cnt[k] = (cnt[k]||0) + 1;
+      });
+    });
+    const max = Math.max(1, ...Object.values(cnt));
+    const start = new Date(today); start.setDate(today.getDate() - days + 1);
+    const dow = start.getDay()===0?6:start.getDay()-1;
+    const cells = [];
+    for (let i=0; i<dow; i++) cells.push('<div class="theat-c" style="visibility:hidden"></div>');
+    let totalVisits = 0;
+    for (let i=0; i<days; i++) {
+      const d = new Date(start); d.setDate(start.getDate()+i);
+      const k = d.getTime();
+      const c = cnt[k]||0; totalVisits += c;
+      const lv = c>0 ? Math.min(4, Math.ceil(c/(max/4))) : 0;
+      const tip = (d.getMonth()+1)+'/'+d.getDate()+' · '+c+' 次访问';
+      cells.push(`<div class="theat-c ${lv?'l'+lv:''}" data-tip="${tip}"></div>`);
+    }
+    const g = document.getElementById('theatG');
+    if (g) g.innerHTML = cells.join('');
+    const n = document.getElementById('thN');
+    if (n) n.textContent = totalVisits + ' 次';
+
+    // 按学生连续天数
+    const rows = users.map(u => {
+      const mine = u.sessions.slice();
+      const dSet = new Set();
+      mine.forEach(s => { const d = new Date(s.startedAt); d.setHours(0,0,0,0); dSet.add(d.getTime()); });
+      const sorted = Array.from(dSet).sort((a,b)=>a-b);
+      let maxStreak=0, curStreak=0, prev=null;
+      sorted.forEach(t => {
+        if (prev!=null && t-prev===86400000) { curStreak++; } else { curStreak=1; }
+        maxStreak = Math.max(maxStreak, curStreak);
+        prev = t;
+      });
+      const m30 = today.getTime() - 30*86400000;
+      const act30 = sorted.filter(t => t>=m30).length;
+      return { u, maxStreak, act30 };
+    }).sort((a,b) => b.maxStreak - a.maxStreak);
+
+    const tb = document.querySelector('#stkTb tbody');
+    if (tb) {
+      if (!rows.length) tb.innerHTML = '<tr><td colspan="4"><div class="emp">暂无数据</div></td></tr>';
+      else tb.innerHTML = rows.map(r => `<tr data-u="${esc(r.u.user)}">
+        <td><div class="uc"><div class="ava">${esc((r.u.name||'?').slice(0,1).toUpperCase())}</div><div class="meta"><strong>${esc(r.u.name)}</strong><small>@${esc(r.u.user)}</small></div></div></td>
+        <td class="mn">${r.maxStreak} 天</td>
+        <td class="mn">${r.act30} 天</td>
+        <td class="mn">${fmtDate(r.u.lastSeen)}</td>
+      </tr>`).join('');
+    }
+  }
+
+  /* --- 学生对比 --- */
+  function renderCompare(){
+    const users = Object.values(AGG).filter(u => u.role !== 'teacher')
+      .sort((a,b) => (b.lastSeen||0) - (a.lastSeen||0));
+    const pick = document.getElementById('cmpPick');
+    if (!users.length) {
+      pick.innerHTML = '<div class="emp" style="padding:24px">暂无学生</div>';
+      document.getElementById('cmpOut').innerHTML = '';
+      return;
+    }
+    pick.innerHTML = users.map(u => `<label class="cmp-opt"><input type="checkbox" value="${esc(u.user)}" ${CMP_SEL.includes(u.user)?'checked':''}><span>${esc(u.name)} · @${esc(u.user)}</span></label>`).join('');
+
+    renderCmpOutput();
+  }
+
+  function renderCmpOutput(){
+    const out = document.getElementById('cmpOut');
+    if (CMP_SEL.length < 2) {
+      out.innerHTML = '<div class="emp-tall"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="7" r="4"/><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/></svg><h4>请至少勾选 2 位学生</h4><p>已选 '+CMP_SEL.length+' 位</p></div>';
+      return;
+    }
+    const sel = CMP_SEL.map(k => AGG[k]).filter(Boolean);
+    if (!sel.length) return;
+    const cols = sel.length;
+    const head = '<div class="cmp-row-h" style="--cols:'+cols+'"><span>指标</span>' + sel.map(u => '<span>'+esc(u.name)+'</span>').join('') + '</div>';
+    function row(label, getFn, fmtFn, needBar){
+      const vs = sel.map(u => getFn(u));
+      const maxV = needBar ? Math.max(1, ...vs.map(v => typeof v === 'number' ? v : 0)) : 0;
+      const cells = sel.map((u, i) => {
+        const raw = vs[i]; const text = fmtFn ? fmtFn(raw) : (raw==null?'—':raw);
+        if (needBar && typeof raw === 'number') {
+          const pct = Math.round(raw/maxV*100);
+          return '<div><div class="v">'+esc(text)+'</div><div class="bar" style="margin-top:4px;max-width:120px"><div style="height:100%;width:'+pct+'%;background:linear-gradient(90deg,var(--tide-500),var(--coral-500));border-radius:999px"></div></div></div>';
+        }
+        return '<span class="v">'+esc(text)+'</span>';
+      }).join('');
+      return '<div class="cmp-row" style="--cols:'+cols+'"><span class="lab">'+label+'</span>'+cells+'</div>';
+    }
+    out.innerHTML = head
+      + row('访问次数', u => u.visits, v => v, true)
+      + row('累计时长', u => u.totalDuration, v => fmtDur(v), true)
+      + row('测验次数', u => u.scores.length, v => v, true)
+      + row('平均分', u => u.avgScore, v => v==null?'—':(v+' 分'), true)
+      + row('最高分', u => u.maxScore||null, v => v==null?'—':(v+' 分'))
+      + row('最低分', u => u.minScore==null?null:u.minScore, v => v==null?'—':(v+' 分'))
+      + row('模块数', u => Object.keys(u.modules||{}).length, v => v, true)
+      + row('最后访问', u => u.lastSeen, v => fmtDate(v));
+  }
+
+  document.addEventListener('change', e => {
+    if (e.target.matches('.cmp-opt input[type=checkbox]')) {
+      const v = e.target.value;
+      if (e.target.checked) {
+        if (CMP_SEL.length >= 4) { e.target.checked = false; FMToast.warn('最多选 4 位'); return; }
+        if (!CMP_SEL.includes(v)) CMP_SEL.push(v);
+      } else {
+        CMP_SEL = CMP_SEL.filter(x => x !== v);
+      }
+      renderCmpOutput();
+    }
+  });
+
+  window.addEventListener('fm:activity', () => {
+    const cur = document.querySelector('.view.on')?.dataset.v;
+    if (cur === 'activity') renderActivity();
+    if (cur === 'feed') renderFeed();
+  });
+
+  /* ====== Phase 3-A: 公告管理 ====== */
+  const ANN_KEY = 'fm_teacher_announcements';
+  function loadAnnouncements(){ try{return JSON.parse(localStorage.getItem(ANN_KEY)||'[]')}catch(e){return[]} }
+  function saveAnnouncements(a){ try{localStorage.setItem(ANN_KEY,JSON.stringify(a));return true}catch(e){return false} }
+
+  function annPreviewUpdate(){
+    const t = document.getElementById('annTtl').value.trim() || '预览标题会显示在这里';
+    const b = document.getElementById('annBdy').value.trim() || '正文内容 · 学生端打开首页就会看到这条公告。';
+    const l = document.getElementById('annLvl').value;
+    const p = document.getElementById('annPrv');
+    p.className = 'ann-preview ' + (l==='default'?'':l);
+    const labels = { info:'信息', default:'默认', warn:'提醒', imp:'重要' };
+    document.getElementById('annPrvL').textContent = labels[l] || l;
+    document.getElementById('annPrvT').textContent = t;
+    document.getElementById('annPrvB').textContent = b;
+  }
+
+  function renderAnnounce(){
+    annPreviewUpdate();
+    const list = loadAnnouncements();
+    const box = document.getElementById('annHist');
+    if (!list.length) {
+      box.innerHTML = '<div class="emp" style="padding:24px">还没有公告</div>';
+    } else {
+      box.innerHTML = list.slice().sort((a,b) => b.createdAt - a.createdAt).map(a => {
+        const expired = a.expiresAt && a.expiresAt < Date.now();
+        return `<div class="ann-row"><label class="sw"><input type="checkbox" data-id="${a.id}" ${a.active&&!expired?'checked':''} ${expired?'disabled':''}><span class="sl"></span></label>
+          <div class="ar-b">
+            <strong>${esc(a.title)} ${a.level&&a.level!=='default'?'<span class="chip chip-t" style="margin-left:6px">'+esc(a.level)+'</span>':''}</strong>
+            <p>${esc(a.body||'')}</p>
+            <div class="meta">
+              <span>创建 ${fmtDT(a.createdAt)}</span>
+              ${a.expiresAt?'<span>'+(expired?'已过期 ':'过期 ')+fmtDate(a.expiresAt)+'</span>':''}
+              ${expired?'':(a.active?'<span style="color:var(--ok)">启用中</span>':'<span style="color:var(--text-muted)">已暂停</span>')}
+            </div>
+          </div>
+          <button class="btn btn-d btn-sm" data-del="${a.id}">删除</button>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  document.addEventListener('input', e => {
+    if (['annTtl','annBdy'].includes(e.target.id)) annPreviewUpdate();
+  });
+  document.addEventListener('change', e => {
+    if (e.target.id === 'annLvl') annPreviewUpdate();
+    if (e.target.matches('.sw input[data-id]')) {
+      const list = loadAnnouncements();
+      const a = list.find(x => x.id === e.target.dataset.id);
+      if (a) { a.active = e.target.checked; saveAnnouncements(list); FMToast.ok(a.active?'已启用':'已暂停'); }
+    }
+  });
+  document.addEventListener('click', e => {
+    if (e.target.id === 'annSave') {
+      const title = document.getElementById('annTtl').value.trim();
+      const body = document.getElementById('annBdy').value.trim();
+      if (!title) { FMToast.warn('标题不能为空'); return; }
+      const level = document.getElementById('annLvl').value;
+      const expStr = document.getElementById('annExp').value;
+      const expiresAt = expStr ? new Date(expStr).getTime() + 86400000 : null;
+      const list = loadAnnouncements();
+      list.push({ id:'a_'+Date.now(), title, body, level, expiresAt, active:true, createdAt:Date.now(), author:FMSecurity.getUser()?.name||'教师' });
+      if (saveAnnouncements(list)) {
+        FMToast.ok('公告已发布');
+        document.getElementById('annTtl').value = '';
+        document.getElementById('annBdy').value = '';
+        document.getElementById('annExp').value = '';
+        annPreviewUpdate();
+        renderAnnounce();
+      } else FMToast.err('保存失败');
+    }
+    if (e.target.id === 'annClear') {
+      document.getElementById('annTtl').value = '';
+      document.getElementById('annBdy').value = '';
+      document.getElementById('annExp').value = '';
+      annPreviewUpdate();
+    }
+    const del = e.target.dataset.del;
+    if (del) {
+      if (confirm('确认删除这条公告？')) {
+        const list = loadAnnouncements().filter(x => x.id !== del);
+        saveAnnouncements(list);
+        FMToast.info('已删除');
+        renderAnnounce();
+      }
+    }
+  });
+
+  /* ====== Phase 3-A: 学生画像 ====== */
+  const TAG_KEY = 'fm_teacher_student_tags';
+  function loadTags(){ try{return JSON.parse(localStorage.getItem(TAG_KEY)||'{}')}catch(e){return{}} }
+  function saveTags(t){ try{localStorage.setItem(TAG_KEY,JSON.stringify(t))}catch(e){} }
+
+  function renderPortrait(){
+    const sel = document.getElementById('portSel');
+    const users = Object.values(AGG).filter(u => u.role !== 'teacher').sort((a,b) => (b.lastSeen||0)-(a.lastSeen||0));
+    if (!sel.options || sel.options.length <= 1 || sel.dataset.populated !== String(users.length)) {
+      sel.innerHTML = '<option value="">— 请选择学生 —</option>' + users.map(u => `<option value="${esc(u.user)}">${esc(u.name)} · @${esc(u.user)}</option>`).join('');
+      sel.dataset.populated = String(users.length);
+    }
+    const out = document.getElementById('portOut');
+    if (!sel.value) {
+      out.innerHTML = '<div class="emp-tall"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="5"/><path d="M20 21a8 8 0 0 0-16 0"/></svg><h4>请先选择一位学生</h4><p>系统会基于其数据自动生成学习画像</p></div>';
+      return;
+    }
+    const u = AGG[sel.value];
+    if (!u) { out.innerHTML = '<div class="emp">学生数据不存在</div>'; return; }
+
+    const tags = loadTags()[u.user] || { tags:[], note:'' };
+    const now = Date.now();
+    const daysSince = u.lastSeen ? Math.floor((now - u.lastSeen)/86400000) : 9999;
+    const avgMin = u.visits ? Math.round(u.totalDuration/u.visits/60000) : 0;
+    const moduleCount = Object.keys(u.modules||{}).length;
+
+    // 生成画像
+    const strengths = [];
+    const weaknesses = [];
+    const suggestions = [];
+
+    if (u.visits >= 10) strengths.push({t:'参与度高', d:'累计访问 '+u.visits+' 次，持续活跃'});
+    if (u.avgScore != null && u.avgScore >= 80) strengths.push({t:'成绩优秀', d:'平均 '+u.avgScore+' 分，稳定高分'});
+    if (u.scores.length >= 5) strengths.push({t:'勤于练习', d:'累计 '+u.scores.length+' 次测验'});
+    if (moduleCount >= 5) strengths.push({t:'涉猎广泛', d:'涉足 '+moduleCount+' 个模块'});
+    if (avgMin >= 20) strengths.push({t:'专注度高', d:'平均每次 '+avgMin+' 分钟，不浅尝辄止'});
+    if (u.maxScore === 100) strengths.push({t:'有满分记录', d:'至少一次拿到 100 分'});
+
+    if (daysSince >= 14) weaknesses.push({t:'已 '+daysSince+' 天未访问', d:'活跃度明显下滑', l:'bad'});
+    else if (daysSince >= 7) weaknesses.push({t:daysSince+' 天未登录', d:'近期学习节奏放缓', l:'warn'});
+    if (u.avgScore != null && u.avgScore < 60) weaknesses.push({t:'平均分偏低 '+u.avgScore+' 分', d:'基础薄弱，需要针对辅导', l:'bad'});
+    else if (u.avgScore != null && u.avgScore < 70) weaknesses.push({t:'平均分 '+u.avgScore+' 分', d:'刚过及格线，仍有提升空间', l:'warn'});
+    if (u.visits > 0 && u.scores.length === 0) weaknesses.push({t:'缺少测验', d:'已访问但从未做过一次测验', l:'warn'});
+    if (avgMin > 0 && avgMin < 3) weaknesses.push({t:'停留过短', d:'平均每次 '+avgMin+' 分钟，像是随便翻翻', l:'warn'});
+    if (moduleCount === 1) weaknesses.push({t:'局限单一模块', d:'只访问过 1 个模块，建议拓展', l:'warn'});
+
+    // 按模块分数分析短板
+    if (u.scores.length) {
+      const byMod = {};
+      u.scores.forEach(s => { if (!byMod[s.module]) byMod[s.module]={t:0,c:0}; byMod[s.module].t+=s.score; byMod[s.module].c++; });
+      const lowMods = Object.entries(byMod).map(([m,d]) => ({m, avg:d.t/d.c})).filter(x => x.avg < 70).sort((a,b)=>a.avg-b.avg).slice(0,2);
+      lowMods.forEach(x => weaknesses.push({t:'"'+x.m+'" 得分低', d:'该模块平均 '+Math.round(x.avg)+' 分', l:'warn'}));
+    }
+
+    // 建议
+    if (daysSince >= 7) suggestions.push({t:'主动联系', d:'发送消息或线下提醒，帮学生重回学习节奏'});
+    if (u.avgScore != null && u.avgScore < 70) suggestions.push({t:'基础巩固', d:'建议先完成物理海洋学知识点页，再做对应练习'});
+    if (u.scores.length === 0 && u.visits > 2) suggestions.push({t:'鼓励做题', d:'学生在浏览但不练习，可通过公告推荐题库'});
+    if (moduleCount === 1) suggestions.push({t:'拓展模块', d:'推荐下一步可以学的模块（基于推荐路径）'});
+    if (u.avgScore != null && u.avgScore >= 85) suggestions.push({t:'挑战进阶', d:'成绩优秀，可以推荐真题或海赛专题'});
+    if (u.visits === 0) suggestions.push({t:'尚未开始', d:'学生还没有登录，可以线下沟通激活'});
+
+    if (!strengths.length) strengths.push({t:'数据不足', d:'暂时无法提取优势，继续观察'});
+    if (!weaknesses.length) weaknesses.push({t:'无明显短板', d:'整体表现平稳', l:'good'});
+    if (!suggestions.length) suggestions.push({t:'继续保持', d:'学生状态良好，无需额外干预'});
+
+    out.innerHTML = `
+      <div class="port-hd">
+        <div class="ava-lg">${esc((u.name||'?').slice(0,1).toUpperCase())}</div>
+        <div class="nm"><strong>${esc(u.name)}</strong><span>@${esc(u.user)} · 最后访问 ${fmtDate(u.lastSeen)}</span>
+          <div class="tag-bar" id="tagBar"></div>
+        </div>
+      </div>
+      <div class="kpi-g" style="margin-bottom:18px;grid-template-columns:repeat(4,1fr)">
+        <div class="kpi" style="padding:12px"><div class="l">访问</div><div class="v" style="font-size:1.1rem">${u.visits}</div></div>
+        <div class="kpi" style="padding:12px"><div class="l">时长</div><div class="v" style="font-size:1.1rem">${fmtDur(u.totalDuration)}</div></div>
+        <div class="kpi" style="padding:12px"><div class="l">测验</div><div class="v" style="font-size:1.1rem">${u.scores.length}</div></div>
+        <div class="kpi" style="padding:12px"><div class="l">均分</div><div class="v" style="font-size:1.1rem">${u.avgScore!=null?u.avgScore:'—'}</div></div>
+      </div>
+      <div class="port-w">
+        <div class="port"><h3 class="ttl-o"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 优势</h3>
+          <ul class="port-ul">${strengths.map(x => '<li class="good"><strong>'+esc(x.t)+'</strong> · '+esc(x.d)+'</li>').join('')}</ul></div>
+        <div class="port"><h3 class="ttl-w"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> 需要关注</h3>
+          <ul class="port-ul">${weaknesses.map(x => '<li class="'+(x.l||'warn')+'"><strong>'+esc(x.t)+'</strong> · '+esc(x.d)+'</li>').join('')}</ul></div>
+      </div>
+      <div class="port" style="margin-top:14px"><h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3M12 17h.01"/></svg> 教学建议</h3>
+        <ul class="port-ul">${suggestions.map((x,i) => '<li><strong>'+(i+1)+'. '+esc(x.t)+'</strong> · '+esc(x.d)+'</li>').join('')}</ul></div>
+      <div class="note-box">
+        <strong style="display:block;font-size:.88rem;color:var(--text);margin-bottom:8px">教师批注（只对你可见）</strong>
+        <textarea id="portNote" placeholder="写下对这位学生的观察或备忘…">${esc(tags.note||'')}</textarea>
+        <div style="display:flex;justify-content:space-between;margin-top:10px;align-items:center">
+          <span style="font-size:.78rem;color:var(--text-muted)">自动保存于本地</span>
+          <button class="btn btn-g btn-sm" id="portNoteSave">保存批注</button>
+        </div>
+      </div>
+    `;
+
+    // 渲染标签
+    const tagBar = document.getElementById('tagBar');
+    const TAG_PRESETS = ['重点关注','进步明显','需要鼓励','学习之星','基础薄弱','近期缺课'];
+    function drawTags(){
+      const cur = loadTags()[u.user] || { tags:[], note:tags.note };
+      tagBar.innerHTML = (cur.tags||[]).map((t,i) => `<span class="tag ${i%3===0?'pri':i%3===1?'sec':'tri'}">${esc(t)}<button data-remove="${i}">×</button></span>`).join('')
+        + '<span class="tag-add" id="tagAddBtn">+ 加标签</span>';
+    }
+    drawTags();
+    tagBar.addEventListener('click', e => {
+      if (e.target.id === 'tagAddBtn') {
+        const choice = prompt('选择或输入标签：\n' + TAG_PRESETS.map((t,i)=>'['+(i+1)+'] '+t).join('\n') + '\n或直接输入自定义标签：');
+        if (!choice) return;
+        const num = parseInt(choice);
+        const tag = (num>=1&&num<=TAG_PRESETS.length) ? TAG_PRESETS[num-1] : choice.trim();
+        if (!tag) return;
+        const all = loadTags();
+        if (!all[u.user]) all[u.user] = { tags:[], note:'' };
+        if (all[u.user].tags.includes(tag)) { FMToast.warn('已有该标签'); return; }
+        all[u.user].tags.push(tag);
+        saveTags(all); drawTags();
+      }
+      const rm = e.target.dataset.remove;
+      if (rm !== undefined) {
+        const all = loadTags();
+        if (all[u.user]) { all[u.user].tags.splice(+rm,1); saveTags(all); drawTags(); }
+      }
+    });
+  }
+
+  document.addEventListener('change', e => {
+    if (e.target.id === 'portSel') renderPortrait();
+  });
+  document.addEventListener('click', e => {
+    if (e.target.id === 'portNoteSave') {
+      const uId = document.getElementById('portSel').value;
+      const note = document.getElementById('portNote').value;
+      const all = loadTags();
+      if (!all[uId]) all[uId] = { tags:[], note:'' };
+      all[uId].note = note;
+      saveTags(all);
+      FMToast.ok('批注已保存');
+    }
+    if (e.target.id === 'feedRef') renderFeed();
+  });
+
+  /* ====== Phase 3-B: 知识掌握度热图 ====== */
+  function renderKnowHM(){
+    const users = Object.values(AGG).filter(u => u.role !== 'teacher').sort((a,b) => (b.lastSeen||0) - (a.lastSeen||0));
+    // 所有出现过的模块
+    const modSet = new Set();
+    users.forEach(u => u.scores.forEach(s => modSet.add(s.module)));
+    const mods = Array.from(modSet).sort();
+    const tb = document.getElementById('khmTb');
+    if (!users.length || !mods.length) {
+      tb.innerHTML = '<tr><td><div class="emp-tall"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg><h4>还没有测验数据</h4><p>学生完成测验后，这里会显示掌握度矩阵</p></div></td></tr>';
+      document.getElementById('khmN').textContent = '—';
+      return;
+    }
+    document.getElementById('khmN').textContent = users.length+' 人 × '+mods.length+' 模块';
+    // 颜色映射
+    function color(avg){
+      if (avg==null) return { bg:'var(--bg-soft)', txt:'var(--text-muted)', na:true };
+      if (avg<60) return { bg:'#ef4444', txt:'#fff' };
+      if (avg<70) return { bg:'#f59e0b', txt:'#fff' };
+      if (avg<80) return { bg:'#fbbf24', txt:'#1a1a1a' };
+      if (avg<90) return { bg:'#14b8a6', txt:'#fff' };
+      return { bg:'#10b981', txt:'#fff' };
+    }
+    let html = '<thead><tr><th>学生 / 模块</th>' + mods.map(m => '<th>'+esc(m.length>6?m.slice(0,6)+'…':m)+'</th>').join('') + '</tr></thead><tbody>';
+    users.forEach(u => {
+      html += '<tr><td data-u="'+esc(u.user)+'">'+esc(u.name)+'</td>';
+      mods.forEach(m => {
+        const ss = u.scores.filter(s => s.module === m);
+        if (!ss.length) { html += '<td><div class="khm-cell na" data-tip="未测验">—</div></td>'; return; }
+        const avg = Math.round(ss.reduce((a,s)=>a+s.score,0)/ss.length);
+        const c = color(avg);
+        html += `<td><div class="khm-cell" style="background:${c.bg};color:${c.txt}" data-tip="${esc(u.name)} × ${esc(m)} · ${ss.length} 次 · 均 ${avg}分">${avg}<span class="sub">×${ss.length}</span></div></td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody>';
+    tb.innerHTML = html;
+  }
+
+  /* ====== Phase 3-B: 难点分析 ====== */
+  function renderDifficult(){
+    const scores = FMAnalytics.getScores();
+    const L = document.getElementById('difL');
+    if (!scores.length) {
+      L.innerHTML = '<div class="emp-tall"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg><h4>暂无测验数据</h4><p>学生完成测验后，这里会按模块难度排行</p></div>';
+      document.getElementById('difN').textContent = '—';
+      return;
+    }
+    const byMod = {};
+    scores.forEach(s => {
+      if (!byMod[s.module]) byMod[s.module] = { total:0, count:0, min:100, max:0, users:new Set() };
+      byMod[s.module].total += s.score;
+      byMod[s.module].count++;
+      byMod[s.module].min = Math.min(byMod[s.module].min, s.score);
+      byMod[s.module].max = Math.max(byMod[s.module].max, s.score);
+      byMod[s.module].users.add(s.user);
+    });
+    const rows = Object.entries(byMod).map(([m,d]) => ({
+      module: m,
+      avg: Math.round(d.total/d.count),
+      count: d.count,
+      users: d.users.size,
+      min: d.min,
+      max: d.max
+    })).sort((a,b) => a.avg - b.avg);
+    document.getElementById('difN').textContent = rows.length + ' 个模块';
+    L.innerHTML = rows.map(r => {
+      const lv = r.avg<60?'bad':r.avg<75?'warn':'ok';
+      return `<div class="dif-r ${lv}">
+        <div class="nm">${esc(r.module)}</div>
+        <div class="ba"><div class="ba-f" style="width:${r.avg}%"></div></div>
+        <div class="v">均 ${r.avg}分</div>
+        <div class="n">${r.count}次 · ${r.users}人</div>
+      </div>`;
+    }).join('');
+  }
+
+  /* ====== Phase 3-B: 班级 Feed ====== */
+  function renderFeed(){
+    const log = (function(){ try{return JSON.parse(localStorage.getItem('fm_activity_log')||'[]')}catch(e){return[]} })();
+    const scs = FMAnalytics.getScores();
+    const ses = FMAnalytics.getSessions();
+
+    // 聚合事件
+    const events = [];
+    log.slice(-60).forEach(e => {
+      events.push({
+        t: e.t, type: e.type, path: e.path,
+        user: (e.data && (e.data.user||e.data.username)) || '未知',
+        reason: e.data && e.data.reason,
+        role: e.data && e.data.role
+      });
+    });
+    scs.slice(-30).forEach(s => {
+      events.push({ t:s.at, type:'score', user:s.userDisplay||s.user, module:s.module, score:s.score });
+    });
+    ses.slice(-30).forEach(s => {
+      if (s.pages && s.pages.length > 1) {
+        events.push({ t:s.pages[s.pages.length-1].t||s.startedAt, type:'view', user:s.userDisplay||s.user, path:s.pages[s.pages.length-1].path, title:s.pages[s.pages.length-1].title });
+      }
+    });
+    events.sort((a,b) => b.t - a.t);
+    const top = events.slice(0, 80);
+
+    const L = document.getElementById('feedL');
+    if (!top.length) {
+      L.innerHTML = '<div class="emp-tall"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16M4 15h.01M4 20h.01"/></svg><h4>暂无活动</h4><p>学生操作后，这里会实时显示</p></div>';
+      return;
+    }
+    const ICONS = {
+      login: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>',
+      logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
+      login_fail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/></svg>',
+      score: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>',
+      view: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'
+    };
+    L.innerHTML = top.map(e => {
+      let cls='l-view', ic=ICONS.view, strong='', desc='';
+      if (e.type === 'login') { cls='l-login'; ic=ICONS.login; strong='登录成功'; desc=e.role==='teacher'?'教师账户':'学生账户'; }
+      else if (e.type === 'logout' || e.type === 'auto_logout') { cls='l-view'; ic=ICONS.logout; strong='退出登录'; desc=e.reason?'原因：'+e.reason:''; }
+      else if (e.type === 'login_fail' || e.type === 'login_blocked') { cls='l-fail'; ic=ICONS.login_fail; strong=e.type==='login_blocked'?'登录被阻止':'登录失败'; desc=e.reason||''; }
+      else if (e.type === 'access_denied') { cls='l-fail'; ic=ICONS.login_fail; strong='访问被拒'; desc=e.path||''; }
+      else if (e.type === 'score') { cls='l-score'; ic=ICONS.score; strong='测验 '+esc(e.module||''); desc='得分 <strong style="color:'+(e.score>=80?'var(--ok)':e.score>=60?'var(--warn)':'var(--err)')+'">'+e.score+' 分</strong>'; }
+      else if (e.type === 'view' || e.type === 'page_view') { cls='l-view'; ic=ICONS.view; strong='访问了 '+esc(e.title||e.path||'页面'); desc=e.path?esc(e.path):''; }
+      else { strong = e.type; }
+      return `<div class="feed-r"><div class="feed-ic ${cls}">${ic}</div>
+        <div class="feed-b"><strong>${esc(e.user||'未知')}</strong> <span class="d">· ${strong}</span>${desc?'<div class="d" style="margin-top:2px">'+desc+'</div>':''}${e.path&&e.type!=='view'&&e.type!=='access_denied'?'<div class="p">'+esc(e.path)+'</div>':''}</div>
+        <div class="feed-t">${fmtDate(e.t)}</div></div>`;
+    }).join('');
+  }
+
+  /* ====== Phase 4: 时段分布 ====== */
+  function renderHourly(){
+    const sessions = FMAnalytics.getSessions();
+    const buckets = new Array(24).fill(0);
+    sessions.forEach(s => {
+      const pages = s.pages || [];
+      pages.forEach(p => {
+        const t = p.t || s.startedAt;
+        const h = new Date(t).getHours();
+        buckets[h]++;
+      });
+      if (!pages.length && s.startedAt) buckets[new Date(s.startedAt).getHours()]++;
+    });
+    const max = Math.max.apply(null, buckets) || 1;
+    const peakH = buckets.indexOf(max);
+    const total = buckets.reduce((a,b) => a+b, 0);
+    document.getElementById('hrPeak').textContent = '峰值 ' + peakH + ':00 (' + max + ' 次)';
+    const bars = document.getElementById('hrBars');
+    bars.innerHTML = buckets.map((v,h) => {
+      const pct = (v / max) * 100;
+      return `<div class="hr-b" style="height:${Math.max(3,pct)}%" title="${h}时 · ${v}次"><span class="v">${v}</span></div>`;
+    }).join('');
+    const lbls = document.getElementById('hrLbls');
+    lbls.innerHTML = buckets.map((_, h) => `<span class="hr-lbl">${h%3===0?h+'时':''}</span>`).join('');
+    // 提示
+    const morning = buckets.slice(6,12).reduce((a,b)=>a+b,0);
+    const afternoon = buckets.slice(12,18).reduce((a,b)=>a+b,0);
+    const evening = buckets.slice(18,24).reduce((a,b)=>a+b,0);
+    const night = buckets.slice(0,6).reduce((a,b)=>a+b,0);
+    const parts = [];
+    if (morning > 0) parts.push('上午 ' + morning + ' 次');
+    if (afternoon > 0) parts.push('下午 ' + afternoon + ' 次');
+    if (evening > 0) parts.push('晚间 ' + evening + ' 次');
+    if (night > 0) parts.push('深夜 ' + night + ' 次');
+    const tipEl = document.getElementById('hrTip');
+    if (total === 0) tipEl.textContent = '暂无访问记录';
+    else {
+      let tip = '共 ' + total + ' 次访问 · ' + parts.join(' · ') + ' · 峰值在 ' + peakH + ':00';
+      if (peakH >= 22 || peakH <= 5) tip += ' · 建议提醒学生注意休息';
+      else if (peakH >= 19 && peakH <= 22) tip += ' · 夜自习时段高峰';
+      else if (peakH >= 9 && peakH <= 11) tip += ' · 上午课后活跃';
+      else if (peakH >= 14 && peakH <= 17) tip += ' · 下午学习高峰';
+      tipEl.textContent = tip;
+    }
+  }
+
+  /* ====== Phase 4: 考勤视图 ====== */
+  function renderAttend(){
+    const sessions = FMAnalytics.getSessions();
+    const scores = FMAnalytics.getScores();
+    const users = Object.values(AGG).filter(u => u.role !== 'teacher').sort((a,b) => (a.name||'').localeCompare(b.name||'', 'zh'));
+    // 过去 14 天
+    const today = new Date(); today.setHours(0,0,0,0);
+    const days = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(today); d.setDate(today.getDate() - i);
+      days.push(d);
+    }
+    const tb = document.getElementById('atdTb');
+    if (!users.length) {
+      tb.innerHTML = '<tr><td><div class="emp-tall"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><h4>无学生数据</h4></div></td></tr>';
+      document.getElementById('atdN').textContent = '—';
+      return;
+    }
+    document.getElementById('atdN').textContent = users.length + ' 人 × 14 天';
+    // 表头
+    let html = '<thead><tr><th>学生 / 日期</th>';
+    days.forEach(d => {
+      html += '<th>' + (d.getMonth()+1) + '/' + d.getDate() + '</th>';
+    });
+    html += '<th>出勤率</th></tr></thead><tbody>';
+    users.forEach(u => {
+      html += '<tr><td>' + esc(u.name) + '</td>';
+      let present = 0;
+      days.forEach(d => {
+        const ds = d.getTime();
+        const de = ds + 86400000;
+        const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+        const hasSes = sessions.some(s => s.user === u.user && s.startedAt >= ds && s.startedAt < de);
+        const hasQuiz = scores.some(s => s.user === u.user && s.at >= ds && s.at < de);
+        let cls, txt;
+        if (hasQuiz) { cls = 'q'; txt = '题'; present++; }
+        else if (hasSes) { cls = 'p'; txt = '✓'; present++; }
+        else if (isWeekend) { cls = 'w'; txt = '休'; }
+        else { cls = 'a'; txt = '—'; }
+        html += '<td><span class="atd-c ' + cls + '">' + txt + '</span></td>';
+      });
+      const rate = Math.round(present / 14 * 100);
+      const rateC = rate >= 70 ? 'var(--ok)' : rate >= 40 ? 'var(--warn)' : 'var(--err)';
+      html += '<td style="font-family:var(--fm);font-weight:700;color:' + rateC + ';padding:0 10px">' + rate + '%</td></tr>';
+    });
+    html += '</tbody>';
+    tb.innerHTML = html;
+  }
+
+  /* ====== Phase 4: 班级简报 ====== */
+  function renderReportView(){
+    // 初始化视图时不自动生成
+  }
+  function generateReport(days){
+    const now = Date.now();
+    const cutoff = days > 0 ? now - days * 86400000 : 0;
+    const sessions = FMAnalytics.getSessions().filter(s => !cutoff || s.startedAt >= cutoff);
+    const scores = FMAnalytics.getScores().filter(s => !cutoff || s.at >= cutoff);
+    const users = Object.values(AGG).filter(u => u.role !== 'teacher');
+    // 统计
+    const totalVisits = sessions.length;
+    const totalQuiz = scores.length;
+    const totalMin = Math.round(sessions.reduce((a,s)=>a+(s.duration||0),0) / 60000);
+    const activeUsers = new Set(sessions.map(s=>s.user)).size;
+    const avgScore = scores.length ? Math.round(scores.reduce((a,s)=>a+s.score,0) / scores.length) : null;
+    // 按模块
+    const modMap = {};
+    scores.forEach(s => {
+      if (!modMap[s.module]) modMap[s.module] = { t:0, c:0, u:new Set() };
+      modMap[s.module].t += s.score;
+      modMap[s.module].c++;
+      modMap[s.module].u.add(s.user);
+    });
+    const modList = Object.entries(modMap).map(([m,d])=>({m, avg:Math.round(d.t/d.c), c:d.c, u:d.u.size})).sort((a,b)=>a.avg-b.avg);
+    const worstMod = modList[0];
+    const bestMod = modList[modList.length-1];
+    // 高分学生
+    const userStats = users.map(u => {
+      const uSes = sessions.filter(s => s.user === u.user);
+      const uScs = scores.filter(s => s.user === u.user);
+      return {
+        user: u.user, name: u.name,
+        visits: uSes.length,
+        scoreCount: uScs.length,
+        avg: uScs.length ? Math.round(uScs.reduce((a,s)=>a+s.score,0) / uScs.length) : null
+      };
+    });
+    const active = userStats.filter(u => u.visits > 0).sort((a,b) => b.visits - a.visits);
+    const topScorer = userStats.filter(u => u.avg != null).sort((a,b) => b.avg - a.avg)[0];
+    const mostActive = active[0];
+    const silent = userStats.filter(u => u.visits === 0);
+    const atRisk = userStats.filter(u => u.avg != null && u.avg < 60);
+    const periodLabel = days > 0 ? '最近 '+days+' 天' : '全部时间';
+    const genTime = new Date();
+    const dateStr = genTime.getFullYear()+'-'+String(genTime.getMonth()+1).padStart(2,'0')+'-'+String(genTime.getDate()).padStart(2,'0');
+    // 构造 Markdown
+    let md = '# 班级学情简报\n\n';
+    md += '**报告周期：** ' + periodLabel + '　　**生成时间：** ' + dateStr + '\n\n';
+    md += '---\n\n## 概况\n\n';
+    md += '* 班级共 <strong>' + users.length + '</strong> 名学生，其中 <strong>' + activeUsers + '</strong> 人在统计周期内有访问记录（活跃率 <em>' + (users.length ? Math.round(activeUsers/users.length*100) : 0) + '%</em>）。\n';
+    md += '* 累计访问 <strong>' + totalVisits + '</strong> 次，总学习时长 <strong>' + totalMin + '</strong> 分钟（约 ' + (totalMin/60).toFixed(1) + ' 小时）。\n';
+    md += '* 完成测验 <strong>' + totalQuiz + '</strong> 次' + (avgScore != null ? '，班级平均分 <em>' + avgScore + '</em> 分' : '') + '。\n\n';
+    if (avgScore != null) {
+      let verdict;
+      if (avgScore >= 85) verdict = '整体掌握情况<em>优秀</em>，可以适当增加进阶挑战。';
+      else if (avgScore >= 75) verdict = '整体掌握情况<em>良好</em>，大部分同学已达到课程标准。';
+      else if (avgScore >= 60) verdict = '整体掌握情况<em>及格</em>，但仍有提升空间。';
+      else verdict = '整体掌握情况<em>偏弱</em>，建议加强基础辅导。';
+      md += verdict + '\n\n';
+    }
+    md += '## 模块表现\n\n';
+    if (modList.length) {
+      if (bestMod) md += '* <strong>掌握最好：</strong> 《' + bestMod.m + '》 平均 <em>' + bestMod.avg + '</em> 分 · ' + bestMod.u + ' 人参与、' + bestMod.c + ' 次测验\n';
+      if (worstMod && worstMod !== bestMod) md += '* <strong>最需关注：</strong> 《' + worstMod.m + '》 平均 ' + worstMod.avg + ' 分 · ' + worstMod.u + ' 人参与、' + worstMod.c + ' 次测验 — 建议课堂重点讲解\n';
+      if (modList.length >= 3) {
+        md += '* 各模块难度排序（由低到高）：' + modList.map(m => m.m+'('+m.avg+')').join(' → ') + '\n';
+      }
+    } else {
+      md += '* 本周期暂无测验数据。\n';
+    }
+    md += '\n## 学生表现\n\n';
+    if (mostActive && mostActive.visits > 0) md += '* <strong>最活跃：</strong> ' + mostActive.name + ' · 本周期访问 <em>' + mostActive.visits + '</em> 次\n';
+    if (topScorer) md += '* <strong>成绩领先：</strong> ' + topScorer.name + ' · 平均 <em>' + topScorer.avg + '</em> 分（' + topScorer.scoreCount + ' 次测验）\n';
+    if (silent.length) md += '* <strong>待激活 (' + silent.length + ' 人)：</strong> ' + silent.map(u => u.name).join('、') + ' — 本周期未登录，建议线下沟通\n';
+    if (atRisk.length) md += '* <strong>成绩偏低 (' + atRisk.length + ' 人)：</strong> ' + atRisk.map(u => u.name+'('+u.avg+')').join('、') + ' — 建议一对一辅导\n';
+    if (!silent.length && !atRisk.length && activeUsers > 0) md += '* 全班表现稳定，无明显掉队学生 ✓\n';
+    md += '\n## 教学建议\n\n';
+    const suggestions = [];
+    if (worstMod && worstMod.avg < 70) suggestions.push('《' + worstMod.m + '》平均分偏低，建议下次课安排专题讲解');
+    if (silent.length >= users.length * 0.3) suggestions.push('超过 30% 的学生本周期未登录，考虑通过公告或面对面提醒');
+    if (totalQuiz < users.length) suggestions.push('人均测验次数不足 1 次，可增加随堂练习推动');
+    if (avgScore != null && avgScore < 70) suggestions.push('班级平均分低于 70，建议回顾前置知识点');
+    if (avgScore != null && avgScore >= 85) suggestions.push('班级掌握度优秀，可以加入真题或开放式问题挑战');
+    if (!suggestions.length) suggestions.push('整体教学节奏健康，继续保持');
+    suggestions.forEach((s,i) => { md += (i+1) + '. ' + s + '\n'; });
+    md += '\n---\n\n*本简报由系统根据近期数据自动生成，仅供教学参考。*';
+    return { md, meta: { days, totalVisits, totalQuiz, activeUsers, avgScore, dateStr } };
+  }
+  function renderReportOutput(data){
+    const out = document.getElementById('rptOut');
+    const meta = document.getElementById('rptMeta');
+    const act = document.getElementById('rptAct');
+    // 渲染 markdown（简单版）
+    const html = data.md
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/&lt;strong&gt;([^&]+?)&lt;\/strong&gt;/g,'<strong>$1</strong>')
+      .replace(/&lt;em&gt;([^&]+?)&lt;\/em&gt;/g,'<em>$1</em>')
+      .replace(/^# (.+)$/m,'<h2>$1</h2>')
+      .replace(/^## (.+)$/gm,'<h3>$1</h3>')
+      .replace(/^---$/gm,'<hr style="border:none;border-top:1px dashed var(--border);margin:14px 0">')
+      .replace(/^\* (.+)$/gm,'<li>$1</li>')
+      .replace(/^(\d+)\. (.+)$/gm,'<li><strong>$1.</strong> $2</li>')
+      .replace(/(<li>[\s\S]*?<\/li>\n?)+/g, m => '<ul>'+m+'</ul>')
+      .replace(/\n\n/g,'<br><br>');
+    out.innerHTML = html;
+    meta.innerHTML = '<span>📅 周期：<strong>' + (data.meta.days > 0 ? '最近 '+data.meta.days+' 天' : '全部') + '</strong></span><span>👥 活跃：<strong>' + data.meta.activeUsers + '</strong> 人</span><span>📊 测验：<strong>' + data.meta.totalQuiz + '</strong> 次</span>' + (data.meta.avgScore != null ? '<span>🎯 均分：<strong>' + data.meta.avgScore + '</strong></span>' : '') + '<span>🕐 生成于 <strong>' + data.meta.dateStr + '</strong></span>';
+    act.hidden = false;
+    // 把原始 md 存到 dataset
+    out.dataset.md = data.md;
+  }
+  document.addEventListener('click', e => {
+    if (e.target.id === 'rptGen') {
+      const days = parseInt(document.getElementById('rptPeriod').value, 10);
+      const data = generateReport(days);
+      renderReportOutput(data);
+      FMToast.ok('简报已生成');
+    }
+    if (e.target.id === 'rptCopy') {
+      const md = document.getElementById('rptOut').dataset.md || '';
+      if (!md) { FMToast.warn('请先生成简报'); return; }
+      navigator.clipboard && navigator.clipboard.writeText(md).then(() => FMToast.ok('已复制到剪贴板'), () => FMToast.err('复制失败'));
+    }
+    if (e.target.id === 'rptDl') {
+      const md = document.getElementById('rptOut').dataset.md || '';
+      if (!md) { FMToast.warn('请先生成简报'); return; }
+      const blob = new Blob([md], { type:'text/markdown;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '班级简报-' + new Date().toISOString().slice(0,10) + '.md';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      FMToast.ok('已下载');
+    }
+  });
+});
+
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   ░  APPLE-GRADE AESTHETIC JS  ░  教师端极致美学驱动
+   ══════════════════════════════════════════════════════════════ */
+(function(){
+'use strict';
+const prefersReduce=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+const $=s=>document.querySelector(s);const $$=s=>Array.from(document.querySelectorAll(s));
+
+/* 滚动进度 */
+(function(){const bar=$('#scPg');if(!bar)return;let t=false;function u(){const st=scrollY,sh=document.documentElement.scrollHeight-innerHeight,p=sh>0?Math.min(1,Math.max(0,st/sh)):0;bar.style.transform='scaleX('+p+')';t=false}addEventListener('scroll',()=>{if(!t){requestAnimationFrame(u);t=true}},{passive:true});u()})();
+
+/* 顶栏毛玻璃 */
+(function(){const h=document.querySelector('.bar');if(!h)return;let t=false;function u(){h.classList.toggle('scrolled',scrollY>12);t=false}addEventListener('scroll',()=>{if(!t){requestAnimationFrame(u);t=true}},{passive:true});u()})();
+
+/* 光标 spotlight */
+(function(){if(prefersReduce||!matchMedia('(pointer:fine)').matches)return;const g=$('#curGlow');if(!g)return;let tx=innerWidth/2,ty=innerHeight/2,cx=tx,cy=ty,raf=null;function loop(){cx+=(tx-cx)*.18;cy+=(ty-cy)*.18;g.style.transform='translate('+cx+'px,'+cy+'px) translate(-50%,-50%)';if(Math.abs(tx-cx)>.3||Math.abs(ty-cy)>.3)raf=requestAnimationFrame(loop);else raf=null}addEventListener('pointermove',e=>{tx=e.clientX;ty=e.clientY;document.body.classList.add('cur-on');if(!raf)raf=requestAnimationFrame(loop)},{passive:true});addEventListener('pointerleave',()=>document.body.classList.remove('cur-on'))})();
+
+/* Scroll reveal */
+(function(){
+  if(prefersReduce||!('IntersectionObserver' in window)){$$('[data-rv]').forEach(el=>el.classList.add('in'));return}
+  // 自动打标
+  ['.head','.pan','.kpi','.risk-card','.ann-row'].forEach(s=>{$$(s).forEach(el=>{if(!el.hasAttribute('data-rv'))el.setAttribute('data-rv','')})});
+  const io=new IntersectionObserver(ents=>{ents.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.06,rootMargin:'0px 0px -6% 0px'});
+  function scan(){$$('[data-rv]:not(.in)').forEach(el=>io.observe(el))}
+  scan();
+  // 切换视图后再扫一次
+  const mo=new MutationObserver(()=>{clearTimeout(window._rvT);window._rvT=setTimeout(()=>{['.head','.pan','.kpi','.risk-card'].forEach(s=>{$$(s).forEach(el=>{if(!el.hasAttribute('data-rv'))el.setAttribute('data-rv','')})});scan()},120)});
+  mo.observe(document.body,{childList:true,subtree:true});
+})();
+
+/* 按钮 magnetic */
+(function(){
+  if(prefersReduce||!matchMedia('(pointer:fine)').matches)return;
+  function attach(el){if(el._mag)return;el._mag=true;
+    el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();const mx=e.clientX-r.left-r.width/2;const my=e.clientY-r.top-r.height/2;el.style.transform='translate('+(mx*.2).toFixed(1)+'px,'+(my*.2).toFixed(1)+'px)'});
+    el.addEventListener('pointerleave',()=>{el.style.transform=''});
+  }
+  function scan(){$$('.btn-p, .btn-d').forEach(attach)}
+  scan();
+  const mo=new MutationObserver(()=>{clearTimeout(window._mT);window._mT=setTimeout(scan,200)});
+  mo.observe(document.body,{childList:true,subtree:true});
+})();
+
+/* 数字自动 roll */
+(function(){
+  if(!('IntersectionObserver' in window))return;
+  const io=new IntersectionObserver(ents=>{
+    ents.forEach(e=>{
+      if(!e.isIntersecting)return;
+      const el=e.target;
+      const t=parseFloat(el.textContent);
+      if(!isNaN(t)&&el.textContent.trim()===String(t)&&t>0&&t<100000){
+        const dur=1000,t0=0,start=performance.now();
+        el.textContent='0';
+        function step(now){const p=Math.min(1,(now-start)/dur);const e=1-Math.pow(1-p,3);el.textContent=Math.round(t0+(t-t0)*e);if(p<1)requestAnimationFrame(step)}
+        requestAnimationFrame(step);
+      }
+      io.unobserve(el);
+    });
+  },{threshold:.6});
+  setTimeout(()=>{$$('.kpi .v').forEach(el=>{if(/^\d+$/.test((el.textContent||'').trim()))io.observe(el)})},600);
+  // 切换视图后重新扫
+  const mo=new MutationObserver(()=>{clearTimeout(window._nT);window._nT=setTimeout(()=>{$$('.kpi .v').forEach(el=>{if(/^\d+$/.test((el.textContent||'').trim())&&!el._rolled){el._rolled=true;io.observe(el)}})},200)});
+  mo.observe(document.body,{childList:true,subtree:true});
+})();
+})();
+</script>
+</body>
+</html>

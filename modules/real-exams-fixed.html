@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <style data-auth-boot>
+    html[data-auth-pending="1"] body { visibility: hidden !important; opacity: 0 !important; }
+    [v-cloak] { display: none !important; }
+  </style>
+  <script data-auth-boot>document.documentElement.setAttribute('data-auth-pending', '1');</script>
+  <script src="/js/security/auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🏆 固定版历年真题 - 流体力学学习平台</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg1: #f59e0b;
+      --bg2: #ea580c;
+      --bg3: #7c2d12;
+      --card: rgba(255,255,255,0.96);
+      --line: #fde68a;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --accent: #f59e0b;
+      --accent-2: #2563eb;
+      --success: #059669;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+      color: white;
+      background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 45%, var(--bg3) 100%);
+      min-height: 100vh;
+    }
+    .wrap {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 28px 18px 48px;
+    }
+    .hero {
+      background: rgba(255,255,255,0.14);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 28px;
+      padding: 28px 24px;
+      box-shadow: 0 18px 48px rgba(0,0,0,.16);
+      backdrop-filter: blur(12px);
+      margin-bottom: 22px;
+    }
+    .hero h1 { margin: 0 0 10px; font-size: 2rem; }
+    .hero p { margin: 0; line-height: 1.85; color: rgba(255,255,255,.94); }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .btn-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: 700;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.2);
+    }
+    .btn-link.primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); border-color: transparent; }
+    .panel {
+      background: var(--card);
+      color: var(--text);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: 0 14px 32px rgba(0,0,0,.12);
+      margin-bottom: 20px;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+    .stat {
+      border: 1px solid #f3f4f6;
+      border-radius: 18px;
+      padding: 18px;
+      background: linear-gradient(180deg, #fff7ed, #ffffff);
+    }
+    .stat-value {
+      font-size: 1.9rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .stat-label { color: var(--muted); }
+    .meta-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      color: var(--muted);
+      font-size: 14px;
+      margin-top: 12px;
+    }
+    .years {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 18px;
+    }
+    .year-card {
+      background: linear-gradient(180deg, #ffffff, #fffaf2);
+      border-radius: 22px;
+      border: 1px solid #fde68a;
+      padding: 20px;
+      box-shadow: 0 10px 24px rgba(15,23,42,.06);
+    }
+    .year-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    .year-title { font-size: 1.45rem; font-weight: 800; color: #b45309; }
+    .year-sub { color: var(--muted); font-size: 14px; line-height: 1.6; }
+    .badge {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: #fef3c7;
+      color: #92400e;
+      white-space: nowrap;
+    }
+    .topic-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0 16px;
+    }
+    .topic {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .action-btn {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 700;
+      cursor: pointer;
+      color: white;
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+    }
+    .action-btn.blue { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+    .action-btn.green { background: linear-gradient(135deg, #10b981, #059669); }
+    .action-btn.gray { background: linear-gradient(135deg, #6b7280, #4b5563); }
+    .empty, .loading-box, .error-box {
+      text-align: center;
+      padding: 32px 18px;
+      border-radius: 18px;
+      border: 1px dashed #d1d5db;
+      color: var(--muted);
+      background: #fff;
+    }
+    .error-box { color: #b91c1c; border-color: #fecaca; background: #fff5f5; }
+    .loading-spinner {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 3px solid #fde68a;
+      border-top-color: var(--accent);
+      animation: spin 1s linear infinite;
+      margin-bottom: 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 720px) {
+      .hero h1 { font-size: 1.65rem; }
+      .panel { padding: 16px; }
+      .year-head { flex-direction: column; }
+      .actions { flex-direction: column; }
+      .action-btn, .btn-link { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+  <div id="realExamsApp" v-cloak>
+    <div class="wrap">
+      <section class="hero">
+        <h1>🏆 固定版历年真题</h1>
+        <p>这一页固定按年份展示中国海洋大学 803 流体力学真题，优先保证可直达、可浏览、可开练，不依赖动态筛选逻辑才能看到主干内容。若你想要更灵活的检索与筛选，可转到动态真题页。</p>
+        <div class="toolbar">
+          <a class="btn-link primary" href="../index-complete.html"><i class="fas fa-house"></i> 返回首页</a>
+          <a class="btn-link" href="./real-exams-dynamic.html"><i class="fas fa-filter"></i> 动态真题页</a>
+          <a class="btn-link" href="./site-updates.html"><i class="fas fa-clock-rotate-left"></i> 站点更新</a>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-value">{{ totalQuestions }}</div>
+            <div class="stat-label">真题总数</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{{ yearCount }}</div>
+            <div class="stat-label">覆盖年份</div>
+          </div>
+          <div class="stat">
+            <div class="stat-value">{{ topicCount }}</div>
+            <div class="stat-label">知识点标签</div>
+          </div>
+        </div>
+        <div class="meta-line">
+          <span>数据源：站内真题 JSON 优先，必要时回退 GitHub Raw</span>
+          <span v-if="dataFiles.length">已加载文件：{{ dataFiles.join('、') }}</span>
+        </div>
+      </section>
+
+      <section class="panel" v-if="isLoading">
+        <div class="loading-box">
+          <div class="loading-spinner"></div>
+          <div>正在加载历年真题…</div>
+        </div>
+      </section>
+
+      <section class="panel" v-else-if="loadError">
+        <div class="error-box">{{ loadError }}</div>
+      </section>
+
+      <section class="panel" v-else-if="!examData.length">
+        <div class="empty">暂未读取到可展示的真题年份数据。</div>
+      </section>
+
+      <section class="years" v-else>
+        <article class="year-card" v-for="yearData in examData" :key="yearData.year">
+          <div class="year-head">
+            <div>
+              <div class="year-title">{{ yearData.year }} 年</div>
+              <div class="year-sub">{{ yearData.semester }}</div>
+            </div>
+            <div class="badge">{{ yearData.totalQuestions }} 题</div>
+          </div>
+
+          <div class="meta-line" style="margin-top:0;">
+            <span>题型数：{{ yearData.typeCount }}</span>
+            <span>标签数：{{ yearData.topicCount }}</span>
+            <span>默认来源：{{ yearData.sourceLabel }}</span>
+          </div>
+
+          <div class="topic-list" v-if="yearData.topics.length">
+            <span class="topic" v-for="topic in yearData.topics" :key="topic">{{ topic }}</span>
+          </div>
+
+          <div class="actions">
+            <button class="action-btn" @click="startPractice(yearData.exam)"><i class="fas fa-play"></i> {{ yearData.exam.progress > 0 ? '继续练习' : '开始练习' }}</button>
+            <button class="action-btn blue" @click="viewAnalysis(yearData.exam)"><i class="fas fa-chart-line"></i> 考点分析</button>
+            <button class="action-btn green" @click="downloadExam(yearData.exam)"><i class="fas fa-download"></i> 下载 PDF</button>
+            <button v-if="teacherMode" class="action-btn gray" @click="manageExam(yearData.exam)"><i class="fas fa-check"></i> 管理真题</button>
+          </div>
+        </article>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+
+    createApp({
+      data() {
+        return {
+          examData: [],
+          totalQuestions: 0,
+          yearCount: 0,
+          topicCount: 0,
+          isLoading: true,
+          teacherMode: false,
+          loadError: '',
+          dataFiles: []
+        };
+      },
+      methods: {
+        async fetchJsonWithFallback(localPath, githubPath) {
+          try {
+            const localRes = await fetch(localPath, { cache: 'no-store' });
+            if (localRes.ok) return await localRes.json();
+          } catch (_) {}
+
+          if (githubPath) {
+            const remoteRes = await fetch(githubPath, { cache: 'no-store' });
+            if (remoteRes.ok) return await remoteRes.json();
+          }
+
+          throw new Error(`加载失败：${localPath}`);
+        },
+
+        getDifficultyByQuestionCount(count) {
+          if (count >= 45) return 'hard';
+          if (count >= 25) return 'medium';
+          return 'easy';
+        },
+
+        normalizeExamFingerprint(value) {
+          return String(value || '')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/\s+/g, ' ')
+            .replace(/[（）【】\[\]{}《》“”"'‘’`·,，.。;；:：!?！？、/\\|_—-]+/g, '')
+            .trim()
+            .toLowerCase();
+        },
+
+        buildQuestionFingerprint(question) {
+          const year = Number.parseInt(question?.year, 10);
+          if (!Number.isFinite(year)) return '';
+          const numberPart = this.normalizeExamFingerprint(question?.questionNumber || question?.number || question?.index || '');
+          const stemPart = this.normalizeExamFingerprint(
+            question?.question || question?.title || question?.stem || question?.prompt || question?.content || ''
+          ).slice(0, 220);
+          const answerPart = this.normalizeExamFingerprint(question?.answer || question?.explanation || '').slice(0, 120);
+          const fallbackId = this.normalizeExamFingerprint(question?.id || '');
+          return [year, numberPart || fallbackId, stemPart || answerPart || fallbackId].join('::');
+        },
+
+        async loadRealExamData() {
+          const githubBase = 'https://raw.githubusercontent.com/lghui12138/lghui12138.github.io/main';
+          const yearMap = new Map();
+          const allTopics = new Set();
+          const seenFingerprints = new Set();
+
+          const index = await this.fetchJsonWithFallback(
+            '../question-banks/index.json',
+            `${githubBase}/question-banks/index.json`
+          );
+
+          const candidateFiles = (Array.isArray(index?.questionBanks) ? index.questionBanks : [])
+            .filter(item => {
+              const filename = String(item?.filename || '');
+              const id = String(item?.id || '');
+              return id.startsWith('real-exam-') || filename.startsWith('真题_中国海洋大学_');
+            })
+            .map(item => item.filename)
+            .filter(Boolean);
+
+          const realExamFiles = [...new Set(candidateFiles)].sort();
+          this.dataFiles = realExamFiles.slice();
+
+          for (const filename of realExamFiles) {
+            const data = await this.fetchJsonWithFallback(
+              `../question-banks/${filename}`,
+              `${githubBase}/question-banks/${filename}`
+            );
+
+            const questions = Array.isArray(data)
+              ? data
+              : (Array.isArray(data?.questions) ? data.questions : (Array.isArray(data?.data) ? data.data : []));
+
+            questions.forEach(question => {
+              const fingerprint = this.buildQuestionFingerprint(question);
+              if (!fingerprint || seenFingerprints.has(fingerprint)) return;
+              if (typeof question.year !== 'number') return;
+
+              seenFingerprints.add(fingerprint);
+
+              if (!yearMap.has(question.year)) {
+                yearMap.set(question.year, {
+                  year: question.year,
+                  questions: [],
+                  topicSet: new Set(),
+                  typeSet: new Set(),
+                  sourceFiles: new Set()
+                });
+              }
+
+              const bucket = yearMap.get(question.year);
+              bucket.questions.push(question);
+              bucket.sourceFiles.add(filename);
+
+              if (question.type) bucket.typeSet.add(question.type);
+              if (question.category) {
+                bucket.topicSet.add(question.category);
+                allTopics.add(question.category);
+              }
+              if (Array.isArray(question.tags)) {
+                question.tags.filter(Boolean).forEach(tag => {
+                  bucket.topicSet.add(tag);
+                  allTopics.add(tag);
+                });
+              }
+            });
+          }
+
+          this.examData = Array.from(yearMap.values())
+            .map(bucket => {
+              const topics = Array.from(bucket.topicSet).sort((a, b) => String(a).localeCompare(String(b), 'zh-Hans-CN')).slice(0, 8);
+              const sourceFiles = Array.from(bucket.sourceFiles).sort();
+              const exam = {
+                id: `${bucket.year}-exam`,
+                year: bucket.year,
+                title: `${bucket.year}年中国海洋大学流体力学真题`,
+                date: `${bucket.year}-12-31`,
+                difficulty: this.getDifficultyByQuestionCount(bucket.questions.length),
+                progress: 0,
+                topics: topics,
+                questionCount: bucket.questions.length,
+                questions: bucket.questions,
+                sourceFiles: sourceFiles,
+                type: 'real-exam',
+                source: 'real-exams-fixed',
+                examType: 'yearly'
+              };
+
+              return {
+                year: bucket.year,
+                semester: `按题目真实 year / type / tags 归档 · ${bucket.questions.length} 题`,
+                totalQuestions: bucket.questions.length,
+                topicCount: bucket.topicSet.size,
+                typeCount: bucket.typeSet.size,
+                topics,
+                sourceLabel: sourceFiles.length > 1 ? '多文件合并' : '单文件映射',
+                exam
+              };
+            })
+            .sort((a, b) => b.year - a.year);
+
+          this.totalQuestions = this.examData.reduce((sum, item) => sum + item.totalQuestions, 0);
+          this.yearCount = this.examData.length;
+          this.topicCount = allTopics.size;
+        },
+
+        startPractice(exam) {
+          const payload = {
+            id: exam.id,
+            title: exam.title,
+            year: exam.year,
+            questions: exam.questions || [],
+            questionCount: exam.questionCount || 0,
+            difficulty: exam.difficulty,
+            topics: exam.topics || [],
+            type: 'real-exam',
+            source: 'real-exams-fixed',
+            examType: 'yearly'
+          };
+          localStorage.setItem('currentRealExam', JSON.stringify(payload));
+          window.location.href = `practice-dynamic.html?type=real&exam=${encodeURIComponent(exam.id)}&year=${exam.year}&mode=yearly`;
+        },
+
+        viewAnalysis(exam) {
+          const firstTopic = Array.isArray(exam.topics) && exam.topics.length ? exam.topics[0] : '';
+          if (firstTopic) {
+            window.location.href = `real-exams-dynamic.html?year=${exam.year}&focus=${encodeURIComponent(firstTopic)}`;
+            return;
+          }
+          window.location.href = `real-exams-dynamic.html?year=${exam.year}`;
+        },
+
+        downloadExam(exam) {
+          const file = Array.isArray(exam.sourceFiles) && exam.sourceFiles.length ? exam.sourceFiles[0] : '';
+          if (file) {
+            window.open(`../question-banks/${encodeURIComponent(file)}`, '_blank', 'noopener');
+            return;
+          }
+          alert('暂未找到可下载的对应数据文件。');
+        },
+
+        manageExam(exam) {
+          localStorage.setItem('teacherSelectedExamYear', String(exam.year));
+          window.location.href = './teacher-real-exam-manager.html';
+        }
+      },
+      async mounted() {
+        try {
+          const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+          this.teacherMode = currentUser.role === 'teacher';
+          await this.loadRealExamData();
+        } catch (error) {
+          console.error('固定版真题页加载失败：', error);
+          this.loadError = `固定版真题页加载失败：${error.message}`;
+        } finally {
+          this.isLoading = false;
+        }
+      }
+    }).mount('#realExamsApp');
+  </script>
+</body>
+</html>
