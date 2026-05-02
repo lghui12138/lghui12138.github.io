@@ -3216,19 +3216,45 @@ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',
 /* ============ FMTransitions ============ */
 (function(){
 const VT=typeof document.startViewTransition==='function';
+const SECURE_ORIGIN='https://lghui-fluid-learning.pages.dev';
+const SECURE_PATHS=[
+  /^\/modules\//,
+  /^\/ultimate-beautiful-formulas\.html$/,
+  /^\/high_school_geology\/index\.html$/
+];
 const CH=new Map();let ov=null,tm=null;
 function eo(){if(ov&&document.body.contains(ov))return ov;ov=document.createElement('div');ov.className='load';ov.innerHTML='<div class="ring"></div>';document.body.appendChild(ov);return ov}
 function sl(d){clearTimeout(tm);const e=eo();tm=setTimeout(()=>e.classList.add('on'),d||180)}
 function hl(){clearTimeout(tm);if(ov)ov.classList.remove('on')}
-function pf(u){if(!u||CH.has(u))return;if(!/^\//.test(u)&&!u.startsWith(location.origin))return;const l=document.createElement('link');l.rel='prefetch';l.href=u;l.as='document';document.head.appendChild(l);CH.set(u,true)}
+function isSecurePath(p){return SECURE_PATHS.some(re=>re.test(p||''))}
+function toSecureUrl(h){
+  const u=new URL(h,location.href);
+  if(u.origin===location.origin&&isSecurePath(u.pathname))return SECURE_ORIGIN+u.pathname+u.search+u.hash;
+  return u.href;
+}
+function rew(root){
+  if(!root||!root.querySelectorAll)return;
+  root.querySelectorAll('a[href],area[href]').forEach(a=>{
+    const raw=a.getAttribute('href');
+    if(!raw||/^mailto:|^tel:|^javascript:/i.test(raw))return;
+    try{
+      const u=new URL(raw,location.href);
+      if(u.origin===location.origin&&isSecurePath(u.pathname)){
+        a.href=SECURE_ORIGIN+u.pathname+u.search+u.hash;
+        a.dataset.secureOrigin='1';
+      }
+    }catch(e){}
+  });
+}
+function pf(u){if(!u||CH.has(u))return;if(!/^\//.test(u)&&!u.startsWith(location.origin)&&!u.startsWith(SECURE_ORIGIN))return;const t=toSecureUrl(u);const l=document.createElement('link');l.rel='prefetch';l.href=t;l.as='document';document.head.appendChild(l);CH.set(u,true)}
 function si(a,e){if(!a||!a.href)return false;if(e&&(e.defaultPrevented||e.metaKey||e.ctrlKey||e.shiftKey||e.altKey))return false;if(a.target&&a.target!==''&&a.target!=='_self')return false;if(a.hasAttribute('download'))return false;if(a.dataset.nt==='1'||a.dataset.noTransition==='true')return false;const u=new URL(a.href,location.href);if(u.origin!==location.origin)return false;if(/\.(png|jpg|jpeg|gif|svg|webp|pdf|zip|mp4|mp3|css|js|json)($|\?)/i.test(u.pathname))return false;return true}
 function pr(){return !!(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches)}
-function nav(h,rp){const d=()=>{if(rp)location.replace(h);else location.assign(h)};if(!VT||pr()){sl();d();return}try{const v=document.startViewTransition(()=>new Promise(r=>{document.documentElement.classList.add('navout');setTimeout(r,220)}));v.finished.finally(()=>{sl(0);d()})}catch(e){sl();d()}}
+function nav(h,rp){const t=toSecureUrl(h);const tu=new URL(t,location.href);const d=()=>{if(rp)location.replace(t);else location.assign(t)};if(tu.origin!==location.origin||!VT||pr()){sl();d();return}try{const v=document.startViewTransition(()=>new Promise(r=>{document.documentElement.classList.add('navout');setTimeout(r,220)}));v.finished.finally(()=>{sl(0);d()})}catch(e){sl();d()}}
 function oh(e){const a=e.target.closest&&e.target.closest('a[href]');if(!a||!si(a))return;const u=new URL(a.href,location.href);pf(u.pathname+u.search)}
 function oc(e){const a=e.target.closest&&e.target.closest('a[href]');if(!a||!si(a,e))return;e.preventDefault();const u=new URL(a.href,location.href);if(u.pathname===location.pathname&&u.search===location.search&&u.hash){location.hash=u.hash;return}nav(u.pathname+u.search+u.hash)}
 function os(e){if(e.persisted){document.documentElement.classList.remove('navout');hl()}}
-function init(){document.addEventListener('click',oc,false);let t=null;document.addEventListener('mouseover',e=>{clearTimeout(t);t=setTimeout(()=>oh(e),80)});document.addEventListener('touchstart',oh,{passive:true});window.addEventListener('pageshow',os);document.documentElement.classList.remove('navout');hl();document.querySelectorAll('[data-rv]').forEach(rt=>{[].slice.call(rt.children).forEach((el,i)=>{if(!el.classList.contains('rv')){el.classList.add('rv');el.style.setProperty('--i',i)}})})}
-window.FMTransitions={navigate:nav,prefetch:pf,supportsVT:VT,showLoader:sl,hideLoader:hl};
+function init(){document.addEventListener('click',oc,false);let t=null;document.addEventListener('mouseover',e=>{clearTimeout(t);t=setTimeout(()=>oh(e),80)});document.addEventListener('touchstart',oh,{passive:true});window.addEventListener('pageshow',os);document.documentElement.classList.remove('navout');hl();rew(document.body);const mo=new MutationObserver(ms=>{ms.forEach(m=>{m.addedNodes&&m.addedNodes.forEach(n=>{if(n.nodeType===1)rew(n)})})});mo.observe(document.body,{childList:true,subtree:true});document.querySelectorAll('[data-rv]').forEach(rt=>{[].slice.call(rt.children).forEach((el,i)=>{if(!el.classList.contains('rv')){el.classList.add('rv');el.style.setProperty('--i',i)}})})}
+window.FMTransitions={navigate:nav,prefetch:pf,supportsVT:VT,showLoader:sl,hideLoader:hl,rewriteLinks:rew,toSecureUrl:toSecureUrl};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();
 </script>
