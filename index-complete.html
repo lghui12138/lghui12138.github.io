@@ -156,6 +156,12 @@
       margin-top: 30px;
     }
 
+    .link-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
     a {
       display: inline-flex;
       min-height: 46px;
@@ -407,8 +413,11 @@
         <span>错题复盘</span>
       </div>
       <div class="actions">
-        <a id="targetLink" href="https://lghui-fluid-learning.pages.dev/index-complete?edge_refresh=round263-fluid-exam-route-map-20260522">进入主站</a>
-        <span class="redirect-note">正在自动跳转，保留当前查询参数和锚点</span>
+        <div class="link-group">
+          <a id="targetLink" href="https://lghui-fluid-learning.pages.dev/index-complete?edge_refresh=round263-fluid-exam-route-map-20260522">进入主站</a>
+          <a id="updatesLink" href="/site-updates.json">查看公开更新记录</a>
+        </div>
+        <span class="redirect-note">正在自动跳转，保留当前查询参数和锚点；如需核对公开变更，可先看更新记录。</span>
       </div>
       <div class="progress" aria-hidden="true"><span></span></div>
     </section>
@@ -447,7 +456,9 @@
     const searchParams = new URLSearchParams(location.search);
     searchParams.set('edge_refresh', EDGE_REFRESH);
     const target = TARGET_ORIGIN + '/index-complete?' + searchParams.toString() + location.hash;
+    const updatesUrl = new URL('/site-updates.json', location.origin);
     document.getElementById('targetLink').href = target;
+    document.getElementById('updatesLink').href = updatesUrl.toString();
     if (REDIRECT_DELAY_MS > 0) {
       setTimeout(() => location.replace(target), REDIRECT_DELAY_MS);
     } else {
