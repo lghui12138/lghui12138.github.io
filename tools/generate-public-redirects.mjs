@@ -43,8 +43,18 @@ const routes = [
   '/teacher-panel.html'
 ];
 
+const targetRouteOverrides = new Map([
+  ['/practice-dynamic.html', '/modules/practice-dynamic.html'],
+  ['/question-bank-home.html', '/modules/question-bank.html']
+]);
+
+function targetRouteFor(route) {
+  return targetRouteOverrides.get(route) || route;
+}
+
 function htmlFor(route) {
-  const target = `${targetOrigin}${route}?edge_refresh=${encodeURIComponent(edgeRefresh)}`;
+  const targetRoute = targetRouteFor(route);
+  const target = `${targetOrigin}${targetRoute}?edge_refresh=${encodeURIComponent(edgeRefresh)}`;
   return `<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -75,7 +85,7 @@ function htmlFor(route) {
   </main>
   <script>
     const TARGET_ORIGIN = '${targetOrigin}';
-    const ROUTE = '${route}';
+    const ROUTE = '${targetRoute}';
     const EDGE_REFRESH = '${edgeRefresh}';
     async function clearOldPublicState(){
       try{
