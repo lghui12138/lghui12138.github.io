@@ -3,7 +3,7 @@ import path from 'node:path';
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const targetOrigin = 'https://lghui-fluid-learning.pages.dev';
-const edgeRefresh = 'round264-formula-condition-checklist-20260522';
+const edgeRefresh = 'round265-redirect-loop-recovery-20260524';
 
 const routes = [
   '/modules/knowledge-upgrade-2026.html',
@@ -49,7 +49,6 @@ function htmlFor(route) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta http-equiv="cache-control" content="no-store">
-  <meta http-equiv="refresh" content="0; url=${target}">
   <link rel="canonical" href="${target}">
   <title>正在进入流体力学主站</title>
   <style>
@@ -66,7 +65,7 @@ function htmlFor(route) {
 <body>
   <main>
     <h1>正在进入主站</h1>
-    <p>这个公开路径已迁移到 Cloudflare 源站，会保留当前查询参数和页面锚点。</p>
+    <p>这个公开路径已迁移到 Cloudflare 源站。为避免旧浏览器状态触发循环，页面不再自动跳转，请点击按钮进入。</p>
     <p><code>${route}</code></p>
     <p><a id="targetLink" href="${target}">立即打开</a></p>
   </main>
@@ -78,7 +77,6 @@ function htmlFor(route) {
     searchParams.set('edge_refresh', EDGE_REFRESH);
     const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
     document.getElementById('targetLink').href = target;
-    location.replace(target);
   </script>
 </body>
 </html>
