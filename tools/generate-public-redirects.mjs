@@ -34,6 +34,7 @@ const routes = [
   '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html',
   '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html',
   '/ultimate-beautiful-formulas.html',
+  '/question-bank-home.html',
   '/practice.html',
   '/resources.html',
   '/teacher-panel.html'
