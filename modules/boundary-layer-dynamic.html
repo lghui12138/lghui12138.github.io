@@ -30,11 +30,24 @@
     const TARGET_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
     const ROUTE = '/modules/boundary-layer-dynamic.html';
     const EDGE_REFRESH = 'round265-redirect-loop-recovery-20260524';
+    async function clearOldPublicState(){
+      try{
+        if('serviceWorker' in navigator){
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((registration)=>registration.unregister()));
+        }
+        if(window.caches){
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key)=>caches.delete(key)));
+        }
+      }catch(_){}
+    }
     const searchParams = new URLSearchParams(location.search);
     searchParams.delete('go');
     searchParams.set('edge_refresh', EDGE_REFRESH);
     const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
     document.getElementById('targetLink').href = target;
+    clearOldPublicState();
   </script>
 </body>
 </html>

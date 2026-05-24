@@ -16,6 +16,7 @@ const routes = [
   '/modules/progress-module.html',
   '/modules/question-bank.html',
   '/modules/question-bank-module.html',
+  '/modules/practice-dynamic.html',
   '/modules/boundary-layer-dynamic.html',
   '/modules/energy-equation-dynamic.html',
   '/modules/experiment-dimension-dynamic.html',
@@ -34,8 +35,10 @@ const routes = [
   '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html',
   '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html',
   '/ultimate-beautiful-formulas.html',
+  '/question-bank.html',
   '/question-bank-home.html',
   '/practice.html',
+  '/practice-dynamic.html',
   '/resources.html',
   '/teacher-panel.html'
 ];
@@ -74,11 +77,24 @@ function htmlFor(route) {
     const TARGET_ORIGIN = '${targetOrigin}';
     const ROUTE = '${route}';
     const EDGE_REFRESH = '${edgeRefresh}';
+    async function clearOldPublicState(){
+      try{
+        if('serviceWorker' in navigator){
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map((registration)=>registration.unregister()));
+        }
+        if(window.caches){
+          const keys = await caches.keys();
+          await Promise.all(keys.map((key)=>caches.delete(key)));
+        }
+      }catch(_){}
+    }
     const searchParams = new URLSearchParams(location.search);
     searchParams.delete('go');
     searchParams.set('edge_refresh', EDGE_REFRESH);
     const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
     document.getElementById('targetLink').href = target;
+    clearOldPublicState();
   </script>
 </body>
 </html>
