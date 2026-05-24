@@ -74,6 +74,7 @@ function htmlFor(route) {
     const ROUTE = '${route}';
     const EDGE_REFRESH = '${edgeRefresh}';
     const searchParams = new URLSearchParams(location.search);
+    searchParams.delete('go');
     searchParams.set('edge_refresh', EDGE_REFRESH);
     const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
     document.getElementById('targetLink').href = target;
