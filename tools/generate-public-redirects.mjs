@@ -45,6 +45,7 @@ const routes = [
 
 const targetRouteOverrides = new Map([
   ['/practice-dynamic.html', '/modules/practice-dynamic.html'],
+  ['/question-bank.html', '/modules/question-bank.html'],
   ['/question-bank-home.html', '/modules/question-bank.html']
 ]);
 
