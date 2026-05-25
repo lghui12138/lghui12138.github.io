@@ -245,7 +245,10 @@
 
     const existingJobs = inFlightFor(nodes);
     const renderNodes = nodes.filter((node) => !inflightRenders.some((entry) => entry.nodes.some((root) => rootsOverlap(root, node))));
-    if (!renderNodes.length) return Promise.all(existingJobs).then(() => null);
+    if (!renderNodes.length) {
+      return Promise.all(existingJobs)
+        .then(() => typesetMath(nodes));
+    }
 
     renderNodes.forEach((node) => node?.classList?.remove('math-fallback'));
     const job = renderPromise

@@ -63,6 +63,8 @@ const targetRouteOverrides = new Map([
   ['/knowledge.html', '/modules/knowledge-detail.html'],
   ['/knowledge', '/modules/knowledge-detail.html'],
   ['/modules/knowledge-detail', '/modules/knowledge-detail.html'],
+  ['/modules/teacher-panel.html', '/teacher-panel.html'],
+  ['/modules/teacher-panel', '/teacher-panel.html'],
   ['/modules/wu-wangyi-fluid-reading.html', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html'],
   ['/modules/wu-wangyi-fluid-reading', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html'],
   ['/modules/wang-hongwei-fluid-reading.html', '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html'],
@@ -94,7 +96,8 @@ const runtimeCopies = [
   ['modules/js/teacher-main.js', 'modules/js/teacher-main.js'],
   ['styles/edge-fluid-upgrade.css', 'styles/edge-fluid-upgrade.css'],
   ['modules/styles/practice-animations.css', 'modules/styles/practice-animations.css'],
-  ['vendor/mathjax/es5/tex-chtml-full.js', 'vendor/mathjax/es5/tex-chtml-full.js']
+  ['vendor/mathjax/es5/tex-chtml-full.js', 'vendor/mathjax/es5/tex-chtml-full.js'],
+  ['vendor/mathjax/es5/output/chtml/fonts/tex.js', 'vendor/mathjax/es5/output/chtml/fonts/tex.js']
 ];
 
 const authGuardAliases = [
@@ -192,6 +195,25 @@ function copyRuntimeAsset(sourceRelative, destRelative) {
   fs.copyFileSync(sourcePath, destPath);
 }
 
+function copyRuntimeTree(sourceRelative, destRelative) {
+  const sourcePath = path.join(sourceRepoRoot, sourceRelative);
+  const destPath = path.join(repoRoot, destRelative);
+  if (!fs.existsSync(sourcePath)) {
+    throw new Error(`Missing source runtime directory: ${sourcePath}`);
+  }
+  fs.mkdirSync(destPath, { recursive: true });
+  for (const entry of fs.readdirSync(sourcePath, { withFileTypes: true })) {
+    if (entry.name.startsWith('._') || entry.name === '.DS_Store') continue;
+    const sourceChild = path.join(sourceRelative, entry.name);
+    const destChild = path.join(destRelative, entry.name);
+    if (entry.isDirectory()) {
+      copyRuntimeTree(sourceChild, destChild);
+    } else if (entry.isFile()) {
+      copyRuntimeAsset(sourceChild, destChild);
+    }
+  }
+}
+
 function authGuardShim() {
   return `(() => {
   const TARGET_ORIGIN = '${targetOrigin}';
@@ -279,6 +301,7 @@ function writeRuntimeAssets() {
   for (const [sourceRelative, destRelative] of runtimeCopies) {
     copyRuntimeAsset(sourceRelative, destRelative);
   }
+  copyRuntimeTree('vendor/mathjax/es5/output/chtml/fonts/woff-v2', 'vendor/mathjax/es5/output/chtml/fonts/woff-v2');
   for (const destRelative of authGuardAliases) {
     const destPath = path.join(repoRoot, destRelative);
     ensureParent(destPath);
@@ -286,6 +309,17 @@ function writeRuntimeAssets() {
   }
   for (const name of ['sw.js', 'sw-simple.js']) {
     fs.writeFileSync(path.join(repoRoot, name), serviceWorkerKillSwitch());
+  }
+}
+
+function removeGeneratedAppleDoubleFiles(dir = repoRoot) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.name.startsWith('._')) {
+      fs.rmSync(fullPath, { force: true, recursive: true });
+    } else if (entry.isDirectory()) {
+      removeGeneratedAppleDoubleFiles(fullPath);
+    }
   }
 }
 
@@ -315,10 +349,21 @@ for (const route of routes) {
 fs.writeFileSync(path.join(repoRoot, '.nojekyll'), '');
 writeRuntimeAssets();
 writeJsonFallbacks();
+removeGeneratedAppleDoubleFiles(path.join(repoRoot, 'vendor'));
+fs.writeFileSync(path.join(repoRoot, '_headers'), `/api/auth/me/*
+  Content-Type: application/json; charset=utf-8
+
+/vendor/mathjax/es5/output/chtml/fonts/*.js
+  Content-Type: application/javascript; charset=utf-8
+
+/vendor/mathjax/es5/output/chtml/fonts/woff-v2/*.woff
+  Content-Type: font/woff
+  X-Content-Type-Options: nosniff
+`);
 
 console.log(JSON.stringify({
   generated: routes.length,
-  runtimeAssets: runtimeCopies.length + authGuardAliases.length,
+  runtimeAssets: runtimeCopies.length + authGuardAliases.length + 1,
   jsonFallbacks: jsonFallbacks.size,
   edgeRefresh
 }, null, 2));
