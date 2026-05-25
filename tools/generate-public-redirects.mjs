@@ -81,6 +81,7 @@ const targetRouteOverrides = new Map([
 ]);
 
 const runtimeCopies = [
+  ['site-updates.json', 'site-updates.json'],
   ['js/core/local-mathjax.js', 'js/core/local-mathjax.js'],
   ['js/core/local-mathjax.js', 'local-mathjax.js'],
   ['js/core/local-mathjax.js', 'modules/local-mathjax.js'],
@@ -350,15 +351,48 @@ fs.writeFileSync(path.join(repoRoot, '.nojekyll'), '');
 writeRuntimeAssets();
 writeJsonFallbacks();
 removeGeneratedAppleDoubleFiles(path.join(repoRoot, 'vendor'));
-fs.writeFileSync(path.join(repoRoot, '_headers'), `/api/auth/me/*
+fs.writeFileSync(path.join(repoRoot, '_headers'), `/*.html
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/*
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/sw.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Clear-Site-Data: "cache", "storage"
+
+/sw-simple.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+  Clear-Site-Data: "cache", "storage"
+
+/js/formula-lite.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/js/core/local-mathjax.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/formula-lite.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/local-mathjax.js
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/vendor/mathjax/es5/tex-chtml-full.js
+  Cache-Control: no-cache, must-revalidate
+  Content-Type: application/javascript; charset=utf-8
+
+/api/auth/me/*
   Content-Type: application/json; charset=utf-8
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 
 /vendor/mathjax/es5/output/chtml/fonts/*.js
   Content-Type: application/javascript; charset=utf-8
+  Cache-Control: no-cache, must-revalidate
 
 /vendor/mathjax/es5/output/chtml/fonts/woff-v2/*.woff
   Content-Type: font/woff
   X-Content-Type-Options: nosniff
+  Cache-Control: public, max-age=31536000, immutable
 `);
 
 console.log(JSON.stringify({
