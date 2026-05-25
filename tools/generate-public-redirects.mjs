@@ -9,7 +9,12 @@ const routes = [
   '/modules/knowledge-upgrade-2026.html',
   '/modules/real-exams-dynamic.html',
   '/modules/knowledge-detail.html',
+  '/modules/knowledge-detail',
   '/modules/fluid-intensive-training.html',
+  '/modules/wu-wangyi-fluid-reading.html',
+  '/modules/wu-wangyi-fluid-reading',
+  '/modules/wang-hongwei-fluid-reading.html',
+  '/modules/wang-hongwei-fluid-reading',
   '/modules/physical-oceanography-home.html',
   '/modules/physical-oceanography-knowledge.html',
   '/modules/ai-assistant-dynamic.html',
@@ -33,7 +38,9 @@ const routes = [
   '/modules/vorticity-theory-dynamic.html',
   '/resources/fluid-original-animations.html',
   '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html',
+  '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt',
   '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html',
+  '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt',
   '/ultimate-beautiful-formulas.html',
   '/question-bank.html',
   '/question-bank-home.html',
@@ -44,6 +51,13 @@ const routes = [
 ];
 
 const targetRouteOverrides = new Map([
+  ['/modules/knowledge-detail', '/modules/knowledge-detail.html'],
+  ['/modules/wu-wangyi-fluid-reading.html', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html'],
+  ['/modules/wu-wangyi-fluid-reading', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html'],
+  ['/modules/wang-hongwei-fluid-reading.html', '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html'],
+  ['/modules/wang-hongwei-fluid-reading', '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html'],
+  ['/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html'],
+  ['/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt', '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html'],
   ['/practice-dynamic.html', '/modules/practice-dynamic.html'],
   ['/question-bank.html', '/modules/question-bank.html'],
   ['/question-bank-home.html', '/modules/question-bank.html']
