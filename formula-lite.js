@@ -1,5 +1,5 @@
 (() => {
-  const LOCAL_MATHJAX_VERSION = 'round265-auth-formula-hardening-20260525-1818';
+  const LOCAL_MATHJAX_VERSION = 'round268-auth-redirect-practice-20260526';
   const LOCAL_MATHJAX_PATH = '/js/core/local-mathjax.js';
   const LOCAL_MATHJAX_SRC = `${LOCAL_MATHJAX_PATH}?v=${LOCAL_MATHJAX_VERSION}`;
   const MATH_TARGET_SELECTOR = [
@@ -18,12 +18,24 @@
     '.hero-equation',
     '.caption',
     '.question-text',
-    '.explanation'
+    '.explanation',
+    '.card',
+    '.topic-card',
+    '.section-card',
+    '.state-card',
+    '.guide-card',
+    '.chapter-panel',
+    '.formula-panel',
+    '.ns-role',
+    '.blueprint',
+    '.path-step'
   ].join(',');
   const TEX_PATTERN = /(\$\$|\\\(|\\\[|\\(?:frac|dfrac|tfrac|partial|nabla|rho|mu|sigma|sqrt|vec|mathbf|boldsymbol|operatorname|mathrm|overline|bar|hat|dot|theta|Theta|pi|nu|cdot|times|omega|phi|psi|varphi|alpha|beta|gamma|Delta|Omega|lambda|int|iint|iiint|oint|sum|lim|sin|cos|tan|cot|ln|log|exp|infty|therefore|because|leq|geq|approx|neq)\b)/;
   const MATHJAX_LOAD_TIMEOUT_MS = 7000;
   let mathJaxBridgePromise = null;
   const rawTexRenderPromises = new WeakMap();
+  let mutationObserver = null;
+  let mutationScanTimer = 0;
 
   const greek = {
     alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsilon: 'ε',
@@ -338,6 +350,45 @@
     return renderPromise;
   }
 
+  function nodeMayContainTex(node) {
+    if (!node) return false;
+    if (node.nodeType === Node.TEXT_NODE) return TEX_PATTERN.test(node.textContent || '');
+    if (node.nodeType !== Node.ELEMENT_NODE) return false;
+    if (node.matches?.('script,style,noscript,textarea,pre,mjx-container')) return false;
+    const text = node.textContent || '';
+    return TEX_PATTERN.test(text);
+  }
+
+  function scheduleMathScan(root) {
+    const target = normalizeRoot(root);
+    if (!target) return;
+    clearTimeout(mutationScanTimer);
+    mutationScanTimer = setTimeout(() => {
+      mutationScanTimer = 0;
+      if (hasRawTex(target)) ensureMathJaxForRawTex(target);
+    }, 140);
+  }
+
+  function installMutationObserver() {
+    const root = document.body || document.documentElement;
+    if (!root || mutationObserver) return;
+    mutationObserver = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'characterData' && nodeMayContainTex(mutation.target)) {
+          scheduleMathScan(root);
+          return;
+        }
+        for (const node of mutation.addedNodes || []) {
+          if (nodeMayContainTex(node)) {
+            scheduleMathScan(root);
+            return;
+          }
+        }
+      }
+    });
+    mutationObserver.observe(root, { childList: true, subtree: true, characterData: true });
+  }
+
   function beautifyFormulas(root, options = {}) {
     const target = normalizeRoot(root);
     if (!target) return;
@@ -595,6 +646,7 @@
     } else {
       beautifyFormulas(document.body || document.documentElement, { forceFallback: true });
     }
+    installMutationObserver();
   }
 
   window.FMFormulaLite = {
