@@ -10,9 +10,12 @@ const routes = [
   '/knowledge.html',
   '/knowledge',
   '/_edge-login',
+  '/_edge-fast-login',
   '/_edge-bridge',
+  '/_edge-register',
   '/_edge-reset',
   '/_edge-logout',
+  '/_edge-status',
   '/modules/knowledge-upgrade-2026.html',
   '/modules/real-exams-dynamic.html',
   '/modules/knowledge-detail.html',
@@ -56,15 +59,16 @@ const routes = [
   '/practice.html',
   '/practice-dynamic.html',
   '/resources.html',
-  '/teacher-panel.html'
+  '/teacher-panel.html',
+  '/teacher-panel'
 ];
 
 const targetRouteOverrides = new Map([
   ['/knowledge.html', '/modules/knowledge-detail.html'],
   ['/knowledge', '/modules/knowledge-detail.html'],
   ['/modules/knowledge-detail', '/modules/knowledge-detail.html'],
-  ['/modules/teacher-panel.html', '/teacher-panel.html'],
-  ['/modules/teacher-panel', '/teacher-panel.html'],
+  ['/modules/teacher-panel.html', '/modules/teacher-panel'],
+  ['/modules/teacher-panel', '/modules/teacher-panel'],
   ['/modules/wu-wangyi-fluid-reading.html', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html'],
   ['/modules/wu-wangyi-fluid-reading', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html'],
   ['/modules/wang-hongwei-fluid-reading.html', '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html'],
@@ -75,9 +79,14 @@ const targetRouteOverrides = new Map([
   ['/question-bank.html', '/modules/question-bank.html'],
   ['/question-bank-home.html', '/modules/question-bank.html'],
   ['/_edge-login', '/_edge-login'],
+  ['/_edge-fast-login', '/_edge-fast-login'],
   ['/_edge-bridge', '/_edge-login'],
+  ['/_edge-register', '/_edge-register'],
   ['/_edge-reset', '/_edge-reset'],
-  ['/_edge-logout', '/_edge-logout']
+  ['/_edge-logout', '/_edge-logout'],
+  ['/_edge-status', '/_edge-status'],
+  ['/teacher-panel.html', '/modules/teacher-panel'],
+  ['/teacher-panel', '/modules/teacher-panel']
 ]);
 
 const runtimeCopies = [
@@ -382,6 +391,10 @@ fs.writeFileSync(path.join(repoRoot, '_headers'), `/*.html
   Content-Type: application/javascript; charset=utf-8
 
 /api/auth/me/*
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: no-store, no-cache, must-revalidate, max-age=0
+
+/api/auth/me
   Content-Type: application/json; charset=utf-8
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 
