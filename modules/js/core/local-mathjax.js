@@ -238,6 +238,13 @@
     });
   }
 
+  function hasRenderErrors(nodes) {
+    return nodes.some((node) => {
+      if (!node || typeof node.querySelector !== 'function') return false;
+      return Boolean(node.querySelector('mjx-merror'));
+    });
+  }
+
   function typesetMath(root) {
     injectMathJaxQualityStyle();
     const nodes = compactRoots(normalizeNodes(root));
@@ -257,7 +264,12 @@
       .then((mj) => {
         if (!mj?.typesetPromise) return null;
         if (mj.typesetClear) mj.typesetClear(renderNodes);
-        return mj.typesetPromise(renderNodes);
+        return mj.typesetPromise(renderNodes).then((result) => {
+          if (hasRenderErrors(renderNodes)) {
+            throw new Error('MathJax rendered mjx-merror nodes');
+          }
+          return result;
+        });
       })
       .catch((error) => {
         markMathJaxState('formula-mathjax-failed', error);
