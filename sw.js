@@ -3,12 +3,12 @@
  * This fallback meta tag provides defense-in-depth for the HTML file itself
  */
 
-const CACHE_NAME='fm-v4.1.0';
+const CACHE_NAME='fm-v4.2.0';
 const AUTH_TARGET='https://lghui-fluid-learning.pages.dev/_edge-fast-login?next=%2Findex-complete';
 const OFFLINE_FALLBACK='/offline.html';
-const STATIC_CACHE='fm-static-v4.1.0';
+const STATIC_CACHE='fm-static-v4.2.0';
 
-const PRECACHE_URLS=['/','/index.html','/offline.html','/manifest.json','/favicon.ico'];
+const PRECACHE_URLS=['/','/index.html','/index-complete.html','/offline.html','/manifest.json','/favicon.ico','/styles/index-complete-base.css','/styles/edge-fluid-upgrade.css'];
 
 self.oninstall=e=>{e.waitUntil(caches.open(STATIC_CACHE).then(c=>c.addAll(PRECACHE_URLS).catch(()=>{})).then(()=>self.skipWaiting()))};
 
