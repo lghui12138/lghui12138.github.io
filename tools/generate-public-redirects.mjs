@@ -360,7 +360,7 @@ for (const route of routes) {
   fs.writeFileSync(filePath, htmlFor(route));
 }
 
-for (const fileName of ['index.html', 'index-complete.html']) {
+for (const fileName of ['index.html', 'index-complete.html', 'offline.html']) {
   fs.writeFileSync(path.join(repoRoot, fileName), htmlFor('/index-complete'));
 }
 fs.writeFileSync(path.join(repoRoot, '.nojekyll'), '');
