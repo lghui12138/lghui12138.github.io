@@ -145,6 +145,7 @@ function htmlFor(route) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta http-equiv="cache-control" content="no-store">
+  <meta http-equiv="refresh" content="0;url=${target}">
   <link rel="canonical" href="${target}">
   <title>正在进入流体力学主站</title>
   <style>
@@ -161,8 +162,8 @@ function htmlFor(route) {
 <body>
   <main>
     <h1>正在进入主站</h1>
-    <p>这个公开路径已迁移到 Cloudflare 源站。为避免旧浏览器状态触发循环，页面不再自动跳转，请点击按钮进入。</p>
-    <p>当前入口版本是 ${edgeRefresh}。按钮会保留当前路径并把旧 edge_refresh 统一改到 round268，主站会继续显示公式适用条件、边界条件、单位方向和错因回查内容。</p>
+    <p>这个公开路径已迁移到 Cloudflare 源站。页面会自动进入主站；如果浏览器拦截跳转，请点击按钮进入。</p>
+    <p>当前入口版本是 ${edgeRefresh}。跳转会保留当前路径并把旧 edge_refresh 统一改到 round268，主站会继续显示完整内容、公式和练习。</p>
     <p><code>${route}</code></p>
     <p><a id="targetLink" href="${target}">立即打开</a></p>
   </main>
@@ -187,7 +188,7 @@ function htmlFor(route) {
     searchParams.set('edge_refresh', EDGE_REFRESH);
     const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
     document.getElementById('targetLink').href = target;
-    clearOldPublicState();
+    clearOldPublicState().finally(() => location.replace(target));
   </script>
 </body>
 </html>
@@ -359,10 +360,13 @@ for (const route of routes) {
   fs.writeFileSync(filePath, htmlFor(route));
 }
 
+for (const fileName of ['index.html', 'index-complete.html']) {
+  fs.writeFileSync(path.join(repoRoot, fileName), htmlFor('/index-complete'));
+}
 fs.writeFileSync(path.join(repoRoot, '.nojekyll'), '');
 writeRuntimeAssets();
 writeJsonFallbacks();
-removeGeneratedAppleDoubleFiles(path.join(repoRoot, 'vendor'));
+removeGeneratedAppleDoubleFiles(repoRoot);
 fs.writeFileSync(path.join(repoRoot, '_headers'), `/*.html
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 
@@ -410,6 +414,7 @@ fs.writeFileSync(path.join(repoRoot, '_headers'), `/*.html
   X-Content-Type-Options: nosniff
   Cache-Control: public, max-age=31536000, immutable
 `);
+removeGeneratedAppleDoubleFiles(repoRoot);
 
 console.log(JSON.stringify({
   generated: routes.length,

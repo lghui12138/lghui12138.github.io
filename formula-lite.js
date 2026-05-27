@@ -334,12 +334,30 @@
         document.documentElement.classList.add('formula-mathjax-ready');
         document.documentElement.classList.add('formula-lite-ready');
         target.classList?.remove('math-fallback');
+        window.__FM_MATH_DIAGNOSTICS__ = {
+          ...(window.__FM_MATH_DIAGNOSTICS__ || {}),
+          state: 'ready',
+          lastRoot: target.id || target.className || target.nodeName || 'formula-lite',
+          rawTexCount: ((target.innerText || '').match(/\$\$|\\(?:frac|partial|int|rho|mu|nabla)\b/g) || []).length,
+          merrorCount: target.querySelectorAll ? target.querySelectorAll('mjx-merror').length : 0,
+          lastError: '',
+          updatedAt: new Date().toISOString()
+        };
         return true;
       })
       .catch((error) => {
         document.documentElement.classList.remove('formula-mathjax-pending', 'formula-mathjax-ready');
         document.documentElement.classList.add('formula-mathjax-failed');
         target.classList?.add('math-fallback');
+        window.__FM_MATH_DIAGNOSTICS__ = {
+          ...(window.__FM_MATH_DIAGNOSTICS__ || {}),
+          state: 'failed',
+          lastRoot: target.id || target.className || target.nodeName || 'formula-lite',
+          rawTexCount: ((target.innerText || '').match(/\$\$|\\(?:frac|partial|int|rho|mu|nabla)\b/g) || []).length,
+          merrorCount: target.querySelectorAll ? target.querySelectorAll('mjx-merror').length : 0,
+          lastError: error?.message || 'formula-lite render failed',
+          updatedAt: new Date().toISOString()
+        };
         console.warn('公式 MathJax 加载失败，保留原始 TeX 以免公式被误改写', error);
         return false;
       })

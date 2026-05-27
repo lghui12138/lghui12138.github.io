@@ -11,6 +11,33 @@
   let queuedResolvers = [];
   let inflightRenders = [];
 
+  function countRawTex(nodes) {
+    const pattern = /\$\$|\\(?:frac|partial|int|rho|mu|nabla|sum|lim|left|right)\b/g;
+    return normalizeNodes(nodes).reduce((sum, node) => {
+      const text = node?.innerText || node?.textContent || '';
+      return sum + ((text.match(pattern) || []).length);
+    }, 0);
+  }
+
+  function countRenderErrors(nodes) {
+    return normalizeNodes(nodes).reduce((sum, node) => {
+      if (!node || typeof node.querySelectorAll !== 'function') return sum;
+      return sum + node.querySelectorAll('mjx-merror').length;
+    }, 0);
+  }
+
+  function updateMathDiagnostics(state, nodes, error) {
+    window.__FM_MATH_DIAGNOSTICS__ = {
+      ...(window.__FM_MATH_DIAGNOSTICS__ || {}),
+      state,
+      lastRoot: normalizeNodes(nodes).map((node) => node?.id || node?.className || node?.nodeName || 'root').join(',').slice(0, 160),
+      rawTexCount: countRawTex(nodes),
+      merrorCount: countRenderErrors(nodes),
+      lastError: error?.message || '',
+      updatedAt: new Date().toISOString()
+    };
+  }
+
   function injectMathJaxQualityStyle() {
     if (document.getElementById('fm-mathjax-quality-style')) return;
     const style = document.createElement('style');
@@ -71,6 +98,7 @@
     } else {
       delete root.dataset.mathjaxError;
     }
+    updateMathDiagnostics(state === 'formula-mathjax-failed' ? 'failed' : state.replace(/^formula-mathjax-/, ''), [document.body], error);
   }
 
   function withTimeout(promise, ms, message) {
@@ -239,10 +267,7 @@
   }
 
   function hasRenderErrors(nodes) {
-    return nodes.some((node) => {
-      if (!node || typeof node.querySelector !== 'function') return false;
-      return Boolean(node.querySelector('mjx-merror'));
-    });
+    return countRenderErrors(nodes) > 0;
   }
 
   function typesetMath(root) {
@@ -266,13 +291,16 @@
         if (mj.typesetClear) mj.typesetClear(renderNodes);
         return mj.typesetPromise(renderNodes).then((result) => {
           if (hasRenderErrors(renderNodes)) {
+            updateMathDiagnostics('merror', renderNodes);
             throw new Error('MathJax rendered mjx-merror nodes');
           }
+          updateMathDiagnostics('ready', renderNodes);
           return result;
         });
       })
       .catch((error) => {
         markMathJaxState('formula-mathjax-failed', error);
+        updateMathDiagnostics('failed', renderNodes, error);
         markFallback(renderNodes);
         console.warn('本地公式渲染失败', error);
       })
