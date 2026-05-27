@@ -162,7 +162,6 @@ function htmlFor(route) {
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow,noarchive">
   <meta http-equiv="cache-control" content="no-store">
-  <meta http-equiv="refresh" content="0;url=${target}">
   <link rel="canonical" href="${target}">
   <title>正在进入流体力学主站</title>
   <style>
@@ -179,7 +178,7 @@ function htmlFor(route) {
 <body>
   <main>
     <h1>正在进入主站</h1>
-    <p>这个公开路径已迁移到 Cloudflare 源站。页面会自动进入主站；如果浏览器拦截跳转，请点击按钮进入。</p>
+    <p>这个公开路径已迁移到 Cloudflare 源站。请点击按钮进入主站；入口会保留当前路径、查询参数和章节位置。</p>
     <p>当前入口版本是 ${edgeRefresh}。跳转会保留当前路径并把旧 edge_refresh 统一改到 round268，主站会继续显示完整内容、公式和练习。</p>
     <p><code>${route}</code></p>
     <p><a id="targetLink" href="${target}">立即打开</a></p>
@@ -207,7 +206,7 @@ function htmlFor(route) {
     searchParams.set('edge_refresh', EDGE_REFRESH);
     const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
     document.getElementById('targetLink').href = target;
-    clearOldPublicState().finally(() => location.replace(target));
+    clearOldPublicState();
   </script>
 </body>
 </html>
