@@ -64,6 +64,12 @@ const routes = [
 ];
 
 const targetRouteOverrides = new Map([
+  ['/', '/index-complete?full=1'],
+  ['/index.html', '/index-complete?full=1'],
+  ['/index-complete', '/index-complete?full=1'],
+  ['/index-complete.html', '/index-complete?full=1'],
+  ['/404.html', '/index-complete?full=1'],
+  ['/offline.html', '/index-complete?full=1'],
   ['/knowledge.html', '/modules/knowledge-detail'],
   ['/knowledge', '/modules/knowledge-detail'],
   ['/modules/knowledge-detail.html', '/modules/knowledge-detail'],
@@ -135,9 +141,20 @@ function targetRouteFor(route) {
   return targetRouteOverrides.get(route) || route;
 }
 
-function htmlFor(route) {
+function targetHrefForRoute(route) {
   const targetRoute = targetRouteFor(route);
-  const target = `${targetOrigin}${targetRoute}?edge_refresh=${encodeURIComponent(edgeRefresh)}`;
+  const target = new URL(targetRoute, targetOrigin);
+  target.searchParams.set('edge_refresh', edgeRefresh);
+  return {
+    href: target.toString(),
+    pathname: target.pathname,
+    search: target.search
+  };
+}
+
+function htmlFor(route) {
+  const targetInfo = targetHrefForRoute(route);
+  const target = targetInfo.href;
   return `<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -169,7 +186,8 @@ function htmlFor(route) {
   </main>
   <script>
     const TARGET_ORIGIN = '${targetOrigin}';
-    const ROUTE = '${targetRoute}';
+    const ROUTE = '${targetInfo.pathname}';
+    const BASE_SEARCH = '${targetInfo.search}';
     const EDGE_REFRESH = '${edgeRefresh}';
     async function clearOldPublicState(){
       try{
@@ -183,7 +201,8 @@ function htmlFor(route) {
         }
       }catch(_){}
     }
-    const searchParams = new URLSearchParams(location.search);
+    const searchParams = new URLSearchParams(BASE_SEARCH);
+    for (const [key, value] of new URLSearchParams(location.search)) searchParams.set(key, value);
     searchParams.delete('go');
     searchParams.set('edge_refresh', EDGE_REFRESH);
     const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
@@ -345,6 +364,19 @@ function writeJsonFallbacks() {
   }
 }
 
+function updateManifestEntry() {
+  const filePath = path.join(repoRoot, 'manifest.json');
+  if (!fs.existsSync(filePath)) return;
+  const manifest = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  manifest.start_url = '/index-complete.html?full=1';
+  for (const handler of manifest.protocol_handlers || []) {
+    if (handler && handler.url === '/index-complete.html?action=%s') {
+      handler.url = '/index-complete.html?full=1&action=%s';
+    }
+  }
+  fs.writeFileSync(filePath, `${JSON.stringify(manifest, null, 2)}\n`);
+}
+
 for (const route of routes) {
   const routePath = route.replace(/^\//, '');
   const routeLeaf = path.basename(routePath);
@@ -360,10 +392,11 @@ for (const route of routes) {
   fs.writeFileSync(filePath, htmlFor(route));
 }
 
-for (const fileName of ['index.html', 'index-complete.html', 'offline.html']) {
+for (const fileName of ['index.html', 'index-complete.html', 'offline.html', '404.html']) {
   fs.writeFileSync(path.join(repoRoot, fileName), htmlFor('/index-complete'));
 }
 fs.writeFileSync(path.join(repoRoot, '.nojekyll'), '');
+updateManifestEntry();
 writeRuntimeAssets();
 writeJsonFallbacks();
 removeGeneratedAppleDoubleFiles(repoRoot);
