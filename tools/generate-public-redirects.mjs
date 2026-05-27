@@ -178,7 +178,7 @@ function htmlFor(route) {
 <body>
   <main>
     <h1>正在进入主站</h1>
-    <p>这个公开路径已迁移到 Cloudflare 源站。请点击按钮进入主站；入口会保留当前路径、查询参数和章节位置。</p>
+    <p>这个公开路径已迁移到 Cloudflare 源站，正在自动打开完整主站。若浏览器拦截自动跳转，请点击按钮进入。</p>
     <p>当前入口版本是 ${edgeRefresh}。跳转会保留当前路径并把旧 edge_refresh 统一改到 round268，主站会继续显示完整内容、公式和练习。</p>
     <p><code>${route}</code></p>
     <p><a id="targetLink" href="${target}">立即打开</a></p>
@@ -206,7 +206,9 @@ function htmlFor(route) {
     searchParams.set('edge_refresh', EDGE_REFRESH);
     const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
     document.getElementById('targetLink').href = target;
-    clearOldPublicState();
+    clearOldPublicState().finally(() => {
+      if (location.href !== target) location.replace(target);
+    });
   </script>
 </body>
 </html>
