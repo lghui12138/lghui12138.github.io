@@ -345,7 +345,7 @@ if (!isProtectedHtml(pathname) || PUBLIC_PATHS.has(pathname)) {
         serverValidationInFlight = (async function () {
             lastServerValidationAt = Date.now();
             try {
-                const response = await window.fetch('/_edge-health', {
+                const response = await window.fetch('/api/auth/me', {
                     cache: 'no-store',
                     credentials: 'same-origin',
                     headers: { Accept: 'application/json' }
@@ -356,7 +356,7 @@ if (!isProtectedHtml(pathname) || PUBLIC_PATHS.has(pathname)) {
                 } catch (_) {
                     data = null;
                 }
-                if (!response.ok || !data || !data.ok || !data.user) {
+                if (!response.ok || !data || !data.ok || !data.authenticated || !data.user) {
                     clearSession();
                     if (opts.redirectOnFail && isProtectedHtml(pathname)) {
                         redirectToLogin(loginPage, (data && data.error) || 'required', target);
