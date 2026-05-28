@@ -188,6 +188,9 @@ function htmlFor(route) {
     const ROUTE = '${targetInfo.pathname}';
     const BASE_SEARCH = '${targetInfo.search}';
     const EDGE_REFRESH = '${edgeRefresh}';
+    function timeout(ms){
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
     async function clearOldPublicState(){
       try{
         if('serviceWorker' in navigator){
@@ -206,9 +209,15 @@ function htmlFor(route) {
     searchParams.set('edge_refresh', EDGE_REFRESH);
     const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
     document.getElementById('targetLink').href = target;
-    clearOldPublicState().finally(() => {
-      if (location.href !== target) location.replace(target);
-    });
+    let entering = false;
+    function enterTarget(){
+      if (entering || location.href === target) return;
+      entering = true;
+      location.replace(target);
+    }
+    requestAnimationFrame(enterTarget);
+    setTimeout(enterTarget, 250);
+    Promise.race([clearOldPublicState(), timeout(600)]).finally(enterTarget);
   </script>
 </body>
 </html>
