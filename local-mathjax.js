@@ -82,6 +82,17 @@
       .formula-mathjax-pending .math-display {
         color: #0f766e;
       }
+      html:not(.formula-mathjax-failed) .math-inline:not(:has(mjx-container)),
+      html:not(.formula-mathjax-failed) .math-display:not(:has(mjx-container)),
+      html:not(.formula-mathjax-failed) .inline-formula:not(:has(mjx-container)),
+      html:not(.formula-mathjax-failed) .mini-math:not(:has(mjx-container)),
+      html:not(.formula-mathjax-failed) .formula:not(:has(mjx-container)),
+      html:not(.formula-mathjax-failed) .formula-mini:not(:has(mjx-container)),
+      html:not(.formula-mathjax-failed) .mathbox:not(:has(mjx-container)),
+      html:not(.formula-mathjax-failed) .tex:not(:has(mjx-container)),
+      html:not(.formula-mathjax-failed) .ns-role-code:not(:has(mjx-container)) {
+        visibility: hidden;
+      }
       .formula-mathjax-failed .math-inline,
       .formula-mathjax-failed .math-display {
         white-space: normal;
