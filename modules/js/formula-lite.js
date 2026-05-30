@@ -1,5 +1,5 @@
 (() => {
-  const LOCAL_MATHJAX_VERSION = 'round268-auth-redirect-practice-20260526';
+  const LOCAL_MATHJAX_VERSION = 'round269-six-agent-full-entry-math-practice-20260531';
   const LOCAL_MATHJAX_PATH = '/js/core/local-mathjax.js';
   const LOCAL_MATHJAX_SRC = `${LOCAL_MATHJAX_PATH}?v=${LOCAL_MATHJAX_VERSION}`;
   const MATH_TARGET_SELECTOR = [
@@ -36,6 +36,15 @@
   const rawTexRenderPromises = new WeakMap();
   let mutationObserver = null;
   let mutationScanTimer = 0;
+
+  function countRawTexIn(target) {
+    const text = target?.innerText || target?.textContent || '';
+    return ((text.match(new RegExp(TEX_PATTERN.source, 'g')) || []).length);
+  }
+
+  function countMathErrorsIn(target) {
+    return target?.querySelectorAll ? target.querySelectorAll('mjx-merror').length : 0;
+  }
 
   const greek = {
     alpha: 'α', beta: 'β', gamma: 'γ', delta: 'δ', epsilon: 'ε',
@@ -336,10 +345,10 @@
         target.classList?.remove('math-fallback');
         window.__FM_MATH_DIAGNOSTICS__ = {
           ...(window.__FM_MATH_DIAGNOSTICS__ || {}),
-          state: 'ready',
+          state: countMathErrorsIn(target) > 0 ? 'merror' : (countRawTexIn(target) > 0 ? 'raw-tex' : 'ready'),
           lastRoot: target.id || target.className || target.nodeName || 'formula-lite',
-          rawTexCount: ((target.innerText || '').match(/\$\$|\\(?:frac|partial|int|rho|mu|nabla)\b/g) || []).length,
-          merrorCount: target.querySelectorAll ? target.querySelectorAll('mjx-merror').length : 0,
+          rawTexCount: countRawTexIn(target),
+          merrorCount: countMathErrorsIn(target),
           lastError: '',
           updatedAt: new Date().toISOString()
         };
@@ -353,8 +362,8 @@
           ...(window.__FM_MATH_DIAGNOSTICS__ || {}),
           state: 'failed',
           lastRoot: target.id || target.className || target.nodeName || 'formula-lite',
-          rawTexCount: ((target.innerText || '').match(/\$\$|\\(?:frac|partial|int|rho|mu|nabla)\b/g) || []).length,
-          merrorCount: target.querySelectorAll ? target.querySelectorAll('mjx-merror').length : 0,
+          rawTexCount: countRawTexIn(target),
+          merrorCount: countMathErrorsIn(target),
           lastError: error?.message || 'formula-lite render failed',
           updatedAt: new Date().toISOString()
         };

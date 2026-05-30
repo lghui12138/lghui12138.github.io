@@ -4,7 +4,7 @@ import path from 'node:path';
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const sourceRepoRoot = process.env.FLUID_SOURCE_REPO || path.resolve(repoRoot, '../lghui12138.github.io');
 const targetOrigin = 'https://lghui-fluid-learning.pages.dev';
-const edgeRefresh = 'round268-auth-redirect-practice-20260526';
+const edgeRefresh = 'round269-six-agent-full-entry-math-practice-20260531';
 
 const routes = [
   '/knowledge.html',
@@ -179,7 +179,7 @@ function htmlFor(route) {
   <main>
     <h1>正在进入主站</h1>
     <p>这个公开路径已迁移到 Cloudflare 源站，正在自动打开完整主站。若浏览器拦截自动跳转，请点击按钮进入。</p>
-    <p>当前入口版本是 ${edgeRefresh}。跳转会保留当前路径并把旧 edge_refresh 统一改到 round268，主站会继续显示完整内容、公式和练习。</p>
+    <p>当前入口版本是 ${edgeRefresh}。跳转会保留当前路径并把旧 edge_refresh 统一改到当前入口版本，主站会继续显示完整内容、公式和练习。</p>
     <p><code>${route}</code></p>
     <p><a id="targetLink" href="${target}">立即打开</a></p>
   </main>

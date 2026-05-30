@@ -1,9 +1,10 @@
 (() => {
   const SCRIPT_ID = 'MathJax-script';
-  const SCRIPT_VERSION = 'round268-auth-redirect-practice-20260526';
+  const SCRIPT_VERSION = 'round269-six-agent-full-entry-math-practice-20260531';
   const SCRIPT_SRC = `/vendor/mathjax/es5/tex-chtml-full.js?v=${SCRIPT_VERSION}`;
   const FONT_URL = '/vendor/mathjax/es5/output/chtml/fonts/woff-v2';
   const LOAD_TIMEOUT_MS = 7000;
+  const RAW_TEX_PATTERN = /(\$\$|\\\(|\\\[|\\(?:frac|dfrac|tfrac|partial|nabla|rho|mu|sigma|sqrt|vec|mathbf|boldsymbol|operatorname|mathrm|overline|bar|hat|dot|theta|Theta|pi|nu|cdot|times|omega|phi|psi|varphi|alpha|beta|gamma|delta|Delta|Omega|lambda|int|iint|iiint|oint|sum|lim|sin|cos|tan|cot|ln|log|exp|infty|therefore|because|leq|geq|approx|neq|begin|end)\b)/g;
   let loadingPromise = null;
   let renderPromise = Promise.resolve();
   let queueHandle = 0;
@@ -12,10 +13,9 @@
   let inflightRenders = [];
 
   function countRawTex(nodes) {
-    const pattern = /\$\$|\\(?:frac|partial|int|rho|mu|nabla|sum|lim|left|right)\b/g;
     return normalizeNodes(nodes).reduce((sum, node) => {
       const text = node?.innerText || node?.textContent || '';
-      return sum + ((text.match(pattern) || []).length);
+      return sum + ((text.match(RAW_TEX_PATTERN) || []).length);
     }, 0);
   }
 
@@ -27,12 +27,21 @@
   }
 
   function updateMathDiagnostics(state, nodes, error) {
+    const rawTexCount = countRawTex(nodes);
+    const merrorCount = countRenderErrors(nodes);
+    const diagnosticState = error || state === 'failed'
+      ? 'failed'
+      : merrorCount > 0
+        ? 'merror'
+        : rawTexCount > 0 && state === 'ready'
+          ? 'raw-tex'
+          : state;
     window.__FM_MATH_DIAGNOSTICS__ = {
       ...(window.__FM_MATH_DIAGNOSTICS__ || {}),
-      state,
+      state: diagnosticState,
       lastRoot: normalizeNodes(nodes).map((node) => node?.id || node?.className || node?.nodeName || 'root').join(',').slice(0, 160),
-      rawTexCount: countRawTex(nodes),
-      merrorCount: countRenderErrors(nodes),
+      rawTexCount,
+      merrorCount,
       lastError: error?.message || '',
       updatedAt: new Date().toISOString()
     };

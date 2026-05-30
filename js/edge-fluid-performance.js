@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var VERSION = 'round268-auth-redirect-practice-20260526';
+  var VERSION = 'round269-six-agent-full-entry-math-practice-20260531';
   var LEARNING_CONTENT_VERSION = 'round264-formula-condition-checklist-20260522';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';
