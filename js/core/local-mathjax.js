@@ -342,8 +342,53 @@
     });
   }
 
+  function nodeMayContainRawTex(node) {
+    if (!node || node.nodeType !== Node.ELEMENT_NODE) return false;
+    if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'PRE'].includes(node.tagName)) return false;
+    if (node.closest?.('mjx-container')) return false;
+    RAW_TEX_PATTERN.lastIndex = 0;
+    return RAW_TEX_PATTERN.test(node.innerText || node.textContent || '');
+  }
+
+  function installMutationMathQueue() {
+    if (!('MutationObserver' in window) || window.__FM_MATH_MUTATION_QUEUE__) return;
+    window.__FM_MATH_MUTATION_QUEUE__ = true;
+    const observer = new MutationObserver((mutations) => {
+      const roots = [];
+      mutations.forEach((mutation) => {
+        mutation.addedNodes.forEach((node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            const parent = node.parentElement;
+            if (parent && nodeMayContainRawTex(parent)) roots.push(parent);
+            return;
+          }
+          if (nodeMayContainRawTex(node)) roots.push(node);
+        });
+      });
+      if (roots.length) queueMath(compactRoots(roots), 260);
+    });
+    const start = () => {
+      const root = document.body || document.documentElement;
+      if (root) observer.observe(root, { childList: true, subtree: true });
+    };
+    if (document.body) start();
+    else document.addEventListener('DOMContentLoaded', start, { once: true });
+  }
+
+  function scheduleDocumentMathSweeps() {
+    const run = () => {
+      const root = document.body || document.documentElement;
+      if (!root) return;
+      RAW_TEX_PATTERN.lastIndex = 0;
+      if (RAW_TEX_PATTERN.test(root.innerText || root.textContent || '')) queueMath(root, 120);
+    };
+    [0, 700, 1800, 3600, 6200].forEach((delay) => setTimeout(run, delay));
+  }
+
   window.FMConfigureMathJax = configureMathJax;
   window.FMLoadMathJax = loadMathJax;
   window.FMTypesetMath = typesetMath;
   window.FMQueueMath = queueMath;
+  installMutationMathQueue();
+  scheduleDocumentMathSweeps();
 })();
