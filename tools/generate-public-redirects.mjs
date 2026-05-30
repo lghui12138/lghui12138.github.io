@@ -155,6 +155,19 @@ function targetHrefForRoute(route) {
 function htmlFor(route) {
   const targetInfo = targetHrefForRoute(route);
   const target = targetInfo.href;
+  const stableFallback = route === '/modules/physical-oceanography-home.html';
+  const actionStyles = stableFallback
+    ? '\n    .actions{display:flex;flex-wrap:wrap;gap:12px}\n    .secondary{background:#155eef}'
+    : '';
+  const actionMarkup = stableFallback
+    ? `<div class="actions">
+      <a id="targetLink" href="${target}">立即打开</a>
+      <a id="stableLink" class="secondary" href="https://lghui.top/index-complete.html">打开稳定入口</a>
+    </div>`
+    : `<p><a id="targetLink" href="${target}">立即打开</a></p>`;
+  const stableScript = stableFallback
+    ? "\n    document.getElementById('stableLink').href = 'https://lghui.top/index-complete.html' + location.search + location.hash;"
+    : '';
   return `<!doctype html>
 <html lang="zh-CN">
 <head>
@@ -171,7 +184,7 @@ function htmlFor(route) {
     main{width:min(560px,100%);border:1px solid rgba(7,17,31,.12);border-radius:8px;background:rgba(255,255,255,.88);padding:28px;box-shadow:0 18px 50px rgba(7,17,31,.12)}
     h1{margin:0 0 10px;font-size:28px;letter-spacing:0}
     p{margin:0 0 14px;color:#425466;line-height:1.7}
-    a{display:inline-flex;align-items:center;min-height:42px;border-radius:8px;background:#0f766e;color:#fff;padding:0 16px;text-decoration:none;font-weight:800}
+    a{display:inline-flex;align-items:center;min-height:42px;border-radius:8px;background:#0f766e;color:#fff;padding:0 16px;text-decoration:none;font-weight:800}${actionStyles}
     code{word-break:break-all}
   </style>
 </head>
@@ -181,7 +194,7 @@ function htmlFor(route) {
     <p>这个公开路径已迁移到 Cloudflare 源站，正在自动打开完整主站。若浏览器拦截自动跳转，请点击按钮进入。</p>
     <p>当前入口版本是 ${edgeRefresh}。跳转会保留当前路径并把旧 edge_refresh 统一改到当前入口版本，主站会继续显示完整内容、公式和练习。</p>
     <p><code>${route}</code></p>
-    <p><a id="targetLink" href="${target}">立即打开</a></p>
+    ${actionMarkup}
   </main>
   <script>
     const TARGET_ORIGIN = '${targetOrigin}';
@@ -208,7 +221,7 @@ function htmlFor(route) {
     searchParams.delete('go');
     searchParams.set('edge_refresh', EDGE_REFRESH);
     const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
-    document.getElementById('targetLink').href = target;
+    document.getElementById('targetLink').href = target;${stableScript}
     let entering = false;
     function enterTarget(){
       if (entering || location.href === target) return;
