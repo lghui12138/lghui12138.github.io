@@ -15,6 +15,8 @@
     h1{margin:0 0 10px;font-size:28px;letter-spacing:0}
     p{margin:0 0 14px;color:#425466;line-height:1.7}
     a{display:inline-flex;align-items:center;min-height:42px;border-radius:8px;background:#0f766e;color:#fff;padding:0 16px;text-decoration:none;font-weight:800}
+    .actions{display:flex;flex-wrap:wrap;gap:12px}
+    .secondary{background:#155eef}
     code{word-break:break-all}
   </style>
 </head>
@@ -24,7 +26,10 @@
     <p>这个公开路径已迁移到 Cloudflare 源站，正在自动打开完整主站。若浏览器拦截自动跳转，请点击按钮进入。</p>
     <p>当前入口版本是 round272-home-math-security-polish-20260531。跳转会保留当前路径并把旧 edge_refresh 统一改到当前入口版本，主站会继续显示完整内容、公式和练习。</p>
     <p><code>/simulated-exams</code></p>
-    <p><a id="targetLink" href="https://lghui-fluid-learning.pages.dev/modules/simulated-exams-dynamic.html?edge_refresh=round272-home-math-security-polish-20260531">立即打开</a></p>
+    <div class="actions">
+      <a id="targetLink" href="https://lghui-fluid-learning.pages.dev/modules/simulated-exams-dynamic.html?edge_refresh=round272-home-math-security-polish-20260531">立即打开</a>
+      <a id="stableLink" class="secondary" href="https://lghui.top/index-complete.html?full=1">打开稳定入口</a>
+    </div>
   </main>
   <script>
     const TARGET_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
@@ -52,6 +57,12 @@
     searchParams.set('edge_refresh', EDGE_REFRESH);
     const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
     document.getElementById('targetLink').href = target;
+    const stableUrl = new URL('https://lghui.top/index-complete.html');
+    const stableParams = new URLSearchParams(location.search);
+    stableParams.set('full', '1');
+    stableUrl.search = stableParams.toString();
+    stableUrl.hash = location.hash;
+    document.getElementById('stableLink').href = stableUrl.toString();
     let entering = false;
     function enterTarget(){
       if (entering || location.href === target) return;
