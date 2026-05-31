@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var VERSION = 'round269-six-agent-full-entry-math-practice-20260531';
+  var VERSION = 'round270-six-agent-seven-round-simulated-release-20260531';
   var LEARNING_CONTENT_VERSION = 'round264-formula-condition-checklist-20260522';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';
@@ -21,12 +21,8 @@
     '[data-answer-source]'
   ].join(',');
   var PREFETCH = [
-    '/data/fluid-knowledge-upgrade-2026.json',
-    '/data/fluid-knowledge-points.json',
-    '/modules/knowledge-upgrade-2026.html',
-    '/modules/knowledge-detail.html',
     '/modules/real-exams-dynamic.html',
-    '/resources.html'
+    '/modules/simulated-exams-dynamic.html'
   ];
   var FORMULA_PREFETCH_URLS = [
     '/data/fluid-formula-index.json'
@@ -35,8 +31,7 @@
     '/data/fluid-home-search-index.json'
   ];
   var WARM_FETCH_URLS = [
-    '/data/fluid-knowledge-upgrade-2026.json',
-    '/data/fluid-knowledge-points.json'
+    '/question-banks/real-exams-index.json'
   ];
   var STATE_KEY = 'efu_perf_v1';
   var DEFERRED_TRACK_KEY = 'efu_perf_deferred_track_v1';

@@ -1,6 +1,6 @@
 /**
  * Edge Fluid Learning Upgrade
- * round269-six-agent-full-entry-math-practice-20260531: authenticated route recovery plus full chapter practice links
+ * round270-six-agent-seven-round-simulated-release-20260531: authenticated route recovery plus full chapter practice links
  * learning interaction and knowledge navigation enhancement.
  *
  * No framework, no HTML edits required. The script mounts into
@@ -10,7 +10,7 @@
 (function(global, document) {
   'use strict';
 
-  var VERSION = 'round269-six-agent-full-entry-math-practice-20260531';
+  var VERSION = 'round270-six-agent-seven-round-simulated-release-20260531';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';
   var R263_VERSION = 'round263-fluid-exam-route-map-20260522';

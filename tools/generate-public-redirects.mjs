@@ -4,7 +4,7 @@ import path from 'node:path';
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const sourceRepoRoot = process.env.FLUID_SOURCE_REPO || path.resolve(repoRoot, '../lghui12138.github.io');
 const targetOrigin = 'https://lghui-fluid-learning.pages.dev';
-const edgeRefresh = 'round269-six-agent-full-entry-math-practice-20260531';
+const edgeRefresh = 'round270-six-agent-seven-round-simulated-release-20260531';
 
 const routes = [
   '/knowledge.html',
@@ -18,6 +18,8 @@ const routes = [
   '/_edge-status',
   '/modules/knowledge-upgrade-2026.html',
   '/modules/real-exams-dynamic.html',
+  '/modules/simulated-exams-dynamic.html',
+  '/modules/simulated-exams-dynamic',
   '/modules/knowledge-detail.html',
   '/modules/knowledge-detail',
   '/modules/teacher-panel.html',
@@ -76,6 +78,10 @@ const targetRouteOverrides = new Map([
   ['/modules/knowledge-detail', '/modules/knowledge-detail'],
   ['/modules/teacher-panel.html', '/modules/teacher-panel'],
   ['/modules/teacher-panel', '/modules/teacher-panel'],
+  ['/modules/simulated-exams-dynamic.html', '/modules/simulated-exams-dynamic.html'],
+  ['/modules/simulated-exams-dynamic', '/modules/simulated-exams-dynamic.html'],
+  ['/simulated-exams.html', '/modules/simulated-exams-dynamic.html'],
+  ['/simulated-exams', '/modules/simulated-exams-dynamic.html'],
   ['/modules/wu-wangyi-fluid-reading.html', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt'],
   ['/modules/wu-wangyi-fluid-reading', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt'],
   ['/modules/wang-hongwei-fluid-reading.html', '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt'],
@@ -155,7 +161,17 @@ function targetHrefForRoute(route) {
 function htmlFor(route) {
   const targetInfo = targetHrefForRoute(route);
   const target = targetInfo.href;
-  const stableFallback = route === '/modules/physical-oceanography-home.html';
+  const stableFallback = [
+    '/modules/physical-oceanography-home.html',
+    '/knowledge.html',
+    '/knowledge',
+    '/modules/knowledge-detail.html',
+    '/modules/knowledge-detail',
+    '/question-bank.html',
+    '/question-bank-home.html',
+    '/modules/question-bank.html',
+    '/modules/question-bank-module.html'
+  ].includes(route);
   const actionStyles = stableFallback
     ? '\n    .actions{display:flex;flex-wrap:wrap;gap:12px}\n    .secondary{background:#155eef}'
     : '';

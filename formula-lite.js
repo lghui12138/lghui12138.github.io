@@ -1,5 +1,5 @@
 (() => {
-  const LOCAL_MATHJAX_VERSION = 'round269-six-agent-full-entry-math-practice-20260531';
+  const LOCAL_MATHJAX_VERSION = 'round270-six-agent-seven-round-simulated-release-20260531';
   const LOCAL_MATHJAX_PATH = '/js/core/local-mathjax.js';
   const LOCAL_MATHJAX_SRC = `${LOCAL_MATHJAX_PATH}?v=${LOCAL_MATHJAX_VERSION}`;
   const MATH_TARGET_SELECTOR = [
@@ -30,7 +30,7 @@
     '.blueprint',
     '.path-step'
   ].join(',');
-  const TEX_PATTERN = /(\$\$|\\\(|\\\[|\\(?:frac|dfrac|tfrac|partial|nabla|rho|mu|sigma|sqrt|vec|mathbf|boldsymbol|operatorname|mathrm|overline|bar|hat|dot|theta|Theta|pi|nu|cdot|times|omega|phi|psi|varphi|alpha|beta|gamma|Delta|Omega|lambda|int|iint|iiint|oint|sum|lim|sin|cos|tan|cot|ln|log|exp|infty|therefore|because|leq|geq|approx|neq)\b)/;
+  const TEX_PATTERN = /(\$\$|\\\(|\\\[|\\(?:frac|dfrac|tfrac|partial|nabla|rho|mu|sigma|tau|sqrt|vec|mathbf|boldsymbol|operatorname|mathrm|mathit|mathcal|overline|underline|bar|hat|dot|ddot|left|right|theta|Theta|pi|nu|varepsilon|epsilon|cdot|times|omega|phi|psi|varphi|alpha|beta|gamma|delta|Delta|Omega|lambda|eta|kappa|int|iint|iiint|oint|sum|prod|lim|max|min|sin|cos|tan|cot|ln|log|exp|infty|therefore|because|pm|mp|le|ge|leq|geq|lt|gt|approx|neq|equiv|sim|simeq|propto|to|rightarrow|leftarrow|Rightarrow|Leftarrow|begin|end)\b)/;
   const MATHJAX_LOAD_TIMEOUT_MS = 7000;
   let mathJaxBridgePromise = null;
   const rawTexRenderPromises = new WeakMap();
