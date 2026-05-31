@@ -5,6 +5,7 @@ const repoRoot = path.resolve(import.meta.dirname, '..');
 const sourceRepoRoot = process.env.FLUID_SOURCE_REPO || path.resolve(repoRoot, '../lghui12138.github.io');
 const targetOrigin = 'https://lghui-fluid-learning.pages.dev';
 const edgeRefresh = 'round272-home-math-security-polish-20260531';
+const previousSiteUpdates = readJsonArray(path.join(repoRoot, 'site-updates.json'));
 
 const routes = [
   '/knowledge.html',
@@ -19,8 +20,12 @@ const routes = [
   '/_edge-status',
   '/modules/knowledge-upgrade-2026.html',
   '/modules/real-exams-dynamic.html',
+  '/real-exams.html',
+  '/real-exams',
   '/modules/simulated-exams-dynamic.html',
   '/modules/simulated-exams-dynamic',
+  '/simulated-exams.html',
+  '/simulated-exams',
   '/modules/knowledge-detail.html',
   '/modules/knowledge-detail',
   '/modules/teacher-panel.html',
@@ -81,6 +86,8 @@ const targetRouteOverrides = new Map([
   ['/modules/teacher-panel', '/modules/teacher-panel'],
   ['/modules/simulated-exams-dynamic.html', '/modules/simulated-exams-dynamic.html'],
   ['/modules/simulated-exams-dynamic', '/modules/simulated-exams-dynamic.html'],
+  ['/real-exams.html', '/modules/real-exams-dynamic.html'],
+  ['/real-exams', '/modules/real-exams-dynamic.html'],
   ['/simulated-exams.html', '/modules/simulated-exams-dynamic.html'],
   ['/simulated-exams', '/modules/simulated-exams-dynamic.html'],
   ['/modules/wu-wangyi-fluid-reading.html', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt'],
@@ -145,6 +152,38 @@ const jsonFallbacks = new Map([
   }]
 ]);
 
+function readJsonArray(filePath) {
+  try {
+    const parsed = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (_) {
+    return [];
+  }
+}
+
+function updateKey(item) {
+  try {
+    return JSON.stringify(item || null);
+  } catch (_) {
+    return String(item || '');
+  }
+}
+
+function preservePreviousSiteUpdates(previousRecords) {
+  const filePath = path.join(repoRoot, 'site-updates.json');
+  const sourceRecords = readJsonArray(filePath);
+  if (!previousRecords.length || !sourceRecords.length) return;
+  const seen = new Set();
+  const merged = [];
+  for (const item of [...previousRecords, ...sourceRecords]) {
+    const key = updateKey(item);
+    if (!key || key === 'null' || seen.has(key)) continue;
+    seen.add(key);
+    merged.push(item);
+  }
+  fs.writeFileSync(filePath, `${JSON.stringify(merged, null, 2)}\n`);
+}
+
 function targetRouteFor(route) {
   return targetRouteOverrides.get(route) || route;
 }
@@ -169,6 +208,8 @@ function htmlFor(route) {
     '/knowledge',
     '/modules/knowledge-detail.html',
     '/modules/knowledge-detail',
+    '/resources.html',
+    '/modules/potential-flow-dynamic.html',
     '/question-bank.html',
     '/question-bank-home.html',
     '/modules/question-bank.html',
@@ -180,11 +221,11 @@ function htmlFor(route) {
   const actionMarkup = stableFallback
     ? `<div class="actions">
       <a id="targetLink" href="${target}">立即打开</a>
-      <a id="stableLink" class="secondary" href="https://lghui.top/index-complete.html">打开稳定入口</a>
+      <a id="stableLink" class="secondary" href="https://lghui.top/index-complete.html?full=1">打开稳定入口</a>
     </div>`
     : `<p><a id="targetLink" href="${target}">立即打开</a></p>`;
   const stableScript = stableFallback
-    ? "\n    document.getElementById('stableLink').href = 'https://lghui.top/index-complete.html' + location.search + location.hash;"
+    ? "\n    const stableUrl = new URL('https://lghui.top/index-complete.html');\n    const stableParams = new URLSearchParams(location.search);\n    stableParams.set('full', '1');\n    stableUrl.search = stableParams.toString();\n    stableUrl.hash = location.hash;\n    document.getElementById('stableLink').href = stableUrl.toString();"
     : '';
   return `<!doctype html>
 <html lang="zh-CN">
@@ -439,6 +480,7 @@ for (const fileName of ['index.html', 'index-complete.html', 'offline.html', '40
 fs.writeFileSync(path.join(repoRoot, '.nojekyll'), '');
 updateManifestEntry();
 writeRuntimeAssets();
+preservePreviousSiteUpdates(previousSiteUpdates);
 writeJsonFallbacks();
 removeGeneratedAppleDoubleFiles(repoRoot);
 fs.writeFileSync(path.join(repoRoot, '_headers'), `/*.html
