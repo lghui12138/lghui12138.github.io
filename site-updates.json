@@ -17,11 +17,12 @@
     "time": "16:40",
     "title": "首页公式渲染、教师重置边界与入口体验再加固",
     "version": "round272-home-math-security-polish-20260531",
-    "description": "round272-home-math-security-polish-20260531 接在密码找回上线之后继续收口：完整首页的 Navier-Stokes 主公式和核心公式预览全部纳入 MathJax 处理，普通学生使用时不再被调试版本浮层遮挡题卡；教师后台重置学生临时密码时必须命中已注册学生账号，拼错账号不会创建新学生，也不会改变购买/开通状态；忘记密码邮箱验证码重置继续保留，验证码 hash 必须依赖 AUTH_COOKIE_SECRET，生产域名不会因为 EMAIL_DEV_MODE 误设而回显 devCode。账号基线继续只保留 qi、chenlei、anxin、sunruze 四个默认活跃学生，未加入额外默认账号。",
+    "description": "round272-home-math-security-polish-20260531 接在密码找回上线之后继续收口：完整首页的 Navier-Stokes 主公式和核心公式预览全部纳入 MathJax 处理，普通学生使用时不再被调试版本浮层遮挡题卡，章节练习首开也不再露出 Vue 模板花括号；教师后台重置学生临时密码时必须命中已注册学生账号，拼错账号不会创建新学生，也不会改变购买/开通状态；忘记密码邮箱验证码重置继续保留，验证码 hash 必须依赖 AUTH_COOKIE_SECRET，生产域名不会因为 EMAIL_DEV_MODE 误设而回显 devCode。账号基线继续只保留 qi、chenlei、anxin、sunruze 四个默认活跃学生，未加入额外默认账号。",
     "category": "首页体验与账号边界加固",
     "details": [
       "首页 N-S 方程和 4 张核心公式卡补齐 math-display / tex2jax_process 标记，formula-lite 与 local MathJax 的待渲染样式同步覆盖 .math 与 .box，避免真实浏览器里看到裸 $$ 与 \\begin 文本。",
       "Edge 版本状态胶囊改成 debug=1、edge_debug=1 或 localStorage efu_debug=1 时才显示，正常学生练习页不再被左下角调试浮层压住题卡标签。",
+      "章节练习页根节点补 v-cloak，公式脚本 cachebuster 升到 round272，真实浏览器首开资源尚未完成时不会显示 {{ loadingText }} 等模板文本。",
       "教师端学生临时密码重置新增 student_not_found / not_student_account 边界：只允许已存在学生账号，拼写错误不会写入 account:*，教师/管理员账号仍禁止走学生重置入口。",
       "自助忘记密码保留通用提示防枚举；新增 AUTH_COOKIE_SECRET 缺失时 fail closed，并把 devCode 回显限制到本地或显式 PASSWORD_RESET_DEV_CODE。",
       "烟测补充缺 secret、生产域名 devCode 不泄露、未知学生重置不创建账号；静态门禁补充首页公式标记、默认学生名单精确断言和状态浮层 debug 门禁。"
