@@ -1,6 +1,28 @@
 [
   {
     "date": "2026-05-31",
+    "time": "20:54",
+    "title": "首页公式渲染、教师重置边界、更新记录与样式缓存再加固",
+    "version": "round272-home-math-security-polish-20260531",
+    "description": "round272-home-math-security-polish-20260531 接在密码找回上线之后继续收口：完整首页的 Navier-Stokes 主公式和核心公式预览全部纳入 MathJax 处理，普通学生使用时不再被调试版本浮层遮挡题卡，章节练习首开也不再露出 Vue 模板花括号；教师后台重置学生临时密码时必须命中已注册学生账号，拼错账号不会创建新学生，也不会改变购买/开通状态；忘记密码邮箱验证码重置继续保留，验证码 hash 必须依赖 AUTH_COOKIE_SECRET，生产域名不会因为 EMAIL_DEV_MODE 误设而回显 devCode，前端也只在本地域名显示调试验证码；生产邮件服务未显式配置 Resend/Postmark/Webhook 时新增受域名白名单限制的 MailChannels 兜底，匹配账号不再因为缺少 provider secret 直接显示繁忙；历史更新记录的 ts/changes/task/desc 字段已纳入静态门禁识别，三条早期短记录按 git 提交时间补齐 timestamp；完整首页 200KB 级主体样式已外置为可缓存 CSS，仅保留登录状态确认 critical CSS；真实登录后看到的 Edge 快速首页也改用 styles/edge-fast-home.css 外置样式，并给首页搜索补上 role=search、隐藏标签、aria-controls 与 aria-live 结果数播报；首页搜索和快捷键浮层补齐 dialog/listbox/expanded 状态，键盘和读屏用户不再只看到视觉浮层。账号基线继续只保留 qi、chenlei、anxin、sunruze 四个默认活跃学生，未加入额外默认账号。",
+    "category": "首页体验、账号边界、更新记录与缓存加固",
+    "details": [
+      "首页 N-S 方程和 4 张核心公式卡补齐 math-display / tex2jax_process 标记，formula-lite 与 local MathJax 的待渲染样式同步覆盖 .math 与 .box，避免真实浏览器里看到裸 $$ 与 \\begin 文本。",
+      "Edge 版本状态胶囊改成 debug=1、edge_debug=1 或 localStorage efu_debug=1 时才显示，正常学生练习页不再被左下角调试浮层压住题卡标签。",
+      "章节练习页根节点补 v-cloak，公式脚本 cachebuster 升到 round272，真实浏览器首开资源尚未完成时不会显示 {{ loadingText }} 等模板文本。",
+      "教师端学生临时密码重置新增 student_not_found / not_student_account 边界：只允许已存在学生账号，拼写错误不会写入 account:*，教师/管理员账号仍禁止走学生重置入口。",
+      "自助忘记密码保留通用提示防枚举；新增 AUTH_COOKIE_SECRET 缺失时 fail closed，API devCode 回显限制到本地或显式 PASSWORD_RESET_DEV_CODE，页面显示再加本地域名门禁。",
+      "烟测补充缺 secret、生产域名 devCode 不泄露、未知学生重置不创建账号；静态门禁补充首页公式标记、默认学生名单精确断言和状态浮层 debug 门禁。",
+      "site-updates 历史记录门禁接受真实历史别名 ts/changes/task/desc，并用 git 历史核到的提交时间补齐 ocean-2016-22、ocean-2002-02/03/04、ocean-2016-11/13 三条早期短记录 timestamp。",
+      "完整首页主体样式从 index-complete.html 拆到 styles/fluid-home-complete.css，head 顶部提前加载；index-complete 只保留登录状态确认 critical CSS，静态回归收敛到 WARN 0。",
+      "Edge 登录态快速首页 renderFastHome 的主体样式拆到 styles/edge-fast-home.css，真实学生登录后的首页不再携带大段内联样式。",
+      "Edge 登录态快速首页搜索区补齐 role=search、sr-only label、aria-controls、aria-describedby 和 aria-live 结果数播报，筛选入口时读屏用户能听到剩余入口数量。",
+      "首页站内搜索浮层和快捷键浮层补齐 aria-controls、aria-expanded、aria-hidden、role=dialog、搜索结果 listbox/option 与 activedescendant，同步静态门禁防回退。",
+      "忘记密码验证码发送新增生产 MailChannels 兜底：只在 lghui.top / pages.dev 白名单域名、非本地 dev 模式下启用；若 KV 存储异常则提示老师临时密码通道，不再只显示“繁忙”。"
+    ]
+  },
+  {
+    "date": "2026-05-31",
     "time": "17:45",
     "title": "真题与模拟题公开别名、稳定入口和缓存壳再收口",
     "version": "round272-home-math-security-polish-20260531",
@@ -8744,5 +8766,26 @@
       "site-updates.json"
     ],
     "status": "local-updated"
+  },
+  {
+    "id": "ocean-2016-22",
+    "timestamp": "2026-04-25T14:43:17+08:00",
+    "action": "补全 answer/explanation",
+    "note": "平壁镜像复势题",
+    "title": "更新 ocean-2016-22"
+  },
+  {
+    "id": "ocean-2002-02-03-04",
+    "timestamp": "2026-04-25T15:03:49+08:00",
+    "action": "补全 answer/explanation",
+    "note": "补全 2002 年流线轨迹/圆锥管加速度/自由涡环流三道缺失 answer 的计算题",
+    "title": "更新 ocean-2002-02"
+  },
+  {
+    "id": "ocean-2016-11-ocean-2016-13",
+    "timestamp": "2026-04-25T15:23:06+08:00",
+    "action": "补全 answer/explanation",
+    "note": "补全 ocean-2016-11(肥皂泡速度加速度) 和 ocean-2016-13(拉格朗日速度加速度) 两道缺失 answer/explanation",
+    "title": "更新 ocean-2016-11/ocean-2016-13"
   }
 ]

@@ -3,7 +3,8 @@
   const SCRIPT_VERSION = 'round272-home-math-security-polish-20260531';
   const SCRIPT_SRC = `/vendor/mathjax/es5/tex-chtml-full.js?v=${SCRIPT_VERSION}`;
   const FONT_URL = '/vendor/mathjax/es5/output/chtml/fonts/woff-v2';
-  const LOAD_TIMEOUT_MS = 7000;
+  const LOAD_TIMEOUT_MS = 15000;
+  const RECOVERY_DELAYS_MS = [1200, 3600, 9000, 18000];
   const RAW_TEX_PATTERN = /(\$\$|\\\(|\\\[|\\(?:frac|dfrac|tfrac|partial|nabla|rho|mu|sigma|tau|sqrt|vec|mathbf|boldsymbol|operatorname|mathrm|mathit|mathcal|overline|underline|bar|hat|dot|ddot|left|right|theta|Theta|pi|nu|varepsilon|epsilon|cdot|times|omega|phi|psi|varphi|alpha|beta|gamma|delta|Delta|Omega|lambda|eta|kappa|int|iint|iiint|oint|sum|prod|lim|max|min|sin|cos|tan|cot|ln|log|exp|infty|therefore|because|pm|mp|le|ge|leq|geq|lt|gt|approx|neq|equiv|sim|simeq|propto|to|rightarrow|leftarrow|Rightarrow|Leftarrow|begin|end)\b)/g;
   let loadingPromise = null;
   let renderPromise = Promise.resolve();
@@ -11,6 +12,8 @@
   let queuedRoots = [];
   let queuedResolvers = [];
   let inflightRenders = [];
+  let recoveryHandle = 0;
+  let recoveryAttempts = 0;
 
   function countRawTex(nodes) {
     return normalizeNodes(nodes).reduce((sum, node) => {
@@ -121,6 +124,13 @@
       delete root.dataset.mathjaxError;
     }
     updateMathDiagnostics(state === 'formula-mathjax-failed' ? 'failed' : state.replace(/^formula-mathjax-/, ''), [document.body], error);
+    if (state === 'formula-mathjax-ready') {
+      recoveryAttempts = 0;
+      if (recoveryHandle) {
+        clearTimeout(recoveryHandle);
+        recoveryHandle = 0;
+      }
+    }
   }
 
   function withTimeout(promise, ms, message) {
@@ -149,6 +159,46 @@
         window.MathJax = undefined;
       }
     }
+  }
+
+  function runDocumentMathSweep(timeout = 120) {
+    const root = document.body || document.documentElement;
+    if (!root) return;
+    RAW_TEX_PATTERN.lastIndex = 0;
+    if (RAW_TEX_PATTERN.test(root.innerText || root.textContent || '')) queueMath(root, timeout);
+  }
+
+  function handleMathJaxLoad(mj) {
+    const loaded = mj || window.MathJax;
+    if (loaded?.typesetPromise || mathJaxReady()) {
+      markMathJaxState('formula-mathjax-ready');
+      setTimeout(() => runDocumentMathSweep(80), 0);
+      setTimeout(() => runDocumentMathSweep(160), 900);
+    }
+    return loaded;
+  }
+
+  function scheduleRecoveryMathSweep(root, error) {
+    if (recoveryHandle || recoveryAttempts >= RECOVERY_DELAYS_MS.length) return;
+    const delay = RECOVERY_DELAYS_MS[recoveryAttempts];
+    recoveryAttempts += 1;
+    window.__FM_MATH_DIAGNOSTICS__ = {
+      ...(window.__FM_MATH_DIAGNOSTICS__ || {}),
+      recoveryAttempt: recoveryAttempts,
+      recoveryDelayMs: delay,
+      recoveryReason: error?.message || 'MathJax recovery scheduled',
+      updatedAt: new Date().toISOString()
+    };
+    recoveryHandle = setTimeout(() => {
+      recoveryHandle = 0;
+      const nodes = compactRoots(normalizeNodes(root || document.body || document.documentElement));
+      if (!nodes.length) return;
+      if (!mathJaxReady()) {
+        loadingPromise = null;
+        resetPartialMathJax(document.getElementById(SCRIPT_ID));
+      }
+      queueMath(nodes, 120);
+    }, delay);
   }
 
   function configureMathJax() {
@@ -200,10 +250,10 @@
       if (existing && !forceReload) {
         return withTimeout(new Promise((resolve, reject) => {
           if (mathJaxReady()) {
-            resolve(window.MathJax);
+            resolve(handleMathJaxLoad(window.MathJax));
             return;
           }
-          existing.addEventListener('load', () => resolve(window.MathJax), { once: true });
+          existing.addEventListener('load', () => resolve(handleMathJaxLoad(window.MathJax)), { once: true });
           existing.addEventListener('error', reject, { once: true });
         }), LOAD_TIMEOUT_MS, 'MathJax load timeout').then(assertLoaded);
       }
@@ -216,7 +266,7 @@
         script.src = mathJaxScriptSrc(forceReload);
         script.defer = true;
         script.dataset.fmMathjaxVersion = SCRIPT_VERSION;
-        script.onload = () => resolve(window.MathJax);
+        script.onload = () => resolve(handleMathJaxLoad(window.MathJax));
         script.onerror = reject;
         document.head.appendChild(script);
       }), LOAD_TIMEOUT_MS, 'MathJax load timeout').then(assertLoaded);
@@ -234,6 +284,7 @@
       .catch((error) => {
         markMathJaxState('formula-mathjax-failed', error);
         loadingPromise = null;
+        scheduleRecoveryMathSweep(document.body || document.documentElement, error);
         throw error;
       });
     return loadingPromise;
@@ -324,6 +375,7 @@
         markMathJaxState('formula-mathjax-failed', error);
         updateMathDiagnostics('failed', renderNodes, error);
         markFallback(renderNodes);
+        scheduleRecoveryMathSweep(renderNodes, error);
         console.warn('本地公式渲染失败', error);
       })
       .finally(() => {
@@ -389,13 +441,7 @@
   }
 
   function scheduleDocumentMathSweeps() {
-    const run = () => {
-      const root = document.body || document.documentElement;
-      if (!root) return;
-      RAW_TEX_PATTERN.lastIndex = 0;
-      if (RAW_TEX_PATTERN.test(root.innerText || root.textContent || '')) queueMath(root, 120);
-    };
-    [0, 700, 1800, 3600, 6200].forEach((delay) => setTimeout(run, delay));
+    [0, 700, 1800, 3600, 6200, 12000, 24000].forEach((delay) => setTimeout(() => runDocumentMathSweep(120), delay));
   }
 
   window.FMConfigureMathJax = configureMathJax;

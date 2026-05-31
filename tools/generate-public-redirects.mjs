@@ -175,7 +175,12 @@ function preservePreviousSiteUpdates(previousRecords) {
   if (!previousRecords.length || !sourceRecords.length) return;
   const seen = new Set();
   const merged = [];
-  for (const item of [...previousRecords, ...sourceRecords]) {
+  const orderedRecords = [
+    sourceRecords[0],
+    ...previousRecords,
+    ...sourceRecords.slice(1)
+  ].filter(Boolean);
+  for (const item of orderedRecords) {
     const key = updateKey(item);
     if (!key || key === 'null' || seen.has(key)) continue;
     seen.add(key);
