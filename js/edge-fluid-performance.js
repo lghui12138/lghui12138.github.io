@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var VERSION = 'round270-six-agent-seven-round-simulated-release-20260531';
+  var VERSION = 'round272-home-math-security-polish-20260531';
   var LEARNING_CONTENT_VERSION = 'round264-formula-condition-checklist-20260522';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';
@@ -344,7 +344,20 @@
     } catch (_) {}
   }
 
+  function edgeStatusDebugEnabled() {
+    try {
+      var params = new URLSearchParams(location.search || '');
+      if (params.get('debug') === '1' || params.get('edge_debug') === '1') return true;
+    } catch (_) {}
+    try {
+      return localStorage.getItem('efu_debug') === '1';
+    } catch (_) {
+      return false;
+    }
+  }
+
   function showEdgeStatus() {
+    if (!edgeStatusDebugEnabled()) return;
     if (constrainedNetwork()) return;
     fetchWithTimeout('/_edge-status', { credentials: 'same-origin', cache: 'no-cache' }, 4500)
       .then(function (res) { return res.ok ? res.json() : null; })

@@ -1,5 +1,5 @@
 (() => {
-  const LOCAL_MATHJAX_VERSION = 'round270-six-agent-seven-round-simulated-release-20260531';
+  const LOCAL_MATHJAX_VERSION = 'round272-home-math-security-polish-20260531';
   const LOCAL_MATHJAX_PATH = '/js/core/local-mathjax.js';
   const LOCAL_MATHJAX_SRC = `${LOCAL_MATHJAX_PATH}?v=${LOCAL_MATHJAX_VERSION}`;
   const MATH_TARGET_SELECTOR = [
@@ -13,9 +13,11 @@
     '.formula-explanation',
     '.math-inline',
     '.math-display',
+    '.math',
     '.mini-math',
     '.inline-formula',
     '.hero-equation',
+    '.box',
     '.caption',
     '.question-text',
     '.explanation',
@@ -26,6 +28,8 @@
     '.guide-card',
     '.chapter-panel',
     '.formula-panel',
+    '.fcard',
+    '.ns-equation-card',
     '.ns-role',
     '.blueprint',
     '.path-step'

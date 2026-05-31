@@ -1,6 +1,6 @@
 (() => {
   const SCRIPT_ID = 'MathJax-script';
-  const SCRIPT_VERSION = 'round270-six-agent-seven-round-simulated-release-20260531';
+  const SCRIPT_VERSION = 'round272-home-math-security-polish-20260531';
   const SCRIPT_SRC = `/vendor/mathjax/es5/tex-chtml-full.js?v=${SCRIPT_VERSION}`;
   const FONT_URL = '/vendor/mathjax/es5/output/chtml/fonts/woff-v2';
   const LOAD_TIMEOUT_MS = 7000;
@@ -84,10 +84,12 @@
       }
       html:not(.formula-mathjax-failed) .math-inline:not(:has(mjx-container)),
       html:not(.formula-mathjax-failed) .math-display:not(:has(mjx-container)),
+      html:not(.formula-mathjax-failed) .math:not(:has(mjx-container)),
       html:not(.formula-mathjax-failed) .inline-formula:not(:has(mjx-container)),
       html:not(.formula-mathjax-failed) .mini-math:not(:has(mjx-container)),
       html:not(.formula-mathjax-failed) .formula:not(:has(mjx-container)),
       html:not(.formula-mathjax-failed) .formula-mini:not(:has(mjx-container)),
+      html:not(.formula-mathjax-failed) .box:not(:has(mjx-container)),
       html:not(.formula-mathjax-failed) .mathbox:not(:has(mjx-container)),
       html:not(.formula-mathjax-failed) .tex:not(:has(mjx-container)),
       html:not(.formula-mathjax-failed) .ns-role-code:not(:has(mjx-container)) {

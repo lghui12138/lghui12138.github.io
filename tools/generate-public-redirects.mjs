@@ -4,7 +4,7 @@ import path from 'node:path';
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const sourceRepoRoot = process.env.FLUID_SOURCE_REPO || path.resolve(repoRoot, '../lghui12138.github.io');
 const targetOrigin = 'https://lghui-fluid-learning.pages.dev';
-const edgeRefresh = 'round271-password-reset-recovery-20260531';
+const edgeRefresh = 'round272-home-math-security-polish-20260531';
 
 const routes = [
   '/knowledge.html',
