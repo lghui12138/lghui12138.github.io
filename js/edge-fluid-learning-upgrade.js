@@ -1,6 +1,6 @@
 /**
  * Edge Fluid Learning Upgrade
- * round273-learning-radar-a11y-20260611: authenticated route recovery plus full chapter practice links
+ * round274-lghui-top-auth-continuity-20260611: lghui.top QA auth chain and teacher review order
  * learning interaction and knowledge navigation enhancement.
  *
  * No framework, no HTML edits required. The script mounts into
@@ -10,7 +10,7 @@
 (function(global, document) {
   'use strict';
 
-  var VERSION = 'round273-learning-radar-a11y-20260611-eflu-formula-fix';
+  var VERSION = 'round274-lghui-top-auth-continuity-20260611-eflu-formula-fix';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';
   var R263_VERSION = 'round263-fluid-exam-route-map-20260522';
@@ -2396,6 +2396,11 @@
       '.eflu-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}',
       '.eflu-chip,.eflu-tab,.eflu-seg{border:1px solid var(--eflu-line);background:color-mix(in srgb,var(--eflu-surface) 82%,transparent);color:var(--eflu-soft);min-height:34px;border-radius:999px;padding:0 12px;display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:.86rem;}',
       '.eflu-chip strong{color:var(--eflu-ink);font-weight:800;}',
+      '.eflu-review-rail{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:14px 0 2px;}',
+      '.eflu-review-step{min-width:0;min-height:74px;border:1px solid var(--eflu-line);background:color-mix(in srgb,var(--eflu-surface) 86%,transparent);border-radius:8px;padding:10px;display:grid;align-content:start;gap:4px;overflow-wrap:anywhere;}',
+      '.eflu-review-step small{font-size:.68rem;font-weight:900;letter-spacing:.07em;color:var(--eflu-coral);}',
+      '.eflu-review-step b{font-size:.88rem;line-height:1.25;color:var(--eflu-ink);}',
+      '.eflu-review-step span{font-size:.76rem;line-height:1.42;color:var(--eflu-muted);}',
       '.eflu-hero-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}',
       '.eflu-stat{min-height:82px;border:1px solid var(--eflu-line);background:rgba(255,255,255,.58);border-radius:8px;padding:14px;display:grid;align-content:center;gap:4px;}',
       '[data-theme="dark"] .eflu-stat,.eflu[data-dark="1"] .eflu-stat{background:rgba(255,255,255,.04);}',
@@ -2486,9 +2491,9 @@
       '.eflu-r264-step span{display:block;margin-top:3px;font-size:.8rem;line-height:1.42;overflow-wrap:anywhere;}',
       '.eflu-toast{position:fixed;right:18px;bottom:18px;z-index:99999;background:var(--eflu-ink);color:var(--eflu-surface);border-radius:8px;padding:10px 14px;box-shadow:var(--eflu-shadow);transition:opacity .22s ease,transform .22s ease;}',
       '.eflu-toast.is-out{opacity:0;transform:translateY(8px);}',
-      '@media (max-width:900px){.eflu-hero-in,.eflu-grid,.eflu-split-form,.eflu-route-board{grid-template-columns:1fr;}.eflu-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-path-row{grid-template-columns:1fr;}.eflu-hero-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media (max-width:900px){.eflu-hero-in,.eflu-grid,.eflu-split-form,.eflu-route-board{grid-template-columns:1fr;}.eflu-review-rail{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-path-row{grid-template-columns:1fr;}.eflu-hero-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
       '@media (pointer:coarse){.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}}',
-      '@media (max-width:560px){.eflu{margin:18px 0 26px;}.eflu-hero{padding:16px;}.eflu h2{font-size:1.35rem;}.eflu-kpis,.eflu-hero-grid{grid-template-columns:1fr;}.eflu-inputbar{display:grid;}.eflu-inputbar .eflu-btn{width:100%;}.eflu-actions .eflu-btn{flex:1 1 150px;}.eflu-anchor{min-width:138px;}.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}.eflu-tile-top{display:grid;}.eflu-clue-chip{flex:1 1 132px;justify-content:center;text-align:center;}.eflu-route-note,.eflu-route-empty{text-align:left;}.eflu-step{padding-left:38px;}.eflu-quick-actions .eflu-btn,.eflu-r264-step{flex:1 1 100%;}}',
+      '@media (max-width:560px){.eflu{margin:18px 0 26px;}.eflu-hero{padding:16px;}.eflu h2{font-size:1.35rem;}.eflu-kpis,.eflu-hero-grid{grid-template-columns:1fr;}.eflu-review-rail{grid-auto-flow:column;grid-auto-columns:minmax(210px,84%);grid-template-columns:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding-bottom:4px;}.eflu-review-step{scroll-snap-align:start;min-height:84px;}.eflu-inputbar{display:grid;}.eflu-inputbar .eflu-btn{width:100%;}.eflu-actions .eflu-btn{flex:1 1 150px;}.eflu-anchor{min-width:138px;}.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}.eflu-tile-top{display:grid;}.eflu-clue-chip{flex:1 1 132px;justify-content:center;text-align:center;}.eflu-route-note,.eflu-route-empty{text-align:left;}.eflu-step{padding-left:38px;}.eflu-quick-actions .eflu-btn,.eflu-r264-step{flex:1 1 100%;}}',
       '@media print{.eflu-tabs,.eflu-anchor-strip,.eflu-actions,.eflu-inputbar{display:none!important}.eflu,.eflu-hero,.eflu-tile,.eflu-kpi{box-shadow:none!important;background:#fff!important;color:#111!important}.eflu-grid{grid-template-columns:1fr!important}.eflu-desc{display:block!important;overflow:visible!important}}',
       '@media (prefers-reduced-motion:reduce){.eflu *{transition:none!important;animation:none!important;}}'
     ].join('\n');
@@ -2566,6 +2571,7 @@
       '<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="formulas" aria-controls="' + attr(tabPanelId('formulas')) + '" aria-label="打开公式速查标签">' + icon('sigma') + '公式速查</button>',
       '<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="review" aria-controls="' + attr(tabPanelId('review')) + '" aria-label="打开复习本标签">' + icon('bookmark') + '复习本</button>',
       '</div>',
+      renderRound274WorkbenchLoop(summary),
       '</div>',
       '<div class="eflu-hero-grid">',
       statBox(summary.pct + '%', '知识掌握率'),
@@ -2585,6 +2591,19 @@
     if (summary.learning > 0) return '继续收口学习中的知识点。先把正在学的条目改成“掌握”或“薄弱”，再开新章节。';
     if (summary.done === 0) return '从 N-S 主线或第 1 章开始。不要急着刷题，先把变量、假设和边界条件说清楚。';
     return '今天可以从公式抽样里选两条，分别写出来源、适用条件和失效情形。';
+  }
+
+  function renderRound274WorkbenchLoop(summary) {
+    var steps = [
+      ['01', '题干条件', summary.total ? summary.done + '/' + summary.total + ' 知识点已收口' : '先读一个知识点'],
+      ['02', '边界条件', summary.weak > 0 ? summary.weak + ' 个薄弱点待核' : '先核定常和壁面条件'],
+      ['03', '单位方向', DATA.formulaChecklist.length ? DATA.formulaChecklist.length + ' 张条件卡可查' : '先查公式条件表'],
+      ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
+      ['05', '错因复盘', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
+    ];
+    return '<div class="eflu-review-rail" data-round274-workbench-loop="round274-lghui-top-auth-continuity-20260611" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
+      return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
+    }).join('') + '</div>';
   }
 
   function renderTeacherHint(summary) {

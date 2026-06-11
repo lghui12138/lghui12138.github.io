@@ -4,7 +4,7 @@ import path from 'node:path';
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const sourceRepoRoot = process.env.FLUID_SOURCE_REPO || path.resolve(repoRoot, '../lghui12138.github.io');
 const targetOrigin = 'https://lghui-fluid-learning.pages.dev';
-const edgeRefresh = 'round273-learning-radar-a11y-20260611';
+const edgeRefresh = 'round274-lghui-top-auth-continuity-20260611';
 const previousSiteUpdates = readJsonArray(path.join(repoRoot, 'site-updates.json'));
 
 const routes = [
@@ -169,6 +169,11 @@ function updateKey(item) {
   }
 }
 
+function updateStamp(item) {
+  if (item && item.updatedAt) return String(item.updatedAt);
+  return `${item?.date || '0000-00-00'}T${item?.time || '00:00'}:00+08:00`;
+}
+
 function preservePreviousSiteUpdates(previousRecords) {
   const filePath = path.join(repoRoot, 'site-updates.json');
   const sourceRecords = readJsonArray(filePath);
@@ -186,6 +191,7 @@ function preservePreviousSiteUpdates(previousRecords) {
     seen.add(key);
     merged.push(item);
   }
+  merged.sort((a, b) => updateStamp(b).localeCompare(updateStamp(a)));
   fs.writeFileSync(filePath, `${JSON.stringify(merged, null, 2)}\n`);
 }
 
