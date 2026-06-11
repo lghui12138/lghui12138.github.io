@@ -1,5 +1,5 @@
 (() => {
-  const LOCAL_MATHJAX_VERSION = 'round279-real-exam-source-granularity-20260612';
+  const LOCAL_MATHJAX_VERSION = 'round280-real-exam-integrity-board-20260612';
   const LOCAL_MATHJAX_PATH = '/js/core/local-mathjax.js';
   const LOCAL_MATHJAX_SRC = `${LOCAL_MATHJAX_PATH}?v=${LOCAL_MATHJAX_VERSION}`;
   const MATH_TARGET_SELECTOR = [
