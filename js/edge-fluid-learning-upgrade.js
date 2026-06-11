@@ -1,6 +1,6 @@
 /**
  * Edge Fluid Learning Upgrade
- * round277-formula-condition-sprint-20260612: 100-round upgrade roadmap and quality radar
+ * round278-pdf-web-year-compare-20260612: 100-round upgrade roadmap and quality radar
  * learning interaction and knowledge navigation enhancement.
  *
  * No framework, no HTML edits required. The script mounts into
@@ -10,7 +10,7 @@
 (function(global, document) {
   'use strict';
 
-  var VERSION = 'round277-formula-condition-sprint-20260612-eflu-formula-fix';
+  var VERSION = 'round278-pdf-web-year-compare-20260612-eflu-pdf-web-year';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';
   var R263_VERSION = 'round263-fluid-exam-route-map-20260522';
@@ -18,8 +18,10 @@
   var R264_VERSION = 'round264-formula-condition-checklist-20260522';
   var LEARNING_CONTENT_VERSION = R264_VERSION;
   var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
-  var ROADMAP100_VERSION = 'round277-formula-condition-sprint-20260612';
+  var ROADMAP100_VERSION = 'round278-pdf-web-year-compare-20260612';
   var ROADMAP100_URL = '/data/fluid-upgrade-roadmap-100.json';
+  var R278_VERSION = 'round278-pdf-web-year-compare-20260612';
+  var R278_YEAR_COMPARE_URL = '/data/fluid-round278-pdf-web-year-compare.json';
   var R247_SELECTOR = [
     '[data-round247-real-exam-pdf-fidelity-audit]',
     '[data-r247-audit-summary]',
@@ -186,6 +188,8 @@
     upgrade: null,
     roadmap100: null,
     roadmapStatus: 'pending',
+    round278PdfWebYearCompare: null,
+    round278Status: 'pending',
     knowledge: [],
     categories: [],
     searchEntries: [],
@@ -913,6 +917,7 @@
     DATA.searchStatus = 'pending';
     DATA.formulaStatus = 'pending';
     DATA.roadmapStatus = 'pending';
+    DATA.round278Status = 'pending';
     DATA.reviewSupportStatus = 'pending';
     DATA.searchEntries = [];
     DATA.formulas = FALLBACK_FORMULAS.slice();
@@ -921,7 +926,8 @@
       loadFirstJSON(UPGRADE_URLS),
       fetchJSON(DATA_URLS.examRouteMap, true),
       fetchJSON(DATA_URLS.formulaConditionChecklist, true),
-      fetchJSON(ROADMAP100_URL, true)
+      fetchJSON(ROADMAP100_URL, true),
+      fetchJSON(R278_YEAR_COMPARE_URL, true)
     ]).then(function(results) {
       DATA.knowledge = normalizeKnowledge(results[0]);
       DATA.categories = normalizeCategories(results[0], DATA.knowledge);
@@ -936,9 +942,11 @@
       DATA.examRouteMap = results[2] || null;
       DATA.formulaConditionChecklist = results[3] || null;
       DATA.roadmap100 = normalizeRoadmap100(results[4]);
+      DATA.round278PdfWebYearCompare = normalizeRound278PdfWebYearCompare(results[5]);
       DATA.routeMapStatus = DATA.examRouteMap ? 'loaded' : 'fallback';
       DATA.formulaChecklistStatus = DATA.formulaConditionChecklist ? 'loaded' : 'fallback';
       DATA.roadmapStatus = DATA.roadmap100 ? 'loaded' : 'fallback';
+      DATA.round278Status = DATA.round278PdfWebYearCompare ? 'loaded' : 'fallback';
       if (!DATA.upgrade) DATA.upgradeStatus = 'fallback';
       applyUpgrade(DATA.upgrade);
       DATA.paths = derivePaths(DATA.upgrade);
@@ -1120,6 +1128,55 @@
       lanes: lanes,
       rounds: rounds,
       releaseGate: payload.releaseGate || {}
+    };
+  }
+
+  function normalizeRound278PdfWebYearCompare(payload) {
+    if (!payload || typeof payload !== 'object') return null;
+    if (payload.version !== R278_VERSION) return null;
+    var summary = payload.summary || {};
+    var years = toArray(payload.years).filter(function(item) {
+      return item && Number(item.year) >= 2000 && Number(item.year) <= 2025;
+    }).map(function(item) {
+      return {
+        year: Number(item.year),
+        status: String(item.status || 'needs-source-review'),
+        sourceStatus: String(item.sourceStatus || ''),
+        questionCount: Number(item.questionCount) || 0,
+        exactOrContainedQuestionStems: Number(item.exactOrContainedQuestionStems) || 0,
+        fuzzyAlignedQuestionStems: Number(item.fuzzyAlignedQuestionStems) || 0,
+        sourceComparableQuestionStems: Number(item.sourceComparableQuestionStems) || 0,
+        comparableRate: Number(item.comparableRate) || 0,
+        derivedOrUnprovenAnswers: Number(item.derivedOrUnprovenAnswers) || 0,
+        issues: toArray(item.issues).map(String)
+      };
+    });
+    if (!years.length) return null;
+    return {
+      version: String(payload.version),
+      generatedAt: String(payload.generatedAt || ''),
+      summary: {
+        auditedYearSpan: String(summary.auditedYearSpan || '2000-2025'),
+        originalQuestionPdfYearSpan: String(summary.originalQuestionPdfYearSpan || '2000-2024'),
+        activeQuestionCount: Number(summary.activeQuestionCount) || 0,
+        sourceComparableQuestionStems: Number(summary.sourceComparableQuestionStems) || 0,
+        exactOrContainedQuestionStems: Number(summary.exactOrContainedQuestionStems) || 0,
+        fuzzyAlignedQuestionStems: Number(summary.fuzzyAlignedQuestionStems) || 0,
+        noComparableSourceQuestionStems: Number(summary.noComparableSourceQuestionStems) || 0,
+        derivedOrUnprovenAnswers: Number(summary.derivedOrUnprovenAnswers) || 0,
+        missingAnswers: Number(summary.missingAnswers) || 0,
+        answerPdfVerbatimProofStatus: String(summary.answerPdfVerbatimProofStatus || 'not-established'),
+        evidenceAlignedQuestionCount: Number(summary.evidenceAlignedQuestionCount) || 0,
+        strictOriginalAnswerEvidenceCount: Number(summary.strictOriginalAnswerEvidenceCount) || 0,
+        highlightYears: summary.highlightYears || {}
+      },
+      boundaryNotes: toArray(payload.boundaryNotes).map(String),
+      quickLinks: toArray(payload.quickLinks).filter(function(link) {
+        return link && link.href && link.label;
+      }).map(function(link) {
+        return { label: String(link.label), href: String(link.href) };
+      }),
+      years: years
     };
   }
 
@@ -2541,6 +2598,25 @@
       '.eflu-r277-card dt{font-size:.74rem;font-weight:900;color:var(--eflu-muted);margin:0 0 2px;}',
       '.eflu-r277-card dd{margin:0;color:var(--eflu-soft);font-size:.82rem;line-height:1.45;overflow-wrap:anywhere;}',
       '.eflu-r277-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}',
+      '.eflu-r278-compare{border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-indigo);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 92%,var(--eflu-indigo) 8%);padding:14px;margin:0 0 14px;}',
+      '.eflu-r278-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px;}',
+      '.eflu-r278-metrics .eflu-kpi{min-height:74px;padding:10px;}',
+      '.eflu-r278-metrics .eflu-kpi b{font-size:1.2rem;}',
+      '.eflu-r278-highlights{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;}',
+      '.eflu-r278-highlights span{display:inline-grid;gap:2px;min-width:104px;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:8px 10px;}',
+      '.eflu-r278-highlights b{font-size:.74rem;color:var(--eflu-muted);}',
+      '.eflu-r278-highlights em{font-style:normal;color:var(--eflu-ink);font-weight:900;line-height:1.3;}',
+      '.eflu-r278-years{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:6px;margin:0 0 10px;}',
+      '.eflu-r278-year{min-width:0;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:7px 6px;display:grid;gap:2px;text-align:center;}',
+      '.eflu-r278-year b{font-size:.82rem;color:var(--eflu-ink);line-height:1.1;}',
+      '.eflu-r278-year small{color:var(--eflu-soft);font-size:.68rem;font-weight:850;line-height:1.2;overflow-wrap:anywhere;}',
+      '.eflu-r278-year em{font-style:normal;color:var(--eflu-muted);font-size:.66rem;line-height:1.2;}',
+      '.eflu-r278-year[data-r278-year-status="pdf-web-comparable"]{border-color:color-mix(in srgb,var(--eflu-teal) 45%,var(--eflu-line));}',
+      '.eflu-r278-year[data-r278-year-status="partial-compare"]{border-color:color-mix(in srgb,var(--eflu-warn) 48%,var(--eflu-line));}',
+      '.eflu-r278-year[data-r278-year-status="empty-or-source-missing"]{border-color:color-mix(in srgb,var(--eflu-err) 45%,var(--eflu-line));background:color-mix(in srgb,var(--eflu-surface) 86%,var(--eflu-err) 14%);}',
+      '.eflu-r278-year[data-r278-year-status="outside-original-pdf-index"]{border-color:color-mix(in srgb,var(--eflu-indigo) 52%,var(--eflu-line));background:color-mix(in srgb,var(--eflu-surface) 86%,var(--eflu-indigo) 14%);}',
+      '.eflu-r278-notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px;}',
+      '.eflu-r278-notes span{display:flex;align-items:flex-start;gap:7px;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:9px 10px;color:var(--eflu-soft);font-size:.8rem;line-height:1.42;}',
       '.eflu-roadmap{border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-coral);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 94%,var(--eflu-coral) 6%);padding:14px;margin:0 0 14px;}',
       '.eflu-roadmap-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}',
       '.eflu-roadmap-head h3{margin:0;color:var(--eflu-ink);font-size:1rem;line-height:1.3;}',
@@ -2553,9 +2629,9 @@
       '.eflu-roadmap-next{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}',
       '.eflu-toast{position:fixed;right:18px;bottom:18px;z-index:99999;background:var(--eflu-ink);color:var(--eflu-surface);border-radius:8px;padding:10px 14px;box-shadow:var(--eflu-shadow);transition:opacity .22s ease,transform .22s ease;}',
       '.eflu-toast.is-out{opacity:0;transform:translateY(8px);}',
-      '@media (max-width:900px){.eflu-hero-in,.eflu-grid,.eflu-split-form,.eflu-route-board,.eflu-r277-grid{grid-template-columns:1fr;}.eflu-review-rail{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-path-row{grid-template-columns:1fr;}.eflu-hero-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-roadmap-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media (max-width:900px){.eflu-hero-in,.eflu-grid,.eflu-split-form,.eflu-route-board,.eflu-r277-grid,.eflu-r278-notes{grid-template-columns:1fr;}.eflu-review-rail{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-kpis,.eflu-r278-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-path-row{grid-template-columns:1fr;}.eflu-hero-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-roadmap-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-r278-years{grid-template-columns:repeat(4,minmax(0,1fr));}}',
       '@media (pointer:coarse){.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}}',
-      '@media (max-width:560px){.eflu{margin:18px 0 26px;}.eflu-hero{padding:16px;}.eflu h2{font-size:1.35rem;}.eflu-kpis,.eflu-hero-grid,.eflu-roadmap-grid{grid-template-columns:1fr;}.eflu-roadmap-head{display:grid;}.eflu-roadmap-badge{justify-content:center;}.eflu-review-rail{grid-auto-flow:column;grid-auto-columns:minmax(210px,84%);grid-template-columns:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding-bottom:4px;}.eflu-review-step{scroll-snap-align:start;min-height:84px;}.eflu-inputbar{display:grid;}.eflu-inputbar .eflu-btn{width:100%;}.eflu-actions .eflu-btn{flex:1 1 150px;}.eflu-anchor{min-width:138px;}.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}.eflu-tile-top{display:grid;}.eflu-clue-chip{flex:1 1 132px;justify-content:center;text-align:center;}.eflu-route-note,.eflu-route-empty{text-align:left;}.eflu-step{padding-left:38px;}.eflu-quick-actions .eflu-btn,.eflu-r264-step{flex:1 1 100%;}}',
+      '@media (max-width:560px){.eflu{margin:18px 0 26px;}.eflu-hero{padding:16px;}.eflu h2{font-size:1.35rem;}.eflu-kpis,.eflu-hero-grid,.eflu-roadmap-grid,.eflu-r278-metrics{grid-template-columns:1fr;}.eflu-r278-years{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-roadmap-head{display:grid;}.eflu-roadmap-badge{justify-content:center;white-space:normal;}.eflu-review-rail{grid-auto-flow:column;grid-auto-columns:minmax(210px,84%);grid-template-columns:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding-bottom:4px;}.eflu-review-step{scroll-snap-align:start;min-height:84px;}.eflu-inputbar{display:grid;}.eflu-inputbar .eflu-btn{width:100%;}.eflu-actions .eflu-btn{flex:1 1 150px;}.eflu-anchor{min-width:138px;}.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}.eflu-tile-top{display:grid;}.eflu-clue-chip{flex:1 1 132px;justify-content:center;text-align:center;}.eflu-route-note,.eflu-route-empty{text-align:left;}.eflu-step{padding-left:38px;}.eflu-quick-actions .eflu-btn,.eflu-r264-step{flex:1 1 100%;}}',
       '@media print{.eflu-tabs,.eflu-anchor-strip,.eflu-actions,.eflu-inputbar{display:none!important}.eflu,.eflu-hero,.eflu-tile,.eflu-kpi{box-shadow:none!important;background:#fff!important;color:#111!important}.eflu-grid{grid-template-columns:1fr!important}.eflu-desc{display:block!important;overflow:visible!important}}',
       '@media (prefers-reduced-motion:reduce){.eflu *{transition:none!important;animation:none!important;}}'
     ].join('\n');
@@ -2663,7 +2739,7 @@
       ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
       ['05', '错因订正', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
     ];
-    return '<div class="eflu-review-rail" data-round274-workbench-loop="round277-formula-condition-sprint-20260612" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
+    return '<div class="eflu-review-rail" data-round274-workbench-loop="round278-pdf-web-year-compare-20260612" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
       return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
     }).join('') + '</div>';
   }
@@ -2732,6 +2808,7 @@
       '</div>',
       renderUpgradeRoadmapRadar(),
       renderRound277FormulaConditionSprint(),
+      renderRound278PdfWebYearCompare(),
       '<div class="eflu-grid">',
       '<section class="eflu-panel">',
       panelHead('知识路径概览', '按主线板块聚合，优先显示薄弱与学习中内容'),
@@ -2858,6 +2935,88 @@
       '<a class="eflu-btn" href="' + attr(routeHref) + '">' + icon('external') + '入口</a>',
       '</div>',
       '</article>'
+    ].join('');
+  }
+
+  function round278StatusLabel(status) {
+    var labels = {
+      'pdf-web-comparable': '题面可对照',
+      'partial-compare': '部分可对照',
+      'empty-or-source-missing': '缺源/空年',
+      'outside-original-pdf-index': '索引外训练',
+      'needs-source-review': '来源待复核'
+    };
+    return labels[status] || '来源待复核';
+  }
+
+  function round278HighlightYears(compare) {
+    var highlights = compare && compare.summary && compare.summary.highlightYears ? compare.summary.highlightYears : {};
+    return [
+      { label: '空年', value: toArray(highlights.emptyYears).join('、') || '无' },
+      { label: '源缺失', value: toArray(highlights.sourceMissingYears).join('、') || '无' },
+      { label: '索引外', value: toArray(highlights.outsideOriginalPdfIndexYears).join('、') || '无' }
+    ];
+  }
+
+  function renderRound278YearCell(row) {
+    var exact = row.exactOrContainedQuestionStems;
+    var fuzzy = row.fuzzyAlignedQuestionStems;
+    var label = round278StatusLabel(row.status);
+    return [
+      '<span class="eflu-r278-year" data-r278-year-status="' + attr(row.status) + '" role="listitem" aria-label="' + attr(row.year + ' 年：' + label + '，' + row.questionCount + ' 题') + '">',
+      '<b>' + esc(row.year) + '</b>',
+      '<small>' + esc(label) + '</small>',
+      '<em>' + esc(row.questionCount + '题 · E' + exact + '/F' + fuzzy) + '</em>',
+      '</span>'
+    ].join('');
+  }
+
+  function renderRound278PdfWebYearCompare() {
+    var compare = DATA.round278PdfWebYearCompare;
+    if (!compare) {
+      return [
+        '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="fallback" aria-label="round278 PDF Web 年份对照">',
+        '<div class="eflu-roadmap-head">',
+        '<div><h3>round278 PDF/Web 年份对照正在读取</h3><p>小型汇总数据暂未取到时，真题页仍保留 round247 PDF 保真审计和 release gate 对照脚本。</p></div>',
+        '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?from=round278-pdf-web-year-compare">' + icon('external') + '真题训练</a>',
+        '</div>',
+        '</section>'
+      ].join('');
+    }
+    var summary = compare.summary;
+    var comparableRate = summary.activeQuestionCount ? Math.round(summary.sourceComparableQuestionStems / summary.activeQuestionCount * 100) : 0;
+    var highlights = round278HighlightYears(compare);
+    var notes = compare.boundaryNotes.slice(0, 4);
+    return [
+      '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="' + attr(compare.version) + '" aria-labelledby="eflu-r278-title" aria-describedby="eflu-r278-desc">',
+      '<div class="eflu-roadmap-head">',
+      '<div><h3 id="eflu-r278-title">round278 真题 PDF/Web 年份对照台</h3><p id="eflu-r278-desc">先看年份是否在原题册索引内，再分题面可对照、模糊对齐、缺源和索引外训练；答案仍按待核验参考处理。</p></div>',
+      '<span class="eflu-roadmap-badge">' + icon('target') + esc(summary.auditedYearSpan + ' · ' + comparableRate + '% 可比对') + '</span>',
+      '</div>',
+      '<div class="eflu-r278-metrics" aria-label="PDF Web 对照汇总">',
+      kpi(summary.activeQuestionCount, '真题/训练题'),
+      kpi(summary.sourceComparableQuestionStems, '题面可比对'),
+      kpi(summary.fuzzyAlignedQuestionStems, '模糊对齐'),
+      kpi(summary.strictOriginalAnswerEvidenceCount, '原答案 PDF 严格证据'),
+      '</div>',
+      '<div class="eflu-r278-highlights" role="list" aria-label="关键年份边界">',
+      highlights.map(function(item) {
+        return '<span role="listitem"><b>' + esc(item.label) + '</b><em>' + esc(item.value) + '</em></span>';
+      }).join(''),
+      '<span role="listitem"><b>原题册</b><em>' + esc(summary.originalQuestionPdfYearSpan) + '</em></span>',
+      '</div>',
+      '<div class="eflu-r278-years" role="list" aria-label="2000 到 2025 年 PDF Web 年份状态">',
+      compare.years.map(renderRound278YearCell).join(''),
+      '</div>',
+      '<div class="eflu-r278-notes" role="list" aria-label="PDF Web 证据边界">',
+      notes.map(function(note) { return '<span role="listitem">' + icon('alert') + esc(note) + '</span>'; }).join(''),
+      '</div>',
+      '<div class="eflu-r277-actions" role="group" aria-label="round278 PDF Web 对照入口">',
+      compare.quickLinks.map(function(link) {
+        return '<a class="eflu-btn" href="' + attr(link.href) + '">' + icon(link.href.indexOf('/data/') >= 0 ? 'note' : 'external') + esc(link.label) + '</a>';
+      }).join(''),
+      '</div>',
+      '</section>'
     ].join('');
   }
 
