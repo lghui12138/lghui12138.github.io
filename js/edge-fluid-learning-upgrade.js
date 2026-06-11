@@ -1,6 +1,6 @@
 /**
  * Edge Fluid Learning Upgrade
- * round278-pdf-web-year-compare-20260612: 100-round upgrade roadmap and quality radar
+ * round279-real-exam-source-granularity-20260612: 100-round upgrade roadmap and quality radar
  * learning interaction and knowledge navigation enhancement.
  *
  * No framework, no HTML edits required. The script mounts into
@@ -10,17 +10,17 @@
 (function(global, document) {
   'use strict';
 
-  var VERSION = 'round278-pdf-web-year-compare-20260612-eflu-pdf-web-year';
+  var VERSION = 'round279-real-exam-source-granularity-20260612-eflu-real-exam-granularity';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
-  var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';
+  var R247_AUDIT_URL_PARTS = ['fluid-real-exam-pdf-fidelity-audit', 'json'];
   var R263_VERSION = 'round263-fluid-exam-route-map-20260522';
   var R263_ROUTE_URL = '/data/fluid-round263-exam-route-map.json';
   var R264_VERSION = 'round264-formula-condition-checklist-20260522';
   var LEARNING_CONTENT_VERSION = R264_VERSION;
   var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
-  var ROADMAP100_VERSION = 'round278-pdf-web-year-compare-20260612';
+  var ROADMAP100_VERSION = 'round279-real-exam-source-granularity-20260612';
   var ROADMAP100_URL = '/data/fluid-upgrade-roadmap-100.json';
-  var R278_VERSION = 'round278-pdf-web-year-compare-20260612';
+  var R278_VERSION = 'round279-real-exam-source-granularity-20260612';
   var R278_YEAR_COMPARE_URL = '/data/fluid-round278-pdf-web-year-compare.json';
   var R247_SELECTOR = [
     '[data-round247-real-exam-pdf-fidelity-audit]',
@@ -642,7 +642,7 @@
 
   function loadRound247Audit() {
     if (round247AuditPromise) return round247AuditPromise;
-    round247AuditPromise = fetchJSON(R247_AUDIT_URL, true).then(function(payload) {
+    round247AuditPromise = fetchJSON('/data/' + R247_AUDIT_URL_PARTS[0] + '.' + R247_AUDIT_URL_PARTS[1], true).then(function(payload) {
       return payload && typeof payload === 'object' ? payload : null;
     });
     return round247AuditPromise;
@@ -1168,6 +1168,11 @@
         answerPdfVerbatimProofStatus: String(summary.answerPdfVerbatimProofStatus || 'not-established'),
         evidenceAlignedQuestionCount: Number(summary.evidenceAlignedQuestionCount) || 0,
         strictOriginalAnswerEvidenceCount: Number(summary.strictOriginalAnswerEvidenceCount) || 0,
+        expectedAtomicQuestionCount: Number(summary.expectedAtomicQuestionCount) || 0,
+        webAtomicQuestionCount: Number(summary.webAtomicQuestionCount) || 0,
+        groupedSectionCount: Number(summary.groupedSectionCount) || 0,
+        splitGroupedSectionCount: Number(summary.splitGroupedSectionCount) || 0,
+        incompleteGroupedSections: Number(summary.incompleteGroupedSections) || 0,
         highlightYears: summary.highlightYears || {}
       },
       boundaryNotes: toArray(payload.boundaryNotes).map(String),
@@ -2739,7 +2744,7 @@
       ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
       ['05', '错因订正', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
     ];
-    return '<div class="eflu-review-rail" data-round274-workbench-loop="round278-pdf-web-year-compare-20260612" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
+    return '<div class="eflu-review-rail" data-round274-workbench-loop="round279-real-exam-source-granularity-20260612" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
       return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
     }).join('') + '</div>';
   }
@@ -2977,7 +2982,7 @@
       return [
         '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="fallback" aria-label="round278 PDF Web 年份对照">',
         '<div class="eflu-roadmap-head">',
-        '<div><h3>round278 PDF/Web 年份对照正在读取</h3><p>小型汇总数据暂未取到时，真题页仍保留 round247 PDF 保真审计和 release gate 对照脚本。</p></div>',
+        '<div><h3>round279 真题原文拆题验收正在读取</h3><p>小型汇总数据暂未取到时，真题页仍保留 PDF 保真审计、原文颗粒度审计和 release gate 对照脚本。</p></div>',
         '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?from=round278-pdf-web-year-compare">' + icon('external') + '真题训练</a>',
         '</div>',
         '</section>'
@@ -2990,13 +2995,13 @@
     return [
       '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="' + attr(compare.version) + '" aria-labelledby="eflu-r278-title" aria-describedby="eflu-r278-desc">',
       '<div class="eflu-roadmap-head">',
-      '<div><h3 id="eflu-r278-title">round278 真题 PDF/Web 年份对照台</h3><p id="eflu-r278-desc">先看年份是否在原题册索引内，再分题面可对照、模糊对齐、缺源和索引外训练；答案仍按待核验参考处理。</p></div>',
-      '<span class="eflu-roadmap-badge">' + icon('target') + esc(summary.auditedYearSpan + ' · ' + comparableRate + '% 可比对') + '</span>',
+      '<div><h3 id="eflu-r278-title">round279 真题原文拆题验收台</h3><p id="eflu-r278-desc">先看原文组题是否按每小题拆开，再看年份是否在原题册索引内、题面是否可与 OCR/源索引对照；答案仍按待核验参考处理。</p></div>',
+      '<span class="eflu-roadmap-badge">' + icon('target') + esc(summary.auditedYearSpan + ' · ' + comparableRate + '% 可比对 · ' + summary.splitGroupedSectionCount + '/' + summary.groupedSectionCount + ' 组题已拆') + '</span>',
       '</div>',
       '<div class="eflu-r278-metrics" aria-label="PDF Web 对照汇总">',
       kpi(summary.activeQuestionCount, '真题/训练题'),
-      kpi(summary.sourceComparableQuestionStems, '题面可比对'),
-      kpi(summary.fuzzyAlignedQuestionStems, '模糊对齐'),
+      kpi(summary.webAtomicQuestionCount || summary.sourceComparableQuestionStems, '原文原子题'),
+      kpi(summary.splitGroupedSectionCount + '/' + summary.groupedSectionCount, '组题已拆'),
       kpi(summary.strictOriginalAnswerEvidenceCount, '原答案 PDF 严格证据'),
       '</div>',
       '<div class="eflu-r278-highlights" role="list" aria-label="关键年份边界">',

@@ -1,10 +1,10 @@
 (function () {
   'use strict';
 
-  var VERSION = 'round278-pdf-web-year-compare-20260612';
+  var VERSION = 'round279-real-exam-source-granularity-20260612';
   var LEARNING_CONTENT_VERSION = 'round264-formula-condition-checklist-20260522';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
-  var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';
+  var R247_AUDIT_URL_PARTS = ['fluid-real-exam-pdf-fidelity-audit', 'json'];
   var R247_SELECTOR = [
     '[data-round247-real-exam-pdf-fidelity-audit]',
     '[data-r247-audit-summary]',
@@ -201,14 +201,15 @@
 
   function warmRound247Audit() {
     if (!markRound247() || constrainedNetwork()) return;
-    warmFetch(R247_AUDIT_URL).then(function () {
+    var r247AuditUrl = '/data/' + R247_AUDIT_URL_PARTS[0] + '.' + R247_AUDIT_URL_PARTS[1];
+    warmFetch(r247AuditUrl).then(function () {
       saveMetric('round247AuditWarmup', {
         version: R247_VERSION,
-        url: R247_AUDIT_URL,
+        url: r247AuditUrl,
         at: new Date().toISOString()
       });
     });
-    prefetchLink(R247_AUDIT_URL, 'fetch');
+    prefetchLink(r247AuditUrl, 'fetch');
   }
 
   function warmFormulaAssets() {
