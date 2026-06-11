@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var VERSION = 'round274-lghui-top-auth-continuity-20260611';
+  var VERSION = 'round275-upgrade-roadmap-100-20260612';
   var LEARNING_CONTENT_VERSION = 'round264-formula-condition-checklist-20260522';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';

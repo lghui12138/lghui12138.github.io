@@ -4,7 +4,7 @@ import path from 'node:path';
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const sourceRepoRoot = process.env.FLUID_SOURCE_REPO || path.resolve(repoRoot, '../lghui12138.github.io');
 const targetOrigin = 'https://lghui-fluid-learning.pages.dev';
-const edgeRefresh = 'round274-lghui-top-auth-continuity-20260611';
+const edgeRefresh = 'round275-upgrade-roadmap-100-20260612';
 const previousSiteUpdates = readJsonArray(path.join(repoRoot, 'site-updates.json'));
 
 const routes = [
@@ -115,6 +115,8 @@ const targetRouteOverrides = new Map([
 
 const runtimeCopies = [
   ['site-updates.json', 'site-updates.json'],
+  ['data/fluid-upgrade-roadmap-100.json', 'data/fluid-upgrade-roadmap-100.json'],
+  ['data/fluid-upgrade-roadmap-100.json.gz', 'data/fluid-upgrade-roadmap-100.json.gz'],
   ['js/core/local-mathjax.js', 'js/core/local-mathjax.js'],
   ['js/core/local-mathjax.js', 'local-mathjax.js'],
   ['js/core/local-mathjax.js', 'modules/local-mathjax.js'],

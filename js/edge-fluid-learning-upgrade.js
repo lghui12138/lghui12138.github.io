@@ -1,6 +1,6 @@
 /**
  * Edge Fluid Learning Upgrade
- * round274-lghui-top-auth-continuity-20260611: lghui.top QA auth chain and teacher review order
+ * round275-upgrade-roadmap-100-20260612: 100-round upgrade roadmap and quality radar
  * learning interaction and knowledge navigation enhancement.
  *
  * No framework, no HTML edits required. The script mounts into
@@ -10,7 +10,7 @@
 (function(global, document) {
   'use strict';
 
-  var VERSION = 'round274-lghui-top-auth-continuity-20260611-eflu-formula-fix';
+  var VERSION = 'round275-upgrade-roadmap-100-20260612-eflu-formula-fix';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';
   var R263_VERSION = 'round263-fluid-exam-route-map-20260522';
@@ -18,6 +18,8 @@
   var R264_VERSION = 'round264-formula-condition-checklist-20260522';
   var LEARNING_CONTENT_VERSION = R264_VERSION;
   var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
+  var R275_VERSION = 'round275-upgrade-roadmap-100-20260612';
+  var R275_ROADMAP_URL = '/data/fluid-upgrade-roadmap-100.json';
   var R247_SELECTOR = [
     '[data-round247-real-exam-pdf-fidelity-audit]',
     '[data-r247-audit-summary]',
@@ -182,6 +184,8 @@
     routeMapStatus: 'pending',
     upgradeStatus: 'pending',
     upgrade: null,
+    roadmap100: null,
+    roadmapStatus: 'pending',
     knowledge: [],
     categories: [],
     searchEntries: [],
@@ -908,6 +912,7 @@
     DATA.routeMapStatus = 'pending';
     DATA.searchStatus = 'pending';
     DATA.formulaStatus = 'pending';
+    DATA.roadmapStatus = 'pending';
     DATA.reviewSupportStatus = 'pending';
     DATA.searchEntries = [];
     DATA.formulas = FALLBACK_FORMULAS.slice();
@@ -915,7 +920,8 @@
       fetchJSON(DATA_URLS.knowledge, false),
       loadFirstJSON(UPGRADE_URLS),
       fetchJSON(DATA_URLS.examRouteMap, true),
-      fetchJSON(DATA_URLS.formulaConditionChecklist, true)
+      fetchJSON(DATA_URLS.formulaConditionChecklist, true),
+      fetchJSON(R275_ROADMAP_URL, true)
     ]).then(function(results) {
       DATA.knowledge = normalizeKnowledge(results[0]);
       DATA.categories = normalizeCategories(results[0], DATA.knowledge);
@@ -929,8 +935,10 @@
       DATA.upgrade = results[1] || null;
       DATA.examRouteMap = results[2] || null;
       DATA.formulaConditionChecklist = results[3] || null;
+      DATA.roadmap100 = normalizeRoadmap100(results[4]);
       DATA.routeMapStatus = DATA.examRouteMap ? 'loaded' : 'fallback';
       DATA.formulaChecklistStatus = DATA.formulaConditionChecklist ? 'loaded' : 'fallback';
+      DATA.roadmapStatus = DATA.roadmap100 ? 'loaded' : 'fallback';
       if (!DATA.upgrade) DATA.upgradeStatus = 'fallback';
       applyUpgrade(DATA.upgrade);
       DATA.paths = derivePaths(DATA.upgrade);
@@ -954,6 +962,8 @@
       DATA.formulaConditionChecklist = null;
       DATA.formulaChecklistStatus = 'fallback';
       DATA.formulaChecklist = deriveFormulaChecklist(null, null);
+      DATA.roadmap100 = null;
+      DATA.roadmapStatus = 'fallback';
       DATA.upgradeStatus = 'fallback';
       DATA.reviewPlan = null;
       DATA.remediation = null;
@@ -1078,6 +1088,39 @@
       });
     }
     return categories.filter(function(cat) { return cat.name; });
+  }
+
+  function normalizeRoadmap100(payload) {
+    if (!payload || typeof payload !== 'object') return null;
+    var rounds = toArray(payload.rounds).filter(function(item) {
+      return item && Number(item.round) >= 275 && item.id && item.lane && item.title;
+    }).map(function(item) {
+      return {
+        round: Number(item.round),
+        id: String(item.id),
+        lane: String(item.lane),
+        title: String(item.title),
+        focus: String(item.focus || ''),
+        status: String(item.status || 'queued'),
+        acceptance: toArray(item.acceptance).map(String)
+      };
+    });
+    if (payload.version !== R275_VERSION || rounds.length !== 100) return null;
+    var lanes = toArray(payload.lanes).map(function(lane) {
+      return {
+        id: String(lane.id || ''),
+        title: String(lane.title || lane.id || ''),
+        summary: String(lane.summary || '')
+      };
+    }).filter(function(lane) { return lane.id && lane.title; });
+    return {
+      version: String(payload.version),
+      goal: String(payload.goal || '至少 100 大轮持续升级'),
+      currentRound: Number(payload.currentRound) || 275,
+      lanes: lanes,
+      rounds: rounds,
+      releaseGate: payload.releaseGate || {}
+    };
   }
 
   function normalizeSearch(payload) {
@@ -2489,11 +2532,21 @@
       '.eflu-r264-step{flex:1 1 154px;min-width:0;border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-teal);border-radius:8px;background:var(--eflu-surface);padding:10px 11px;color:var(--eflu-soft);}',
       '.eflu-r264-step b{display:block;color:var(--eflu-ink);font-size:.88rem;line-height:1.28;}',
       '.eflu-r264-step span{display:block;margin-top:3px;font-size:.8rem;line-height:1.42;overflow-wrap:anywhere;}',
+      '.eflu-roadmap{border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-coral);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 94%,var(--eflu-coral) 6%);padding:14px;margin:0 0 14px;}',
+      '.eflu-roadmap-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}',
+      '.eflu-roadmap-head h3{margin:0;color:var(--eflu-ink);font-size:1rem;line-height:1.3;}',
+      '.eflu-roadmap-head p{margin:4px 0 0;color:var(--eflu-soft);font-size:.86rem;line-height:1.45;}',
+      '.eflu-roadmap-badge{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid color-mix(in srgb,var(--eflu-coral) 48%,var(--eflu-line));border-radius:999px;padding:6px 10px;background:var(--eflu-surface);font-weight:800;color:var(--eflu-ink);}',
+      '.eflu-roadmap-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;}',
+      '.eflu-roadmap-lane{min-width:0;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:9px 10px;}',
+      '.eflu-roadmap-lane b{display:block;color:var(--eflu-ink);font-size:.84rem;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+      '.eflu-roadmap-lane span{display:block;margin-top:3px;color:var(--eflu-soft);font-size:.78rem;line-height:1.35;}',
+      '.eflu-roadmap-next{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}',
       '.eflu-toast{position:fixed;right:18px;bottom:18px;z-index:99999;background:var(--eflu-ink);color:var(--eflu-surface);border-radius:8px;padding:10px 14px;box-shadow:var(--eflu-shadow);transition:opacity .22s ease,transform .22s ease;}',
       '.eflu-toast.is-out{opacity:0;transform:translateY(8px);}',
-      '@media (max-width:900px){.eflu-hero-in,.eflu-grid,.eflu-split-form,.eflu-route-board{grid-template-columns:1fr;}.eflu-review-rail{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-path-row{grid-template-columns:1fr;}.eflu-hero-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media (max-width:900px){.eflu-hero-in,.eflu-grid,.eflu-split-form,.eflu-route-board{grid-template-columns:1fr;}.eflu-review-rail{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-path-row{grid-template-columns:1fr;}.eflu-hero-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-roadmap-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
       '@media (pointer:coarse){.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}}',
-      '@media (max-width:560px){.eflu{margin:18px 0 26px;}.eflu-hero{padding:16px;}.eflu h2{font-size:1.35rem;}.eflu-kpis,.eflu-hero-grid{grid-template-columns:1fr;}.eflu-review-rail{grid-auto-flow:column;grid-auto-columns:minmax(210px,84%);grid-template-columns:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding-bottom:4px;}.eflu-review-step{scroll-snap-align:start;min-height:84px;}.eflu-inputbar{display:grid;}.eflu-inputbar .eflu-btn{width:100%;}.eflu-actions .eflu-btn{flex:1 1 150px;}.eflu-anchor{min-width:138px;}.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}.eflu-tile-top{display:grid;}.eflu-clue-chip{flex:1 1 132px;justify-content:center;text-align:center;}.eflu-route-note,.eflu-route-empty{text-align:left;}.eflu-step{padding-left:38px;}.eflu-quick-actions .eflu-btn,.eflu-r264-step{flex:1 1 100%;}}',
+      '@media (max-width:560px){.eflu{margin:18px 0 26px;}.eflu-hero{padding:16px;}.eflu h2{font-size:1.35rem;}.eflu-kpis,.eflu-hero-grid,.eflu-roadmap-grid{grid-template-columns:1fr;}.eflu-roadmap-head{display:grid;}.eflu-roadmap-badge{justify-content:center;}.eflu-review-rail{grid-auto-flow:column;grid-auto-columns:minmax(210px,84%);grid-template-columns:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding-bottom:4px;}.eflu-review-step{scroll-snap-align:start;min-height:84px;}.eflu-inputbar{display:grid;}.eflu-inputbar .eflu-btn{width:100%;}.eflu-actions .eflu-btn{flex:1 1 150px;}.eflu-anchor{min-width:138px;}.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}.eflu-tile-top{display:grid;}.eflu-clue-chip{flex:1 1 132px;justify-content:center;text-align:center;}.eflu-route-note,.eflu-route-empty{text-align:left;}.eflu-step{padding-left:38px;}.eflu-quick-actions .eflu-btn,.eflu-r264-step{flex:1 1 100%;}}',
       '@media print{.eflu-tabs,.eflu-anchor-strip,.eflu-actions,.eflu-inputbar{display:none!important}.eflu,.eflu-hero,.eflu-tile,.eflu-kpi{box-shadow:none!important;background:#fff!important;color:#111!important}.eflu-grid{grid-template-columns:1fr!important}.eflu-desc{display:block!important;overflow:visible!important}}',
       '@media (prefers-reduced-motion:reduce){.eflu *{transition:none!important;animation:none!important;}}'
     ].join('\n');
@@ -2601,7 +2654,7 @@
       ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
       ['05', '错因订正', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
     ];
-    return '<div class="eflu-review-rail" data-round274-workbench-loop="round274-lghui-top-auth-continuity-20260611" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
+    return '<div class="eflu-review-rail" data-round274-workbench-loop="round275-upgrade-roadmap-100-20260612" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
       return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
     }).join('') + '</div>';
   }
@@ -2668,6 +2721,7 @@
       kpi(DATA.categories.length, '知识板块'),
       kpi(DATA.searchEntries.length, '站内可搜条目'),
       '</div>',
+      renderRound275RoadmapRadar(),
       '<div class="eflu-grid">',
       '<section class="eflu-panel">',
       panelHead('知识路径概览', '按主线板块聚合，优先显示薄弱与学习中内容'),
@@ -2695,6 +2749,43 @@
       '</section>',
       '</div>'
     ].join('');
+  }
+
+  function renderRound275RoadmapRadar() {
+    var roadmap = DATA.roadmap100;
+    if (!roadmap) {
+      return '<section class="eflu-roadmap" data-round275-roadmap-status="' + attr(DATA.roadmapStatus) + '" aria-label="round275 百轮升级路线"><div class="eflu-roadmap-head"><div><h3>百轮升级路线正在读取</h3><p>读取失败时不影响知识点、题库和公式使用；发布门禁会继续检查路线账本。</p></div><span class="eflu-roadmap-badge">' + icon('clock') + '等待数据</span></div></section>';
+    }
+    var laneCounts = Object.create(null);
+    roadmap.rounds.forEach(function(item) {
+      laneCounts[item.lane] = (laneCounts[item.lane] || 0) + 1;
+    });
+    var active = roadmap.rounds.find(function(item) { return item.status === 'active'; }) || roadmap.rounds[0];
+    var next = roadmap.rounds.filter(function(item) { return item.round > roadmap.currentRound; }).slice(0, 3);
+    var lanes = roadmap.lanes.slice(0, 10);
+    return [
+      '<section class="eflu-roadmap" data-round275-roadmap="' + attr(roadmap.version) + '" aria-label="round275 百轮升级路线">',
+      '<div class="eflu-roadmap-head">',
+      '<div><h3>百轮升级路线与质量雷达</h3><p>' + esc(roadmap.goal) + '；当前从 round275 开始，把认证、公式、真题、资源、性能、可访问性和发布验证分开推进。</p></div>',
+      '<span class="eflu-roadmap-badge">' + icon('chart') + '当前：round' + esc(roadmap.currentRound) + '</span>',
+      '</div>',
+      '<div class="eflu-roadmap-grid">',
+      lanes.map(function(lane) {
+        return '<div class="eflu-roadmap-lane"><b>' + esc(lane.title) + '</b><span>' + esc((laneCounts[lane.id] || 0) + ' 轮 · ' + lane.summary) + '</span></div>';
+      }).join(''),
+      '</div>',
+      '<div class="eflu-roadmap-next" role="list" aria-label="近期升级轮次">',
+      renderRoadmapChip(active, '本轮'),
+      next.map(function(item) { return renderRoadmapChip(item, '下一轮'); }).join(''),
+      '<a class="eflu-btn" href="/data/fluid-upgrade-roadmap-100.json" aria-label="打开完整百轮升级路线数据">' + icon('external') + '完整路线</a>',
+      '</div>',
+      '</section>'
+    ].join('');
+  }
+
+  function renderRoadmapChip(item, prefix) {
+    if (!item) return '';
+    return '<span class="eflu-chip" role="listitem">' + icon(item.status === 'active' ? 'target' : 'check') + esc(prefix + ' round' + item.round + ' · ' + item.focus) + '</span>';
   }
 
   function kpi(value, label) {
