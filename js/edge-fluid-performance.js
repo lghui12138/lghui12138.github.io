@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var VERSION = 'round280-real-exam-integrity-board-20260612';
+  var VERSION = 'round281-real-exam-integrity-browser-gate-20260612';
   var LEARNING_CONTENT_VERSION = 'round264-formula-condition-checklist-20260522';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL_PARTS = ['fluid-real-exam-pdf-fidelity-audit', 'json'];
