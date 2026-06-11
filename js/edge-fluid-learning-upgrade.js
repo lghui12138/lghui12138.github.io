@@ -1,6 +1,6 @@
 /**
  * Edge Fluid Learning Upgrade
- * round276-public-shell-sw-kill-switch-20260612: 100-round upgrade roadmap and quality radar
+ * round277-formula-condition-sprint-20260612: 100-round upgrade roadmap and quality radar
  * learning interaction and knowledge navigation enhancement.
  *
  * No framework, no HTML edits required. The script mounts into
@@ -10,7 +10,7 @@
 (function(global, document) {
   'use strict';
 
-  var VERSION = 'round276-public-shell-sw-kill-switch-20260612-eflu-formula-fix';
+  var VERSION = 'round277-formula-condition-sprint-20260612-eflu-formula-fix';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';
   var R263_VERSION = 'round263-fluid-exam-route-map-20260522';
@@ -18,7 +18,7 @@
   var R264_VERSION = 'round264-formula-condition-checklist-20260522';
   var LEARNING_CONTENT_VERSION = R264_VERSION;
   var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
-  var ROADMAP100_VERSION = 'round276-public-shell-sw-kill-switch-20260612';
+  var ROADMAP100_VERSION = 'round277-formula-condition-sprint-20260612';
   var ROADMAP100_URL = '/data/fluid-upgrade-roadmap-100.json';
   var R247_SELECTOR = [
     '[data-round247-real-exam-pdf-fidelity-audit]',
@@ -2532,6 +2532,15 @@
       '.eflu-r264-step{flex:1 1 154px;min-width:0;border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-teal);border-radius:8px;background:var(--eflu-surface);padding:10px 11px;color:var(--eflu-soft);}',
       '.eflu-r264-step b{display:block;color:var(--eflu-ink);font-size:.88rem;line-height:1.28;}',
       '.eflu-r264-step span{display:block;margin-top:3px;font-size:.8rem;line-height:1.42;overflow-wrap:anywhere;}',
+      '.eflu-r277-sprint{border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-teal);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 92%,var(--eflu-teal) 8%);padding:14px;margin:0 0 14px;}',
+      '.eflu-r277-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}',
+      '.eflu-r277-card{min-width:0;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:12px;display:grid;gap:9px;}',
+      '.eflu-r277-card h4{margin:0;color:var(--eflu-ink);font-size:.92rem;line-height:1.35;}',
+      '.eflu-r277-card dl{display:grid;gap:7px;margin:0;}',
+      '.eflu-r277-card div{min-width:0;}',
+      '.eflu-r277-card dt{font-size:.74rem;font-weight:900;color:var(--eflu-muted);margin:0 0 2px;}',
+      '.eflu-r277-card dd{margin:0;color:var(--eflu-soft);font-size:.82rem;line-height:1.45;overflow-wrap:anywhere;}',
+      '.eflu-r277-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}',
       '.eflu-roadmap{border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-coral);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 94%,var(--eflu-coral) 6%);padding:14px;margin:0 0 14px;}',
       '.eflu-roadmap-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}',
       '.eflu-roadmap-head h3{margin:0;color:var(--eflu-ink);font-size:1rem;line-height:1.3;}',
@@ -2544,7 +2553,7 @@
       '.eflu-roadmap-next{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}',
       '.eflu-toast{position:fixed;right:18px;bottom:18px;z-index:99999;background:var(--eflu-ink);color:var(--eflu-surface);border-radius:8px;padding:10px 14px;box-shadow:var(--eflu-shadow);transition:opacity .22s ease,transform .22s ease;}',
       '.eflu-toast.is-out{opacity:0;transform:translateY(8px);}',
-      '@media (max-width:900px){.eflu-hero-in,.eflu-grid,.eflu-split-form,.eflu-route-board{grid-template-columns:1fr;}.eflu-review-rail{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-path-row{grid-template-columns:1fr;}.eflu-hero-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-roadmap-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
+      '@media (max-width:900px){.eflu-hero-in,.eflu-grid,.eflu-split-form,.eflu-route-board,.eflu-r277-grid{grid-template-columns:1fr;}.eflu-review-rail{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-kpis{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-path-row{grid-template-columns:1fr;}.eflu-hero-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-roadmap-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}',
       '@media (pointer:coarse){.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}}',
       '@media (max-width:560px){.eflu{margin:18px 0 26px;}.eflu-hero{padding:16px;}.eflu h2{font-size:1.35rem;}.eflu-kpis,.eflu-hero-grid,.eflu-roadmap-grid{grid-template-columns:1fr;}.eflu-roadmap-head{display:grid;}.eflu-roadmap-badge{justify-content:center;}.eflu-review-rail{grid-auto-flow:column;grid-auto-columns:minmax(210px,84%);grid-template-columns:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding-bottom:4px;}.eflu-review-step{scroll-snap-align:start;min-height:84px;}.eflu-inputbar{display:grid;}.eflu-inputbar .eflu-btn{width:100%;}.eflu-actions .eflu-btn{flex:1 1 150px;}.eflu-anchor{min-width:138px;}.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}.eflu-tile-top{display:grid;}.eflu-clue-chip{flex:1 1 132px;justify-content:center;text-align:center;}.eflu-route-note,.eflu-route-empty{text-align:left;}.eflu-step{padding-left:38px;}.eflu-quick-actions .eflu-btn,.eflu-r264-step{flex:1 1 100%;}}',
       '@media print{.eflu-tabs,.eflu-anchor-strip,.eflu-actions,.eflu-inputbar{display:none!important}.eflu,.eflu-hero,.eflu-tile,.eflu-kpi{box-shadow:none!important;background:#fff!important;color:#111!important}.eflu-grid{grid-template-columns:1fr!important}.eflu-desc{display:block!important;overflow:visible!important}}',
@@ -2654,7 +2663,7 @@
       ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
       ['05', '错因订正', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
     ];
-    return '<div class="eflu-review-rail" data-round274-workbench-loop="round276-public-shell-sw-kill-switch-20260612" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
+    return '<div class="eflu-review-rail" data-round274-workbench-loop="round277-formula-condition-sprint-20260612" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
       return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
     }).join('') + '</div>';
   }
@@ -2722,6 +2731,7 @@
       kpi(DATA.searchEntries.length, '站内可搜条目'),
       '</div>',
       renderUpgradeRoadmapRadar(),
+      renderRound277FormulaConditionSprint(),
       '<div class="eflu-grid">',
       '<section class="eflu-panel">',
       panelHead('知识路径概览', '按主线板块聚合，优先显示薄弱与学习中内容'),
@@ -2786,6 +2796,69 @@
   function renderRoadmapChip(item, prefix) {
     if (!item) return '';
     return '<span class="eflu-chip" role="listitem">' + icon(item.status === 'active' ? 'target' : 'check') + esc(prefix + ' round' + item.round + ' · ' + item.focus) + '</span>';
+  }
+
+  function firstChecklistText(items, fallback) {
+    var text = firstText(toArray(items).slice(0, 2));
+    return text || fallback || '先回到题干补齐条件。';
+  }
+
+  function round277SprintCards() {
+    var preferred = ['连续', '伯努利', '动量'];
+    var picked = [];
+    preferred.forEach(function(keyword) {
+      var found = DATA.formulaChecklist.find(function(item) {
+        return normalizeText(item.title + ' ' + toArray(item.aliases).join(' ')).indexOf(normalizeText(keyword)) >= 0;
+      });
+      if (found && picked.indexOf(found) < 0) picked.push(found);
+    });
+    DATA.formulaChecklist.forEach(function(item) {
+      if (picked.length < 3 && picked.indexOf(item) < 0) picked.push(item);
+    });
+    return picked.slice(0, 3);
+  }
+
+  function renderRound277FormulaConditionSprint() {
+    var cards = round277SprintCards();
+    if (!cards.length) {
+      return '<section class="eflu-r277-sprint" data-round277-formula-sprint="fallback" aria-label="round277 公式条件速核"><div class="eflu-roadmap-head"><div><h3>公式条件速核正在读取</h3><p>条件表暂未取到时，仍可进入完整条件回查标签和知识整理页。</p></div><button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="formula-checklist">' + icon('check') + '条件回查</button></div></section>';
+    }
+    return [
+      '<section class="eflu-r277-sprint" data-round277-formula-sprint="' + attr(VERSION) + '" aria-labelledby="eflu-r277-title" aria-describedby="eflu-r277-desc">',
+      '<div class="eflu-roadmap-head">',
+      '<div><h3 id="eflu-r277-title">round277 公式条件速核</h3><p id="eflu-r277-desc">先核适用条件、缺条件、单位方向和真题入口；能不能用，比先把式子写出来更重要。</p></div>',
+      '<span class="eflu-roadmap-badge">' + icon('check') + esc(cards.length + ' 张速核卡') + '</span>',
+      '</div>',
+      '<div class="eflu-r277-grid" role="list" aria-label="首页公式条件速核卡">',
+      cards.map(renderRound277SprintCard).join(''),
+      '</div>',
+      '<div class="eflu-r277-actions" role="group" aria-label="round277 公式条件操作">',
+      '<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="tab" data-tab="formula-checklist" aria-controls="' + attr(tabPanelId('formula-checklist')) + '">' + icon('check') + '完整条件回查</button>',
+      '<a class="eflu-btn" href="/modules/knowledge-upgrade-2026.html#formula-condition-checklist">' + icon('external') + '知识整理页</a>',
+      '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?from=round277-formula-condition-sprint">' + icon('play') + '真题重做</a>',
+      '</div>',
+      '</section>'
+    ].join('');
+  }
+
+  function renderRound277SprintCard(item) {
+    var route = toArray(item.routeLinks).find(function(link) { return link && link.href; }) || null;
+    var routeHref = route && route.href ? route.href : '/modules/knowledge-upgrade-2026.html#formula-condition-checklist';
+    return [
+      '<article class="eflu-r277-card" role="listitem" aria-label="公式条件速核：' + attr(item.title) + '">',
+      '<h4>' + esc(item.title) + '</h4>',
+      '<dl>',
+      '<div><dt>适用条件</dt><dd>' + esc(firstChecklistText(item.applyConditions, '先确认题干信号和模型假设。')) + '</dd></div>',
+      '<div><dt>不能直接用</dt><dd>' + esc(firstChecklistText(toArray(item.notEnoughConditions).concat(item.invalidWhen || []), '条件不全时先补控制体、损失项或密度关系。')) + '</dd></div>',
+      '<div><dt>单位方向</dt><dd>' + esc(firstChecklistText(item.unitDirections, '最后核单位、正方向和数量级。')) + '</dd></div>',
+      '<div><dt>真题入口</dt><dd>' + esc(route && route.label ? route.label : (item.examEntry || '回到同类真题重做')) + '</dd></div>',
+      '</dl>',
+      '<div class="eflu-r277-actions">',
+      '<button class="eflu-btn" type="button" data-eflu-action="formula-checklist-select" data-checklist-id="' + attr(item.id) + '">' + icon('check') + '查这条</button>',
+      '<a class="eflu-btn" href="' + attr(routeHref) + '">' + icon('external') + '入口</a>',
+      '</div>',
+      '</article>'
+    ].join('');
   }
 
   function kpi(value, label) {
