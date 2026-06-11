@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var VERSION = 'round283-real-exam-type-sequence-ledger-20260612';
+  var VERSION = 'round284-real-exam-review-navigator-20260612';
   var LEARNING_CONTENT_VERSION = 'round264-formula-condition-checklist-20260522';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL_PARTS = ['fluid-real-exam-pdf-fidelity-audit', 'json'];

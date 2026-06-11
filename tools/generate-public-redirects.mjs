@@ -4,7 +4,7 @@ import path from 'node:path';
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const sourceRepoRoot = process.env.FLUID_SOURCE_REPO || path.resolve(repoRoot, '../lghui12138.github.io');
 const targetOrigin = 'https://lghui-fluid-learning.pages.dev';
-const edgeRefresh = 'round283-real-exam-type-sequence-ledger-20260612';
+const edgeRefresh = 'round284-real-exam-review-navigator-20260612';
 const previousSiteUpdates = readJsonArray(path.join(repoRoot, 'site-updates.json'));
 
 const routes = [
@@ -127,6 +127,8 @@ const runtimeCopies = [
   ['data/fluid-round282-real-exam-year-count-ledger.json.gz', 'data/fluid-round282-real-exam-year-count-ledger.json.gz'],
   ['data/fluid-round283-real-exam-type-sequence-ledger.json', 'data/fluid-round283-real-exam-type-sequence-ledger.json'],
   ['data/fluid-round283-real-exam-type-sequence-ledger.json.gz', 'data/fluid-round283-real-exam-type-sequence-ledger.json.gz'],
+  ['data/fluid-round284-real-exam-review-navigator.json', 'data/fluid-round284-real-exam-review-navigator.json'],
+  ['data/fluid-round284-real-exam-review-navigator.json.gz', 'data/fluid-round284-real-exam-review-navigator.json.gz'],
   ['js/core/local-mathjax.js', 'js/core/local-mathjax.js'],
   ['js/core/local-mathjax.js', 'local-mathjax.js'],
   ['js/core/local-mathjax.js', 'modules/local-mathjax.js'],
