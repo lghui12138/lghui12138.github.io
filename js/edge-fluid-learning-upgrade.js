@@ -1,6 +1,6 @@
 /**
  * Edge Fluid Learning Upgrade
- * round275-upgrade-roadmap-100-20260612: 100-round upgrade roadmap and quality radar
+ * round276-public-shell-sw-kill-switch-20260612: 100-round upgrade roadmap and quality radar
  * learning interaction and knowledge navigation enhancement.
  *
  * No framework, no HTML edits required. The script mounts into
@@ -10,7 +10,7 @@
 (function(global, document) {
   'use strict';
 
-  var VERSION = 'round275-upgrade-roadmap-100-20260612-eflu-formula-fix';
+  var VERSION = 'round276-public-shell-sw-kill-switch-20260612-eflu-formula-fix';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';
   var R263_VERSION = 'round263-fluid-exam-route-map-20260522';
@@ -18,8 +18,8 @@
   var R264_VERSION = 'round264-formula-condition-checklist-20260522';
   var LEARNING_CONTENT_VERSION = R264_VERSION;
   var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
-  var R275_VERSION = 'round275-upgrade-roadmap-100-20260612';
-  var R275_ROADMAP_URL = '/data/fluid-upgrade-roadmap-100.json';
+  var ROADMAP100_VERSION = 'round276-public-shell-sw-kill-switch-20260612';
+  var ROADMAP100_URL = '/data/fluid-upgrade-roadmap-100.json';
   var R247_SELECTOR = [
     '[data-round247-real-exam-pdf-fidelity-audit]',
     '[data-r247-audit-summary]',
@@ -921,7 +921,7 @@
       loadFirstJSON(UPGRADE_URLS),
       fetchJSON(DATA_URLS.examRouteMap, true),
       fetchJSON(DATA_URLS.formulaConditionChecklist, true),
-      fetchJSON(R275_ROADMAP_URL, true)
+      fetchJSON(ROADMAP100_URL, true)
     ]).then(function(results) {
       DATA.knowledge = normalizeKnowledge(results[0]);
       DATA.categories = normalizeCategories(results[0], DATA.knowledge);
@@ -1105,7 +1105,7 @@
         acceptance: toArray(item.acceptance).map(String)
       };
     });
-    if (payload.version !== R275_VERSION || rounds.length !== 100) return null;
+    if (payload.version !== ROADMAP100_VERSION || rounds.length !== 100) return null;
     var lanes = toArray(payload.lanes).map(function(lane) {
       return {
         id: String(lane.id || ''),
@@ -2654,7 +2654,7 @@
       ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
       ['05', '错因订正', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
     ];
-    return '<div class="eflu-review-rail" data-round274-workbench-loop="round275-upgrade-roadmap-100-20260612" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
+    return '<div class="eflu-review-rail" data-round274-workbench-loop="round276-public-shell-sw-kill-switch-20260612" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
       return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
     }).join('') + '</div>';
   }
@@ -2721,7 +2721,7 @@
       kpi(DATA.categories.length, '知识板块'),
       kpi(DATA.searchEntries.length, '站内可搜条目'),
       '</div>',
-      renderRound275RoadmapRadar(),
+      renderUpgradeRoadmapRadar(),
       '<div class="eflu-grid">',
       '<section class="eflu-panel">',
       panelHead('知识路径概览', '按主线板块聚合，优先显示薄弱与学习中内容'),
@@ -2751,10 +2751,10 @@
     ].join('');
   }
 
-  function renderRound275RoadmapRadar() {
+  function renderUpgradeRoadmapRadar() {
     var roadmap = DATA.roadmap100;
     if (!roadmap) {
-      return '<section class="eflu-roadmap" data-round275-roadmap-status="' + attr(DATA.roadmapStatus) + '" aria-label="round275 百轮升级路线"><div class="eflu-roadmap-head"><div><h3>百轮升级路线正在读取</h3><p>读取失败时不影响知识点、题库和公式使用；发布门禁会继续检查路线账本。</p></div><span class="eflu-roadmap-badge">' + icon('clock') + '等待数据</span></div></section>';
+      return '<section class="eflu-roadmap" data-upgrade-roadmap100-status="' + attr(DATA.roadmapStatus) + '" aria-label="百轮升级路线"><div class="eflu-roadmap-head"><div><h3>百轮升级路线正在读取</h3><p>读取失败时不影响知识点、题库和公式使用；发布门禁会继续检查路线账本。</p></div><span class="eflu-roadmap-badge">' + icon('clock') + '等待数据</span></div></section>';
     }
     var laneCounts = Object.create(null);
     roadmap.rounds.forEach(function(item) {
@@ -2764,9 +2764,9 @@
     var next = roadmap.rounds.filter(function(item) { return item.round > roadmap.currentRound; }).slice(0, 3);
     var lanes = roadmap.lanes.slice(0, 10);
     return [
-      '<section class="eflu-roadmap" data-round275-roadmap="' + attr(roadmap.version) + '" aria-label="round275 百轮升级路线">',
+      '<section class="eflu-roadmap" data-upgrade-roadmap100="' + attr(roadmap.version) + '" aria-label="百轮升级路线">',
       '<div class="eflu-roadmap-head">',
-      '<div><h3>百轮升级路线与质量雷达</h3><p>' + esc(roadmap.goal) + '；当前从 round275 开始，把认证、公式、真题、资源、性能、可访问性和发布验证分开推进。</p></div>',
+      '<div><h3>百轮升级路线与质量雷达</h3><p>' + esc(roadmap.goal) + '；从 round275 起持续推进，当前重点由路线账本标记，把认证、公式、真题、资源、性能、可访问性和发布验证分开收口。</p></div>',
       '<span class="eflu-roadmap-badge">' + icon('chart') + '当前：round' + esc(roadmap.currentRound) + '</span>',
       '</div>',
       '<div class="eflu-roadmap-grid">',
