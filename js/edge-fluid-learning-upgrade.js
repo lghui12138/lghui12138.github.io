@@ -2599,7 +2599,7 @@
       ['02', '边界条件', summary.weak > 0 ? summary.weak + ' 个薄弱点待核' : '先核定常和壁面条件'],
       ['03', '单位方向', DATA.formulaChecklist.length ? DATA.formulaChecklist.length + ' 张条件卡可查' : '先查公式条件表'],
       ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
-      ['05', '错因复盘', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
+      ['05', '错因订正', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
     ];
     return '<div class="eflu-review-rail" data-round274-workbench-loop="round274-lghui-top-auth-continuity-20260611" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
       return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
@@ -3026,7 +3026,7 @@
       renderChecklistBlock('单位方向', item.unitDirections, '单位和正方向是最后一道保险，尤其是压强、水头、通量和力。'),
       renderChecklistBlock('常见错因', item.commonMistakes, '看到这些苗头，先停笔回到题面。'),
       renderChecklistBlock('答题骨架', item.answerSkeleton, '按骨架写步骤，避免只代数不交代条件。'),
-      renderChecklistBlock('真题入口', [item.examEntry].concat(item.mistakeTags || []), '先从同类真题重做，错因标签用于复盘。'),
+      renderChecklistBlock('真题入口', [item.examEntry].concat(item.mistakeTags || []), '先从同类真题重做，错因标签用于订正。'),
       renderRouteLinksBlock(item.routeLinks),
       '<article class="eflu-tile" aria-label="补救训练检查项">',
       '<div class="eflu-title">补救训练</div>',

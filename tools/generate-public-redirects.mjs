@@ -180,9 +180,10 @@ function preservePreviousSiteUpdates(previousRecords) {
   if (!previousRecords.length || !sourceRecords.length) return;
   const seen = new Set();
   const merged = [];
+  const previousNonCurrent = previousRecords.filter((item) => item?.version !== edgeRefresh);
   const orderedRecords = [
     sourceRecords[0],
-    ...previousRecords,
+    ...previousNonCurrent,
     ...sourceRecords.slice(1)
   ].filter(Boolean);
   for (const item of orderedRecords) {
