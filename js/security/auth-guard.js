@@ -1,6 +1,6 @@
 (() => {
   const TARGET_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round272-home-math-security-polish-20260531';
+  const EDGE_REFRESH = 'round273-learning-radar-a11y-20260611';
   const SESSION_KEYS = ['fm_session_v2', 'fm_auth_session_v2', 'fluidMechanicsUser', 'currentUser'];
 
   function sourceUrl(pathname = location.pathname) {

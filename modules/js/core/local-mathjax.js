@@ -1,6 +1,6 @@
 (() => {
   const SCRIPT_ID = 'MathJax-script';
-  const SCRIPT_VERSION = 'round272-home-math-security-polish-20260531';
+  const SCRIPT_VERSION = 'round273-learning-radar-a11y-20260611';
   const SCRIPT_SRC = `/vendor/mathjax/es5/tex-chtml-full.js?v=${SCRIPT_VERSION}`;
   const FONT_URL = '/vendor/mathjax/es5/output/chtml/fonts/woff-v2';
   const LOAD_TIMEOUT_MS = 15000;
@@ -14,6 +14,7 @@
   let inflightRenders = [];
   let recoveryHandle = 0;
   let recoveryAttempts = 0;
+  let documentSweepSettled = false;
 
   function countRawTex(nodes) {
     return normalizeNodes(nodes).reduce((sum, node) => {
@@ -29,9 +30,28 @@
     }, 0);
   }
 
+  function documentMathSweepDisabled() {
+    return window.__FM_DISABLE_DOCUMENT_MATH_SWEEP__ === true;
+  }
+
+  function isDocumentWideRoot(node) {
+    return node === document
+      || node === document.body
+      || node === document.documentElement
+      || node?.nodeType === Node.DOCUMENT_NODE;
+  }
+
+  function mathRootsForDiagnostics(nodes) {
+    const roots = normalizeNodes(nodes);
+    return documentMathSweepDisabled()
+      ? roots.filter((node) => !isDocumentWideRoot(node))
+      : roots;
+  }
+
   function updateMathDiagnostics(state, nodes, error) {
-    const rawTexCount = countRawTex(nodes);
-    const merrorCount = countRenderErrors(nodes);
+    const diagnosticRoots = mathRootsForDiagnostics(nodes);
+    const rawTexCount = countRawTex(diagnosticRoots);
+    const merrorCount = countRenderErrors(diagnosticRoots);
     const diagnosticState = error || state === 'failed'
       ? 'failed'
       : merrorCount > 0
@@ -42,7 +62,7 @@
     window.__FM_MATH_DIAGNOSTICS__ = {
       ...(window.__FM_MATH_DIAGNOSTICS__ || {}),
       state: diagnosticState,
-      lastRoot: normalizeNodes(nodes).map((node) => node?.id || node?.className || node?.nodeName || 'root').join(',').slice(0, 160),
+      lastRoot: diagnosticRoots.map((node) => node?.id || node?.className || node?.nodeName || 'root').join(',').slice(0, 160),
       rawTexCount,
       merrorCount,
       lastError: error?.message || '',
@@ -162,24 +182,40 @@
   }
 
   function runDocumentMathSweep(timeout = 120) {
+    if (documentMathSweepDisabled()) return;
+    if (documentSweepSettled) return;
     const root = document.body || document.documentElement;
     if (!root) return;
     RAW_TEX_PATTERN.lastIndex = 0;
-    if (RAW_TEX_PATTERN.test(root.innerText || root.textContent || '')) queueMath(root, timeout);
+    if (!RAW_TEX_PATTERN.test(root.innerText || root.textContent || '')) {
+      if (mathJaxReady()) documentSweepSettled = true;
+      return;
+    }
+    queueMath(root, timeout).then(() => {
+      RAW_TEX_PATTERN.lastIndex = 0;
+      if (!RAW_TEX_PATTERN.test(root.innerText || root.textContent || '')) documentSweepSettled = true;
+    });
   }
 
   function handleMathJaxLoad(mj) {
     const loaded = mj || window.MathJax;
     if (loaded?.typesetPromise || mathJaxReady()) {
       markMathJaxState('formula-mathjax-ready');
-      setTimeout(() => runDocumentMathSweep(80), 0);
-      setTimeout(() => runDocumentMathSweep(160), 900);
+      if (!documentMathSweepDisabled()) {
+        setTimeout(() => runDocumentMathSweep(80), 0);
+        setTimeout(() => runDocumentMathSweep(160), 900);
+      }
     }
     return loaded;
   }
 
   function scheduleRecoveryMathSweep(root, error) {
     if (recoveryHandle || recoveryAttempts >= RECOVERY_DELAYS_MS.length) return;
+    let recoveryRoots = compactRoots(normalizeNodes(root || document.body || document.documentElement));
+    if (documentMathSweepDisabled()) {
+      recoveryRoots = recoveryRoots.filter((node) => !isDocumentWideRoot(node));
+    }
+    if (!recoveryRoots.length) return;
     const delay = RECOVERY_DELAYS_MS[recoveryAttempts];
     recoveryAttempts += 1;
     window.__FM_MATH_DIAGNOSTICS__ = {
@@ -191,7 +227,7 @@
     };
     recoveryHandle = setTimeout(() => {
       recoveryHandle = 0;
-      const nodes = compactRoots(normalizeNodes(root || document.body || document.documentElement));
+      const nodes = compactRoots(recoveryRoots).filter((node) => !documentMathSweepDisabled() || !isDocumentWideRoot(node));
       if (!nodes.length) return;
       if (!mathJaxReady()) {
         loadingPromise = null;
@@ -416,6 +452,7 @@
   }
 
   function installMutationMathQueue() {
+    if (documentMathSweepDisabled()) return;
     if (!('MutationObserver' in window) || window.__FM_MATH_MUTATION_QUEUE__) return;
     window.__FM_MATH_MUTATION_QUEUE__ = true;
     const observer = new MutationObserver((mutations) => {
@@ -441,7 +478,12 @@
   }
 
   function scheduleDocumentMathSweeps() {
-    [0, 700, 1800, 3600, 6200, 12000, 24000].forEach((delay) => setTimeout(() => runDocumentMathSweep(120), delay));
+    if (documentMathSweepDisabled()) return;
+    [0, 700, 1800, 3600, 6200, 12000, 24000].forEach((delay) => {
+      setTimeout(() => {
+        if (!documentSweepSettled) runDocumentMathSweep(120);
+      }, delay);
+    });
   }
 
   window.FMConfigureMathJax = configureMathJax;

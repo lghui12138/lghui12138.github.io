@@ -1,5 +1,5 @@
 (() => {
-  const LOCAL_MATHJAX_VERSION = 'round272-home-math-security-polish-20260531';
+  const LOCAL_MATHJAX_VERSION = 'round273-learning-radar-a11y-20260611';
   const LOCAL_MATHJAX_PATH = '/js/core/local-mathjax.js';
   const LOCAL_MATHJAX_SRC = `${LOCAL_MATHJAX_PATH}?v=${LOCAL_MATHJAX_VERSION}`;
   const MATH_TARGET_SELECTOR = [
@@ -14,6 +14,8 @@
     '.math-inline',
     '.math-display',
     '.math',
+    '.eflu-formula',
+    '.efu-formula',
     '.mini-math',
     '.inline-formula',
     '.hero-equation',
@@ -40,6 +42,7 @@
   const rawTexRenderPromises = new WeakMap();
   let mutationObserver = null;
   let mutationScanTimer = 0;
+  let pendingMathScanRoots = [];
 
   function countRawTexIn(target) {
     const text = target?.innerText || target?.textContent || '';
@@ -202,6 +205,36 @@
   function normalizeRoot(root) {
     if (!root || root === document) return document.body || document.documentElement;
     return root;
+  }
+
+  function normalizeScanRoot(root) {
+    const target = normalizeRoot(root);
+    if (!target) return null;
+    if (target.nodeType === Node.TEXT_NODE) {
+      return target.parentElement || target.parentNode || document.body || document.documentElement;
+    }
+    if (target.nodeType === Node.ELEMENT_NODE) {
+      return target.closest?.(MATH_TARGET_SELECTOR) || target;
+    }
+    return target;
+  }
+
+  function rootContains(root, node) {
+    return root === node || root === document || (root?.contains && node?.nodeType && root.contains(node));
+  }
+
+  function compactScanRoots(nodes) {
+    const compacted = [];
+    nodes.forEach((node) => {
+      const target = normalizeScanRoot(node);
+      if (!target || (target.nodeType === Node.ELEMENT_NODE && !target.isConnected)) return;
+      if (compacted.some((root) => rootContains(root, target))) return;
+      for (let i = compacted.length - 1; i >= 0; i -= 1) {
+        if (rootContains(target, compacted[i])) compacted.splice(i, 1);
+      }
+      compacted.push(target);
+    });
+    return compacted;
   }
 
   function hasRawTex(root) {
@@ -383,20 +416,30 @@
 
   function nodeMayContainTex(node) {
     if (!node) return false;
-    if (node.nodeType === Node.TEXT_NODE) return TEX_PATTERN.test(node.textContent || '');
+    if (node.nodeType === Node.TEXT_NODE) {
+      const parent = node.parentElement;
+      if (parent?.closest?.('script,style,noscript,textarea,pre,mjx-container')) return false;
+      return TEX_PATTERN.test(node.textContent || '');
+    }
     if (node.nodeType !== Node.ELEMENT_NODE) return false;
     if (node.matches?.('script,style,noscript,textarea,pre,mjx-container')) return false;
+    if (node.closest?.('mjx-container')) return false;
     const text = node.textContent || '';
     return TEX_PATTERN.test(text);
   }
 
   function scheduleMathScan(root) {
-    const target = normalizeRoot(root);
+    const target = normalizeScanRoot(root);
     if (!target) return;
+    pendingMathScanRoots.push(target);
     clearTimeout(mutationScanTimer);
     mutationScanTimer = setTimeout(() => {
       mutationScanTimer = 0;
-      if (hasRawTex(target)) ensureMathJaxForRawTex(target);
+      const roots = compactScanRoots(pendingMathScanRoots);
+      pendingMathScanRoots = [];
+      roots.forEach((scanRoot) => {
+        if (hasRawTex(scanRoot)) ensureMathJaxForRawTex(scanRoot);
+      });
     }, 140);
   }
 
@@ -406,13 +449,12 @@
     mutationObserver = new MutationObserver((mutations) => {
       for (const mutation of mutations) {
         if (mutation.type === 'characterData' && nodeMayContainTex(mutation.target)) {
-          scheduleMathScan(root);
-          return;
+          scheduleMathScan(mutation.target.parentElement || mutation.target.parentNode || root);
+          continue;
         }
         for (const node of mutation.addedNodes || []) {
           if (nodeMayContainTex(node)) {
-            scheduleMathScan(root);
-            return;
+            scheduleMathScan(node);
           }
         }
       }

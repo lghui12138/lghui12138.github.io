@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var VERSION = 'round272-home-math-security-polish-20260531';
+  var VERSION = 'round273-learning-radar-a11y-20260611';
   var LEARNING_CONTENT_VERSION = 'round264-formula-condition-checklist-20260522';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';

@@ -1,6 +1,6 @@
 /**
  * Edge Fluid Learning Upgrade
- * round272-home-math-security-polish-20260531: authenticated route recovery plus full chapter practice links
+ * round273-learning-radar-a11y-20260611: authenticated route recovery plus full chapter practice links
  * learning interaction and knowledge navigation enhancement.
  *
  * No framework, no HTML edits required. The script mounts into
@@ -10,7 +10,7 @@
 (function(global, document) {
   'use strict';
 
-  var VERSION = 'round272-home-math-security-polish-20260531';
+  var VERSION = 'round273-learning-radar-a11y-20260611-eflu-formula-fix';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL = '/data/fluid-real-exam-pdf-fidelity-audit.json';
   var R263_VERSION = 'round263-fluid-exam-route-map-20260522';
@@ -236,6 +236,29 @@
 
   function attr(value) {
     return esc(value).replace(/`/g, '&#96;');
+  }
+
+  var TEX_FORMULA_PATTERN = /(?:\$\$|\\\(|\\\[|\\(?:frac|dfrac|tfrac|partial|nabla|rho|mu|sigma|tau|sqrt|vec|mathbf|boldsymbol|operatorname|mathrm|mathit|mathcal|overline|underline|bar|hat|dot|ddot|left|right|theta|Theta|pi|nu|varepsilon|epsilon|cdot|times|omega|phi|psi|varphi|alpha|beta|gamma|delta|Delta|Omega|lambda|eta|kappa|int|iint|iiint|oint|sum|prod|lim|max|min|sin|cos|tan|cot|ln|log|exp|infty|therefore|because|pm|mp|le|ge|leq|geq|lt|gt|approx|neq|equiv|sim|simeq|propto|to|rightarrow|leftarrow|Rightarrow|Leftarrow|begin|end)\b)/;
+  var WRAPPED_MATH_PATTERN = /^\s*(?:\$\$[\s\S]*\$\$|\\\[[\s\S]*\\\]|\\\([\s\S]*\\\)|\$[^$]+\$)\s*$/;
+
+  function shouldRenderFormulaMath(value) {
+    var text = String(value == null ? '' : value).trim();
+    if (!text) return false;
+    if (TEX_FORMULA_PATTERN.test(text) || WRAPPED_MATH_PATTERN.test(text)) return true;
+    return /[∂∇ρμνφψθωΓΩ_^{}\\]/.test(text) && /[=+\-*/∂∇_^\\]/.test(text);
+  }
+
+  function normalizeFormulaTex(value) {
+    var text = String(value == null ? '' : value).trim();
+    if (!text || !shouldRenderFormulaMath(text) || WRAPPED_MATH_PATTERN.test(text)) return text;
+    return '\\[' + text + '\\]';
+  }
+
+  function renderFormulaBlock(value) {
+    var raw = String(value == null ? '' : value).trim();
+    if (!raw) return '';
+    var classes = shouldRenderFormulaMath(raw) ? 'eflu-formula math-display tex2jax_process' : 'eflu-formula';
+    return '<div class="' + classes + '">' + esc(normalizeFormulaTex(raw)) + '</div>';
   }
 
   function clamp(num, min, max) {
@@ -2825,7 +2848,7 @@
       '<div class="eflu-step">',
       '<b>' + esc(title) + '</b>',
       item.note ? '<div class="eflu-desc">' + esc(item.note) + '</div>' : '',
-      formula ? '<div class="eflu-formula">' + esc(formula) + '</div>' : '<div class="eflu-desc">先按题干条件确认能不能用，再到公式速查补完整写法。</div>',
+      formula ? renderFormulaBlock(formula) : '<div class="eflu-desc">先按题干条件确认能不能用，再到公式速查补完整写法。</div>',
       '</div>'
     ].join('');
   }
@@ -2892,7 +2915,7 @@
       '<div class="eflu-tile-top"><div><div class="eflu-title">' + esc(formula.title || formula.pointTitle || '公式') + '</div>',
       '<div class="eflu-desc">' + esc((formula.pointTitle || formula.category || '') + (related ? ' · 关联真题 ' + related + ' 道' : '')) + '</div></div>',
       '<span class="eflu-tag">' + esc(formula.page ? 'P' + formula.page : '公式') + '</span></div>',
-      '<div class="eflu-formula">' + esc(formula.formula) + '</div>',
+      renderFormulaBlock(formula.formula),
       '<div class="eflu-tagrow">' + tags.map(function(tag) { return '<span class="eflu-tag">' + esc(tag) + '</span>'; }).join('') + '</div>',
       '<div class="eflu-actions">',
       '<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="review-formula" data-id="' + attr(formula.id) + '" aria-label="把公式加入复习本：' + attr(formula.title || formula.pointTitle || '公式') + '">' + icon('bookmark') + '加入复习</button>',
@@ -2973,7 +2996,7 @@
       '<div class="eflu-tile-top"><div><div class="eflu-title">' + esc(item.title) + '</div>',
       '<div class="eflu-desc">' + esc(item.teacherNote || '先把条件问完，再决定公式能不能上草稿纸。') + '</div></div>',
       '<span class="eflu-tag">' + esc(item.source || 'round264') + '</span></div>',
-      formulaText ? '<div class="eflu-formula">' + esc(formulaText) + '</div>' : '',
+      formulaText ? renderFormulaBlock(formulaText) : '',
       '<div class="eflu-tagrow"><span class="eflu-tag">' + esc(item.category || '公式条件') + '</span>' + toArray(item.keywords).slice(0, 3).map(function(tag) { return '<span class="eflu-tag">' + esc(tag) + '</span>'; }).join('') + '</div>',
       '</article>',
       renderChecklistBlock('适用条件', item.applyConditions, '先问题干给没给这些条件。没给，就不能直接套简化式。'),
