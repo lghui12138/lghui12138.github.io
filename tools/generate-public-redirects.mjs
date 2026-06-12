@@ -109,8 +109,8 @@ const targetRouteOverrides = new Map([
   ['/_edge-reset', '/_edge-reset'],
   ['/_edge-logout', '/_edge-logout'],
   ['/_edge-status', '/_edge-status'],
-  ['/teacher-panel.html', '/teacher-panel'],
-  ['/teacher-panel', '/teacher-panel']
+  ['/teacher-panel.html', '/teacher-panel?view=resources#private-videos'],
+  ['/teacher-panel', '/teacher-panel?view=resources#private-videos']
 ]);
 
 const runtimeCopies = [
