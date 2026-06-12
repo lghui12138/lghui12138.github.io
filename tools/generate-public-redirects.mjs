@@ -4,7 +4,7 @@ import path from 'node:path';
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const sourceRepoRoot = process.env.FLUID_SOURCE_REPO || path.resolve(repoRoot, '../lghui12138.github.io');
 const targetOrigin = 'https://lghui-fluid-learning.pages.dev';
-const edgeRefresh = 'round288-final-public-shell-release-20260613';
+const edgeRefresh = 'round289-answer-evidence-pdf-181103-review-20260613';
 const previousSiteUpdates = readJsonArray(path.join(repoRoot, 'site-updates.json'));
 
 const routes = [
@@ -131,6 +131,14 @@ const runtimeCopies = [
   ['data/fluid-round284-real-exam-review-navigator.json.gz', 'data/fluid-round284-real-exam-review-navigator.json.gz'],
   ['data/fluid-round287-real-exam-source-section-ledger.json', 'data/fluid-round287-real-exam-source-section-ledger.json'],
   ['data/fluid-round287-real-exam-source-section-ledger.json.gz', 'data/fluid-round287-real-exam-source-section-ledger.json.gz'],
+  ['data/fluid-real-exam-answer-evidence-boundary.json', 'data/fluid-real-exam-answer-evidence-boundary.json'],
+  ['data/fluid-real-exam-answer-evidence-boundary.json.gz', 'data/fluid-real-exam-answer-evidence-boundary.json.gz'],
+  ['data/fluid-181103-question-review-queue.json', 'data/fluid-181103-question-review-queue.json'],
+  ['data/fluid-181103-question-review-queue.json.gz', 'data/fluid-181103-question-review-queue.json.gz'],
+  ['data/fluid-textbook-full-compare-audit.json', 'data/fluid-textbook-full-compare-audit.json'],
+  ['data/fluid-textbook-full-compare-audit.json.gz', 'data/fluid-textbook-full-compare-audit.json.gz'],
+  ['data/fluid-textbook-formula-match-audit.json', 'data/fluid-textbook-formula-match-audit.json'],
+  ['data/fluid-textbook-formula-match-audit.json.gz', 'data/fluid-textbook-formula-match-audit.json.gz'],
   ['js/core/local-mathjax.js', 'js/core/local-mathjax.js'],
   ['js/core/local-mathjax.js', 'local-mathjax.js'],
   ['js/core/local-mathjax.js', 'modules/local-mathjax.js'],

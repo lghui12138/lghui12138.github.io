@@ -1,6 +1,6 @@
 (() => {
   const SCRIPT_ID = 'MathJax-script';
-  const SCRIPT_VERSION = 'round288-final-public-shell-release-20260613';
+  const SCRIPT_VERSION = 'round289-answer-evidence-pdf-181103-review-20260613';
   const SCRIPT_SRC = `/vendor/mathjax/es5/tex-chtml-full.js?v=${SCRIPT_VERSION}`;
   const FONT_URL = '/vendor/mathjax/es5/output/chtml/fonts/woff-v2';
   const LOAD_TIMEOUT_MS = 15000;
