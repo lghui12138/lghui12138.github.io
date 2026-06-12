@@ -1,6 +1,6 @@
 /**
  * Edge Fluid Learning Upgrade
- * round285-real-exam-original-count-ledger-20260612: 100-round upgrade roadmap and quality radar
+ * round286-real-exam-source-atomic-ledger-20260612: 100-round upgrade roadmap and quality radar
  * learning interaction and knowledge navigation enhancement.
  *
  * No framework, no HTML edits required. The script mounts into
@@ -10,7 +10,7 @@
 (function(global, document) {
   'use strict';
 
-  var VERSION = 'round285-real-exam-original-count-ledger-20260612-eflu-real-exam-integrity';
+  var VERSION = 'round286-real-exam-source-atomic-ledger-20260612-eflu-source-atomic-ledger';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL_PARTS = ['fluid-real-exam-pdf-fidelity-audit', 'json'];
   var R263_VERSION = 'round263-fluid-exam-route-map-20260522';
@@ -18,7 +18,7 @@
   var R264_VERSION = 'round264-formula-condition-checklist-20260522';
   var LEARNING_CONTENT_VERSION = R264_VERSION;
   var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
-  var ROADMAP100_VERSION = 'round285-real-exam-original-count-ledger-20260612';
+  var ROADMAP100_VERSION = 'round286-real-exam-source-atomic-ledger-20260612';
   var ROADMAP100_URL = '/data/fluid-upgrade-roadmap-100.json';
   var R278_VERSION = 'round279-real-exam-source-granularity-20260612';
   var R278_YEAR_COMPARE_URL = '/data/fluid-round278-pdf-web-year-compare.json';
@@ -2744,7 +2744,7 @@
       ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
       ['05', '错因订正', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
     ];
-    return '<div class="eflu-review-rail" data-round274-workbench-loop="round285-real-exam-original-count-ledger-20260612" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
+    return '<div class="eflu-review-rail" data-round274-workbench-loop="round286-real-exam-source-atomic-ledger-20260612" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
       return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
     }).join('') + '</div>';
   }
