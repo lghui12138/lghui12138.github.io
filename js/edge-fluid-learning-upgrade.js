@@ -1,6 +1,6 @@
 /**
  * Edge Fluid Learning Upgrade
- * round287-source-section-ledger-study-routes-20260613: 100-round upgrade roadmap and quality radar
+ * round288-final-public-shell-release-20260613: 100-round upgrade roadmap and quality radar
  * learning interaction and knowledge navigation enhancement.
  *
  * No framework, no HTML edits required. The script mounts into
@@ -10,7 +10,7 @@
 (function(global, document) {
   'use strict';
 
-  var VERSION = 'round287-source-section-ledger-study-routes-20260613-eflu-source-atomic-ledger';
+  var VERSION = 'round288-final-public-shell-release-20260613-eflu-source-atomic-ledger';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL_PARTS = ['fluid-real-exam-pdf-fidelity-audit', 'json'];
   var R263_VERSION = 'round263-fluid-exam-route-map-20260522';
@@ -18,7 +18,7 @@
   var R264_VERSION = 'round264-formula-condition-checklist-20260522';
   var LEARNING_CONTENT_VERSION = R264_VERSION;
   var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
-  var ROADMAP100_VERSION = 'round287-source-section-ledger-study-routes-20260613';
+  var ROADMAP100_VERSION = 'round288-final-public-shell-release-20260613';
   var ROADMAP100_URL = '/data/fluid-upgrade-roadmap-100.json';
   var R278_VERSION = 'round279-real-exam-source-granularity-20260612';
   var R278_YEAR_COMPARE_URL = '/data/fluid-round278-pdf-web-year-compare.json';
@@ -1779,7 +1779,7 @@
       mistakeTags: normalizeChecklistList(raw.mistakeTags || raw.errorTags || raw.mistakeTypes),
       reviewOrder: normalizeChecklistList(raw.reviewOrder || raw.order || raw.checkOrder),
       teacherNote: firstText(raw.teacherNote, raw.note, raw.hint, raw.summary),
-      source: source || raw.source || 'round264',
+      source: source || raw.source || '公式条件历史包',
       keywords: keywords,
       url: raw.url || (formula && formula.url) || ''
     };
@@ -1800,7 +1800,7 @@
     fill('commonMistakes', ['只背公式但没有写适用条件、边界条件或单位方向。']);
     fill('remedialTraining', ['重做一道同类真题，只写条件表和边界单位，不急着算数值。']);
     if (!toArray(item.routeLinks).length) {
-      item.routeLinks = [{ label: '知识升级入口：公式条件表', href: '/modules/knowledge-upgrade-2026.html#formula-condition-checklist', use: '回到 round264 条件表核对适用条件、边界和单位方向。' }];
+      item.routeLinks = [{ label: '知识升级入口：公式条件表', href: '/modules/knowledge-upgrade-2026.html#formula-condition-checklist', use: '回到历史条件表核对适用条件、边界和单位方向。' }];
       DATA.visibilityIssues.push({ type: 'formula-checklist-fill', id: item.id || title, field: 'routeLinks' });
     }
     if (!item.teacherNote) item.teacherNote = '公式能不能用，先看条件、边界和单位方向。';
@@ -1855,7 +1855,7 @@
           remedialTraining: trainingNotes.concat(linkNotes),
           teacherNote: r264.teacherUse || r264.siteUpdateNote,
           keywords: [entry.entry, entry.aliases, entry.triggerWords, entry.routeLabels, r264.searchKeywords]
-        }, index, 'round264 升级数据'));
+        }, index, '公式条件历史包'));
       });
     }
     return items;
@@ -1863,7 +1863,7 @@
 
   function deriveFormulaChecklist(payload, upgrade) {
     var explicit = normalizeChecklistItems(payload).map(function(item, index) {
-      return normalizeFormulaChecklistItem(item, index, 'round264');
+      return normalizeFormulaChecklistItem(item, index, '公式条件历史包');
     }).filter(function(item) {
       return item.title || item.formula || item.applyConditions.length || item.commonMistakes.length;
     });
@@ -2688,15 +2688,15 @@
 
   function renderHero(summary) {
     var statusText = DATA.upgradeStatus === 'fallback' ? '使用现有资料' : (DATA.upgradeStatus.indexOf('loaded:') === 0 ? '讲义资料已接入' : '资料加载中');
-    var checklistStatus = DATA.formulaChecklistStatus === 'loaded' ? 'round264 已接入' : '条件表兜底中';
+    var checklistStatus = DATA.formulaChecklistStatus === 'loaded' ? '公式条件包已接入' : '条件表兜底中';
     var last = readLastLearningLink();
     return [
       '<header class="eflu-hero">',
       '<div class="eflu-hero-in">',
       '<div>',
       '<span class="eflu-kicker"><span class="eflu-dot"></span>老师讲义工作台</span>',
-      '<h2>先定主线，再用 round264 条件表回查公式</h2>',
-      '<p>这里合并知识点、题目路线、公式条件、站内检索和本地复习本。标记只写入本机，不改变登录、题库或教师工具流程。</p>',
+      '<h2>round286 真题主线，公式条件随后回查</h2>',
+      '<p>这里合并知识点、题目路线、公式条件、站内检索和本地复习本。历年真题入口以 round288 原文原子账本为准，公式条件包只用于复核适用条件、边界和单位方向。</p>',
       '<div class="eflu-meta">',
       '<span class="eflu-chip">' + icon('target') + '<strong>' + summary.total + '</strong> 知识点</span>',
       '<span class="eflu-chip">' + icon('sigma') + '<strong>' + DATA.formulas.length + '</strong> 公式</span>',
@@ -2707,7 +2707,7 @@
       last ? '<a class="eflu-chip" href="' + attr(teacherUrl(last.href)) + '">' + icon('clock') + '上次：' + esc(last.label) + '</a>' : '',
       '</div>',
       '<div class="eflu-quick-actions" role="group" aria-label="首页学习入口快捷操作">',
-      '<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="tab" data-tab="formula-checklist" aria-controls="' + attr(tabPanelId('formula-checklist')) + '" aria-label="打开 round264 条件回查标签">' + icon('check') + '条件回查</button>',
+      '<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="tab" data-tab="formula-checklist" aria-controls="' + attr(tabPanelId('formula-checklist')) + '" aria-label="打开公式条件回查标签">' + icon('check') + '条件回查</button>',
       '<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="exam-route" aria-controls="' + attr(tabPanelId('exam-route')) + '" aria-label="打开题目路线标签">' + icon('target') + '题目路线</button>',
       '<a class="eflu-btn" data-tone="coral" href="/modules/real-exams-dynamic.html?from=student-workbench-practice" aria-label="进入历年真题和题库练习">' + icon('play') + '真题练习</a>',
       '<a class="eflu-btn" href="/modules/question-bank.html?from=student-workbench-chapters" aria-label="进入题库页，查看六章章节练习入口">' + icon('chart') + '六章题库</a>',
@@ -2744,7 +2744,7 @@
       ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
       ['05', '错因订正', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
     ];
-    return '<div class="eflu-review-rail" data-round274-workbench-loop="round287-source-section-ledger-study-routes-20260613" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
+    return '<div class="eflu-review-rail" data-round274-workbench-loop="round288-final-public-shell-release-20260613" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
       return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
     }).join('') + '</div>';
   }
@@ -2980,9 +2980,9 @@
     var compare = DATA.round278PdfWebYearCompare;
     if (!compare) {
       return [
-        '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="fallback" aria-label="round278 PDF Web 年份对照">',
+        '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="fallback" aria-label="round288 真题原文原子账本">',
         '<div class="eflu-roadmap-head">',
-        '<div><h3>round279 真题原文拆题验收正在读取</h3><p>小型汇总数据暂未取到时，真题页仍保留 PDF 保真审计、原文颗粒度审计和 release gate 对照脚本。</p></div>',
+        '<div><h3>round288 真题原文原子账本正在读取</h3><p>小型汇总数据暂未取到时，真题页仍保留 PDF 保真审计、原文颗粒度审计和 release gate 对照脚本；答案仍按待核验参考处理。</p></div>',
         '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?from=round278-pdf-web-year-compare">' + icon('external') + '真题训练</a>',
         '</div>',
         '</section>'
@@ -2995,7 +2995,7 @@
     return [
       '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="' + attr(compare.version) + '" aria-labelledby="eflu-r278-title" aria-describedby="eflu-r278-desc">',
       '<div class="eflu-roadmap-head">',
-      '<div><h3 id="eflu-r278-title">round279 真题原文拆题验收台</h3><p id="eflu-r278-desc">先看原文组题是否按每小题拆开，再看年份是否在原题册索引内、题面是否可与 OCR/源索引对照；答案仍按待核验参考处理。</p></div>',
+      '<div><h3 id="eflu-r278-title">round288 真题原文原子账本</h3><p id="eflu-r278-desc">先看原文组题是否按每小题拆开，再看年份是否在原题册索引内、题面是否可与 OCR/源索引对照；答案仍按待核验参考处理。</p></div>',
       '<span class="eflu-roadmap-badge">' + icon('target') + esc(summary.auditedYearSpan + ' · ' + comparableRate + '% 可比对 · ' + summary.splitGroupedSectionCount + '/' + summary.groupedSectionCount + ' 组题已拆') + '</span>',
       '</div>',
       '<div class="eflu-r278-metrics" aria-label="PDF Web 对照汇总">',
@@ -3277,7 +3277,7 @@
     var cats = ['all'].concat(unique(toArray(DATA.formulaChecklist).map(function(item) { return item.category; })).slice(0, 18));
     var results = formulaChecklistResults();
     var selected = selectedFormulaChecklist();
-    var sourceText = DATA.formulaChecklistStatus === 'loaded' ? '已接入 round264 公式条件表' : '条件表文件暂未取到，先用讲义里已有的公式规则兜底';
+    var sourceText = DATA.formulaChecklistStatus === 'loaded' ? '已接入公式条件历史包' : '条件表文件暂未取到，先用讲义里已有的公式规则兜底';
     var fillText = DATA.visibilityIssues.length ? '<div class="eflu-route-note" role="status"><b>字段可见性</b><span>已自动补齐 ' + esc(DATA.visibilityIssues.length) + ' 个条件卡可见字段，确保适用条件、边界条件、单位方向、错因和补救训练都有入口。</span></div>' : '';
     return [
       renderRound264Flow(),
@@ -3324,7 +3324,7 @@
     return [
       '<section class="eflu-r264-guide" aria-labelledby="eflu-r264-guide-title" aria-describedby="eflu-r264-guide-desc">',
       '<div class="eflu-panel-head eflu-r264-head"><div><h3 id="eflu-r264-guide-title">五步公式回查</h3><p id="eflu-r264-guide-desc">选公式前先过这 5 步，减少适用条件、边界和单位方向类失分。</p></div><span class="eflu-tag">5 步</span></div>',
-      '<ol class="eflu-r264-flow" aria-label="round264 五步公式回查顺序">',
+      '<ol class="eflu-r264-flow" aria-label="五步公式回查顺序">',
       steps.map(function(step, index) {
         return '<li class="eflu-r264-step"><b>' + esc(String(index + 1).padStart(2, '0') + ' ' + step[0]) + '</b><span>' + esc(step[1]) + '</span></li>';
       }).join(''),
@@ -3342,7 +3342,7 @@
       '<article class="eflu-tile" aria-label="' + attr(item.title || '公式条件卡') + '">',
       '<div class="eflu-tile-top"><div><div class="eflu-title">' + esc(item.title) + '</div>',
       '<div class="eflu-desc">' + esc(item.teacherNote || '先把条件问完，再决定公式能不能上草稿纸。') + '</div></div>',
-      '<span class="eflu-tag">' + esc(item.source || 'round264') + '</span></div>',
+      '<span class="eflu-tag">' + esc(item.source === 'round264' ? '公式条件历史包' : (item.source || '公式条件历史包')) + '</span></div>',
       formulaText ? renderFormulaBlock(formulaText) : '',
       '<div class="eflu-tagrow"><span class="eflu-tag">' + esc(item.category || '公式条件') + '</span>' + toArray(item.keywords).slice(0, 3).map(function(tag) { return '<span class="eflu-tag">' + esc(tag) + '</span>'; }).join('') + '</div>',
       '</article>',
