@@ -1,5 +1,5 @@
 (() => {
-  const LOCAL_MATHJAX_VERSION = 'round286-real-exam-source-atomic-ledger-20260612';
+  const LOCAL_MATHJAX_VERSION = 'round287-source-section-ledger-study-routes-20260613';
   const LOCAL_MATHJAX_PATH = '/js/core/local-mathjax.js';
   const LOCAL_MATHJAX_SRC = `${LOCAL_MATHJAX_PATH}?v=${LOCAL_MATHJAX_VERSION}`;
   const MATH_TARGET_SELECTOR = [
