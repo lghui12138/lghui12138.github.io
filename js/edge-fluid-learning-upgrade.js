@@ -2695,8 +2695,8 @@
       '<div class="eflu-hero-in">',
       '<div>',
       '<span class="eflu-kicker"><span class="eflu-dot"></span>老师讲义工作台</span>',
-      '<h2>round286 真题主线，公式条件随后回查</h2>',
-      '<p>这里合并知识点、题目路线、公式条件、站内检索和本地复习本。历年真题入口以 round288 原文原子账本为准，公式条件包只用于复核适用条件、边界和单位方向。</p>',
+      '<h2>round291 真题主线，公式条件随后回查</h2>',
+      '<p>这里合并知识点、题目路线、公式条件、站内检索和本地复习本。历年真题入口以 round291 两本书 PDF 与来源覆盖账本为准，公式条件包只用于复核适用条件、边界和单位方向。</p>',
       '<div class="eflu-meta">',
       '<span class="eflu-chip">' + icon('target') + '<strong>' + summary.total + '</strong> 知识点</span>',
       '<span class="eflu-chip">' + icon('sigma') + '<strong>' + DATA.formulas.length + '</strong> 公式</span>',
@@ -2980,9 +2980,9 @@
     var compare = DATA.round278PdfWebYearCompare;
     if (!compare) {
       return [
-        '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="fallback" aria-label="round288 真题原文原子账本">',
+        '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="fallback" aria-label="round291 真题来源覆盖账本">',
         '<div class="eflu-roadmap-head">',
-        '<div><h3>round288 真题原文原子账本正在读取</h3><p>小型汇总数据暂未取到时，真题页仍保留 PDF 保真审计、原文颗粒度审计和 release gate 对照脚本；答案仍按待核验参考处理。</p></div>',
+        '<div><h3>round291 真题来源覆盖账本正在读取</h3><p>小型汇总数据暂未取到时，真题页仍保留 PDF 保真审计、原文颗粒度审计和 release gate 对照脚本；答案仍按待核验参考处理。</p></div>',
         '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?from=round278-pdf-web-year-compare">' + icon('external') + '真题训练</a>',
         '</div>',
         '</section>'
@@ -2995,7 +2995,7 @@
     return [
       '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="' + attr(compare.version) + '" aria-labelledby="eflu-r278-title" aria-describedby="eflu-r278-desc">',
       '<div class="eflu-roadmap-head">',
-      '<div><h3 id="eflu-r278-title">round288 真题原文原子账本</h3><p id="eflu-r278-desc">先看原文组题是否按每小题拆开，再看年份是否在原题册索引内、题面是否可与 OCR/源索引对照；答案仍按待核验参考处理。</p></div>',
+      '<div><h3 id="eflu-r278-title">round291 真题来源覆盖账本</h3><p id="eflu-r278-desc">先看原文组题是否按每小题拆开，再看年份是否在原题册索引内、题面是否可与 OCR/源索引对照；答案仍按待核验参考处理。</p></div>',
       '<span class="eflu-roadmap-badge">' + icon('target') + esc(summary.auditedYearSpan + ' · ' + comparableRate + '% 可比对 · ' + summary.splitGroupedSectionCount + '/' + summary.groupedSectionCount + ' 组题已拆') + '</span>',
       '</div>',
       '<div class="eflu-r278-metrics" aria-label="PDF Web 对照汇总">',
