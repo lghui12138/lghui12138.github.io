@@ -138,6 +138,16 @@ const runtimeCopies = [
   ['data/fluid-round290-real-exam-source-expansion-ledger.json.gz', 'data/fluid-round290-real-exam-source-expansion-ledger.json.gz'],
   ['data/fluid-round291-two-textbook-pdf-coverage-ledger.json', 'data/fluid-round291-two-textbook-pdf-coverage-ledger.json'],
   ['data/fluid-round291-two-textbook-pdf-coverage-ledger.json.gz', 'data/fluid-round291-two-textbook-pdf-coverage-ledger.json.gz'],
+  ['data/fluid-round298-auth-facet-proof.json', 'data/fluid-round298-auth-facet-proof.json'],
+  ['data/fluid-round298-auth-facet-proof.json.gz', 'data/fluid-round298-auth-facet-proof.json.gz'],
+  ['data/fluid-round298-release-claim-boundary.json', 'data/fluid-round298-release-claim-boundary.json'],
+  ['data/fluid-round298-release-claim-boundary.json.gz', 'data/fluid-round298-release-claim-boundary.json.gz'],
+  ['data/fluid-round298-real-exam-answer-count-boundary.json', 'data/fluid-round298-real-exam-answer-count-boundary.json'],
+  ['data/fluid-round298-real-exam-answer-count-boundary.json.gz', 'data/fluid-round298-real-exam-answer-count-boundary.json.gz'],
+  ['data/fluid-round298-181103-source-coverage.json', 'data/fluid-round298-181103-source-coverage.json'],
+  ['data/fluid-round298-181103-source-coverage.json.gz', 'data/fluid-round298-181103-source-coverage.json.gz'],
+  ['data/fluid-round298-optimization-lessons.json', 'data/fluid-round298-optimization-lessons.json'],
+  ['data/fluid-round298-optimization-lessons.json.gz', 'data/fluid-round298-optimization-lessons.json.gz'],
   ['data/fluid-real-exam-answer-evidence-boundary.json', 'data/fluid-real-exam-answer-evidence-boundary.json'],
   ['data/fluid-real-exam-answer-evidence-boundary.json.gz', 'data/fluid-real-exam-answer-evidence-boundary.json.gz'],
   ['data/fluid-181103-question-review-queue.json', 'data/fluid-181103-question-review-queue.json'],
@@ -225,8 +235,11 @@ function preservePreviousSiteUpdates(previousRecords) {
     seen.add(key);
     merged.push(item);
   }
-  merged.sort((a, b) => updateStamp(b).localeCompare(updateStamp(a)));
-  fs.writeFileSync(filePath, `${JSON.stringify(merged, null, 2)}\n`);
+  const current = merged.find((item) => item?.version === edgeRefresh) || merged[0];
+  const history = merged
+    .filter((item) => item !== current)
+    .sort((a, b) => updateStamp(b).localeCompare(updateStamp(a)));
+  fs.writeFileSync(filePath, `${JSON.stringify([current, ...history], null, 2)}\n`);
 }
 
 function targetRouteFor(route) {
