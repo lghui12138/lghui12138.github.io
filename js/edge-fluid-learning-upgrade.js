@@ -1,6 +1,6 @@
 /**
  * Edge Fluid Learning Upgrade
- * round292-real-exam-granularity-auth-release-lock-20260613: 100-round upgrade roadmap and quality radar
+ * round293-181103-full-material-audit-20260613: 100-round upgrade roadmap and quality radar
  * learning interaction and knowledge navigation enhancement.
  *
  * No framework, no HTML edits required. The script mounts into
@@ -10,7 +10,7 @@
 (function(global, document) {
   'use strict';
 
-  var VERSION = 'round292-real-exam-granularity-auth-release-lock-20260613-eflu-source-atomic-ledger';
+  var VERSION = 'round293-181103-full-material-audit-20260613-eflu-source-atomic-ledger';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL_PARTS = ['fluid-real-exam-pdf-fidelity-audit', 'json'];
   var R263_VERSION = 'round263-fluid-exam-route-map-20260522';
@@ -18,7 +18,7 @@
   var R264_VERSION = 'round264-formula-condition-checklist-20260522';
   var LEARNING_CONTENT_VERSION = R264_VERSION;
   var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
-  var ROADMAP100_VERSION = 'round292-real-exam-granularity-auth-release-lock-20260613';
+  var ROADMAP100_VERSION = 'round293-181103-full-material-audit-20260613';
   var ROADMAP100_URL = '/data/fluid-upgrade-roadmap-100.json';
   var R278_VERSION = 'round279-real-exam-source-granularity-20260612';
   var R278_YEAR_COMPARE_URL = '/data/fluid-round278-pdf-web-year-compare.json';
@@ -2744,7 +2744,7 @@
       ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
       ['05', '错因订正', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
     ];
-    return '<div class="eflu-review-rail" data-round274-workbench-loop="round292-real-exam-granularity-auth-release-lock-20260613" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
+    return '<div class="eflu-review-rail" data-round274-workbench-loop="round293-181103-full-material-audit-20260613" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
       return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
     }).join('') + '</div>';
   }
@@ -2980,9 +2980,9 @@
     var compare = DATA.round278PdfWebYearCompare;
     if (!compare) {
       return [
-        '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="fallback" aria-label="round292 真题来源覆盖账本">',
+        '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="fallback" aria-label="round293 181103 全资料核验账本">',
         '<div class="eflu-roadmap-head">',
-        '<div><h3>round292 真题来源覆盖账本正在读取</h3><p>小型汇总数据暂未取到时，真题页仍保留 PDF 保真审计、原文颗粒度审计和 release gate 对照脚本；答案仍按待核验参考处理。</p></div>',
+        '<div><h3>round293 181103 全资料核验账本正在读取</h3><p>小型汇总数据暂未取到时，资源页仍保留 181103 全资料核验，真题页仍保留 PDF 保真审计、原文颗粒度审计和 release gate 对照脚本；答案仍按待核验参考处理。</p></div>',
         '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?from=round278-pdf-web-year-compare">' + icon('external') + '真题训练</a>',
         '</div>',
         '</section>'
@@ -2995,7 +2995,7 @@
     return [
       '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="' + attr(compare.version) + '" aria-labelledby="eflu-r278-title" aria-describedby="eflu-r278-desc">',
       '<div class="eflu-roadmap-head">',
-      '<div><h3 id="eflu-r278-title">round292 真题来源覆盖账本</h3><p id="eflu-r278-desc">先看原文组题是否按每小题拆开，再看年份是否在原题册索引内、题面是否可与 OCR/源索引对照；答案仍按待核验参考处理。</p></div>',
+      '<div><h3 id="eflu-r278-title">round293 181103 全资料核验账本</h3><p id="eflu-r278-desc">先看 181103 资料是否全量进索引，再看原文组题是否按每小题拆开、年份是否在原题册索引内、题面是否可与 OCR/源索引对照；答案仍按待核验参考处理。</p></div>',
       '<span class="eflu-roadmap-badge">' + icon('target') + esc(summary.auditedYearSpan + ' · ' + comparableRate + '% 可比对 · ' + summary.splitGroupedSectionCount + '/' + summary.groupedSectionCount + ' 组题已拆') + '</span>',
       '</div>',
       '<div class="eflu-r278-metrics" aria-label="PDF Web 对照汇总">',

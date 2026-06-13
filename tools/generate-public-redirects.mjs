@@ -142,6 +142,8 @@ const runtimeCopies = [
   ['data/fluid-real-exam-answer-evidence-boundary.json.gz', 'data/fluid-real-exam-answer-evidence-boundary.json.gz'],
   ['data/fluid-181103-question-review-queue.json', 'data/fluid-181103-question-review-queue.json'],
   ['data/fluid-181103-question-review-queue.json.gz', 'data/fluid-181103-question-review-queue.json.gz'],
+  ['data/fluid-181103-full-material-audit.json', 'data/fluid-181103-full-material-audit.json'],
+  ['data/fluid-181103-full-material-audit.json.gz', 'data/fluid-181103-full-material-audit.json.gz'],
   ['data/fluid-textbook-full-compare-audit.json', 'data/fluid-textbook-full-compare-audit.json'],
   ['data/fluid-textbook-full-compare-audit.json.gz', 'data/fluid-textbook-full-compare-audit.json.gz'],
   ['data/fluid-textbook-formula-match-audit.json', 'data/fluid-textbook-formula-match-audit.json'],
