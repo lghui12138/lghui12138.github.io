@@ -1,0 +1,543 @@
+{
+  "version": "round297-real-qa-account-readiness-ledger-20260614",
+  "expectedVersion": "round297-real-qa-account-readiness-ledger-20260614",
+  "generatedAt": "2026-06-13T21:49:06.277Z",
+  "pass": true,
+  "origins": {
+    "publicOrigin": "https://lghui.top",
+    "sourceOrigin": "https://lghui-fluid-learning.pages.dev",
+    "rule": "lghui.top is public shell proof only; lghui-fluid-learning.pages.dev is the authenticated source proof origin."
+  },
+  "proofFacets": {
+    "publicShell": {
+      "origin": "https://lghui.top",
+      "status": "checked-with-warnings",
+      "meaning": "Custom-domain shell, route freshness, and public entry proof. This facet is not authenticated browser QA.",
+      "routeExpectations": [
+        {
+          "id": "public-home",
+          "method": "GET",
+          "path": "/",
+          "purpose": "Public shell entry must load from the custom domain before any authenticated source proof is claimed.",
+          "acceptableStatuses": [
+            200
+          ],
+          "origin": "https://lghui.top",
+          "proofFacet": "public-shell"
+        },
+        {
+          "id": "public-edge-status",
+          "method": "GET",
+          "path": "/_edge-status",
+          "purpose": "Public shell runtime status belongs to lghui.top, not to the authenticated source-origin proof.",
+          "acceptableStatuses": [
+            200,
+            301,
+            302,
+            303,
+            307,
+            308
+          ],
+          "origin": "https://lghui.top",
+          "proofFacet": "public-shell"
+        },
+        {
+          "id": "public-site-updates",
+          "method": "GET",
+          "path": "/site-updates.json",
+          "purpose": "Public shell release feed should expose the expected current version without relying on source auth.",
+          "acceptableStatuses": [
+            200
+          ],
+          "origin": "https://lghui.top",
+          "proofFacet": "public-shell"
+        },
+        {
+          "id": "public-real-exams",
+          "method": "GET",
+          "path": "/real-exams.html",
+          "purpose": "Public shell route proof for the real-exam entry surface.",
+          "acceptableStatuses": [
+            200
+          ],
+          "origin": "https://lghui.top",
+          "proofFacet": "public-shell"
+        }
+      ],
+      "network": {
+        "status": "checked-with-warnings",
+        "checkedCount": 4,
+        "blockedCount": 0,
+        "okCount": 3,
+        "warningCount": 1,
+        "routes": [
+          {
+            "id": "public-home",
+            "origin": "https://lghui.top",
+            "method": "GET",
+            "path": "/",
+            "status": "checked",
+            "httpStatus": 200,
+            "ok": true,
+            "expectedStatuses": [
+              200
+            ],
+            "contentType": "text/html; charset=utf-8",
+            "bodyVersionPresent": null,
+            "bodyBytesSampled": 3308
+          },
+          {
+            "id": "public-edge-status",
+            "origin": "https://lghui.top",
+            "method": "GET",
+            "path": "/_edge-status",
+            "status": "checked",
+            "httpStatus": 301,
+            "ok": true,
+            "expectedStatuses": [
+              200,
+              301,
+              302,
+              303,
+              307,
+              308
+            ],
+            "contentType": "text/html",
+            "bodyVersionPresent": null,
+            "bodyBytesSampled": 162
+          },
+          {
+            "id": "public-site-updates",
+            "origin": "https://lghui.top",
+            "method": "GET",
+            "path": "/site-updates.json",
+            "status": "checked",
+            "httpStatus": 200,
+            "ok": false,
+            "expectedStatuses": [
+              200
+            ],
+            "contentType": "application/json; charset=utf-8",
+            "bodyVersionPresent": false,
+            "bodyBytesSampled": 389851
+          },
+          {
+            "id": "public-real-exams",
+            "origin": "https://lghui.top",
+            "method": "GET",
+            "path": "/real-exams.html",
+            "status": "checked",
+            "httpStatus": 200,
+            "ok": true,
+            "expectedStatuses": [
+              200
+            ],
+            "contentType": "text/html; charset=utf-8",
+            "bodyVersionPresent": null,
+            "bodyBytesSampled": 3888
+          }
+        ]
+      }
+    },
+    "authenticatedSource": {
+      "origin": "https://lghui-fluid-learning.pages.dev",
+      "status": "checked",
+      "meaning": "pages.dev source-origin auth surface. This ledger does not load credentials and does not prove real-account login.",
+      "routeExpectations": [
+        {
+          "id": "source-login-shell",
+          "method": "GET",
+          "path": "/_edge-login",
+          "purpose": "Login shell for authenticated browser flows must be checked on pages.dev, not lghui.top.",
+          "acceptableStatuses": [
+            200,
+            302,
+            303,
+            307,
+            308
+          ],
+          "origin": "https://lghui-fluid-learning.pages.dev",
+          "proofFacet": "authenticated-source"
+        },
+        {
+          "id": "source-auth-me",
+          "method": "GET",
+          "path": "/api/auth/me",
+          "purpose": "Unauthenticated auth status probe belongs to pages.dev and does not require credential values.",
+          "acceptableStatuses": [
+            200,
+            401,
+            403
+          ],
+          "origin": "https://lghui-fluid-learning.pages.dev",
+          "proofFacet": "authenticated-source"
+        },
+        {
+          "id": "source-teacher-panel",
+          "method": "GET",
+          "path": "/teacher-panel.html",
+          "purpose": "Authenticated-source protected surface route expectation; no credential proof is attempted here.",
+          "acceptableStatuses": [
+            200,
+            302,
+            303,
+            307,
+            308,
+            401,
+            403
+          ],
+          "origin": "https://lghui-fluid-learning.pages.dev",
+          "proofFacet": "authenticated-source"
+        },
+        {
+          "id": "source-student-workbench",
+          "method": "GET",
+          "path": "/index-complete.html?full=1",
+          "purpose": "Authenticated-source student route expectation; no credential proof is attempted here.",
+          "acceptableStatuses": [
+            200,
+            302,
+            303,
+            307,
+            308,
+            401,
+            403
+          ],
+          "origin": "https://lghui-fluid-learning.pages.dev",
+          "proofFacet": "authenticated-source"
+        }
+      ],
+      "network": {
+        "status": "checked",
+        "checkedCount": 4,
+        "blockedCount": 0,
+        "okCount": 4,
+        "warningCount": 0,
+        "routes": [
+          {
+            "id": "source-login-shell",
+            "origin": "https://lghui-fluid-learning.pages.dev",
+            "method": "GET",
+            "path": "/_edge-login",
+            "status": "checked",
+            "httpStatus": 200,
+            "ok": true,
+            "expectedStatuses": [
+              200,
+              302,
+              303,
+              307,
+              308
+            ],
+            "contentType": "text/html; charset=utf-8",
+            "bodyVersionPresent": null,
+            "bodyBytesSampled": 14988
+          },
+          {
+            "id": "source-auth-me",
+            "origin": "https://lghui-fluid-learning.pages.dev",
+            "method": "GET",
+            "path": "/api/auth/me",
+            "status": "checked",
+            "httpStatus": 401,
+            "ok": true,
+            "expectedStatuses": [
+              200,
+              401,
+              403
+            ],
+            "contentType": "application/json; charset=utf-8",
+            "bodyVersionPresent": null,
+            "bodyBytesSampled": 34
+          },
+          {
+            "id": "source-teacher-panel",
+            "origin": "https://lghui-fluid-learning.pages.dev",
+            "method": "GET",
+            "path": "/teacher-panel.html",
+            "status": "checked",
+            "httpStatus": 200,
+            "ok": true,
+            "expectedStatuses": [
+              200,
+              302,
+              303,
+              307,
+              308,
+              401,
+              403
+            ],
+            "contentType": "text/html; charset=utf-8",
+            "bodyVersionPresent": null,
+            "bodyBytesSampled": 6642
+          },
+          {
+            "id": "source-student-workbench",
+            "origin": "https://lghui-fluid-learning.pages.dev",
+            "method": "GET",
+            "path": "/index-complete.html?full=1",
+            "status": "checked",
+            "httpStatus": 200,
+            "ok": true,
+            "expectedStatuses": [
+              200,
+              302,
+              303,
+              307,
+              308,
+              401,
+              403
+            ],
+            "contentType": "text/html; charset=utf-8",
+            "bodyVersionPresent": null,
+            "bodyBytesSampled": 6740
+          }
+        ]
+      }
+    }
+  },
+  "originContract": {
+    "authBrowserBaseUrl": {
+      "present": false,
+      "configuredOrigin": null,
+      "expectedOrigin": "https://lghui-fluid-learning.pages.dev",
+      "refusedOrigin": "https://lghui.top",
+      "ok": true,
+      "status": "configured-by-default"
+    },
+    "credentialValuesRequired": false,
+    "credentialsLoaded": false,
+    "sourceProofBaseUrl": "https://lghui-fluid-learning.pages.dev",
+    "publicShellBaseUrl": "https://lghui.top"
+  },
+  "staticAuthorities": [
+    {
+      "id": "site-updates-top-version",
+      "relPath": "site-updates.json",
+      "expected": "round297-real-qa-account-readiness-ledger-20260614",
+      "actual": "round297-real-qa-account-readiness-ledger-20260614",
+      "ok": true,
+      "status": "checked"
+    },
+    {
+      "id": "edge-home-version",
+      "relPath": "functions/_middleware.js",
+      "expected": "round297-real-qa-account-readiness-ledger-20260614",
+      "actual": "round297-real-qa-account-readiness-ledger-20260614",
+      "ok": true,
+      "status": "checked"
+    },
+    {
+      "id": "edge-runtime-js-version",
+      "relPath": "functions/_middleware.js",
+      "expected": "round297-real-qa-account-readiness-ledger-20260614",
+      "actual": "round297-real-qa-account-readiness-ledger-20260614",
+      "ok": true,
+      "status": "checked"
+    }
+  ],
+  "checks": [
+    {
+      "name": "expected public origin is lghui.top",
+      "pass": true,
+      "details": {
+        "expected": "https://lghui.top",
+        "actual": "https://lghui.top"
+      }
+    },
+    {
+      "name": "expected authenticated source origin is pages.dev",
+      "pass": true,
+      "details": {
+        "expected": "https://lghui-fluid-learning.pages.dev",
+        "actual": "https://lghui-fluid-learning.pages.dev"
+      }
+    },
+    {
+      "name": "public shell and authenticated source origins are distinct",
+      "pass": true,
+      "details": {
+        "publicOrigin": "https://lghui.top",
+        "sourceOrigin": "https://lghui-fluid-learning.pages.dev"
+      }
+    },
+    {
+      "name": "AUTH_BROWSER_BASE_URL is absent or points at the source origin",
+      "pass": true,
+      "details": {
+        "present": false,
+        "configuredOrigin": null,
+        "expectedOrigin": "https://lghui-fluid-learning.pages.dev",
+        "refusedOrigin": "https://lghui.top",
+        "ok": true,
+        "status": "configured-by-default"
+      }
+    },
+    {
+      "name": "local source authorities are bound to expected version",
+      "pass": true,
+      "details": {
+        "expectedVersion": "round297-real-qa-account-readiness-ledger-20260614",
+        "authorities": [
+          {
+            "id": "site-updates-top-version",
+            "relPath": "site-updates.json",
+            "expected": "round297-real-qa-account-readiness-ledger-20260614",
+            "actual": "round297-real-qa-account-readiness-ledger-20260614",
+            "ok": true,
+            "status": "checked"
+          },
+          {
+            "id": "edge-home-version",
+            "relPath": "functions/_middleware.js",
+            "expected": "round297-real-qa-account-readiness-ledger-20260614",
+            "actual": "round297-real-qa-account-readiness-ledger-20260614",
+            "ok": true,
+            "status": "checked"
+          },
+          {
+            "id": "edge-runtime-js-version",
+            "relPath": "functions/_middleware.js",
+            "expected": "round297-real-qa-account-readiness-ledger-20260614",
+            "actual": "round297-real-qa-account-readiness-ledger-20260614",
+            "ok": true,
+            "status": "checked"
+          }
+        ]
+      }
+    },
+    {
+      "name": "route expectations keep public shell and authenticated source proof separate",
+      "pass": true,
+      "details": {
+        "ok": true,
+        "publicShell": [
+          {
+            "id": "public-home",
+            "method": "GET",
+            "path": "/",
+            "purpose": "Public shell entry must load from the custom domain before any authenticated source proof is claimed.",
+            "acceptableStatuses": [
+              200
+            ],
+            "origin": "https://lghui.top",
+            "proofFacet": "public-shell"
+          },
+          {
+            "id": "public-edge-status",
+            "method": "GET",
+            "path": "/_edge-status",
+            "purpose": "Public shell runtime status belongs to lghui.top, not to the authenticated source-origin proof.",
+            "acceptableStatuses": [
+              200,
+              301,
+              302,
+              303,
+              307,
+              308
+            ],
+            "origin": "https://lghui.top",
+            "proofFacet": "public-shell"
+          },
+          {
+            "id": "public-site-updates",
+            "method": "GET",
+            "path": "/site-updates.json",
+            "purpose": "Public shell release feed should expose the expected current version without relying on source auth.",
+            "acceptableStatuses": [
+              200
+            ],
+            "origin": "https://lghui.top",
+            "proofFacet": "public-shell"
+          },
+          {
+            "id": "public-real-exams",
+            "method": "GET",
+            "path": "/real-exams.html",
+            "purpose": "Public shell route proof for the real-exam entry surface.",
+            "acceptableStatuses": [
+              200
+            ],
+            "origin": "https://lghui.top",
+            "proofFacet": "public-shell"
+          }
+        ],
+        "authenticatedSource": [
+          {
+            "id": "source-login-shell",
+            "method": "GET",
+            "path": "/_edge-login",
+            "purpose": "Login shell for authenticated browser flows must be checked on pages.dev, not lghui.top.",
+            "acceptableStatuses": [
+              200,
+              302,
+              303,
+              307,
+              308
+            ],
+            "origin": "https://lghui-fluid-learning.pages.dev",
+            "proofFacet": "authenticated-source"
+          },
+          {
+            "id": "source-auth-me",
+            "method": "GET",
+            "path": "/api/auth/me",
+            "purpose": "Unauthenticated auth status probe belongs to pages.dev and does not require credential values.",
+            "acceptableStatuses": [
+              200,
+              401,
+              403
+            ],
+            "origin": "https://lghui-fluid-learning.pages.dev",
+            "proofFacet": "authenticated-source"
+          },
+          {
+            "id": "source-teacher-panel",
+            "method": "GET",
+            "path": "/teacher-panel.html",
+            "purpose": "Authenticated-source protected surface route expectation; no credential proof is attempted here.",
+            "acceptableStatuses": [
+              200,
+              302,
+              303,
+              307,
+              308,
+              401,
+              403
+            ],
+            "origin": "https://lghui-fluid-learning.pages.dev",
+            "proofFacet": "authenticated-source"
+          },
+          {
+            "id": "source-student-workbench",
+            "method": "GET",
+            "path": "/index-complete.html?full=1",
+            "purpose": "Authenticated-source student route expectation; no credential proof is attempted here.",
+            "acceptableStatuses": [
+              200,
+              302,
+              303,
+              307,
+              308,
+              401,
+              403
+            ],
+            "origin": "https://lghui-fluid-learning.pages.dev",
+            "proofFacet": "authenticated-source"
+          }
+        ]
+      }
+    }
+  ],
+  "acceptanceBoundary": [
+    "HTTP 200 alone is not accepted as production proof.",
+    "Public lghui.top shell evidence and pages.dev authenticated-source evidence are recorded as separate facets.",
+    "Real QA-account browser proof still belongs to the authenticated browser gate on pages.dev with credentials supplied outside this ledger.",
+    "This report intentionally stores no credential values, session material, or local filesystem paths."
+  ],
+  "outputFiles": [
+    "data/fluid-round297-dual-origin-proof.json",
+    "data/fluid-round297-dual-origin-proof.json.gz",
+    "docs/round297/dual-origin-proof.md"
+  ]
+}
