@@ -4,7 +4,10 @@ import path from 'node:path';
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const sourceRepoRoot = process.env.FLUID_SOURCE_REPO || path.resolve(repoRoot, '../lghui12138.github.io');
 const targetOrigin = 'https://lghui-fluid-learning.pages.dev';
-const edgeRefresh = 'round290-source-expansion-181103-private-video-qa-20260613';
+const sourceSiteUpdates = readJsonArray(path.join(sourceRepoRoot, 'site-updates.json'));
+const edgeRefresh = process.env.FLUID_PUBLIC_EDGE_REFRESH
+  || sourceSiteUpdates[0]?.version
+  || 'round291-two-textbook-pdf-181103-source-coverage-20260613';
 const previousSiteUpdates = readJsonArray(path.join(repoRoot, 'site-updates.json'));
 
 const routes = [
@@ -133,6 +136,8 @@ const runtimeCopies = [
   ['data/fluid-round287-real-exam-source-section-ledger.json.gz', 'data/fluid-round287-real-exam-source-section-ledger.json.gz'],
   ['data/fluid-round290-real-exam-source-expansion-ledger.json', 'data/fluid-round290-real-exam-source-expansion-ledger.json'],
   ['data/fluid-round290-real-exam-source-expansion-ledger.json.gz', 'data/fluid-round290-real-exam-source-expansion-ledger.json.gz'],
+  ['data/fluid-round291-two-textbook-pdf-coverage-ledger.json', 'data/fluid-round291-two-textbook-pdf-coverage-ledger.json'],
+  ['data/fluid-round291-two-textbook-pdf-coverage-ledger.json.gz', 'data/fluid-round291-two-textbook-pdf-coverage-ledger.json.gz'],
   ['data/fluid-real-exam-answer-evidence-boundary.json', 'data/fluid-real-exam-answer-evidence-boundary.json'],
   ['data/fluid-real-exam-answer-evidence-boundary.json.gz', 'data/fluid-real-exam-answer-evidence-boundary.json.gz'],
   ['data/fluid-181103-question-review-queue.json', 'data/fluid-181103-question-review-queue.json'],

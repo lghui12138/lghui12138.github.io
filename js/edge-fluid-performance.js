@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var VERSION = 'round290-source-expansion-181103-private-video-qa-20260613';
+  var VERSION = 'round291-two-textbook-pdf-181103-source-coverage-20260613';
   var LEARNING_CONTENT_VERSION = 'round264-formula-condition-checklist-20260522';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL_PARTS = ['fluid-real-exam-pdf-fidelity-audit', 'json'];
