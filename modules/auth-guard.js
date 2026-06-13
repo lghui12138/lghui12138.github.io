@@ -1,6 +1,6 @@
 (() => {
   const TARGET_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round289-answer-evidence-pdf-181103-review-20260613';
+  const EDGE_REFRESH = 'round290-source-expansion-181103-private-video-qa-20260613';
   const SESSION_KEYS = ['fm_session_v2', 'fm_auth_session_v2', 'fluidMechanicsUser', 'currentUser'];
 
   function sourceUrl(pathname = location.pathname) {
