@@ -1,8 +1,8 @@
 {
-  "version": "round304-release-gate-no-fake-account-qa-20260614",
-  "generatedAt": "2026-06-14T08:55:00+08:00",
+  "version": "round305-release-gate-r2-binding-hard-stop-20260614",
+  "generatedAt": "2026-06-14T09:55:00+08:00",
   "goal": "round287 后继续推进至少 100 大轮升级；每轮必须给出证据、预算和生产验收边界。",
-  "currentRound": 304,
+  "currentRound": 305,
   "releaseGate": {
     "requirePublicShell": true,
     "requirePagesDev": true,
@@ -20,9 +20,9 @@
     "requireOptimizationPlaybookCheck": true,
     "requireMobilePerformanceBudgetCheck": true,
     "forbidClaimingRealQaWithoutCredentials": true,
-    "currentVersion": "round304-release-gate-no-fake-account-qa-20260614",
-    "previousVersion": "round303-release-gate-source-production-sync-20260614",
-    "lastUpdated": "2026-06-14T09:40:00+08:00",
+    "currentVersion": "round305-release-gate-r2-binding-hard-stop-20260614",
+    "previousVersion": "round304-release-gate-no-fake-account-qa-20260614",
+    "lastUpdated": "2026-06-14T09:55:00+08:00",
     "requireNoFakeAccountQa": true,
     "requirePrivateMediaR2": true
   },
@@ -611,23 +611,28 @@
         "tools/check-round304-private-video-production-blockers.mjs 通过，本地 mock 6 routes/7 UI controls ready、FM_AUDIT 可见、FM_PRIVATE_MEDIA R2 未证明、真实账号凭据 0/12 present、production-ready actions=0/6；私有视频删除/管理不可宣称生产恢复。",
         "tools/check-round304-student-real-exam-ui-a11y.mjs --write 后 fail=0，Round304 当前版本可见，316/61/201/176/四题锁/五题锁/181103/private-video blocker 在学生真题入口可见，继承 public-load warning 但不阻塞本轮。",
         "tools/check-round304-release-readiness.mjs --require-ready 通过；site-updates、EDGE_HOME_VERSION、EDGE_RUNTIME_JS_VERSION、roadmap、首页、知识页、练习页、资源页和真题页均对齐 round304-release-gate-no-fake-account-qa-20260614。",
-        "推送后必须重新生成 public shell、部署 Pages、验证 lghui.top/site-updates/home/real-exams/resources、pages.dev _edge-status、browser entry 和 auth/R2 blocker；不得用匿名 401、本地 mock、dry-run 或缺凭据环境冒充真实老师/学生 QA。"
+        "推送后必须重新生成 public shell、部署 Pages、验证 lghui.top/site-updates/home/real-exams/resources、pages.dev _edge-status、browser entry 和 auth/R2 blocker；不得用匿名 401、本地 mock、dry-run 或缺凭据环境冒充真实老师/学生 QA。",
+        "Round304 public proof closed before Round305; 真实账号 QA 与 FM_PRIVATE_MEDIA R2 仍按 blocked/not run 报告。"
       ],
-      "status": "active"
+      "status": "done",
+      "completedAt": "2026-06-14T09:55:00+08:00"
     },
     {
       "round": 305,
       "id": "round305-release-gate-r2-binding-hard-stop",
       "lane": "observability-release",
-      "title": "发布与观测 · R2 binding 缺失硬阻断",
-      "focus": "FM_PRIVATE_MEDIA 缺失时私有视频生产恢复保持 blocker，不被 UI 成功覆盖",
+      "title": "发布与观测 · R2 binding 缺失硬阻断、真实账号不可假验证与私有视频管理边界",
+      "focus": "把私有视频无法真实管理的问题收成 Round305 当前公开版本：FM_PRIVATE_MEDIA R2 缺失是生产恢复硬阻断，真实账号缺凭据时不能假验证；UI/mock 管理合同、181103 补充目标和真题 316/61/201 no-merge 口径必须同时可见。",
       "acceptance": [
-        "Cloudflare binding audit status=external-binding-missing 时 accepted nonzero 只能进入 blocker 摘要",
-        "private-video browser pass-with-storage-blocker 不等于 private-video productionReady",
-        "release gate summary 暴露 hasAuditKv、hasPrivateMediaR2 和 productionReadyBlocker",
-        "不通过修改私有视频业务代码绕过绑定缺失"
+        "tools/check-round305-r2-binding-hard-stop.mjs 通过，Cloudflare binding audit 记录 FM_AUDIT=true、FM_PRIVATE_MEDIA=false、productionPrivateVideoRecovery=false，缺 R2 时只能进入 blocker 摘要。",
+        "tools/check-round305-real-account-qa-readiness.mjs 通过，真实教师/学生浏览器 QA 缺凭据时 realAccountQaPassed=false，公开壳、mock、dry-run 或 401 不得冒充真实账号证明。",
+        "tools/check-round305-private-video-admin-ui-contract.mjs 通过，本地 action contract 覆盖 list/publish/access-change/archive/delete-dry-run/delete typed courseId，但 productionActionsReady=false。",
+        "tools/check-round305-181103-real-exam-supplement-targets.mjs 通过，38/38 受保护资料、30 路线、61 grouped review tasks、316/316 原文原子题、61 grouped sections、201 grouped 小问和合并会丢 140 道原子题保持不变。",
+        "tools/check-round305-private-video-blocker-ui-a11y.mjs 通过，公开壳、pages.dev 认证源站、真实账号 QA 和 FM_PRIVATE_MEDIA R2 blocker 在学生/教师可见面分开显示。",
+        "tools/check-round305-release-readiness.mjs --require-ready 通过；site-updates、EDGE_HOME_VERSION、EDGE_RUNTIME_JS_VERSION、roadmap、首页、知识页、练习页、资源页和真题页均对齐 round305-release-gate-r2-binding-hard-stop-20260614。",
+        "推送后必须重新生成 public shell、部署 Pages、验证 lghui.top/site-updates/home/real-exams/resources、pages.dev _edge-status、browser entry，并继续把真实账号 QA 与 FM_PRIVATE_MEDIA R2 实况分面报告。"
       ],
-      "status": "queued"
+      "status": "active"
     },
     {
       "round": 306,
@@ -1622,6 +1627,6 @@
       "requiredCheck": "tools/check-fluid-mobile-performance-budget.mjs"
     }
   },
-  "updatedAt": "2026-06-14T07:20:00+08:00",
-  "lastUpdated": "2026-06-14T07:20:00+08:00"
+  "updatedAt": "2026-06-14T09:55:00+08:00",
+  "lastUpdated": "2026-06-14T09:55:00+08:00"
 }
