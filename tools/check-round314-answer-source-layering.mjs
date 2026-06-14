@@ -73,6 +73,7 @@ const summary = {
   allHtmlBinaryHrefCount: allHtmlLedger.summary?.binaryHrefCount,
   allHtmlWrapperTokenCount: allHtmlLedger.summary?.forbiddenWrapperTokenCount,
   allHtmlLocalPathLeakCount: allHtmlLedger.summary?.localPathLeakCount,
+  allHtmlMobileTouchTargetCssCount: allHtmlLedger.summary?.mobileTouchTargetCssCount,
   materialPageCount: countFiles('resources/fluid-181103-html/materials')
 };
 
@@ -106,9 +107,10 @@ const checks = [
     ocrPages: summary.textbookOcrPagesPresent,
     sections: summary.textbookSections
   }),
-  gate('181103-all-html-still-direct-content', summary.allHtmlMaterialCount === 38 && summary.allHtmlContractPassCount === 38 && summary.materialPageCount === 38 && summary.allHtmlBinaryHrefCount === 0 && summary.allHtmlWrapperTokenCount === 0 && summary.allHtmlLocalPathLeakCount === 0, {
+  gate('181103-all-html-still-direct-content', summary.allHtmlMaterialCount === 38 && summary.allHtmlContractPassCount === 38 && summary.materialPageCount === 38 && summary.allHtmlMobileTouchTargetCssCount === 38 && summary.allHtmlBinaryHrefCount === 0 && summary.allHtmlWrapperTokenCount === 0 && summary.allHtmlLocalPathLeakCount === 0, {
     allHtmlMaterialCount: summary.allHtmlMaterialCount,
     materialPageCount: summary.materialPageCount,
+    mobileTouchTargetCssCount: summary.allHtmlMobileTouchTargetCssCount,
     binaryHrefCount: summary.allHtmlBinaryHrefCount,
     wrapperTokenCount: summary.allHtmlWrapperTokenCount,
     localPathLeakCount: summary.allHtmlLocalPathLeakCount

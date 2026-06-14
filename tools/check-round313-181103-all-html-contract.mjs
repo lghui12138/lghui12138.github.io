@@ -44,6 +44,14 @@ function count(re, text) {
   return (text.match(re) || []).length;
 }
 
+function hasMobileTouchContract(html, mode = 'material') {
+  const shared = /\.top a\{min-height:44px/.test(html)
+    && /\.study-bridge a,\.index-tools a\{min-height:44px/.test(html)
+    && /\.slide>p a\{min-height:44px/.test(html);
+  if (mode === 'index') return shared && /\.index-filter-row a\{padding:10px 12px\}/.test(html);
+  return shared && /\.reader-nav a,\.reader-nav span\{min-height:44px/.test(html);
+}
+
 function rowContract(item) {
   const html = fs.existsSync(fromRoot(item.htmlPath)) ? readText(item.htmlPath) : '';
   const links = hrefs(html);
@@ -58,6 +66,7 @@ function rowContract(item) {
   const hasPrevOrFirst = /data-round313-reader-prev/.test(html);
   const hasNextOrLast = /data-round313-reader-next/.test(html);
   const hasHtmlContent = /<section class=["'][^"']*\bhtml-content\b/i.test(html);
+  const hasMobileTouchTargetCss = hasMobileTouchContract(html, 'material');
   const localPathLeakCount = count(/\/Users\/|\/Volumes\/|file:\/\//gi, html);
   const pass = Boolean(html)
     && visibleText.length >= 300
@@ -69,6 +78,7 @@ function rowContract(item) {
     && hasResourcesReturn
     && hasPrevOrFirst
     && hasNextOrLast
+    && hasMobileTouchTargetCss
     && binaryHrefCount === 0
     && forbiddenWrapperTokenCount === 0
     && localPathLeakCount === 0;
@@ -87,6 +97,7 @@ function rowContract(item) {
     hasResourcesReturn,
     hasPrevOrFirst,
     hasNextOrLast,
+    hasMobileTouchTargetCss,
     binaryHrefCount,
     forbiddenWrapperTokenCount,
     localPathLeakCount,
@@ -116,6 +127,7 @@ const checks = [
       && /data-round313-material-list/.test(indexHtml)
       && /38\/38 (?:站内 )?HTML 正文/.test(indexHtml)
       && /30 条路线 \/ 68 复核任务/.test(indexHtml)
+      && hasMobileTouchContract(indexHtml, 'index')
       && !/\bviewer\b|<iframe\b|<embed\b|<object\b|converted-frame/i.test(indexHtml),
     detail: 'resources/fluid-181103-html/index.html'
   },
@@ -161,6 +173,7 @@ const payload = {
     readerNavCount: rows.filter((row) => row.hasReaderNav).length,
     studyBridgeCount: rows.filter((row) => row.hasStudyBridge).length,
     htmlContentCount: rows.filter((row) => row.hasHtmlContent).length,
+    mobileTouchTargetCssCount: rows.filter((row) => row.hasMobileTouchTargetCss).length,
     binaryHrefCount: rows.reduce((sum, row) => sum + row.binaryHrefCount, 0),
     forbiddenWrapperTokenCount: rows.reduce((sum, row) => sum + row.forbiddenWrapperTokenCount, 0),
     localPathLeakCount: rows.reduce((sum, row) => sum + row.localPathLeakCount, 0),
