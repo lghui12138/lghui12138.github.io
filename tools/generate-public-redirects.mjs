@@ -87,8 +87,8 @@ const targetRouteOverrides = new Map([
   ['/knowledge', '/modules/knowledge-detail'],
   ['/modules/knowledge-detail.html', '/modules/knowledge-detail'],
   ['/modules/knowledge-detail', '/modules/knowledge-detail'],
-  ['/modules/teacher-panel.html', '/modules/teacher-panel'],
-  ['/modules/teacher-panel', '/modules/teacher-panel'],
+  ['/modules/teacher-panel.html', '/teacher-panel?view=resources#private-videos'],
+  ['/modules/teacher-panel', '/teacher-panel?view=resources#private-videos'],
   ['/modules/simulated-exams-dynamic.html', '/modules/simulated-exams-dynamic.html'],
   ['/modules/simulated-exams-dynamic', '/modules/simulated-exams-dynamic.html'],
   ['/real-exams.html', '/modules/real-exams-dynamic.html'],
@@ -215,6 +215,8 @@ const runtimeCopies = [
   ['data/fluid-round318-181103-practice-bridge.json.gz', 'data/fluid-round318-181103-practice-bridge.json.gz'],
   ['data/fluid-round319-resources-video-practice-chain.json', 'data/fluid-round319-resources-video-practice-chain.json'],
   ['data/fluid-round319-resources-video-practice-chain.json.gz', 'data/fluid-round319-resources-video-practice-chain.json.gz'],
+  ['data/fluid-round321-181103-extracted-material-bank.json', 'data/fluid-round321-181103-extracted-material-bank.json'],
+  ['data/fluid-round321-181103-extracted-material-bank.json.gz', 'data/fluid-round321-181103-extracted-material-bank.json.gz'],
   ['docs/round313/181103-all-html-contract.md', 'docs/round313/181103-all-html-contract.md'],
   ['docs/round314/answer-source-layering.md', 'docs/round314/answer-source-layering.md'],
   ['docs/round315/181103-all-html-direct-pages.md', 'docs/round315/181103-all-html-direct-pages.md'],
@@ -230,6 +232,7 @@ const runtimeCopies = [
   ['docs/round318/optimization-experience.md', 'docs/round318/optimization-experience.md'],
   ['docs/round318/release-proof.md', 'docs/round318/release-proof.md'],
   ['docs/round319/resources-video-practice-chain.md', 'docs/round319/resources-video-practice-chain.md'],
+  ['docs/round321/181103-extracted-material-bank.md', 'docs/round321/181103-extracted-material-bank.md'],
   ['tools/check-round313-181103-all-html-contract.mjs', 'tools/check-round313-181103-all-html-contract.mjs'],
   ['tools/check-round314-answer-source-layering.mjs', 'tools/check-round314-answer-source-layering.mjs'],
   ['tools/check-round315-181103-all-html-direct-pages.mjs', 'tools/check-round315-181103-all-html-direct-pages.mjs'],
@@ -623,9 +626,12 @@ function writeRuntimeAssets() {
   copyRuntimeTree('resources/fluid-181103-html', 'resources/fluid-181103-html');
   fs.rmSync(path.join(repoRoot, 'question-banks', 'real-exam-years'), { recursive: true, force: true });
   copyRuntimeTree('question-banks/real-exam-years', 'question-banks/real-exam-years');
-  copyRuntimeAsset('question-banks/index.json', 'question-banks/index.json');
-  copyRuntimeAsset('question-banks/181103-material-review.json', 'question-banks/181103-material-review.json');
-  copyRuntimeAsset('question-banks/181103-material-review.json.gz', 'question-banks/181103-material-review.json.gz');
+	  copyRuntimeAsset('question-banks/index.json', 'question-banks/index.json');
+	  copyRuntimeAsset('question-banks/index.json.gz', 'question-banks/index.json.gz');
+	  copyRuntimeAsset('question-banks/181103-material-review.json', 'question-banks/181103-material-review.json');
+	  copyRuntimeAsset('question-banks/181103-material-review.json.gz', 'question-banks/181103-material-review.json.gz');
+	  copyRuntimeAsset('question-banks/181103-material-extracted.json', 'question-banks/181103-material-extracted.json');
+	  copyRuntimeAsset('question-banks/181103-material-extracted.json.gz', 'question-banks/181103-material-extracted.json.gz');
   for (const destRelative of authGuardAliases) {
     const destPath = path.join(repoRoot, destRelative);
     ensureParent(destPath);
