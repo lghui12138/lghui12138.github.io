@@ -20,7 +20,7 @@ ZIP-derived subpages remain HTML-only assets: the full tree is scanned for raw P
 
 | check | status |
 | --- | --- |
-| current-release-version-round315 | PASS |
+| current-or-successor-release-preserves-round315 | PASS |
 | roadmap-round315-active | PASS |
 | official-38-material-pages-direct-html | PASS |
 | full-181103-tree-has-no-binary-hrefs-or-embeds | PASS |
