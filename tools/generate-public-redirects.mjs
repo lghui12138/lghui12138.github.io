@@ -410,7 +410,7 @@ function htmlFor(route) {
     '/modules/question-bank-module.html'
   ].includes(route);
   const actionStyles = stableFallback
-    ? '\n    .actions{display:flex;flex-wrap:wrap;gap:12px}\n    .secondary{background:#155eef}'
+    ? '\n    .actions{display:flex;flex-wrap:wrap;gap:12px}\n    .secondary{background:#155eef}\n    .route-cards{display:grid;gap:10px;margin:16px 0}.route-card{display:block;background:#fff;color:#0f172a;border:1px solid rgba(15,23,42,.12);border-radius:8px;padding:12px 14px;text-decoration:none;font-weight:700}.route-card span{display:block;margin-top:4px;color:#475569;font-size:14px;font-weight:500;line-height:1.5}'
     : '';
   const actionMarkup = stableFallback
     ? `<div class="actions">
@@ -418,6 +418,12 @@ function htmlFor(route) {
       <a id="stableLink" class="secondary" href="https://lghui.top/index-complete.html?full=1">打开稳定入口</a>
     </div>`
     : `<p><a id="targetLink" href="${target}">立即打开</a></p>`;
+  const routeSpecificMarkup = route === '/resources.html'
+    ? `<div class="route-cards" aria-label="181103 资料直达入口">
+      <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 全资料 HTML 总表<span>38/38 个资料页已写成站内 HTML 正文，不走下载或 viewer 壳。</span></a>
+      <a class="route-card" href="${targetOrigin}/modules/question-bank.html?focus=181103-material-review&edge_refresh=${edgeRefresh}#questionBanksList">181103 资料题库<span>68 个真题复核题已入题库；资料内额外题目进入 OCR/人工拆题队列。</span></a>
+    </div>`
+    : '';
   const stableScript = stableFallback
     ? "\n    const stableUrl = new URL('https://lghui.top/index-complete.html');\n    const stableParams = new URLSearchParams(location.search);\n    stableParams.set('full', '1');\n    stableUrl.search = stableParams.toString();\n    stableUrl.hash = location.hash;\n    document.getElementById('stableLink').href = stableUrl.toString();"
     : '';
@@ -448,6 +454,7 @@ function htmlFor(route) {
     <p>当前入口版本是 ${edgeRefresh}。跳转会保留当前路径并把旧 edge_refresh 统一改到当前入口版本，主站会继续显示完整内容、公式和练习。</p>
     <p>181103 资料当前已写成 HTML 正文：38 份资料、30 条学习路线和 68 个真题复核任务；公开壳不提供原始文件下载。</p>
     <p><code>${route}</code></p>
+    ${routeSpecificMarkup}
     ${actionMarkup}
   </main>
   <script>
@@ -616,6 +623,9 @@ function writeRuntimeAssets() {
   copyRuntimeTree('resources/fluid-181103-html', 'resources/fluid-181103-html');
   fs.rmSync(path.join(repoRoot, 'question-banks', 'real-exam-years'), { recursive: true, force: true });
   copyRuntimeTree('question-banks/real-exam-years', 'question-banks/real-exam-years');
+  copyRuntimeAsset('question-banks/index.json', 'question-banks/index.json');
+  copyRuntimeAsset('question-banks/181103-material-review.json', 'question-banks/181103-material-review.json');
+  copyRuntimeAsset('question-banks/181103-material-review.json.gz', 'question-banks/181103-material-review.json.gz');
   for (const destRelative of authGuardAliases) {
     const destPath = path.join(repoRoot, destRelative);
     ensureParent(destPath);
