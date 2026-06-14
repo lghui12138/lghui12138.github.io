@@ -2,7 +2,7 @@
   "version": "round310-real-exam-325-html-content-video-admin-20260614",
   "generatedAt": "2026-06-14T15:22:00+08:00",
   "goal": "round287 后继续推进至少 100 大轮升级；每轮必须给出证据、预算和生产验收边界。",
-  "currentRound": 310,
+  "currentRound": 312,
   "releaseGate": {
     "requirePublicShell": true,
     "requirePagesDev": true,
@@ -25,7 +25,7 @@
     "lastUpdated": "2026-06-14T15:22:00+08:00",
     "requireNoFakeAccountQa": true,
     "requirePrivateMediaR2": true,
-    "currentRound": 310,
+    "currentRound": 312,
     "requiredLocalChecks": [
       "node tools/patch-real-exam-atomic-overrides.mjs",
       "node tools/patch-round310-real-exam-subquestion-fixes.mjs",
@@ -36,8 +36,11 @@
       "node tools/check-round310-181103-html-content-pages.mjs --json",
       "node tools/check-private-video-management-mock.mjs --json",
       "node tools/validate-site-content.mjs",
-      "node tools/verify-fluid-release-gate.mjs"
-    ]
+      "node tools/verify-fluid-release-gate.mjs",
+      "node tools/check-round312-181103-html-quality-ledger.mjs --write --json"
+    ],
+    "round311NoViewerGuard": true,
+    "round312HtmlQualityGuard": true
   },
   "lanes": [
     {
@@ -730,36 +733,55 @@
         "首页、真题页、资源页、site-updates、roadmap、edge version 与 public shell 均显示 round310-real-exam-325-html-content-video-admin-20260614。",
         "发布前必须通过 tools/verify-fluid-release-gate.mjs，并在推送/部署后验证 lghui.top 与 pages.dev 当前版本。"
       ],
-      "status": "active",
+      "status": "done",
       "startedAt": "2026-06-14T15:22:00+08:00"
     },
     {
       "round": 311,
-      "id": "round311-accessibility-mobile-07",
+      "id": "round311-all-html-current-counts-guard",
       "lane": "accessibility-mobile",
       "title": "可访问性与移动端 · 深浅色对比",
-      "focus": "深浅色对比",
+      "focus": "固化当前真题 325/68/217 口径、181103 38/38 HTML 内容页、公开壳 全 HTML/no-download JSON、私有视频生产 blocker 与 lghui.top/pages.dev 分面线上证明，防止旧 316/61/201、round264 或 旧包装入口回流。",
       "acceptance": [
-        "本地静态门禁通过",
-        "首页或对应模块有可见入口",
-        "更新记录与版本锚点同步",
-        "不得削弱生产认证门禁"
+        "tools/check-round311-optimization-experience-ledger.mjs 通过，data/fluid-round311-optimization-experience-ledger.json 与 gzip sidecar 存在并锁定 325/68/217、149 collapse-loss、38/38 HTML 内容页、rawDownloadCount=0、legacyWrapperFieldCount=0。",
+        "tools/check-round311-181103-live-html-content.mjs --json 通过：lghui.top 与 pages.dev 的 181103 HTML 内容页均可访问，lghui.top 的 Round310 JSON ledger 为 sanitized，旧 Round309 public JSON 如仍存在也不得含旧包装/download/local path 字段。",
+        "当前学生真题入口、固定旧页、教师旧管理页和历史 UI gate 不得把 316/61/201 或 round264 当作最新真题口径。",
+        "私有视频只声明 UI/mock/typed delete 与 confirmCourseId 后端硬化；生产恢复仍需 FM_PRIVATE_MEDIA R2 binding 与真实教师/学生账号浏览器 QA。",
+        "推送后必须重新验证 lghui.top site-updates、lghui.top 181103 HTML/JSON、pages.dev _edge-status、public browser gate 与 release gate。"
       ],
-      "status": "queued"
+      "status": "done",
+      "artifacts": [
+        "data/fluid-round311-optimization-experience-ledger.json",
+        "docs/round311/optimization-experience-ledger.md",
+        "tools/check-round311-optimization-experience-ledger.mjs",
+        "tools/check-round311-181103-live-html-content.mjs"
+      ],
+      "proofBoundary": "Round311 local/source gates are not real-account QA and do not prove private-video production recovery.",
+      "completedAt": "2026-06-14T16:50:00+08:00"
     },
     {
       "round": 312,
-      "id": "round312-teacher-workflow-08",
-      "lane": "teacher-workflow",
-      "title": "教师工作流 · 批改反馈语言",
-      "focus": "批改反馈语言",
+      "id": "round312-181103-html-quality-current-surface",
+      "lane": "content-evidence",
+      "title": "内容与证据边界 · 181103 全资料 HTML 正文质量锁",
+      "focus": "把 181103 38/38 资料从“可打开 HTML 页”升级为逐页可读 HTML 正文质量账本：ZIP 目录必须链接到站内正文页，PDF 页图文件必须存在，PPT LibreOffice 元数据噪声必须清理，公开入口继续锁 325 真题原子题和 68 个复核任务。",
       "acceptance": [
-        "本地静态门禁通过",
-        "首页或对应模块有可见入口",
-        "更新记录与版本锚点同步",
-        "不得削弱生产认证门禁"
+        "tools/check-round312-181103-html-quality-ledger.mjs --write --json 通过，锁定 38/38 质量页、0 raw download href、0 local path、0 legacy viewer token、0 mojibake、0 missing image。",
+        "resources/fluid-181103-html/materials/11-* 与 26-* ZIP 总表不再显示乱码目录壳，所有目录行均跳到对应站内 HTML 正文页。",
+        "resources/fluid-181103-html/materials/27-* PPT LibreOffice XHTML 清理转换元数据并带移动端防溢出 CSS；所有 181103 页面带键盘 focus-visible。",
+        "question-bank-home.html 不再显示 308，当前真题入口锁定 325 道原文原子题、68 个组题 section；resources.html 与浏览器 gate 锁定 68 个复核任务和 325/68 返回路径。",
+        "仍不声称私有视频生产恢复；FM_PRIVATE_MEDIA R2 和真实教师/学生账号 QA 未通过前，只能报告 UI/mock/边界门禁。"
       ],
-      "status": "queued"
+      "status": "active",
+      "startedAt": "2026-06-14T16:50:00+08:00",
+      "artifacts": [
+        "data/fluid-round312-181103-html-quality-ledger.json",
+        "docs/round312/181103-html-quality-ledger.md",
+        "tools/check-round312-181103-html-quality-ledger.mjs",
+        "resources/fluid-181103-html/materials/11-fluid-181103-11-i/index.html",
+        "resources/fluid-181103-html/materials/26-fluid-181103-26-ii/index.html"
+      ],
+      "proofBoundary": "Round312 proves local/source HTML readability and current public entry counts. It is not a private-video production recovery claim and still needs post-deploy lghui.top/pages.dev proof."
     },
     {
       "round": 313,
