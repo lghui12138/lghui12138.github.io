@@ -71,6 +71,7 @@ const routes = [
   '/practice.html',
   '/practice-dynamic.html',
   '/resources.html',
+  '/private-video.html',
   '/teacher-panel.html',
   '/teacher-panel'
 ];
@@ -199,14 +200,26 @@ const runtimeCopies = [
   ['data/fluid-round315-181103-all-html-direct-pages.json.gz', 'data/fluid-round315-181103-all-html-direct-pages.json.gz'],
   ['data/fluid-round316-181103-reader-polish.json', 'data/fluid-round316-181103-reader-polish.json'],
   ['data/fluid-round316-181103-reader-polish.json.gz', 'data/fluid-round316-181103-reader-polish.json.gz'],
+  ['data/fluid-round307-real-exam-source-row-year-count-lock.json', 'data/fluid-round307-real-exam-source-row-year-count-lock.json'],
+  ['data/fluid-round307-real-exam-source-row-year-count-lock.json.gz', 'data/fluid-round307-real-exam-source-row-year-count-lock.json.gz'],
+  ['data/fluid-round317-real-exam-source-cardinality.json', 'data/fluid-round317-real-exam-source-cardinality.json'],
+  ['data/fluid-round317-real-exam-source-cardinality.json.gz', 'data/fluid-round317-real-exam-source-cardinality.json.gz'],
+  ['data/fluid-round317-181103-live-html-depth.json', 'data/fluid-round317-181103-live-html-depth.json'],
+  ['data/fluid-round317-181103-live-html-depth.json.gz', 'data/fluid-round317-181103-live-html-depth.json.gz'],
   ['docs/round313/181103-all-html-contract.md', 'docs/round313/181103-all-html-contract.md'],
   ['docs/round314/answer-source-layering.md', 'docs/round314/answer-source-layering.md'],
   ['docs/round315/181103-all-html-direct-pages.md', 'docs/round315/181103-all-html-direct-pages.md'],
   ['docs/round316/181103-reader-polish.md', 'docs/round316/181103-reader-polish.md'],
+  ['docs/round317/real-exam-cardinality.md', 'docs/round317/real-exam-cardinality.md'],
+  ['docs/round317/181103-html-depth.md', 'docs/round317/181103-html-depth.md'],
+  ['docs/round317/release-freshness.md', 'docs/round317/release-freshness.md'],
   ['tools/check-round313-181103-all-html-contract.mjs', 'tools/check-round313-181103-all-html-contract.mjs'],
   ['tools/check-round314-answer-source-layering.mjs', 'tools/check-round314-answer-source-layering.mjs'],
   ['tools/check-round315-181103-all-html-direct-pages.mjs', 'tools/check-round315-181103-all-html-direct-pages.mjs'],
   ['tools/check-round316-181103-reader-polish.mjs', 'tools/check-round316-181103-reader-polish.mjs'],
+  ['tools/check-round317-real-exam-source-cardinality.mjs', 'tools/check-round317-real-exam-source-cardinality.mjs'],
+  ['tools/check-round317-181103-live-html-depth.mjs', 'tools/check-round317-181103-live-html-depth.mjs'],
+  ['question-banks/真题_中国海洋大学_2000-2024_fixed.json', 'question-banks/真题_中国海洋大学_2000-2024_fixed.json'],
   ['data/fluid-knowledge-upgrade-2026.json', 'data/fluid-knowledge-upgrade-2026.json'],
   ['data/fluid-knowledge-upgrade-2026.json.gz', 'data/fluid-knowledge-upgrade-2026.json.gz'],
   ['data/fluid-knowledge-upgrade.json', 'data/fluid-knowledge-upgrade.json'],
@@ -578,6 +591,8 @@ function writeRuntimeAssets() {
   copyRuntimeTree('vendor/mathjax/es5/output/chtml/fonts/woff-v2', 'vendor/mathjax/es5/output/chtml/fonts/woff-v2');
   fs.rmSync(path.join(repoRoot, 'resources', 'fluid-181103-html'), { recursive: true, force: true });
   copyRuntimeTree('resources/fluid-181103-html', 'resources/fluid-181103-html');
+  fs.rmSync(path.join(repoRoot, 'question-banks', 'real-exam-years'), { recursive: true, force: true });
+  copyRuntimeTree('question-banks/real-exam-years', 'question-banks/real-exam-years');
   for (const destRelative of authGuardAliases) {
     const destPath = path.join(repoRoot, destRelative);
     ensureParent(destPath);

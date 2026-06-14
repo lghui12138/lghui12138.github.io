@@ -1,0 +1,46 @@
+# Round317 181103 HTML Depth Check
+
+- version: round317-181103-live-html-depth-20260614
+- official material pages: 38/38
+- Round317 structure maps: 38/38
+- empty content risks: 0
+- image-only pages without structure: 0
+- binary/viewer/download/local-path/embed risks: 0
+- viewer/download hrefs: 0
+- source inventory checked read-only: yes (38 files)
+
+## Checks
+
+| Check | Result |
+|---|---|
+| official-38-materials | PASS |
+| all-pages-have-round317-structure-map | PASS |
+| no-empty-content-pages | PASS |
+| no-image-only-pages-without-structure | PASS |
+| no-viewer-download-binary-local-path-hrefs | PASS |
+| source-directory-readonly-inventory-seen | PASS |
+
+## What Changed
+
+Each official material page under `resources/fluid-181103-html/materials` now has a `data-round317-content-map` panel before the body. The panel summarizes the in-site body type, page/text depth, topic cue, and local anchors. It does not link to raw PDF/PPT/DOC/ZIP files.
+
+## Image-Heavy Pages Sample
+
+| Page | Page Images | Visible Text Chars | Round317 Map |
+|---|---:|---:|---|
+| resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html | 365 | 2811 | added |
+| resources/fluid-181103-html/materials/02-fluid-181103-02-material/index.html | 19 | 123 | added |
+| resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html | 12 | 74 | added |
+| resources/fluid-181103-html/materials/10-fluid-181103-10-2010/index.html | 52 | 354 | added |
+| resources/fluid-181103-html/materials/12-fluid-181103-12-1-1/index.html | 12 | 74 | added |
+| resources/fluid-181103-html/materials/13-fluid-181103-13-1-2/index.html | 26 | 172 | added |
+| resources/fluid-181103-html/materials/14-fluid-181103-14-1-3/index.html | 21 | 137 | added |
+| resources/fluid-181103-html/materials/15-fluid-181103-15-1-4-1-5/index.html | 20 | 130 | added |
+| resources/fluid-181103-html/materials/16-fluid-181103-16-2/index.html | 36 | 242 | added |
+| resources/fluid-181103-html/materials/17-fluid-181103-17-3/index.html | 40 | 270 | added |
+| resources/fluid-181103-html/materials/18-fluid-181103-18-6-1-6-4/index.html | 23 | 151 | added |
+| resources/fluid-181103-html/materials/19-fluid-181103-19-6-5/index.html | 27 | 179 | added |
+
+## Boundary
+
+No site-updates, roadmap, or release-gate files were edited in this worker round. The check is local/static and focused on the 38 material `index.html` pages plus this ledger.

@@ -5,8 +5,8 @@
 - PDF/page-image materials with jump tools: 27/27
 - anchored PDF pages: 902/902
 - lazy/async page images: 902/902
-- malformed intro: 0
 - malformed intro tags: 0
+- malformed intro: 0
 - raw binary hrefs: 0
 - iframe/embed/object tags: 0
 - preview-wrapper tokens: 0
