@@ -120,6 +120,7 @@ const targetRouteOverrides = new Map([
 
 const runtimeCopies = [
   ['site-updates.json', 'site-updates.json'],
+  ['site-announcement.json', 'site-announcement.json'],
   ['data/fluid-upgrade-roadmap-100.json', 'data/fluid-upgrade-roadmap-100.json'],
   ['data/fluid-upgrade-roadmap-100.json.gz', 'data/fluid-upgrade-roadmap-100.json.gz'],
   ['data/fluid-round278-pdf-web-year-compare.json', 'data/fluid-round278-pdf-web-year-compare.json'],
