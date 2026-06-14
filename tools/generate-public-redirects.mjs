@@ -184,6 +184,14 @@ const runtimeCopies = [
   ['data/fluid-round304-student-real-exam-ui-a11y.json.gz', 'data/fluid-round304-student-real-exam-ui-a11y.json.gz'],
   ['data/fluid-round304-release-readiness.json', 'data/fluid-round304-release-readiness.json'],
   ['data/fluid-round304-release-readiness.json.gz', 'data/fluid-round304-release-readiness.json.gz'],
+  ['data/fluid-round310-181103-html-content.json', 'data/fluid-round310-181103-html-content.json'],
+  ['data/fluid-round310-181103-html-content.json.gz', 'data/fluid-round310-181103-html-content.json.gz'],
+  ['data/fluid-round312-181103-html-quality-ledger.json', 'data/fluid-round312-181103-html-quality-ledger.json'],
+  ['data/fluid-round312-181103-html-quality-ledger.json.gz', 'data/fluid-round312-181103-html-quality-ledger.json.gz'],
+  ['data/fluid-round313-181103-all-html-contract.json', 'data/fluid-round313-181103-all-html-contract.json'],
+  ['data/fluid-round313-181103-all-html-contract.json.gz', 'data/fluid-round313-181103-all-html-contract.json.gz'],
+  ['docs/round313/181103-all-html-contract.md', 'docs/round313/181103-all-html-contract.md'],
+  ['tools/check-round313-181103-all-html-contract.mjs', 'tools/check-round313-181103-all-html-contract.mjs'],
   ['js/core/local-mathjax.js', 'js/core/local-mathjax.js'],
   ['js/core/local-mathjax.js', 'local-mathjax.js'],
   ['js/core/local-mathjax.js', 'modules/local-mathjax.js'],
@@ -340,6 +348,7 @@ function htmlFor(route) {
     <h1>正在进入主站</h1>
     <p>这个公开路径已迁移到 Cloudflare 源站，正在自动打开完整主站。若浏览器拦截自动跳转，请点击按钮进入。</p>
     <p>当前入口版本是 ${edgeRefresh}。跳转会保留当前路径并把旧 edge_refresh 统一改到当前入口版本，主站会继续显示完整内容、公式和练习。</p>
+    <p>181103 资料当前已写成 HTML 正文：38 份资料、30 条学习路线和 68 个真题复核任务；公开壳不提供原始文件下载。</p>
     <p><code>${route}</code></p>
     ${actionMarkup}
   </main>
@@ -505,6 +514,8 @@ function writeRuntimeAssets() {
     copyRuntimeAsset(sourceRelative, destRelative);
   }
   copyRuntimeTree('vendor/mathjax/es5/output/chtml/fonts/woff-v2', 'vendor/mathjax/es5/output/chtml/fonts/woff-v2');
+  fs.rmSync(path.join(repoRoot, 'resources', 'fluid-181103-html'), { recursive: true, force: true });
+  copyRuntimeTree('resources/fluid-181103-html', 'resources/fluid-181103-html');
   for (const destRelative of authGuardAliases) {
     const destPath = path.join(repoRoot, destRelative);
     ensureParent(destPath);
