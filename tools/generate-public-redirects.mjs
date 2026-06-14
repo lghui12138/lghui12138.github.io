@@ -258,6 +258,7 @@ const runtimeCopies = [
   ['js/formula-lite.js', 'modules/formula-lite.js'],
   ['js/formula-lite.js', 'modules/js/formula-lite.js'],
   ['js/edge-fluid-performance.js', 'js/edge-fluid-performance.js'],
+  ['safari-compatibility.js', 'safari-compatibility.js'],
   ['js/edge-fluid-learning-upgrade.js', 'js/edge-fluid-learning-upgrade.js'],
   ['lib/fm-core.js', 'lib/fm-core.js'],
   ['modules/js/practice-components.js', 'modules/js/practice-components.js'],
