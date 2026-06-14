@@ -48,7 +48,8 @@ function hasMobileTouchContract(html, mode = 'material') {
   const shared = /\.top a\{min-height:44px/.test(html)
     && /\.source-note a\{min-height:44px/.test(html)
     && /\.study-bridge a,\.index-tools a\{min-height:44px/.test(html)
-    && /\.slide>p a\{min-height:44px/.test(html);
+    && /\.slide>p a\{min-height:44px/.test(html)
+    && /\.doc-html p,\.slide p,\.doc-block p\{max-width:100%;overflow-wrap:anywhere;word-break:break-all;line-break:anywhere\}/.test(html);
   if (mode === 'index') return shared && /\.index-filter-row a\{padding:10px 12px\}/.test(html);
   return shared && /\.reader-nav a,\.reader-nav span\{min-height:44px/.test(html);
 }
