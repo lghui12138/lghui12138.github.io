@@ -6,6 +6,7 @@ import zlib from 'node:zlib';
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const args = new Set(process.argv.slice(2));
 const version = 'round316-181103-reader-polish-20260614';
+const generatedAt = '2026-06-14T00:00:00.000Z';
 const previousVersion = 'round315-181103-all-html-direct-pages-20260614';
 const ledgerRel = 'data/fluid-round316-181103-reader-polish.json';
 const docRel = 'docs/round316/181103-reader-polish.md';
@@ -179,7 +180,7 @@ const checks = [
 const failed = checks.filter((check) => !check.pass);
 const payload = {
   version,
-  generatedAt: new Date().toISOString(),
+  generatedAt,
   source: {
     materialsRoot: materialsRootRel,
     previousContract: 'data/fluid-round315-181103-all-html-direct-pages.json'

@@ -309,7 +309,6 @@ function buildDoc(payload) {
   lines.push('## 机器判定');
   lines.push('');
   lines.push(payload.acceptance.pass ? '通过。当前站内题库没有发现多小问父题被合并。' : '失败。见 `failedRows`。');
-  lines.push('');
   return `${lines.join('\n')}\n`;
 }
 

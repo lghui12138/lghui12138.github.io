@@ -6,7 +6,6 @@
 - empty content risks: 0
 - image-only pages without structure: 0
 - binary/viewer/download/local-path/embed risks: 0
-- viewer/download hrefs: 0
 - source inventory checked read-only: yes (38 files)
 
 ## Checks
