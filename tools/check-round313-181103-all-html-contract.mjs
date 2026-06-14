@@ -46,6 +46,7 @@ function count(re, text) {
 
 function hasMobileTouchContract(html, mode = 'material') {
   const shared = /\.top a\{min-height:44px/.test(html)
+    && /\.source-note a\{min-height:44px/.test(html)
     && /\.study-bridge a,\.index-tools a\{min-height:44px/.test(html)
     && /\.slide>p a\{min-height:44px/.test(html);
   if (mode === 'index') return shared && /\.index-filter-row a\{padding:10px 12px\}/.test(html);
