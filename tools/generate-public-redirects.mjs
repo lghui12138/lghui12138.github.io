@@ -424,7 +424,8 @@ function htmlFor(route) {
   const routeSpecificMarkup = route === '/resources.html'
     ? `<div class="route-cards" aria-label="181103 资料直达入口">
       <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 全资料 HTML 总表<span>38/38 个资料页已写成站内 HTML 正文，不走下载或 viewer 壳。</span></a>
-      <a class="route-card" href="${targetOrigin}/modules/question-bank.html?focus=181103-material-review&edge_refresh=${edgeRefresh}#questionBanksList">181103 资料题库<span>68 个真题复核题已入题库；资料内额外题目进入 OCR/人工拆题队列。</span></a>
+      <a class="route-card" href="${targetOrigin}/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=${edgeRefresh}#questionBanksList">181103 资料内题目全集<span>411 个资料内习题、例题、名词解释、证明计算题已入题库。</span></a>
+      <a class="route-card" href="${targetOrigin}/modules/question-bank.html?focus=181103-material-review&edge_refresh=${edgeRefresh}#questionBanksList">181103 真题复核题<span>68 个真题复核题保留独立边界，不冒充原卷答案 PDF 证据。</span></a>
     </div>`
     : '';
   const stableScript = stableFallback
@@ -455,7 +456,7 @@ function htmlFor(route) {
     <h1>正在进入主站</h1>
     <p>这个公开路径已迁移到 Cloudflare 源站，正在自动打开完整主站。若浏览器拦截自动跳转，请点击按钮进入。</p>
     <p>当前入口版本是 ${edgeRefresh}。跳转会保留当前路径并把旧 edge_refresh 统一改到当前入口版本，主站会继续显示完整内容、公式和练习。</p>
-    <p>181103 资料当前已写成 HTML 正文：38 份资料、30 条学习路线和 68 个真题复核任务；公开壳不提供原始文件下载。</p>
+    <p>181103 资料当前已写成 HTML 正文：38 份资料、30 条学习路线、68 个真题复核任务和 411 个资料内题目；公开壳不提供原始文件下载。</p>
     <p><code>${route}</code></p>
     ${routeSpecificMarkup}
     ${actionMarkup}
