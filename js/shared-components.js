@@ -116,7 +116,7 @@ window.SharedMixin = {
             }
             
             // 学生账号 (简单验证，无教师权限)
-            if (username && password && password.length >= 4) {
+            if (username && password) {
                 const user = {
                     username: username,
                     role: 'student', 

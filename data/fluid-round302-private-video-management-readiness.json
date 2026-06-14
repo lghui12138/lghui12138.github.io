@@ -1,0 +1,1387 @@
+{
+  "version": "round302-private-video-management-readiness-20260614",
+  "generatedAt": "2026-06-14T00:23:33.180Z",
+  "targetRound": 302,
+  "pass": true,
+  "productionRecovery": false,
+  "productionRecoveryAllowed": false,
+  "productionRecoveryReason": "Real-account QA and FM_PRIVATE_MEDIA R2 production binding are missing or not proven.",
+  "scope": {
+    "worker": "Round302 worker C",
+    "target": "private-video management production readiness",
+    "projectRoot": "lghui-source-private-video-work",
+    "cwdRestrictionObserved": true,
+    "mac2tCwdUsed": false,
+    "nodeOnly": true,
+    "pythonUsed": false,
+    "lxmlUsed": false,
+    "vpnOrProxyTouched": false,
+    "deployAttempted": false,
+    "destructiveMutationAttempted": false,
+    "credentialValuesReadOrPrinted": false,
+    "authEnvValuesRead": false,
+    "authOrCloudflareCredentialScriptsExecuted": false,
+    "liveCloudflareBindingCheckExecuted": false,
+    "realAccountBrowserQaExecuted": false
+  },
+  "artifacts": {
+    "tool": "tools/check-round302-private-video-management-readiness.mjs",
+    "json": "data/fluid-round302-private-video-management-readiness.json",
+    "gzip": "data/fluid-round302-private-video-management-readiness.json.gz",
+    "doc": "docs/round302/private-video-management-readiness.md"
+  },
+  "summary": {
+    "actionsTotal": 7,
+    "localActionsReady": 7,
+    "productionReadyActions": 0,
+    "sourceChecksTotal": 20,
+    "sourceChecksPassed": 20,
+    "mockRoutesCovered": [
+      "list",
+      "publish",
+      "access",
+      "archive",
+      "delete-dry-run",
+      "delete"
+    ],
+    "mockButtonsCovered": [
+      "refresh",
+      "retry",
+      "publish",
+      "same-access-save",
+      "change-access",
+      "archive",
+      "delete"
+    ],
+    "readinessStatesCovered": [
+      "ready",
+      "limited",
+      "blocked"
+    ],
+    "blockersTotal": 22
+  },
+  "gates": [
+    {
+      "id": "source-audit",
+      "label": "Source/backend/UI checker audit",
+      "state": "ready-source-covered",
+      "ready": true,
+      "productionClaimAllowed": false
+    },
+    {
+      "id": "mock-static-gate",
+      "label": "Existing no-credential mock/static gate",
+      "state": "ready-mock-only",
+      "ready": true,
+      "productionClaimAllowed": false,
+      "noRealCredentials": true,
+      "productionAccountQA": false
+    },
+    {
+      "id": "unauth-json-safety",
+      "label": "Unauthenticated/non-admin JSON safety",
+      "state": "ready-source-covered",
+      "ready": true,
+      "productionClaimAllowed": false,
+      "expectedStatus": 403,
+      "expectedError": "admin_required"
+    },
+    {
+      "id": "kv-r2-binding-evidence-fields",
+      "label": "KV/R2 binding evidence fields",
+      "state": "ready-fields-covered-not-live-verified",
+      "ready": true,
+      "productionClaimAllowed": false,
+      "fields": [
+        "kvBindings",
+        "r2Bindings",
+        "hasAuditKv",
+        "hasPrivateMediaR2",
+        "FM_AUDIT",
+        "FM_PRIVATE_MEDIA"
+      ],
+      "liveCloudflareCheckExecuted": false,
+      "reason": "Round302 does not run tools that read Cloudflare env/keychain credentials."
+    },
+    {
+      "id": "real-account-qa",
+      "label": "Real teacher-account browser QA",
+      "state": "blocked-not-run",
+      "ready": false,
+      "productionClaimAllowed": false,
+      "reason": "Round302 does not read auth env values or run authenticated browser gates."
+    },
+    {
+      "id": "fm-private-media-r2",
+      "label": "FM_PRIVATE_MEDIA R2 production binding",
+      "state": "blocked-not-proven",
+      "ready": false,
+      "productionClaimAllowed": false,
+      "reason": "Binding field support is audited, but live Cloudflare binding evidence was not fetched in this worker."
+    }
+  ],
+  "actions": [
+    {
+      "id": "list",
+      "label": "List private-video courses",
+      "destructive": false,
+      "localContractReady": true,
+      "productionReady": false,
+      "productionClaimAllowed": false,
+      "backendCoverage": [
+        {
+          "id": "route-list",
+          "ok": true
+        }
+      ],
+      "uiCoverage": [
+        {
+          "id": "ui-list-refresh",
+          "ok": true
+        }
+      ],
+      "mockRouteCoverage": [
+        {
+          "id": "list",
+          "present": true
+        }
+      ],
+      "mockButtonCoverage": [
+        {
+          "id": "refresh",
+          "present": true
+        },
+        {
+          "id": "retry",
+          "present": true
+        }
+      ],
+      "dependencies": {
+        "realAccountQa": true,
+        "fmAuditKv": true,
+        "fmPrivateMediaR2": false
+      },
+      "blockers": [
+        "Real teacher-account browser QA was not run by Round302 and remains required.",
+        "FM_AUDIT KV production binding must be present or proven."
+      ]
+    },
+    {
+      "id": "create-upload-if-present",
+      "label": "Create/upload private-video course when upload is present",
+      "destructive": false,
+      "localContractReady": true,
+      "productionReady": false,
+      "productionClaimAllowed": false,
+      "createUploadPresent": true,
+      "backendCoverage": [
+        {
+          "id": "route-create",
+          "ok": true
+        },
+        {
+          "id": "route-upload-chunk",
+          "ok": true
+        }
+      ],
+      "uiCoverage": [
+        {
+          "id": "ui-upload-source-probe",
+          "ok": true
+        }
+      ],
+      "mockRouteCoverage": [],
+      "mockButtonCoverage": [],
+      "dependencies": {
+        "realAccountQa": true,
+        "fmAuditKv": true,
+        "fmPrivateMediaR2": true
+      },
+      "blockers": [
+        "Real teacher-account browser QA was not run by Round302 and remains required.",
+        "FM_AUDIT KV production binding must be present or proven.",
+        "FM_PRIVATE_MEDIA R2 production binding is missing or not proven, so storage-backed production recovery remains blocked."
+      ]
+    },
+    {
+      "id": "publish",
+      "label": "Publish private-video course",
+      "destructive": false,
+      "localContractReady": true,
+      "productionReady": false,
+      "productionClaimAllowed": false,
+      "backendCoverage": [
+        {
+          "id": "route-course-publish",
+          "ok": true
+        },
+        {
+          "id": "route-segment-publish",
+          "ok": true
+        }
+      ],
+      "uiCoverage": [
+        {
+          "id": "ui-publish",
+          "ok": true
+        }
+      ],
+      "mockRouteCoverage": [
+        {
+          "id": "publish",
+          "present": true
+        }
+      ],
+      "mockButtonCoverage": [
+        {
+          "id": "publish",
+          "present": true
+        }
+      ],
+      "dependencies": {
+        "realAccountQa": true,
+        "fmAuditKv": true,
+        "fmPrivateMediaR2": true
+      },
+      "blockers": [
+        "Real teacher-account browser QA was not run by Round302 and remains required.",
+        "FM_AUDIT KV production binding must be present or proven.",
+        "FM_PRIVATE_MEDIA R2 production binding is missing or not proven, so storage-backed production recovery remains blocked."
+      ]
+    },
+    {
+      "id": "access-change",
+      "label": "Save/change private-video access",
+      "destructive": false,
+      "localContractReady": true,
+      "productionReady": false,
+      "productionClaimAllowed": false,
+      "backendCoverage": [
+        {
+          "id": "route-course-access",
+          "ok": true
+        },
+        {
+          "id": "route-segment-access",
+          "ok": true
+        }
+      ],
+      "uiCoverage": [
+        {
+          "id": "ui-access",
+          "ok": true
+        }
+      ],
+      "mockRouteCoverage": [
+        {
+          "id": "access",
+          "present": true
+        }
+      ],
+      "mockButtonCoverage": [
+        {
+          "id": "same-access-save",
+          "present": true
+        },
+        {
+          "id": "change-access",
+          "present": true
+        }
+      ],
+      "dependencies": {
+        "realAccountQa": true,
+        "fmAuditKv": true,
+        "fmPrivateMediaR2": true
+      },
+      "blockers": [
+        "Real teacher-account browser QA was not run by Round302 and remains required.",
+        "FM_AUDIT KV production binding must be present or proven.",
+        "FM_PRIVATE_MEDIA R2 production binding is missing or not proven, so storage-backed production recovery remains blocked."
+      ]
+    },
+    {
+      "id": "archive",
+      "label": "Archive private-video course",
+      "destructive": false,
+      "localContractReady": true,
+      "productionReady": false,
+      "productionClaimAllowed": false,
+      "backendCoverage": [
+        {
+          "id": "route-course-archive",
+          "ok": true
+        }
+      ],
+      "uiCoverage": [
+        {
+          "id": "ui-archive",
+          "ok": true
+        }
+      ],
+      "mockRouteCoverage": [
+        {
+          "id": "archive",
+          "present": true
+        }
+      ],
+      "mockButtonCoverage": [
+        {
+          "id": "archive",
+          "present": true
+        }
+      ],
+      "dependencies": {
+        "realAccountQa": true,
+        "fmAuditKv": true,
+        "fmPrivateMediaR2": true
+      },
+      "blockers": [
+        "Real teacher-account browser QA was not run by Round302 and remains required.",
+        "FM_AUDIT KV production binding must be present or proven.",
+        "FM_PRIVATE_MEDIA R2 production binding is missing or not proven, so storage-backed production recovery remains blocked."
+      ]
+    },
+    {
+      "id": "delete-dry-run",
+      "label": "Delete dry-run preflight",
+      "destructive": false,
+      "localContractReady": true,
+      "productionReady": false,
+      "productionClaimAllowed": false,
+      "backendCoverage": [
+        {
+          "id": "route-delete-dry-run",
+          "ok": true
+        }
+      ],
+      "uiCoverage": [
+        {
+          "id": "ui-delete-dry-run",
+          "ok": true
+        }
+      ],
+      "mockRouteCoverage": [
+        {
+          "id": "delete-dry-run",
+          "present": true
+        }
+      ],
+      "mockButtonCoverage": [
+        {
+          "id": "delete",
+          "present": true
+        }
+      ],
+      "dependencies": {
+        "realAccountQa": true,
+        "fmAuditKv": true,
+        "fmPrivateMediaR2": true
+      },
+      "blockers": [
+        "Real teacher-account browser QA was not run by Round302 and remains required.",
+        "FM_AUDIT KV production binding must be present or proven.",
+        "FM_PRIVATE_MEDIA R2 production binding is missing or not proven, so storage-backed production recovery remains blocked."
+      ]
+    },
+    {
+      "id": "delete",
+      "label": "Delete private-video course",
+      "destructive": true,
+      "localContractReady": true,
+      "productionReady": false,
+      "productionClaimAllowed": false,
+      "backendCoverage": [
+        {
+          "id": "route-delete",
+          "ok": true
+        },
+        {
+          "id": "route-delete-dry-run",
+          "ok": true
+        }
+      ],
+      "uiCoverage": [
+        {
+          "id": "ui-delete",
+          "ok": true
+        },
+        {
+          "id": "ui-delete-dry-run",
+          "ok": true
+        },
+        {
+          "id": "ui-typed-course-id",
+          "ok": true
+        }
+      ],
+      "mockRouteCoverage": [
+        {
+          "id": "delete",
+          "present": true
+        },
+        {
+          "id": "delete-dry-run",
+          "present": true
+        }
+      ],
+      "mockButtonCoverage": [
+        {
+          "id": "delete",
+          "present": true
+        }
+      ],
+      "dependencies": {
+        "realAccountQa": true,
+        "fmAuditKv": true,
+        "fmPrivateMediaR2": true
+      },
+      "blockers": [
+        "Real teacher-account browser QA was not run by Round302 and remains required.",
+        "FM_AUDIT KV production binding must be present or proven.",
+        "FM_PRIVATE_MEDIA R2 production binding is missing or not proven, so storage-backed production recovery remains blocked."
+      ]
+    }
+  ],
+  "claims": {
+    "localManagementContractAudited": true,
+    "unauthenticatedJsonSafetySourceCovered": true,
+    "kvR2EvidenceFieldsCovered": true,
+    "realAccountQaComplete": false,
+    "fmPrivateMediaR2Ready": false,
+    "productionManagementRecoveryComplete": false,
+    "impossibleToOverclaim": true
+  },
+  "state": {
+    "realAccountQa": {
+      "state": "blocked-not-run",
+      "ready": false,
+      "blocker": "Round302 did not read auth env values or run a real teacher-account browser session."
+    },
+    "fmAuditKv": {
+      "state": "field-covered-live-not-verified",
+      "ready": false,
+      "blocker": "Round302 did not run the Cloudflare API/keychain checker."
+    },
+    "fmPrivateMediaR2": {
+      "state": "blocked-not-proven",
+      "ready": false,
+      "blocker": "Round302 did not run live Cloudflare binding verification and prior boundary says R2 remains required before recovery."
+    }
+  },
+  "diagnostics": {
+    "sourceAudit": {
+      "ok": true,
+      "files": {
+        "edge": {
+          "path": "functions/_middleware.js",
+          "exists": true
+        },
+        "teacherModule": {
+          "path": "modules/teacher-panel.html",
+          "exists": true
+        },
+        "mock": {
+          "path": "tools/check-private-video-management-mock.mjs",
+          "exists": true
+        },
+        "browser": {
+          "path": "tools/check-private-video-management-browser.mjs",
+          "exists": true
+        },
+        "cloudflare": {
+          "path": "tools/check-cloudflare-pages-private-video-bindings.mjs",
+          "exists": true
+        }
+      },
+      "moduleTeacherPanel": {
+        "path": "modules/teacher-panel.html",
+        "privateVideoAffordanceMarkersPresent": false,
+        "markerEvidence": [
+          {
+            "marker": "pvLessonList",
+            "present": false
+          },
+          {
+            "marker": "data-pv-delete-course",
+            "present": false
+          },
+          {
+            "marker": "/api/admin/private-videos",
+            "present": false
+          }
+        ],
+        "note": "modules/teacher-panel.html does not contain the current private-video management affordance markers; Round302 relies on existing no-credential check-private-video tools for the generated/live teacher UI surface."
+      },
+      "checks": [
+        {
+          "id": "route-list",
+          "label": "Backend list route returns courses, static courses, limits, and audit",
+          "target": "functions/_middleware.js",
+          "markers": [
+            {
+              "marker": "url.pathname === '/api/admin/private-videos'",
+              "present": true
+            },
+            {
+              "marker": "request.method === 'GET'",
+              "present": true
+            },
+            {
+              "marker": "courses",
+              "present": true
+            },
+            {
+              "marker": "staticCourses",
+              "present": true
+            },
+            {
+              "marker": "privateVideoAdminLimits",
+              "present": true
+            },
+            {
+              "marker": "admin_private_video_list",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/if \\(url\\.pathname === '\\/api\\/admin\\/private-videos'\\)[\\s\\S]*request\\.method === 'GET'[\\s\\S]*courses[\\s\\S]*limits:\\s*privateVideoAdminLimits/",
+              "present": true
+            },
+            {
+              "pattern": "/queueAudit\\(context,\\s*'admin_private_video_list'/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "route-create",
+          "label": "Backend create/upload-init route exists when upload is present",
+          "target": "functions/_middleware.js",
+          "markers": [
+            {
+              "marker": "url.pathname === '/api/admin/private-videos'",
+              "present": true
+            },
+            {
+              "marker": "request.method === 'POST'",
+              "present": true
+            },
+            {
+              "marker": "pickPrivateUploadChunkPlan",
+              "present": true
+            },
+            {
+              "marker": "writeUploadedPrivateVideoMeta",
+              "present": true
+            },
+            {
+              "marker": "private_video_upload_init",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/if \\(request\\.method === 'POST'\\)[\\s\\S]*pickPrivateUploadChunkPlan[\\s\\S]*writeUploadedPrivateVideoMeta/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "route-upload-chunk",
+          "label": "Backend upload chunk route exists",
+          "target": "functions/_middleware.js",
+          "markers": [
+            {
+              "marker": "chunkMatch",
+              "present": true
+            },
+            {
+              "marker": "putUploadedPrivateVideoChunk",
+              "present": true
+            },
+            {
+              "marker": "private_video_upload_chunk",
+              "present": true
+            },
+            {
+              "marker": "private_video_upload_chunk_failed",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/chunkMatch[\\s\\S]*request\\.method !== 'PUT'[\\s\\S]*request\\.method !== 'POST'/",
+              "present": true
+            },
+            {
+              "pattern": "/putUploadedPrivateVideoChunk\\(env,\\s*id,\\s*index,\\s*buffer/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "route-course-publish",
+          "label": "Backend course publish route exists",
+          "target": "functions/_middleware.js",
+          "markers": [
+            {
+              "marker": "coursePublishMatch",
+              "present": true
+            },
+            {
+              "marker": "private_video_course_publish",
+              "present": true
+            },
+            {
+              "marker": "validatePrivateCourseSegmentsForPublish",
+              "present": true
+            },
+            {
+              "marker": "coursePublished: true",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/coursePublishMatch[\\s\\S]*request\\.method !== 'POST'[\\s\\S]*private_video_course_publish/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "route-segment-publish",
+          "label": "Backend segment publish route exists",
+          "target": "functions/_middleware.js",
+          "markers": [
+            {
+              "marker": "publishMatch",
+              "present": true
+            },
+            {
+              "marker": "private_video_upload_publish",
+              "present": true
+            },
+            {
+              "marker": "validatePrivateCourseSegmentsForPublish",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/publishMatch[\\s\\S]*request\\.method !== 'POST'[\\s\\S]*private_video_upload_publish/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "route-course-access",
+          "label": "Backend course access-change route exists",
+          "target": "functions/_middleware.js",
+          "markers": [
+            {
+              "marker": "courseAccessMatch",
+              "present": true
+            },
+            {
+              "marker": "private_video_course_access_update",
+              "present": true
+            },
+            {
+              "marker": "private_video_course_access_noop",
+              "present": true
+            },
+            {
+              "marker": "assignedUsers",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/courseAccessMatch[\\s\\S]*request\\.method !== 'POST'[\\s\\S]*private_video_course_access_update/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "route-segment-access",
+          "label": "Backend segment access-change route exists",
+          "target": "functions/_middleware.js",
+          "markers": [
+            {
+              "marker": "updateMatch",
+              "present": true
+            },
+            {
+              "marker": "private_video_access_update",
+              "present": true
+            },
+            {
+              "marker": "assignedUsers",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/updateMatch[\\s\\S]*request\\.method !== 'POST'[\\s\\S]*private_video_access_update/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "route-course-archive",
+          "label": "Backend course archive route exists",
+          "target": "functions/_middleware.js",
+          "markers": [
+            {
+              "marker": "courseArchiveMatch",
+              "present": true
+            },
+            {
+              "marker": "private_video_course_archive",
+              "present": true
+            },
+            {
+              "marker": "archived",
+              "present": true
+            },
+            {
+              "marker": "removePrivateVideosFromIndex",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/courseArchiveMatch[\\s\\S]*request\\.method !== 'POST'[\\s\\S]*private_video_course_archive/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "route-delete-dry-run",
+          "label": "Backend delete dry-run route returns JSON safety fields",
+          "target": "functions/_middleware.js",
+          "markers": [
+            {
+              "marker": "courseDeleteMatch",
+              "present": true
+            },
+            {
+              "marker": "url.searchParams.get('dryRun') === '1'",
+              "present": true
+            },
+            {
+              "marker": "writeProbe",
+              "present": true
+            },
+            {
+              "marker": "dryRun: true",
+              "present": true
+            },
+            {
+              "marker": "canDelete",
+              "present": true
+            },
+            {
+              "marker": "delete_blocked_by_storage",
+              "present": true
+            },
+            {
+              "marker": "productionBlocker",
+              "present": true
+            },
+            {
+              "marker": "productionAcceptance",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/if \\(dryRun\\)[\\s\\S]*dryRun:\\s*true[\\s\\S]*canDelete[\\s\\S]*course:\\s*beforeDelete/",
+              "present": true
+            },
+            {
+              "pattern": "/deleteReadiness\\.state !== 'blocked'/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "route-delete",
+          "label": "Backend delete route removes metadata/storage/index and does not fake success",
+          "target": "functions/_middleware.js",
+          "markers": [
+            {
+              "marker": "deleteUploadedPrivateVideoStorage",
+              "present": true
+            },
+            {
+              "marker": "removePrivateVideosFromIndex",
+              "present": true
+            },
+            {
+              "marker": "private_video_course_delete",
+              "present": true
+            },
+            {
+              "marker": "delete_meta_failed",
+              "present": true
+            },
+            {
+              "marker": "cleanupPending",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/deleteUploadedPrivateVideoStorage\\(env,\\s*meta,\\s*\\{\\s*metaFirst:\\s*true\\s*\\}\\)/",
+              "present": true
+            },
+            {
+              "pattern": "/if \\(metaDeleteIncomplete\\)[\\s\\S]*error:\\s*'delete_meta_failed'/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "unauth-json-safety",
+          "label": "Unauthenticated/non-admin admin API safety is JSON and fail-closed",
+          "target": "functions/_middleware.js",
+          "markers": [
+            {
+              "marker": "async function handleAdminPrivateVideos",
+              "present": true
+            },
+            {
+              "marker": "if (!isAdmin(session, env))",
+              "present": true
+            },
+            {
+              "marker": "queueAudit(context, 'admin_denied'",
+              "present": true
+            },
+            {
+              "marker": "error: 'admin_required'",
+              "present": true
+            },
+            {
+              "marker": "status: 403",
+              "present": true
+            },
+            {
+              "marker": "crossOriginMutationError(request)",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/async function handleAdminPrivateVideos[\\s\\S]*if \\(!isAdmin\\(session, env\\)\\)[\\s\\S]*jsonResponse\\(\\{ ok: false, error: 'admin_required' \\}, \\{ status: 403 \\}\\)/",
+              "present": true
+            },
+            {
+              "pattern": "/const originError = crossOriginMutationError\\(request\\)/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "binding-fields-source",
+          "label": "KV/R2 binding evidence fields are represented without credential values",
+          "target": "functions/_middleware.js; tools/check-cloudflare-pages-private-video-bindings.mjs",
+          "markers": [
+            {
+              "marker": "FM_AUDIT",
+              "present": true
+            },
+            {
+              "marker": "FM_PRIVATE_MEDIA",
+              "present": true
+            },
+            {
+              "marker": "r2Available",
+              "present": true
+            },
+            {
+              "marker": "privateVideoAdminLimits",
+              "present": true
+            },
+            {
+              "marker": "productionBlocker",
+              "present": true
+            },
+            {
+              "marker": "productionAcceptance",
+              "present": true
+            },
+            {
+              "marker": "kvBindings",
+              "present": true
+            },
+            {
+              "marker": "r2Bindings",
+              "present": true
+            },
+            {
+              "marker": "hasAuditKv",
+              "present": true
+            },
+            {
+              "marker": "hasPrivateMediaR2",
+              "present": true
+            },
+            {
+              "marker": "FM_AUDIT",
+              "present": true
+            },
+            {
+              "marker": "FM_PRIVATE_MEDIA",
+              "present": true
+            },
+            {
+              "marker": "Cloudflare Pages production is missing FM_PRIVATE_MEDIA R2 binding",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/productionKv\\.includes\\('FM_AUDIT'\\)\\s*&&\\s*productionR2\\.includes\\('FM_PRIVATE_MEDIA'\\)/",
+              "present": true
+            },
+            {
+              "pattern": "/console\\.log\\(JSON\\.stringify\\(result,\\s*null,\\s*2\\)\\)/",
+              "present": true
+            },
+            {
+              "pattern": "/if \\(!ok\\) process\\.exit\\(2\\)/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "ui-list-refresh",
+          "label": "UI list/refresh affordance is covered by existing no-credential checker",
+          "target": "tools/check-private-video-management-mock.mjs; tools/check-private-video-management-browser.mjs",
+          "markers": [
+            {
+              "marker": "uiButtons",
+              "present": true
+            },
+            {
+              "marker": "refresh",
+              "present": true
+            },
+            {
+              "marker": "retry",
+              "present": true
+            },
+            {
+              "marker": "edgeRoutes",
+              "present": true
+            },
+            {
+              "marker": "#pvLessonList",
+              "present": true
+            },
+            {
+              "marker": "#pvLessonSummary",
+              "present": true
+            }
+          ],
+          "patterns": [],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "ui-upload-source-probe",
+          "label": "UI upload/create affordance is covered if present",
+          "target": "tools/check-private-video-management-browser.mjs",
+          "markers": [
+            {
+              "marker": "#pvUpload",
+              "present": true
+            },
+            {
+              "marker": "uploadButton",
+              "present": true
+            },
+            {
+              "marker": "teacher panel is missing the private-video upload/publish button",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/document\\.querySelector\\('#pvUpload'\\)/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "ui-publish",
+          "label": "UI publish affordance is covered",
+          "target": "tools/check-private-video-management-mock.mjs; tools/check-private-video-management-browser.mjs",
+          "markers": [
+            {
+              "marker": "data-pv-publish-course",
+              "present": true
+            },
+            {
+              "marker": "upload-publish",
+              "present": true
+            },
+            {
+              "marker": "data-pv-publish-course",
+              "present": true
+            },
+            {
+              "marker": "publishButtons",
+              "present": true
+            }
+          ],
+          "patterns": [],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "ui-access",
+          "label": "UI access-change affordance is covered",
+          "target": "tools/check-private-video-management-mock.mjs; tools/check-private-video-management-browser.mjs",
+          "markers": [
+            {
+              "marker": "data-pv-access-course",
+              "present": true
+            },
+            {
+              "marker": "same-access-save",
+              "present": true
+            },
+            {
+              "marker": "change-access",
+              "present": true
+            },
+            {
+              "marker": "data-pv-access-course",
+              "present": true
+            },
+            {
+              "marker": "accessButtons",
+              "present": true
+            }
+          ],
+          "patterns": [],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "ui-archive",
+          "label": "UI archive affordance is covered",
+          "target": "tools/check-private-video-management-mock.mjs; tools/check-private-video-management-browser.mjs",
+          "markers": [
+            {
+              "marker": "data-pv-archive-course",
+              "present": true
+            },
+            {
+              "marker": "archive-course",
+              "present": true
+            },
+            {
+              "marker": "data-pv-archive-course",
+              "present": true
+            },
+            {
+              "marker": "archiveButtons",
+              "present": true
+            }
+          ],
+          "patterns": [],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "ui-delete-dry-run",
+          "label": "UI delete dry-run happens before destructive delete",
+          "target": "tools/check-private-video-management-mock.mjs; tools/check-private-video-management-browser.mjs",
+          "markers": [
+            {
+              "marker": "delete?dryRun=1&writeProbe=1",
+              "present": true
+            },
+            {
+              "marker": "teacher delete dry-run before confirmation",
+              "present": true
+            },
+            {
+              "marker": "delete?dryRun=1&writeProbe=1",
+              "present": true
+            },
+            {
+              "marker": "realDeleteAttempted: false",
+              "present": true
+            }
+          ],
+          "order": [
+            {
+              "first": "delete?dryRun=1&writeProbe=1",
+              "second": "pvPromptCourseId(courseId,title)",
+              "firstIndex": 3177,
+              "secondIndex": 5003,
+              "present": true,
+              "ordered": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "ui-typed-course-id",
+          "label": "UI typed course-id confirmation is covered",
+          "target": "tools/check-private-video-management-mock.mjs; tools/check-private-video-management-browser.mjs",
+          "markers": [
+            {
+              "marker": "function pvPromptCourseId",
+              "present": true
+            },
+            {
+              "marker": "只有完全一致才会继续删除",
+              "present": true
+            },
+            {
+              "marker": "课程 ID 核对未通过，已取消删除",
+              "present": true
+            },
+            {
+              "marker": "promptReturnedWrongId",
+              "present": true
+            },
+            {
+              "marker": "return 'wrong-course-id'",
+              "present": true
+            },
+            {
+              "marker": "realDeleteAttempted: false",
+              "present": true
+            }
+          ],
+          "patterns": [
+            {
+              "pattern": "/window\\.prompt = \\(message\\) =>/",
+              "present": true
+            },
+            {
+              "pattern": "/return 'wrong-course-id'/",
+              "present": true
+            }
+          ],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        },
+        {
+          "id": "ui-delete",
+          "label": "UI delete affordance is covered",
+          "target": "tools/check-private-video-management-mock.mjs; tools/check-private-video-management-browser.mjs",
+          "markers": [
+            {
+              "marker": "data-pv-delete-course",
+              "present": true
+            },
+            {
+              "marker": "delete-course",
+              "present": true
+            },
+            {
+              "marker": "data-pv-delete-course",
+              "present": true
+            },
+            {
+              "marker": "deleteButtons",
+              "present": true
+            }
+          ],
+          "patterns": [],
+          "ok": true,
+          "failedMarkers": [],
+          "failedPatterns": [],
+          "failedOrder": []
+        }
+      ],
+      "problems": []
+    },
+    "commandRuns": {
+      "mock": {
+        "command": "node tools/check-private-video-management-mock.mjs --json",
+        "exitCode": 0,
+        "signal": null,
+        "parsed": {
+          "ok": true,
+          "gate": "private-video-management-mock",
+          "noRealCredentials": true,
+          "productionAccountQA": false,
+          "filesChecked": {
+            "edge": "functions/_middleware.js",
+            "teacher": "teacher-panel.html",
+            "browser": "tools/check-private-video-management-browser.mjs",
+            "binding": "tools/check-cloudflare-pages-private-video-bindings.mjs",
+            "validate": "tools/validate-site-content.mjs",
+            "runbook": "docs/private-video-management-runbook.md"
+          },
+          "summary": {
+            "version": "round302-question-count-181103-enrichment-video-proof-20260614",
+            "edgeRoutes": [
+              "list",
+              "publish",
+              "access",
+              "archive",
+              "delete-dry-run",
+              "delete"
+            ],
+            "uiButtons": [
+              "refresh",
+              "retry",
+              "publish",
+              "same-access-save",
+              "change-access",
+              "archive",
+              "delete"
+            ],
+            "readinessStates": [
+              "ready",
+              "limited",
+              "blocked"
+            ],
+            "cloudflareBindingAudit": "read-only Pages deployment config check; production requires FM_AUDIT KV plus FM_PRIVATE_MEDIA R2",
+            "destructiveProof": "dry-run plus typed course-id mismatch; no real delete credentials required",
+            "productionAccountQA": false
+          }
+        },
+        "stdoutPreview": "<json>",
+        "stderrPreview": ""
+      },
+      "authReadiness": {
+        "command": "node tools/check-fluid-auth-env-readiness.mjs --json --production --require-private-video",
+        "executed": false,
+        "reason": "not executed by Round302 because it may read auth environment values"
+      },
+      "cloudflareBindings": {
+        "command": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json",
+        "executed": false,
+        "reason": "not executed by Round302 because it may read Cloudflare env/keychain credentials"
+      }
+    }
+  },
+  "blockers": [
+    "list: Real teacher-account browser QA was not run by Round302 and remains required.",
+    "list: FM_AUDIT KV production binding must be present or proven.",
+    "create-upload-if-present: Real teacher-account browser QA was not run by Round302 and remains required.",
+    "create-upload-if-present: FM_AUDIT KV production binding must be present or proven.",
+    "create-upload-if-present: FM_PRIVATE_MEDIA R2 production binding is missing or not proven, so storage-backed production recovery remains blocked.",
+    "publish: Real teacher-account browser QA was not run by Round302 and remains required.",
+    "publish: FM_AUDIT KV production binding must be present or proven.",
+    "publish: FM_PRIVATE_MEDIA R2 production binding is missing or not proven, so storage-backed production recovery remains blocked.",
+    "access-change: Real teacher-account browser QA was not run by Round302 and remains required.",
+    "access-change: FM_AUDIT KV production binding must be present or proven.",
+    "access-change: FM_PRIVATE_MEDIA R2 production binding is missing or not proven, so storage-backed production recovery remains blocked.",
+    "archive: Real teacher-account browser QA was not run by Round302 and remains required.",
+    "archive: FM_AUDIT KV production binding must be present or proven.",
+    "archive: FM_PRIVATE_MEDIA R2 production binding is missing or not proven, so storage-backed production recovery remains blocked.",
+    "delete-dry-run: Real teacher-account browser QA was not run by Round302 and remains required.",
+    "delete-dry-run: FM_AUDIT KV production binding must be present or proven.",
+    "delete-dry-run: FM_PRIVATE_MEDIA R2 production binding is missing or not proven, so storage-backed production recovery remains blocked.",
+    "delete: Real teacher-account browser QA was not run by Round302 and remains required.",
+    "delete: FM_AUDIT KV production binding must be present or proven.",
+    "delete: FM_PRIVATE_MEDIA R2 production binding is missing or not proven, so storage-backed production recovery remains blocked.",
+    "Real teacher-account browser QA remains blocked/not run by this worker.",
+    "FM_PRIVATE_MEDIA R2 production binding remains blocked/not proven by this worker."
+  ],
+  "verificationCommands": [
+    "node --check tools/check-round302-private-video-management-readiness.mjs",
+    "node tools/check-round302-private-video-management-readiness.mjs --json",
+    "node tools/check-private-video-management-mock.mjs --json"
+  ],
+  "commandOutputs": [
+    {
+      "command": "node tools/check-private-video-management-mock.mjs --json",
+      "exitCode": 0,
+      "note": "mock/static gate passed"
+    },
+    {
+      "command": "node tools/check-fluid-auth-env-readiness.mjs --json --production --require-private-video",
+      "exitCode": null,
+      "note": "not run; would read auth env values"
+    },
+    {
+      "command": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json",
+      "exitCode": null,
+      "note": "not run; would read Cloudflare env/keychain credential"
+    }
+  ],
+  "outputFiles": [
+    "data/fluid-round302-private-video-management-readiness.json",
+    "data/fluid-round302-private-video-management-readiness.json.gz",
+    "docs/round302/private-video-management-readiness.md"
+  ]
+}

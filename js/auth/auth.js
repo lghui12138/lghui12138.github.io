@@ -10,7 +10,7 @@ window.AuthSystem = {
         refreshToken: null
     },
     
-    // 公开站点不内置可登录账号；认证请走首页 PBKDF2 登录流程。
+    // 公开站点不内置可登录账号；认证请走首页 PBKDF2 / Cloudflare 边缘会话。
     defaultUsers: [],
     
     // 初始化认证系统
@@ -195,42 +195,26 @@ window.AuthSystem = {
             return { valid: false, message: '请输入用户名和密码' };
         }
         
-        var cfg = (window.AppConfig && AppConfig.security && AppConfig.security.validation) || {};
-        var minLen = (cfg.username && cfg.username.minLength) || 3;
-        var maxLen = (cfg.username && cfg.username.maxLength) || 20;
-        var pwdMin = (cfg.password && cfg.password.minLength) || 6;
-        
-        if (username.length < minLen) {
-            return { valid: false, message: '用户名至少需要' + minLen + '个字符' };
-        }
-        if (username.length > maxLen) {
-            return { valid: false, message: '用户名不能超过' + maxLen + '个字符' };
+        if (username.length < 3) {
+            return { valid: false, message: '用户名至少需要3个字符' };
         }
         
-        if (password.length < pwdMin) {
-            return { valid: false, message: '密码至少需要' + pwdMin + '个字符' };
+        if (password.length < 6) {
+            return { valid: false, message: '密码至少需要6个字符' };
         }
         
         return { valid: true };
     },
     
-    // 查找用户 - 委托给 FMSecurity PBKDF2 验证
+    // 查找用户
     findUser(username, password) {
-        if (window.FMSecurity && typeof FMSecurity.verifyCredentials === 'function') {
-            return null;
-        }
         return this.defaultUsers.find(user => 
             user.username === username && user.passwordHash && user.passwordHash === password
         );
     },
     
-    // 生成令牌 - 使用密码学安全随机数
+    // 生成令牌
     generateToken() {
-        if (window.crypto && window.crypto.getRandomValues) {
-            var bytes = new Uint8Array(32);
-            window.crypto.getRandomValues(bytes);
-            return Array.from(bytes, function(b) { return b.toString(16).padStart(2, '0'); }).join('');
-        }
         return Math.random().toString(36).substring(2) + Date.now().toString(36);
     },
     
@@ -280,19 +264,14 @@ window.AuthSystem = {
         }
     },
     
-    // 更新用户显示 - 使用 textContent 防止 XSS
+    // 更新用户显示
     updateUserDisplay() {
         const userInfo = Utils.dom.get('#user-info');
         if (userInfo && this.currentUser) {
-            var nameSpan = document.createElement('span');
-            nameSpan.className = 'user-name';
-            nameSpan.textContent = this.currentUser.profile.name;
-            var roleSpan = document.createElement('span');
-            roleSpan.className = 'user-role';
-            roleSpan.textContent = this.currentUser.role === 'admin' ? '管理员' : '学生';
-            userInfo.textContent = '';
-            userInfo.appendChild(nameSpan);
-            userInfo.appendChild(roleSpan);
+            userInfo.innerHTML = `
+                <span class="user-name">${this.currentUser.profile.name}</span>
+                <span class="user-role">${this.currentUser.role === 'admin' ? '管理员' : '学生'}</span>
+            `;
         }
     },
     
@@ -373,7 +352,11 @@ window.AuthSystem = {
             }
             
             // 全局注销函数
-            
+            window.logout = () => this.logout();
+            window.showPasswordResetModal = () => this.showPasswordResetModal();
+            window.showSignupModal = () => this.showSignupModal();
+            window.loginWithGitHub = () => this.loginWithGitHub();
+            window.loginWithGoogle = () => this.loginWithGoogle();
             
             console.log('✅ 认证系统事件监听器已设置');
         } catch (error) {
@@ -482,4 +465,4 @@ if (document.readyState === 'loading') {
     AuthSystem.init();
 }
 
-console.log('🔐 认证系统已加载'); 
+console.log('🔐 认证系统已加载');
