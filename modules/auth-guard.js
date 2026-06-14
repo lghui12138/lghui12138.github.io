@@ -1,6 +1,6 @@
 (() => {
   const TARGET_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round319-resources-video-practice-chain-20260614';
+  const EDGE_REFRESH = 'round320-181103-material-question-bank-20260614';
   const SESSION_KEYS = ['fm_session_v2', 'fm_auth_session_v2', 'fluidMechanicsUser', 'currentUser'];
 
   function sourceUrl(pathname = location.pathname) {
