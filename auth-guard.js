@@ -1,6 +1,6 @@
 (() => {
   const TARGET_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round307-source-row-181103-video-management-proof-20260614';
+  const EDGE_REFRESH = 'round308-181103-all-html-viewers-20260614';
   const SESSION_KEYS = ['fm_session_v2', 'fm_auth_session_v2', 'fluidMechanicsUser', 'currentUser'];
 
   function sourceUrl(pathname = location.pathname) {
