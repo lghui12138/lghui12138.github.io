@@ -266,24 +266,63 @@ function updateStamp(item) {
   return `${item?.date || '0000-00-00'}T${item?.time || '00:00'}:00+08:00`;
 }
 
+function recordText(item) {
+  try {
+    return JSON.stringify(item || {});
+  } catch (_) {
+    return '';
+  }
+}
+
+function shouldReplaceExistingSiteUpdate(existing, candidate) {
+  const version = String(candidate?.version || '');
+  const candidateText = recordText(candidate);
+  const existingText = recordText(existing);
+  if (version === 'round272-home-math-security-polish-20260531') {
+    const hasPasswordFallback = /MailChannels|繁忙|兜底/.test(candidateText)
+      && /忘记密码|重置密码|验证码/.test(candidateText);
+    const existingHasPasswordFallback = /MailChannels|繁忙|兜底/.test(existingText)
+      && /忘记密码|重置密码|验证码/.test(existingText);
+    return hasPasswordFallback && !existingHasPasswordFallback;
+  }
+  return false;
+}
+
 function preservePreviousSiteUpdates(previousRecords) {
   const filePath = path.join(repoRoot, 'site-updates.json');
   const sourceRecords = readJsonArray(filePath);
-  if (!previousRecords.length || !sourceRecords.length) return;
-  const seen = new Set();
+  if (!sourceRecords.length) return;
+  const seenRecords = new Set();
+  const seenVersions = new Set();
+  const indexByVersion = new Map();
   const merged = [];
-  const previousNonCurrent = previousRecords.filter((item) => item?.version !== edgeRefresh);
-  const orderedRecords = [
-    sourceRecords[0],
-    ...previousNonCurrent,
-    ...sourceRecords.slice(1)
-  ].filter(Boolean);
-  for (const item of orderedRecords) {
+  function addRecord(item) {
+    if (!item) return;
+    const version = item?.version ? String(item.version) : '';
     const key = updateKey(item);
-    if (!key || key === 'null' || seen.has(key)) continue;
-    seen.add(key);
+    if (!key || key === 'null') return;
+    if (version) {
+      if (seenVersions.has(version)) {
+        const existingIndex = indexByVersion.get(version);
+        const existing = merged[existingIndex];
+        if (Number.isInteger(existingIndex) && shouldReplaceExistingSiteUpdate(existing, item)) {
+          const oldKey = updateKey(existing);
+          if (oldKey) seenRecords.delete(oldKey);
+          merged[existingIndex] = item;
+          seenRecords.add(key);
+        }
+        return;
+      }
+      seenVersions.add(version);
+      indexByVersion.set(version, merged.length);
+    } else if (seenRecords.has(key)) {
+      return;
+    }
+    seenRecords.add(key);
     merged.push(item);
   }
+  for (const item of sourceRecords) addRecord(item);
+  for (const item of previousRecords) addRecord(item);
   const current = merged.find((item) => item?.version === edgeRefresh) || merged[0];
   const history = merged
     .filter((item) => item !== current)
