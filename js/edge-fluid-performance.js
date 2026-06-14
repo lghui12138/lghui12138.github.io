@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var VERSION = 'round322-181103-quality-private-video-admin-20260614';
+  var VERSION = 'round323-observability-source-parity-real-account-release-20260615';
   var LEARNING_CONTENT_VERSION = 'round264-formula-condition-checklist-20260522';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL_PARTS = ['fluid-real-exam-pdf-fidelity-audit', 'json'];

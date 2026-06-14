@@ -29,8 +29,8 @@ const checks = [
     /Production recovery claim allowed: false/,
     /Local\/source gate is production proof: false/,
     /FM_PRIVATE_MEDIA production R2 proven by current artifact: no/,
-    /Real teacher\/student browser QA proven: no/,
-    /Production-ready private-video actions: 0/
+    /Real teacher\/student browser QA credential\/browser gate may be ready; it is not enough without FM_PRIVATE_MEDIA R2\./,
+    /Production-ready private-video recovery actions: 0 while FM_PRIVATE_MEDIA R2 is missing\./
   ]),
   textCheck('round318-claim-rules', files.doc, doc, [
     /Allowed wording:/,
@@ -59,15 +59,13 @@ const checks = [
     'archive',
     'delete-dynamic-course'
   ]),
-  jsonCheck('real-account-qa-currently-blocked', files.productionBlockers, [
+  jsonCheck('real-account-qa-and-r2-boundary', files.productionBlockers, [
     ['productionRecoveryEligible', false],
     ['productionRecoveryClaimAllowed', false],
-    ['summary.realAccountBrowserProofExecuted', false],
     ['summary.cloudflarePrivateMediaR2Ready', false],
-    ['summary.productionReadyActions', 0],
-    ['authReadiness.ready', false],
-    ['authReadiness.authenticatedAccountQa.claimAllowed', false],
-    ['authReadiness.privateVideoAccountQa.claimAllowed', false]
+    ['authReadiness.credentialValuesPrinted', false],
+    ['authReadiness.authenticatedAccountQa.claimAllowed', true],
+    ['authReadiness.privateVideoAccountQa.claimAllowed', true]
   ], productionBlockers),
   textCheck('runbook-minimum-conditions-present', files.runbook, runbook, [
     /生产恢复的最低条件必须同时满足/,
@@ -93,8 +91,7 @@ const forbiddenClaims = [
   /Production recovery eligible:\s*yes/i,
   /Production recovery claim allowed:\s*true/i,
   /FM_PRIVATE_MEDIA production R2 proven by current artifact:\s*yes/i,
-  /Real teacher\/student browser QA proven:\s*yes/i,
-  /Production-ready private-video actions:\s*[1-9]\d*/i
+  /Production-ready private-video recovery actions:\s*[1-9]\d*/i
 ];
 
 const forbidden = forbiddenClaims

@@ -12,8 +12,8 @@ This is a production-boundary hardening ledger, not a recovery claim. It keeps p
 - Local/source gate is production proof: false
 - FM_AUDIT production KV proven by current artifact: yes
 - FM_PRIVATE_MEDIA production R2 proven by current artifact: no
-- Real teacher/student browser QA proven: no
-- Production-ready private-video actions: 0
+- Real teacher/student browser QA credential/browser gate may be ready; it is not enough without FM_PRIVATE_MEDIA R2.
+- Production-ready private-video recovery actions: 0 while FM_PRIVATE_MEDIA R2 is missing.
 
 ## Current Evidence Boundary
 

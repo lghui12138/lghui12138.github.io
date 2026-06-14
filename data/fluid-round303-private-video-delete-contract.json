@@ -1,6 +1,6 @@
 {
   "version": "round303-private-video-delete-contract-20260614",
-  "generatedAt": "2026-06-14T01:09:42.701Z",
+  "generatedAt": "2026-06-14T14:54:30.041Z",
   "targetRound": 303,
   "pass": true,
   "productionRecovery": false,
@@ -805,7 +805,7 @@
     {
       "id": "ui-delete",
       "label": "Embedded admin UI requires irreversible warning and exact course ID before delete",
-      "target": "functions/_middleware.js",
+      "target": "functions/_middleware.js; teacher-panel.html",
       "surface": "ui",
       "markers": [
         {
@@ -825,7 +825,7 @@
           "present": true
         },
         {
-          "marker": "await submitPrivateVideoAction(courseId, 'delete')",
+          "marker": "confirmCourseId",
           "present": true
         }
       ],
@@ -835,7 +835,11 @@
           "present": true
         },
         {
-          "pattern": "/String\\(typedCourseId \\|\\| ''\\)\\.trim\\(\\) !== String\\(courseId \\|\\| ''\\)\\.trim\\(\\)/",
+          "pattern": "/typedCourseId === expected/",
+          "present": true
+        },
+        {
+          "pattern": "/body:JSON\\.stringify\\(\\{confirmCourseId:confirmedCourseId\\}\\)/",
           "present": true
         }
       ],
@@ -847,31 +851,31 @@
     {
       "id": "ui-delete-order",
       "label": "Embedded admin UI orders dry-run, confirmation, typed ID, then delete POST",
-      "target": "functions/_middleware.js",
+      "target": "functions/_middleware.js; teacher-panel.html",
       "surface": "ui",
       "markers": [],
       "order": [
         {
           "first": "delete?dryRun=1&writeProbe=1",
-          "second": "confirm('永久删除专属课",
-          "firstIndex": 231313,
-          "secondIndex": 232178,
+          "second": "pvConfirm('永久删除专属课",
+          "firstIndex": 231540,
+          "secondIndex": 759975,
           "present": true,
           "ordered": true
         },
         {
-          "first": "confirm('永久删除专属课",
-          "second": "prompt('永久删除专属课",
-          "firstIndex": 232178,
-          "secondIndex": 232473,
+          "first": "pvConfirm('永久删除专属课",
+          "second": "pvPromptCourseId(courseId,title)",
+          "firstIndex": 759975,
+          "secondIndex": 760758,
           "present": true,
           "ordered": true
         },
         {
-          "first": "prompt('永久删除专属课",
-          "second": "await submitPrivateVideoAction(courseId, 'delete')",
-          "firstIndex": 232473,
-          "secondIndex": 232724,
+          "first": "pvPromptCourseId(courseId,title)",
+          "second": "body:JSON.stringify({confirmCourseId:confirmedCourseId})",
+          "firstIndex": 760758,
+          "secondIndex": 761448,
           "present": true,
           "ordered": true
         }
@@ -1015,6 +1019,7 @@
         "productionAccountQA": false,
         "filesChecked": {
           "edge": "functions/_middleware.js",
+          "privatePage": "private-video.html",
           "teacher": "teacher-panel.html",
           "browser": "tools/check-private-video-management-browser.mjs",
           "binding": "tools/check-cloudflare-pages-private-video-bindings.mjs",
@@ -1022,7 +1027,7 @@
           "runbook": "docs/private-video-management-runbook.md"
         },
         "summary": {
-          "version": "round303-release-gate-source-production-sync-20260614",
+          "version": "round322-181103-quality-private-video-admin-20260614",
           "edgeRoutes": [
             "list",
             "publish",
@@ -1040,6 +1045,7 @@
             "archive",
             "delete"
           ],
+          "standalonePage": "private-video.html shows management actions, disabled reasons, confirmCourseId delete contract, and production blockers without real credentials",
           "readinessStates": [
             "ready",
             "limited",
