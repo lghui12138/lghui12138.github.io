@@ -2,12 +2,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
-const sourceRepoRoot = process.env.FLUID_SOURCE_REPO || path.resolve(repoRoot, '../lghui12138.github.io');
+const sourceRepoRoot = process.env.FLUID_SOURCE_REPO || '/Users/kili/Documents/Codex/lghui-source-private-video-work';
 const targetOrigin = 'https://lghui-fluid-learning.pages.dev';
 const sourceSiteUpdates = readJsonArray(path.join(sourceRepoRoot, 'site-updates.json'));
-const edgeRefresh = process.env.FLUID_PUBLIC_EDGE_REFRESH
-  || sourceSiteUpdates[0]?.version
-  || 'round291-two-textbook-pdf-181103-source-coverage-20260613';
+if (!sourceSiteUpdates[0]?.version && !process.env.FLUID_PUBLIC_EDGE_REFRESH) {
+  throw new Error(`Missing latest source site-updates.json version in ${sourceRepoRoot}`);
+}
+const edgeRefresh = process.env.FLUID_PUBLIC_EDGE_REFRESH || sourceSiteUpdates[0].version;
 const previousSiteUpdates = readJsonArray(path.join(repoRoot, 'site-updates.json'));
 
 const routes = [
@@ -138,6 +139,8 @@ const runtimeCopies = [
   ['data/fluid-round290-real-exam-source-expansion-ledger.json.gz', 'data/fluid-round290-real-exam-source-expansion-ledger.json.gz'],
   ['data/fluid-round291-two-textbook-pdf-coverage-ledger.json', 'data/fluid-round291-two-textbook-pdf-coverage-ledger.json'],
   ['data/fluid-round291-two-textbook-pdf-coverage-ledger.json.gz', 'data/fluid-round291-two-textbook-pdf-coverage-ledger.json.gz'],
+  ['data/fluid-evidence-matrix-audit.json', 'data/fluid-evidence-matrix-audit.json'],
+  ['data/fluid-evidence-matrix-audit.json.gz', 'data/fluid-evidence-matrix-audit.json.gz'],
   ['data/fluid-round298-auth-facet-proof.json', 'data/fluid-round298-auth-facet-proof.json'],
   ['data/fluid-round298-auth-facet-proof.json.gz', 'data/fluid-round298-auth-facet-proof.json.gz'],
   ['data/fluid-round298-release-claim-boundary.json', 'data/fluid-round298-release-claim-boundary.json'],
@@ -190,8 +193,20 @@ const runtimeCopies = [
   ['data/fluid-round312-181103-html-quality-ledger.json.gz', 'data/fluid-round312-181103-html-quality-ledger.json.gz'],
   ['data/fluid-round313-181103-all-html-contract.json', 'data/fluid-round313-181103-all-html-contract.json'],
   ['data/fluid-round313-181103-all-html-contract.json.gz', 'data/fluid-round313-181103-all-html-contract.json.gz'],
+  ['data/fluid-round314-answer-source-layering.json', 'data/fluid-round314-answer-source-layering.json'],
+  ['data/fluid-round314-answer-source-layering.json.gz', 'data/fluid-round314-answer-source-layering.json.gz'],
   ['docs/round313/181103-all-html-contract.md', 'docs/round313/181103-all-html-contract.md'],
+  ['docs/round314/answer-source-layering.md', 'docs/round314/answer-source-layering.md'],
   ['tools/check-round313-181103-all-html-contract.mjs', 'tools/check-round313-181103-all-html-contract.mjs'],
+  ['tools/check-round314-answer-source-layering.mjs', 'tools/check-round314-answer-source-layering.mjs'],
+  ['data/fluid-knowledge-upgrade-2026.json', 'data/fluid-knowledge-upgrade-2026.json'],
+  ['data/fluid-knowledge-upgrade-2026.json.gz', 'data/fluid-knowledge-upgrade-2026.json.gz'],
+  ['data/fluid-knowledge-upgrade.json', 'data/fluid-knowledge-upgrade.json'],
+  ['data/fluid-knowledge-upgrade.json.gz', 'data/fluid-knowledge-upgrade.json.gz'],
+  ['data/fluid-learning-upgrade.json', 'data/fluid-learning-upgrade.json'],
+  ['data/fluid-learning-upgrade.json.gz', 'data/fluid-learning-upgrade.json.gz'],
+  ['data/fluid-knowledge-points-upgrade.json', 'data/fluid-knowledge-points-upgrade.json'],
+  ['data/fluid-knowledge-points-upgrade.json.gz', 'data/fluid-knowledge-points-upgrade.json.gz'],
   ['js/core/local-mathjax.js', 'js/core/local-mathjax.js'],
   ['js/core/local-mathjax.js', 'local-mathjax.js'],
   ['js/core/local-mathjax.js', 'modules/local-mathjax.js'],

@@ -114,7 +114,7 @@ const checks = [
     id: 'index-is-study-workbench-not-flat-viewer',
     pass: /data-round313-index-tools/.test(indexHtml)
       && /data-round313-material-list/.test(indexHtml)
-      && /38\/38 HTML 正文/.test(indexHtml)
+      && /38\/38 (?:站内 )?HTML 正文/.test(indexHtml)
       && /30 条路线 \/ 68 复核任务/.test(indexHtml)
       && !/\bviewer\b|<iframe\b|<embed\b|<object\b|converted-frame/i.test(indexHtml),
     detail: 'resources/fluid-181103-html/index.html'
