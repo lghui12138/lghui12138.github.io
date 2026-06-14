@@ -1,8 +1,8 @@
 {
-  "version": "round323-observability-source-parity-real-account-release-20260615",
+  "version": "round324-release-readiness-observation-integration-20260615",
   "generatedAt": "2026-06-15T00:45:00+08:00",
   "goal": "round287 后继续推进至少 100 大轮升级；每轮必须给出证据、预算和生产验收边界。",
-  "currentRound": 323,
+  "currentRound": 324,
   "releaseGate": {
     "requirePublicShell": true,
     "requirePagesDev": true,
@@ -20,12 +20,12 @@
     "requireOptimizationPlaybookCheck": true,
     "requireMobilePerformanceBudgetCheck": true,
     "forbidClaimingRealQaWithoutCredentials": true,
-    "currentVersion": "round323-observability-source-parity-real-account-release-20260615",
-    "previousVersion": "round322-181103-quality-private-video-admin-20260614",
+    "currentVersion": "round324-release-readiness-observation-integration-20260615",
+    "previousVersion": "round323-observability-source-parity-real-account-release-20260615",
     "lastUpdated": "2026-06-15T00:45:00+08:00",
     "requireNoFakeAccountQa": true,
     "requirePrivateMediaR2": true,
-    "currentRound": 323,
+    "currentRound": 324,
     "requiredLocalChecks": [
       "node tools/patch-real-exam-atomic-overrides.mjs",
       "node tools/patch-round310-real-exam-subquestion-fixes.mjs",
@@ -50,8 +50,14 @@
       "node tools/check-round318-private-video-boundary.mjs --json",
       "node tools/check-round319-resources-video-practice-chain.mjs --write --json",
       "node tools/check-round323-observability-release-readiness.mjs --write --json",
-      "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round323-observability-source-parity-real-account-release-20260615",
-      "node tools/check-real-exam-integrity-browser.mjs --json --production --expected-version round323-observability-source-parity-real-account-release-20260615"
+      "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round324-release-readiness-observation-integration-20260615",
+      "node tools/check-real-exam-integrity-browser.mjs --json --production --expected-version round324-release-readiness-observation-integration-20260615",
+      "node tools/check-round324-181103-content-evidence.mjs --write --json",
+      "node tools/check-round324-181103-question-discovery.mjs --write --json",
+      "node tools/check-round324-real-exam-expanded-count-guard.mjs --write --json",
+      "node tools/check-round324-resources-discovery-a11y.mjs --write --json",
+      "node tools/check-round324-private-video-action-matrix.mjs --write --json",
+      "node tools/check-round324-release-readiness.mjs --write --json --require-ready --expected-version round324-release-readiness-observation-integration-20260615"
     ],
     "round311NoViewerGuard": true,
     "round312HtmlQualityGuard": true,
@@ -60,16 +66,10 @@
     "round315AllHtmlDirectPagesGuard": true,
     "round316ReaderPolishGuard": true,
     "commands": [
-      "node tools/check-round317-real-exam-source-cardinality.mjs --write --json",
-      "node tools/check-round317-181103-live-html-depth.mjs --write --json",
-      "node tools/check-round318-chapter-practice-shortcuts.mjs --write --json",
-      "node tools/check-round318-real-exam-chapter-practice.mjs --write --json",
-      "node tools/check-round318-181103-practice-bridge.mjs --write --json",
-      "node tools/check-round318-private-video-boundary.mjs --json",
-      "node tools/check-round319-resources-video-practice-chain.mjs --write --json",
-      "node tools/check-round323-observability-release-readiness.mjs --write --json",
-      "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round323-observability-source-parity-real-account-release-20260615",
-      "node tools/check-real-exam-integrity-browser.mjs --json --production --expected-version round323-observability-source-parity-real-account-release-20260615"
+      "node tools/check-round324-release-readiness.mjs --write --json --expected-version round324-release-readiness-observation-integration-20260615",
+      "node tools/verify-fluid-release-gate.mjs",
+      "node tools/monitor-fluid-public-release.mjs --json --expected-version round324-release-readiness-observation-integration-20260615",
+      "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round324-release-readiness-observation-integration-20260615"
     ],
     "round317RealExamSourceCardinalityGuard": true,
     "round318ChapterPracticeShortcutGuard": true,
@@ -77,7 +77,11 @@
     "round318181103HtmlBridgeGuard": true,
     "round318PrivateVideoBoundaryGuard": true,
     "round319ResourcesVideoPracticeChainGuard": true,
-    "round323ObservabilityReleaseGuard": true
+    "round323ObservabilityReleaseGuard": true,
+    "required": true,
+    "productionProofRequired": true,
+    "lastIntegratedRound": 324,
+    "lastIntegratedAt": "2026-06-15T01:35:00+08:00"
   },
   "lanes": [
     {
@@ -1107,7 +1111,7 @@
         "发布必须跑 lghui.top -> pages.dev 真实账号链、私有视频管理浏览器门禁、真题完整性浏览器门禁；缺 FM_PRIVATE_MEDIA R2 时私有视频生产恢复仍为 blocker。",
         "旧 round264 仅保留为历史公式条件内容包，不能作为当前历年真题或 181103 发布面。"
       ],
-      "status": "active",
+      "status": "done",
       "artifacts": [
         "tools/check-round323-observability-release-readiness.mjs",
         "data/fluid-round323-observability-release-readiness.json",
@@ -1119,22 +1123,40 @@
         "tools/verify-fluid-release-gate.mjs",
         "tests/edge-fluid-upgrade-check.js"
       ],
-      "proofBoundary": "Round323 proves release observability, source parity, real-exam no-merge counts, and real-account QA wiring. It does not claim private-video production storage recovery until FM_PRIVATE_MEDIA R2 binding passes.",
-      "startedAt": "2026-06-15T00:45:00+08:00"
+      "proofBoundary": "Round323 is the previous production proof baseline. Round324 supersedes it as current release authority while preserving all 38/411/325/68/217/R2 boundaries.",
+      "startedAt": "2026-06-15T00:45:00+08:00",
+      "finishedAt": "2026-06-15T01:35:00+08:00"
     },
     {
       "round": 324,
-      "id": "round324-content-evidence-10",
+      "id": "round324-release-readiness-observation-integration",
       "lane": "content-evidence",
-      "title": "内容与证据边界 · 历史记录 schema",
-      "focus": "历史记录 schema",
+      "title": "内容与证据边界 · Round324 内容证据 schema 与发布观测集成",
+      "focus": "181103 内容证据、411 题发现性、真题扩展防合并、资源入口 a11y、私有视频动作矩阵与发布 readiness 聚合",
       "acceptance": [
-        "本地静态门禁通过",
-        "首页或对应模块有可见入口",
-        "更新记录与版本锚点同步",
-        "不得削弱生产认证门禁"
+        "tools/check-round324-181103-content-evidence.mjs 固定 38/38 HTML、902 PDF 页图、26 HTML slides、4 DOC/DOCX HTML、2 ZIP HTML 目录和 0 raw/download/viewer/local path。",
+        "tools/check-round324-181103-question-discovery.mjs 固定 411/411 资源入口、题库入口和来源 HTML 锚点可发现。",
+        "tools/check-round324-real-exam-expanded-count-guard.mjs 固定 325/325 原文小题、68 组题、217 grouped 小题和 4/5/连续计算防合并。",
+        "tools/check-round324-resources-discovery-a11y.mjs 固定首页/资源页四大入口、aria/focus/移动端语义和无 download/viewer 误导。",
+        "tools/check-round324-private-video-action-matrix.mjs 固定 ready/limited/blocked 动作矩阵，不宣称 FM_PRIVATE_MEDIA R2 缺失时生产恢复。",
+        "tools/check-round324-release-readiness.mjs 与 release gate 聚合 A-E 账本，生产发布仍需 lghui.top、pages.dev、真实账号、私有视频浏览器和真题完整性浏览器验证。"
       ],
-      "status": "queued"
+      "status": "active",
+      "artifacts": [
+        "tools/check-round324-181103-content-evidence.mjs",
+        "tools/check-round324-181103-question-discovery.mjs",
+        "tools/check-round324-real-exam-expanded-count-guard.mjs",
+        "tools/check-round324-resources-discovery-a11y.mjs",
+        "tools/check-round324-private-video-action-matrix.mjs",
+        "tools/check-round324-release-readiness.mjs",
+        "data/fluid-round324-release-readiness.json",
+        "site-updates.json",
+        "data/fluid-upgrade-roadmap-100.json",
+        "tools/verify-fluid-release-gate.mjs",
+        "tests/edge-fluid-upgrade-check.js"
+      ],
+      "proofBoundary": "Round324 proves local content-evidence/readiness integration and must be followed by production release gate for live lghui.top/real-account proof. It still does not claim private-video storage recovery without FM_PRIVATE_MEDIA R2.",
+      "startedAt": "2026-06-15T01:35:00+08:00"
     },
     {
       "round": 325,
@@ -1863,6 +1885,6 @@
       "requiredCheck": "tools/check-fluid-mobile-performance-budget.mjs"
     }
   },
-  "updatedAt": "2026-06-14T23:59:00+08:00",
+  "updatedAt": "2026-06-15T01:35:00+08:00",
   "lastUpdated": "2026-06-14T23:58:00+08:00"
 }
