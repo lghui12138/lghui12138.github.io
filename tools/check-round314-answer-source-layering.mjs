@@ -6,6 +6,7 @@ import zlib from 'node:zlib';
 const repoRoot = path.resolve(import.meta.dirname, '..');
 const args = new Set(process.argv.slice(2));
 const version = 'round314-answer-source-layering-20260614';
+const currentVersion = 'round315-181103-all-html-direct-pages-20260614';
 const ledgerRel = 'data/fluid-round314-answer-source-layering.json';
 const docRel = 'docs/round314/answer-source-layering.md';
 
@@ -78,12 +79,12 @@ const summary = {
 };
 
 const checks = [
-  gate('current-release-version-round314', siteUpdates[0]?.version === version && roadmap.version === version && roadmap.releaseGate?.currentVersion === version, {
+  gate('current-release-version-round314', siteUpdates[0]?.version === currentVersion && roadmap.version === currentVersion && roadmap.releaseGate?.currentVersion === currentVersion, {
     siteUpdates: siteUpdates[0]?.version,
     roadmap: roadmap.version,
     releaseGate: roadmap.releaseGate?.currentVersion
   }),
-  gate('roadmap-round314-active', roadmap.currentRound === 314 && (roadmap.rounds || []).find((round) => round.round === 313)?.status === 'done' && (roadmap.rounds || []).find((round) => round.round === 314)?.status === 'active', {
+  gate('roadmap-round314-active', roadmap.currentRound === 315 && (roadmap.rounds || []).find((round) => round.round === 314)?.status === 'done' && (roadmap.rounds || []).find((round) => round.round === 315)?.status === 'active', {
     currentRound: roadmap.currentRound
   }),
   gate('question-source-counts-not-merged', summary.realExamAtoms === 325 && summary.groupedSections === 68 && summary.groupedSubquestions === 217 && summary.collapseLossIfMerged === 149, {

@@ -61,13 +61,13 @@ function rowContract(item) {
   const visibleText = stripVisibleText(html);
   const binaryHrefCount = links.filter((href) => /\.(?:pdf|pptx?|docx?|doc|zip)(?:$|[?#])/i.test(href)).length;
   const forbiddenWrapperTokenCount = count(/\bviewer\b|htmlViewer|viewerUrl|viewerPath|viewerMode|<iframe\b|<embed\b|<object\b|converted-frame/gi, html);
-  const hasReaderNav = /data-round313-reader-nav/.test(html);
-  const hasStudyBridge = /data-round313-study-bridge/.test(html);
+  const hasReaderNav = /data-round31[35]-reader-nav/.test(html);
+  const hasStudyBridge = /data-round31[35]-study-bridge/.test(html);
   const hasNoDownloadNotice = /不提供 PDF、PPT、DOC、ZIP 原件下载链接/.test(html);
   const hasRealExamReturn = /325\/68|325 原文小题 \/ 68 组题|325 原文小题/.test(html) && /real-exams-dynamic\.html/.test(html);
   const hasResourcesReturn = /resources\.html#supplemental-181103/.test(html);
-  const hasPrevOrFirst = /data-round313-reader-prev/.test(html);
-  const hasNextOrLast = /data-round313-reader-next/.test(html);
+  const hasPrevOrFirst = /data-round31[35]-reader-prev/.test(html);
+  const hasNextOrLast = /data-round31[35]-reader-next/.test(html);
   const hasHtmlContent = /<section class=["'][^"']*\bhtml-content\b/i.test(html);
   const hasMobileTouchTargetCss = hasMobileTouchContract(html, 'material');
   const localPathLeakCount = count(/\/Users\/|\/Volumes\/|file:\/\//gi, html);
@@ -126,8 +126,8 @@ const checks = [
   },
   {
     id: 'index-is-study-workbench-not-flat-viewer',
-    pass: /data-round313-index-tools/.test(indexHtml)
-      && /data-round313-material-list/.test(indexHtml)
+    pass: /data-round31[35]-index-tools/.test(indexHtml)
+      && /data-round31[35]-material-list/.test(indexHtml)
       && /38\/38 (?:站内 )?HTML 正文/.test(indexHtml)
       && /30 条路线 \/ 68 复核任务/.test(indexHtml)
       && hasMobileTouchContract(indexHtml, 'index')
