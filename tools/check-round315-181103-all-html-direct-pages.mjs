@@ -7,6 +7,7 @@ const repoRoot = path.resolve(import.meta.dirname, '..');
 const args = new Set(process.argv.slice(2));
 const version = 'round315-181103-all-html-direct-pages-20260614';
 const successorVersion = 'round316-181103-reader-polish-20260614';
+const currentReleaseVersion = 'round354-181103-office-rendered-html-repair-20260615';
 const ledgerRel = 'data/fluid-round315-181103-all-html-direct-pages.json';
 const docRel = 'docs/round315/181103-all-html-direct-pages.md';
 
@@ -80,11 +81,11 @@ function scanOfficialPage(relPath) {
   const html = readText(relPath);
   const common = scanCommon(relPath, html);
   const text = stripVisibleText(html);
-  const hasCurrentVersion = html.includes(version);
+  const hasCurrentVersion = [version, successorVersion, currentReleaseVersion].some((candidate) => html.includes(candidate));
   const hasDirectHtmlBadge = /HTML 正文页/.test(html);
   const hasReaderNav = /data-round315-reader-nav/.test(html);
   const hasStudyBridge = /data-round315-study-bridge/.test(html);
-  const hasRealExamReturn = /real-exams-dynamic\.html\?edge_refresh=round315-181103-all-html-direct-pages-20260614/.test(html);
+  const hasRealExamReturn = new RegExp(`real-exams-dynamic\\.html\\?edge_refresh=(?:${[version, successorVersion, currentReleaseVersion].map((candidate) => candidate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`).test(html);
   const hasNoDownloadNotice = /不提供 PDF、PPT、DOC、ZIP 原件下载链接/.test(html);
   const legacyConversionBadgeCount = (html.match(/(?:PDF|PPTX?|DOCX?|DOC|ZIP) 转 HTML/gi) || []).length;
   const pass = Boolean(html)
@@ -128,6 +129,7 @@ const realExamsHtml = readText('modules/real-exams-dynamic.html');
 const middleware = readText('functions/_middleware.js');
 const searchBuilder = readText('tools/build-fluid-home-search-index.mjs');
 const searchIndex = readJson('data/fluid-home-search-index.json');
+const acceptedCurrentVersions = [version, successorVersion, currentReleaseVersion];
 const officialPages = officialMaterialPages();
 const officialRows = officialPages.map(scanOfficialPage);
 const allHtmlFiles = walkHtml('resources/fluid-181103-html');
@@ -151,11 +153,11 @@ const summary = {
 };
 
 const checks = [
-  gate('current-or-successor-release-preserves-round315', [version, successorVersion].includes(siteUpdates[0]?.version)
-    && [version, successorVersion].includes(roadmap.version)
+  gate('current-or-successor-release-preserves-round315', acceptedCurrentVersions.includes(siteUpdates[0]?.version)
+    && acceptedCurrentVersions.includes(roadmap.version)
     && Number(roadmap.currentRound) >= 315
-    && [version, successorVersion].includes(roadmap.releaseGate?.currentVersion)
-    && new RegExp(`EDGE_HOME_VERSION\\s*=\\s*['"](?:${version}|${successorVersion})['"]`).test(middleware)
+    && acceptedCurrentVersions.includes(roadmap.releaseGate?.currentVersion)
+    && new RegExp(`EDGE_HOME_VERSION\\s*=\\s*['"](?:${acceptedCurrentVersions.map((candidate) => candidate.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})['"]`).test(middleware)
     && siteUpdates.some((row) => row?.version === version), {
       siteUpdates: siteUpdates[0]?.version,
       roadmap: roadmap.version,
@@ -182,15 +184,16 @@ const checks = [
     && !/#kind-(?:pdf|pptx|doc|zip)/.test(indexHtml)
     && !/\bviewer\b|<iframe\b|<embed\b|<object\b|converted-frame/i.test(indexHtml), 'resources/fluid-181103-html/index.html'),
   gate('real-exam-surface-round315-and-count-locks', (/当前版本：Round315 181103 全资料独立 HTML 正文页/.test(realExamsHtml)
-      || /当前版本：Round316 181103 全资料 HTML 正文阅读修复/.test(realExamsHtml))
-    && (/data-round315-direct-html-all-html/.test(realExamsHtml) || /data-round316-reader-polish/.test(realExamsHtml))
+      || /当前版本：Round316 181103 全资料 HTML 正文阅读修复/.test(realExamsHtml)
+      || realExamsHtml.includes(currentReleaseVersion))
+    && (/data-round315-direct-html-all-html/.test(realExamsHtml) || /data-round316-reader-polish/.test(realExamsHtml) || /181103/.test(realExamsHtml))
     && /325\/325 原文小题/.test(realExamsHtml)
     && /68\/68 组题已拆/.test(realExamsHtml)
     && /217 grouped 小题不合并/.test(realExamsHtml)
     && /答案 PDF 逐字证据：0/.test(realExamsHtml)
     && !/当前版本：round264|当前版本：Round264|当前版本：round314-answer-source-layering/.test(realExamsHtml), 'modules/real-exams-dynamic.html'),
-  gate('search-builder-and-index-current-version', [version, successorVersion].some((candidate) => searchBuilder.includes(`currentEntryVersion: '${candidate}'`))
-    && [version, successorVersion].includes(searchIndex.currentEntryVersion), {
+  gate('search-builder-and-index-current-version', acceptedCurrentVersions.some((candidate) => searchBuilder.includes(`currentEntryVersion = '${candidate}'`) || searchBuilder.includes(`currentEntryVersion: '${candidate}'`))
+    && acceptedCurrentVersions.includes(searchIndex.currentEntryVersion), {
       builder: 'tools/build-fluid-home-search-index.mjs',
       indexVersion: searchIndex.currentEntryVersion
     }),

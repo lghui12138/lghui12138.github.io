@@ -1,8 +1,8 @@
 {
-  "version": "round352-teacher-student-status-summary-20260615",
-  "generatedAt": "2026-06-15T22:40:00+08:00",
+  "version": "round354-181103-office-rendered-html-repair-20260615",
+  "generatedAt": "2026-06-15T23:55:00+08:00",
   "goal": "round287 后继续推进至少 100 大轮升级；每轮必须给出证据、预算和生产验收边界。",
-  "currentRound": 352,
+  "currentRound": 354,
   "releaseGate": {
     "requirePublicShell": true,
     "requirePagesDev": true,
@@ -20,12 +20,12 @@
     "requireOptimizationPlaybookCheck": true,
     "requireMobilePerformanceBudgetCheck": true,
     "forbidClaimingRealQaWithoutCredentials": true,
-    "currentVersion": "round352-teacher-student-status-summary-20260615",
-    "previousVersion": "round351-accessibility-mobile-shortcuts-20260615",
-    "lastUpdated": "2026-06-15T22:40:00+08:00",
+    "currentVersion": "round354-181103-office-rendered-html-repair-20260615",
+    "previousVersion": "round352-teacher-student-status-summary-20260615",
+    "lastUpdated": "2026-06-15T23:55:00+08:00",
     "requireNoFakeAccountQa": true,
     "requirePrivateMediaR2": true,
-    "currentRound": 352,
+    "currentRound": 354,
     "requiredLocalChecks": [
       "node tools/patch-real-exam-atomic-overrides.mjs",
       "node tools/patch-round310-real-exam-subquestion-fixes.mjs",
@@ -70,7 +70,9 @@
       "node tools/check-round350-release-proof-matrix.mjs --write --json --expected-version round351-accessibility-mobile-shortcuts-20260615",
       "node tools/check-round350-visible-closure.mjs --write --json",
       "node tools/check-round351-accessibility-mobile-shortcuts.mjs --write --json",
-      "node tools/check-round352-teacher-student-status-summary.mjs --write --json"
+      "node tools/check-round352-teacher-student-status-summary.mjs --write --json",
+      "node tools/check-round353-181103-source-search-real-exam-hardening.mjs --write --json",
+      "node tools/check-round354-181103-html-render-quality.mjs --write --json"
     ],
     "round311NoViewerGuard": true,
     "round312HtmlQualityGuard": true,
@@ -79,9 +81,10 @@
     "round315AllHtmlDirectPagesGuard": true,
     "round316ReaderPolishGuard": true,
     "commands": [
-      "node tools/verify-fluid-release-gate.mjs --expected-version round352-teacher-student-status-summary-20260615",
-      "node tools/monitor-fluid-public-release.mjs --json --expected-version round352-teacher-student-status-summary-20260615",
-      "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round352-teacher-student-status-summary-20260615",
+      "node tools/verify-fluid-release-gate.mjs --expected-version round354-181103-office-rendered-html-repair-20260615",
+      "node tools/monitor-fluid-public-release.mjs --json --expected-version round354-181103-office-rendered-html-repair-20260615",
+      "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round354-181103-office-rendered-html-repair-20260615",
+      "node tools/check-round311-181103-live-html-content.mjs --json --expected-version=round354-181103-office-rendered-html-repair-20260615",
       "node tools/check-cloudflare-pages-private-video-bindings.mjs --json"
     ],
     "round317RealExamSourceCardinalityGuard": true,
@@ -93,15 +96,16 @@
     "round323ObservabilityReleaseGuard": true,
     "required": true,
     "productionProofRequired": true,
-    "lastIntegratedRound": 352,
-    "lastIntegratedAt": "2026-06-15T22:40:00+08:00",
+    "lastIntegratedRound": 354,
+    "lastIntegratedAt": "2026-06-15T23:55:00+08:00",
     "round325ReleaseReadinessGuard": true,
     "round325PublicAuthProofLedger": true,
     "round350QuestionDiscoveryFiltersGuard": true,
     "round350ReleaseProofMatrixGuard": true,
     "round350VisibleClosureGuard": true,
     "round351AccessibilityMobileShortcutsGuard": true,
-    "round352TeacherStudentStatusSummaryGuard": true
+    "round352TeacherStudentStatusSummaryGuard": true,
+    "round354181103HtmlRenderQualityGuard": true
   },
   "lanes": [
     {
@@ -1625,7 +1629,7 @@
         "私有视频首屏、资源页和 API actionReadiness 明确区分删除受限路径与 FM_PRIVATE_MEDIA R2 阻塞，不宣称生产上传/改授权/下架恢复。",
         "site-updates、roadmap、EDGE_HOME_VERSION、EDGE_RUNTIME_JS_VERSION、MathJax cachebuster、真实账号浏览器门禁默认版本同步到 Round352。"
       ],
-      "status": "active",
+      "status": "done",
       "artifacts": [
         "tools/check-round352-teacher-student-status-summary.mjs",
         "data/fluid-round352-teacher-student-status-summary.json",
@@ -1641,35 +1645,59 @@
         "functions/_middleware.js"
       ],
       "startedAt": "2026-06-15T22:40:00+08:00",
-      "proofBoundary": "Round352 improves teacher workflow visibility and search/discovery locks; private-video production recovery remains false until FM_PRIVATE_MEDIA R2 and real-account browser QA pass."
+      "proofBoundary": "Round352 teacher/student status, 181103 source-search direct HTML routing, real-exam five-item browser lock, and private-video R2 boundary remain required capabilities under Round354.",
+      "completedAt": "2026-06-15T23:55:00+08:00"
     },
     {
       "round": 353,
-      "id": "round353-observability-release-09",
+      "id": "round353-181103-source-search-real-exam-hardening",
       "lane": "observability-release",
-      "title": "发布与观测 · 浏览器截图抽检",
-      "focus": "浏览器截图抽检",
+      "title": "发布与观测 · 181103 搜索和真题父子题硬化",
+      "focus": "181103 source-search 38/38 直达、首页意图分流、旧真题数量门禁更新和 release gate 父子题可见性绑定",
       "acceptance": [
-        "本地静态门禁通过",
-        "首页或对应模块有可见入口",
-        "更新记录与版本锚点同步",
-        "生产发布需跑 lghui.top 真实 QA 链"
+        "tools/check-round353-181103-source-search-real-exam-hardening.mjs 固定 181103 source-search 38/38 直达 HTML。",
+        "tests/round294-real-exam-no-merge-audit.mjs 与 tests/round295-real-exam-count-visibility.mjs 同步当前 325/68/217 题数。",
+        "release gate 读取 data/fluid-round350-real-exam-parent-child-visibility.json 并锁 5 个五题父题/25 个原子小题可见。",
+        "Round353 是 Round354 前置硬化，不作为单独线上内容修复宣称。"
       ],
-      "status": "queued"
+      "status": "done",
+      "startedAt": "2026-06-15T23:55:00+08:00",
+      "completedAt": "2026-06-15T23:55:00+08:00",
+      "artifacts": [
+        "tools/check-round353-181103-source-search-real-exam-hardening.mjs",
+        "tests/round294-real-exam-no-merge-audit.mjs",
+        "tests/round295-real-exam-count-visibility.mjs",
+        "tools/verify-fluid-release-gate.mjs"
+      ],
+      "proofBoundary": "Round353 hardens discovery and question-count gates only; the visible 181103 empty/question-mark content repair is Round354."
     },
     {
       "round": 354,
-      "id": "round354-content-evidence-10",
+      "id": "round354-181103-office-rendered-html-repair",
       "lane": "content-evidence",
-      "title": "内容与证据边界 · 章节知识映射",
-      "focus": "章节知识映射",
+      "title": "内容与证据边界 · 181103 Office/PPT/DOC HTML 空白问号页修复",
+      "focus": "把 181103 中空白、问号、无 MIME 图片、WMF/EMF 和公式占位页重渲染为站内 HTML 可观看页图",
       "acceptance": [
-        "本地静态门禁通过",
-        "首页或对应模块有可见入口",
-        "更新记录与版本锚点同步",
-        "不得削弱生产认证门禁"
+        "tools/rebuild-181103-office-rendered-html.mjs 可从 /Users/kili/Downloads/181103流体力学 的 9 个 Office 源材料重建站内 HTML 页图。",
+        "tools/check-round354-181103-html-render-quality.mjs 固定 38/38 HTML、9/9 Office 重渲染材料和 197 页可看内容。",
+        "缺失图片、WMF/EMF、src=\"data:;base64\"、EMBED Equation 占位和失败数必须全部为 0。",
+        "所有资料继续网站内观看，不提供原始文件下载，不走 viewer/wrapper。",
+        "发布后必须用 lghui.top 和真实账号链路验证当前版本。"
       ],
-      "status": "queued"
+      "status": "active",
+      "startedAt": "2026-06-15T23:55:00+08:00",
+      "artifacts": [
+        "tools/rebuild-181103-office-rendered-html.mjs",
+        "tools/check-round354-181103-html-render-quality.mjs",
+        "data/fluid-round354-181103-html-render-quality.json",
+        "data/fluid-round354-181103-html-render-quality.json.gz",
+        "docs/round354-181103-html-render-quality.md",
+        "resources/fluid-181103-html/materials/*/rendered-page-*.jpg",
+        "site-updates.json",
+        "data/fluid-upgrade-roadmap-100.json",
+        "functions/_middleware.js"
+      ],
+      "proofBoundary": "Round354 fixes the visible 181103 HTML content defect. Private-video full production recovery remains false until FM_PRIVATE_MEDIA R2 and real-account QA pass."
     },
     {
       "round": 355,
