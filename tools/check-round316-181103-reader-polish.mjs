@@ -8,9 +8,11 @@ const args = new Set(process.argv.slice(2));
 const version = 'round316-181103-reader-polish-20260614';
 const generatedAt = '2026-06-14T00:00:00.000Z';
 const previousVersion = 'round315-181103-all-html-direct-pages-20260614';
+const officeRenderedVersion = 'round354-181103-office-rendered-html-repair-20260615';
 const ledgerRel = 'data/fluid-round316-181103-reader-polish.json';
 const docRel = 'docs/round316/181103-reader-polish.md';
 const materialsRootRel = 'resources/fluid-181103-html/materials';
+const expectedPageImageMaterialCount = 36;
 
 function fromRoot(relPath) {
   return path.join(repoRoot, relPath);
@@ -136,7 +138,7 @@ function scanPage(relPath) {
     localPathLeakCount: (html.match(/\/Users\/|\/Volumes\/|file:\/\//gi) || []).length,
     iframeEmbedObjectCount: (html.match(/<iframe\b|<embed\b|<object\b/gi) || []).length,
     viewerTokenCount: (html.match(/\bviewer\b|htmlViewer|viewerUrl|viewerPath|viewerMode|converted-frame/gi) || []).length,
-    hasRound315Continuity: html.includes(previousVersion) || html.includes('Round315')
+    hasRound315Continuity: html.includes(previousVersion) || html.includes('Round315') || html.includes(officeRenderedVersion)
   };
   row.pass = row.visibleTextChars >= 300
     && row.malformedIntroCount === 0
@@ -173,7 +175,7 @@ const checks = [
   { id: 'official-38-materials', pass: summary.officialMaterialPageCount === 38, detail: summary.officialMaterialPageCount },
   { id: 'all-pages-pass-reader-polish', pass: summary.passCount === 38, detail: rows.filter((row) => !row.pass).slice(0, 12) },
   { id: 'all-pdf-pages-anchored-and-lazy', pass: summary.totalPdfPages > 0 && summary.anchoredPdfPageCount === summary.totalPdfPages && summary.lazyPdfImageCount === summary.totalPdfPages, detail: { totalPdfPages: summary.totalPdfPages, anchoredPdfPageCount: summary.anchoredPdfPageCount, lazyPdfImageCount: summary.lazyPdfImageCount } },
-  { id: 'all-pdf-materials-have-page-jump', pass: summary.pdfPageMaterialCount === 27 && summary.pageJumpMaterialCount === 27, detail: { pdfPageMaterialCount: summary.pdfPageMaterialCount, pageJumpMaterialCount: summary.pageJumpMaterialCount } },
+  { id: 'all-pdf-materials-have-page-jump', pass: summary.pdfPageMaterialCount === expectedPageImageMaterialCount && summary.pageJumpMaterialCount === expectedPageImageMaterialCount, detail: { expectedPageImageMaterialCount, pdfPageMaterialCount: summary.pdfPageMaterialCount, pageJumpMaterialCount: summary.pageJumpMaterialCount } },
   { id: 'no-malformed-intro-or-wrapper-downloads', pass: summary.malformedIntroCount === 0 && summary.binaryHrefCount === 0 && summary.localPathLeakCount === 0 && summary.iframeEmbedObjectCount === 0 && summary.viewerTokenCount === 0, detail: summary }
 ];
 
@@ -216,7 +218,7 @@ function renderMarkdown(data) {
 
 - version: ${data.version}
 - official material pages: ${data.summary.passCount}/38
-- PDF/page-image materials with jump tools: ${data.summary.pageJumpMaterialCount}/27
+- PDF/page-image materials with jump tools: ${data.summary.pageJumpMaterialCount}/${expectedPageImageMaterialCount}
 - anchored PDF pages: ${data.summary.anchoredPdfPageCount}/${data.summary.totalPdfPages}
 - lazy/async page images: ${data.summary.lazyPdfImageCount}/${data.summary.totalPdfPages}
 - malformed intro tags: ${data.summary.malformedIntroCount}
