@@ -9,6 +9,7 @@ const version = 'round316-181103-reader-polish-20260614';
 const generatedAt = '2026-06-14T00:00:00.000Z';
 const previousVersion = 'round315-181103-all-html-direct-pages-20260614';
 const officeRenderedVersion = 'round354-181103-office-rendered-html-repair-20260615';
+const currentVersion = 'round357-181103-auth-workflow-proof-20260615';
 const ledgerRel = 'data/fluid-round316-181103-reader-polish.json';
 const docRel = 'docs/round316/181103-reader-polish.md';
 const materialsRootRel = 'resources/fluid-181103-html/materials';
@@ -93,7 +94,7 @@ function polishPdfFigures(html) {
     index += 1;
     const number = pageNumberFromFigure(figure, index);
     let next = `<figure id="${pageId(number)}" class="pdf-page" data-round316-page="${number}">${inner}</figure>`;
-    next = next.replace(/<img\b(?![^>]*\bloading=)([^>]*)>/i, '<img loading="lazy"$1>');
+    next = next.replace(/<img\b(?![^>]*\bloading=)([^>]*)>/i, '<img loading="eager"$1>');
     next = next.replace(/<img\b(?![^>]*\bdecoding=)([^>]*)>/i, '<img decoding="async"$1>');
     return next;
   });
@@ -125,7 +126,7 @@ function scanPage(relPath) {
   const links = hrefs(html);
   const pageCount = (html.match(/class="pdf-page"/g) || []).length;
   const anchoredPageCount = (html.match(/data-round316-page="/g) || []).length;
-  const lazyImageCount = (html.match(/<img\b(?=[^>]*\bloading="lazy")(?=[^>]*\bdecoding="async")/g) || []).length;
+  const eagerImageCount = (html.match(/<img\b(?=[^>]*\bloading="eager")(?=[^>]*\bdecoding="async")/g) || []).length;
   const row = {
     relPath,
     visibleTextChars: stripVisibleText(html).length,
@@ -133,12 +134,12 @@ function scanPage(relPath) {
     pageCount,
     hasPageJump: pageCount > 0 ? /data-round316-page-jump/.test(html) : true,
     anchoredPageCount,
-    lazyImageCount,
+    eagerImageCount,
     binaryHrefCount: links.filter((href) => /\.(?:pdf|pptx?|docx?|doc|zip|rar|7z|mp4)(?:$|[?#])/i.test(href)).length,
     localPathLeakCount: (html.match(/\/Users\/|\/Volumes\/|file:\/\//gi) || []).length,
     iframeEmbedObjectCount: (html.match(/<iframe\b|<embed\b|<object\b/gi) || []).length,
     viewerTokenCount: (html.match(/\bviewer\b|htmlViewer|viewerUrl|viewerPath|viewerMode|converted-frame/gi) || []).length,
-    hasRound315Continuity: html.includes(previousVersion) || html.includes('Round315') || html.includes(officeRenderedVersion)
+    hasHtmlContinuity: html.includes(currentVersion) || html.includes(previousVersion) || html.includes('Round315') || html.includes(officeRenderedVersion)
   };
   row.pass = row.visibleTextChars >= 300
     && row.malformedIntroCount === 0
@@ -146,8 +147,8 @@ function scanPage(relPath) {
     && row.localPathLeakCount === 0
     && row.iframeEmbedObjectCount === 0
     && row.viewerTokenCount === 0
-    && row.hasRound315Continuity
-    && (row.pageCount === 0 || (row.hasPageJump && row.anchoredPageCount === row.pageCount && row.lazyImageCount === row.pageCount));
+    && row.hasHtmlContinuity
+    && (row.pageCount === 0 || (row.hasPageJump && row.anchoredPageCount === row.pageCount && row.eagerImageCount === row.pageCount));
   return row;
 }
 
@@ -163,7 +164,7 @@ const summary = {
   totalPdfPages: rows.reduce((sum, row) => sum + row.pageCount, 0),
   pageJumpMaterialCount: rows.filter((row) => row.pageCount > 0 && row.hasPageJump).length,
   anchoredPdfPageCount: rows.reduce((sum, row) => sum + row.anchoredPageCount, 0),
-  lazyPdfImageCount: rows.reduce((sum, row) => sum + row.lazyImageCount, 0),
+  eagerPdfImageCount: rows.reduce((sum, row) => sum + row.eagerImageCount, 0),
   malformedIntroCount: rows.reduce((sum, row) => sum + row.malformedIntroCount, 0),
   binaryHrefCount: rows.reduce((sum, row) => sum + row.binaryHrefCount, 0),
   localPathLeakCount: rows.reduce((sum, row) => sum + row.localPathLeakCount, 0),
@@ -174,7 +175,7 @@ const summary = {
 const checks = [
   { id: 'official-38-materials', pass: summary.officialMaterialPageCount === 38, detail: summary.officialMaterialPageCount },
   { id: 'all-pages-pass-reader-polish', pass: summary.passCount === 38, detail: rows.filter((row) => !row.pass).slice(0, 12) },
-  { id: 'all-pdf-pages-anchored-and-lazy', pass: summary.totalPdfPages > 0 && summary.anchoredPdfPageCount === summary.totalPdfPages && summary.lazyPdfImageCount === summary.totalPdfPages, detail: { totalPdfPages: summary.totalPdfPages, anchoredPdfPageCount: summary.anchoredPdfPageCount, lazyPdfImageCount: summary.lazyPdfImageCount } },
+  { id: 'all-pdf-pages-anchored-and-eager', pass: summary.totalPdfPages > 0 && summary.anchoredPdfPageCount === summary.totalPdfPages && summary.eagerPdfImageCount === summary.totalPdfPages, detail: { totalPdfPages: summary.totalPdfPages, anchoredPdfPageCount: summary.anchoredPdfPageCount, eagerPdfImageCount: summary.eagerPdfImageCount } },
   { id: 'all-pdf-materials-have-page-jump', pass: summary.pdfPageMaterialCount === expectedPageImageMaterialCount && summary.pageJumpMaterialCount === expectedPageImageMaterialCount, detail: { expectedPageImageMaterialCount, pdfPageMaterialCount: summary.pdfPageMaterialCount, pageJumpMaterialCount: summary.pageJumpMaterialCount } },
   { id: 'no-malformed-intro-or-wrapper-downloads', pass: summary.malformedIntroCount === 0 && summary.binaryHrefCount === 0 && summary.localPathLeakCount === 0 && summary.iframeEmbedObjectCount === 0 && summary.viewerTokenCount === 0, detail: summary }
 ];
@@ -185,7 +186,8 @@ const payload = {
   generatedAt,
   source: {
     materialsRoot: materialsRootRel,
-    previousContract: 'data/fluid-round315-181103-all-html-direct-pages.json'
+    previousContract: 'data/fluid-round315-181103-all-html-direct-pages.json',
+    currentVisibleContract: currentVersion
   },
   summary,
   rows,
@@ -193,7 +195,7 @@ const payload = {
   acceptance: {
     pass: failed.length === 0,
     failedCheckIds: failed.map((check) => check.id),
-    meaning: 'Round316 keeps the 181103 materials as in-site HTML body pages and adds reader polish: valid intro markup, quick page jumps, per-page anchors, lazy/async page images, and no viewer/download/embed/local-path regression.'
+    meaning: 'Round316 keeps the 181103 materials as in-site HTML body pages and adds reader polish: valid intro markup, quick page jumps, per-page anchors, eager/async page images, and no viewer/download/embed/local-path regression.'
   }
 };
 
@@ -228,7 +230,7 @@ function renderMarkdown(data) {
 
 ## Contract
 
-Round316 does not loosen the Round315 all-HTML rule. It improves the same 38 in-site HTML body pages so long page-image documents have page anchors, quick jump controls, lazy loading, and valid intro markup.
+Round316 does not loosen the all-HTML rule. It improves the same 38 in-site HTML body pages so long page-image documents have page anchors, quick jump controls, lazy loading, and valid intro markup. Current learner-facing pages may show the newer Round355 version instead of the older Round315 continuity string.
 
 ## Checks
 

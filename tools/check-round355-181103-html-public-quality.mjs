@@ -4,7 +4,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
-const version = 'round356-181103-workbook-html-ocr-clean-20260615';
+const version = 'round357-181103-auth-workflow-proof-20260615';
 const jsonRel = 'data/fluid-round355-181103-html-public-quality.json';
 const gzipRel = `${jsonRel}.gz`;
 const docRel = 'docs/round355/181103-html-public-quality.md';

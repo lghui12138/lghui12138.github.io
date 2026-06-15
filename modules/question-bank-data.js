@@ -1692,8 +1692,16 @@ window.QuestionBankData = (function() {
                     return;
                 }
                 
+                const practicePool = bank.id === '181103-material-extracted'
+                    ? this.getDefaultPracticeQuestions(questions)
+                    : questions;
+                if (!practicePool || practicePool.length === 0) {
+                    showNotification('该题库没有默认可练的净题，请先打开全量来源页复核', 'warning');
+                    return;
+                }
+
                 // 随机选择5道题进行快速测试
-                const shuffled = questions.sort(() => 0.5 - Math.random());
+                const shuffled = [...practicePool].sort(() => 0.5 - Math.random());
                 const quickQuestions = shuffled.slice(0, 5);
                 
                 const fullBank = {

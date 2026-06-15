@@ -2,7 +2,7 @@
 
 Version: `round355-visible-quality-regression-20260615`
 
-Expected current version: `round356-181103-workbook-html-ocr-clean-20260615`
+Expected current version: `round357-181103-auth-workflow-proof-20260615`
 
 ## Summary
 
