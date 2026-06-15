@@ -6,22 +6,22 @@ This atlas proves the current real-exam surface still preserves original source-
 
 ## Summary
 
-- Source/web atoms: 316/316
-- Grouped sections: 61
-- Grouped web question IDs: 201
+- Source/web atoms: 325/325
+- Grouped sections: 68
+- Grouped web question IDs: 217
 - Short-answer four/five sections: 9 across years 2004, 2007, 2008, 2010, 2011, 2015, 2018, 2019, 2020
-- High-risk grouped sections: 20 across years 2000, 2004, 2006, 2007, 2008, 2010, 2011, 2012, 2014, 2015, 2018, 2019, 2020
+- High-risk grouped sections: 21 across years 2000, 2001, 2004, 2006, 2007, 2008, 2010, 2011, 2012, 2014, 2015, 2018, 2019, 2020
 - Current merge-loss sections/atoms: 0/0
-- Collapse loss if every grouped source section were merged to one parent: 140
+- Collapse loss if every grouped source section were merged to one parent: 149
 - Acceptance: pass
 
 ## Grouped Buckets
 
 | original items | grouped sections | web question IDs | collapse loss if merged | keys |
 |---:|---:|---:|---:|---|
-| 2 | 25 | 50 | 25 | 2000-02, 2000-03, 2000-08, 2002-08, 2005-01, 2005-03, 2005-07, 2005-08, 2006-06, 2007-04, 2012-05, 2012-07, 2013-02, 2013-03, 2015-05, 2018-04, 2018-06, 2019-02, 2019-03, 2019-04, 2019-05, 2020-05, 2020-06, 2021-06, 2021-09 |
+| 2 | 31 | 62 | 31 | 2000-02, 2000-03, 2000-08, 2002-08, 2005-01, 2005-03, 2005-07, 2005-08, 2006-06, 2007-04, 2012-05, 2012-07, 2013-02, 2013-03, 2015-05, 2018-04, 2018-06, 2019-02, 2019-03, 2019-04, 2019-05, 2020-05, 2020-06, 2021-06, 2021-09, 2023-09, 2024-06, 2024-07, 2024-08, 2024-09, 2024-10 |
 | 3 | 16 | 48 | 32 | 2000-06, 2003-07, 2005-02, 2005-06, 2007-03, 2007-08, 2008-03, 2010-05, 2012-01, 2012-02, 2014-01, 2014-02, 2015-02, 2015-04, 2018-05, 2020-02 |
-| 4 | 12 | 48 | 36 | 2000-07, 2004-02, 2006-01, 2006-02, 2007-01, 2007-02, 2007-07, 2008-01, 2011-02, 2012-06, 2014-03, 2020-04 |
+| 4 | 13 | 52 | 39 | 2000-07, 2001-06, 2004-02, 2006-01, 2006-02, 2007-01, 2007-02, 2007-07, 2008-01, 2011-02, 2012-06, 2014-03, 2020-04 |
 | 5 | 5 | 25 | 20 | 2010-02, 2015-01, 2018-01, 2019-01, 2020-01 |
 | 10 | 3 | 30 | 27 | 2004-01, 2010-01, 2011-01 |
 
@@ -52,6 +52,7 @@ This atlas proves the current real-exam surface still preserves original source-
 | 2019-01 | critical | short-answer-family | 5 | ocean-2019-01-01 -> ocean-2019-01-05 | 4 |
 | 2020-01 | critical | short-answer-family | 5 | ocean-2020-01-01 -> ocean-2020-01-05 | 4 |
 | 2000-07 | high | calculation-subparts | 4 | ocean-2000-07-01 -> ocean-2000-07-04 | 3 |
+| 2001-06 | high | calculation-subparts | 4 | ocean-2001-06-01 -> ocean-2001-06-04 | 3 |
 | 2004-02 | high | short-answer-family | 4 | ocean-2004-02-01 -> ocean-2004-02-04 | 3 |
 | 2006-01 | high | objective-family | 4 | ocean-2006-01-01 -> ocean-2006-01-04 | 3 |
 | 2006-02 | high | calculation-subparts | 4 | ocean-2006-02-01 -> ocean-2006-02-04 | 3 |
@@ -74,8 +75,8 @@ This atlas proves the current real-exam surface still preserves original source-
 
 | check | status |
 |---|---|
-| source-and-web-atomic-counts-316-316 | pass |
-| grouped-section-counts-61-and-201 | pass |
+| source-and-web-atomic-counts-325-325 | pass |
+| grouped-section-counts-68-and-217 | pass |
 | no-current-merge-loss | pass |
 | four-five-short-answer-sections-present-and-preserved | pass |
 | upstream-round303-round304-acceptance-pass | pass |

@@ -1,7 +1,7 @@
 # Round335 Public/Auth Proof
 
 - version: round335-public-auth-proof-20260615
-- expectedVersion: round357-181103-auth-workflow-proof-20260615
+- expectedVersion: round358-181103-522-html-practice-release-20260616
 - generatedAt: 2026-06-15T17:36:37.000Z
 - pass: true
 - public shell: https://lghui.top
@@ -26,8 +26,8 @@ Round335 is a live public/auth proof. It requires the current HTTPS public shell
 
 ## Live Version
 
-- lghui.top site-updates latest: `round357-181103-auth-workflow-proof-20260615`
-- pages.dev edgeHomeVersion: `round357-181103-auth-workflow-proof-20260615`
+- lghui.top site-updates latest: `round358-181103-522-html-practice-release-20260616`
+- pages.dev edgeHomeVersion: `round358-181103-522-html-practice-release-20260616`
 
 ## HTTP Redirect Probe
 
@@ -45,6 +45,6 @@ Round335 is a live public/auth proof. It requires the current HTTPS public shell
 
 ## Commands
 
-- `NODE_PATH=<codex-runtime-node-modules> node tools/check-public-entry-browser.mjs --expected-edge-version round357-181103-auth-workflow-proof-20260615 --urls '["http://lghui.top/","https://lghui.top/","https://lghui-fluid-learning.pages.dev/","https://lghui-fluid-learning.pages.dev/index-complete?edge_refresh=round357-181103-auth-workflow-proof-20260615"]'`
-- `NODE_PATH=<codex-runtime-node-modules> node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round357-181103-auth-workflow-proof-20260615`
-- `NODE_PATH=<codex-runtime-node-modules> node tools/check-authenticated-browser-gate.mjs --production --expected-version round357-181103-auth-workflow-proof-20260615`
+- `NODE_PATH=<codex-runtime-node-modules> node tools/check-public-entry-browser.mjs --expected-edge-version round358-181103-522-html-practice-release-20260616 --urls '["http://lghui.top/","https://lghui.top/","https://lghui-fluid-learning.pages.dev/","https://lghui-fluid-learning.pages.dev/index-complete?edge_refresh=round358-181103-522-html-practice-release-20260616"]'`
+- `NODE_PATH=<codex-runtime-node-modules> node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round358-181103-522-html-practice-release-20260616`
+- `NODE_PATH=<codex-runtime-node-modules> node tools/check-authenticated-browser-gate.mjs --production --expected-version round358-181103-522-html-practice-release-20260616`

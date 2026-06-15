@@ -1,7 +1,7 @@
 # Round306 Release Readiness
 
 - version: round306-release-readiness-integration-scout-20260614
-- expectedVersion: round307-source-row-181103-video-management-proof-20260614
+- expectedVersion: round306-no-merge-181103-video-proof-20260614
 - status: ready-with-hard-stop-blockers
 - ready: true
 - worker slots ready: 6/6
@@ -24,15 +24,15 @@
 
 | authority | status | expected | actual |
 |---|---:|---|---|
-| site-updates-top-version | ready | round307-source-row-181103-video-management-proof-20260614 | round307-source-row-181103-video-management-proof-20260614 |
-| roadmap-version | ready | round307-source-row-181103-video-management-proof-20260614 | round307-source-row-181103-video-management-proof-20260614 |
+| site-updates-top-version | ready | round306-no-merge-181103-video-proof-20260614 | round306-no-merge-181103-video-proof-20260614 |
+| roadmap-version | ready | round306-no-merge-181103-video-proof-20260614 | round306-no-merge-181103-video-proof-20260614 |
 | roadmap-current-round | ready | currentRound>=306 | currentRound=306 |
 | roadmap-round306-active-or-done | ready | round306 active/done | round306=active |
-| edge-home-version | ready | round307-source-row-181103-video-management-proof-20260614 | round307-source-row-181103-video-management-proof-20260614 |
-| edge-runtime-js-version | ready | round307-source-row-181103-video-management-proof-20260614 | round307-source-row-181103-video-management-proof-20260614 |
-| real-exams-current-ledger | ready | round307-source-row-181103-video-management-proof-20260614 | round307-source-row-181103-video-management-proof-20260614 |
-| home-search-current-entry | ready | round307-source-row-181103-video-management-proof-20260614 | round307-source-row-181103-video-management-proof-20260614 |
-| knowledge-current-entry | ready | round307-source-row-181103-video-management-proof-20260614 | round307-source-row-181103-video-management-proof-20260614 |
+| edge-home-version | ready | round306-no-merge-181103-video-proof-20260614 | round306-no-merge-181103-video-proof-20260614 |
+| edge-runtime-js-version | ready | round306-no-merge-181103-video-proof-20260614 | round306-no-merge-181103-video-proof-20260614 |
+| real-exams-current-ledger | ready | round306-no-merge-181103-video-proof-20260614 | round306-no-merge-181103-video-proof-20260614 |
+| home-search-current-entry | ready | round306-no-merge-181103-video-proof-20260614 | round306-no-merge-181103-video-proof-20260614 |
+| knowledge-current-entry | ready | round306-no-merge-181103-video-proof-20260614 | round306-no-merge-181103-video-proof-20260614 |
 
 ## Private-Video And Real-Account Blockers
 

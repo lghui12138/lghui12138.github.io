@@ -2,7 +2,7 @@
 
 Version: `round355-visible-quality-regression-20260615`
 
-Expected current version: `round357-181103-auth-workflow-proof-20260615`
+Expected current version: `round368-ten-round-upgrade-20260616`
 
 ## Summary
 

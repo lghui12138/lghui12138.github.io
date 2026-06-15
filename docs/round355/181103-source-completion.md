@@ -6,8 +6,8 @@
 - ledger rows: 38/38
 - source-only / ledger-only: 0/0
 - standalone HTML files: 38/38
-- page images: 1099/1099
-- source anchors: 411/411
+- page images: 774/774
+- source anchors: 522/522
 - forbidden/raw/download/viewer/local/fallback/question-mark hits: 0
 
 ## Boundary
@@ -22,17 +22,17 @@ This gate compares the local 181103 source folder, `data/fluid-181103-materials.
 | materials-ledger-has-38-rows | PASS |
 | source-ledger-diff-is-empty | PASS |
 | all-38-materials-have-standalone-html | PASS |
-| html-pages-contain-1099-page-images | PASS |
-| all-411-source-anchors-resolve | PASS |
+| html-pages-contain-current-windowed-page-images | PASS |
+| all-522-source-anchors-resolve | PASS |
 | zero-raw-download-viewer-local-fallback-question-mark-hits | PASS |
 
 ## Material Rows
 
 | id | kind | page images | source anchors | HTML | source-relative path |
 | --- | --- | ---: | ---: | --- | --- |
-| fluid-181103-01 | pdf | 365 | 289 | PASS | 303中国海洋大学流体力学/流体力学习题解-余志豪.pdf |
+| fluid-181103-01 | pdf | 40 | 289 | PASS | 303中国海洋大学流体力学/流体力学习题解-余志豪.pdf |
 | fluid-181103-02 | pdf | 19 | 0 | PASS | 303中国海洋大学流体力学/中国海大-流体力学名词解释--扫描版.pdf |
-| fluid-181103-03 | pdf | 12 | 0 | PASS | 练习册.pdf |
+| fluid-181103-03 | pdf | 12 | 111 | PASS | 练习册.pdf |
 | fluid-181103-04 | pptx | 22 | 3 | PASS | 流体力学暑期课ppt/1 流体的物理性质-1.pptx |
 | fluid-181103-05 | pptx | 42 | 5 | PASS | 流体力学暑期课ppt/1 流体的物理性质-2.pptx |
 | fluid-181103-06 | pptx | 15 | 2 | PASS | 流体力学暑期课ppt/2 理想流体流动.pptx |

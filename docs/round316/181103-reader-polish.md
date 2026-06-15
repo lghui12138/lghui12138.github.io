@@ -3,9 +3,9 @@
 - version: round316-181103-reader-polish-20260614
 - official material pages: 38/38
 - PDF/page-image materials with jump tools: 36/36
-- anchored PDF pages: 1099/1099
+- anchored PDF pages: 774/774
 - eager/async page images: 108/108
-- lazy/async page images: 991/991
+- lazy/async page images: 666/666
 - malformed intro tags: 0
 - raw binary hrefs: 0
 - iframe/embed/object tags: 0

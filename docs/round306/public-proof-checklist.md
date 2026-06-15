@@ -6,7 +6,7 @@ VPN/proxy changes, credential disclosure, or fake production claims.
 ## Source Anchors
 
 - Worktree: `/Users/kili/Documents/Codex/lghui-source-private-video-work`
-- Current source version: `round307-source-row-181103-video-management-proof-20260614`
+- Current source version: `round306-no-merge-181103-video-proof-20260614`
 - Required local authorities:
   - `site-updates.json[0].version` is the current Round306 source version.
   - `functions/_middleware.js` has `EDGE_HOME_VERSION` equal to the current Round306 source version.
@@ -34,7 +34,7 @@ network/VPN/proxy state, or print credentials.
 
    ```sh
    node tools/check-round302-public-shell-proof.mjs \
-     --expected-version round307-source-row-181103-video-management-proof-20260614 \
+     --expected-version round306-no-merge-181103-video-proof-20260614 \
      --json
    ```
 
@@ -49,7 +49,7 @@ network/VPN/proxy state, or print credentials.
    NODE_PATH=/Users/kili/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules \
    PUBLIC_ENTRY_BROWSER_CHROME_EXECUTABLE=bundled \
    node tools/check-public-entry-browser.mjs \
-     --expected-edge-version round307-source-row-181103-video-management-proof-20260614
+     --expected-edge-version round306-no-merge-181103-video-proof-20260614
    ```
 
    Pass condition: `lghui.top` public shell and pages.dev entry routes render
@@ -62,7 +62,7 @@ network/VPN/proxy state, or print credentials.
    NODE_PATH=/Users/kili/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules \
    AUTH_BROWSER_CHROME_EXECUTABLE=bundled \
    FLUID_GATE_MODE=production \
-   FLUID_REQUIRED_RELEASE_VERSION=round307-source-row-181103-video-management-proof-20260614 \
+   FLUID_REQUIRED_RELEASE_VERSION=round306-no-merge-181103-video-proof-20260614 \
    FLUID_GATE_SUMMARY_PATH=docs/round306/public-proof-summary.local.json \
    node tools/verify-fluid-release-gate.mjs
    ```

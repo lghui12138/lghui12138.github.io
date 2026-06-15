@@ -1,7 +1,7 @@
 # Round306 Optimization Memory Ledger
 
 - version: round306-optimization-memory-ledger-20260614
-- expected site version: round307-source-row-181103-video-management-proof-20260614
+- expected site version: round306-no-merge-181103-video-proof-20260614
 - lessons: 30
 - categories: 6
 - source artifacts present: true

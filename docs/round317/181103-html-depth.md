@@ -27,18 +27,18 @@ Each official material page under `resources/fluid-181103-html/materials` now ha
 
 | Page | Page Images | Visible Text Chars | Round317 Map |
 |---|---:|---:|---|
-| resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html | 365 | 2811 | added |
-| resources/fluid-181103-html/materials/02-fluid-181103-02-material/index.html | 19 | 123 | added |
-| resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html | 12 | 74 | added |
-| resources/fluid-181103-html/materials/04-fluid-181103-04-1-1/index.html | 22 | 282 | added |
-| resources/fluid-181103-html/materials/05-fluid-181103-05-1-2/index.html | 42 | 422 | added |
-| resources/fluid-181103-html/materials/06-fluid-181103-06-2/index.html | 15 | 233 | added |
-| resources/fluid-181103-html/materials/07-fluid-181103-07-2-1/index.html | 8 | 184 | added |
-| resources/fluid-181103-html/materials/08-fluid-181103-08-3/index.html | 13 | 219 | added |
-| resources/fluid-181103-html/materials/09-fluid-181103-09-2010/index.html | 53 | 499 | added |
-| resources/fluid-181103-html/materials/10-fluid-181103-10-2010/index.html | 52 | 354 | added |
-| resources/fluid-181103-html/materials/12-fluid-181103-12-1-1/index.html | 12 | 74 | added |
-| resources/fluid-181103-html/materials/13-fluid-181103-13-1-2/index.html | 26 | 172 | added |
+| resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html | 365 | 2293 | added |
+| resources/fluid-181103-html/materials/02-fluid-181103-02-material/index.html | 19 | 1073 | added |
+| resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html | 12 | 674 | added |
+| resources/fluid-181103-html/materials/04-fluid-181103-04-1-1/index.html | 22 | 1580 | added |
+| resources/fluid-181103-html/materials/05-fluid-181103-05-1-2/index.html | 42 | 2900 | added |
+| resources/fluid-181103-html/materials/06-fluid-181103-06-2/index.html | 15 | 1118 | added |
+| resources/fluid-181103-html/materials/07-fluid-181103-07-2-1/index.html | 8 | 656 | added |
+| resources/fluid-181103-html/materials/08-fluid-181103-08-3/index.html | 13 | 986 | added |
+| resources/fluid-181103-html/materials/09-fluid-181103-09-2010/index.html | 53 | 3626 | added |
+| resources/fluid-181103-html/materials/10-fluid-181103-10-2010/index.html | 52 | 2954 | added |
+| resources/fluid-181103-html/materials/12-fluid-181103-12-1-1/index.html | 12 | 674 | added |
+| resources/fluid-181103-html/materials/13-fluid-181103-13-1-2/index.html | 26 | 1472 | added |
 
 ## Boundary
 

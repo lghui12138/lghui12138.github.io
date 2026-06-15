@@ -4,27 +4,28 @@
 - question bank: `question-banks/181103-material-extracted.json`
 - material HTML root: `resources/fluid-181103-html/materials`
 - question-bank index: `question-banks/index.json`
-- questions: 411/411
-- existing material anchors: 411/411
+- questions: 522/522
+- existing material anchors: 522/522
 - material pages: 38/38
-- default/source-first/OCR/hidden: 0/411/268/24
+- playable/source-first/OCR/hidden: 522/522/379/24
 - original OCR show candidates: 119
-- default practice OCR/formula garble: 0
-- human enrichment candidates: 292 (non-failing)
+- quality noise marker/source fallback: 98/98 marked, 98/98 source-backed, naked 0
+- human enrichment candidates: 403 (non-failing)
 
 ## Hard Checks
 
 | check | status |
 |---|---|
 | safe-internal-apfs-execution | PASS |
-| question-bank-has-411-questions | PASS |
-| question-bank-index-registers-411-bank | PASS |
+| question-bank-has-current-181103-questions | PASS |
+| question-bank-index-registers-current-bank | PASS |
 | all-sourceHtmlUrl-values-are-site-material-anchors | PASS |
 | all-source-html-pages-exist-under-materials | PASS |
 | all-source-html-anchors-exist | PASS |
 | question-sourceMaterialId-matches-sourceHtmlUrl-material | PASS |
 | material-html-surface-has-38-pages | PASS |
-| default-practice-excludes-round356-ocr-formula-garble | PASS |
+| source-first-playable-pool-covers-all-current-questions | PASS |
+| quality-noise-items-have-marker-and-source-fallback | PASS |
 
 ## Material Statistics
 
@@ -32,7 +33,7 @@
 |---|---:|---:|---:|---:|---|
 | fluid-181103-01 | 流体力学习题解 余志豪 | 289 | 227 | 196 | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html` |
 | fluid-181103-02 | 中国海大 流体力学名词解释 扫描版 | 0 | 0 | 0 | `/resources/fluid-181103-html/materials/02-fluid-181103-02-material/index.html` |
-| fluid-181103-03 | 练习册 | 0 | 0 | 0 | `/resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html` |
+| fluid-181103-03 | 练习册 | 111 | 11 | 111 | `/resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html` |
 | fluid-181103-04 | 1 流体的物理性质 1 | 3 | 1 | 0 | `/resources/fluid-181103-html/materials/04-fluid-181103-04-1-1/index.html` |
 | fluid-181103-05 | 1 流体的物理性质 2 | 5 | 1 | 1 | `/resources/fluid-181103-html/materials/05-fluid-181103-05-1-2/index.html` |
 | fluid-181103-06 | 2 理想流体流动 | 2 | 1 | 1 | `/resources/fluid-181103-html/materials/06-fluid-181103-06-2/index.html` |
@@ -76,16 +77,17 @@ These rows are intentionally warnings rather than failures. They are short, low-
 | question | material | chars | CJK | tier | reasons | source anchor |
 |---|---:|---:|---:|---|---|---|
 | 181103-material-extracted-0062 | fluid-181103-01 | 14 | 8 | ocr-review | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-076` |
+| 181103-material-extracted-0494 | fluid-181103-03 | 15 | 11 | ocr-review | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html#page-009` |
 | 181103-material-extracted-0150 | fluid-181103-01 | 16 | 8 | ocr-review | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-181` |
 | 181103-material-extracted-0022 | fluid-181103-01 | 16 | 9 | ocr-review | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-024` |
+| 181103-material-extracted-0307 | fluid-181103-09 | 16 | 13 | ocr-review | short-question-text, low-cjk-density, weak-question-cue, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-flag-weak-question-cue, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/09-fluid-181103-09-2010/index.html#round317-html-content-start` |
 | 181103-material-extracted-0374 | fluid-181103-38 | 16 | 13 | hide | short-question-text, low-cjk-density, weak-question-cue, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-flag-weak-question-cue, quality-tier-hide | `/resources/fluid-181103-html/materials/38-fluid-181103-38-3-3/index.html#page-004` |
 | 181103-material-extracted-0314 | fluid-181103-09 | 16 | 14 | ocr-review | short-question-text, low-cjk-density, weak-question-cue, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-flag-weak-question-cue, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/09-fluid-181103-09-2010/index.html#round317-html-content-start` |
-| 181103-material-extracted-0307 | fluid-181103-09 | 17 | 13 | ocr-review | short-question-text, low-cjk-density, weak-question-cue, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-flag-weak-question-cue, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/09-fluid-181103-09-2010/index.html#round317-html-content-start` |
+| 181103-material-extracted-0339 | fluid-181103-09 | 17 | 14 | ocr-review | short-question-text, low-cjk-density, weak-question-cue, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-flag-weak-question-cue, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/09-fluid-181103-09-2010/index.html#round317-html-content-start` |
 | 181103-material-extracted-0377 | fluid-181103-38 | 17 | 14 | hide | short-question-text, low-cjk-density, weak-question-cue, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-flag-weak-question-cue, quality-tier-hide | `/resources/fluid-181103-html/materials/38-fluid-181103-38-3-3/index.html#page-007` |
 | 181103-material-extracted-0400 | fluid-181103-38 | 17 | 14 | hide | short-question-text, low-cjk-density, weak-question-cue, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-flag-weak-question-cue, quality-tier-hide | `/resources/fluid-181103-html/materials/38-fluid-181103-38-3-3/index.html#page-038` |
 | 181103-material-extracted-0009 | fluid-181103-01 | 18 | 11 | ocr-review | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-010` |
 | 181103-material-extracted-0011 | fluid-181103-01 | 18 | 11 | ocr-review | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-012` |
-| 181103-material-extracted-0339 | fluid-181103-09 | 18 | 14 | ocr-review | short-question-text, low-cjk-density, weak-question-cue, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-flag-weak-question-cue, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/09-fluid-181103-09-2010/index.html#round317-html-content-start` |
 | 181103-material-extracted-0316 | fluid-181103-09 | 18 | 16 | ocr-review | short-question-text, weak-question-cue, quality-flag-short-fragment, quality-flag-weak-question-cue, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/09-fluid-181103-09-2010/index.html#round317-html-content-start` |
 | 181103-material-extracted-0383 | fluid-181103-38 | 19 | 16 | ocr-review | short-question-text, weak-question-cue, quality-flag-short-fragment, quality-flag-weak-question-cue, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/38-fluid-181103-38-3-3/index.html#page-013` |
 | 181103-material-extracted-0329 | fluid-181103-09 | 19 | 17 | ocr-review | short-question-text, weak-question-cue, quality-flag-short-fragment, quality-flag-weak-question-cue, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/09-fluid-181103-09-2010/index.html#round317-html-content-start` |
@@ -103,18 +105,17 @@ These rows are intentionally warnings rather than failures. They are short, low-
 | 181103-material-extracted-0395 | fluid-181103-38 | 26 | 3 | hide | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-tier-hide | `/resources/fluid-181103-html/materials/38-fluid-181103-38-3-3/index.html#page-030` |
 | 181103-material-extracted-0087 | fluid-181103-01 | 26 | 4 | hide | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-tier-hide | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-101` |
 | 181103-material-extracted-0206 | fluid-181103-01 | 27 | 20 | ocr-review | short-question-text, quality-flag-short-fragment, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-252` |
+| 181103-material-extracted-0466 | fluid-181103-03 | 27 | 22 | ocr-review | short-question-text, quality-flag-short-fragment, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html#page-006` |
 | 181103-material-extracted-0225 | fluid-181103-01 | 28 | 3 | ocr-review | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-278` |
+| 181103-material-extracted-0499 | fluid-181103-03 | 28 | 23 | ocr-review | short-question-text, quality-flag-short-fragment, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html#page-010` |
+| 181103-material-extracted-0500 | fluid-181103-03 | 28 | 23 | ocr-review | short-question-text, quality-flag-short-fragment, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html#page-010` |
+| 181103-material-extracted-0505 | fluid-181103-03 | 29 | 20 | ocr-review | short-question-text, quality-flag-short-fragment, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html#page-010` |
+| 181103-material-extracted-0440 | fluid-181103-03 | 29 | 21 | ocr-review | short-question-text, quality-flag-short-fragment, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html#page-004` |
 | 181103-material-extracted-0385 | fluid-181103-38 | 29 | 22 | ocr-review | short-question-text, weak-question-cue, quality-flag-short-fragment, quality-flag-weak-question-cue, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/38-fluid-181103-38-3-3/index.html#page-016` |
+| 181103-material-extracted-0442 | fluid-181103-03 | 31 | 26 | ocr-review | short-question-text, quality-flag-short-fragment, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html#page-004` |
+| 181103-material-extracted-0378 | fluid-181103-38 | 32 | 0 | hide | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-tier-hide | `/resources/fluid-181103-html/materials/38-fluid-181103-38-3-3/index.html#page-007` |
 | 181103-material-extracted-0161 | fluid-181103-01 | 32 | 12 | hide | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-tier-hide | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-195` |
 | 181103-material-extracted-0197 | fluid-181103-01 | 32 | 21 | ocr-review | short-question-text, quality-flag-short-fragment, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-239` |
-| 181103-material-extracted-0378 | fluid-181103-38 | 33 | 0 | hide | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-tier-hide | `/resources/fluid-181103-html/materials/38-fluid-181103-38-3-3/index.html#page-007` |
-| 181103-material-extracted-0296 | fluid-181103-05 | 33 | 22 | ocr-review | short-question-text, quality-flag-short-fragment, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/05-fluid-181103-05-1-2/index.html#round317-html-content-start` |
-| 181103-material-extracted-0204 | fluid-181103-01 | 33 | 23 | ocr-review | short-question-text, quality-flag-short-fragment, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-249` |
-| 181103-material-extracted-0020 | fluid-181103-01 | 35 | 12 | hide | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-tier-hide | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-023` |
-| 181103-material-extracted-0028 | fluid-181103-01 | 36 | 17 | ocr-review | short-question-text, quality-flag-short-fragment, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-032` |
-| 181103-material-extracted-0303 | fluid-181103-09 | 36 | 30 | ocr-review | short-question-text, weak-question-cue, quality-flag-short-fragment, quality-flag-weak-question-cue, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/09-fluid-181103-09-2010/index.html#round317-html-content-start` |
-| 181103-material-extracted-0254 | fluid-181103-01 | 37 | 0 | hide | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-tier-hide | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-312` |
-| 181103-material-extracted-0370 | fluid-181103-38 | 37 | 30 | ocr-review | short-question-text, weak-question-cue, quality-flag-short-fragment, quality-flag-weak-question-cue, round356-default-practice-blocked, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/38-fluid-181103-38-3-3/index.html#page-001` |
 
 ## Zero-Question Materials
 
@@ -123,7 +124,6 @@ These material pages exist in the 38-page HTML surface but currently have no ext
 | material | title | file |
 |---|---|---|
 | fluid-181103-02 | 中国海大 流体力学名词解释 扫描版 | `resources/fluid-181103-html/materials/02-fluid-181103-02-material/index.html` |
-| fluid-181103-03 | 练习册 | `resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html` |
 | fluid-181103-10 | 流体力学习题册答案2010修改版 | `resources/fluid-181103-html/materials/10-fluid-181103-10-2010/index.html` |
 | fluid-181103-11 | 流体力学I课件 | `resources/fluid-181103-html/materials/11-fluid-181103-11-i/index.html` |
 | fluid-181103-16 | 2理想流体运动 | `resources/fluid-181103-html/materials/16-fluid-181103-16-2/index.html` |
@@ -143,4 +143,4 @@ These material pages exist in the 38-page HTML surface but currently have no ext
 
 ## Acceptance
 
-PASS: Round345 confirms the 411 extracted 181103 material-bank questions each point to an existing in-site material HTML anchor; human-enrichment candidates are informational only.
+PASS: Round345 confirms the 522 extracted 181103 material-bank questions are all playable and each point to an existing in-site material HTML anchor; human-enrichment candidates are informational only.
