@@ -1,7 +1,7 @@
-# Round358 181103 Authenticated Workflow Proof
+# Round368 181103 Authenticated Workflow Proof
 
-- Version: `round358-181103-522-html-practice-release-20260616`
-- Expected release: `round358-181103-522-html-practice-release-20260616`
+- Version: `round368-ten-round-upgrade-20260616`
+- Expected release: `round368-ten-round-upgrade-20260616`
 - Generated at: `2026-06-15T17:36:37.000Z`
 - Acceptance: **PASS**
 - Browser runs skipped: `false`
@@ -27,9 +27,10 @@
 - Auth chain: started on lghui.top=true, reached source=true, role=student, qa=qa-student, credentials=credentials-redacted
 - Bank ledger: 可刷题 522 来源页图 522 原 OCR show 119 OCR池 379 hidden提示 24 题面内置页图 重复簇 1
 - Practice dialog: 522 total / 522 legacy default diagnostic / 522 source-first / 379 OCR / 24 hidden / default garble 48
-- Rendered question: launched=522, counter=题目 1 / 522, bad tokens=false, formula bridge=true, source link=/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-003
+- Rendered question: launched=522, counter=题目 1 / 522, bad tokens=false, formula bridge=true, source link=/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-003, source image=1946x2858
 - Authenticated source index: 38/38 material links, binary links=0
 - Authenticated big workbook: 40 first-window images, 3 eager, 37 lazy, total pages=365, page anchors=365, binary links=0
+- User-pointed 03 material page: 12 images / 12 decoded, page ids=12, binary links=0, replacements=0, qmark runs=0
 
 ## Optimization Lessons
 
@@ -59,5 +60,7 @@
 - PASS browser-rendered-practice-bad-tokens-hidden
 - PASS browser-practice-no-default-mislabel
 - PASS browser-practice-formula-bridge-and-source-link
+- PASS browser-practice-source-page-image-rendered
 - PASS browser-authenticated-source-index-38-no-downloads
 - PASS browser-authenticated-big-workbook-windowed-lazy-budget-no-binaries
+- PASS browser-user-pointed-03-html-renders-all-images
