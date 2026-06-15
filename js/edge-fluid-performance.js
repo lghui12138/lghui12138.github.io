@@ -107,6 +107,7 @@
   }
 
   function track(eventName, payload) {
+    if (location.hostname === 'lghui.top') return;
     var body = JSON.stringify({
       type: eventName,
       source: 'edge-fluid-performance',
