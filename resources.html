@@ -1031,8 +1031,35 @@ function publicResourceText(value){
     .trim();
 }
 
+function isBinaryResourceUrl(value){
+  return /\.(?:pdf|docx?|pptx?|zip)(?:$|[?#])/i.test(String(value||''));
+}
+
+function sourceMaterialReadableUrl(material){
+  if(!material)return '';
+  var candidates=[material.htmlUrl,material.primaryUrl,material.readerUrl,material.viewUrl];
+  (material.sections||[]).forEach(function(section){
+    candidates.push(section&&section.htmlUrl);
+    candidates.push(section&&section.url);
+  });
+  var readable=candidates.find(function(url){return url&&!isBinaryResourceUrl(url)});
+  if(readable)return readable;
+  if(material.role==='notes'||material.role==='notes-md'||material.role==='notes-md-history'){
+    return '/modules/knowledge-detail.html?query='+encodeURIComponent(material.title||'课程笔记')+'&from=resources-readable-source';
+  }
+  if(material.role==='exams'){
+    return '/modules/real-exams-dynamic.html?edge_refresh=round357-181103-auth-workflow-proof-20260615&from=resources-readable-source';
+  }
+  if(material.chapter){
+    return '/modules/knowledge-detail.html?chapter='+encodeURIComponent(material.chapter)+'&from=resources-readable-source';
+  }
+  return isBinaryResourceUrl(material.url)?'':String(material.url||'');
+}
+
 function sourceMaterialToDoc(material,source){
-  if(!material||!material.url)return null;
+  if(!material)return null;
+  var readableUrl=sourceMaterialReadableUrl(material);
+  if(!readableUrl)return null;
   var type=sourceMaterialType(material);
   var meta=[];
   if(material.slideCount)meta.push(material.slideCount+' 张课件页');
@@ -1065,14 +1092,16 @@ function sourceMaterialToDoc(material,source){
     id:id,
     title:publicResourceText(material.title||material.originalName||material.resourceFile)||'流体力学学习资料',
     desc:[publicResourceText(material.originalName||material.title||''),meta.join(' · ')].filter(Boolean).join(' · '),
-    url:material.url,
+    url:readableUrl,
+    originalUrl:material.url&&material.url!==readableUrl?material.url:'',
+    originalIsBinary:isBinaryResourceUrl(material.url),
     locked:false,
     type:type,
     size:material.bytes||0,
     tags:tags,
     priority:priority,
     source:'fluid-source-materials',
-    sourceNote:'课程资料原件入口；登录后按站内权限打开，课件、笔记和真题内容同时用于知识点、公式线索和题库索引。',
+    sourceNote:'站内 HTML/知识页入口；课件、笔记和真题内容用于知识点、公式线索和题库索引，原件不作为默认打开目标。',
     createdAt:Date.parse(source&&source.generatedAt||'')||1762070400000
   };
 }
@@ -1694,7 +1723,7 @@ function setQuickMeta(id,text){
 }
 
 function renderQuickLinks(){
-  setQuickMeta('#quickDeckMeta',countByTag(DATA.docs,'课件')+' 个课件入口 · 按站内权限打开');
+  setQuickMeta('#quickDeckMeta',countByTag(DATA.docs,'课件')+' 个课件入口 · 网页阅读');
   setQuickMeta('#quickTextbookMeta',countByTag(DATA.docs,'教材')+' 本教材整理稿 · 网页阅读');
   setQuickMeta('#quickAnimationMeta',countByTag(DATA.videos,'自制动画')+' 个自制动画 · 站内交互');
   setQuickMeta('#quickExamMeta',countByTag(DATA.docs,'历年真题')+' 个真题入口 · 索引/档案');
@@ -1729,7 +1758,7 @@ function openResourceFilter(tab,tag){
 function docSourceMeta(doc){
   var source=String(doc&&doc.source||'');
   if(source==='fluid-source-materials'){
-    return {label:'课程资料原件',access:'登录可用',note:doc.sourceNote||'登录后按站内权限打开课程资料原件。'};
+    return {label:'课程资料 HTML',access:'网页阅读',note:doc.sourceNote||'优先打开站内 HTML/知识页；原件不作为默认打开目标。'};
   }
   if(source==='authored-textbook-html'){
     return {label:'教材整理稿',access:'网页阅读',note:doc.sourceNote||'公开网页整理稿，不展示原扫描页，不替代原著。'};
@@ -1782,7 +1811,7 @@ function manifestAssetSummary(){
     '</div>'+
     renderPrivateVideoManagementMatrix()+
     '<div class="source-grid">'+
-      '<div class="source-chip"><b>'+deckCount+'</b>课件/讲义原件入口</div>'+
+      '<div class="source-chip"><b>'+deckCount+'</b>课件/讲义网页入口</div>'+
       '<div class="source-chip"><b>'+textbookCount+'</b>教材网页整理稿</div>'+
       '<div class="source-chip"><b>'+animationCount+'</b>站内自制动画</div>'+
       '<div class="source-chip"><b>'+examCount+'</b>真题索引与档案</div>'+
@@ -1805,7 +1834,7 @@ function manifestAssetSummary(){
       '<a class="round273-route-link" href="/modules/knowledge-upgrade-2026.html#mistake-diagnosis">错因订正</a>'+
     '</div>'+
     '<ul class="source-list">'+
-      '<li>课件、课程笔记和原始真题入口来自 <code>data/fluid-source-materials.json</code>，登录后按站内权限打开；知识点、公式线索和题库索引使用其派生数据。</li>'+
+      '<li>课件、课程笔记和真题来源来自 <code>data/fluid-source-materials.json</code>，默认打开站内 HTML/知识页/真题页；知识点、公式线索和题库索引使用其派生数据，二进制原件不作为学生侧主入口。</li>'+
 		      '<li>Round310 181103 补充资料已生成 38/38 个站内 HTML 内容页；本页显示 PDF/PPT/DOC/ZIP 统计、HTML 总表、章节路线、复习目标、题型索引、真题复盘、课件路线、习题册错因订正、68 个复核任务、325/68 真实真题返回路径、本地受保护索引和处理队列，不生成原始文件下载链接。</li>'+
       '<li>教材整理稿和真题 Markdown 档案是公开派生网页入口，不展示原扫描页，不替代原著或原始文档。</li>'+
 		      '<li>B 站视频只嵌入原站播放器，不下载、不重传；自制动画在本站打开；专属课视频走账号授权和视频源检测。生产上传、发布、授权变更、归档和删除不能只凭前端成功提示收口，仍要等 FM_PRIVATE_MEDIA R2 binding 与真实教师/学生账号验收；pages.dev 仍是认证源站验收面。</li>'+

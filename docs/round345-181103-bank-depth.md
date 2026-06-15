@@ -7,7 +7,8 @@
 - questions: 411/411
 - existing material anchors: 411/411
 - material pages: 38/38
-- default/OCR/hidden: 119/268/24
+- default/source-first/OCR/hidden: 0/411/268/24
+- original OCR show candidates: 119
 - default practice OCR/formula garble: 0
 - human enrichment candidates: 292 (non-failing)
 

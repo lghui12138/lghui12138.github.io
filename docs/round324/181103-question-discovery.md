@@ -6,7 +6,7 @@
 - 资源入口可发现：411/411
 - 题库入口可发现：411/411
 - 来源 HTML 锚点可发现：411/411
-- 默认可练 / OCR 复核 / 隐藏复核 / 章节待复核：119 / 268 / 24 / 181
+- 默认可练净池 / 历史 show 候选 / 回源复核 / OCR 复核 / 隐藏复核 / 章节待复核：0 / 119 / 411 / 268 / 24 / 181
 - 默认练习 OCR/公式乱码：0；已挡出默认练习的 OCR/公式复核题：268
 - 缺失来源 HTML / 缺失锚点 / 桶异常：0 / 0 / 0
 
@@ -18,7 +18,8 @@
 
 ## 可复盘路径
 
-- default：从 `/modules/question-bank.html?focus=181103-material-extracted#questionBanksList` 进入，点击默认练习；默认集合 119 题，且高风险 OCR/公式乱码 0 题。
+- default：从 `/modules/question-bank.html?focus=181103-material-extracted#questionBanksList` 进入，默认练习净池 0 题；181103 当前全部按来源 HTML 页图回源复核，不把历史 OCR 候选直接放入默认练习。
+- source-first：从同一题库入口进入“查看/练习全部 411 题（含 OCR 复核）”，每题用“打开来源 HTML 页”回到页图；回源复核 411 题。
 - OCR：从同一题库入口进入“查看/练习全部 411 题（含 OCR 复核）”，再按题卡的“打开来源 HTML 页”回查；OCR 复核 268 题。
 - hidden：隐藏复核题不进默认练习，但保留在全部 411 模式和来源 HTML 锚点中；隐藏复核 24 题。
 - chapter pending：章节待复核是叠加标记，仍有题库入口和来源 HTML；章节待复核 181 题。
