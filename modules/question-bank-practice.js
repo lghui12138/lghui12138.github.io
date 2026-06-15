@@ -60,6 +60,9 @@ window.QuestionBankPractice = (function() {
 
     function hasOcrGarbleQuestion(question) {
         if (!question || typeof question !== 'object') return false;
+        const is181103Material = question.extractedFromMaterial === true
+            && /\/resources\/fluid-181103-html\/materials\//.test(String(question.sourceHtmlUrl || ''));
+        if (is181103Material) return true;
         const flags = Array.isArray(question.qualityFlags) ? question.qualityFlags.join(' ') : '';
         const reviewReason = Array.isArray(question.ocrReviewReason) ? question.ocrReviewReason.join(' ') : '';
         const text = [
@@ -84,11 +87,16 @@ window.QuestionBankPractice = (function() {
             .replace(/\n{3,}/g, '\n\n')
             .replace(/\n/g, '<br>');
         if (question && question.extractedFromMaterial && (question.qualityTier !== 'show' || hasOcrGarbleQuestion(question))) {
+            const sourceHref = escapeHtml(question.sourceHtmlUrl || '/resources/fluid-181103-html/index.html');
             return `
                 <div data-round356-ocr-source-first="1" style="margin-bottom:18px;padding:14px 16px;border:1px solid #bae6fd;background:#f0f9ff;color:#075985;border-radius:12px;font-size:.68em;line-height:1.55;">
-                    这道 181103 资料题含 OCR/公式复核标记，已退出默认练习；题面和公式以来源 HTML 页图为准。
+                    这道 181103 资料题已退出默认练习；题面、图和公式以来源 HTML 页图为准。
+                    <div style="margin-top:10px;"><a href="${sourceHref}" style="font-weight:800;color:#0f766e;">打开来源 HTML 页图</a></div>
                 </div>
-                ${body}
+                <details data-181103-ocr-excerpt="1" style="margin-bottom:18px;padding:12px 14px;border:1px dashed #cbd5e1;border-radius:10px;background:#f8fafc;font-size:.7em;line-height:1.55;">
+                    <summary style="cursor:pointer;font-weight:800;color:#334155;">展开 OCR 摘录（仅供定位，不作为正式题面）</summary>
+                    <div style="margin-top:10px;">${body}</div>
+                </details>
             `;
         }
         return body;
