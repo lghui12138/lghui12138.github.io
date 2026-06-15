@@ -85,6 +85,21 @@
         box-sizing: border-box;
         scrollbar-width: thin;
       }
+      mjx-assistive-mml,
+      mjx-assistive-mml * {
+        position: absolute !important;
+        width: 1px !important;
+        min-width: 0 !important;
+        max-width: 1px !important;
+        height: 1px !important;
+        margin: -1px !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        clip: rect(0, 0, 0, 0) !important;
+        clip-path: inset(50%) !important;
+        white-space: nowrap !important;
+        border: 0 !important;
+      }
       mjx-container[display="true"] {
         display: block;
         margin: .7rem 0;
