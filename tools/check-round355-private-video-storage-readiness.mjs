@@ -264,7 +264,7 @@ function operatorNextSteps(storageBinding) {
       owner: 'Cloudflare dashboard operator',
       requiredBeforeRecoveryClaim: true,
       action: 'Cloudflare dashboard -> Workers & Pages -> Pages project lghui-fluid-learning -> Settings -> Bindings -> Production -> Add R2 bucket binding -> Variable name FM_PRIVATE_MEDIA -> select the production private-media bucket -> Save.',
-      credentials: 'Do not write credentials into repo artifacts or chat. Use the operator account already authorized for Cloudflare dashboard changes.'
+      operatorAccessNote: '使用已授权的后台操作身份完成 Cloudflare 绑定；不要把私人登录材料写入仓库产物或对话。'
     },
     {
       id: 'redeploy-after-binding',
@@ -285,7 +285,7 @@ function operatorNextSteps(storageBinding) {
       owner: 'release operator',
       requiredAfterBinding: true,
       command: 'NODE_PATH=<codex primary runtime node_modules> node tools/check-private-video-management-browser.mjs --production --json',
-      expected: 'Real teacher/student QA proves the storage-backed paths without printing credentials.'
+      expected: '真实教师/学生账号 QA 证明存储链路，不输出私人登录材料。'
     },
     {
       id: 'only-then-reclassify-storage-actions',

@@ -111,7 +111,7 @@ const payload = {
   rows,
   acceptance: {
     pass: checks.every((item) => item.pass),
-    meaning: 'Current learner-facing HTML surfaces keep the Round354 release authority visible while 181103 HTML pages remain free of current-status placeholders, legacy current-round wording, local paths, raw downloads, and viewer escapes. Historical site-updates entries are intentionally out of scope.'
+    meaning: 'Current learner-facing HTML surfaces keep the Round355 release authority visible while 181103 HTML pages remain free of current-status placeholders, legacy current-round wording, local paths, raw downloads, and viewer escapes. Historical site-updates entries are intentionally out of scope.'
   },
   artifacts: {
     tool: 'tools/check-round355-visible-quality-regression.mjs',
