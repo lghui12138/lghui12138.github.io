@@ -1344,9 +1344,13 @@ window.QuestionBankPractice = (function() {
         generateQuestionHTML: function(question, index) {
             const questionNumber = index + 1;
             const questionType = question.type || '选择题';
-            const qualityLabel = question.qualityTier === 'show'
-                ? '默认可练'
-                : question.qualityTier === 'hide'
+            const is181103SourceFirstQuestion = question.extractedFromMaterial === true
+                && (question.sourceFirstReview === true || String(question.sourceHtmlUrl || '').includes('/resources/fluid-181103-html/materials/'));
+            const qualityLabel = is181103SourceFirstQuestion
+                ? (question.qualityTier === 'show' ? '历史候选' : '回源复核')
+                : question.qualityTier === 'show'
+                    ? '默认可练'
+                    : question.qualityTier === 'hide'
                     ? '隐藏复核'
                     : question.qualityTier === 'ocr-review'
                         ? 'OCR复核'
