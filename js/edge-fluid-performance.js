@@ -136,6 +136,7 @@
 
   function prefetchLink(url, as) {
     if (constrainedNetwork()) return;
+    if (isManualDownloadAsset(url)) return;
     if (!url || document.querySelector('link[data-efu-prefetch="' + cssEscape(url) + '"]')) return;
     var link = document.createElement('link');
     link.rel = 'prefetch';
@@ -143,6 +144,16 @@
     if (as) link.as = as;
     link.setAttribute('data-efu-prefetch', url);
     document.head.appendChild(link);
+  }
+
+  function isManualDownloadAsset(url) {
+    var path = '';
+    try {
+      path = new URL(url, location.href).pathname;
+    } catch (_) {
+      path = String(url || '').split('#')[0].split('?')[0];
+    }
+    return /\.(pptx?|docx?|pdf|zip)($|[?#])/i.test(path);
   }
 
   function fetchWithTimeout(url, options, timeoutMs) {
@@ -229,6 +240,7 @@
       if (constrainedNetwork()) return;
       var href = anchor.getAttribute('href');
       if (!href || href.charAt(0) !== '/' || seen.has(href)) return;
+      if (anchor.hasAttribute('download') || anchor.dataset.noPrefetch === '1' || isManualDownloadAsset(href)) return;
       seen.add(href);
       prefetchLink(href);
       if (/formula|ultimate-beautiful-formulas|fluid-intensive-training|knowledge-detail/i.test(href) || /公式|量纲|边界/.test(anchor.textContent || '')) {
