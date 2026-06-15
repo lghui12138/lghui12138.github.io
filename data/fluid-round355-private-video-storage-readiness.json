@@ -1,0 +1,258 @@
+{
+  "version": "round355-private-video-storage-readiness-20260615",
+  "generatedAt": "2026-06-15T03:00:18.021Z",
+  "scope": {
+    "task": "Task D Round355 private-video storage readiness guidance",
+    "projectRoot": "lghui-source-private-video-work",
+    "wroteOnly": [
+      "tools/check-round355-private-video-storage-readiness.mjs",
+      "data/fluid-round355-private-video-storage-readiness.json",
+      "data/fluid-round355-private-video-storage-readiness.json.gz",
+      "docs/round355/private-video-storage-readiness.md",
+      "tests/edge-fluid-upgrade-check.js"
+    ],
+    "cloudflareMutationAttempted": false,
+    "cloudflareConfigurationChanged": false,
+    "privateVideoCourseMutationAttempted": false,
+    "uploadAttempted": false,
+    "publishAttempted": false,
+    "accessChangeAttempted": false,
+    "archiveAttempted": false,
+    "realDeleteAttempted": false,
+    "pythonUsed": false,
+    "volumesMac2TTouched": false,
+    "vpnOrProxyTouched": false
+  },
+  "artifacts": {
+    "tool": "tools/check-round355-private-video-storage-readiness.mjs",
+    "json": "data/fluid-round355-private-video-storage-readiness.json",
+    "gzip": "data/fluid-round355-private-video-storage-readiness.json.gz",
+    "doc": "docs/round355/private-video-storage-readiness.md"
+  },
+  "sourceEvidence": {
+    "files": {
+      "round347BoundaryProof": "data/fluid-round347-private-video-boundary-proof.json",
+      "round340UiActions": "data/fluid-round340-private-video-ui-actions.json",
+      "round334ManagementActions": "data/fluid-round334-private-video-management-actions.json",
+      "round325R2Remediation": "data/fluid-round325-private-video-r2-remediation.json",
+      "round305RealAccountQa": "data/fluid-round305-real-account-qa-readiness.json",
+      "round304ProductionBlockers": "data/fluid-round304-private-video-production-blockers.json",
+      "bindingChecker": "tools/check-cloudflare-pages-private-video-bindings.mjs",
+      "browserGate": "tools/check-private-video-management-browser.mjs",
+      "runbook": "docs/private-video-management-runbook.md"
+    },
+    "missingEvidence": [],
+    "versions": {
+      "round347": "round347-private-video-boundary-proof-20260615",
+      "round340": "round340-private-video-ui-actions-20260615",
+      "round334": "round334-private-video-management-actions-20260615",
+      "round325": "round325-private-video-r2-remediation-20260615",
+      "round305": "round305-real-account-qa-readiness-20260614",
+      "round304": "round304-private-video-production-blockers-20260614"
+    },
+    "currentBindingCommand": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json",
+    "currentBindingExitCode": 2
+  },
+  "diagnostics": {
+    "currentBindingRun": {
+      "command": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json",
+      "exitCode": 2,
+      "signal": null,
+      "parsed": {
+        "ok": false,
+        "projectName": "lghui-fluid-learning",
+        "production": {
+          "kvBindings": [
+            "FM_AUDIT"
+          ],
+          "r2Bindings": [],
+          "hasAuditKv": true,
+          "hasPrivateMediaR2": false
+        },
+        "preview": {
+          "kvBindings": [],
+          "r2Bindings": []
+        },
+        "message": "Cloudflare Pages production is missing FM_PRIVATE_MEDIA R2 binding; private-video upload, publish, access-change, archive, R2 fallback, and complete storage cleanup cannot be claimed recovered. Delete remains a separate limited path that requires dry-run, typed confirmation, and real-account QA."
+      },
+      "stdoutPreview": "<json>",
+      "stderrPreview": ""
+    },
+    "browserGateMentionsPrivateVideoStorage": true,
+    "runbookMentionsActionReadiness": true
+  },
+  "storageBinding": {
+    "status": "blocked-missing-fm-private-media-r2",
+    "hasAuditKv": true,
+    "hasPrivateMediaR2": false,
+    "currentAuditUsable": true,
+    "currentBindingExitCode": 2,
+    "currentBindingMessage": "Cloudflare Pages production is missing FM_PRIVATE_MEDIA R2 binding; private-video upload, publish, access-change, archive, R2 fallback, and complete storage cleanup cannot be claimed recovered. Delete remains a separate limited path that requires dry-run, typed confirmation, and real-account QA.",
+    "priorHasAuditKv": true,
+    "priorHasPrivateMediaR2": false,
+    "productionKvBindings": [
+      "FM_AUDIT"
+    ],
+    "productionR2Bindings": [],
+    "blocker": "FM_PRIVATE_MEDIA R2 is absent in the current/available proof; upload/publish, true access change, archive, and storage-backed cleanup remain blocked."
+  },
+  "actionReadiness": [
+    {
+      "id": "list",
+      "label": "列表刷新",
+      "state": "ready",
+      "sourceState": "ready",
+      "fmAuditRequired": true,
+      "fmPrivateMediaRequired": false,
+      "cloudflareMutationAttemptedHere": false,
+      "privateVideoMutationAttemptedHere": false,
+      "productionRecoveryClaimAllowed": false,
+      "reason": "Ready: list/refresh is read-only and does not need FM_PRIVATE_MEDIA writes."
+    },
+    {
+      "id": "same-access-save",
+      "label": "重复保存当前授权",
+      "state": "ready",
+      "sourceState": "ready",
+      "fmAuditRequired": true,
+      "fmPrivateMediaRequired": false,
+      "cloudflareMutationAttemptedHere": false,
+      "privateVideoMutationAttemptedHere": false,
+      "productionRecoveryClaimAllowed": false,
+      "reason": "Ready: saving the same assigned student is an idempotent no-op, not a storage recovery claim."
+    },
+    {
+      "id": "delete-dry-run",
+      "label": "删除 dry-run 预检",
+      "state": "ready",
+      "sourceState": "ready",
+      "fmAuditRequired": true,
+      "fmPrivateMediaRequired": false,
+      "cloudflareMutationAttemptedHere": false,
+      "privateVideoMutationAttemptedHere": false,
+      "productionRecoveryClaimAllowed": false,
+      "reason": "Ready: dry-run/preflight reads readiness and cleanup plan without deleting data."
+    },
+    {
+      "id": "delete-course",
+      "label": "永久删除专属课",
+      "state": "limited",
+      "sourceState": "limited",
+      "fmAuditRequired": true,
+      "fmPrivateMediaRequired": true,
+      "cloudflareMutationAttemptedHere": false,
+      "privateVideoMutationAttemptedHere": false,
+      "productionRecoveryClaimAllowed": false,
+      "reason": "Limited: the destructive path requires dry-run, exact course-id confirmation, and post-binding re-verification; this artifact performs no delete."
+    },
+    {
+      "id": "upload-publish",
+      "label": "上传/发布专属课",
+      "state": "blocked",
+      "sourceState": "blocked",
+      "fmAuditRequired": true,
+      "fmPrivateMediaRequired": true,
+      "cloudflareMutationAttemptedHere": false,
+      "privateVideoMutationAttemptedHere": false,
+      "productionRecoveryClaimAllowed": false,
+      "reason": "上传/发布专属课 is blocked until FM_PRIVATE_MEDIA R2 is bound in production and verified."
+    },
+    {
+      "id": "change-access",
+      "label": "改授权学生",
+      "state": "blocked",
+      "sourceState": "blocked",
+      "fmAuditRequired": true,
+      "fmPrivateMediaRequired": true,
+      "cloudflareMutationAttemptedHere": false,
+      "privateVideoMutationAttemptedHere": false,
+      "productionRecoveryClaimAllowed": false,
+      "reason": "改授权学生 is blocked until FM_PRIVATE_MEDIA R2 is bound in production and verified."
+    },
+    {
+      "id": "archive-course",
+      "label": "下架专属课",
+      "state": "blocked",
+      "sourceState": "blocked",
+      "fmAuditRequired": true,
+      "fmPrivateMediaRequired": true,
+      "cloudflareMutationAttemptedHere": false,
+      "privateVideoMutationAttemptedHere": false,
+      "productionRecoveryClaimAllowed": false,
+      "reason": "下架专属课 is blocked until FM_PRIVATE_MEDIA R2 is bound in production and verified."
+    }
+  ],
+  "summary": {
+    "ready": 3,
+    "limited": 1,
+    "blocked": 3
+  },
+  "operatorNextSteps": [
+    {
+      "id": "confirm-readiness-artifact",
+      "owner": "operator",
+      "requiredBeforeRecoveryClaim": true,
+      "command": "node tools/check-round355-private-video-storage-readiness.mjs --write --json",
+      "expected": "ok=true with FM_AUDIT present and FM_PRIVATE_MEDIA blocker visible."
+    },
+    {
+      "id": "bind-fm-private-media-r2",
+      "owner": "Cloudflare dashboard operator",
+      "requiredBeforeRecoveryClaim": true,
+      "action": "Cloudflare dashboard -> Workers & Pages -> Pages project lghui-fluid-learning -> Settings -> Bindings -> Production -> Add R2 bucket binding -> Variable name FM_PRIVATE_MEDIA -> select the production private-media bucket -> Save.",
+      "credentials": "Do not write credentials into repo artifacts or chat. Use the operator account already authorized for Cloudflare dashboard changes."
+    },
+    {
+      "id": "redeploy-after-binding",
+      "owner": "release operator",
+      "requiredAfterBinding": true,
+      "command": "npx wrangler pages deploy <OUTPUT_DIR> --project-name=lghui-fluid-learning",
+      "note": "Run only after the dashboard binding is saved and the intended output directory is selected by the release operator."
+    },
+    {
+      "id": "verify-production-binding",
+      "owner": "release operator",
+      "requiredAfterBinding": true,
+      "command": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json",
+      "expected": "production.hasAuditKv=true and production.hasPrivateMediaR2=true."
+    },
+    {
+      "id": "rerun-real-private-video-browser-gate",
+      "owner": "release operator",
+      "requiredAfterBinding": true,
+      "command": "NODE_PATH=<codex primary runtime node_modules> node tools/check-private-video-management-browser.mjs --production --json",
+      "expected": "Real teacher/student QA proves the storage-backed paths without printing credentials."
+    },
+    {
+      "id": "only-then-reclassify-storage-actions",
+      "owner": "release reviewer",
+      "requiredAfterBinding": true,
+      "action": "Only after the binding audit and real browser gate both pass, revisit upload-publish/change-access/archive/delete cleanup readiness. Until then, keep productionRecoveryAllowed=false.",
+      "currentBlocker": "FM_PRIVATE_MEDIA R2 is absent in the current/available proof; upload/publish, true access change, archive, and storage-backed cleanup remain blocked."
+    }
+  ],
+  "claims": {
+    "fmAuditPresent": true,
+    "fmPrivateMediaAbsentUnlessCurrentAuditProvesBound": true,
+    "listReady": true,
+    "sameAccessReady": true,
+    "deleteDryRunReady": true,
+    "deleteCourseLimited": true,
+    "uploadPublishBlocked": true,
+    "changeAccessBlocked": true,
+    "archiveBlocked": true,
+    "productionRecoveryAllowed": false,
+    "productionStorageRecoveryClaimed": false,
+    "r2RepairClaimed": false
+  },
+  "verificationCommands": [
+    "node --check tools/check-round355-private-video-storage-readiness.mjs",
+    "node tools/check-round355-private-video-storage-readiness.mjs --write --json",
+    "node tests/edge-fluid-upgrade-check.js"
+  ],
+  "acceptance": {
+    "pass": true,
+    "meaning": "Round355 makes the missing FM_PRIVATE_MEDIA storage blocker explicit while preserving ready/limited/blocked action boundaries and avoiding production recovery claims."
+  },
+  "noSecretsPrinted": true
+}
