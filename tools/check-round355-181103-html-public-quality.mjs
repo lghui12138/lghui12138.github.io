@@ -4,7 +4,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
-const version = 'round355-181103-html-public-quality-20260615';
+const version = 'round356-181103-workbook-html-ocr-clean-20260615';
 const jsonRel = 'data/fluid-round355-181103-html-public-quality.json';
 const gzipRel = `${jsonRel}.gz`;
 const docRel = 'docs/round355/181103-html-public-quality.md';
@@ -64,6 +64,9 @@ const payload = {
     htmlFilesChecked: 1 + materialRows.length,
     pagesWithImages: materialRows.filter((row) => row.imageRefs > 0).length,
     totalImageRefs: materialRows.reduce((sum, row) => sum + row.imageRefs, 0),
+    eagerImageRefs: materialRows.reduce((sum, row) => sum + row.eagerImageRefs, 0),
+    lazyImageRefs: materialRows.reduce((sum, row) => sum + row.lazyImageRefs, 0),
+    largeEagerImageRiskPages: materialRows.filter((row) => row.largeEagerImageRisk).length,
     missingImageRefs: materialRows.reduce((sum, row) => sum + row.missingImages.length, 0),
     emptyOrThinPages: materialRows.filter((row) => row.emptyOrThin).length,
     visibleOldRound315Mentions: indexRow.visibleOldRound315Mentions + materialRows.reduce((sum, row) => sum + row.visibleOldRound315Mentions, 0),
@@ -84,7 +87,7 @@ const payload = {
   failures,
   acceptance: {
     pass: failures.length === 0,
-    meaning: 'All 38 181103 resources must be visible as direct in-site HTML pages, with non-empty page content, no repeated question-mark garbling, no replacement characters, no stale Round315 current links, no binary download hrefs, and no local path leaks.'
+    meaning: 'All 38 181103 resources must be visible as direct in-site HTML pages, with non-empty page content, no repeated question-mark garbling, no replacement characters, no stale Round315 current links, no binary download hrefs, no local path leaks, and lazy image loading for large page-image workbooks.'
   },
   artifacts: {
     tool: 'tools/check-round355-181103-html-public-quality.mjs',
@@ -107,7 +110,7 @@ if (args.write) {
 
 if (args.json) process.stdout.write(`${JSON.stringify(payload, null, 2)}\n`);
 else {
-  console.log(`${payload.ok ? 'PASS' : 'FAIL'} ${version}: html=${payload.summary.materialHtmlPages}/38, images=${payload.summary.totalImageRefs}, oldRound315=${payload.summary.visibleOldRound315Mentions}, questionRunPages=${payload.summary.questionRunPages}, failures=${payload.summary.failCount}`);
+  console.log(`${payload.ok ? 'PASS' : 'FAIL'} ${version}: html=${payload.summary.materialHtmlPages}/38, images=${payload.summary.totalImageRefs}, lazy=${payload.summary.lazyImageRefs}, oldRound315=${payload.summary.visibleOldRound315Mentions}, questionRunPages=${payload.summary.questionRunPages}, failures=${payload.summary.failCount}`);
   for (const failure of failures.slice(0, 30)) console.log(`- ${failure.id}: ${failure.failure}`);
 }
 process.exitCode = payload.ok ? 0 : 1;
@@ -127,8 +130,18 @@ function inspectHtml(id, title, rel, options = {}) {
   const text = visibleText(html);
   const dir = htmlExists ? path.dirname(abs) : '';
   const hrefs = [...html.matchAll(/\bhref=["']([^"']+)["']/gi)].map((match) => match[1]);
-  const imageRefs = [...html.matchAll(/<img\b[^>]*\bsrc=["']([^"']+)["']/gi)].map((match) => match[1]);
-  const localImageRefs = imageRefs.filter((src) => !/^https?:/i.test(src) && !/^data:/i.test(src));
+  const imageTags = [...html.matchAll(/<img\b[^>]*>/gi)].map((match) => match[0]);
+  const imageRows = imageTags
+    .map((tag) => {
+      const src = tag.match(/\bsrc=["']([^"']+)["']/i)?.[1] || '';
+      return { tag, src };
+    })
+    .filter((row) => row.src && !/^https?:/i.test(row.src) && !/^data:/i.test(row.src));
+  const localImageRefs = imageRows.map((row) => row.src);
+  const eagerImageRefs = imageRows.filter((row) => /\bloading=["']eager["']/i.test(row.tag)).length;
+  const lazyImageRefs = imageRows.filter((row) => /\bloading=["']lazy["']/i.test(row.tag)).length;
+  const missingLoadingRefs = imageRows.length - eagerImageRefs - lazyImageRefs;
+  const largeEagerImageRisk = imageRows.length >= 80 && eagerImageRefs > 6;
   const missingImages = localImageRefs.filter((src) => !fs.existsSync(path.join(dir, src.split(/[?#]/)[0])));
   const binaryHrefs = hrefs.filter((href) => /\.(?:pdf|docx?|pptx?|zip)(?:[?#]|$)/i.test(href));
   const localPathLeaks = [...html.matchAll(/(?:\/Users\/|\/Volumes\/|file:\/\/)/g)].length;
@@ -151,6 +164,8 @@ function inspectHtml(id, title, rel, options = {}) {
   if (localPathLeaks) failures.push(`local path leaks: ${localPathLeaks}`);
   if (iframeEmbedObjectCount) failures.push(`viewer/embed shell elements: ${iframeEmbedObjectCount}`);
   if (missingImages.length) failures.push(`missing image refs: ${missingImages.slice(0, 3).join(', ')}`);
+  if (missingLoadingRefs) failures.push(`image loading attrs missing: ${missingLoadingRefs}`);
+  if (largeEagerImageRisk) failures.push(`large workbook eager image risk: images=${imageRows.length}, eager=${eagerImageRefs}, lazy=${lazyImageRefs}`);
 
   return {
     id,
@@ -162,6 +177,10 @@ function inspectHtml(id, title, rel, options = {}) {
     textLength: text.length,
     cjkChars: (text.match(/[\u4e00-\u9fff]/g) || []).length,
     imageRefs: localImageRefs.length,
+    eagerImageRefs,
+    lazyImageRefs,
+    missingLoadingRefs,
+    largeEagerImageRisk,
     missingImages,
     binaryHrefCount: binaryHrefs.length,
     localPathLeakCount: localPathLeaks,
@@ -249,7 +268,7 @@ function renderMarkdown(report) {
   const badRows = report.failures.length
     ? report.failures.map((row) => `| ${row.id} | ${row.title} | ${row.failure} |`).join('\n')
     : '| none | none | none |';
-  const rows = report.materialRows.map((row) => `| ${row.id} | ${row.kind} | ${row.pass ? 'PASS' : 'FAIL'} | ${row.textLength} | ${row.imageRefs} | ${row.maxQuestionRun} | ${row.visibleOldRound315Mentions} |`).join('\n');
+  const rows = report.materialRows.map((row) => `| ${row.id} | ${row.kind} | ${row.pass ? 'PASS' : 'FAIL'} | ${row.textLength} | ${row.imageRefs} | ${row.eagerImageRefs} | ${row.lazyImageRefs} | ${row.maxQuestionRun} | ${row.visibleOldRound315Mentions} |`).join('\n');
   return `# Round355 181103 HTML Public Quality
 
 Version: \`${report.version}\`
@@ -260,6 +279,8 @@ Version: \`${report.version}\`
 - Manifest materials: ${report.summary.manifestMaterials}/38
 - Material HTML pages: ${report.summary.materialHtmlPages}/38
 - Image refs: ${report.summary.totalImageRefs}
+- Image loading eager/lazy: ${report.summary.eagerImageRefs}/${report.summary.lazyImageRefs}
+- Large eager-image risk pages: ${report.summary.largeEagerImageRiskPages}
 - Missing images: ${report.summary.missingImageRefs}
 - Empty/thin pages: ${report.summary.emptyOrThinPages}
 - Visible old Round315 mentions: ${report.summary.visibleOldRound315Mentions}
@@ -277,8 +298,8 @@ ${badRows}
 
 ## Material Rows
 
-| id | kind | status | text | images | max ? run | visible old Round315 |
-|---|---|---|---:|---:|---:|---:|
+| id | kind | status | text | images | eager | lazy | max ? run | visible old Round315 |
+|---|---|---|---:|---:|---:|---:|---:|---:|
 ${rows}
 `;
 }
