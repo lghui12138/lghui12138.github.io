@@ -125,6 +125,8 @@ const runtimeCopies = [
   ['data/fluid-upgrade-roadmap-100.json.gz', 'data/fluid-upgrade-roadmap-100.json.gz'],
   ['data/fluid-round278-pdf-web-year-compare.json', 'data/fluid-round278-pdf-web-year-compare.json'],
   ['data/fluid-round278-pdf-web-year-compare.json.gz', 'data/fluid-round278-pdf-web-year-compare.json.gz'],
+  ['data/fluid-round374-181103-reference-answer-display.json', 'data/fluid-round374-181103-reference-answer-display.json'],
+  ['data/fluid-round374-181103-reference-answer-display.json.gz', 'data/fluid-round374-181103-reference-answer-display.json.gz'],
   ['data/fluid-real-exam-source-granularity-audit.json', 'data/fluid-real-exam-source-granularity-audit.json'],
   ['data/fluid-real-exam-source-granularity-audit.json.gz', 'data/fluid-real-exam-source-granularity-audit.json.gz'],
   ['data/fluid-round280-real-exam-integrity-board.json', 'data/fluid-round280-real-exam-integrity-board.json'],
