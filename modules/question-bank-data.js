@@ -906,14 +906,18 @@ window.QuestionBankData = (function() {
                 : `<button class="btn btn-success" onclick="QuestionBankData.quickTest('${bank.id}')"><i class="fas fa-rocket"></i> 快速测试</button>`;
             const defaultPracticeCount = Number(bank.defaultPracticeQuestionCount ?? bank.questionCount ?? bank.qualityShowCount ?? 0);
             const sourceFirstCount = Number(bank.sourceFirstReviewQuestionCount ?? bank.questionCount ?? 0);
+            const htmlQuestionCount = Number(bank.htmlQuestionFieldCount ?? bank.htmlQuestionCardCount ?? bank.materialHtmlQuestionCardCount ?? defaultPracticeCount);
+            const highConfidenceCount = Number(bank.round371HighConfidenceQuestionCount ?? 0);
+            const lowConfidenceCount = Number(bank.round371LowConfidenceQuestionCount ?? 0);
+            const placeholderCount = Number(bank.unreadablePracticeQuestionCount ?? 0);
             const qualitySummary = bank.id === '181103-material-extracted'
                 ? `<div class="qb-quality-ledger" data-181103-quality-ledger="1" style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap;font-size:.82em;">
                     <span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:999px;">可刷题 ${defaultPracticeCount}</span>
-                    <span style="background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:999px;">来源页图 ${sourceFirstCount}</span>
-                    <span style="background:#e0f2fe;color:#075985;padding:3px 8px;border-radius:999px;">原 OCR show ${bank.qualityShowCount || 0}</span>
-                    <span style="background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:999px;">OCR池 ${bank.qualityOcrReviewCount || 0}</span>
-                    <span style="background:#fee2e2;color:#991b1b;padding:3px 8px;border-radius:999px;">hidden提示 ${bank.qualityHideCount || 0}</span>
-                    <span style="background:#e0f2fe;color:#075985;padding:3px 8px;border-radius:999px;">题面内置页图</span>
+                    <span style="background:#e0f2fe;color:#075985;padding:3px 8px;border-radius:999px;">HTML题面 ${htmlQuestionCount}</span>
+                    <span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:999px;">高置信 ${highConfidenceCount}</span>
+                    <span style="background:#fee2e2;color:#991b1b;padding:3px 8px;border-radius:999px;">低置信 ${lowConfidenceCount}</span>
+                    <span style="background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:999px;">来源证据 ${sourceFirstCount}</span>
+                    <span style="background:#e0f2fe;color:#075985;padding:3px 8px;border-radius:999px;">纯占位 ${placeholderCount}</span>
                     <span style="background:#ede9fe;color:#5b21b6;padding:3px 8px;border-radius:999px;">重复簇 ${bank.duplicateGroupCount || 0}</span>
                   </div>`
                 : '';
@@ -1323,6 +1327,18 @@ window.QuestionBankData = (function() {
                 const reviewCount = isMaterial181103
                     ? questions.filter(q => q && q.sourceFirstReview === true).length
                     : questions.filter(q => q && q.defaultVisible !== true).length;
+                const htmlQuestionCount = isMaterial181103
+                    ? questions.filter(q => q && (q.questionHtml || q.promptHtml)).length
+                    : 0;
+                const highConfidenceCount = isMaterial181103
+                    ? questions.filter(q => q && q.questionTextConfidence === 'high').length
+                    : 0;
+                const lowConfidenceCount = isMaterial181103
+                    ? questions.filter(q => q && q.questionTextConfidence === 'low').length
+                    : 0;
+                const placeholderCount = isMaterial181103
+                    ? questions.filter(q => q && !(q.questionHtml || q.promptHtml)).length
+                    : 0;
                 const defaultButtonStyle = defaultPracticeQuestions.length
                     ? 'width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 10px;'
                     : 'width: 100%; padding: 10px; background: #9ca3af; color: white; border: none; border-radius: 5px; cursor: not-allowed; margin-bottom: 10px;';
@@ -1359,7 +1375,7 @@ window.QuestionBankData = (function() {
                     <p style="margin: 0 0 20px 0; color: #666;">题库: ${bank.name} (共${questions.length}题)</p>
                     ${isMaterial181103 ? `
                     <div data-181103-practice-quality-panel="1" style="margin:0 0 18px 0;padding:12px 14px;border:1px solid #fde68a;background:#fffbeb;color:#78350f;border-radius:10px;line-height:1.55;">
-                        181103 资料内 ${questions.length} 题全部进入可刷题模式；每题题面内置来源 HTML 页图/锚点入口，${reviewCount} 道题保留 source-first 质量提示，OCR 文本不可靠处只作定位辅助。
+                        181103 资料内 ${questions.length} 题已生成 ${htmlQuestionCount} 条 HTML 题面；${highConfidenceCount} 题为高置信文本，${lowConfidenceCount} 题仍需逐题核对，来源 HTML/页图只作证据，非题面替代；无 HTML 题面占位 ${placeholderCount} 题。
                     </div>` : ''}
 
                     <div style="margin-bottom: 20px;">
@@ -1370,7 +1386,7 @@ window.QuestionBankData = (function() {
                         </button>
                         ${isMaterial181103 ? `<button data-181103-practice-all="1" onclick="QuestionBankData.startAllMaterialPractice('${bank.id}')"
                                 style="width: 100%; padding: 10px; background: #7c3aed; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                            来源页图模式刷全部 ${questions.length} 题
+                            HTML题面刷全部 ${questions.length} 题
                         </button>` : ''}
                     </div>
 
@@ -1477,7 +1493,7 @@ window.QuestionBankData = (function() {
                 ? bankData.defaultPracticeQuestions
                 : bankData.questions;
             if (bankData.bank && bankData.bank.id === '181103-material-extracted' && (!bankData.defaultPracticeQuestions || bankData.defaultPracticeQuestions.length === 0)) {
-                showNotification('181103 随机练习使用 522 题来源页图模式。', 'info');
+                showNotification('181103 随机练习使用 522 题 HTML 题面；来源页仅作核对证据。', 'info');
             }
             const randomQuestions = this.getRandomQuestions(pool, count);
             
@@ -1632,7 +1648,7 @@ window.QuestionBankData = (function() {
             const has181103Material = questions.some(question => question && question.extractedFromMaterial === true
                 && /\/resources\/fluid-181103-html\/materials\//.test(String(question.sourceHtmlUrl || '')));
             if (has181103Material) {
-                return questions.filter(question => question && typeof question === 'object' && question.sourceHtmlUrl);
+                return questions.filter(question => question && typeof question === 'object' && (question.questionHtml || question.promptHtml));
             }
             const visible = questions.filter(question => {
                 if (!question || typeof question !== 'object') return false;

@@ -68,60 +68,96 @@ window.QuestionBankPractice = (function() {
             question.question,
             question.title,
             question.answer,
-            question.explanation,
+            question.explanation
+        ].filter(Boolean).join('\n');
+        const metaText = [
             flags,
             reviewReason
         ].filter(Boolean).join('\n');
+        const badTextPattern = /round356-default-practice-blocked|embedded-equation-placeholder|font-table-noise|low-ocr-score|latin-symbol-noise|EMBED\s+Equation|DSMT4|high-resolution\s+ja\s+JP|501\s+501\s+\d{4,}|[�□■]|\?{2,}/i;
+        const sourcePageCorrected = /^manual-source-page-correction-round371-(high|medium)$/.test(String(question.questionTextSource || ''))
+            && /^(high|medium)$/.test(String(question.manualCorrectionConfidence || question.questionTextConfidence || ''))
+            && question.semanticReviewRequired !== true
+            && !badTextPattern.test(text);
+        if (sourcePageCorrected) return false;
+        if (question.questionTextConfidence === 'high' && /verified/.test(String(question.questionTextSource || '')) && !badTextPattern.test(text)) {
+            return false;
+        }
         return is181103Material && (
-            question.qualityTier === 'ocr-review'
+            question.semanticReviewRequired === true
+            || question.questionTextConfidence === 'low'
+            || question.qualityTier === 'ocr-review'
             || question.qualityTier === 'hide'
             || question.defaultHidden === true
-            || /round356-default-practice-blocked|embedded-equation-placeholder|font-table-noise|low-ocr-score|latin-symbol-noise|EMBED\s+Equation|DSMT4|high-resolution\s+ja\s+JP|501\s+501\s+\d{4,}|[�□■]|\?{2,}/i.test(text)
+            || badTextPattern.test(text)
+            || badTextPattern.test(metaText)
         );
     }
 
-    function sourceImageFromHtmlUrl(sourceHtmlUrl) {
+    function sourceImageFromQuestion(question) {
+        const explicit = String(question && question.sourcePageImageUrl || '').trim();
+        if (explicit) return explicit;
+        const sourceHtmlUrl = question && question.sourceHtmlUrl;
         const raw = String(sourceHtmlUrl || '').trim();
         const match = raw.match(/^(.*\/materials\/[^/]+\/)index\.html#page-(\d{1,4})$/);
         if (!match) return '';
         return `${match[1]}pages${match[2].padStart(3, '0')}.jpg`;
     }
 
-    function formatQuestionBody(question) {
-        const rawText = String((question && (question.question || question.title)) || '题目内容');
-        const cleaned = rawText
-            .replace(/EMBED\s+Equation(?:\.[A-Za-z0-9]+)?/gi, '\\(\\text{公式见来源页图}\\)')
-            .replace(/EMBED\s+Equation\.DSMT4/gi, '\\(\\text{公式见来源页图}\\)')
-            .replace(/501\s+501\s+\d{3,}\s+\d{3,}\s+0\s+0\s+\d+\s+\d+\s+1\s+0\s+1\s+high-resolution\s+ja\s+JP[\s\S]{0,260}/gi, '【字体/OCR噪声已隐藏，请打开来源 HTML 页图复核】');
-        const body = escapeHtml(cleaned)
+    function hasUnsafeInlineHtml(value) {
+        return /<\s*script\b|on[a-z]+\s*=|javascript:/i.test(String(value || ''));
+    }
+
+    function formatTextAsHtml(value) {
+        const cleaned = String(value == null ? '' : value)
+            .replace(/EMBED\s+Equation(?:\.[A-Za-z0-9]+)?/gi, '\\(\\text{公式待复核}\\)')
+            .replace(/EMBED\s+Equation\.DSMT4/gi, '\\(\\text{公式待复核}\\)')
+            .replace(/501\s+501\s+\d{3,}\s+\d{3,}\s+0\s+0\s+\d+\s+\d+\s+1\s+0\s+1\s+high-resolution\s+ja\s+JP[\s\S]{0,260}/gi, '【字体/OCR噪声已隐藏，请查看来源 HTML 核对】');
+        return escapeHtml(cleaned)
             .replace(/\r\n?/g, '\n')
             .replace(/\n{3,}/g, '\n\n')
             .replace(/\n/g, '<br>');
+    }
+
+    function getQuestionHtml(question) {
+        const explicit = String((question && (question.questionHtml || question.promptHtml)) || '').trim();
+        if (explicit && !hasUnsafeInlineHtml(explicit)) return explicit;
+        return formatTextAsHtml((question && (question.question || question.title)) || '题目内容');
+    }
+
+    function formatQuestionBody(question) {
+        const body = getQuestionHtml(question);
         if (question && question.extractedFromMaterial) {
             const sourceHref = escapeHtml(question.sourceHtmlUrl || '/resources/fluid-181103-html/index.html');
-            const sourceImage = sourceImageFromHtmlUrl(question.sourceHtmlUrl || '');
+            const sourceImage = sourceImageFromQuestion(question);
+            const confidence = escapeHtml(question.questionTextConfidence || 'needs-review');
+            const sourceLabel = question.questionTextConfidence === 'high' ? '高置信 HTML 题面' : question.questionTextConfidence === 'medium' ? '中置信 HTML 题面' : '待复核 HTML 题面';
             const sourceImageHtml = sourceImage ? `
-                <figure data-181103-source-page-image="1" style="margin:14px 0 0;padding:10px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;">
-                    <img src="${escapeHtml(sourceImage)}" alt="181103 来源页图" loading="eager" decoding="async" style="display:block;width:100%;max-height:72vh;object-fit:contain;border-radius:8px;background:#fff;">
-                    <figcaption style="margin-top:8px;color:#64748b;font-size:.85em;">来源页图预览；题面、图和公式以此为准。</figcaption>
-                </figure>` : `
+                <details data-181103-source-page-image="1" style="margin-top:12px;">
+                    <summary style="cursor:pointer;font-weight:800;color:#0f766e;">展开来源页图核对证据</summary>
+                    <figure style="margin:10px 0 0;padding:10px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;">
+                        <img src="${escapeHtml(sourceImage)}" alt="181103 来源页图核对证据" loading="lazy" decoding="async" style="display:block;width:100%;max-height:72vh;object-fit:contain;border-radius:8px;background:#fff;">
+                        <figcaption style="margin-top:8px;color:#64748b;font-size:.85em;">来源页图仅用于逐题核对，不替代上方 HTML 题面。</figcaption>
+                    </figure>
+                </details>` : `
                 <div data-181103-source-anchor-fallback="1" style="margin-top:10px;padding:10px 12px;border:1px dashed #38bdf8;border-radius:10px;background:#f8fafc;color:#075985;font-weight:700;">
-                    本题定位到来源 HTML 正文锚点；请打开来源 HTML 页图/锚点核对原文后作答。
+                    本题定位到来源 HTML 正文锚点；可打开来源 HTML 核对原文。
                 </div>`;
-            const garbleNote = hasOcrGarbleQuestion(question)
-                ? '<div style="margin-top:6px;font-weight:800;color:#9a3412;">检测到 OCR/公式噪声：请以来源页图/锚点为准，OCR 摘录只用于定位。</div>'
+            const needsSourceFirst = hasOcrGarbleQuestion(question);
+            const garbleNote = needsSourceFirst
+                ? '<div style="margin-top:8px;font-weight:800;color:#9a3412;">这题仍标记为待复核；HTML 题面继续完整显示，来源页只作逐题核对证据。</div>'
                 : '';
             return `
-                <div data-round356-ocr-source-first="1" data-181103-practice-source-backed="1" style="margin-bottom:18px;padding:14px 16px;border:1px solid #bae6fd;background:#f0f9ff;color:#075985;border-radius:12px;font-size:.72em;line-height:1.55;">
-                    这道 181103 资料题已进入可刷题模式；题面、图和公式以来源 HTML 页图/锚点为准，OCR 摘录用于快速定位。
+                <section data-181103-html-question-body="1" style="margin-bottom:18px;padding:18px 20px;border:2px solid #0f766e;background:#ecfdf5;color:#064e3b;border-radius:14px;line-height:1.8;">
+                    <strong style="display:block;margin-bottom:10px;font-size:.86em;color:#047857;">HTML 题面</strong>
+                    <div>${body}</div>
+                </section>
+                <div data-round372-html-question-source-evidence="1" data-181103-practice-source-backed="1" style="margin-bottom:18px;padding:14px 16px;border:1px solid #bae6fd;background:#f0f9ff;color:#075985;border-radius:12px;font-size:.78em;line-height:1.6;">
+                    这道 181103 资料题使用 ${sourceLabel}（${confidence}）；来源 HTML/页图只作核对证据。
                     ${garbleNote}
-                    <div style="margin-top:10px;"><a href="${sourceHref}" style="font-weight:800;color:#0f766e;">打开来源 HTML 页图/锚点</a></div>
+                    <div style="margin-top:10px;"><a href="${sourceHref}" target="_blank" rel="noopener" style="font-weight:800;color:#0f766e;">打开来源 HTML 核对页</a></div>
                     ${sourceImageHtml}
                 </div>
-                <section data-181103-ocr-excerpt="1" style="margin-bottom:18px;padding:12px 14px;border:1px dashed #cbd5e1;border-radius:10px;background:#f8fafc;font-size:.78em;line-height:1.65;color:#334155;">
-                    <strong style="display:block;margin-bottom:8px;">OCR 题面摘录</strong>
-                    <div style="margin-top:10px;">${body}</div>
-                </section>
             `;
         }
         return body;
@@ -1372,13 +1408,13 @@ window.QuestionBankPractice = (function() {
             const is181103SourceFirstQuestion = question.extractedFromMaterial === true
                 && (question.sourceFirstReview === true || String(question.sourceHtmlUrl || '').includes('/resources/fluid-181103-html/materials/'));
             const qualityLabel = is181103SourceFirstQuestion
-                ? (question.qualityTier === 'show' ? 'source-first提示' : question.qualityTier === 'hide' ? 'hidden提示' : 'OCR回源提示')
+                ? (question.questionTextConfidence === 'high' ? '高置信 HTML 题面' : question.questionTextConfidence === 'medium' ? '中置信 HTML 题面' : '待复核 HTML 题面')
                 : question.qualityTier === 'show'
                     ? '默认可练'
                     : question.qualityTier === 'hide'
                     ? '隐藏复核'
                     : question.qualityTier === 'ocr-review'
-                        ? 'OCR复核'
+                        ? 'HTML题面复核'
                         : '';
             const sourceHtmlUrl = String(question.sourceHtmlUrl || '').trim();
             const questionBodyHTML = formatQuestionBody(question);
@@ -1388,9 +1424,9 @@ window.QuestionBankPractice = (function() {
                     ${qualityLabel ? `<span style="display:inline-flex;margin-left:8px;padding:2px 8px;border-radius:999px;background:#ede9fe;color:#5b21b6;font-size:.85em;">${escapeHtml(qualityLabel)}</span>` : ''}
                     ${Number.isFinite(Number(question.ocrQualityScore)) ? `<span style="display:inline-flex;margin-left:6px;padding:2px 8px;border-radius:999px;background:#e0f2fe;color:#075985;font-size:.85em;">质量分 ${escapeHtml(question.ocrQualityScore)}</span>` : ''}
                     ${question.duplicateGroupId ? `<span style="display:inline-flex;margin-left:6px;padding:2px 8px;border-radius:999px;background:#fee2e2;color:#991b1b;font-size:.85em;">重复簇 ${escapeHtml(question.duplicateGroupId)}</span>` : ''}
-                    <div style="margin-top:8px;">${escapeHtml(question.qualityNote || '请结合来源 HTML/OCR 页复核题干。')}</div>
-                    ${hasOcrGarbleQuestion(question) ? '<div style="margin-top:6px;font-weight:700;color:#9a3412;">OCR/公式文本可能不可靠；本题仍在 522 可刷题入口中，请先打开来源 HTML 页图/锚点核对。</div>' : ''}
-                    ${sourceHtmlUrl ? `<a href="${escapeHtml(sourceHtmlUrl)}" target="_blank" rel="noopener" style="display:inline-flex;margin-top:8px;color:#2563eb;font-weight:700;">打开来源 HTML 页图/锚点</a>` : ''}
+                    <div style="margin-top:8px;">${escapeHtml(question.qualityNote || 'HTML 题面已直接显示；来源页仅用于复核。')}</div>
+                    ${hasOcrGarbleQuestion(question) ? '<div style="margin-top:6px;font-weight:700;color:#9a3412;">本题仍需逐条复核，但不会退回图片/PDF 占位；请以上方 HTML 题面作答，再用来源页核对。</div>' : ''}
+                    ${sourceHtmlUrl ? `<a href="${escapeHtml(sourceHtmlUrl)}" target="_blank" rel="noopener" style="display:inline-flex;margin-top:8px;color:#2563eb;font-weight:700;">打开来源 HTML 核对页</a>` : ''}
                 </div>
             ` : '';
             
