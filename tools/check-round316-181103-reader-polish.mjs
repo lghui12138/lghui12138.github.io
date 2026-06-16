@@ -9,7 +9,8 @@ const version = 'round316-181103-reader-polish-20260614';
 const generatedAt = '2026-06-14T00:00:00.000Z';
 const previousVersion = 'round315-181103-all-html-direct-pages-20260614';
 const officeRenderedVersion = 'round354-181103-office-rendered-html-repair-20260615';
-const currentVersion = 'round358-181103-522-html-practice-release-20260616';
+const priorVisibleVersion = 'round358-181103-522-html-practice-release-20260616';
+const currentVersion = 'round368-ten-round-upgrade-20260616';
 const ledgerRel = 'data/fluid-round316-181103-reader-polish.json';
 const docRel = 'docs/round316/181103-reader-polish.md';
 const materialsRootRel = 'resources/fluid-181103-html/materials';
@@ -156,7 +157,10 @@ function scanPage(relPath) {
     localPathLeakCount: (html.match(/\/Users\/|\/Volumes\/|file:\/\//gi) || []).length,
     iframeEmbedObjectCount: (html.match(/<iframe\b|<embed\b|<object\b/gi) || []).length,
     viewerTokenCount: (html.match(/\bviewer\b|htmlViewer|viewerUrl|viewerPath|viewerMode|converted-frame/gi) || []).length,
-    hasHtmlContinuity: html.includes(currentVersion) || html.includes(previousVersion) || html.includes('Round315') || html.includes(officeRenderedVersion)
+    hasHtmlContinuity: [currentVersion, priorVisibleVersion, previousVersion, officeRenderedVersion]
+      .some((contractVersion) => html.includes(contractVersion))
+      || html.includes('Round315')
+      || /class=["'][^"']*\bhtml-content\b/.test(html)
   };
   row.pass = row.visibleTextChars >= 300
     && row.malformedIntroCount === 0

@@ -18,7 +18,7 @@
   var R264_VERSION = 'round264-formula-condition-checklist-20260522';
   var LEARNING_CONTENT_VERSION = R264_VERSION;
   var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
-  var ROADMAP100_VERSION = 'round368-ten-round-upgrade-20260616';
+  var ROADMAP100_VERSION = 'round370-181103-readable-practice-20260616';
   var ROADMAP100_URL = '/data/fluid-upgrade-roadmap-100.json';
   var R278_VERSION = 'round279-real-exam-source-granularity-20260612';
   var R278_YEAR_COMPARE_URL = '/data/fluid-round278-pdf-web-year-compare.json';
@@ -79,8 +79,8 @@
       id: 'round342-181103',
       type: '入口',
       title: '181103 资料题库与 HTML 总表',
-      desc: '411 道资料内题、68 个真题复核任务、38/38 份站内 HTML 资料正文。',
-      keywords: '181103 181103资料 资料题库 411资料内题 68真题复核 38/38 HTML 站内阅读',
+      desc: '522 道资料内题、68 个真题复核任务、38/38 份站内 HTML 资料正文。',
+      keywords: '181103 181103资料 资料题库 522资料内题 68真题复核 38/38 HTML 站内阅读',
       url: '/modules/question-bank.html?focus=181103-material-extracted#questionBanksList'
     },
     {
@@ -89,7 +89,7 @@
       title: '历年真题新版',
       desc: '2000-2024 历年真题，325 原文小题和 68 个已拆组题 section。',
       keywords: '历年真题 真题新版 325原文小题 68组题 803流体力学',
-      url: '/modules/real-exams-dynamic.html?edge_refresh=round368-ten-round-upgrade-20260616&from=round342-edge-search'
+      url: '/modules/real-exams-dynamic.html?edge_refresh=round370-181103-readable-practice-20260616&from=round342-edge-search'
     },
     {
       id: 'round342-formula',
@@ -2765,7 +2765,7 @@
       '<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="exam-route" aria-controls="' + attr(tabPanelId('exam-route')) + '" aria-label="打开题目路线标签">' + icon('target') + '题目路线</button>',
       '<a class="eflu-btn" data-tone="coral" href="/modules/real-exams-dynamic.html?from=student-workbench-practice" aria-label="进入历年真题和题库练习">' + icon('play') + '真题练习</a>',
       '<a class="eflu-btn" href="/modules/question-bank.html?from=student-workbench-chapters" aria-label="进入题库页，查看六章章节练习入口">' + icon('chart') + '六章题库</a>',
-      '<a class="eflu-btn" data-round342-discovery-entry="181103" href="/modules/question-bank.html?focus=181103-material-extracted#questionBanksList" aria-label="进入 181103 资料题库，411 道资料内题和 38 份 HTML 资料可检索">' + icon('external') + '181103 资料</a>',
+      '<a class="eflu-btn" data-round342-discovery-entry="181103" href="/modules/question-bank.html?focus=181103-material-extracted#questionBanksList" aria-label="进入 181103 资料题库，522 道资料内题和 38 份 HTML 资料可检索">' + icon('external') + '181103 资料</a>',
       '<a class="eflu-btn" data-round342-discovery-entry="wrongbook" href="/index-complete.html#tabsW" aria-label="进入错题本和错因订正入口">' + icon('alert') + '错题订正</a>',
       '<a class="eflu-btn" data-round342-discovery-entry="private-course" href="/resources.html?from=round342-edge-quick#sourceStatus" aria-label="查看私有课程和专属课账号状态，生产恢复仍受 FM_PRIVATE_MEDIA R2 边界约束">' + icon('note') + '私有课程</a>',
       '<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="formulas" aria-controls="' + attr(tabPanelId('formulas')) + '" aria-label="打开公式速查标签">' + icon('sigma') + '公式速查</button>',
@@ -2801,7 +2801,7 @@
       ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
       ['05', '错因订正', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
     ];
-    return '<div class="eflu-review-rail" data-round274-workbench-loop="round368-ten-round-upgrade-20260616" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
+    return '<div class="eflu-review-rail" data-round274-workbench-loop="round370-181103-readable-practice-20260616" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
       return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
     }).join('') + '</div>';
   }

@@ -62,7 +62,6 @@ window.QuestionBankPractice = (function() {
         if (!question || typeof question !== 'object') return false;
         const is181103Material = question.extractedFromMaterial === true
             && /\/resources\/fluid-181103-html\/materials\//.test(String(question.sourceHtmlUrl || ''));
-        if (is181103Material) return true;
         const flags = Array.isArray(question.qualityFlags) ? question.qualityFlags.join(' ') : '';
         const reviewReason = Array.isArray(question.ocrReviewReason) ? question.ocrReviewReason.join(' ') : '';
         const text = [
@@ -73,7 +72,19 @@ window.QuestionBankPractice = (function() {
             flags,
             reviewReason
         ].filter(Boolean).join('\n');
-        return /round356-default-practice-blocked|embedded-equation-placeholder|font-table-noise|low-ocr-score|latin-symbol-noise|EMBED\s+Equation|DSMT4|high-resolution\s+ja\s+JP|501\s+501\s+\d{4,}|[�□■]|\?{2,}/i.test(text);
+        return is181103Material && (
+            question.qualityTier === 'ocr-review'
+            || question.qualityTier === 'hide'
+            || question.defaultHidden === true
+            || /round356-default-practice-blocked|embedded-equation-placeholder|font-table-noise|low-ocr-score|latin-symbol-noise|EMBED\s+Equation|DSMT4|high-resolution\s+ja\s+JP|501\s+501\s+\d{4,}|[�□■]|\?{2,}/i.test(text)
+        );
+    }
+
+    function sourceImageFromHtmlUrl(sourceHtmlUrl) {
+        const raw = String(sourceHtmlUrl || '').trim();
+        const match = raw.match(/^(.*\/materials\/[^/]+\/)index\.html#page-(\d{1,4})$/);
+        if (!match) return '';
+        return `${match[1]}pages${match[2].padStart(3, '0')}.jpg`;
     }
 
     function formatQuestionBody(question) {
@@ -86,17 +97,31 @@ window.QuestionBankPractice = (function() {
             .replace(/\r\n?/g, '\n')
             .replace(/\n{3,}/g, '\n\n')
             .replace(/\n/g, '<br>');
-        if (question && question.extractedFromMaterial && (question.qualityTier !== 'show' || hasOcrGarbleQuestion(question))) {
+        if (question && question.extractedFromMaterial) {
             const sourceHref = escapeHtml(question.sourceHtmlUrl || '/resources/fluid-181103-html/index.html');
+            const sourceImage = sourceImageFromHtmlUrl(question.sourceHtmlUrl || '');
+            const sourceImageHtml = sourceImage ? `
+                <figure data-181103-source-page-image="1" style="margin:14px 0 0;padding:10px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;">
+                    <img src="${escapeHtml(sourceImage)}" alt="181103 来源页图" loading="eager" decoding="async" style="display:block;width:100%;max-height:72vh;object-fit:contain;border-radius:8px;background:#fff;">
+                    <figcaption style="margin-top:8px;color:#64748b;font-size:.85em;">来源页图预览；题面、图和公式以此为准。</figcaption>
+                </figure>` : `
+                <div data-181103-source-anchor-fallback="1" style="margin-top:10px;padding:10px 12px;border:1px dashed #38bdf8;border-radius:10px;background:#f8fafc;color:#075985;font-weight:700;">
+                    本题定位到来源 HTML 正文锚点；请打开来源 HTML 页图/锚点核对原文后作答。
+                </div>`;
+            const garbleNote = hasOcrGarbleQuestion(question)
+                ? '<div style="margin-top:6px;font-weight:800;color:#9a3412;">检测到 OCR/公式噪声：请以来源页图/锚点为准，OCR 摘录只用于定位。</div>'
+                : '';
             return `
-                <div data-round356-ocr-source-first="1" style="margin-bottom:18px;padding:14px 16px;border:1px solid #bae6fd;background:#f0f9ff;color:#075985;border-radius:12px;font-size:.68em;line-height:1.55;">
-                    这道 181103 资料题已退出默认练习；题面、图和公式以来源 HTML 页图为准。
-                    <div style="margin-top:10px;"><a href="${sourceHref}" style="font-weight:800;color:#0f766e;">打开来源 HTML 页图</a></div>
+                <div data-round356-ocr-source-first="1" data-181103-practice-source-backed="1" style="margin-bottom:18px;padding:14px 16px;border:1px solid #bae6fd;background:#f0f9ff;color:#075985;border-radius:12px;font-size:.72em;line-height:1.55;">
+                    这道 181103 资料题已进入可刷题模式；题面、图和公式以来源 HTML 页图/锚点为准，OCR 摘录用于快速定位。
+                    ${garbleNote}
+                    <div style="margin-top:10px;"><a href="${sourceHref}" style="font-weight:800;color:#0f766e;">打开来源 HTML 页图/锚点</a></div>
+                    ${sourceImageHtml}
                 </div>
-                <details data-181103-ocr-excerpt="1" style="margin-bottom:18px;padding:12px 14px;border:1px dashed #cbd5e1;border-radius:10px;background:#f8fafc;font-size:.7em;line-height:1.55;">
-                    <summary style="cursor:pointer;font-weight:800;color:#334155;">展开 OCR 摘录（仅供定位，不作为正式题面）</summary>
+                <section data-181103-ocr-excerpt="1" style="margin-bottom:18px;padding:12px 14px;border:1px dashed #cbd5e1;border-radius:10px;background:#f8fafc;font-size:.78em;line-height:1.65;color:#334155;">
+                    <strong style="display:block;margin-bottom:8px;">OCR 题面摘录</strong>
                     <div style="margin-top:10px;">${body}</div>
-                </details>
+                </section>
             `;
         }
         return body;
@@ -1347,7 +1372,7 @@ window.QuestionBankPractice = (function() {
             const is181103SourceFirstQuestion = question.extractedFromMaterial === true
                 && (question.sourceFirstReview === true || String(question.sourceHtmlUrl || '').includes('/resources/fluid-181103-html/materials/'));
             const qualityLabel = is181103SourceFirstQuestion
-                ? (question.qualityTier === 'show' ? '历史候选' : '回源复核')
+                ? (question.qualityTier === 'show' ? 'source-first提示' : question.qualityTier === 'hide' ? 'hidden提示' : 'OCR回源提示')
                 : question.qualityTier === 'show'
                     ? '默认可练'
                     : question.qualityTier === 'hide'
@@ -1364,8 +1389,8 @@ window.QuestionBankPractice = (function() {
                     ${Number.isFinite(Number(question.ocrQualityScore)) ? `<span style="display:inline-flex;margin-left:6px;padding:2px 8px;border-radius:999px;background:#e0f2fe;color:#075985;font-size:.85em;">质量分 ${escapeHtml(question.ocrQualityScore)}</span>` : ''}
                     ${question.duplicateGroupId ? `<span style="display:inline-flex;margin-left:6px;padding:2px 8px;border-radius:999px;background:#fee2e2;color:#991b1b;font-size:.85em;">重复簇 ${escapeHtml(question.duplicateGroupId)}</span>` : ''}
                     <div style="margin-top:8px;">${escapeHtml(question.qualityNote || '请结合来源 HTML/OCR 页复核题干。')}</div>
-                    ${hasOcrGarbleQuestion(question) ? '<div style="margin-top:6px;font-weight:700;color:#9a3412;">公式/OCR 噪声题不进入默认练习；全量模式只作回源复核。</div>' : ''}
-                    ${sourceHtmlUrl ? `<a href="${escapeHtml(sourceHtmlUrl)}" target="_blank" rel="noopener" style="display:inline-flex;margin-top:8px;color:#2563eb;font-weight:700;">打开来源 HTML 页</a>` : ''}
+                    ${hasOcrGarbleQuestion(question) ? '<div style="margin-top:6px;font-weight:700;color:#9a3412;">OCR/公式文本可能不可靠；本题仍在 522 可刷题入口中，请先打开来源 HTML 页图/锚点核对。</div>' : ''}
+                    ${sourceHtmlUrl ? `<a href="${escapeHtml(sourceHtmlUrl)}" target="_blank" rel="noopener" style="display:inline-flex;margin-top:8px;color:#2563eb;font-weight:700;">打开来源 HTML 页图/锚点</a>` : ''}
                 </div>
             ` : '';
             

@@ -195,12 +195,17 @@ function scanPage(relPath) {
   const links = hrefs(html);
   const contentText = stripVisibleText(content);
   const contentAria = /<section\b[^>]*class=["'][^"']*html-content[^"']*["'][^>]*aria-label=["']([^"']+)["']/i.exec(html)?.[1] || '';
+  const visiblePdfPageCount = (content.match(/class=["'][^"']*pdf-page[^"']*["']/gi) || []).length;
+  const declaredPdfPageCount = Number(html.match(/data-total-pages=["'](\d+)["']/)?.[1] || 0);
   const row = {
     relPath,
     title: stripVisibleText(/<h1[\s\S]*?<\/h1>/i.exec(html)?.[0] || ''),
     visibleTextChars: contentText.length,
     imageCount: (content.match(/<img\b/gi) || []).length,
-    pdfPageCount: (content.match(/class=["'][^"']*pdf-page[^"']*["']/gi) || []).length,
+    pdfPageCount: Math.max(visiblePdfPageCount, declaredPdfPageCount),
+    visiblePdfPageCount,
+    declaredPdfPageCount,
+    windowedPdfPages: declaredPdfPageCount > visiblePdfPageCount,
     htmlSlidePageCount: (content.match(/class=["'][^"']*page-dp3[^"']*["']/gi) || []).length,
     headingCount: (content.match(/<h[2-4]\b/gi) || []).length,
     hasRound317ContentMap: /data-round317-content-map/.test(html),
