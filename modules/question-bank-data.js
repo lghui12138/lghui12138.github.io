@@ -40,7 +40,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round375-181103-all-question-web-parity-20260617';
+    const practiceModuleVersion = 'round376-181103-visible-522-all-question-proof-20260617';
 
     function removeFailedPracticeScripts() {
         document.querySelectorAll('script[data-question-bank-practice-module],script[src*="question-bank-practice.js"]').forEach(script => {
