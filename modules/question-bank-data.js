@@ -1545,6 +1545,9 @@ window.QuestionBankData = (function() {
                 console.error('题库缺少文件名:', bank);
                 return [];
             }
+            const isMaterial181103Bank = bank.id === '181103-material-extracted' || bank.filename === '181103-material-extracted.json';
+            const localQuestionBankTimeoutMs = isMaterial181103Bank ? 30000 : 2500;
+            const remoteQuestionBankTimeoutMs = isMaterial181103Bank ? 20000 : 3500;
             
             try {
                 // 获取保存的GitHub配置
@@ -1559,15 +1562,15 @@ window.QuestionBankData = (function() {
                 console.log(`📁 从本地文件系统加载题库: ${bank.filename}`);
                 let response;
                 const paths = [
+                    `/question-banks/${bank.filename}`,
                     `../question-banks/${bank.filename}`,
                     `../../question-banks/${bank.filename}`,
-                    `question-banks/${bank.filename}`,
-                    `/question-banks/${bank.filename}`
+                    `question-banks/${bank.filename}`
                 ];
                 
                 for (const path of paths) {
                     try {
-                        response = await fetchWithTimeout(path, {}, 2500);
+                        response = await fetchWithTimeout(path, { cache: isMaterial181103Bank ? 'no-store' : 'default' }, localQuestionBankTimeoutMs);
                         if (response.ok) {
                             console.log(`✅ 成功从路径加载: ${path}`);
                             break;
@@ -1581,7 +1584,7 @@ window.QuestionBankData = (function() {
                     try {
                         console.log(`🌐 尝试从GitHub直接访问题库: ${bank.filename}`);
                         const githubUrl = `${GITHUB_CONFIG.rawBaseUrl}/question-banks/${bank.filename}`;
-                        response = await fetchWithTimeout(githubUrl, {}, 3500);
+                        response = await fetchWithTimeout(githubUrl, {}, remoteQuestionBankTimeoutMs);
                         if (response.ok) {
                             console.log(`✅ 从GitHub成功加载题库: ${bank.name}`);
                         } else {
