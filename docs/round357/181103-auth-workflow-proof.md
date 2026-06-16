@@ -1,7 +1,7 @@
-# Round368 181103 Authenticated Workflow Proof
+# Round370 181103 Authenticated Workflow Proof
 
-- Version: `round368-ten-round-upgrade-20260616`
-- Expected release: `round368-ten-round-upgrade-20260616`
+- Version: `round370-181103-readable-practice-20260616`
+- Expected release: `round370-181103-readable-practice-20260616`
 - Generated at: `2026-06-15T17:36:37.000Z`
 - Acceptance: **PASS**
 - Browser runs skipped: `false`
@@ -11,7 +11,7 @@
 - Question bank: 522 total / 522 source-backed playable / 522 source-first review / 379 OCR review / 24 hidden review
 - Index source-first count: 522; legacy default diagnostic=522
 - Source anchors: 522/522
-- Raw OCR/noise hits in source-backed practice pool: 48
+- Raw OCR/noise hits in source-backed practice pool: 0
 - Big workbook: 40 first-window images, 3 eager, 37 lazy, total pages=365, static anchors=325
 
 ## Live Public Shell
@@ -26,7 +26,7 @@
 
 - Auth chain: started on lghui.top=true, reached source=true, role=student, qa=qa-student, credentials=credentials-redacted
 - Bank ledger: 可刷题 522 来源页图 522 原 OCR show 119 OCR池 379 hidden提示 24 题面内置页图 重复簇 1
-- Practice dialog: 522 total / 522 legacy default diagnostic / 522 source-first / 379 OCR / 24 hidden / default garble 48
+- Practice dialog: 522 total / 522 legacy default diagnostic / 522 source-first / 379 OCR / 24 hidden / default garble 0
 - Rendered question: launched=522, counter=题目 1 / 522, bad tokens=false, formula bridge=true, source link=/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-003, source image=1946x2858
 - Authenticated source index: 38/38 material links, binary links=0
 - Authenticated big workbook: 40 first-window images, 3 eager, 37 lazy, total pages=365, page anchors=365, binary links=0
@@ -43,6 +43,7 @@
 
 - PASS local-latest-version-matches-expected
 - PASS local-question-bank-counts-current-source-backed-playable
+- PASS local-181103-default-practice-garble-zero
 - PASS local-question-bank-index-source-first-current
 - PASS local-question-bank-source-anchors-current
 - PASS local-big-workbook-windowed-lazy-policy
@@ -50,6 +51,7 @@
 - PASS pages-dev-edge-status-current
 - PASS public-181103-index-38-html-links-no-binaries
 - PASS public-181103-bank-counts-current-source-backed-playable
+- PASS public-181103-default-practice-garble-zero
 - PASS public-181103-bank-index-source-first-current
 - PASS public-big-workbook-windowed-lazy-budget-no-binaries
 - PASS browser-auth-starts-on-lghui-top-and-reaches-source
