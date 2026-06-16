@@ -133,10 +133,10 @@ window.QuestionBankPractice = (function() {
             const confidence = escapeHtml(question.questionTextConfidence || 'needs-review');
             const sourceLabel = question.questionTextConfidence === 'high' ? '高置信 HTML 题面' : question.questionTextConfidence === 'medium' ? '中置信 HTML 题面' : '待复核 HTML 题面';
             const sourceImageHtml = sourceImage ? `
-                <details data-181103-source-page-image="1" style="margin-top:12px;">
+                <details open data-181103-source-page-image="1" style="margin-top:12px;">
                     <summary style="cursor:pointer;font-weight:800;color:#0f766e;">展开来源页图核对证据</summary>
                     <figure style="margin:10px 0 0;padding:10px;border:1px solid #cbd5e1;border-radius:12px;background:#fff;">
-                        <img src="${escapeHtml(sourceImage)}" alt="181103 来源页图核对证据" loading="lazy" decoding="async" style="display:block;width:100%;max-height:72vh;object-fit:contain;border-radius:8px;background:#fff;">
+                        <img src="${escapeHtml(sourceImage)}" alt="181103 来源页图核对证据" loading="eager" fetchpriority="high" decoding="async" style="display:block;width:100%;max-height:72vh;object-fit:contain;border-radius:8px;background:#fff;">
                         <figcaption style="margin-top:8px;color:#64748b;font-size:.85em;">来源页图仅用于逐题核对，不替代上方 HTML 题面。</figcaption>
                     </figure>
                 </details>` : `
