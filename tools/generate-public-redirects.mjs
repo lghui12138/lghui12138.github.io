@@ -127,6 +127,10 @@ const runtimeCopies = [
   ['data/fluid-round278-pdf-web-year-compare.json.gz', 'data/fluid-round278-pdf-web-year-compare.json.gz'],
   ['data/fluid-round374-181103-reference-answer-display.json', 'data/fluid-round374-181103-reference-answer-display.json'],
   ['data/fluid-round374-181103-reference-answer-display.json.gz', 'data/fluid-round374-181103-reference-answer-display.json.gz'],
+  ['data/fluid-round375-181103-all-question-web-parity.json', 'data/fluid-round375-181103-all-question-web-parity.json'],
+  ['data/fluid-round375-181103-all-question-web-parity.json.gz', 'data/fluid-round375-181103-all-question-web-parity.json.gz'],
+  ['data/fluid-round373-181103-live-browser-all-questions.json', 'data/fluid-round373-181103-live-browser-all-questions.json'],
+  ['data/fluid-round373-181103-live-browser-all-questions.json.gz', 'data/fluid-round373-181103-live-browser-all-questions.json.gz'],
   ['data/fluid-real-exam-source-granularity-audit.json', 'data/fluid-real-exam-source-granularity-audit.json'],
   ['data/fluid-real-exam-source-granularity-audit.json.gz', 'data/fluid-real-exam-source-granularity-audit.json.gz'],
   ['data/fluid-round280-real-exam-integrity-board.json', 'data/fluid-round280-real-exam-integrity-board.json'],
@@ -269,6 +273,12 @@ const runtimeCopies = [
   ['lib/fm-core.js', 'lib/fm-core.js'],
   ['modules/js/practice-components.js', 'modules/js/practice-components.js'],
   ['modules/js/teacher-main.js', 'modules/js/teacher-main.js'],
+  ['modules/question-bank-ai.js', 'modules/question-bank-ai.js'],
+  ['modules/question-bank-data.js', 'modules/question-bank-data.js'],
+  ['modules/question-bank-practice.js', 'modules/question-bank-practice.js'],
+  ['modules/question-bank-stats.js', 'modules/question-bank-stats.js'],
+  ['modules/question-bank-ui.js', 'modules/question-bank-ui.js'],
+  ['modules/question-bank-user.js', 'modules/question-bank-user.js'],
   ['styles/edge-fluid-upgrade.css', 'styles/edge-fluid-upgrade.css'],
   ['modules/styles/practice-animations.css', 'modules/styles/practice-animations.css'],
   ['vendor/mathjax/es5/tex-chtml-full.js', 'vendor/mathjax/es5/tex-chtml-full.js'],
@@ -458,7 +468,7 @@ function htmlFor(route) {
     <h1>正在进入主站</h1>
     <p>这个公开路径已迁移到 Cloudflare 源站，正在自动打开完整主站。若浏览器拦截自动跳转，请点击按钮进入。</p>
     <p>当前入口版本是 ${edgeRefresh}。跳转会保留当前路径并把旧 edge_refresh 统一改到当前入口版本，主站会继续显示完整内容、公式和练习。</p>
-    <p>181103 资料当前已写成 HTML 正文：38 份资料、30 条学习路线、68 个真题复核任务和 522 个资料内题目；119 道 show 净题、379 道 OCR/公式复核题、24 道隐藏复核题都保留来源页图；公开壳不提供原始文件下载。</p>
+    <p>181103 资料当前已写成 HTML 正文：38 份资料、30 条学习路线、68 个真题复核任务和 522 张资料来源卡；381 道独立题进入刷题，141 条参考答案页、父卡、源文/答案续页/讲义正文只作线索展示；公开壳不提供原始文件下载。</p>
     <p><code>${route}</code></p>
     ${routeSpecificMarkup}
     ${actionMarkup}
