@@ -125,6 +125,55 @@ window.QuestionBankPractice = (function() {
         return formatTextAsHtml((question && (question.question || question.title)) || '题目内容');
     }
 
+    function getAnswerHtml(question) {
+        if (!question || typeof question !== 'object') return '暂无参考答案';
+        const explicit = String(question.answerHtml || question.referenceAnswerHtml || question.sampleAnswerHtml || '').trim();
+        if (explicit && !hasUnsafeInlineHtml(explicit)) return explicit;
+        const answer = question.referenceAnswer || question.sampleAnswer || question.answer || question.correct || '';
+        return answer ? formatTextAsHtml(answer) : '暂无参考答案';
+    }
+
+    function getExplanationHtml(question) {
+        if (!question || typeof question !== 'object') return '';
+        const explicit = String(question.explanationHtml || '').trim();
+        if (explicit && !hasUnsafeInlineHtml(explicit)) return explicit;
+        return question.explanation ? formatTextAsHtml(question.explanation) : '';
+    }
+
+    function isMaterial181103Question(question) {
+        return Boolean(question && question.extractedFromMaterial === true
+            && /\/resources\/fluid-181103-html\/materials\//.test(String(question.sourceHtmlUrl || question.htmlQuestionSourceUrl || '')));
+    }
+
+    function referenceAnswerBlock(question, options = {}) {
+        const heading = options.heading || '参考答案';
+        const compact = Boolean(options.compact);
+        const answerHtml = getAnswerHtml(question);
+        const sourceHref = escapeHtml(question && (question.sourceHtmlUrl || question.htmlQuestionSourceUrl || question.htmlQuestionCardUrl || ''));
+        const sourceHint = isMaterial181103Question(question)
+            ? `<div data-round374-181103-answer-source-note="1" style="margin-top:12px;color:#64748b;font-size:${compact ? '.86em' : '.92em'};line-height:1.65;">本答案为站内整理参考答案；来源 HTML/页图用于逐题核对题面、公式和资料语境。${sourceHref ? ` <a href="${sourceHref}" target="_blank" rel="noopener" style="font-weight:800;color:#0f766e;">打开来源核对</a>` : ''}</div>`
+            : '';
+        return `
+            <section data-round374-reference-answer="1" data-round374-181103-reference-answer="${isMaterial181103Question(question) ? '1' : '0'}" style="background:#fff7ed;border:2px solid #fed7aa;border-radius:${compact ? '10px' : '18px'};padding:${compact ? '16px' : '28px'};margin:${compact ? '12px 0' : '0 0 28px'};line-height:1.9;color:#1f2937;">
+                <strong style="display:block;color:#9a3412;font-size:${compact ? '1.05em' : '1.35em'};margin-bottom:12px;">${escapeHtml(heading)}</strong>
+                <div data-round374-reference-answer-html="1" style="background:#fff;border-left:5px solid #f97316;border-radius:10px;padding:${compact ? '14px' : '22px'};font-size:${compact ? '1em' : '1.08em'};line-height:2;overflow-wrap:anywhere;">${answerHtml}</div>
+                ${sourceHint}
+            </section>
+        `;
+    }
+
+    function explanationBlock(question, options = {}) {
+        const html = getExplanationHtml(question);
+        if (!html) return '';
+        const compact = Boolean(options.compact);
+        return `
+            <section data-round374-answer-explanation="1" style="background:#eff6ff;border:2px solid #bfdbfe;border-radius:${compact ? '10px' : '18px'};padding:${compact ? '14px' : '24px'};margin:${compact ? '12px 0' : '0 0 24px'};line-height:1.8;color:#1e3a8a;">
+                <strong style="display:block;margin-bottom:10px;color:#1d4ed8;">核对说明</strong>
+                <div style="background:#fff;border-radius:10px;padding:${compact ? '12px' : '18px'};color:#334155;overflow-wrap:anywhere;">${html}</div>
+            </section>
+        `;
+    }
+
     function formatQuestionBody(question) {
         const body = getQuestionHtml(question);
         if (question && question.extractedFromMaterial) {
@@ -1728,9 +1777,6 @@ window.QuestionBankPractice = (function() {
             const resultText = isCorrect ? '回答正确！' : '回答错误';
             const resultColor = isCorrect ? '#28a745' : '#dc3545';
             
-            // 生成或获取答案
-            const answer = this.generateAnswer(question);
-            
             // AI智能分析用户答案
             this.analyzeAnswerWithAI(question, isCorrect, userAnswer);
             
@@ -1739,30 +1785,13 @@ window.QuestionBankPractice = (function() {
                 <div style="color: ${resultColor}; font-weight: bold; font-size: 3.0em; margin-bottom: 40px; text-align: center; padding: 35px; background: ${isCorrect ? '#d4edda' : '#f8d7da'}; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);">
                     ${resultIcon} ${resultText}
                 </div>
-                <div style="background: #fff3cd; border: 4px solid #ffeaa7; border-radius: 20px; padding: 40px; margin-bottom: 40px; font-size: 1.8em; line-height: 2.0;">
-                    <strong style="font-size: 1.6em; color: #856404;">📝 参考答案：</strong><br><br>
-                    <div style="background: white; padding: 35px; border-radius: 15px; border-left: 6px solid #ffc107; font-size: 1.7em; line-height: 2.2; color: #333; font-weight: 500;">
-                        ${answer}
-                    </div>
-                </div>
+                ${referenceAnswerBlock(question, { heading: '参考答案' })}
             `;
             
             // 更新解释内容
             if (explanationContent) {
                 explanationContent.innerHTML = `
-                    ${question.explanation ? `
-                        <div style="margin-bottom: 40px; background: #e7f3ff; border: 4px solid #b3d9ff; border-radius: 20px; padding: 40px;">
-                            <strong style="font-size: 1.8em; color: #0056b3;">💡 详细解释：</strong><br><br>
-                            <div style="font-size: 1.6em; line-height: 2.2; color: #333;">${question.explanation}</div>
-                        </div>
-                    ` : ''}
-                    
-                    <div style="background: #f8f9fa; border: 4px solid #dee2e6; padding: 40px; border-radius: 20px; font-size: 1.7em;">
-                        <strong style="color: #495057; font-size: 1.6em;">✓ 标准答案：</strong><br><br>
-                        <div style="background: white; padding: 30px; border-radius: 15px; border-left: 6px solid #28a745; font-size: 1.6em; line-height: 2.0;">
-                            ${this.formatCorrectAnswer(question)}
-                        </div>
-                    </div>
+                    ${explanationBlock(question)}
                     
                     <div style="text-align: center; margin-top: 50px;">
                         <button onclick="QuestionBankPractice.continueToNext()" style="
@@ -1793,6 +1822,7 @@ window.QuestionBankPractice = (function() {
             answerDisplay.style.padding = '50px';
             answerDisplay.style.background = 'rgba(240,248,255,0.98)';
             answerDisplay.style.backdropFilter = 'blur(15px)';
+            renderFormulaInRoot(answerDisplay);
             answerDisplay.style.boxShadow = '0 20px 60px rgba(0,0,0,0.2)';
             answerDisplay.style.border = '4px solid #007bff';
             answerDisplay.style.borderRadius = '20px';
@@ -1818,17 +1848,22 @@ window.QuestionBankPractice = (function() {
         
         // 格式化正确答案显示
         formatCorrectAnswer: function(question) {
+            if (!question || typeof question !== 'object') return '答案未设置';
+            const directAnswer = question.referenceAnswer || question.sampleAnswer || question.answer;
+            if (directAnswer !== null && directAnswer !== undefined && String(directAnswer).trim()) {
+                return formatTextAsHtml(directAnswer);
+            }
             switch(question.type) {
                 case 'fill':
                     return Array.isArray(question.correct) 
-                        ? question.correct.join(' 或 ')
-                        : question.correct;
+                        ? formatTextAsHtml(question.correct.join(' 或 '))
+                        : formatTextAsHtml(question.correct || '');
                 case 'judge':
                     return question.correct ? '正确' : '错误';
                 default:
                     return question.options 
-                        ? `${String.fromCharCode(65 + question.correct)}. ${question.options[question.correct]}`
-                        : question.correct;
+                        ? formatTextAsHtml(`${String.fromCharCode(65 + question.correct)}. ${question.options[question.correct]}`)
+                        : formatTextAsHtml(question.correct || '答案未设置');
             }
         },
         
@@ -2386,8 +2421,8 @@ window.QuestionBankPractice = (function() {
                                 </div>
                                 <div style="font-size: 0.9em;">
                                     <div><strong>您的答案：</strong>${this.formatUserAnswer(question, userAnswer)}</div>
-                                    <div><strong>正确答案：</strong>${this.formatCorrectAnswer(question)}</div>
-                                    ${question.explanation ? `<div style="margin-top: 8px; color: #666;"><strong>解释：</strong>${question.explanation}</div>` : ''}
+                                    ${referenceAnswerBlock(question, { heading: '参考答案', compact: true })}
+                                    ${explanationBlock(question, { compact: true })}
                                 </div>
                             </div>
                         `;
@@ -2751,24 +2786,15 @@ window.QuestionBankPractice = (function() {
                 const explanationContent = document.getElementById('explanationContent');
                 
                 if (answerContent) {
-                    answerContent.innerHTML = `
-                        <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 5px; padding: 15px; margin-bottom: 10px;">
-                            <strong>📝 答案:</strong><br>
-                            ${currentQuestion.answer || '暂无答案'}
-                        </div>
-                    `;
+                    answerContent.innerHTML = referenceAnswerBlock(currentQuestion, { heading: '参考答案' });
                 }
                 
                 if (explanationContent) {
-                    explanationContent.innerHTML = `
-                        <div style="background: #d1ecf1; border: 1px solid #bee5eb; border-radius: 5px; padding: 15px;">
-                            <strong>💡 解释:</strong><br>
-                            ${currentQuestion.explanation || '暂无解释'}
-                        </div>
-                    `;
+                    explanationContent.innerHTML = explanationBlock(currentQuestion) || '';
                 }
                 
                 answerDisplay.style.display = 'block';
+                renderFormulaInRoot(answerDisplay);
                 if (showAnswerBtn) {
                     showAnswerBtn.innerHTML = '<i class="fas fa-eye-slash"></i> 隐藏';
                     showAnswerBtn.className = 'btn btn-outline-warning btn-sm';
@@ -4716,13 +4742,8 @@ window.QuestionBankPractice = (function() {
         // 生成答案
         generateAnswer: function(question) {
             // 获取题目的正确答案
-            const correctAnswer = question.answer || question.correct;
+            const correctAnswer = question.referenceAnswer || question.sampleAnswer || question.answer || question.correct;
             const questionType = question.type || '选择题';
-            
-            // 如果有完整的答案说明，直接返回
-            if (question.explanation) {
-                return question.explanation;
-            }
             
             // 根据题型格式化答案
             if (questionType === '选择题') {

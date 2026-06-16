@@ -40,8 +40,10 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
+    const practiceModuleVersion = 'round374-181103-reference-answer-display-20260617';
+
     function removeFailedPracticeScripts() {
-        document.querySelectorAll('script[data-question-bank-practice-module],script[src$="question-bank-practice.js"]').forEach(script => {
+        document.querySelectorAll('script[data-question-bank-practice-module],script[src*="question-bank-practice.js"]').forEach(script => {
             if (script.dataset.questionBankPracticeLoaded === 'true') return;
             if (script.parentNode) script.parentNode.removeChild(script);
         });
@@ -80,7 +82,7 @@ window.QuestionBankData = (function() {
                 }
                 reject(new Error('练习模块脚本加载失败'));
             };
-            let existing = document.querySelector('script[data-question-bank-practice-module],script[src$="question-bank-practice.js"]');
+            let existing = document.querySelector('script[data-question-bank-practice-module],script[src*="question-bank-practice.js"]');
 
             if (existing) {
                 if (existing.dataset.questionBankPracticeFailed === 'true') {
@@ -99,9 +101,10 @@ window.QuestionBankData = (function() {
             }
 
             const script = document.createElement('script');
-            script.src = 'question-bank-practice.js';
+            script.src = `question-bank-practice.js?v=${practiceModuleVersion}`;
             script.async = true;
             script.dataset.questionBankPracticeModule = 'true';
+            script.dataset.questionBankPracticeVersion = practiceModuleVersion;
             script.onload = () => {
                 script.dataset.questionBankPracticeLoaded = 'true';
                 finish();
@@ -1341,6 +1344,9 @@ window.QuestionBankData = (function() {
                 const placeholderCount = isMaterial181103
                     ? questions.filter(q => q && !(q.questionHtml || q.promptHtml)).length
                     : 0;
+                const sourceContentCardCount = isMaterial181103
+                    ? questions.filter(q => q && (q.sourceSemanticQuestionCardKind === 'source-content-card' || q.round373QuestionCardKind === 'source-content-card' || q.round372QuestionCardKind === 'source-content-card')).length
+                    : 0;
                 const defaultButtonStyle = defaultPracticeQuestions.length
                     ? 'width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 10px;'
                     : 'width: 100%; padding: 10px; background: #9ca3af; color: white; border: none; border-radius: 5px; cursor: not-allowed; margin-bottom: 10px;';
@@ -1377,18 +1383,18 @@ window.QuestionBankData = (function() {
                     <p style="margin: 0 0 20px 0; color: #666;">题库: ${bank.name} (共${questions.length}题)</p>
                     ${isMaterial181103 ? `
                     <div data-181103-practice-quality-panel="1" style="margin:0 0 18px 0;padding:12px 14px;border:1px solid #fde68a;background:#fffbeb;color:#78350f;border-radius:10px;line-height:1.55;">
-                        181103 资料内 ${questions.length} 题已生成 ${htmlQuestionCount} 条 HTML 题面；${highConfidenceCount} 题为高置信文本，${lowConfidenceCount} 题仍需逐题核对，来源 HTML/页图只作证据，非题面替代；无 HTML 题面占位 ${placeholderCount} 题。
+                        Round373：181103 资料内 ${questions.length} 张来源卡已生成 ${htmlQuestionCount} 条 HTML 题面；${defaultPracticeQuestions.length} 道独立题进入刷题，${sourceContentCardCount} 张源文/答案续页/讲义正文只作线索展示；无 HTML 题面占位 ${placeholderCount} 题。
                     </div>` : ''}
 
                     <div style="margin-bottom: 20px;">
                         <h4 style="margin: 0 0 10px 0; color: #333;">📚 完整练习</h4>
                         <button onclick="QuestionBankData.startFullPractice('${bank.id}')" ${defaultButtonDisabled}
                                 style="${defaultButtonStyle}">
-                            ${isMaterial181103 ? `练习 181103 全部 ${defaultPracticeQuestions.length || questions.length} 题` : `练习全部 ${questions.length} 题`}
+                            ${isMaterial181103 ? `练习 181103 独立题 ${defaultPracticeQuestions.length} 题` : `练习全部 ${questions.length} 题`}
                         </button>
                         ${isMaterial181103 ? `<button data-181103-practice-all="1" onclick="QuestionBankData.startAllMaterialPractice('${bank.id}')"
                                 style="width: 100%; padding: 10px; background: #7c3aed; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                            HTML题面刷全部 ${questions.length} 题
+                            HTML 题面刷 ${defaultPracticeQuestions.length} 道独立题
                         </button>` : ''}
                     </div>
 
@@ -1473,10 +1479,17 @@ window.QuestionBankData = (function() {
                 showNotification('题库数据未加载', 'error');
                 return;
             }
+            const practiceQuestions = bankData.defaultPracticeQuestions && bankData.defaultPracticeQuestions.length
+                ? bankData.defaultPracticeQuestions
+                : [];
+            if (!practiceQuestions.length) {
+                showNotification('181103 当前没有可刷独立题；源文线索只在资料页展示。', 'warning');
+                return;
+            }
             const fullBank = {
                 ...bankData.bank,
-                questions: bankData.questions,
-                practiceIncludesOcrReview: true
+                questions: practiceQuestions,
+                practiceIncludesSourceSemanticVerified: true
             };
             document.querySelector('.practice-dialog')?.remove();
             await startPracticeSession(fullBank);
@@ -1495,7 +1508,7 @@ window.QuestionBankData = (function() {
                 ? bankData.defaultPracticeQuestions
                 : bankData.questions;
             if (bankData.bank && bankData.bank.id === '181103-material-extracted' && (!bankData.defaultPracticeQuestions || bankData.defaultPracticeQuestions.length === 0)) {
-                showNotification('181103 随机练习使用 522 题 HTML 题面；来源页仅作核对证据。', 'info');
+                showNotification('181103 随机练习只使用语义确认的独立题；源文线索只在资料页展示。', 'info');
             }
             const randomQuestions = this.getRandomQuestions(pool, count);
             
@@ -1653,7 +1666,16 @@ window.QuestionBankData = (function() {
             const has181103Material = questions.some(question => question && question.extractedFromMaterial === true
                 && /\/resources\/fluid-181103-html\/materials\//.test(String(question.sourceHtmlUrl || '')));
             if (has181103Material) {
-                return questions.filter(question => question && typeof question === 'object' && (question.questionHtml || question.promptHtml));
+                return questions.filter(question => question
+                    && typeof question === 'object'
+                    && (question.questionHtml || question.promptHtml)
+                    && question.defaultPracticeEligible !== false
+                    && question.practiceEntryEnabled !== false
+                    && question.defaultHidden !== true
+                    && question.sourceSemanticPracticeEligible !== false
+                    && question.sourceSemanticQuestionCardKind !== 'source-content-card'
+                    && question.round373QuestionCardKind !== 'source-content-card'
+                    && question.round372QuestionCardKind !== 'source-content-card');
             }
             const visible = questions.filter(question => {
                 if (!question || typeof question !== 'object') return false;
