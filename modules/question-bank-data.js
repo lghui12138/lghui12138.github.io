@@ -906,6 +906,7 @@ window.QuestionBankData = (function() {
                 : `<button class="btn btn-success" onclick="QuestionBankData.quickTest('${bank.id}')"><i class="fas fa-rocket"></i> 快速测试</button>`;
             const defaultPracticeCount = Number(bank.defaultPracticeQuestionCount ?? bank.questionCount ?? bank.qualityShowCount ?? 0);
             const sourceFirstCount = Number(bank.sourceFirstReviewQuestionCount ?? bank.questionCount ?? 0);
+            const sourceContentCardCount = Number(bank.sourceSemanticContentCardCount ?? bank.sourceContentCardCount ?? 0);
             const htmlQuestionCount = Number(bank.htmlQuestionFieldCount ?? bank.htmlQuestionCardCount ?? bank.materialHtmlQuestionCardCount ?? defaultPracticeCount);
             const highConfidenceCount = Number(bank.round371HighConfidenceQuestionCount ?? 0);
             const lowConfidenceCount = Number(bank.round371LowConfidenceQuestionCount ?? 0);
@@ -917,6 +918,7 @@ window.QuestionBankData = (function() {
                     <span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:999px;">高置信 ${highConfidenceCount}</span>
                     <span style="background:#fee2e2;color:#991b1b;padding:3px 8px;border-radius:999px;">低置信 ${lowConfidenceCount}</span>
                     <span style="background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:999px;">来源证据 ${sourceFirstCount}</span>
+                    <span style="background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:999px;">源文线索 ${sourceContentCardCount}</span>
                     <span style="background:#e0f2fe;color:#075985;padding:3px 8px;border-radius:999px;">纯占位 ${placeholderCount}</span>
                     <span style="background:#ede9fe;color:#5b21b6;padding:3px 8px;border-radius:999px;">重复簇 ${bank.duplicateGroupCount || 0}</span>
                   </div>`
