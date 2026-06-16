@@ -674,6 +674,12 @@ window.QuestionBankPractice = (function() {
                     container.innerHTML = content;
                 }
             }
+            if (!document.getElementById('practiceContainer')) {
+                const container = document.getElementById('questionBanksList');
+                if (container) {
+                    container.innerHTML = content;
+                }
+            }
             
             // 应用阅读模式样式
             this.applyReadingModeStyles();
