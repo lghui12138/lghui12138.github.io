@@ -83,9 +83,10 @@ window.QuestionBankPractice = (function() {
         const final181103SourceVerified = is181103Material
             && question.sourceSemanticVerified === true
             && question.semanticReviewRequired !== true
+            && question.round378QuestionAnswerWebsiteVerified === true
+            && question.round378OriginalMeaningChecked === true
             && String(question.sourceHtmlUrl || '').includes('/resources/fluid-181103-html/materials/')
             && String(question.sourcePageImageUrl || question.sourcePageImageEvidenceUrl || '').trim()
-            && /^(high|medium)$/.test(String(question.sourceSemanticOriginalConfidence || question.manualCorrectionConfidence || question.questionTextConfidence || ''))
             && !badTextPattern.test(text);
         if (final181103SourceVerified) return false;
         if (question.questionTextConfidence === 'high' && /verified/.test(String(question.questionTextSource || '')) && !badTextPattern.test(text)) {
@@ -188,7 +189,10 @@ window.QuestionBankPractice = (function() {
             const sourceHref = escapeHtml(question.sourceHtmlUrl || '/resources/fluid-181103-html/index.html');
             const sourceImage = sourceImageFromQuestion(question);
             const confidence = escapeHtml(question.questionTextConfidence || 'needs-review');
-            const sourceLabel = question.questionTextConfidence === 'high' ? '高置信 HTML 题面' : question.questionTextConfidence === 'medium' ? '中置信 HTML 题面' : '待复核 HTML 题面';
+            const finalVerified = question.round378QuestionAnswerWebsiteVerified === true && question.round378OriginalMeaningChecked === true;
+            const sourceLabel = finalVerified
+                ? '最终源文已验 HTML 题面'
+                : question.questionTextConfidence === 'high' ? '高置信 HTML 题面' : question.questionTextConfidence === 'medium' ? '中置信 HTML 题面' : '待复核 HTML 题面';
             const sourceImageHtml = sourceImage ? `
                 <details open data-181103-source-page-image="1" style="margin-top:12px;">
                     <summary style="cursor:pointer;font-weight:800;color:#0f766e;">展开来源页图核对证据</summary>
@@ -200,7 +204,7 @@ window.QuestionBankPractice = (function() {
                 <div data-181103-source-anchor-fallback="1" style="margin-top:10px;padding:10px 12px;border:1px dashed #38bdf8;border-radius:10px;background:#f8fafc;color:#075985;font-weight:700;">
                     本题定位到来源 HTML 正文锚点；可打开来源 HTML 核对原文。
                 </div>`;
-            const needsSourceFirst = hasOcrGarbleQuestion(question);
+            const needsSourceFirst = !finalVerified && hasOcrGarbleQuestion(question);
             const garbleNote = needsSourceFirst
                 ? '<div style="margin-top:8px;font-weight:800;color:#9a3412;">这题仍标记为待复核；HTML 题面继续完整显示，来源页只作逐题核对证据。</div>'
                 : '';
@@ -1470,8 +1474,13 @@ window.QuestionBankPractice = (function() {
             const questionType = question.type || '选择题';
             const is181103SourceFirstQuestion = question.extractedFromMaterial === true
                 && (question.sourceFirstReview === true || String(question.sourceHtmlUrl || '').includes('/resources/fluid-181103-html/materials/'));
+            const final181103WebsiteVerified = is181103SourceFirstQuestion
+                && question.round378QuestionAnswerWebsiteVerified === true
+                && question.round378OriginalMeaningChecked === true;
             const qualityLabel = is181103SourceFirstQuestion
-                ? (question.questionTextConfidence === 'high' ? '高置信 HTML 题面' : question.questionTextConfidence === 'medium' ? '中置信 HTML 题面' : '待复核 HTML 题面')
+                ? (final181103WebsiteVerified
+                    ? (question.sourceSemanticQuestionCardKind === 'source-content-card' ? '源文线索已验' : '最终源文已验题面')
+                    : question.questionTextConfidence === 'high' ? '高置信 HTML 题面' : question.questionTextConfidence === 'medium' ? '中置信 HTML 题面' : '待复核 HTML 题面')
                 : question.qualityTier === 'show'
                     ? '默认可练'
                     : question.qualityTier === 'hide'
@@ -1485,10 +1494,10 @@ window.QuestionBankPractice = (function() {
                 <div data-181103-question-quality="1" style="margin:0 0 24px 0;padding:14px 16px;border:1px solid #fde68a;background:#fffbeb;color:#78350f;border-radius:14px;font-size:0.95em;line-height:1.55;">
                     <strong>181103资料题</strong>
                     ${qualityLabel ? `<span style="display:inline-flex;margin-left:8px;padding:2px 8px;border-radius:999px;background:#ede9fe;color:#5b21b6;font-size:.85em;">${escapeHtml(qualityLabel)}</span>` : ''}
-                    ${Number.isFinite(Number(question.ocrQualityScore)) ? `<span style="display:inline-flex;margin-left:6px;padding:2px 8px;border-radius:999px;background:#e0f2fe;color:#075985;font-size:.85em;">质量分 ${escapeHtml(question.ocrQualityScore)}</span>` : ''}
+                    ${!final181103WebsiteVerified && Number.isFinite(Number(question.ocrQualityScore)) ? `<span style="display:inline-flex;margin-left:6px;padding:2px 8px;border-radius:999px;background:#e0f2fe;color:#075985;font-size:.85em;">质量分 ${escapeHtml(question.ocrQualityScore)}</span>` : ''}
                     ${question.duplicateGroupId ? `<span style="display:inline-flex;margin-left:6px;padding:2px 8px;border-radius:999px;background:#fee2e2;color:#991b1b;font-size:.85em;">重复簇 ${escapeHtml(question.duplicateGroupId)}</span>` : ''}
                     <div style="margin-top:8px;">${escapeHtml(question.qualityNote || 'HTML 题面已直接显示；来源页仅用于复核。')}</div>
-                    ${hasOcrGarbleQuestion(question) ? '<div style="margin-top:6px;font-weight:700;color:#9a3412;">本题仍需逐条复核，但不会退回图片/PDF 占位；请以上方 HTML 题面作答，再用来源页核对。</div>' : ''}
+                    ${!final181103WebsiteVerified && hasOcrGarbleQuestion(question) ? '<div style="margin-top:6px;font-weight:700;color:#9a3412;">本题仍需逐条复核，但不会退回图片/PDF 占位；请以上方 HTML 题面作答，再用来源页核对。</div>' : ''}
                     ${sourceHtmlUrl ? `<a href="${escapeHtml(sourceHtmlUrl)}" target="_blank" rel="noopener" style="display:inline-flex;margin-top:8px;color:#2563eb;font-weight:700;">打开来源 HTML 核对页</a>` : ''}
                 </div>
             ` : '';
