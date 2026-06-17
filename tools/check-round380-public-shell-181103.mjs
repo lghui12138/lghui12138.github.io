@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const repoRoot = path.resolve(import.meta.dirname, '..');
-const expectedVersion = process.env.FLUID_EXPECTED_EDGE_VERSION || 'round380-server-progress-persistence-20260617';
+const expectedVersion = process.env.FLUID_EXPECTED_EDGE_VERSION || 'round382-server-progress-monitoring-20260617';
 const previous181103Base = 'round379-181103-full-website-question-validation-20260617';
 
 const shellFiles = [
