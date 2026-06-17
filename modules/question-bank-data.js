@@ -1649,15 +1649,24 @@ window.QuestionBankData = (function() {
                 question.question,
                 question.title,
                 question.answer,
-                question.explanation,
-                flags,
-                reviewReason
+                question.explanation
             ].filter(Boolean).join('\n');
+            const badTextPattern = /round356-default-practice-blocked|embedded-equation-placeholder|font-table-noise|latin-symbol-noise|EMBED\s+Equation|DSMT4|high-resolution\s+ja\s+JP|501\s+501\s+\d{4,}|[�□■]|\?{2,}/i;
+            const final181103SourceVerified = is181103Material
+                && question.sourceSemanticVerified === true
+                && question.semanticReviewRequired !== true
+                && String(question.sourceHtmlUrl || '').includes('/resources/fluid-181103-html/materials/')
+                && String(question.sourcePageImageUrl || question.sourcePageImageEvidenceUrl || '').trim()
+                && /^(high|medium)$/.test(String(question.sourceSemanticOriginalConfidence || question.manualCorrectionConfidence || question.questionTextConfidence || ''))
+                && !badTextPattern.test(text);
+            if (final181103SourceVerified) return false;
+            const metaText = [flags, reviewReason].filter(Boolean).join('\n');
             return is181103Material && (
                 question.qualityTier === 'ocr-review'
                 || question.qualityTier === 'hide'
                 || question.defaultHidden === true
-                || /round356-default-practice-blocked|embedded-equation-placeholder|font-table-noise|low-ocr-score|latin-symbol-noise|EMBED\s+Equation|DSMT4|high-resolution\s+ja\s+JP|501\s+501\s+\d{4,}|[�□■]|\?{2,}/i.test(text)
+                || badTextPattern.test(text)
+                || /round356-default-practice-blocked|low-ocr-score/i.test(metaText)
             );
         },
 

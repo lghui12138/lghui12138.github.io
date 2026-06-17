@@ -75,11 +75,19 @@ window.QuestionBankPractice = (function() {
             reviewReason
         ].filter(Boolean).join('\n');
         const badTextPattern = /round356-default-practice-blocked|embedded-equation-placeholder|font-table-noise|low-ocr-score|latin-symbol-noise|EMBED\s+Equation|DSMT4|high-resolution\s+ja\s+JP|501\s+501\s+\d{4,}|[�□■]|\?{2,}/i;
-        const sourcePageCorrected = /^manual-source-page-correction-round371-(high|medium)$/.test(String(question.questionTextSource || ''))
+        const sourcePageCorrected = /^manual-source-page-correction-round(?:371|373|378)-(high|medium)$/.test(String(question.questionTextSource || ''))
             && /^(high|medium)$/.test(String(question.manualCorrectionConfidence || question.questionTextConfidence || ''))
             && question.semanticReviewRequired !== true
             && !badTextPattern.test(text);
         if (sourcePageCorrected) return false;
+        const final181103SourceVerified = is181103Material
+            && question.sourceSemanticVerified === true
+            && question.semanticReviewRequired !== true
+            && String(question.sourceHtmlUrl || '').includes('/resources/fluid-181103-html/materials/')
+            && String(question.sourcePageImageUrl || question.sourcePageImageEvidenceUrl || '').trim()
+            && /^(high|medium)$/.test(String(question.sourceSemanticOriginalConfidence || question.manualCorrectionConfidence || question.questionTextConfidence || ''))
+            && !badTextPattern.test(text);
+        if (final181103SourceVerified) return false;
         if (question.questionTextConfidence === 'high' && /verified/.test(String(question.questionTextSource || '')) && !badTextPattern.test(text)) {
             return false;
         }
