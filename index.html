@@ -15,6 +15,9 @@
     h1{margin:0 0 10px;font-size:28px;letter-spacing:0}
     p{margin:0 0 14px;color:#425466;line-height:1.7}
     a{display:inline-flex;align-items:center;min-height:42px;border-radius:8px;background:#0f766e;color:#fff;padding:0 16px;text-decoration:none;font-weight:800}
+    .actions{display:flex;flex-wrap:wrap;gap:12px}
+    .secondary{background:#155eef}
+    .route-cards{display:grid;gap:10px;margin:16px 0}.route-card{display:block;background:#fff;color:#0f172a;border:1px solid rgba(15,23,42,.12);border-radius:8px;padding:12px 14px;text-decoration:none;font-weight:700}.route-card span{display:block;margin-top:4px;color:#475569;font-size:14px;font-weight:500;line-height:1.5}.status-pills{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.status-pills span{border:1px solid rgba(15,23,42,.14);border-radius:999px;background:#f8fafc;color:#334155;padding:6px 10px;font-size:13px;font-weight:760}
     code{word-break:break-all}
   </style>
 </head>
@@ -25,8 +28,20 @@
     <p>当前入口版本是 round380-server-progress-persistence-20260617。跳转会保留当前路径并把旧 edge_refresh 统一改到当前入口版本，主站会继续显示完整内容、公式和练习。</p>
     <p>181103 资料当前已写成 HTML 正文：38 份资料、30 条学习路线、68 个真题复核任务和 522 张资料来源卡；381 道独立题进入刷题，141 条参考答案页、父卡、源文/答案续页/讲义正文只作线索展示；公开壳不提供原始文件下载。</p>
     <p><code>/index-complete</code></p>
-    
-    <p><a id="targetLink" href="https://lghui-fluid-learning.pages.dev/index-complete?full=1&edge_refresh=round380-server-progress-persistence-20260617">立即打开</a></p>
+    <div class="status-pills" aria-label="当前公开壳版本状态">
+      <span>Current · Round380</span>
+      <span>181103 content base · Round379</span>
+      <span>38 HTML · 522 sources · 381 practice · 141 leads</span>
+    </div>
+    <div class="route-cards" aria-label="181103 首页直达入口">
+      <a class="route-card" href="https://lghui-fluid-learning.pages.dev/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round380-server-progress-persistence-20260617#questionBanksList">181103 522 全题核对 / 381 练习<span>资料内习题、例题、名词解释、证明计算题已入题库；141 条参考答案页、父卡和源文续页只作线索。</span></a>
+      <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 38 份 HTML 正文<span>全部是站内 HTML 内容页，不发布 PDF/PPT/DOC/ZIP 原件，也不走 viewer 壳。</span></a>
+      <a class="route-card" href="https://lghui-fluid-learning.pages.dev/resources.html?edge_refresh=round380-server-progress-persistence-20260617#supplemental-181103">资源中心 181103 工作台<span>从资源页进入学习路线、真题复核、题库和私有视频边界，公开壳只做入口与状态提示。</span></a>
+    </div>
+    <div class="actions">
+      <a id="targetLink" href="https://lghui-fluid-learning.pages.dev/index-complete?full=1&edge_refresh=round380-server-progress-persistence-20260617">立即打开</a>
+      <a id="stableLink" class="secondary" href="https://lghui.top/index-complete.html?full=1">打开稳定入口</a>
+    </div>
   </main>
   <script>
     const TARGET_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
@@ -54,6 +69,12 @@
     searchParams.set('edge_refresh', EDGE_REFRESH);
     const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
     document.getElementById('targetLink').href = target;
+    const stableUrl = new URL('https://lghui.top/index-complete.html');
+    const stableParams = new URLSearchParams(location.search);
+    stableParams.set('full', '1');
+    stableUrl.search = stableParams.toString();
+    stableUrl.hash = location.hash;
+    document.getElementById('stableLink').href = stableUrl.toString();
     let entering = false;
     function enterTarget(){
       if (entering || location.href === target) return;

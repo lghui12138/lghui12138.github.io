@@ -415,10 +415,49 @@ function targetHrefForRoute(route) {
   };
 }
 
+function questionBankHref(focus) {
+  return `${targetOrigin}/modules/question-bank.html?focus=${focus}&edge_refresh=${edgeRefresh}#questionBanksList`;
+}
+
+function resourcesHref() {
+  return `${targetOrigin}/resources.html?edge_refresh=${edgeRefresh}#supplemental-181103`;
+}
+
+function routeSpecificMarkupFor(route) {
+  const currentStatus = `<div class="status-pills" aria-label="当前公开壳版本状态">
+      <span>Current · Round380</span>
+      <span>181103 content base · Round379</span>
+      <span>38 HTML · 522 sources · 381 practice · 141 leads</span>
+    </div>`;
+  const homeMarkup = `${currentStatus}
+    <div class="route-cards" aria-label="181103 首页直达入口">
+      <a class="route-card" href="${questionBankHref('181103-material-extracted')}">181103 522 全题核对 / 381 练习<span>资料内习题、例题、名词解释、证明计算题已入题库；141 条参考答案页、父卡和源文续页只作线索。</span></a>
+      <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 38 份 HTML 正文<span>全部是站内 HTML 内容页，不发布 PDF/PPT/DOC/ZIP 原件，也不走 viewer 壳。</span></a>
+      <a class="route-card" href="${resourcesHref()}">资源中心 181103 工作台<span>从资源页进入学习路线、真题复核、题库和私有视频边界，公开壳只做入口与状态提示。</span></a>
+    </div>`;
+  const questionBankMarkup = `${currentStatus}
+    <div class="route-cards" aria-label="181103 题库直达入口">
+      <a class="route-card" href="${questionBankHref('181103-material-extracted')}">181103 资料内题目全集<span>522 张来源 HTML 卡已经进入题库可见面；381 道独立题进入默认练习池。</span></a>
+      <a class="route-card" href="${questionBankHref('181103-material-review')}">181103 真题复核边界<span>68 个真题复核任务保留独立边界，辅助题干、章节和题型复核，不冒充原卷答案 PDF 证据。</span></a>
+      <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 HTML 来源总表<span>需要回看来源时打开站内 HTML 正文页；公开壳不提供原始文件下载。</span></a>
+    </div>`;
+  const resourcesMarkup = `${currentStatus}
+    <div class="route-cards" aria-label="181103 资料直达入口">
+      <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 全资料 HTML 总表<span>38/38 个资料页已写成站内 HTML 正文，不走下载或 viewer 壳。</span></a>
+      <a class="route-card" href="${questionBankHref('181103-material-extracted')}">181103 资料内题目全集<span>522 个资料内习题、例题、名词解释、证明计算题已入题库；381 道独立题进入默认练习。</span></a>
+      <a class="route-card" href="${questionBankHref('181103-material-review')}">181103 真题复核题<span>68 个真题复核题保留独立边界，不冒充原卷答案 PDF 证据。</span></a>
+    </div>`;
+  if (route === '/index-complete') return homeMarkup;
+  if (['/question-bank.html', '/question-bank-home.html', '/modules/question-bank.html'].includes(route)) return questionBankMarkup;
+  if (route === '/resources.html') return resourcesMarkup;
+  return '';
+}
+
 function htmlFor(route) {
   const targetInfo = targetHrefForRoute(route);
   const target = targetInfo.href;
   const stableFallback = [
+    '/index-complete',
     '/modules/physical-oceanography-home.html',
     '/knowledge.html',
     '/knowledge',
@@ -436,7 +475,7 @@ function htmlFor(route) {
     '/modules/question-bank-module.html'
   ].includes(route);
   const actionStyles = stableFallback
-    ? '\n    .actions{display:flex;flex-wrap:wrap;gap:12px}\n    .secondary{background:#155eef}\n    .route-cards{display:grid;gap:10px;margin:16px 0}.route-card{display:block;background:#fff;color:#0f172a;border:1px solid rgba(15,23,42,.12);border-radius:8px;padding:12px 14px;text-decoration:none;font-weight:700}.route-card span{display:block;margin-top:4px;color:#475569;font-size:14px;font-weight:500;line-height:1.5}'
+    ? '\n    .actions{display:flex;flex-wrap:wrap;gap:12px}\n    .secondary{background:#155eef}\n    .route-cards{display:grid;gap:10px;margin:16px 0}.route-card{display:block;background:#fff;color:#0f172a;border:1px solid rgba(15,23,42,.12);border-radius:8px;padding:12px 14px;text-decoration:none;font-weight:700}.route-card span{display:block;margin-top:4px;color:#475569;font-size:14px;font-weight:500;line-height:1.5}.status-pills{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.status-pills span{border:1px solid rgba(15,23,42,.14);border-radius:999px;background:#f8fafc;color:#334155;padding:6px 10px;font-size:13px;font-weight:760}'
     : '';
   const actionMarkup = stableFallback
     ? `<div class="actions">
@@ -444,13 +483,7 @@ function htmlFor(route) {
       <a id="stableLink" class="secondary" href="https://lghui.top/index-complete.html?full=1">打开稳定入口</a>
     </div>`
     : `<p><a id="targetLink" href="${target}">立即打开</a></p>`;
-  const routeSpecificMarkup = route === '/resources.html'
-    ? `<div class="route-cards" aria-label="181103 资料直达入口">
-      <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 全资料 HTML 总表<span>38/38 个资料页已写成站内 HTML 正文，不走下载或 viewer 壳。</span></a>
-      <a class="route-card" href="${targetOrigin}/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=${edgeRefresh}#questionBanksList">181103 资料内题目全集<span>522 个资料内习题、例题、名词解释、证明计算题已入题库；03 练习册新增 111 题。</span></a>
-      <a class="route-card" href="${targetOrigin}/modules/question-bank.html?focus=181103-material-review&edge_refresh=${edgeRefresh}#questionBanksList">181103 真题复核题<span>68 个真题复核题保留独立边界，不冒充原卷答案 PDF 证据。</span></a>
-    </div>`
-    : '';
+  const routeSpecificMarkup = routeSpecificMarkupFor(route);
   const stableScript = stableFallback
     ? "\n    const stableUrl = new URL('https://lghui.top/index-complete.html');\n    const stableParams = new URLSearchParams(location.search);\n    stableParams.set('full', '1');\n    stableUrl.search = stableParams.toString();\n    stableUrl.hash = location.hash;\n    document.getElementById('stableLink').href = stableUrl.toString();"
     : '';
