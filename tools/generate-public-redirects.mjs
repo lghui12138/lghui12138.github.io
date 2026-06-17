@@ -447,7 +447,14 @@ function routeSpecificMarkupFor(route) {
       <a class="route-card" href="${questionBankHref('181103-material-extracted')}">181103 资料内题目全集<span>522 个资料内习题、例题、名词解释、证明计算题已入题库；381 道独立题进入默认练习。</span></a>
       <a class="route-card" href="${questionBankHref('181103-material-review')}">181103 真题复核题<span>68 个真题复核题保留独立边界，不冒充原卷答案 PDF 证据。</span></a>
     </div>`;
+  const knowledgeMarkup = `${currentStatus}
+    <div class="route-cards" aria-label="181103 知识升级直达入口">
+      <a class="route-card" href="${questionBankHref('181103-material-extracted')}">181103 知识点关联题库<span>522 张资料来源卡和 381 道默认练习继续从知识点页回连，不把 141 条线索混入刷题池。</span></a>
+      <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 38 份 HTML 讲义<span>知识升级页只链接站内 HTML 正文，不发布 PDF/PPT/DOC/ZIP 原件，也不走 viewer 壳。</span></a>
+      <a class="route-card" href="${resourcesHref()}">资源中心 181103 工作台<span>从知识点复习跳回资料、路线、真题复核和题库入口，保持 Round380 当前入口标签。</span></a>
+    </div>`;
   if (route === '/index-complete') return homeMarkup;
+  if (['/knowledge.html', '/knowledge', '/modules/knowledge-detail.html', '/modules/knowledge-detail', '/modules/knowledge-upgrade-2026.html'].includes(route)) return knowledgeMarkup;
   if (['/question-bank.html', '/question-bank-home.html', '/modules/question-bank.html'].includes(route)) return questionBankMarkup;
   if (route === '/resources.html') return resourcesMarkup;
   return '';

@@ -35,6 +35,31 @@ const shellFiles = [
     id: 'resources',
     file: 'resources.html',
     required: ['181103 资料直达入口', '181103 全资料 HTML 总表', '181103 资料内题目全集', '181103 真题复核题']
+  },
+  {
+    id: 'knowledge-root',
+    file: 'knowledge.html',
+    required: ['181103 知识升级直达入口', '181103 知识点关联题库', '181103 38 份 HTML 讲义', '资源中心 181103 工作台']
+  },
+  {
+    id: 'knowledge-extensionless',
+    file: 'knowledge/index.html',
+    required: ['181103 知识升级直达入口', '181103 知识点关联题库', '181103 38 份 HTML 讲义', '资源中心 181103 工作台']
+  },
+  {
+    id: 'knowledge-detail',
+    file: 'modules/knowledge-detail.html',
+    required: ['181103 知识升级直达入口', '181103 知识点关联题库', '181103 38 份 HTML 讲义', '资源中心 181103 工作台']
+  },
+  {
+    id: 'knowledge-detail-extensionless',
+    file: 'modules/knowledge-detail/index.html',
+    required: ['181103 知识升级直达入口', '181103 知识点关联题库', '181103 38 份 HTML 讲义', '资源中心 181103 工作台']
+  },
+  {
+    id: 'knowledge-upgrade',
+    file: 'modules/knowledge-upgrade-2026.html',
+    required: ['181103 知识升级直达入口', '181103 知识点关联题库', '181103 38 份 HTML 讲义', '资源中心 181103 工作台']
   }
 ];
 
@@ -107,7 +132,7 @@ for (const entry of shellFiles) {
 }
 
 const generator = readText('tools/generate-public-redirects.mjs');
-for (const term of ['routeSpecificMarkupFor', '181103 首页直达入口', '181103 题库直达入口', '181103 资料直达入口']) {
+for (const term of ['routeSpecificMarkupFor', '181103 首页直达入口', '181103 题库直达入口', '181103 资料直达入口', '181103 知识升级直达入口']) {
   if (!generator.includes(term)) addFailure('generator', `missing generator term: ${term}`);
 }
 if (!generator.includes("'/index-complete'")) {
