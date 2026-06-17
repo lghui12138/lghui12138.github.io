@@ -135,6 +135,8 @@ const runtimeCopies = [
   ['data/fluid-round375-181103-all-question-web-parity.json.gz', 'data/fluid-round375-181103-all-question-web-parity.json.gz'],
   ['data/fluid-round376-181103-visible-522-all-question-proof.json', 'data/fluid-round376-181103-visible-522-all-question-proof.json'],
   ['data/fluid-round376-181103-visible-522-all-question-proof.json.gz', 'data/fluid-round376-181103-visible-522-all-question-proof.json.gz'],
+  ['data/fluid-round378-181103-question-answer-website-verification.json', 'data/fluid-round378-181103-question-answer-website-verification.json'],
+  ['data/fluid-round378-181103-question-answer-website-verification.json.gz', 'data/fluid-round378-181103-question-answer-website-verification.json.gz'],
   ['data/fluid-round373-181103-live-browser-all-questions.json', 'data/fluid-round373-181103-live-browser-all-questions.json'],
   ['data/fluid-round373-181103-live-browser-all-questions.json.gz', 'data/fluid-round373-181103-live-browser-all-questions.json.gz'],
   ['data/fluid-real-exam-source-granularity-audit.json', 'data/fluid-real-exam-source-granularity-audit.json'],
