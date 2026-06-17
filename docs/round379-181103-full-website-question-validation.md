@@ -13,7 +13,7 @@ Previous: round378-181103-question-answer-website-verification-20260617
 | Static failures | 0 |
 | Browser attempted | 522 |
 | Browser problems | 0 |
-| Live JSON checked | no |
+| Live JSON checked | yes |
 
 ## Acceptance Rules
 
