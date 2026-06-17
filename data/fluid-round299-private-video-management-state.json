@@ -1,0 +1,730 @@
+{
+  "version": "round299-private-video-management-state-gate-20260614",
+  "generatedAt": "2026-06-13T22:55:29.902Z",
+  "pass": true,
+  "targetRound": 299,
+  "scope": {
+    "worker": "Round299 Worker C",
+    "target": "private-video management state gate",
+    "projectRoot": "lghui-source-private-video-work",
+    "nodeOnly": true,
+    "pythonUsed": false,
+    "lxmlUsed": false,
+    "vpnOrProxyTouched": false,
+    "deployAttempted": false,
+    "secretsRequired": false,
+    "credentialValuesPrinted": false
+  },
+  "artifacts": {
+    "tool": "tools/check-round299-private-video-management-state.mjs",
+    "json": "data/fluid-round299-private-video-management-state.json",
+    "gzip": "data/fluid-round299-private-video-management-state.json.gz",
+    "doc": "docs/round299/private-video-management-state.md"
+  },
+  "state": {
+    "uiMock": {
+      "id": "ui-mock-readiness",
+      "label": "UI/mock management readiness",
+      "state": "ready-ui-and-mock-only",
+      "ready": true,
+      "claimAllowed": true,
+      "productionClaimAllowed": false,
+      "noRealCredentials": true,
+      "productionAccountQA": false,
+      "routes": [
+        {
+          "id": "list",
+          "present": true
+        },
+        {
+          "id": "publish",
+          "present": true
+        },
+        {
+          "id": "access",
+          "present": true
+        },
+        {
+          "id": "archive",
+          "present": true
+        },
+        {
+          "id": "delete-dry-run",
+          "present": true
+        },
+        {
+          "id": "delete",
+          "present": true
+        }
+      ],
+      "buttons": [
+        {
+          "id": "refresh",
+          "present": true
+        },
+        {
+          "id": "retry",
+          "present": true
+        },
+        {
+          "id": "publish",
+          "present": true
+        },
+        {
+          "id": "same-access-save",
+          "present": true
+        },
+        {
+          "id": "change-access",
+          "present": true
+        },
+        {
+          "id": "archive",
+          "present": true
+        },
+        {
+          "id": "delete",
+          "present": true
+        }
+      ],
+      "readinessStates": [
+        "ready",
+        "limited",
+        "blocked"
+      ],
+      "evidence": [
+        "Source/mock gate checks list, publish, access, archive, delete dry-run, and delete route wiring.",
+        "This state does not include real teacher login, live browser mutation, or Cloudflare storage recovery."
+      ],
+      "blockers": []
+    },
+    "realAccountBrowser": {
+      "id": "real-account-browser-readiness",
+      "label": "Real-account browser readiness",
+      "state": "blocked-missing-real-account-inputs",
+      "ready": false,
+      "runnable": false,
+      "claimAllowed": false,
+      "productionClaimAllowed": false,
+      "authInputsPresent": false,
+      "requiredBrowserProofsPresent": false,
+      "realAccountBrowserQaCompleted": false,
+      "round298RealQaStatus": "blocked-missing-credentials",
+      "credentialsPrinted": false,
+      "missingRequired": [
+        {
+          "id": "teacher-user",
+          "label": "teacher username"
+        },
+        {
+          "id": "teacher-password",
+          "label": "teacher password"
+        },
+        {
+          "id": "student-user",
+          "label": "student username"
+        },
+        {
+          "id": "student-password",
+          "label": "student password"
+        },
+        {
+          "id": "expected-qa-teacher",
+          "label": "expected QA teacher username"
+        },
+        {
+          "id": "expected-qa-student",
+          "label": "expected QA student username"
+        },
+        {
+          "id": "private-video-teacher-user",
+          "label": "private-video teacher username"
+        },
+        {
+          "id": "private-video-teacher-password",
+          "label": "private-video teacher password"
+        },
+        {
+          "id": "teacher-sign-in-name",
+          "label": "teacher sign-in name"
+        },
+        {
+          "id": "teacher-sign-in-verifier",
+          "label": "teacher sign-in verifier"
+        },
+        {
+          "id": "student-sign-in-name",
+          "label": "student sign-in name"
+        },
+        {
+          "id": "student-sign-in-verifier",
+          "label": "student sign-in verifier"
+        }
+      ],
+      "evidence": [
+        "Auth readiness is checked by label/presence only and never stores credential values.",
+        "Real-account browser proof requires the separate lghui.top/pages.dev and private-video browser gates."
+      ],
+      "blockers": [
+        "Required teacher/student/private-video QA account inputs are missing."
+      ]
+    },
+    "storage": {
+      "id": "cloudflare-fm-private-media-storage-readiness",
+      "label": "Cloudflare FM_PRIVATE_MEDIA R2 storage readiness",
+      "state": "blocked-missing-fm-private-media-r2",
+      "ready": false,
+      "claimAllowed": false,
+      "productionClaimAllowed": false,
+      "projectName": "lghui-fluid-learning",
+      "requiredBindings": [
+        "FM_AUDIT",
+        "FM_PRIVATE_MEDIA"
+      ],
+      "production": {
+        "kvBindings": [
+          "FM_AUDIT"
+        ],
+        "r2Bindings": [],
+        "hasAuditKv": true,
+        "hasPrivateMediaR2": false
+      },
+      "message": "Cloudflare Pages production is missing FM_PRIVATE_MEDIA R2 binding; private-video upload, publish, access-change and archive cannot recover from KV write quota with R2 fallback.",
+      "evidence": [
+        "Storage readiness is Cloudflare production binding readiness, not UI readiness or auth readiness.",
+        "Upload/publish/access-change/archive/delete recovery cannot be claimed until FM_PRIVATE_MEDIA R2 is present."
+      ],
+      "blockers": [
+        "Cloudflare production FM_PRIVATE_MEDIA R2 is missing or not proven."
+      ]
+    }
+  },
+  "stateGates": [
+    {
+      "id": "ui-mock-readiness",
+      "label": "UI/mock management readiness",
+      "state": "ready-ui-and-mock-only",
+      "ready": true,
+      "claimAllowed": true,
+      "productionClaimAllowed": false
+    },
+    {
+      "id": "real-account-browser-readiness",
+      "label": "Real-account browser readiness",
+      "state": "blocked-missing-real-account-inputs",
+      "ready": false,
+      "claimAllowed": false,
+      "productionClaimAllowed": false
+    },
+    {
+      "id": "cloudflare-fm-private-media-storage-readiness",
+      "label": "Cloudflare FM_PRIVATE_MEDIA R2 storage readiness",
+      "state": "blocked-missing-fm-private-media-r2",
+      "ready": false,
+      "claimAllowed": false,
+      "productionClaimAllowed": false
+    }
+  ],
+  "managementActions": [
+    {
+      "id": "list",
+      "label": "List private-video courses",
+      "uiMockState": "covered",
+      "realAccountBrowserState": "blocked-missing-real-account-inputs",
+      "storageState": "blocked-missing-fm-private-media-r2",
+      "productionReady": false,
+      "claim": "UI/mock coverage only; production management recovery is blocked or not proven"
+    },
+    {
+      "id": "publish",
+      "label": "Publish uploaded private-video course",
+      "uiMockState": "covered",
+      "realAccountBrowserState": "blocked-missing-real-account-inputs",
+      "storageState": "blocked-missing-fm-private-media-r2",
+      "productionReady": false,
+      "claim": "UI/mock coverage only; production management recovery is blocked or not proven"
+    },
+    {
+      "id": "access",
+      "label": "Save/change private-video access",
+      "uiMockState": "covered",
+      "realAccountBrowserState": "blocked-missing-real-account-inputs",
+      "storageState": "blocked-missing-fm-private-media-r2",
+      "productionReady": false,
+      "claim": "UI/mock coverage only; production management recovery is blocked or not proven"
+    },
+    {
+      "id": "archive",
+      "label": "Archive private-video course",
+      "uiMockState": "covered",
+      "realAccountBrowserState": "blocked-missing-real-account-inputs",
+      "storageState": "blocked-missing-fm-private-media-r2",
+      "productionReady": false,
+      "claim": "UI/mock coverage only; production management recovery is blocked or not proven"
+    },
+    {
+      "id": "delete",
+      "label": "Delete private-video course after dry-run and typed course-id confirmation",
+      "uiMockState": "covered",
+      "realAccountBrowserState": "blocked-missing-real-account-inputs",
+      "storageState": "blocked-missing-fm-private-media-r2",
+      "productionReady": false,
+      "claim": "UI/mock coverage only; production management recovery is blocked or not proven"
+    }
+  ],
+  "claims": {
+    "uiMockReady": true,
+    "realAccountBrowserReady": false,
+    "realAccountBrowserRunnable": false,
+    "cloudflareStorageReady": false,
+    "productionDeleteReady": false,
+    "productionManagementRecoveryAllowed": false
+  },
+  "blockers": [
+    "Required teacher/student/private-video QA account inputs are missing.",
+    "Cloudflare production FM_PRIVATE_MEDIA R2 is missing or not proven.",
+    "Production delete/manage recovery is not claimed by Round299."
+  ],
+  "commandRuns": {
+    "mock": {
+      "command": "node tools/check-private-video-management-mock.mjs --json",
+      "exitCode": 0,
+      "signal": null,
+      "parsed": {
+        "ok": true,
+        "gate": "private-video-management-mock",
+        "noRealCredentials": true,
+        "productionAccountQA": false,
+        "filesChecked": {
+          "edge": "functions/_middleware.js",
+          "teacher": "teacher-panel.html",
+          "browser": "tools/check-private-video-management-browser.mjs",
+          "binding": "tools/check-cloudflare-pages-private-video-bindings.mjs",
+          "validate": "tools/validate-site-content.mjs",
+          "runbook": "docs/private-video-management-runbook.md"
+        },
+        "summary": {
+          "version": "round299-source-count-audit-private-video-release-20260614",
+          "edgeRoutes": [
+            "list",
+            "publish",
+            "access",
+            "archive",
+            "delete-dry-run",
+            "delete"
+          ],
+          "uiButtons": [
+            "refresh",
+            "retry",
+            "publish",
+            "same-access-save",
+            "change-access",
+            "archive",
+            "delete"
+          ],
+          "readinessStates": [
+            "ready",
+            "limited",
+            "blocked"
+          ],
+          "cloudflareBindingAudit": "read-only Pages deployment config check; production requires FM_AUDIT KV plus FM_PRIVATE_MEDIA R2",
+          "destructiveProof": "dry-run plus typed course-id mismatch; no real delete credentials required",
+          "productionAccountQA": false
+        }
+      },
+      "stdoutPreview": "<json>",
+      "stderrPreview": ""
+    },
+    "auth": {
+      "command": "node tools/check-fluid-auth-env-readiness.mjs --json --production --require-private-video",
+      "exitCode": 2,
+      "signal": null,
+      "parsed": {
+        "ok": false,
+        "mode": "production",
+        "checkedAt": "2026-06-13T22:55:28.922Z",
+        "expectedVersion": "round299-source-count-audit-private-video-release-20260614",
+        "siteUpdatesVersion": "round299-source-count-audit-private-video-release-20260614",
+        "versionBinding": {
+          "expectedVersion": "round299-source-count-audit-private-video-release-20260614",
+          "siteUpdatesVersion": "round299-source-count-audit-private-video-release-20260614",
+          "versionSource": "site-updates.json[0].version",
+          "matchesSiteUpdates": true
+        },
+        "localEnvFilesChecked": [
+          ".auth-browser.env",
+          "output/qa/.auth-browser.env"
+        ],
+        "localEnvFilesLoaded": [],
+        "fields": [
+          {
+            "id": "teacher-user",
+            "label": "teacher username",
+            "required": true,
+            "present": false,
+            "presentKey": null,
+            "keys": [
+              "AUTH_BROWSER_TEACHER_USER",
+              "FLUID_AUTH_TEACHER_USER"
+            ],
+            "secret": false
+          },
+          {
+            "id": "teacher-password",
+            "label": "teacher password",
+            "required": true,
+            "present": false,
+            "presentKey": null,
+            "keys": [
+              "AUTH_BROWSER_TEACHER_PASSWORD",
+              "FLUID_AUTH_TEACHER_PASSWORD"
+            ],
+            "secret": true
+          },
+          {
+            "id": "student-user",
+            "label": "student username",
+            "required": true,
+            "present": false,
+            "presentKey": null,
+            "keys": [
+              "AUTH_BROWSER_STUDENT_USER",
+              "FLUID_AUTH_STUDENT_USER"
+            ],
+            "secret": false
+          },
+          {
+            "id": "student-password",
+            "label": "student password",
+            "required": true,
+            "present": false,
+            "presentKey": null,
+            "keys": [
+              "AUTH_BROWSER_STUDENT_PASSWORD",
+              "FLUID_AUTH_STUDENT_PASSWORD"
+            ],
+            "secret": true
+          },
+          {
+            "id": "expected-qa-teacher",
+            "label": "expected QA teacher username",
+            "required": true,
+            "present": false,
+            "presentKey": null,
+            "keys": [
+              "AUTH_BROWSER_EXPECTED_QA_TEACHER_USER",
+              "FLUID_AUTH_EXPECTED_QA_TEACHER_USER"
+            ],
+            "secret": false
+          },
+          {
+            "id": "expected-qa-student",
+            "label": "expected QA student username",
+            "required": true,
+            "present": false,
+            "presentKey": null,
+            "keys": [
+              "AUTH_BROWSER_EXPECTED_QA_STUDENT_USER",
+              "FLUID_AUTH_EXPECTED_QA_STUDENT_USER"
+            ],
+            "secret": false
+          },
+          {
+            "id": "browser-base-url",
+            "label": "authenticated browser base URL",
+            "required": false,
+            "present": false,
+            "presentKey": null,
+            "keys": [
+              "AUTH_BROWSER_BASE_URL",
+              "FLUID_AUTH_BROWSER_BASE_URL"
+            ],
+            "secret": false
+          },
+          {
+            "id": "public-shell-origin",
+            "label": "lghui.top public shell origin",
+            "required": false,
+            "present": false,
+            "presentKey": null,
+            "keys": [
+              "PUBLIC_SHELL_AUTH_BROWSER_BASE_URL",
+              "LGHUI_TOP_AUTH_CHAIN_PUBLIC_ORIGIN"
+            ],
+            "secret": false
+          },
+          {
+            "id": "auth-source-origin",
+            "label": "pages.dev auth origin",
+            "required": false,
+            "present": false,
+            "presentKey": null,
+            "keys": [
+              "PUBLIC_SHELL_AUTH_BROWSER_AUTH_ORIGIN",
+              "LGHUI_TOP_AUTH_CHAIN_SOURCE_ORIGIN"
+            ],
+            "secret": false
+          },
+          {
+            "id": "chrome-executable",
+            "label": "browser executable override",
+            "required": false,
+            "present": false,
+            "presentKey": null,
+            "keys": [
+              "AUTH_BROWSER_CHROME_EXECUTABLE",
+              "PUBLIC_ENTRY_BROWSER_CHROME_EXECUTABLE",
+              "LGHUI_TOP_AUTH_CHAIN_CHROME_EXECUTABLE"
+            ],
+            "secret": false
+          },
+          {
+            "id": "private-video-teacher-user",
+            "label": "private-video teacher username",
+            "required": true,
+            "present": false,
+            "presentKey": null,
+            "keys": [
+              "AUTH_BROWSER_TEACHER_USER",
+              "FLUID_AUTH_TEACHER_USER"
+            ],
+            "secret": false
+          },
+          {
+            "id": "private-video-teacher-password",
+            "label": "private-video teacher password",
+            "required": true,
+            "present": false,
+            "presentKey": null,
+            "keys": [
+              "AUTH_BROWSER_TEACHER_PASSWORD",
+              "FLUID_AUTH_TEACHER_PASSWORD"
+            ],
+            "secret": true
+          }
+        ],
+        "missingRequired": [
+          {
+            "id": "teacher-user",
+            "label": "teacher username",
+            "keys": [
+              "AUTH_BROWSER_TEACHER_USER",
+              "FLUID_AUTH_TEACHER_USER"
+            ]
+          },
+          {
+            "id": "teacher-password",
+            "label": "teacher password",
+            "keys": [
+              "AUTH_BROWSER_TEACHER_PASSWORD",
+              "FLUID_AUTH_TEACHER_PASSWORD"
+            ]
+          },
+          {
+            "id": "student-user",
+            "label": "student username",
+            "keys": [
+              "AUTH_BROWSER_STUDENT_USER",
+              "FLUID_AUTH_STUDENT_USER"
+            ]
+          },
+          {
+            "id": "student-password",
+            "label": "student password",
+            "keys": [
+              "AUTH_BROWSER_STUDENT_PASSWORD",
+              "FLUID_AUTH_STUDENT_PASSWORD"
+            ]
+          },
+          {
+            "id": "expected-qa-teacher",
+            "label": "expected QA teacher username",
+            "keys": [
+              "AUTH_BROWSER_EXPECTED_QA_TEACHER_USER",
+              "FLUID_AUTH_EXPECTED_QA_TEACHER_USER"
+            ]
+          },
+          {
+            "id": "expected-qa-student",
+            "label": "expected QA student username",
+            "keys": [
+              "AUTH_BROWSER_EXPECTED_QA_STUDENT_USER",
+              "FLUID_AUTH_EXPECTED_QA_STUDENT_USER"
+            ]
+          },
+          {
+            "id": "private-video-teacher-user",
+            "label": "private-video teacher username",
+            "keys": [
+              "AUTH_BROWSER_TEACHER_USER",
+              "FLUID_AUTH_TEACHER_USER"
+            ]
+          },
+          {
+            "id": "private-video-teacher-password",
+            "label": "private-video teacher password",
+            "keys": [
+              "AUTH_BROWSER_TEACHER_PASSWORD",
+              "FLUID_AUTH_TEACHER_PASSWORD"
+            ]
+          }
+        ],
+        "proofFacets": {
+          "anonymousPublicRelease": {
+            "id": "anonymous-public-release",
+            "status": "not-evaluated-here",
+            "claimAllowed": false,
+            "requiredByThisCheck": false,
+            "meaning": "Public lghui.top and pages.dev freshness must be proven by monitor-fluid-public-release and browser entry checks, not by auth credentials."
+          },
+          "authenticatedAccountQa": {
+            "id": "authenticated-account-qa",
+            "status": "blocked-missing-credentials",
+            "claimAllowed": false,
+            "requiredByThisCheck": true,
+            "missingFieldIds": [
+              "teacher-user",
+              "teacher-password",
+              "student-user",
+              "student-password",
+              "expected-qa-teacher",
+              "expected-qa-student"
+            ]
+          },
+          "privateVideoAccountQa": {
+            "id": "private-video-account-qa",
+            "status": "blocked-missing-credentials",
+            "claimAllowed": false,
+            "requiredByThisCheck": true,
+            "missingFieldIds": [
+              "private-video-teacher-user",
+              "private-video-teacher-password"
+            ]
+          },
+          "privateVideoStorageBinding": {
+            "id": "private-video-storage-binding",
+            "status": "not-evaluated-here",
+            "claimAllowed": false,
+            "requiredByThisCheck": false,
+            "requiredBinding": "FM_PRIVATE_MEDIA",
+            "requiredAuditCommand": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json",
+            "meaning": "Real teacher credentials do not prove storage-backed private-video production recovery; FM_PRIVATE_MEDIA R2 must be audited separately."
+          }
+        },
+        "round294LocalGate": {
+          "id": "round294-targeted-management-exam-workbench-local-gate",
+          "artifactsExist": true,
+          "targetVersion": "round294-targeted-management-exam-workbench-20260614",
+          "files": [
+            {
+              "relPath": "data/fluid-round294-website-optimization-ledger.json",
+              "exists": true
+            },
+            {
+              "relPath": "data/fluid-round294-website-optimization-ledger.json.gz",
+              "exists": true
+            },
+            {
+              "relPath": "docs/round294/website-optimization-ledger.md",
+              "exists": true
+            },
+            {
+              "relPath": "tools/build-round294-website-optimization-ledger.mjs",
+              "exists": true
+            }
+          ],
+          "ok": true,
+          "claimAllowed": false,
+          "meaning": "Local Round294 ledger readiness does not prove anonymous public release freshness, real-account browser QA, or FM_PRIVATE_MEDIA R2 storage recovery.",
+          "problems": [],
+          "version": "round294-targeted-management-exam-workbench-20260614",
+          "currentReleaseVersion": "round294-targeted-management-exam-workbench-20260614",
+          "privateVideoProductionBlocked": true,
+          "status": "ready"
+        },
+        "blockedClaims": [
+          "teacher-student-authenticated-browser-qa",
+          "private-video-authenticated-management-qa",
+          "private-video-upload-publish-access-archive-delete-production-recovery-without-fm-private-media-r2-proof"
+        ],
+        "allowedClaims": [],
+        "claimBoundaries": [
+          "anonymous public release freshness is not proven by this credential check",
+          "lghui.top auth-chain expected version matches site-updates.json[0].version",
+          "real teacher/student QA login must remain unverified until required credentials are supplied",
+          "private-video management browser QA must remain unverified until teacher credentials are supplied",
+          "FM_PRIVATE_MEDIA R2 binding is not proven by auth credentials; storage-backed upload/publish/access/archive/delete recovery must remain blocked until check-cloudflare-pages-private-video-bindings.mjs proves the binding.",
+          "Round294 local ledger readiness is a source artifact gate only; it does not prove public release freshness, authenticated browser QA, or FM_PRIVATE_MEDIA R2 binding."
+        ],
+        "nextVerificationCommands": [
+          "node tools/monitor-fluid-public-release.mjs --json",
+          "node tools/check-public-entry-browser.mjs --expected-edge-version round299-source-count-audit-private-video-release-20260614",
+          "node tools/check-authenticated-browser-gate.mjs --production --expected-version round299-source-count-audit-private-video-release-20260614",
+          "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round299-source-count-audit-private-video-release-20260614",
+          "node tools/check-private-video-management-browser.mjs --production --json",
+          "node tools/check-cloudflare-pages-private-video-bindings.mjs --json"
+        ],
+        "credentialsPrinted": false,
+        "guidance": "真实账号浏览器验证缺少必需凭据；只能声明匿名公开发布链，不能宣称 teacher/student QA 登录或私有视频真实账号管理已验证。"
+      },
+      "stdoutPreview": "<json>",
+      "stderrPreview": ""
+    },
+    "cloudflare": {
+      "command": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json",
+      "exitCode": 2,
+      "signal": null,
+      "parsed": {
+        "ok": false,
+        "projectName": "lghui-fluid-learning",
+        "production": {
+          "kvBindings": [
+            "FM_AUDIT"
+          ],
+          "r2Bindings": [],
+          "hasAuditKv": true,
+          "hasPrivateMediaR2": false
+        },
+        "preview": {
+          "kvBindings": [],
+          "r2Bindings": []
+        },
+        "message": "Cloudflare Pages production is missing FM_PRIVATE_MEDIA R2 binding; private-video upload, publish, access-change and archive cannot recover from KV write quota with R2 fallback."
+      },
+      "stdoutPreview": "<json>",
+      "stderrPreview": ""
+    }
+  },
+  "reusedArtifacts": [
+    {
+      "relPath": "data/fluid-round296-private-video-readiness-ledger.json",
+      "exists": true,
+      "parsed": true,
+      "parseError": null
+    },
+    {
+      "relPath": "data/fluid-round297-auth-readiness-ledger.json",
+      "exists": true,
+      "parsed": true,
+      "parseError": null
+    },
+    {
+      "relPath": "data/fluid-round298-auth-facet-proof.json",
+      "exists": true,
+      "parsed": true,
+      "parseError": null
+    }
+  ],
+  "verificationCommands": [
+    "node --check tools/check-round299-private-video-management-state.mjs",
+    "node tools/check-round299-private-video-management-state.mjs --json",
+    "node tools/check-private-video-management-mock.mjs --json",
+    "node tools/check-fluid-auth-env-readiness.mjs --json --production --require-private-video",
+    "node tools/check-cloudflare-pages-private-video-bindings.mjs --json"
+  ],
+  "outputFiles": [
+    "data/fluid-round299-private-video-management-state.json",
+    "data/fluid-round299-private-video-management-state.json.gz",
+    "docs/round299/private-video-management-state.md"
+  ]
+}

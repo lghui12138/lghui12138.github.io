@@ -1,0 +1,3384 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <style data-auth-boot>
+        html[data-auth-pending="1"] body { visibility: hidden !important; opacity: 0 !important; }
+        [v-cloak] { display: none !important; }
+    </style>
+    <script data-auth-boot>document.documentElement.setAttribute('data-auth-pending', '1');</script>
+    <script src="/js/security/auth-guard.js"></script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>地理学科知识与教学能力 - 高级中学教师资格考试</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']],
+                processEscapes: true,
+                processEnvironments: true
+            },
+            options: {
+                skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre']
+            }
+        };
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 25%, #3498db 50%, #52c234 75%, #91c7b1 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 100% 50%; }
+            50% { background-position: 50% 100%; }
+            75% { background-position: 0% 100%; }
+        }
+
+        /* 地理主题粒子效果 - 地球、山脉、河流元素 */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .particle {
+            position: absolute;
+            animation: float 25s infinite linear;
+        }
+
+        .particle.earth {
+            width: 8px;
+            height: 8px;
+            background: radial-gradient(circle, #4CAF50, #2E7D32);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .particle.mountain {
+            width: 0;
+            height: 0;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-bottom: 10px solid rgba(139, 69, 19, 0.7);
+        }
+
+        .particle.water {
+            width: 6px;
+            height: 6px;
+            background: radial-gradient(circle, #2196F3, #1565C0);
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(33, 150, 243, 0.6);
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(150px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(25px);
+            border-radius: 35px;
+            padding: 50px;
+            margin-bottom: 50px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(30, 60, 114, 0.3), transparent);
+            animation: shimmer 4s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 3.8em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #1e3c72, #2a5298, #3498db, #52c234);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+        }
+
+        .header .subtitle {
+            color: #1e3c72;
+            font-size: 1.6em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .header p {
+            color: #7f8c8d;
+            font-size: 1.4em;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        /* 考试信息卡片 */
+        .exam-info {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin-bottom: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .exam-structure {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .structure-item {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(30, 60, 114, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .structure-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(30, 60, 114, 0.4);
+        }
+
+        .structure-item h4 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .structure-item .percentage {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        /* 考试目标卡片样式 */
+        .exam-objectives {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+            margin: 50px 0;
+        }
+
+        .objective-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .objective-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(30, 60, 114, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .objective-card:hover::before {
+            left: 100%;
+        }
+
+        .objective-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 80px rgba(0, 0, 0, 0.15);
+        }
+
+        .objective-title {
+            color: #1e3c72;
+            font-size: 1.8em;
+            font-weight: 700;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .objective-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .objective-list li {
+            color: #555;
+            font-size: 1.1em;
+            line-height: 1.8;
+            margin-bottom: 15px;
+            padding-left: 35px;
+            position: relative;
+        }
+
+        .objective-list li::before {
+            content: '🌍';
+            position: absolute;
+            left: 0;
+            top: 0;
+            font-size: 1.2em;
+        }
+
+        /* 主要学习模块 */
+        .nav-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .nav-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 35px;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.4s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(30, 60, 114, 0.2), transparent);
+            transition: left 0.6s;
+        }
+
+        .nav-card:hover::before {
+            left: 100%;
+        }
+
+        .nav-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.2);
+            border-color: #1e3c72;
+        }
+
+        .nav-card-icon {
+            font-size: 3.5em;
+            color: #1e3c72;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-card h3 {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .nav-card p {
+            color: #7f8c8d;
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .nav-card .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(30, 60, 114, 0.2);
+        }
+
+        .progress-bar {
+            width: 60%;
+            height: 8px;
+            background: rgba(30, 60, 114, 0.2);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #1e3c72, #3498db);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-weight: 600;
+            color: #1e3c72;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2.8em;
+            }
+            
+            .nav-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .knowledge-points-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .knowledge-card {
+                padding: 25px;
+            }
+
+            .knowledge-icon {
+                width: 60px;
+                height: 60px;
+            }
+
+            .knowledge-icon i {
+                font-size: 24px;
+            }
+
+            .knowledge-categories {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .category-tab {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+            
+            .exam-objectives {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .exam-structure {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .quick-access-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 15px;
+            }
+
+            .recent-item {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+        }
+
+        /* 核心知识点样式 */
+        .knowledge-points-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .knowledge-points-title {
+            color: #1e3c72;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .knowledge-points-title i {
+            color: #ffd700;
+            font-size: 1.2em;
+        }
+
+        .knowledge-points-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .knowledge-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85));
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 35px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            min-height: 280px;
+        }
+
+        .knowledge-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .knowledge-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+            border-color: rgba(102, 126, 234, 0.5);
+        }
+
+        .knowledge-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .knowledge-icon i {
+            font-size: 32px;
+            color: white;
+        }
+
+        .knowledge-card h4 {
+            color: #2c3e50;
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            line-height: 1.3;
+        }
+
+        .knowledge-card p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .knowledge-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .knowledge-tags .tag {
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            color: #495057;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .knowledge-card:hover .tag {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: transparent;
+        }
+
+        /* 知识点分类导航 */
+        .knowledge-categories {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .category-tab {
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .category-tab:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .category-tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-color: transparent;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .category-tab i {
+            font-size: 16px;
+        }
+
+        /* 知识点卡片过滤动画 */
+        .knowledge-card {
+            transition: all 0.5s ease;
+            opacity: 1;
+            transform: scale(1);
+            position: relative;
+        }
+
+        .knowledge-card.hidden {
+            opacity: 0;
+            transform: scale(0.8);
+            pointer-events: none;
+        }
+
+        /* 快速操作按钮 */
+        .quick-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .knowledge-card:hover .quick-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            width: 35px;
+            height: 35px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-btn:hover {
+            background: #667eea;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* 学习进度提示 */
+        .progress-tip {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            animation: slideIn 0.3s ease;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translate(-50%, -60%);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, -50%);
+            }
+        }
+
+        .tip-content h4 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .progress-bar-mini {
+            width: 100%;
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+
+        .progress-fill-mini {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        .tip-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-start, .btn-review {
+            flex: 1;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-review {
+            background: #f8f9fa;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-review:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        /* 标签过滤提示 */
+        .tag-filter-tip {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            z-index: 1000;
+            animation: slideInRight 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .btn-clear {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-clear:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* 分类统计信息 */
+        .category-stats {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .stats-badge {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* 搜索框样式 */
+        .search-filter-container {
+            margin-bottom: 40px;
+        }
+
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 25px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .search-box:focus-within {
+            border-color: #667eea;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .search-box i {
+            color: white;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        .search-box input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-box input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 10px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        /* 搜索结果高亮 */
+        .knowledge-card.search-highlight {
+            border: 2px solid #ffd700;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        /* 搜索结果提示 */
+        .search-results-tip {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            z-index: 1000;
+            animation: slideInDown 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        @keyframes slideInDown {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(-100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        .search-term {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+
+        /* 卡片进度条 */
+        .card-progress {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .progress-text {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .progress-percentage {
+            font-size: 12px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .progress-bar-card {
+            width: 100%;
+            height: 4px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill-card {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+
+        /* 完成徽章 */
+        .completion-badge {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+            animation: badgePulse 2s infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .knowledge-card.completed {
+            border: 2px solid #4CAF50;
+            box-shadow: 0 10px 30px rgba(76, 175, 80, 0.2);
+        }
+
+        .knowledge-card.completed::before {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(69, 160, 73, 0.1));
+        }
+
+        /* 知识点卡片增强样式 */
+        .knowledge-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 20px;
+        }
+
+        .knowledge-card:hover::after {
+            opacity: 1;
+        }
+
+        .knowledge-card .knowledge-icon {
+            position: relative;
+            z-index: 2;
+        }
+
+        .knowledge-card h4,
+        .knowledge-card p,
+        .knowledge-card .knowledge-tags {
+            position: relative;
+            z-index: 2;
+        }
+
+        /* 学习统计样式 */
+        .stats-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .stats-title {
+            color: #1e3c72;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 25px;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, rgba(30, 60, 114, 0.1), rgba(42, 245, 152, 0.1));
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 2px solid rgba(30, 60, 114, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border-color: #1e3c72;
+        }
+
+        .stat-icon {
+            font-size: 2.5em;
+            color: #1e3c72;
+            margin-bottom: 15px;
+        }
+
+        .stat-content h4 {
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #1e3c72;
+            margin: 0;
+        }
+
+        .stat-unit {
+            color: #666;
+            font-size: 0.9em;
+            margin: 0;
+        }
+
+        /* 快速入口样式 */
+        .quick-access-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .quick-access-title {
+            color: #1e3c72;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .quick-access-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+        }
+
+        .quick-item {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            text-decoration: none;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .quick-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(30, 60, 114, 0.3);
+            background: linear-gradient(135deg, #2a5298, #42a5f5);
+        }
+
+        .quick-item i {
+            font-size: 2em;
+        }
+
+        .quick-item span {
+            font-size: 1em;
+            font-weight: 500;
+        }
+
+        /* 最近学习样式 */
+        .recent-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            padding: 40px;
+            margin: 40px 0;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .recent-title {
+            color: #1e3c72;
+            font-size: 2.2em;
+            margin-bottom: 30px;
+            text-align: center;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .recent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .recent-item {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            border-radius: 15px;
+            padding: 20px;
+            border: 2px solid rgba(30, 60, 114, 0.2);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .recent-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            border-color: #1e3c72;
+        }
+
+        .recent-icon {
+            font-size: 2em;
+            color: #1e3c72;
+            width: 60px;
+            text-align: center;
+        }
+
+        .recent-content {
+            flex: 1;
+        }
+
+        .recent-content h4 {
+            color: #333;
+            font-size: 1.2em;
+            margin-bottom: 5px;
+        }
+
+        .recent-content p {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .recent-time {
+            color: #999;
+            font-size: 0.8em;
+        }
+    </style>
+</head>
+<body>
+    <!-- 地理主题粒子效果 -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-globe-asia"></i> 地理学科知识与教学能力</h1>
+            <div class="subtitle">高级中学教师资格考试</div>
+            <p>全面掌握地理科学知识与教学技能，成为优秀的地理教育工作者</p>
+        </div>
+
+        <!-- 考试结构信息 -->
+        <div class="exam-info">
+            <h2 style="color: #1e3c72; text-align: center; margin-bottom: 30px; font-size: 2.2em;">
+                <i class="fas fa-chart-pie"></i> 试卷结构
+            </h2>
+            <div class="exam-structure">
+                <div class="structure-item">
+                    <h4>地理学科知识与运用</h4>
+                    <div class="percentage">44%</div>
+                    <p>单项选择题<br>材料分析题</p>
+                </div>
+                <div class="structure-item">
+                    <h4>教学知识与运用</h4>
+                    <div class="percentage">21%</div>
+                    <p>简答题<br>材料分析题</p>
+                </div>
+                <div class="structure-item">
+                    <h4>教学设计</h4>
+                    <div class="percentage">35%</div>
+                    <p>简答题<br>材料分析题<br>教学设计题</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 考试目标 -->
+        <div class="exam-objectives">
+            <div class="objective-card">
+                <div class="objective-title">
+                    <i class="fas fa-mountain"></i>
+                    地理科学知识与运用能力
+                </div>
+                <ul class="objective-list">
+                    <li>了解地理科学的特点</li>
+                    <li>掌握地理科学的基础知识、基本技能、基本方法和基础理论</li>
+                    <li>运用空间思维等地理科学的方法观察、分析和解决地理问题</li>
+                </ul>
+            </div>
+
+            <div class="objective-card">
+                <div class="objective-title">
+                    <i class="fas fa-chalkboard-teacher"></i>
+                    地理教学知识与运用能力
+                </div>
+                <ul class="objective-list">
+                    <li>了解初中和高中地理课程的性质、地位、理念、设计思路和主要内容</li>
+                    <li>掌握地理教学的基础知识、基本技能和常用方法</li>
+                    <li>会初步运用地理教学的基本理论分析、解决地理教学的实际问题</li>
+                </ul>
+            </div>
+
+            <div class="objective-card">
+                <div class="objective-title">
+                    <i class="fas fa-drafting-compass"></i>
+                    地理教学设计能力
+                </div>
+                <ul class="objective-list">
+                    <li>了解高中学生地理学习需求和已有学习经验</li>
+                    <li>掌握地理教学设计的基本环节</li>
+                    <li>能够结合具体的课题进行地理教学设计</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- 主要学习模块 -->
+        <div class="nav-grid">
+            <div class="nav-card" onclick="location.href='modules/geography-knowledge.html'">
+                <div class="nav-card-icon">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <h3>地理科学知识与运用</h3>
+                <p>掌握地理科学基本概念、主要地理过程、地理环境基本要素及其相互关系，熟悉中国和世界地理概况</p>
+                <div class="progress-info">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text">0% 完成</div>
+                </div>
+            </div>
+
+            <div class="nav-card" onclick="location.href='modules/teaching-knowledge.html'">
+                <div class="nav-card-icon">
+                    <i class="fas fa-book-open"></i>
+                </div>
+                <h3>教学知识与运用</h3>
+                <p>熟悉高中地理课程体系、教学方法、教学技能和评价方式，掌握地理教学的基本理论和实践应用</p>
+                <div class="progress-info">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text">0% 完成</div>
+                </div>
+            </div>
+
+            <div class="nav-card" onclick="location.href='modules/teaching-design.html'">
+                <div class="nav-card-icon">
+                    <i class="fas fa-pencil-ruler"></i>
+                </div>
+                <h3>教学设计</h3>
+                <p>学会确定教学目标、分析教学内容、选择教学方法和媒体、设计教学过程、形成完整教案</p>
+                <div class="progress-info">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text">0% 完成</div>
+                </div>
+            </div>
+
+            <div class="nav-card" onclick="location.href='practice.html'">
+                <div class="nav-card-icon">
+                    <i class="fas fa-pencil-alt"></i>
+                </div>
+                <h3>练习题库</h3>
+                <p>基础知识题、综合分析题、教学设计题等各类题型的专项练习和模拟考试，系统化提升应试能力</p>
+                <div class="progress-info">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text">0% 完成</div>
+                </div>
+            </div>
+
+            <div class="nav-card" onclick="location.href='modules/case-studies.html'">
+                <div class="nav-card-icon">
+                    <i class="fas fa-microscope"></i>
+                </div>
+                <h3>案例分析</h3>
+                <p>典型地理现象分析、教学案例研究、优秀教学设计示例和实际问题解决方案</p>
+                <div class="progress-info">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text">0% 完成</div>
+                </div>
+            </div>
+
+            <div class="nav-card" onclick="location.href='exam-guide.html'">
+                <div class="nav-card-icon">
+                    <i class="fas fa-clipboard-list"></i>
+                </div>
+                <h3>考试指南</h3>
+                <p>全面了解教师资格证考试要求，掌握备考策略和应试技巧，提高考试通过率</p>
+                <div class="progress-info">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                    <div class="progress-text">0% 完成</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 核心知识点 -->
+        <div class="knowledge-points-container">
+            <div class="knowledge-points-title">
+                <i class="fas fa-lightbulb"></i>
+                核心知识点
+            </div>
+            <!-- 搜索和分类导航 -->
+            <div class="search-filter-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="knowledgeSearch" placeholder="搜索知识点..." />
+                    <button class="search-btn" onclick="searchKnowledge()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                
+                <div class="knowledge-categories">
+                    <div class="category-tab active" data-category="all">
+                        <i class="fas fa-globe"></i>
+                        全部知识点
+                    </div>
+                    <div class="category-tab" data-category="natural">
+                        <i class="fas fa-leaf"></i>
+                        自然地理
+                    </div>
+                    <div class="category-tab" data-category="human">
+                        <i class="fas fa-users"></i>
+                        人文地理
+                    </div>
+                    <div class="category-tab" data-category="regional">
+                        <i class="fas fa-map"></i>
+                        区域地理
+                    </div>
+                    <div class="category-tab" data-category="environment">
+                        <i class="fas fa-seedling"></i>
+                        环境地理
+                    </div>
+                </div>
+            </div>
+
+            <div class="knowledge-points-grid">
+                <!-- 自然地理知识点 -->
+                <div class="knowledge-card natural" onclick="location.href='knowledge/earth-in-universe.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h4>宇宙中的地球</h4>
+                    <p>地球在宇宙中的位置、天体系统层次以及地球存在生命的条件</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">天体系统</span>
+                        <span class="tag">太阳系</span>
+                        <span class="tag">生命条件</span>
+                        <span class="tag">宇宙环境</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">85%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/solar-influence.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <h4>太阳对地球的影响</h4>
+                    <p>太阳辐射特征、太阳活动规律及其对地球系统的重要影响</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">太阳辐射</span>
+                        <span class="tag">太阳活动</span>
+                        <span class="tag">太阳黑子</span>
+                        <span class="tag">极光</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">70%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 70%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/earth-movement.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-globe-americas"></i>
+                    </div>
+                    <h4>地球运动的地理意义</h4>
+                    <p>地球自转公转产生昼夜交替、四季变化、五带划分等重要地理现象</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">自转</span>
+                        <span class="tag">公转</span>
+                        <span class="tag">时差</span>
+                        <span class="tag">四季</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">75%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/earth-structure.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h4>地球的圈层结构</h4>
+                    <p>地球内部圈层结构、地壳、地幔、地核的特征及相互关系</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">地壳</span>
+                        <span class="tag">地幔</span>
+                        <span class="tag">地核</span>
+                        <span class="tag">板块构造</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">60%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/atmospheric-circulation.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-wind"></i>
+                    </div>
+                    <h4>冷热不均引起大气运动</h4>
+                    <p>热力环流的形成过程、气压系统分布及风的形成机制</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">热力环流</span>
+                        <span class="tag">气压系统</span>
+                        <span class="tag">风的形成</span>
+                        <span class="tag">大气环流</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">80%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 80%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/pressure-wind-belts.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-globe-americas"></i>
+                    </div>
+                    <h4>气压带和风带</h4>
+                    <p>全球气压带风带的分布、季节移动及其对气候的影响</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">气压带</span>
+                        <span class="tag">风带</span>
+                        <span class="tag">季节移动</span>
+                        <span class="tag">气候影响</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">85%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/weather-systems.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-cloud-rain"></i>
+                    </div>
+                    <h4>常见天气系统</h4>
+                    <p>锋面系统、气旋反气旋、台风等天气系统的结构特征和天气影响</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">锋面系统</span>
+                        <span class="tag">气旋反气旋</span>
+                        <span class="tag">台风</span>
+                        <span class="tag">天气变化</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">90%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 90%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/global-climate.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                    <h4>全球气候类型与分布</h4>
+                    <p>世界主要气候类型的特征、成因、分布规律及对人类活动的影响</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">热带气候</span>
+                        <span class="tag">温带气候</span>
+                        <span class="tag">寒带气候</span>
+                        <span class="tag">季风气候</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">30%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 30%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural completed" onclick="location.href='knowledge/water-cycle.html'">
+                    <div class="completion-badge">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <div class="knowledge-icon">
+                        <i class="fas fa-tint"></i>
+                    </div>
+                    <h4>水圈和水循环</h4>
+                    <p>海洋水、陆地水、大气水的特征及水循环的过程和地理意义</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">海洋水</span>
+                        <span class="tag">陆地水</span>
+                        <span class="tag">水循环</span>
+                        <span class="tag">水资源</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">100%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/water-resources.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <h4>水资源的合理利用</h4>
+                    <p>水资源分布特点、主要问题及开发利用与保护的途径和措施</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">水资源分布</span>
+                        <span class="tag">水资源问题</span>
+                        <span class="tag">开发利用</span>
+                        <span class="tag">保护措施</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">95%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 95%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/ocean-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <h4>海洋地理</h4>
+                    <p>海洋的形成、海水运动、海洋资源开发利用及海洋环境保护</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">海水运动</span>
+                        <span class="tag">洋流</span>
+                        <span class="tag">海洋资源</span>
+                        <span class="tag">海洋环境</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">20%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 20%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/lithosphere.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <h4>岩石圈与地表形态</h4>
+                    <p>地球内部结构、岩石类型、地质作用与地表形态的形成</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">内力作用</span>
+                        <span class="tag">外力作用</span>
+                        <span class="tag">地貌类型</span>
+                        <span class="tag">地质构造</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">55%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 55%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/geomorphic-forces.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <h4>营造地表形态的力量</h4>
+                    <p>内力作用和外力作用共同塑造地表形态的过程和机制</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">内力作用</span>
+                        <span class="tag">外力作用</span>
+                        <span class="tag">板块构造</span>
+                        <span class="tag">地貌演化</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">88%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 88%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/biogeography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h4>生物圈与生态系统</h4>
+                    <p>生物圈的组成、生态系统的结构功能及生物多样性保护</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">生态系统</span>
+                        <span class="tag">食物链</span>
+                        <span class="tag">生物多样性</span>
+                        <span class="tag">生态平衡</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">65%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 65%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/soil-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h4>土壤地理</h4>
+                    <p>土壤的形成、分类、分布规律及土壤资源的保护与利用</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">土壤形成</span>
+                        <span class="tag">土壤类型</span>
+                        <span class="tag">土壤分布</span>
+                        <span class="tag">土壤保护</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">35%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 35%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/regional-differentiation.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-layer-group"></i>
+                    </div>
+                    <h4>地理环境的地域分异</h4>
+                    <p>纬度地带性、经度地带性、垂直地带性等分异规律</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">纬度地带性</span>
+                        <span class="tag">经度地带性</span>
+                        <span class="tag">垂直地带性</span>
+                        <span class="tag">非地带性</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">50%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 50%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural" onclick="location.href='knowledge/natural-disasters.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h4>自然灾害</h4>
+                    <p>地震、火山、台风、洪涝等自然灾害的成因、分布及防灾减灾</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">地震</span>
+                        <span class="tag">火山</span>
+                        <span class="tag">气象灾害</span>
+                        <span class="tag">防灾减灾</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">25%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 人文地理知识点 -->
+                <div class="knowledge-card human" onclick="location.href='knowledge/population-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h4>人口地理</h4>
+                    <p>人口分布、人口增长、人口迁移及其影响因素和地理意义</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">人口分布</span>
+                        <span class="tag">人口增长</span>
+                        <span class="tag">人口迁移</span>
+                        <span class="tag">人口问题</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">70%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 70%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/population-change.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>人口的数量变化</h4>
+                    <p>人口增长模式、人口转变理论及人口数量变化规律</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">人口增长</span>
+                        <span class="tag">人口转变</span>
+                        <span class="tag">生育率</span>
+                        <span class="tag">死亡率</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">80%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 80%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/population-migration.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-plane"></i>
+                    </div>
+                    <h4>人口的空间变化</h4>
+                    <p>人口迁移的类型、原因、影响及人口分布规律</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">人口迁移</span>
+                        <span class="tag">国际迁移</span>
+                        <span class="tag">国内迁移</span>
+                        <span class="tag">人口分布</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">70%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 70%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/population-capacity.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <h4>人口的合理容量</h4>
+                    <p>人口容量理论、影响因素及可持续发展的人口策略</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">人口容量</span>
+                        <span class="tag">环境承载力</span>
+                        <span class="tag">可持续发展</span>
+                        <span class="tag">人口政策</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">65%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 65%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/urbanization.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>城市化</h4>
+                    <p>人口向城市集中的过程、发展阶段、影响因素及其对社会经济的影响</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">城市化过程</span>
+                        <span class="tag">发展阶段</span>
+                        <span class="tag">影响因素</span>
+                        <span class="tag">城市问题</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">90%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 90%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/urban-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-city"></i>
+                    </div>
+                    <h4>城市地理</h4>
+                    <p>城市化进程、城市空间结构、城市功能分区及城市问题</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">城市化</span>
+                        <span class="tag">城市结构</span>
+                        <span class="tag">功能分区</span>
+                        <span class="tag">城市问题</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">80%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 80%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/urban-spatial-structure.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <h4>城市内部空间结构</h4>
+                    <p>城市功能区分布、城市空间结构模式及影响因素分析</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">功能区</span>
+                        <span class="tag">空间结构</span>
+                        <span class="tag">同心圆</span>
+                        <span class="tag">多核心</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">75%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/urban-hierarchy.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                    <h4>不同等级城市的服务功能</h4>
+                    <p>城市等级体系、服务功能差异及城市网络结构分析</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">城市等级</span>
+                        <span class="tag">服务功能</span>
+                        <span class="tag">中心地理论</span>
+                        <span class="tag">服务网络</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">70%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 70%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/agricultural-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-wheat"></i>
+                    </div>
+                    <h4>农业地理</h4>
+                    <p>农业区位因素、农业地域类型、农业现代化及可持续发展</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">农业区位</span>
+                        <span class="tag">农业类型</span>
+                        <span class="tag">农业现代化</span>
+                        <span class="tag">可持续农业</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">60%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/planting-agriculture.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h4>以种植业为主的农业地域类型</h4>
+                    <p>水稻种植业、商品谷物农业、混合农业等种植业地域类型</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">水稻种植</span>
+                        <span class="tag">商品谷物</span>
+                        <span class="tag">混合农业</span>
+                        <span class="tag">种植园</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">65%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 65%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/industrial-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                    <h4>工业地理</h4>
+                    <p>工业区位因素、工业地域联系、工业转移及产业升级</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">工业区位</span>
+                        <span class="tag">工业联系</span>
+                        <span class="tag">工业转移</span>
+                        <span class="tag">产业升级</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">45%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/transportation-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-route"></i>
+                    </div>
+                    <h4>交通地理</h4>
+                    <p>交通运输方式、交通网络、交通区位及对区域发展的影响</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">交通方式</span>
+                        <span class="tag">交通网络</span>
+                        <span class="tag">交通区位</span>
+                        <span class="tag">区域影响</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">55%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 55%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/economic-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>经济地理</h4>
+                    <p>产业分布、区域经济发展、国际贸易与全球化的地理影响</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">产业分布</span>
+                        <span class="tag">区域发展</span>
+                        <span class="tag">国际贸易</span>
+                        <span class="tag">全球化</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">40%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 40%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/cultural-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-globe-asia"></i>
+                    </div>
+                    <h4>文化地理</h4>
+                    <p>文化景观、宗教分布、语言传播及文化与地理环境的关系</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">文化景观</span>
+                        <span class="tag">宗教地理</span>
+                        <span class="tag">语言分布</span>
+                        <span class="tag">文化传播</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">30%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 30%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/political-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-flag"></i>
+                    </div>
+                    <h4>政治地理</h4>
+                    <p>国家疆域、地缘政治、边界问题及政治地理格局变化</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">国家疆域</span>
+                        <span class="tag">地缘政治</span>
+                        <span class="tag">边界问题</span>
+                        <span class="tag">政治格局</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">25%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 25%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card human" onclick="location.href='knowledge/human-geography-thought.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-balance-scale"></i>
+                    </div>
+                    <h4>人地关系思想演变</h4>
+                    <p>环境决定论、人类中心论、人地协调论的发展历程</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">环境决定论</span>
+                        <span class="tag">人类中心论</span>
+                        <span class="tag">人地协调论</span>
+                        <span class="tag">可持续发展</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">85%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 85%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 区域地理知识点 -->
+                <div class="knowledge-card regional" onclick="location.href='knowledge/china-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h4>中国地理</h4>
+                    <p>中国的疆域、行政区划、地形地貌、气候特征及区域差异</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">疆域位置</span>
+                        <span class="tag">地形特征</span>
+                        <span class="tag">气候分布</span>
+                        <span class="tag">区域差异</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">90%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 90%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card regional" onclick="location.href='knowledge/world-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h4>世界地理</h4>
+                    <p>世界各大洲、主要国家的地理特征及区域发展差异</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">大洲地理</span>
+                        <span class="tag">国家地理</span>
+                        <span class="tag">区域特征</span>
+                        <span class="tag">发展差异</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">65%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 65%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card regional" onclick="location.href='knowledge/regional-differentiation.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-chart-area"></i>
+                    </div>
+                    <h4>区域发展</h4>
+                    <p>区域发展理论、区域发展阶段、区域发展战略及政策</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">发展理论</span>
+                        <span class="tag">发展阶段</span>
+                        <span class="tag">发展战略</span>
+                        <span class="tag">区域政策</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">50%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 50%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card regional" onclick="location.href='knowledge/world-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <h4>区域合作</h4>
+                    <p>区域经济一体化、国际合作组织及跨国合作项目</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">经济一体化</span>
+                        <span class="tag">国际组织</span>
+                        <span class="tag">跨国合作</span>
+                        <span class="tag">一带一路</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">35%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 35%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 环境地理知识点 -->
+                <div class="knowledge-card environment" onclick="location.href='knowledge/environmental-problems.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h4>环境问题</h4>
+                    <p>全球环境问题的类型、成因、影响及解决措施</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">环境污染</span>
+                        <span class="tag">生态破坏</span>
+                        <span class="tag">资源短缺</span>
+                        <span class="tag">环境治理</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">75%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 75%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card environment" onclick="location.href='knowledge/sustainable-development.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-recycle"></i>
+                    </div>
+                    <h4>可持续发展</h4>
+                    <p>可持续发展理论、循环经济、绿色发展及生态文明建设</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">可持续发展</span>
+                        <span class="tag">循环经济</span>
+                        <span class="tag">绿色发展</span>
+                        <span class="tag">生态文明</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">60%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 60%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card environment" onclick="location.href='knowledge/sustainable-development.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <h4>资源管理</h4>
+                    <p>自然资源的分类、分布、开发利用及保护管理</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">资源分类</span>
+                        <span class="tag">资源分布</span>
+                        <span class="tag">资源开发</span>
+                        <span class="tag">资源保护</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">45%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 45%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="knowledge-card environment" onclick="location.href='knowledge/climate-change.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-temperature-high"></i>
+                    </div>
+                    <h4>气候变化</h4>
+                    <p>全球气候变化的原因、影响、适应与减缓措施</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">温室效应</span>
+                        <span class="tag">气候影响</span>
+                        <span class="tag">适应措施</span>
+                        <span class="tag">减缓策略</span>
+                    </div>
+                    <div class="card-progress">
+                        <div class="progress-info">
+                            <span class="progress-text">学习进度</span>
+                            <span class="progress-percentage">55%</span>
+                        </div>
+                        <div class="progress-bar-card">
+                            <div class="progress-fill-card" style="width: 55%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 区域地理知识点 -->
+                <div class="knowledge-card regional" onclick="location.href='knowledge/china-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-flag"></i>
+                    </div>
+                    <h4>中国地理</h4>
+                    <p>中国的自然环境、人文环境、区域差异及可持续发展</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">自然环境</span>
+                        <span class="tag">人文环境</span>
+                        <span class="tag">区域差异</span>
+                        <span class="tag">发展战略</span>
+                    </div>
+                </div>
+
+                <div class="knowledge-card regional" onclick="location.href='knowledge/world-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <h4>世界地理</h4>
+                    <p>世界各大洲、主要国家的地理特征及区域发展差异</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">大洲地理</span>
+                        <span class="tag">国家地理</span>
+                        <span class="tag">区域特征</span>
+                        <span class="tag">发展差异</span>
+                    </div>
+                </div>
+
+                <div class="knowledge-card regional" onclick="location.href='knowledge/regional-differentiation.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>区域发展</h4>
+                    <p>区域发展阶段、区域发展差异、区域协调发展战略</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">发展阶段</span>
+                        <span class="tag">发展差异</span>
+                        <span class="tag">协调发展</span>
+                        <span class="tag">发展战略</span>
+                    </div>
+                </div>
+
+                <div class="knowledge-card regional" onclick="location.href='knowledge/cultural-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                    <h4>旅游地理</h4>
+                    <p>旅游资源评价、旅游开发条件、旅游业发展及影响</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">旅游资源</span>
+                        <span class="tag">开发条件</span>
+                        <span class="tag">旅游业</span>
+                        <span class="tag">影响评价</span>
+                    </div>
+                </div>
+
+                <!-- 环境地理知识点 -->
+                <div class="knowledge-card environment" onclick="location.href='knowledge/environmental-problems.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h4>环境问题</h4>
+                    <p>全球性环境问题、区域性环境问题的成因、影响及治理</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">全球变暖</span>
+                        <span class="tag">臭氧层破坏</span>
+                        <span class="tag">酸雨</span>
+                        <span class="tag">环境治理</span>
+                    </div>
+                </div>
+
+                <div class="knowledge-card environment" onclick="location.href='knowledge/natural-disasters.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4>自然灾害</h4>
+                    <p>地震、火山、台风、洪涝、干旱等自然灾害的成因与防治</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">地质灾害</span>
+                        <span class="tag">气象灾害</span>
+                        <span class="tag">海洋灾害</span>
+                        <span class="tag">防灾减灾</span>
+                    </div>
+                </div>
+
+                <div class="knowledge-card environment" onclick="location.href='knowledge/sustainable-development.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <h4>资源管理</h4>
+                    <p>自然资源的分类、分布、开发利用及可持续管理</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">能源资源</span>
+                        <span class="tag">矿产资源</span>
+                        <span class="tag">土地资源</span>
+                        <span class="tag">可持续利用</span>
+                    </div>
+                </div>
+
+                <div class="knowledge-card natural environment" onclick="location.href='knowledge/geographical-system.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <h4>地理系统的基本概念</h4>
+                    <p>地理环境的系统性、整体性、差异性及人地关系</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">系统要素</span>
+                        <span class="tag">系统结构</span>
+                        <span class="tag">系统功能</span>
+                        <span class="tag">系统演化</span>
+                    </div>
+                </div>
+
+                <!-- 地理信息技术 -->
+                <div class="knowledge-card natural" onclick="location.href='knowledge/geographic-information-technology.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-satellite"></i>
+                    </div>
+                    <h4>地理信息技术</h4>
+                    <p>GIS、RS、GPS等现代地理信息技术的原理与应用</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">GIS</span>
+                        <span class="tag">遥感</span>
+                        <span class="tag">GPS</span>
+                        <span class="tag">数字地球</span>
+                    </div>
+                </div>
+
+                <!-- 海洋地理 -->
+                <div class="knowledge-card natural" onclick="location.href='knowledge/ocean-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-anchor"></i>
+                    </div>
+                    <h4>海洋地理</h4>
+                    <p>海洋环境、海洋资源、海洋开发及海洋权益保护</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">海洋环境</span>
+                        <span class="tag">海洋资源</span>
+                        <span class="tag">海洋开发</span>
+                        <span class="tag">海洋权益</span>
+                    </div>
+                </div>
+
+                <!-- 土壤地理 -->
+                <div class="knowledge-card natural" onclick="location.href='knowledge/soil-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h4>土壤地理</h4>
+                    <p>土壤形成、土壤类型、土壤分布及土壤保护</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">土壤形成</span>
+                        <span class="tag">土壤类型</span>
+                        <span class="tag">土壤分布</span>
+                        <span class="tag">土壤保护</span>
+                    </div>
+                </div>
+
+                <!-- 生物地理 -->
+                <div class="knowledge-card natural" onclick="location.href='knowledge/biogeography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h4>生物地理</h4>
+                    <p>生物分布规律、生态系统、生物多样性及生态保护</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">生物分布</span>
+                        <span class="tag">生态系统</span>
+                        <span class="tag">生物多样性</span>
+                        <span class="tag">生态保护</span>
+                    </div>
+                </div>
+
+                <!-- 气候地理 -->
+                <div class="knowledge-card natural" onclick="location.href='knowledge/climate-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-cloud-sun"></i>
+                    </div>
+                    <h4>气候地理</h4>
+                    <p>气候类型、气候分布、气候变化及气候影响</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">气候类型</span>
+                        <span class="tag">气候分布</span>
+                        <span class="tag">气候变化</span>
+                        <span class="tag">气候影响</span>
+                    </div>
+                </div>
+
+                <!-- 地貌地理 -->
+                <div class="knowledge-card natural" onclick="location.href='knowledge/landform-processes.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-mountain"></i>
+                    </div>
+                    <h4>地貌地理</h4>
+                    <p>地貌类型、地貌形成、地貌演化及地貌应用</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">地貌类型</span>
+                        <span class="tag">地貌形成</span>
+                        <span class="tag">地貌演化</span>
+                        <span class="tag">地貌应用</span>
+                    </div>
+                </div>
+
+                <!-- 水文地理 -->
+                <div class="knowledge-card natural" onclick="location.href='knowledge/water-resources.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-water"></i>
+                    </div>
+                    <h4>水文地理</h4>
+                    <p>河流水文、湖泊水文、地下水及水文循环</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">河流水文</span>
+                        <span class="tag">湖泊水文</span>
+                        <span class="tag">地下水</span>
+                        <span class="tag">水文循环</span>
+                    </div>
+                </div>
+
+                <!-- 经济地理 -->
+                <div class="knowledge-card human" onclick="location.href='knowledge/economic-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>经济地理</h4>
+                    <p>经济活动空间分布、经济区位、经济联系及经济发展</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">经济分布</span>
+                        <span class="tag">经济区位</span>
+                        <span class="tag">经济联系</span>
+                        <span class="tag">经济发展</span>
+                    </div>
+                </div>
+
+                <!-- 文化地理 -->
+                <div class="knowledge-card human" onclick="location.href='knowledge/cultural-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-theater-masks"></i>
+                    </div>
+                    <h4>文化地理</h4>
+                    <p>文化分布、文化传播、文化景观及文化保护</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">文化分布</span>
+                        <span class="tag">文化传播</span>
+                        <span class="tag">文化景观</span>
+                        <span class="tag">文化保护</span>
+                    </div>
+                </div>
+
+                <!-- 政治地理 -->
+                <div class="knowledge-card human" onclick="location.href='knowledge/political-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-flag"></i>
+                    </div>
+                    <h4>政治地理</h4>
+                    <p>国家领土、边界争端、国际关系及地缘政治</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">国家领土</span>
+                        <span class="tag">边界争端</span>
+                        <span class="tag">国际关系</span>
+                        <span class="tag">地缘政治</span>
+                    </div>
+                </div>
+
+                <!-- 历史地理 -->
+                <div class="knowledge-card human" onclick="location.href='knowledge/human-geography-thought.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-landmark"></i>
+                    </div>
+                    <h4>历史地理</h4>
+                    <p>历史时期地理环境、历史变迁、历史遗迹及历史影响</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">历史环境</span>
+                        <span class="tag">历史变迁</span>
+                        <span class="tag">历史遗迹</span>
+                        <span class="tag">历史影响</span>
+                    </div>
+                </div>
+
+                <!-- 军事地理 -->
+                <div class="knowledge-card human" onclick="location.href='knowledge/political-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h4>军事地理</h4>
+                    <p>军事地形、战略位置、军事设施及军事影响</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">军事地形</span>
+                        <span class="tag">战略位置</span>
+                        <span class="tag">军事设施</span>
+                        <span class="tag">军事影响</span>
+                    </div>
+                </div>
+
+                <!-- 环境地理 -->
+                <div class="knowledge-card environment" onclick="location.href='knowledge/environmental-problems.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-recycle"></i>
+                    </div>
+                    <h4>环境地理</h4>
+                    <p>环境问题、环境保护、环境治理及可持续发展</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">环境问题</span>
+                        <span class="tag">环境保护</span>
+                        <span class="tag">环境治理</span>
+                        <span class="tag">可持续发展</span>
+                    </div>
+                </div>
+
+                <!-- 灾害地理 -->
+                <div class="knowledge-card environment" onclick="location.href='knowledge/natural-disasters.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h4>灾害地理</h4>
+                    <p>自然灾害、人为灾害、灾害防治及灾害管理</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">自然灾害</span>
+                        <span class="tag">人为灾害</span>
+                        <span class="tag">灾害防治</span>
+                        <span class="tag">灾害管理</span>
+                    </div>
+                </div>
+
+                <!-- 资源地理 -->
+                <div class="knowledge-card environment" onclick="location.href='knowledge/sustainable-development.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <h4>资源地理</h4>
+                    <p>自然资源、资源分布、资源开发及资源保护</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">自然资源</span>
+                        <span class="tag">资源分布</span>
+                        <span class="tag">资源开发</span>
+                        <span class="tag">资源保护</span>
+                    </div>
+                </div>
+
+                <!-- 能源地理 -->
+                <div class="knowledge-card environment" onclick="location.href='knowledge/industrial-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4>能源地理</h4>
+                    <p>能源类型、能源分布、能源开发及能源安全</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">能源类型</span>
+                        <span class="tag">能源分布</span>
+                        <span class="tag">能源开发</span>
+                        <span class="tag">能源安全</span>
+                    </div>
+                </div>
+
+                <!-- 区域地理 -->
+                <div class="knowledge-card regional" onclick="location.href='knowledge/regional-differentiation.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-map-marked-alt"></i>
+                    </div>
+                    <h4>区域地理</h4>
+                    <p>区域特征、区域差异、区域联系及区域发展</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">区域特征</span>
+                        <span class="tag">区域差异</span>
+                        <span class="tag">区域联系</span>
+                        <span class="tag">区域发展</span>
+                    </div>
+                </div>
+
+                <!-- 城市地理 -->
+                <div class="knowledge-card regional" onclick="location.href='knowledge/urban-spatial-structure.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-city"></i>
+                    </div>
+                    <h4>城市地理详解</h4>
+                    <p>城市形成、城市发展、城市问题及城市规划</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">城市形成</span>
+                        <span class="tag">城市发展</span>
+                        <span class="tag">城市问题</span>
+                        <span class="tag">城市规划</span>
+                    </div>
+                </div>
+
+                <!-- 乡村地理 -->
+                <div class="knowledge-card regional" onclick="location.href='knowledge/agricultural-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-home"></i>
+                    </div>
+                    <h4>乡村地理</h4>
+                    <p>乡村聚落、乡村经济、乡村文化及乡村发展</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">乡村聚落</span>
+                        <span class="tag">乡村经济</span>
+                        <span class="tag">乡村文化</span>
+                        <span class="tag">乡村发展</span>
+                    </div>
+                </div>
+
+                <!-- 边疆地理 -->
+                <div class="knowledge-card regional" onclick="location.href='knowledge/china-geography.html'">
+                    <div class="knowledge-icon">
+                        <i class="fas fa-border-all"></i>
+                    </div>
+                    <h4>边疆地理</h4>
+                    <p>边疆地区、边疆开发、边疆安全及边疆发展</p>
+                    <div class="knowledge-tags">
+                        <span class="tag">边疆地区</span>
+                        <span class="tag">边疆开发</span>
+                        <span class="tag">边疆安全</span>
+                        <span class="tag">边疆发展</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习统计 -->
+        <div class="stats-container">
+            <div class="stats-title">
+                <i class="fas fa-chart-bar"></i>
+                学习统计
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-calendar-day"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>今日学习</h4>
+                        <p class="stat-number">0</p>
+                        <p class="stat-unit">分钟</p>
+                    </div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>连续学习</h4>
+                        <p class="stat-number">0</p>
+                        <p class="stat-unit">天</p>
+                    </div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-trophy"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>完成模块</h4>
+                        <p class="stat-number">0</p>
+                        <p class="stat-unit">个</p>
+                    </div>
+                </div>
+
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div class="stat-content">
+                        <h4>总积分</h4>
+                        <p class="stat-number">0</p>
+                        <p class="stat-unit">分</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 快速入口 -->
+        <div class="quick-access-container">
+            <div class="quick-access-title">
+                <i class="fas fa-rocket"></i>
+                快速入口
+            </div>
+            <div class="quick-access-grid">
+                <a href="modules/exam-practice.html" class="quick-item">
+                    <i class="fas fa-play"></i>
+                    <span>开始练习</span>
+                </a>
+                <a href="modules/interactive-tools.html" class="quick-item">
+                    <i class="fas fa-map"></i>
+                    <span>地图工具</span>
+                </a>
+                <a href="modules/case-studies.html" class="quick-item">
+                    <i class="fas fa-search"></i>
+                    <span>案例分析</span>
+                </a>
+                <a href="#" class="quick-item" onclick="showProgress()">
+                    <i class="fas fa-chart-line"></i>
+                    <span>学习进度</span>
+                </a>
+                <a href="#" class="quick-item" onclick="showNotes()">
+                    <i class="fas fa-sticky-note"></i>
+                    <span>我的笔记</span>
+                </a>
+                <a href="#" class="quick-item" onclick="showBookmarks()">
+                    <i class="fas fa-bookmark"></i>
+                    <span>收藏夹</span>
+                </a>
+                <a href="modules/resources.html" class="quick-item">
+                    <i class="fas fa-download"></i>
+                    <span>学习资源</span>
+                </a>
+                <a href="#" class="quick-item" onclick="showHelp()">
+                    <i class="fas fa-question-circle"></i>
+                    <span>帮助中心</span>
+                </a>
+                <a href="modules/study-plan.html" class="quick-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>学习计划</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 最近学习 -->
+        <div class="recent-container">
+            <div class="recent-title">
+                <i class="fas fa-history"></i>
+                最近学习
+            </div>
+            <div class="recent-list">
+                <div class="recent-item">
+                    <div class="recent-icon">
+                        <i class="fas fa-globe"></i>
+                    </div>
+                    <div class="recent-content">
+                        <h4>地理科学知识与运用</h4>
+                        <p>自然地理 > 气候与天气</p>
+                        <span class="recent-time">2小时前</span>
+                    </div>
+                </div>
+
+                <div class="recent-item">
+                    <div class="recent-icon">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div class="recent-content">
+                        <h4>考试练习</h4>
+                        <p>单项选择题练习</p>
+                        <span class="recent-time">1天前</span>
+                    </div>
+                </div>
+
+                <div class="recent-item">
+                    <div class="recent-icon">
+                        <i class="fas fa-pencil-ruler"></i>
+                    </div>
+                    <div class="recent-content">
+                        <h4>教学设计</h4>
+                        <p>教学目标制定</p>
+                        <span class="recent-time">3天前</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 创建地理主题粒子效果
+        function createParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = 60;
+            const particleTypes = ['earth', 'mountain', 'water'];
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                const type = particleTypes[Math.floor(Math.random() * particleTypes.length)];
+                particle.className = `particle ${type}`;
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 25 + 's';
+                particle.style.animationDuration = (Math.random() * 15 + 20) + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // 显示学习进度
+        function showProgress() {
+            alert('学习进度功能\n\n这里将显示详细的学习进度统计，包括：\n• 各模块完成情况\n• 学习时长统计\n• 练习题完成率\n• 知识点掌握程度');
+        }
+
+        // 显示笔记
+        function showNotes() {
+            alert('我的笔记功能\n\n这里将显示您的学习笔记，包括：\n• 重点知识标记\n• 个人理解记录\n• 错题整理\n• 复习计划');
+        }
+
+        // 显示收藏夹
+        function showBookmarks() {
+            alert('收藏夹功能\n\n这里将显示您收藏的内容，包括：\n• 重要知识点\n• 优秀案例\n• 实用工具\n• 参考资料');
+        }
+
+        // 显示帮助中心
+        function showHelp() {
+            alert('帮助中心\n\n这里提供平台使用指南，包括：\n• 功能介绍\n• 使用教程\n• 常见问题\n• 技术支持\n• 联系我们');
+        }
+
+        // 模拟学习数据更新
+        function updateStats() {
+            // 模拟今日学习时间
+            const todayMinutes = Math.floor(Math.random() * 120) + 30;
+            document.querySelector('.stat-number').textContent = todayMinutes;
+
+            // 模拟连续学习天数
+            const streakDays = Math.floor(Math.random() * 15) + 1;
+            document.querySelectorAll('.stat-number')[1].textContent = streakDays;
+
+            // 模拟完成模块数
+            const completedModules = Math.floor(Math.random() * 6);
+            document.querySelectorAll('.stat-number')[2].textContent = completedModules;
+
+            // 模拟总积分
+            const totalPoints = Math.floor(Math.random() * 1000) + 200;
+            document.querySelectorAll('.stat-number')[3].textContent = totalPoints;
+        }
+
+        // 知识点分类过滤功能
+        function initKnowledgeFilter() {
+            const categoryTabs = document.querySelectorAll('.category-tab');
+            const knowledgeCards = document.querySelectorAll('.knowledge-card');
+
+            categoryTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    // 移除所有活动状态
+                    categoryTabs.forEach(t => t.classList.remove('active'));
+                    // 添加当前活动状态
+                    this.classList.add('active');
+
+                    const category = this.getAttribute('data-category');
+
+                    // 过滤知识点卡片
+                    knowledgeCards.forEach(card => {
+                        if (category === 'all') {
+                            card.classList.remove('hidden');
+                        } else {
+                            if (card.classList.contains(category)) {
+                                card.classList.remove('hidden');
+                            } else {
+                                card.classList.add('hidden');
+                            }
+                        }
+                    });
+
+                    // 添加过滤动画效果
+                    setTimeout(() => {
+                        knowledgeCards.forEach(card => {
+                            if (!card.classList.contains('hidden')) {
+                                card.style.animation = 'fadeInUp 0.6s ease forwards';
+                            }
+                        });
+                    }, 100);
+
+                    // 更新统计信息
+                    updateCategoryStats(category);
+                });
+            });
+        }
+
+        // 更新分类统计信息
+        function updateCategoryStats(category) {
+            const totalCards = document.querySelectorAll('.knowledge-card').length;
+            const visibleCards = document.querySelectorAll('.knowledge-card:not(.hidden)').length;
+            const categoryCards = category === 'all' ? totalCards : document.querySelectorAll(`.knowledge-card.${category}`).length;
+            
+            // 显示统计信息
+            const statsInfo = document.createElement('div');
+            statsInfo.className = 'category-stats';
+            statsInfo.innerHTML = `
+                <div class="stats-badge">
+                    <i class="fas fa-chart-pie"></i>
+                    显示 ${visibleCards} / ${totalCards} 个知识点
+                    ${category !== 'all' ? `(${categoryCards} 个${getCategoryName(category)})` : ''}
+                </div>
+            `;
+            
+            // 移除旧的统计信息
+            const oldStats = document.querySelector('.category-stats');
+            if (oldStats) oldStats.remove();
+            
+            // 添加新的统计信息
+            const categoriesContainer = document.querySelector('.knowledge-categories');
+            categoriesContainer.appendChild(statsInfo);
+        }
+
+        // 获取分类名称
+        function getCategoryName(category) {
+            const categoryNames = {
+                'natural': '自然地理',
+                'human': '人文地理',
+                'regional': '区域地理',
+                'environment': '环境地理'
+            };
+            return categoryNames[category] || category;
+        }
+
+        // 添加知识点卡片动画和交互
+        function addKnowledgeCardAnimations() {
+            const knowledgeCards = document.querySelectorAll('.knowledge-card');
+
+            // 创建观察器
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translateY(0)';
+                        }, index * 100);
+                    }
+                });
+            }, {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
+
+            knowledgeCards.forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.6s ease';
+                observer.observe(card);
+
+                // 添加卡片交互功能
+                addCardInteractions(card);
+            });
+        }
+
+        // 添加卡片交互功能
+        function addCardInteractions(card) {
+            // 点击卡片显示详细信息
+            card.addEventListener('click', function(e) {
+                if (e.target.classList.contains('tag')) return; // 避免标签点击触发
+                
+                // 添加点击反馈
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = 'scale(1)';
+                }, 150);
+
+                // 显示学习进度提示
+                showLearningProgress(this);
+            });
+
+            // 鼠标悬停时显示快速操作
+            card.addEventListener('mouseenter', function() {
+                showQuickActions(this);
+            });
+
+            card.addEventListener('mouseleave', function() {
+                hideQuickActions(this);
+            });
+
+            // 标签点击事件
+            const tags = card.querySelectorAll('.tag');
+            tags.forEach(tag => {
+                tag.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    filterByTag(this.textContent);
+                });
+            });
+        }
+
+        // 显示学习进度
+        function showLearningProgress(card) {
+            const title = card.querySelector('h4').textContent;
+            const progress = Math.floor(Math.random() * 100);
+            
+            // 创建进度提示
+            const progressTip = document.createElement('div');
+            progressTip.className = 'progress-tip';
+            progressTip.innerHTML = `
+                <div class="tip-content">
+                    <h4>${title}</h4>
+                    <div class="progress-bar-mini">
+                        <div class="progress-fill-mini" style="width: ${progress}%"></div>
+                    </div>
+                    <p>学习进度: ${progress}%</p>
+                    <div class="tip-actions">
+                        <button onclick="startLearning('${title}')" class="btn-start">开始学习</button>
+                        <button onclick="reviewContent('${title}')" class="btn-review">复习</button>
+                    </div>
+                </div>
+            `;
+
+            // 显示提示
+            document.body.appendChild(progressTip);
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                if (progressTip.parentNode) {
+                    progressTip.remove();
+                }
+            }, 3000);
+        }
+
+        // 显示快速操作
+        function showQuickActions(card) {
+            const actions = document.createElement('div');
+            actions.className = 'quick-actions';
+            actions.innerHTML = `
+                <button class="action-btn bookmark" title="收藏">
+                    <i class="fas fa-bookmark"></i>
+                </button>
+                <button class="action-btn note" title="笔记">
+                    <i class="fas fa-sticky-note"></i>
+                </button>
+                <button class="action-btn share" title="分享">
+                    <i class="fas fa-share-alt"></i>
+                </button>
+            `;
+            
+            card.appendChild(actions);
+        }
+
+        // 隐藏快速操作
+        function hideQuickActions(card) {
+            const actions = card.querySelector('.quick-actions');
+            if (actions) {
+                actions.remove();
+            }
+        }
+
+        // 按标签过滤
+        function filterByTag(tagName) {
+            const cards = document.querySelectorAll('.knowledge-card');
+            cards.forEach(card => {
+                const tags = card.querySelectorAll('.tag');
+                const hasTag = Array.from(tags).some(tag => tag.textContent === tagName);
+                
+                if (hasTag) {
+                    card.style.border = '2px solid #667eea';
+                    card.style.boxShadow = '0 0 20px rgba(102, 126, 234, 0.3)';
+                } else {
+                    card.style.border = '2px solid rgba(255, 255, 255, 0.3)';
+                    card.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.1)';
+                }
+            });
+
+            // 显示标签过滤提示
+            showTagFilterTip(tagName);
+        }
+
+        // 显示标签过滤提示
+        function showTagFilterTip(tagName) {
+            const tip = document.createElement('div');
+            tip.className = 'tag-filter-tip';
+            tip.innerHTML = `
+                <i class="fas fa-tag"></i>
+                已按标签 "${tagName}" 高亮显示相关知识点
+                <button onclick="clearTagFilter()" class="btn-clear">清除</button>
+            `;
+            
+            document.body.appendChild(tip);
+            
+            setTimeout(() => {
+                if (tip.parentNode) {
+                    tip.remove();
+                }
+            }, 3000);
+        }
+
+        // 清除标签过滤
+        function clearTagFilter() {
+            const cards = document.querySelectorAll('.knowledge-card');
+            cards.forEach(card => {
+                card.style.border = '2px solid rgba(255, 255, 255, 0.3)';
+                card.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.1)';
+            });
+        }
+
+        // 开始学习
+        function startLearning(title) {
+            console.log(`开始学习: ${title}`);
+            // 这里可以添加跳转到具体学习页面的逻辑
+        }
+
+        // 复习内容
+        function reviewContent(title) {
+            console.log(`复习内容: ${title}`);
+            // 这里可以添加复习功能的逻辑
+        }
+
+        // 搜索知识点
+        function searchKnowledge() {
+            const searchInput = document.getElementById('knowledgeSearch');
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const cards = document.querySelectorAll('.knowledge-card');
+
+            if (searchTerm === '') {
+                // 清除搜索，显示所有卡片
+                cards.forEach(card => {
+                    card.classList.remove('search-highlight', 'hidden');
+                });
+                return;
+            }
+
+            let foundCount = 0;
+            cards.forEach(card => {
+                const title = card.querySelector('h4').textContent.toLowerCase();
+                const description = card.querySelector('p').textContent.toLowerCase();
+                const tags = Array.from(card.querySelectorAll('.tag')).map(tag => tag.textContent.toLowerCase());
+                
+                const isMatch = title.includes(searchTerm) || 
+                              description.includes(searchTerm) || 
+                              tags.some(tag => tag.includes(searchTerm));
+
+                if (isMatch) {
+                    card.classList.remove('hidden');
+                    card.classList.add('search-highlight');
+                    foundCount++;
+                } else {
+                    card.classList.add('hidden');
+                    card.classList.remove('search-highlight');
+                }
+            });
+
+            // 显示搜索结果统计
+            showSearchResults(foundCount, searchTerm);
+        }
+
+        // 显示搜索结果
+        function showSearchResults(count, term) {
+            const resultsTip = document.createElement('div');
+            resultsTip.className = 'search-results-tip';
+            resultsTip.innerHTML = `
+                <i class="fas fa-search"></i>
+                找到 ${count} 个相关知识点
+                <span class="search-term">"${term}"</span>
+                <button onclick="clearSearch()" class="btn-clear">清除搜索</button>
+            `;
+            
+            // 移除旧的提示
+            const oldTip = document.querySelector('.search-results-tip');
+            if (oldTip) oldTip.remove();
+            
+            document.body.appendChild(resultsTip);
+            
+            // 5秒后自动隐藏
+            setTimeout(() => {
+                if (resultsTip.parentNode) {
+                    resultsTip.remove();
+                }
+            }, 5000);
+        }
+
+        // 清除搜索
+        function clearSearch() {
+            const searchInput = document.getElementById('knowledgeSearch');
+            searchInput.value = '';
+            
+            const cards = document.querySelectorAll('.knowledge-card');
+            cards.forEach(card => {
+                card.classList.remove('search-highlight', 'hidden');
+            });
+            
+            const resultsTip = document.querySelector('.search-results-tip');
+            if (resultsTip) resultsTip.remove();
+        }
+
+        // 搜索框回车事件
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('knowledgeSearch');
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        searchKnowledge();
+                    }
+                });
+            }
+        });
+
+        // 添加CSS动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeInUp {
+                from {
+                    opacity: 0;
+                    transform: translateY(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .knowledge-card {
+                animation: fadeInUp 0.6s ease forwards;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+
+            // 初始化知识点过滤功能
+            initKnowledgeFilter();
+
+            // 添加知识点卡片动画
+            addKnowledgeCardAnimations();
+
+            // 更新学习统计数据
+            setTimeout(updateStats, 1500);
+
+            // 重新渲染数学公式
+            setTimeout(() => {
+                if (window.MathJax && window.MathJax.typeset) {
+                    MathJax.typeset();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

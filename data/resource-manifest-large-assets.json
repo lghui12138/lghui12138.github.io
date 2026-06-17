@@ -1,0 +1,441 @@
+{
+  "$schema": "https://lghui.local/schemas/resource-manifest-large-assets.v1.json",
+  "version": 1,
+  "purpose": "Inventory of local resource and private-media assets intentionally excluded from normal Cloudflare Pages staging, with non-secret restoration targets.",
+  "baseline": {
+    "repo": "source repo root redacted",
+    "localCommitAtStart": "ce02af55",
+    "scannedDate": "2026-05-24",
+    "pagesStagingSource": ".assetsignore",
+    "stagingDryRun": {
+      "command": "node tools/prepare-fluid-pages-deploy.mjs --dry-run --json",
+      "includedFiles": 448,
+      "includedBytes": 33981255,
+      "ignoredFiles": 985,
+      "ignoredBytes": 475928918
+    }
+  },
+  "summary": {
+    "assetGroups": 4,
+    "restorableFiles": 719,
+    "restorableBytes": 408385466,
+    "normalPagesPolicy": "excluded",
+    "preferredRestoration": "R2 or authenticated Pages Functions download routes; keep originals out of default Pages static uploads",
+    "groupIds": [
+      "private-media/qi-meeting-01",
+      "resources/fluid-sources",
+      "resources/physical-oceanography/ppt",
+      "resources/fluid-mechanics/exam-archives"
+    ],
+    "driftDetection": {
+      "command": "node tools/audit-fluid-resource-hosting.mjs --check-manifest --json",
+      "policy": "Fail the audit when local restorable groups, counts, bytes, ignore coverage, or extension counts drift from this manifest."
+    }
+  },
+  "contracts": {
+    "privateVideoListApi": "/api/private-videos",
+    "privateQiVideoStatusApi": "/api/private-videos/qi-meeting-01/status",
+    "privateQiVideoStreamApi": "/api/private-videos/qi-meeting-01/stream",
+    "protectedSourcePrefix": "/resources/fluid-sources/",
+    "sourceDownloadAuditEvent": "source_download_allowed",
+    "bindings": {
+      "kvMetadataAndAudit": "FM_AUDIT",
+      "privateObjectStorage": "FM_PRIVATE_MEDIA"
+    }
+  },
+  "assets": [
+    {
+      "id": "static-private-video-qi-meeting-01",
+      "groupId": "private-media/qi-meeting-01",
+      "riskLevel": "critical",
+      "restorationPriority": 1,
+      "title": "qi classroom replay 01 static fallback",
+      "classification": "private-media",
+      "sensitivity": "private student media",
+      "defaultPagesStatus": "excluded-by-assetsignore",
+      "assetsIgnoreRules": [
+        "private-media/",
+        "private-media/**",
+        "/private-media/",
+        "/private-media/**"
+      ],
+      "local": {
+        "groupPath": "private-media/qi-meeting-01",
+        "manifestPath": "private-media/qi-meeting-01/manifest.json",
+        "bytes": 369204139,
+        "mediaBytes": 369098204,
+        "fileCount": 705,
+        "chunkCount": 704,
+        "chunkSize": 524288,
+        "contentType": "video/mp4",
+        "sha256": "6bf39ad87be8ca61f2d628297ddfc5648ab0c41c0aa638542094d6907dc28a96",
+        "updatedAt": "2026-05-23T18:34:34.977Z"
+      },
+      "runtimeContract": {
+        "studentVisibleApi": "/api/private-videos/qi-meeting-01/stream",
+        "statusApi": "/api/private-videos/qi-meeting-01/status",
+        "preferredR2ObjectKey": "private/qi/meeting_01.mp4",
+        "legacyKvMetaKey": "private-media:qi-meeting-01:meta",
+        "legacyKvChunkPrefix": "private-media:qi-meeting-01:chunk:",
+        "legacyStaticManifest": "/private-media/qi-meeting-01/manifest.json",
+        "legacyStaticChunkPrefix": "/private-media/qi-meeting-01/chunks/chunk-"
+      },
+      "restorationTarget": {
+        "primary": "protected-r2-single-object",
+        "route": "/api/private-videos/qi-meeting-01/stream",
+        "statusRoute": "/api/private-videos/qi-meeting-01/status",
+        "r2KeyHint": "private/qi/meeting_01.mp4",
+        "binding": "FM_PRIVATE_MEDIA",
+        "metadataBinding": "FM_AUDIT",
+        "staticFallbackRoute": "/private-media/qi-meeting-01/manifest.json"
+      },
+      "postRestoreChecks": [
+        {
+          "id": "private-qi-status-r2",
+          "method": "GET",
+          "route": "/api/private-videos/qi-meeting-01/status",
+          "auth": "authenticated session required; do not store cookie values",
+          "expected": "200 JSON with sources.r2=true, or sources.kv=true only for the documented fallback"
+        },
+        {
+          "id": "private-qi-stream-range",
+          "method": "GET",
+          "route": "/api/private-videos/qi-meeting-01/stream",
+          "headers": "Range: bytes=0-1023",
+          "auth": "authenticated session required; do not store cookie values",
+          "expected": "206 response with X-Private-Video-Store set to r2 or kv"
+        },
+        {
+          "id": "private-qi-authz-block",
+          "method": "GET",
+          "route": "/api/private-videos/qi-meeting-01/stream",
+          "auth": "none",
+          "expected": "401 or 403; no private bytes returned"
+        }
+      ],
+      "driftDetection": {
+        "command": "node tools/audit-fluid-resource-hosting.mjs --check-manifest --json",
+        "expected": {
+          "fileCount": 705,
+          "bytes": 369204139,
+          "ignoredFileCount": 705,
+          "ignoredBytes": 369204139,
+          "extensionCounts": {
+            ".bin": 704,
+            ".json": 1
+          }
+        },
+        "failureMeaning": "Local static fallback chunk inventory changed; update media restore sizing and confirm privacy policy before any restore."
+      },
+      "restoration": {
+        "preferred": "Upload the original MP4 as a single private R2 object at private/qi/meeting_01.mp4, then verify the authenticated status API reports sources.r2=true.",
+        "alternate": "Use the teacher/admin private-video upload path so metadata lands in FM_AUDIT and chunks land in FM_PRIVATE_MEDIA using private/videos/<id>/chunks/chunk-0000.bin keys.",
+        "emergencyStaticFallback": "Temporarily include private-media/qi-meeting-01 in a one-off Pages staging package only when R2/KV is unavailable and the privacy risk is explicitly accepted.",
+        "doNot": "Do not remove the private-media/** ignore rules for normal deploys."
+      },
+      "verification": [
+        "Authenticated GET /api/private-videos/qi-meeting-01/status shows sources.r2=true or sources.kv=true.",
+        "Authenticated ranged GET /api/private-videos/qi-meeting-01/stream returns 206 and X-Private-Video-Store is r2 or kv.",
+        "Unauthenticated stream requests remain 401 or 403."
+      ]
+    },
+    {
+      "id": "fluid-source-originals",
+      "groupId": "resources/fluid-sources",
+      "riskLevel": "high",
+      "restorationPriority": 2,
+      "title": "Fluid mechanics PPT/DOCX source originals",
+      "classification": "protected source documents",
+      "sensitivity": "course source material",
+      "defaultPagesStatus": "excluded-by-assetsignore",
+      "assetsIgnoreRules": [
+        "**/*.docx",
+        "**/*.pptx",
+        "/resources/fluid-sources/*.docx",
+        "/resources/fluid-sources/*.pptx"
+      ],
+      "local": {
+        "groupPath": "resources/fluid-sources",
+        "bytes": 21755180,
+        "fileCount": 8,
+        "deckCount": 6,
+        "docxCount": 2,
+        "derivedPublicArtifacts": [
+          "resources/fluid-sources/fluid-notes-current.md",
+          "data/fluid-source-materials.json",
+          "data/fluid-chapter-source-packs.json",
+          "data/fluid-question-source-packs.json",
+          "data/fluid-section-source-packs.json"
+        ]
+      },
+      "files": [
+        {
+          "path": "resources/fluid-sources/chapter-1-physical-properties.pptx",
+          "bytes": 3042916,
+          "title": "流体的物理性质",
+          "slides": 42
+        },
+        {
+          "path": "resources/fluid-sources/chapter-2-ideal-fluid-flow.pptx",
+          "bytes": 1517323,
+          "title": "理想流体流动",
+          "slides": 29
+        },
+        {
+          "path": "resources/fluid-sources/chapter-3-governing-equations.pptx",
+          "bytes": 673525,
+          "title": "流体运动的基本方程组",
+          "slides": 13
+        },
+        {
+          "path": "resources/fluid-sources/chapter-5-vortex-motion.pptx",
+          "bytes": 1906466,
+          "title": "流体的涡旋运动",
+          "slides": 17
+        },
+        {
+          "path": "resources/fluid-sources/chapter-6-potential-flow.pptx",
+          "bytes": 3116929,
+          "title": "理想不可压缩流体无旋运动",
+          "slides": 41
+        },
+        {
+          "path": "resources/fluid-sources/chapter-8-viscous-incompressible-flow.pptx",
+          "bytes": 6637955,
+          "title": "粘性不可压缩流动",
+          "slides": 40
+        },
+        {
+          "path": "resources/fluid-sources/fluid-notes-current.docx",
+          "bytes": 162111,
+          "title": "流体力学课程笔记文档"
+        },
+        {
+          "path": "resources/fluid-sources/fluid-exams-2000-2024-current.docx",
+          "bytes": 4697955,
+          "title": "中国海洋大学流体力学 2000-2024 历年真题"
+        }
+      ],
+      "runtimeContract": {
+        "protectedPrefix": "/resources/fluid-sources/",
+        "middlewareAudit": "source_download_allowed",
+        "currentDerivedIndex": "data/fluid-source-materials.json"
+      },
+      "restorationTarget": {
+        "primary": "protected-r2-download-route",
+        "route": "/resources/fluid-sources/<filename>",
+        "r2KeyPattern": "protected-sources/fluid-sources/<filename>",
+        "auditEvent": "source_download_allowed",
+        "derivedIndex": "data/fluid-source-materials.json"
+      },
+      "postRestoreChecks": [
+        {
+          "id": "fluid-source-auth-download",
+          "method": "GET",
+          "route": "/resources/fluid-sources/<filename>",
+          "auth": "authenticated session required; do not store cookie values",
+          "expected": "200 response with Content-Length matching the manifest bytes for each restored original"
+        },
+        {
+          "id": "fluid-source-audit-event",
+          "method": "GET",
+          "route": "/resources/fluid-sources/<filename>",
+          "auth": "authenticated session required",
+          "expected": "source_download_allowed audit event emitted for each original download"
+        },
+        {
+          "id": "fluid-source-authz-block",
+          "method": "GET",
+          "route": "/resources/fluid-sources/<filename>",
+          "auth": "none",
+          "expected": "401 or 403; original source bytes are not public by default"
+        }
+      ],
+      "driftDetection": {
+        "command": "node tools/audit-fluid-resource-hosting.mjs --check-manifest --json",
+        "expected": {
+          "fileCount": 8,
+          "bytes": 21755180,
+          "ignoredFileCount": 8,
+          "ignoredBytes": 21755180,
+          "extensionCounts": {
+            ".docx": 2,
+            ".pptx": 6
+          }
+        },
+        "failureMeaning": "Fluid source originals changed; regenerate derived indexes and update R2 key/upload checklist before restoration."
+      },
+      "restoration": {
+        "preferred": "Keep derived Markdown/JSON public in Pages; put originals in R2 and add a protected source-download route that preserves the existing authentication and audit behavior.",
+        "r2KeyPattern": "protected-sources/fluid-sources/<filename>",
+        "staticHosting": "Only acceptable for a deliberate one-off if every original is intended to be downloadable from static Pages assets."
+      },
+      "verification": [
+        "Authenticated download route returns the expected Content-Length for each original.",
+        "source_download_allowed audit event is emitted for each original download.",
+        "Unauthenticated requests to originals are blocked."
+      ]
+    },
+    {
+      "id": "physical-oceanography-ppt-originals",
+      "groupId": "resources/physical-oceanography/ppt",
+      "riskLevel": "medium",
+      "restorationPriority": 3,
+      "title": "Physical oceanography PPT originals",
+      "classification": "teaching deck originals",
+      "sensitivity": "course source material",
+      "defaultPagesStatus": "excluded-by-assetsignore",
+      "assetsIgnoreRules": [
+        "**/*.pptx"
+      ],
+      "local": {
+        "groupPath": "resources/physical-oceanography/ppt",
+        "bytes": 17382397,
+        "fileCount": 5,
+        "deckCount": 5
+      },
+      "files": [
+        {
+          "path": "resources/physical-oceanography/ppt/物理海洋学复试教学串讲_学生挖空点击显答案版.pptx",
+          "bytes": 1763088
+        },
+        {
+          "path": "resources/physical-oceanography/ppt/物理海洋学复试教学串讲_学生挖空版.pptx",
+          "bytes": 641330
+        },
+        {
+          "path": "resources/physical-oceanography/ppt/物理海洋学复试教学串讲_学生挖空答案版.pptx",
+          "bytes": 230060
+        },
+        {
+          "path": "resources/physical-oceanography/ppt/物理海洋学导论_学生挖空点击显答案版.pptx",
+          "bytes": 2044367
+        },
+        {
+          "path": "resources/physical-oceanography/ppt/物理海洋学导论_学生挖空版.pptx",
+          "bytes": 12703552
+        }
+      ],
+      "restorationTarget": {
+        "primary": "r2-or-derived-html-before-public-download",
+        "route": "none yet",
+        "r2KeyPattern": "protected-sources/physical-oceanography/ppt/<filename>",
+        "derivedPrimary": "physical-oceanography derived pages",
+        "auditEvent": "source_download_allowed when protected downloads are enabled"
+      },
+      "postRestoreChecks": [
+        {
+          "id": "physical-oceanography-derived-primary",
+          "method": "INSPECT",
+          "route": "resources/physical-oceanography/",
+          "auth": "none for derived public pages",
+          "expected": "Derived pages or generated public artifacts remain the primary student-facing path before any PPTX original is restored"
+        },
+        {
+          "id": "physical-oceanography-original-auth-audit",
+          "method": "GET",
+          "route": "none yet",
+          "auth": "authenticated session required if a protected original-download route is enabled",
+          "expected": "No public static PPTX URL is introduced; any future original route has auth and audit parity with /resources/fluid-sources/"
+        }
+      ],
+      "driftDetection": {
+        "command": "node tools/audit-fluid-resource-hosting.mjs --check-manifest --json",
+        "expected": {
+          "fileCount": 5,
+          "bytes": 17382397,
+          "ignoredFileCount": 5,
+          "ignoredBytes": 17382397,
+          "extensionCounts": {
+            ".pptx": 5
+          }
+        },
+        "failureMeaning": "Physical oceanography PPT originals changed; refresh the derived-page plan and protected-download decision before restoration."
+      },
+      "restoration": {
+        "preferred": "Convert to derived HTML/Markdown/data where possible and keep PPTX originals in source storage or R2.",
+        "protectedDownloadOption": "If originals need student downloads, extend the protected source-download route to this prefix and audit it.",
+        "staticHosting": "Use static hosting only if these decks are intentionally public and no download audit is required."
+      },
+      "verification": [
+        "Confirm the physical-oceanography pages link to derived assets first.",
+        "If downloads are enabled, verify auth and audit parity with /resources/fluid-sources/."
+      ]
+    },
+    {
+      "id": "fluid-mechanics-exam-archive-docx",
+      "groupId": "resources/fluid-mechanics/exam-archives",
+      "riskLevel": "low",
+      "restorationPriority": 4,
+      "title": "Fluid mechanics exam archive DOCX",
+      "classification": "exam archive source document",
+      "sensitivity": "course source material",
+      "defaultPagesStatus": "excluded-by-assetsignore",
+      "assetsIgnoreRules": [
+        "**/*.docx"
+      ],
+      "local": {
+        "groupPath": "resources/fluid-mechanics/exam-archives",
+        "bytes": 43750,
+        "fileCount": 1,
+        "derivedPublicArtifact": "resources/fluid-mechanics/exam-archives/ouc-fluid-mechanics-2000-2024-complete.md"
+      },
+      "files": [
+        {
+          "path": "resources/fluid-mechanics/exam-archives/ouc-fluid-mechanics-2000-2024-complete.docx",
+          "bytes": 43750
+        }
+      ],
+      "restorationTarget": {
+        "primary": "source-repo-or-protected-object-store",
+        "route": "none yet",
+        "r2KeyPattern": "protected-sources/fluid-mechanics/exam-archives/<filename>",
+        "derivedPublicArtifact": "resources/fluid-mechanics/exam-archives/ouc-fluid-mechanics-2000-2024-complete.md",
+        "auditEvent": "source_download_allowed when protected downloads are enabled"
+      },
+      "postRestoreChecks": [
+        {
+          "id": "exam-archive-derived-accessible",
+          "method": "GET",
+          "route": "resources/fluid-mechanics/exam-archives/ouc-fluid-mechanics-2000-2024-complete.md",
+          "auth": "none for derived public archive",
+          "expected": "Derived Markdown archive remains accessible from Pages"
+        },
+        {
+          "id": "exam-archive-original-auth-audit",
+          "method": "GET",
+          "route": "none yet",
+          "auth": "authenticated session required if the original DOCX download route is enabled",
+          "expected": "No public static DOCX URL is introduced; any future original route is authenticated and audited"
+        }
+      ],
+      "driftDetection": {
+        "command": "node tools/audit-fluid-resource-hosting.mjs --check-manifest --json",
+        "expected": {
+          "fileCount": 1,
+          "bytes": 43750,
+          "ignoredFileCount": 1,
+          "ignoredBytes": 43750,
+          "extensionCounts": {
+            ".docx": 1
+          }
+        },
+        "failureMeaning": "Exam archive source DOCX changed; confirm the derived Markdown remains sufficient or update the protected-object-store plan."
+      },
+      "restoration": {
+        "preferred": "Serve the derived Markdown archive from Pages and keep the DOCX source in the repo or protected object storage.",
+        "protectedDownloadOption": "Map to R2 key protected-sources/fluid-mechanics/exam-archives/ouc-fluid-mechanics-2000-2024-complete.docx if an original download is required.",
+        "staticHosting": "Not recommended while the Markdown derivative is sufficient."
+      },
+      "verification": [
+        "Derived Markdown remains accessible from the site.",
+        "Any original DOCX download route is authenticated and audited."
+      ]
+    }
+  ],
+  "nonGoals": [
+    "No credentials are stored here.",
+    "No upload, bucket creation, KV mutation, or Pages deployment is implied by this manifest.",
+    "This manifest does not relax .assetsignore; normal Pages staging should keep these assets excluded."
+  ]
+}

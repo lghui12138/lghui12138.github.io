@@ -1,0 +1,102 @@
+{
+  "ok": true,
+  "version": "round307-private-video-management-ux-gate-20260614",
+  "generatedAt": "2026-06-14T02:45:09.394Z",
+  "targetRound": 307,
+  "gate": "round307-private-video-management-ux-gate",
+  "filesChecked": [
+    "teacher-panel.html",
+    "tools/check-private-video-management-mock.mjs",
+    "docs/private-video-management-runbook.md",
+    "data/fluid-round305-r2-binding-hard-stop.json"
+  ],
+  "productionActionsReady": false,
+  "productionRecoveryClaimAllowed": false,
+  "r2HardStop": {
+    "id": "r2-hard-stop-artifact",
+    "pass": true,
+    "hasPrivateMediaR2": false,
+    "blockedActions": [
+      "upload",
+      "publish",
+      "access-change",
+      "archive",
+      "delete-dynamic-course"
+    ],
+    "reason": "Current artifact records missing FM_PRIVATE_MEDIA as production blocker."
+  },
+  "checks": [
+    {
+      "id": "list-state-visible",
+      "description": "Teacher panel exposes a visible private-video list and management ledger.",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "access-change-state-visible",
+      "description": "Access-change controls and blocked-write copy are visible per course.",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "archive-state-visible",
+      "description": "Archive controls have explicit readiness and student-playback wording.",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "delete-safe-controls",
+      "description": "Delete remains dry-run first, then irreversible warning, then typed course ID.",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "r2-blocker-wording",
+      "description": "UI keeps production storage recovery blocked without FM_PRIVATE_MEDIA and real teacher QA.",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "mock-gate-covers-safe-delete",
+      "description": "Existing mock gate still asserts dry-run, prompt mismatch, and no real delete attempt.",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "runbook-boundary-present",
+      "description": "Runbook states the no-production-recovery boundary.",
+      "pass": true,
+      "missing": []
+    }
+  ],
+  "ordering": [
+    {
+      "id": "dry-run-before-confirm",
+      "description": "PV_COURSE_BUSY.set(courseId,'delete-check') appears before PV_COURSE_BUSY.set(courseId,'delete-confirm')",
+      "pass": true,
+      "firstIndex": 252553,
+      "secondIndex": 253452,
+      "missing": []
+    },
+    {
+      "id": "confirm-before-typed-id",
+      "description": "await pvConfirm appears before pvPromptCourseId(courseId,title)",
+      "pass": true,
+      "firstIndex": 254314,
+      "secondIndex": 255081,
+      "missing": []
+    },
+    {
+      "id": "typed-id-before-delete-post",
+      "description": "pvPromptCourseId(courseId,title) appears before fetch('/api/admin/private-videos/course/'+encodeURIComponent(courseId)+'/delete'",
+      "pass": true,
+      "firstIndex": 255081,
+      "secondIndex": 255511,
+      "missing": []
+    }
+  ],
+  "acceptance": {
+    "pass": true,
+    "meaning": "Private-video management is visibly usable and safety-gated in the teacher UI, but production recovery remains blocked without FM_PRIVATE_MEDIA R2 and real teacher-account browser QA."
+  }
+}

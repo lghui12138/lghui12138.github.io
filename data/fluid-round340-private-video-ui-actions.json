@@ -1,0 +1,203 @@
+{
+  "version": "round340-private-video-ui-actions-20260615",
+  "generatedAt": "2026-06-14T20:24:28.485Z",
+  "scope": {
+    "worker": "Round340 private video UI/action gate",
+    "projectRoot": "lghui-source-private-video-work",
+    "cloudflareMutationAttempted": false,
+    "privateVideoCourseMutationAttempted": false,
+    "realDeleteAttempted": false,
+    "pythonUsed": false,
+    "volumesMac2TTouched": false,
+    "vpnOrProxyTouched": false
+  },
+  "artifacts": {
+    "tool": "tools/check-round340-private-video-ui-actions.mjs",
+    "json": "data/fluid-round340-private-video-ui-actions.json",
+    "doc": "docs/round340-private-video-ui-actions.md"
+  },
+  "priorEvidence": {
+    "round334": "data/fluid-round334-private-video-management-actions.json",
+    "loaded": true,
+    "priorVersion": "round334-private-video-management-actions-20260615"
+  },
+  "r2Boundary": {
+    "status": "blocked-missing-fm-private-media-r2",
+    "hasAuditKv": true,
+    "hasPrivateMediaR2": false,
+    "source": "data/fluid-round334-private-video-management-actions.json",
+    "blocker": "Cloudflare Pages production lacks or has not proven FM_PRIVATE_MEDIA R2; upload/change/archive and storage-backed delete cleanup remain blocked."
+  },
+  "realTeacherAccount": {
+    "status": "passed-from-available-evidence",
+    "source": "data/fluid-round334-private-video-management-actions.json",
+    "rerunHere": false
+  },
+  "actionMatrix": [
+    {
+      "id": "list",
+      "label": "列表刷新",
+      "state": "ready",
+      "previousRoundState": "ready",
+      "fmPrivateMediaR2": "missing-or-not-proven",
+      "realTeacherAccount": "passed",
+      "buttonExpectation": "enabled",
+      "productionRecoveryClaimAllowed": false,
+      "reason": "Read-only list refresh is available for a teacher account; it does not prove storage writes."
+    },
+    {
+      "id": "same-access-save",
+      "label": "重复保存当前授权",
+      "state": "ready",
+      "previousRoundState": "ready",
+      "fmPrivateMediaR2": "missing-or-not-proven",
+      "realTeacherAccount": "passed",
+      "buttonExpectation": "enabled",
+      "productionRecoveryClaimAllowed": false,
+      "reason": "Saving the unchanged assigned student is a no-op and remains available."
+    },
+    {
+      "id": "delete-dry-run",
+      "label": "删除 dry-run 预检",
+      "state": "ready",
+      "previousRoundState": "ready",
+      "fmPrivateMediaR2": "missing-or-not-proven",
+      "realTeacherAccount": "passed",
+      "buttonExpectation": "enabled",
+      "productionRecoveryClaimAllowed": false,
+      "reason": "Delete preflight reads course state and cleanup plan without deleting data."
+    },
+    {
+      "id": "delete-course",
+      "label": "永久删除专属课",
+      "state": "limited",
+      "previousRoundState": "limited",
+      "fmPrivateMediaR2": "missing-or-not-proven",
+      "realTeacherAccount": "passed",
+      "buttonExpectation": "enabled-with-limited-reason",
+      "productionRecoveryClaimAllowed": false,
+      "reason": "Permanent delete remains limited: dry-run and typed course ID are required, and storage cleanup is not promoted while FM_PRIVATE_MEDIA is missing."
+    },
+    {
+      "id": "upload-publish",
+      "label": "上传/发布专属课",
+      "state": "blocked",
+      "previousRoundState": "blocked",
+      "fmPrivateMediaR2": "missing-or-not-proven",
+      "realTeacherAccount": "passed",
+      "buttonExpectation": "disabled-or-blocked-reason-visible",
+      "productionRecoveryClaimAllowed": false,
+      "reason": "Storage-backed production mutation is blocked until FM_PRIVATE_MEDIA R2 and real teacher browser QA both pass."
+    },
+    {
+      "id": "change-access",
+      "label": "改授权学生",
+      "state": "blocked",
+      "previousRoundState": "blocked",
+      "fmPrivateMediaR2": "missing-or-not-proven",
+      "realTeacherAccount": "passed",
+      "buttonExpectation": "disabled-or-blocked-reason-visible",
+      "productionRecoveryClaimAllowed": false,
+      "reason": "Storage-backed production mutation is blocked until FM_PRIVATE_MEDIA R2 and real teacher browser QA both pass."
+    },
+    {
+      "id": "archive-course",
+      "label": "下架专属课",
+      "state": "blocked",
+      "previousRoundState": "blocked",
+      "fmPrivateMediaR2": "missing-or-not-proven",
+      "realTeacherAccount": "passed",
+      "buttonExpectation": "disabled-or-blocked-reason-visible",
+      "productionRecoveryClaimAllowed": false,
+      "reason": "Storage-backed production mutation is blocked until FM_PRIVATE_MEDIA R2 and real teacher browser QA both pass."
+    }
+  ],
+  "summary": {
+    "ready": 3,
+    "limited": 1,
+    "blocked": 3
+  },
+  "claims": {
+    "listReady": true,
+    "sameAccessSaveReady": true,
+    "deleteDryRunReady": true,
+    "deleteCourseLimited": true,
+    "uploadPublishBlocked": true,
+    "changeAccessBlocked": true,
+    "archiveBlocked": true,
+    "productionRecoveryAllowed": false,
+    "r2RepairClaimed": false,
+    "realDeleteAttempted": false
+  },
+  "checks": [
+    {
+      "id": "round340-ledger-marker",
+      "description": "Teacher management ledger has a Round340 target marker and fixed expected counts.",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "action-matrix-force-lock",
+      "description": "Fallback action matrix cannot promote storage-backed mutations while production prerequisites are missing.",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "buttons-carry-real-state",
+      "description": "Teacher buttons expose real action/state/reason attributes.",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "storage-backed-actions-block-in-code",
+      "description": "Upload, publish, access-change, and archive all call the action-specific blocker gate.",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "same-access-and-delete-copy",
+      "description": "UI explains same-access save, delete dry-run, limited delete, and system read-only courses.",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "delete-dialog-boundary",
+      "description": "Delete confirmation dialog includes irreversible warning, typed course ID, and no false R2 recovery claim.",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "blocked-reason-visible",
+      "description": "The visible management ledger keeps the R2 and real teacher QA blocker on screen.",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "delete-dry-run-before-dialog",
+      "description": "delete?dryRun=1&writeProbe=1 appears before productionBoundary",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "dialog-before-course-id-prompt",
+      "description": "productionBoundary appears before pvPromptCourseId(courseId,title)",
+      "pass": true,
+      "missing": []
+    },
+    {
+      "id": "course-id-before-real-delete",
+      "description": "pvPromptCourseId(courseId,title) appears before fetch('/api/admin/private-videos/course/'+encodeURIComponent(courseId)+'/delete'",
+      "pass": true,
+      "missing": []
+    }
+  ],
+  "forbiddenRecoveryPhrasesFound": [],
+  "verificationCommands": [
+    "node --check tools/check-round340-private-video-ui-actions.mjs",
+    "node tools/check-round340-private-video-ui-actions.mjs --write --json"
+  ],
+  "acceptance": {
+    "pass": true,
+    "meaning": "Teacher UI now locks the private-video action matrix, button states, delete dialog boundary, and visible R2/QA blocker without claiming FM_PRIVATE_MEDIA recovery."
+  }
+}

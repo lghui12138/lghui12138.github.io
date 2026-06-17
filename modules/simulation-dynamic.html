@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <style data-auth-boot>html[data-auth-pending="1"] body{visibility:hidden!important;opacity:0!important}</style>
+  <script data-auth-boot>document.documentElement.setAttribute('data-auth-pending','1');</script>
+  <script src="/js/security/auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f8fb">
+  <title>仿真实验 - 流体力学学习平台</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --surface: rgba(255, 255, 255, .92);
+      --surface-soft: rgba(255, 255, 255, .72);
+      --line: rgba(20, 31, 43, .11);
+      --text: #14202b;
+      --muted: #667584;
+      --blue: #0a84ff;
+      --teal: #14b8a6;
+      --green: #30b980;
+      --orange: #f97316;
+      --red: #e5484d;
+      --shadow: 0 16px 42px rgba(17, 31, 45, .09);
+      --radius: 8px;
+      --ease: cubic-bezier(.2,.8,.2,1);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      min-width: 320px;
+      background: var(--bg);
+      text-rendering: optimizeLegibility;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", system-ui, sans-serif;
+      color: var(--text);
+      background: linear-gradient(180deg, #fbfcfe 0%, #f4f8fb 48%, #eef4f8 100%);
+      letter-spacing: 0;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+    button, a, input { -webkit-tap-highlight-color: transparent; }
+
+    .shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid rgba(20,31,43,.09);
+      background: rgba(246,248,251,.86);
+      backdrop-filter: saturate(180%) blur(22px);
+    }
+
+    .topbar-inner {
+      min-height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .mark {
+      width: 34px;
+      height: 34px;
+      border-radius: var(--radius);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), var(--teal));
+      box-shadow: 0 10px 24px rgba(10,132,255,.17);
+      font-weight: 850;
+      flex: 0 0 auto;
+    }
+
+    .brand-text { min-width: 0; }
+
+    .brand strong,
+    .brand-text span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .brand strong {
+      font-size: 15px;
+      line-height: 1.2;
+    }
+
+    .brand-text span {
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .btn,
+    .pill,
+    .experiment-tab {
+      min-height: 38px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.78);
+      color: var(--text);
+      padding: 0 13px;
+      font-weight: 780;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: transform .18s var(--ease), box-shadow .18s var(--ease), border-color .18s var(--ease), background .18s var(--ease);
+    }
+
+    .primary,
+    .experiment-tab[aria-pressed="true"] {
+      color: #fff;
+      border-color: rgba(10,132,255,.44);
+      background: linear-gradient(135deg, var(--blue), var(--teal));
+      box-shadow: 0 10px 22px rgba(10,132,255,.18);
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .btn:hover,
+      .pill:hover,
+      .experiment-tab:hover,
+      .experiment-card:hover {
+        transform: translateY(-1px);
+        border-color: rgba(10,132,255,.28);
+        box-shadow: 0 12px 28px rgba(17,31,45,.1);
+      }
+    }
+
+    main { padding: 28px 0 54px; }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 18px;
+      align-items: stretch;
+      margin-bottom: 22px;
+    }
+
+    .hero-copy,
+    .status-panel,
+    .surface,
+    .panel,
+    .experiment-card {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .hero-copy,
+    .status-panel {
+      padding: 26px;
+      background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(239,248,248,.84));
+      overflow: hidden;
+    }
+
+    .eyebrow {
+      color: var(--teal);
+      font-size: 13px;
+      font-weight: 850;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 12px 0 12px;
+      max-width: 760px;
+      font-size: 48px;
+      line-height: 1.04;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.72;
+    }
+
+    .status-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .status-panel strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1.16;
+    }
+
+    .status-panel p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      line-height: 1.58;
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 18px 0;
+    }
+
+    .experiment-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .experiment-card {
+      min-height: 172px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 17px;
+      cursor: pointer;
+      box-shadow: 0 10px 28px rgba(17,31,45,.07);
+      transition: transform .18s var(--ease), box-shadow .18s var(--ease), border-color .18s var(--ease);
+    }
+
+    .experiment-card.active {
+      border-color: rgba(10,132,255,.42);
+      box-shadow: 0 14px 34px rgba(10,132,255,.13);
+    }
+
+    .experiment-card h2 {
+      margin: 0 0 8px;
+      font-size: 17px;
+      line-height: 1.28;
+    }
+
+    .experiment-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .tag-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      min-height: 24px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      color: var(--tone, var(--blue));
+      background: color-mix(in srgb, var(--tone, var(--blue)) 12%, white);
+      font-size: 12px;
+      font-weight: 820;
+    }
+
+    .surface {
+      display: grid;
+      grid-template-columns: 340px minmax(0, 1fr) 270px;
+      gap: 14px;
+      padding: 14px;
+      box-shadow: 0 10px 28px rgba(17,31,45,.07);
+    }
+
+    .panel {
+      box-shadow: none;
+      background: rgba(255,255,255,.74);
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .panel h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      line-height: 1.25;
+    }
+
+    .panel-note {
+      margin: -4px 0 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .control-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .control-row {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.72);
+      padding: 12px;
+    }
+
+    .control-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 8px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .control-head strong {
+      color: var(--text);
+      font-size: 14px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--blue);
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .visual-wrap {
+      min-height: 460px;
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .visual-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .visual-head h2 {
+      margin-bottom: 4px;
+    }
+
+    .status-chip {
+      min-height: 28px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 4px 10px;
+      color: var(--tone, var(--blue));
+      background: color-mix(in srgb, var(--tone, var(--blue)) 12%, white);
+      font-size: 12px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      min-height: 360px;
+      display: block;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: linear-gradient(180deg, #f8fbff 0%, #edf6fb 100%);
+    }
+
+    .result-list {
+      display: grid;
+      gap: 9px;
+    }
+
+    .result-row {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.72);
+      padding: 11px;
+    }
+
+    .result-row span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .result-row strong {
+      display: block;
+      margin-top: 4px;
+      color: var(--text);
+      font-size: 19px;
+      line-height: 1.16;
+      overflow-wrap: anywhere;
+    }
+
+    .formula-line {
+      margin-top: 14px;
+      border: 1px solid rgba(20,184,166,.16);
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, rgba(255,255,255,.9), rgba(239,248,248,.82));
+      padding: 13px;
+      color: #101927;
+      font-family: "Times New Roman", Georgia, serif;
+      font-size: 19px;
+      line-height: 1.3;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1120px) {
+      .hero,
+      .surface { grid-template-columns: 1fr; }
+      .experiment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      h1 { font-size: 42px; }
+      .visual-wrap { min-height: auto; }
+      canvas { min-height: 320px; }
+    }
+
+    @media (max-width: 640px) {
+      .shell { width: min(100% - 20px, 1180px); }
+      .topbar-inner { padding: 10px 0; }
+      .brand-text { display: none; }
+      .nav .pill { min-height: 34px; padding: 0 10px; font-size: 13px; }
+      main { padding-top: 16px; }
+      h1 { font-size: 31px; }
+      .hero-copy,
+      .status-panel { padding: 22px; }
+      .experiment-grid { grid-template-columns: 1fr; }
+      .visual-head { flex-direction: column; }
+      canvas { min-height: 280px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell topbar-inner">
+      <a class="brand" href="/index-complete.html">
+        <span class="mark">验</span>
+        <span class="brand-text"><strong>仿真实验</strong><span>参数控制 · 即时计算 · 流动图像</span></span>
+      </a>
+      <nav class="nav">
+        <a class="pill" href="/index-complete.html">主页</a>
+        <a class="pill primary" href="/modules/practice-dynamic.html">练习</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="eyebrow">Simulation Bench</div>
+        <h1>用参数变化看见公式背后的流动关系。</h1>
+        <p class="lead">四个基础实验覆盖能量守恒、流态判别、边界层发展和静压强分布，把图像、数值与公式条件放在同一工作台里。</p>
+      </div>
+      <aside class="status-panel">
+        <div>
+          <div class="eyebrow">当前实验</div>
+          <strong id="currentTitle">伯努利方程验证</strong>
+          <p id="currentSummary">变截面管道中，流速、压强和高度共同决定总机械能。</p>
+        </div>
+        <div class="actions">
+          <button class="btn primary" type="button" id="runButton">运行仿真</button>
+          <button class="btn" type="button" id="resetButton">重置</button>
+        </div>
+      </aside>
+    </section>
+
+    <section class="tabs" aria-label="实验切换" id="tabs"></section>
+
+    <section class="experiment-grid" id="experimentGrid"></section>
+
+    <section class="surface" aria-live="polite">
+      <aside class="panel">
+        <h2>参数控制</h2>
+        <p class="panel-note" id="controlNote">参数组与当前实验条件。</p>
+        <div class="control-list" id="controls"></div>
+      </aside>
+
+      <section class="panel visual-wrap">
+        <div class="visual-head">
+          <div>
+            <h2 id="visualTitle">伯努利方程验证</h2>
+            <p class="panel-note" id="visualNote">流速增大时，局部压强会随之降低。</p>
+          </div>
+          <span class="status-chip" id="stateChip" style="--tone:var(--blue)">待运行</span>
+        </div>
+        <canvas id="simCanvas" width="960" height="540"></canvas>
+      </section>
+
+      <aside class="panel">
+        <h2>计算结果</h2>
+        <p class="panel-note" id="resultNote">当前参数对应的结果。</p>
+        <div class="result-list" id="results"></div>
+        <div class="formula-line" id="formulaLine">p/(ρg) + v²/(2g) + z = H</div>
+      </aside>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const experiments = {
+        bernoulli: {
+          title: '伯努利方程验证',
+          short: '伯努利',
+          tone: 'var(--blue)',
+          summary: '变截面管道中，流速、压强和高度共同决定总机械能。',
+          note: '流速增大时，局部压强会随之降低。',
+          formula: 'p/(ρg) + v²/(2g) + z = H',
+          tags: ['能量守恒', '连续性', '压强变化'],
+          params: [
+            { key: 'velocity1', label: '入口流速', min: 0.5, max: 5, step: 0.1, value: 2.0, unit: 'm/s' },
+            { key: 'area1', label: '入口面积', min: 0.01, max: 0.1, step: 0.001, value: 0.06, unit: 'm²' },
+            { key: 'area2', label: '出口面积', min: 0.005, max: 0.05, step: 0.001, value: 0.025, unit: 'm²' },
+            { key: 'height', label: '高度差', min: 0, max: 2, step: 0.1, value: 0.4, unit: 'm' }
+          ],
+          calculate(values) {
+            const rho = 1000;
+            const g = 9.8;
+            const pressure1 = 101325;
+            const velocity2 = values.velocity1 * values.area1 / values.area2;
+            const pressure2 = pressure1 + 0.5 * rho * (values.velocity1 ** 2 - velocity2 ** 2) - rho * g * values.height;
+            return [
+              { label: '出口流速', value: velocity2.toFixed(2), unit: 'm/s' },
+              { label: '出口压强', value: (pressure2 / 1000).toFixed(1), unit: 'kPa' },
+              { label: '入口总能量', value: ((pressure1 + 0.5 * rho * values.velocity1 ** 2) / 1000).toFixed(1), unit: 'kJ/m³' }
+            ];
+          },
+          draw(ctx, values, results, running) {
+            drawBernoulli(ctx, values, results, running);
+          }
+        },
+        reynolds: {
+          title: '雷诺数流态观测',
+          short: '雷诺数',
+          tone: 'var(--teal)',
+          summary: '通过速度、直径、密度和粘度判断层流、过渡流或湍流。',
+          note: '雷诺数越大，惯性作用越强，流线更容易失稳。',
+          formula: 'Re = ρvD/μ',
+          tags: ['层流', '过渡流', '湍流'],
+          params: [
+            { key: 'velocity', label: '平均流速', min: 0.1, max: 3, step: 0.1, value: 1.2, unit: 'm/s' },
+            { key: 'diameter', label: '管道直径', min: 0.01, max: 0.1, step: 0.001, value: 0.035, unit: 'm' },
+            { key: 'viscosity', label: '动力粘度', min: 0.000001, max: 0.001, step: 0.000001, value: 0.00012, unit: 'Pa·s' },
+            { key: 'density', label: '流体密度', min: 800, max: 1200, step: 10, value: 1000, unit: 'kg/m³' }
+          ],
+          calculate(values) {
+            const re = values.density * values.velocity * values.diameter / values.viscosity;
+            const type = re < 2300 ? '层流' : re > 4000 ? '湍流' : '过渡流';
+            return [
+              { label: '雷诺数', value: Math.round(re).toLocaleString('zh-CN'), unit: '' },
+              { label: '流动状态', value: type, unit: '' },
+              { label: '临界速度', value: (2300 * values.viscosity / (values.density * values.diameter)).toFixed(3), unit: 'm/s' }
+            ];
+          },
+          draw(ctx, values, results, running) {
+            drawReynolds(ctx, values, results, running);
+          }
+        },
+        boundary: {
+          title: '边界层发展',
+          short: '边界层',
+          tone: 'var(--orange)',
+          summary: '沿平板方向，粘性影响逐渐向外扩展形成边界层。',
+          note: '速度越大或粘度越小，给定长度处的边界层越薄。',
+          formula: 'δ ≈ 5x/√Reₓ',
+          tags: ['平板', '速度分布', '阻力'],
+          params: [
+            { key: 'freeVelocity', label: '自由流速度', min: 1, max: 10, step: 0.5, value: 4, unit: 'm/s' },
+            { key: 'plateLength', label: '平板长度', min: 0.5, max: 2, step: 0.1, value: 1.2, unit: 'm' },
+            { key: 'fluidViscosity', label: '运动粘度', min: 0.000001, max: 0.0001, step: 0.000001, value: 0.000015, unit: 'm²/s' }
+          ],
+          calculate(values) {
+            const re = values.freeVelocity * values.plateLength / values.fluidViscosity;
+            const thickness = 5 * values.plateLength / Math.sqrt(re);
+            const drag = 1.328 / Math.sqrt(re);
+            return [
+              { label: '平板雷诺数', value: Math.round(re).toLocaleString('zh-CN'), unit: '' },
+              { label: '边界层厚度', value: (thickness * 1000).toFixed(2), unit: 'mm' },
+              { label: '层流阻力系数', value: drag.toFixed(4), unit: '' }
+            ];
+          },
+          draw(ctx, values, results, running) {
+            drawBoundary(ctx, values, results, running);
+          }
+        },
+        pressure: {
+          title: '静压强分布',
+          short: '静压强',
+          tone: 'var(--green)',
+          summary: '静止液体中，压强随深度线性增加，浮力等于排开液体重力。',
+          note: '深度增加时表压强按 ρgh 线性增加。',
+          formula: 'p = p₀ + ρgh',
+          tags: ['静水压强', '浮力', '深度'],
+          params: [
+            { key: 'depth', label: '液体深度', min: 0.1, max: 2, step: 0.1, value: 1.1, unit: 'm' },
+            { key: 'density', label: '液体密度', min: 800, max: 1200, step: 10, value: 1000, unit: 'kg/m³' },
+            { key: 'objectVolume', label: '排开体积', min: 0.001, max: 0.01, step: 0.0001, value: 0.004, unit: 'm³' }
+          ],
+          calculate(values) {
+            const g = 9.8;
+            const pressure = 101325 + values.density * g * values.depth;
+            const buoyant = values.density * g * values.objectVolume;
+            return [
+              { label: '绝对压强', value: (pressure / 1000).toFixed(1), unit: 'kPa' },
+              { label: '表压强', value: ((pressure - 101325) / 1000).toFixed(1), unit: 'kPa' },
+              { label: '浮力', value: buoyant.toFixed(2), unit: 'N' }
+            ];
+          },
+          draw(ctx, values, results, running) {
+            drawPressure(ctx, values, results, running);
+          }
+        }
+      };
+
+      const tabs = document.getElementById('tabs');
+      const grid = document.getElementById('experimentGrid');
+      const controls = document.getElementById('controls');
+      const results = document.getElementById('results');
+      const canvas = document.getElementById('simCanvas');
+      const ctx = canvas.getContext('2d');
+      const runButton = document.getElementById('runButton');
+      const resetButton = document.getElementById('resetButton');
+      const currentTitle = document.getElementById('currentTitle');
+      const currentSummary = document.getElementById('currentSummary');
+      const visualTitle = document.getElementById('visualTitle');
+      const visualNote = document.getElementById('visualNote');
+      const stateChip = document.getElementById('stateChip');
+      const formulaLine = document.getElementById('formulaLine');
+      let activeKey = 'bernoulli';
+      let state = createInitialState();
+      let running = false;
+
+      function createInitialState() {
+        return Object.fromEntries(Object.entries(experiments).map(([key, experiment]) => [
+          key,
+          Object.fromEntries(experiment.params.map(param => [param.key, param.value]))
+        ]));
+      }
+
+      function renderTabs() {
+        tabs.innerHTML = Object.entries(experiments).map(([key, experiment]) => (
+          `<button class="experiment-tab" type="button" data-key="${key}" aria-pressed="${key === activeKey}">${experiment.short}</button>`
+        )).join('');
+      }
+
+      function renderGrid() {
+        grid.innerHTML = Object.entries(experiments).map(([key, experiment]) => (
+          `<article class="experiment-card ${key === activeKey ? 'active' : ''}" data-key="${key}" tabindex="0" role="button" aria-label="${experiment.title}">
+            <div>
+              <span class="tag" style="--tone:${experiment.tone}">${experiment.short}</span>
+              <h2>${experiment.title}</h2>
+              <p>${experiment.summary}</p>
+            </div>
+            <div class="tag-row">${experiment.tags.map(tag => `<span class="tag" style="--tone:${experiment.tone}">${tag}</span>`).join('')}</div>
+          </article>`
+        )).join('');
+      }
+
+      function renderControls() {
+        const experiment = experiments[activeKey];
+        const values = state[activeKey];
+        controls.innerHTML = experiment.params.map(param => (
+          `<label class="control-row">
+            <span class="control-head"><strong>${param.label}</strong><span>${formatValue(values[param.key], param)} ${param.unit}</span></span>
+            <input type="range" data-param="${param.key}" min="${param.min}" max="${param.max}" step="${param.step}" value="${values[param.key]}" aria-label="${param.label}">
+          </label>`
+        )).join('');
+      }
+
+      function renderResults(calculated) {
+        results.innerHTML = calculated.map(item => (
+          `<div class="result-row"><span>${item.label}</span><strong>${item.value}${item.unit ? ' ' + item.unit : ''}</strong></div>`
+        )).join('');
+      }
+
+      function render() {
+        const experiment = experiments[activeKey];
+        const values = state[activeKey];
+        const calculated = experiment.calculate(values);
+        currentTitle.textContent = experiment.title;
+        currentSummary.textContent = experiment.summary;
+        visualTitle.textContent = experiment.title;
+        visualNote.textContent = experiment.note;
+        formulaLine.textContent = experiment.formula;
+        stateChip.textContent = running ? '运行中' : '即时计算';
+        stateChip.style.setProperty('--tone', running ? 'var(--green)' : experiment.tone);
+        renderTabs();
+        renderGrid();
+        renderControls();
+        renderResults(calculated);
+        experiment.draw(ctx, values, calculated, running);
+      }
+
+      function formatValue(value, param) {
+        const step = String(param.step);
+        const decimals = step.includes('.') ? step.split('.')[1].length : 0;
+        return Number(value).toFixed(Math.min(decimals, 6)).replace(/\\.0+$/, '');
+      }
+
+      function setActive(key) {
+        if (!experiments[key]) return;
+        activeKey = key;
+        running = false;
+        render();
+      }
+
+      function resetActive() {
+        const experiment = experiments[activeKey];
+        state[activeKey] = Object.fromEntries(experiment.params.map(param => [param.key, param.value]));
+        running = false;
+        render();
+      }
+
+      function bindEvents() {
+        document.addEventListener('click', event => {
+          const switcher = event.target.closest('[data-key]');
+          if (switcher) setActive(switcher.dataset.key);
+        });
+
+        document.addEventListener('keydown', event => {
+          if ((event.key === 'Enter' || event.key === ' ') && event.target.matches('.experiment-card')) {
+            event.preventDefault();
+            setActive(event.target.dataset.key);
+          }
+        });
+
+        controls.addEventListener('input', event => {
+          const input = event.target.closest('input[type="range"]');
+          if (!input) return;
+          state[activeKey][input.dataset.param] = Number(input.value);
+          running = false;
+          render();
+        });
+
+        runButton.addEventListener('click', () => {
+          running = true;
+          render();
+          window.setTimeout(() => {
+            running = false;
+            render();
+          }, 620);
+        });
+
+        resetButton.addEventListener('click', resetActive);
+
+        window.addEventListener('resize', () => render(), { passive: true });
+      }
+
+      function clearCanvas(ctx) {
+        const rect = canvas.getBoundingClientRect();
+        const ratio = window.devicePixelRatio || 1;
+        const width = Math.max(1, Math.round(rect.width * ratio));
+        const height = Math.max(1, Math.round(rect.height * ratio));
+        if (canvas.width !== width || canvas.height !== height) {
+          canvas.width = width;
+          canvas.height = height;
+        }
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        ctx.clearRect(0, 0, rect.width, rect.height);
+        return { width: rect.width, height: rect.height };
+      }
+
+      function drawGrid(ctx, width, height) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(20,31,43,.07)';
+        ctx.lineWidth = 1;
+        for (let x = 28; x < width; x += 44) {
+          ctx.beginPath();
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, height);
+          ctx.stroke();
+        }
+        for (let y = 28; y < height; y += 44) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      function label(ctx, text, x, y, color = '#14202b') {
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.font = '700 13px -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif';
+        ctx.fillText(text, x, y);
+        ctx.restore();
+      }
+
+      function drawBernoulli(ctx, values, resultItems, isRunning) {
+        const { width, height } = clearCanvas(ctx);
+        drawGrid(ctx, width, height);
+        const cx = width / 2;
+        const cy = height / 2;
+        const leftRadius = 78;
+        const rightRadius = Math.max(34, Math.min(74, 560 * values.area2));
+        const pipeLeft = 58;
+        const pipeRight = width - 58;
+        ctx.save();
+        ctx.fillStyle = 'rgba(10,132,255,.12)';
+        ctx.strokeStyle = '#0a84ff';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(pipeLeft, cy - leftRadius);
+        ctx.bezierCurveTo(cx - 80, cy - leftRadius, cx + 10, cy - rightRadius, pipeRight, cy - rightRadius);
+        ctx.lineTo(pipeRight, cy + rightRadius);
+        ctx.bezierCurveTo(cx + 10, cy + rightRadius, cx - 80, cy + leftRadius, pipeLeft, cy + leftRadius);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = isRunning ? 'rgba(20,184,166,.34)' : 'rgba(20,184,166,.2)';
+        for (let i = 0; i < 7; i++) {
+          const y = cy - 44 + i * 15;
+          ctx.beginPath();
+          ctx.moveTo(pipeLeft + 22, y);
+          ctx.lineTo(pipeRight - 26, y - (i - 3) * 4);
+          ctx.strokeStyle = 'rgba(20,184,166,.72)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+        const p2 = resultItems[1].value;
+        label(ctx, `v₁ ${values.velocity1.toFixed(1)} m/s`, pipeLeft + 10, cy - leftRadius - 18);
+        label(ctx, `v₂ ${resultItems[0].value} m/s`, pipeRight - 142, cy - rightRadius - 18);
+        label(ctx, `p₂ ${p2} kPa`, pipeRight - 142, cy + rightRadius + 28, '#0f766e');
+        ctx.restore();
+      }
+
+      function drawReynolds(ctx, values, resultItems, isRunning) {
+        const { width, height } = clearCanvas(ctx);
+        drawGrid(ctx, width, height);
+        const re = Number(resultItems[0].value.replace(/,/g, ''));
+        const intensity = Math.min(1, re / 8000);
+        ctx.save();
+        ctx.strokeStyle = '#14b8a6';
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 10; i++) {
+          const baseY = 70 + i * ((height - 140) / 9);
+          ctx.beginPath();
+          for (let x = 48; x < width - 48; x += 8) {
+            const wave = Math.sin(x / (36 - intensity * 22) + i) * intensity * 22;
+            if (x === 48) ctx.moveTo(x, baseY + wave);
+            else ctx.lineTo(x, baseY + wave);
+          }
+          ctx.stroke();
+        }
+        ctx.fillStyle = re < 2300 ? 'rgba(48,185,128,.14)' : re > 4000 ? 'rgba(229,72,77,.12)' : 'rgba(249,115,22,.13)';
+        ctx.fillRect(44, height - 66, width - 88, 28);
+        label(ctx, `Re ${resultItems[0].value}`, 56, height - 47);
+        label(ctx, resultItems[1].value, width - 120, height - 47, re > 4000 ? '#e5484d' : '#0f766e');
+        ctx.restore();
+      }
+
+      function drawBoundary(ctx, values, resultItems, isRunning) {
+        const { width, height } = clearCanvas(ctx);
+        drawGrid(ctx, width, height);
+        const plateY = height - 92;
+        const startX = 62;
+        const endX = width - 54;
+        ctx.save();
+        ctx.strokeStyle = '#14202b';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(startX, plateY);
+        ctx.lineTo(endX, plateY);
+        ctx.stroke();
+        ctx.fillStyle = 'rgba(249,115,22,.14)';
+        ctx.strokeStyle = '#f97316';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(startX, plateY);
+        for (let x = startX; x <= endX; x += 12) {
+          const t = (x - startX) / (endX - startX);
+          const y = plateY - Math.sqrt(t) * Math.min(170, 44 + values.plateLength * 58);
+          ctx.lineTo(x, y);
+        }
+        ctx.lineTo(endX, plateY);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        for (let i = 0; i < 6; i++) {
+          const y = 62 + i * 34;
+          ctx.strokeStyle = 'rgba(10,132,255,.48)';
+          ctx.beginPath();
+          ctx.moveTo(44, y);
+          ctx.lineTo(width - 64, y);
+          ctx.stroke();
+        }
+        label(ctx, `δ ${resultItems[1].value} mm`, width - 154, plateY - 152, '#f97316');
+        label(ctx, `U∞ ${values.freeVelocity.toFixed(1)} m/s`, 54, 50, '#0a84ff');
+        ctx.restore();
+      }
+
+      function drawPressure(ctx, values, resultItems, isRunning) {
+        const { width, height } = clearCanvas(ctx);
+        drawGrid(ctx, width, height);
+        const tankX = width * 0.24;
+        const tankW = width * 0.52;
+        const tankTop = 62;
+        const tankBottom = height - 54;
+        const waterH = Math.min(tankBottom - tankTop - 20, values.depth / 2 * (tankBottom - tankTop - 20));
+        const waterTop = tankBottom - waterH;
+        ctx.save();
+        ctx.strokeStyle = '#14202b';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(tankX, tankTop, tankW, tankBottom - tankTop);
+        const gradient = ctx.createLinearGradient(0, waterTop, 0, tankBottom);
+        gradient.addColorStop(0, 'rgba(10,132,255,.2)');
+        gradient.addColorStop(1, 'rgba(10,132,255,.55)');
+        ctx.fillStyle = gradient;
+        ctx.fillRect(tankX + 2, waterTop, tankW - 4, tankBottom - waterTop - 2);
+        ctx.fillStyle = 'rgba(249,115,22,.82)';
+        ctx.fillRect(tankX + tankW * 0.48, tankBottom - waterH * 0.46, 48, 48);
+        ctx.fillStyle = '#14202b';
+        label(ctx, `h ${values.depth.toFixed(1)} m`, tankX + tankW + 18, waterTop + 18);
+        label(ctx, `p ${resultItems[1].value} kPa`, tankX + tankW + 18, tankBottom - 22, '#0f766e');
+        label(ctx, `Fᵦ ${resultItems[2].value} N`, tankX + tankW * 0.48 - 4, tankBottom - waterH * 0.46 - 12, '#f97316');
+        ctx.restore();
+      }
+
+      bindEvents();
+      render();
+    })();
+  </script>
+</body>
+</html>

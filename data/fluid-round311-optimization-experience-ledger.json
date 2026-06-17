@@ -1,0 +1,52 @@
+{
+  "version": "round311-all-html-current-counts-guard-20260614",
+  "generatedAt": "2026-06-14T16:20:00+08:00",
+  "purpose": "Round311 records the anti-regression rules for the current fluid-learning public site after the 181103 HTML conversion and real-exam count correction.",
+  "realExamCurrentCounts": {
+    "sourceAtomicQuestionCount": 325,
+    "webAtomicQuestionCount": 325,
+    "groupedSectionCount": 68,
+    "splitGroupedSectionCount": 68,
+    "groupedWebQuestionIdCount": 217,
+    "collapseLossIfMerged": 149,
+    "currentSurfaceMustNotUse": "316/61/201 as current truth"
+  },
+  "htmlContentBoundary": {
+    "sourceMaterialCount": 38,
+    "htmlContentPageCount": 38,
+    "rawDownloadCount": 0,
+    "localPathLeakCount": 0,
+    "rule": "181103 materials are served as standalone HTML content pages. Public routes must not expose raw file downloads or old wrapper metadata.",
+    "legacyWrapperFieldCount": 0
+  },
+  "publicShellBoundary": {
+    "requiredCurrentLedger": "/data/fluid-round310-181103-html-content.json",
+    "legacyLedgerPolicy": "If /data/fluid-round309-181103-html-content.json is still public, it must be sanitized and must not contain old wrapper metadata, raw download URLs, or local paths.",
+    "liveGate": "tools/check-round311-181103-live-html-content.mjs"
+  },
+  "privateVideoBoundary": {
+    "uiAndMockManagementReady": true,
+    "productionAccountQA": false,
+    "requiresPrivateMediaR2": true,
+    "requiredBinding": "FM_PRIVATE_MEDIA",
+    "claimRule": "Do not claim private-video production recovery until Cloudflare production has FM_PRIVATE_MEDIA and real teacher/student browser QA has run."
+  },
+  "onlineProofRequired": [
+    "lghui.top site-updates top version",
+    "lghui.top 181103 HTML content pages",
+    "lghui.top sanitized Round310 181103 JSON ledger",
+    "lghui-fluid-learning.pages.dev _edge-status current version",
+    "release gate and public browser gate"
+  ],
+  "checks": [
+    "node tools/check-round310-181103-html-content-pages.mjs --json",
+    "node tools/check-round311-181103-live-html-content.mjs --json",
+    "node tools/check-fluid-optimization-playbook.mjs",
+    "node tests/edge-fluid-upgrade-check.js",
+    "node tools/verify-fluid-release-gate.mjs"
+  ],
+  "acceptance": {
+    "pass": true,
+    "meaning": "Current release surfaces must stay on 325/68/217 real-exam counts, serve 181103 as standalone HTML content pages rather than wrapper/download artifacts, and keep private-video production recovery blocked until R2 and real-account QA prove it."
+  }
+}
