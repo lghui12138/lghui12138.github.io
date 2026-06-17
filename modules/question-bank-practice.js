@@ -22,6 +22,7 @@ window.QuestionBankPractice = (function() {
         questionTimer: null,
         isFullscreen: false
     };
+    let progressSyncListenersBound = false;
     
     // 配置
     const config = {
@@ -34,6 +35,14 @@ window.QuestionBankPractice = (function() {
     };
 
     const PRACTICE_AUDIT_BROWSER_ID_KEY = 'fm_practice_browser_session_id';
+    const LEARNING_PROGRESS_SNAPSHOT_KEY = 'fm_learning_progress_snapshot_v1';
+    const LEARNING_PROGRESS_OUTBOX_KEY = 'fm_learning_progress_outbox_v1';
+    const LEARNING_PROGRESS_EVENT_TYPES = new Set([
+        'practice_answer_submit',
+        'practice_complete',
+        'practice_question_skip',
+        'study_heartbeat'
+    ]);
 
     function makeId(prefix) {
         const base = `${prefix || 'practice'}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
@@ -280,6 +289,158 @@ window.QuestionBankPractice = (function() {
         };
     }
 
+    function readJsonStorage(key, fallback) {
+        try {
+            const raw = localStorage.getItem(key);
+            return raw ? JSON.parse(raw) : fallback;
+        } catch (_) {
+            return fallback;
+        }
+    }
+
+    function writeJsonStorage(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+            return true;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    function stableProgressEventId(type, data) {
+        if (data && (data.clientEventId || data.eventId || data.practiceEventId)) {
+            return String(data.clientEventId || data.eventId || data.practiceEventId);
+        }
+        const parts = [
+            type,
+            data && data.bankId,
+            data && data.practiceSessionId,
+            data && (data.questionId || data.questionNumber || ''),
+            data && (data.answered || ''),
+            data && (data.correct || ''),
+            data && (data.totalQuestions || '')
+        ].filter(value => value !== null && value !== undefined && String(value).trim() !== '');
+        return parts.join(':').replace(/\s+/g, '-').slice(0, 220) || makeId(type || 'progress');
+    }
+
+    function applyServerProgressSnapshot(payload) {
+        const progress = payload && (payload.progress || payload);
+        const stats = payload && (payload.stats || (progress && progress.totals));
+        if (!progress && !stats) return;
+        writeJsonStorage(LEARNING_PROGRESS_SNAPSHOT_KEY, {
+            syncedAt: new Date().toISOString(),
+            source: 'server-kv-learning-progress',
+            progress: progress || null,
+            stats: stats || null
+        });
+        if (!stats) return;
+        const totalQuestions = Number(stats.answered || stats.totalQuestions || 0);
+        const correctAnswers = Number(stats.correct || stats.correctAnswers || 0);
+        const totalStudyTime = Number(stats.studyTimeSeconds || stats.totalStudyTime || 0);
+        const lastStudyDate = stats.lastAnsweredAt || stats.lastSessionAt || new Date().toISOString();
+        const userData = readJsonStorage('questionBankUserData', {});
+        userData.stats = {
+            ...(userData.stats || {}),
+            totalQuestions,
+            correctAnswers,
+            totalStudyTime,
+            lastStudyDate
+        };
+        writeJsonStorage('questionBankUserData', userData);
+        const legacyStats = readJsonStorage('userStats', {});
+        writeJsonStorage('userStats', {
+            ...legacyStats,
+            answeredQuestions: totalQuestions,
+            correctAnswers,
+            correctRate: totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0,
+            totalTime: totalStudyTime,
+            source: 'server-kv-learning-progress',
+            syncedAt: new Date().toISOString()
+        });
+        if (typeof QuestionBankStats !== 'undefined' && typeof QuestionBankStats.updateStats === 'function') {
+            try { QuestionBankStats.updateStats(); } catch (_) {}
+        }
+    }
+
+    function progressOutbox() {
+        const outbox = readJsonStorage(LEARNING_PROGRESS_OUTBOX_KEY, []);
+        return Array.isArray(outbox) ? outbox : [];
+    }
+
+    function saveProgressOutbox(outbox) {
+        writeJsonStorage(LEARNING_PROGRESS_OUTBOX_KEY, outbox.slice(-200));
+    }
+
+    async function flushProgressOutbox() {
+        const outbox = progressOutbox();
+        if (!outbox.length) return;
+        try {
+            const response = await fetch('/api/progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ events: outbox }),
+                keepalive: true,
+                credentials: 'same-origin'
+            });
+            if (!response.ok) return;
+            const payload = await response.json().catch(() => null);
+            if (payload && payload.ok) {
+                saveProgressOutbox([]);
+                applyServerProgressSnapshot(payload);
+            }
+        } catch (_) {}
+    }
+
+    async function syncLearningProgressEvent(type, data) {
+        if (!LEARNING_PROGRESS_EVENT_TYPES.has(type)) return false;
+        const event = {
+            type,
+            data: {
+                ...(data || {}),
+                clientEventId: stableProgressEventId(type, data || {})
+            }
+        };
+        try {
+            const response = await fetch('/api/progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(event),
+                keepalive: true,
+                credentials: 'same-origin'
+            });
+            if (!response.ok) throw new Error(`progress ${response.status}`);
+            const payload = await response.json().catch(() => null);
+            if (payload && payload.ok) {
+                applyServerProgressSnapshot(payload);
+                flushProgressOutbox();
+                return true;
+            }
+        } catch (_) {
+            const outbox = progressOutbox();
+            if (!outbox.some(item => item && item.data && item.data.clientEventId === event.data.clientEventId)) {
+                outbox.push(event);
+                saveProgressOutbox(outbox);
+            }
+        }
+        return false;
+    }
+
+    async function hydrateLearningProgressFromServer() {
+        try {
+            const response = await fetch('/api/progress', {
+                method: 'GET',
+                credentials: 'same-origin',
+                cache: 'no-store'
+            });
+            if (!response.ok) return;
+            const payload = await response.json().catch(() => null);
+            if (payload && payload.ok) {
+                applyServerProgressSnapshot(payload);
+                flushProgressOutbox();
+            }
+        } catch (_) {}
+    }
+
     function getQuestionType(question) {
         const type = String(question && (question.type || question.questionType || '')).trim();
         return type || '选择题';
@@ -452,6 +613,10 @@ window.QuestionBankPractice = (function() {
     }
 
     function trackPracticeEvent(type, data) {
+        if (LEARNING_PROGRESS_EVENT_TYPES.has(type)) {
+            syncLearningProgressEvent(type, data || {});
+            return;
+        }
         const payload = {
             type,
             data: {
@@ -476,12 +641,23 @@ window.QuestionBankPractice = (function() {
             keepalive: true
         }).catch(() => {});
     }
+
+    function bindProgressSyncListeners() {
+        if (progressSyncListenersBound) return;
+        progressSyncListenersBound = true;
+        window.addEventListener('online', flushProgressOutbox);
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') flushProgressOutbox();
+        });
+    }
     
     // 公有方法
     return {
         // 初始化模块
         init: function() {
             console.log('初始化练习模块...');
+            bindProgressSyncListeners();
+            hydrateLearningProgressFromServer();
             this.bindEvents();
             this.bindEnhancedEvents();
             return this;

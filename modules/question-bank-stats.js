@@ -20,7 +20,28 @@ window.QuestionBankStats = (function() {
         init: function() {
             console.log('初始化统计模块...');
             this.updateStats();
+            this.hydrateServerStats();
             return this;
+        },
+
+        hydrateServerStats: async function() {
+            try {
+                const response = await fetch('/api/stats', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store'
+                });
+                if (!response.ok) return;
+                const payload = await response.json();
+                if (!payload || !payload.ok || !payload.stats) return;
+                localStorage.setItem('fm_learning_progress_snapshot_v1', JSON.stringify({
+                    syncedAt: new Date().toISOString(),
+                    source: 'server-kv-learning-progress',
+                    progress: payload.progress || null,
+                    stats: payload.stats
+                }));
+                this.updateStats();
+            } catch (_) {}
         },
         
         // 更新统计数据
@@ -492,8 +513,8 @@ window.QuestionBankStats = (function() {
             if (statsData.favoriteCount >= 10) {
                 achievements.push({ name: '收藏家', icon: '⭐', description: '收藏10个题库' });
             }
-            
+
             return achievements;
         }
     };
-})(); 
+})();

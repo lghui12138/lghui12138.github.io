@@ -40,7 +40,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round379-181103-full-website-question-validation-20260617';
+    const practiceModuleVersion = 'round380-server-progress-persistence-20260617';
 
     function removeFailedPracticeScripts() {
         document.querySelectorAll('script[data-question-bank-practice-module],script[src*="question-bank-practice.js"]').forEach(script => {

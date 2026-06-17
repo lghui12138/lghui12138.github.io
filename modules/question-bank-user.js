@@ -27,6 +27,24 @@ window.QuestionBankUser = (function() {
         STUDY_HISTORY: 'studyHistory',
         PREFERENCES: 'userPreferences'
     };
+    const SERVER_PROGRESS_SNAPSHOT_KEY = 'fm_learning_progress_snapshot_v1';
+
+    function readServerProgressStats() {
+        try {
+            const raw = localStorage.getItem(SERVER_PROGRESS_SNAPSHOT_KEY);
+            const snapshot = raw ? JSON.parse(raw) : null;
+            const stats = snapshot && snapshot.stats ? snapshot.stats : null;
+            if (!stats) return null;
+            return {
+                totalStudyTime: Number(stats.studyTimeSeconds || stats.totalStudyTime || 0),
+                totalQuestions: Number(stats.answered || stats.totalQuestions || 0),
+                correctAnswers: Number(stats.correct || stats.correctAnswers || 0),
+                lastStudyDate: stats.lastAnsweredAt || stats.lastSessionAt || snapshot.syncedAt || null
+            };
+        } catch (_) {
+            return null;
+        }
+    }
 
     function normalizeWrongQuestionRecord(record, fallbackBankId) {
         if (!record || typeof record !== 'object') return null;
@@ -468,6 +486,13 @@ window.QuestionBankUser = (function() {
         // 获取学习统计
         getStats: function() {
             const stats = { ...userData.stats };
+            const serverStats = readServerProgressStats();
+            if (serverStats) {
+                stats.totalStudyTime = serverStats.totalStudyTime;
+                stats.totalQuestions = serverStats.totalQuestions;
+                stats.correctAnswers = serverStats.correctAnswers;
+                stats.lastStudyDate = serverStats.lastStudyDate || stats.lastStudyDate;
+            }
             
             // 计算正确率
             stats.correctRate = stats.totalQuestions > 0 
