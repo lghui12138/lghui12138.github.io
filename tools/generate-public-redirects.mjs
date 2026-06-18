@@ -7,7 +7,11 @@ const targetOrigin = 'https://lghui-fluid-learning.pages.dev';
 const sourceSiteUpdates = readJsonArray(path.join(sourceRepoRoot, 'site-updates.json'));
 const sourceLatestSiteUpdate = sourceSiteUpdates[0] || {};
 const sourceTruthVersion = sourceLatestSiteUpdate.version || '';
-const defaultPublicShellVersion = sourceTruthVersion || 'round390-server-stable-progress-181103-html-sync-20260618';
+const publicShellSyncVersion = 'round394-progress-accounting-181103-html-answer-sync-20260618';
+const publicShellRoundLabel = 'Round394';
+const sourceTruthRoundLabel = roundLabelFromVersion(sourceTruthVersion) || '当前源站版本';
+const answerProofRoundLabel = 'Round394';
+const defaultPublicShellVersion = publicShellSyncVersion;
 if (!sourceTruthVersion && !process.env.FLUID_PUBLIC_EDGE_REFRESH) {
   throw new Error(`Missing latest source site-updates.json version in ${sourceRepoRoot}`);
 }
@@ -326,6 +330,11 @@ function readJsonArray(filePath) {
   }
 }
 
+function roundLabelFromVersion(version) {
+  const match = /^round(\d+)/i.exec(String(version || ''));
+  return match ? `Round${match[1]}` : '';
+}
+
 function updateKey(item) {
   try {
     return JSON.stringify(item || null);
@@ -352,24 +361,24 @@ function publicShellSiteUpdateRecord() {
   return {
     version: edgeRefresh,
     date: '2026-06-18',
-    time: '09:30',
-    updatedAt: '2026-06-18T09:30:00+08:00',
+    time: '13:45',
+    updatedAt: '2026-06-18T13:45:00+08:00',
     previousVersion: sourceTruthVersion,
-    tag: 'Round393',
-    focus: 'round392-public-shell-progress-monitor-181103-answer-lock',
-    title: 'Round393 lghui.top 公开壳入口与累计监控锁',
-    summary: '公开壳第一屏现在展示 Round393 源站入口版本与学习进度生产真值：/api/progress 与 /api/track 的 POST 只代表 progress-write-confirmation，累计题数、学习时长和教师监控必须重新读取 server-progress-snapshot；当前生产仍是 server-kv-learning-progress / kv-single-write-fallback，完整生产持久化继续要求 FM_PROGRESS_DB 或 FM_PROGRESS_R2。181103 入口继续保留 38 份 HTML 总表、522 张资料来源卡、381 道默认练习和 141 条线索展示；私有视频生产恢复仍要求 FM_PRIVATE_MEDIA R2。lghui.top 只做入口，不伪造 auth，不提供 PDF/PPT/DOC/ZIP 下载。',
+    tag: publicShellRoundLabel,
+    focus: 'round394-public-shell-181103-html-answer-sync',
+    title: 'Round394 lghui.top 公开壳入口、181103 HTML 与答案同步',
+    summary: `公开壳第一屏现在展示 ${publicShellRoundLabel} public-shell 同步版本，源站内容真值来自 ${sourceTruthRoundLabel}（${sourceTruthVersion}）：/api/progress 与 /api/track 的 POST 只代表 progress-write-confirmation，累计题数、学习时长和教师监控必须重新读取 server-progress-snapshot；当前生产仍是 server-kv-learning-progress / kv-single-write-fallback，完整生产持久化继续要求 FM_PROGRESS_DB 或 FM_PROGRESS_R2。181103 入口继续保留 38 份 HTML 总表、522 张资料来源卡、381 道默认练习和 141 条线索展示；题库 JSON/GZ、HTML 正文页和 public shell 入口同步到同一版本，不再使用 lghui.top 旧样本、旧 round 或答案旧版。私有视频生产恢复仍要求 FM_PRIVATE_MEDIA R2。lghui.top 只做入口，不伪造 auth，不提供 PDF/PPT/DOC/ZIP 下载。`,
     links: [
       {
-        label: 'Round393 累计监控真值',
+        label: `${sourceTruthRoundLabel} 累计监控真值`,
         href: `/modules/progress-module.html?edge_refresh=${edgeRefresh}`
       },
       {
-        label: '181103 HTML 总表',
+        label: `${publicShellRoundLabel} 181103 HTML 总表`,
         href: `/resources/fluid-181103-html/index.html?edge_refresh=${edgeRefresh}`
       },
       {
-        label: '181103 题库入口',
+        label: `${publicShellRoundLabel} 181103 题库入口`,
         href: `/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=${edgeRefresh}#questionBanksList`
       },
       {
@@ -378,24 +387,26 @@ function publicShellSiteUpdateRecord() {
       }
     ],
     evidence: {
-      currentRound: 392,
+      currentRound: 394,
       sourceProgressTruthVersion: sourceTruthVersion,
       sourceProgressTruthTitle: sourceLatestSiteUpdate.title || '',
       publicShellBoundary: 'lghui.top is a static public shell and route entry. It does not mint auth, does not prove authenticated QA, and does not provide raw downloads.',
-      progressStorageBoundary: 'Round393 proves progress-write-confirmation is not cumulative truth and server-progress-snapshot readback is required; full durable progress still requires FM_PROGRESS_DB or FM_PROGRESS_R2.',
+      progressStorageBoundary: `${publicShellRoundLabel} keeps the source progress truth from ${sourceTruthRoundLabel}: progress-write-confirmation is not cumulative truth and server-progress-snapshot readback is required; full durable progress still requires FM_PROGRESS_DB or FM_PROGRESS_R2.`,
       privateVideoBoundary: 'FM_PRIVATE_MEDIA R2 remains required before claiming private-video production upload/delete/access/archive recovery.',
       supplemental181103Boundary: '181103 remains 38 HTML material pages, 522 source cards, 381 default-practice questions, and 141 display-only source/content leads.',
       generator: 'tools/generate-public-redirects.mjs',
       generatedPublicShellFiles: 'index.html, index-complete.html, resources.html, question-bank-home.html, knowledge.html, modules/question-bank.html, and route aliases',
-      sourceRound393Evidence: sourceLatestSiteUpdate.evidence || {},
+      sourceRoundEvidence: sourceLatestSiteUpdate.evidence || {},
       verificationPlan: [
         'node --check tools/generate-public-redirects.mjs',
         'node tools/generate-public-redirects.mjs',
-        'static public-shell first-screen term check for Round393/181103/storage boundaries'
+        'static public-shell first-screen term check for Round394/181103/storage boundaries',
+        'hash compare public shell resources/fluid-181103-html and question-banks/181103-material-extracted.json(.gz) against the source repo'
       ]
     },
     requiredTerms: [
-      'Round393',
+      publicShellRoundLabel,
+      sourceTruthVersion,
       'server-progress-snapshot',
       'FM_PROGRESS_DB',
       'FM_PROGRESS_R2',
@@ -406,9 +417,10 @@ function publicShellSiteUpdateRecord() {
       '381',
       '141',
       '不伪造 auth',
-      '不提供 PDF/PPT/DOC/ZIP 下载'
+      '不提供 PDF/PPT/DOC/ZIP 下载',
+      '不再使用 lghui.top 旧样本、旧 round 或答案旧版'
     ],
-    visibleProof: 'The generated lghui.top public shell first screen shows Round393 source status, progress truth, 181103 HTML/question-bank entries, and private-video/progress storage boundaries.'
+    visibleProof: `The generated lghui.top public shell first screen shows ${publicShellRoundLabel} shell status, ${sourceTruthRoundLabel} source truth, 181103 HTML/question-bank entries, and private-video/progress storage boundaries.`
   };
 }
 
@@ -500,31 +512,35 @@ function resourcesHref() {
   return `${targetOrigin}/resources.html?edge_refresh=${edgeRefresh}#supplemental-181103`;
 }
 
+function materialHtmlHref() {
+  return `/resources/fluid-181103-html/index.html?edge_refresh=${edgeRefresh}`;
+}
+
 function routeSpecificMarkupFor(route) {
   const currentStatus = `<div class="status-pills" aria-label="当前公开壳版本状态">
-      <span>Public shell · Round393</span>
-      <span>Progress truth · Round393</span>
-      <span>181103 proof · Round379/Round388</span>
+      <span>Public shell · ${publicShellRoundLabel}</span>
+      <span>Source truth · ${sourceTruthRoundLabel}</span>
+      <span>181103 answer · ${answerProofRoundLabel}</span>
       <span>38 HTML · 522 sources · 381 practice · 141 leads</span>
       <span>Storage boundary · FM_PROGRESS_DB/FM_PROGRESS_R2/FM_PRIVATE_MEDIA</span>
     </div>`;
   const homeMarkup = `${currentStatus}
     <div class="route-cards" aria-label="181103 首页直达入口">
-      <a class="route-card" href="${progressHref()}">Round393 累计监控真值<span>POST 写入只作确认；累计学习时长、题数和会话只认重新读取的 server-progress-snapshot，完整持久化要等 FM_PROGRESS_DB 或 FM_PROGRESS_R2。</span></a>
+      <a class="route-card" href="${progressHref()}">${sourceTruthRoundLabel} 累计监控真值<span>${publicShellRoundLabel} 公开壳只同步入口；POST 写入只作确认，累计学习时长、题数和会话只认重新读取的 server-progress-snapshot，完整持久化要等 FM_PROGRESS_DB 或 FM_PROGRESS_R2。</span></a>
       <a class="route-card" href="${questionBankHref('181103-material-extracted')}">181103 522 全题核对 / 381 练习<span>资料内习题、例题、名词解释、证明计算题已入题库；141 条参考答案页、父卡和源文续页只作线索。</span></a>
-      <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 38 份 HTML 正文<span>全部是站内 HTML 内容页，不发布 PDF/PPT/DOC/ZIP 原件，也不走 viewer 壳。</span></a>
+      <a class="route-card" href="${materialHtmlHref()}">181103 38 份 HTML 正文<span>全部是站内 HTML 内容页，不发布 PDF/PPT/DOC/ZIP 原件，也不走 viewer 壳。</span></a>
       <a class="route-card" href="${privateVideoHref()}">私有视频 / 存储边界<span>公开壳只做入口，不伪造 auth；FM_PRIVATE_MEDIA 未绑定前不宣称上传、删除、授权访问或归档恢复。</span></a>
     </div>`;
   const questionBankMarkup = `${currentStatus}
     <div class="route-cards" aria-label="181103 题库直达入口">
       <a class="route-card" href="${questionBankHref('181103-material-extracted')}">181103 资料内题目全集<span>522 张来源 HTML 卡已经进入题库可见面；381 道独立题进入默认练习池。</span></a>
       <a class="route-card" href="${questionBankHref('181103-material-review')}">181103 真题复核边界<span>68 个真题复核任务保留独立边界，辅助题干、章节和题型复核，不冒充原卷答案 PDF 证据。</span></a>
-      <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 HTML 来源总表<span>需要回看来源时打开站内 HTML 正文页；公开壳不提供原始文件下载。</span></a>
-      <a class="route-card" href="${progressHref()}">Round393 进度真值边界<span>题库练习写入后必须回读服务器快照；FM_PROGRESS_DB/FM_PROGRESS_R2 未绑定前只声明 no-drift，不声明完整生产持久化。</span></a>
+      <a class="route-card" href="${materialHtmlHref()}">181103 HTML 来源总表<span>需要回看来源时打开站内 HTML 正文页；公开壳不提供原始文件下载。</span></a>
+      <a class="route-card" href="${progressHref()}">${sourceTruthRoundLabel} 进度真值边界<span>题库练习写入后必须回读服务器快照；FM_PROGRESS_DB/FM_PROGRESS_R2 未绑定前只声明 no-drift，不声明完整生产持久化。</span></a>
     </div>`;
   const resourcesMarkup = `${currentStatus}
     <div class="route-cards" aria-label="181103 资料直达入口">
-      <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 全资料 HTML 总表<span>38/38 个资料页已写成站内 HTML 正文，不走下载或 viewer 壳。</span></a>
+      <a class="route-card" href="${materialHtmlHref()}">181103 全资料 HTML 总表<span>38/38 个资料页已写成站内 HTML 正文，不走下载或 viewer 壳。</span></a>
       <a class="route-card" href="${questionBankHref('181103-material-extracted')}">181103 资料内题目全集<span>522 个资料内习题、例题、名词解释、证明计算题已入题库；381 道独立题进入默认练习。</span></a>
       <a class="route-card" href="${questionBankHref('181103-material-review')}">181103 真题复核题<span>68 个真题复核题保留独立边界，不冒充原卷答案 PDF 证据。</span></a>
       <a class="route-card" href="${privateVideoHref()}">私有视频 / 进度存储边界<span>私有视频仍等 FM_PRIVATE_MEDIA；学习进度完整持久化仍等 FM_PROGRESS_DB 或 FM_PROGRESS_R2。</span></a>
@@ -532,9 +548,9 @@ function routeSpecificMarkupFor(route) {
   const knowledgeMarkup = `${currentStatus}
     <div class="route-cards" aria-label="181103 知识升级直达入口">
       <a class="route-card" href="${questionBankHref('181103-material-extracted')}">181103 知识点关联题库<span>522 张资料来源卡和 381 道默认练习继续从知识点页回连，不把 141 条线索混入刷题池。</span></a>
-      <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 38 份 HTML 讲义<span>知识升级页只链接站内 HTML 正文，不发布 PDF/PPT/DOC/ZIP 原件，也不走 viewer 壳。</span></a>
-      <a class="route-card" href="${resourcesHref()}">资源中心 181103 工作台<span>从知识点复习跳回资料、路线、真题复核和题库入口，保持 Round393 公开壳入口标签。</span></a>
-      <a class="route-card" href="${progressHref()}">Round393 进度真值边界<span>学习进度累计只认服务器快照；公开壳不伪造登录态，也不把 KV fallback 说成完整持久化。</span></a>
+      <a class="route-card" href="${materialHtmlHref()}">181103 38 份 HTML 讲义<span>知识升级页只链接站内 HTML 正文，不发布 PDF/PPT/DOC/ZIP 原件，也不走 viewer 壳。</span></a>
+      <a class="route-card" href="${resourcesHref()}">资源中心 181103 工作台<span>从知识点复习跳回资料、路线、真题复核和题库入口，保持 ${publicShellRoundLabel} 公开壳入口标签。</span></a>
+      <a class="route-card" href="${progressHref()}">${sourceTruthRoundLabel} 进度真值边界<span>学习进度累计只认服务器快照；公开壳不伪造登录态，也不把 KV fallback 说成完整持久化。</span></a>
     </div>`;
   if (route === '/index-complete') return homeMarkup;
   if (['/knowledge.html', '/knowledge', '/modules/knowledge-detail.html', '/modules/knowledge-detail', '/modules/knowledge-upgrade-2026.html'].includes(route)) return knowledgeMarkup;
@@ -570,12 +586,12 @@ function htmlFor(route) {
   const actionMarkup = stableFallback
     ? `<div class="actions">
       <a id="targetLink" href="${target}">立即打开</a>
-      <a id="stableLink" class="secondary" href="https://lghui.top/index-complete.html?full=1">打开稳定入口</a>
+      <a id="stableLink" class="secondary" href="https://lghui.top/index-complete.html?full=1&edge_refresh=${edgeRefresh}">打开稳定入口</a>
     </div>`
     : `<p><a id="targetLink" href="${target}">立即打开</a></p>`;
   const routeSpecificMarkup = routeSpecificMarkupFor(route);
   const stableScript = stableFallback
-    ? "\n    const stableUrl = new URL('https://lghui.top/index-complete.html');\n    const stableParams = new URLSearchParams(location.search);\n    stableParams.set('full', '1');\n    stableUrl.search = stableParams.toString();\n    stableUrl.hash = location.hash;\n    document.getElementById('stableLink').href = stableUrl.toString();"
+    ? "\n    const stableUrl = new URL('https://lghui.top/index-complete.html');\n    const stableParams = new URLSearchParams(location.search);\n    stableParams.set('full', '1');\n    stableParams.set('edge_refresh', EDGE_REFRESH);\n    stableUrl.search = stableParams.toString();\n    stableUrl.hash = location.hash;\n    document.getElementById('stableLink').href = stableUrl.toString();"
     : '';
   return `<!doctype html>
 <html lang="zh-CN">

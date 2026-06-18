@@ -26,6 +26,7 @@ window.QuestionBankPractice = (function() {
         isFullscreen: false
     };
     let progressSyncListenersBound = false;
+    let learningProgressWriteChain = Promise.resolve();
     
     // 配置
     const config = {
@@ -216,6 +217,29 @@ window.QuestionBankPractice = (function() {
             .replace(/\n/g, '<br>');
     }
 
+    function stripInlineHtml(value) {
+        return String(value == null ? '' : value)
+            .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+            .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/<\/(?:p|div|li|tr|section|article|h[1-6])>/gi, '\n')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/&lt;/gi, '<')
+            .replace(/&gt;/gi, '>')
+            .replace(/&amp;/gi, '&')
+            .replace(/&quot;/gi, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function answerPreviewText(html, fallback) {
+        const text = stripInlineHtml(html || fallback || '');
+        if (!text) return '答案正文已默认展开，可继续下滑查看解题思路和来源证据。';
+        return text.length > 96 ? `${text.slice(0, 96)}…` : text;
+    }
+
     function humanizeTexSource(value) {
         return String(value || '')
             .replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, '($1)/($2)')
@@ -293,21 +317,23 @@ window.QuestionBankPractice = (function() {
         const compact = Boolean(options.compact);
         const pageLabel = question && question.sourcePage ? `第 ${escapeHtml(question.sourcePage)} 页` : '页图证据';
         return `
-            <section class="reference-source-evidence${compact ? ' is-compact' : ''}" data-181103-answer-source-evidence="1">
-                <div class="reference-source-evidence__head">
-                    <strong>来源 HTML 与页图证据</strong>
-                    <span>${pageLabel}</span>
-                </div>
-                <div class="reference-source-evidence__links">
-                    ${sourceHref ? `<a href="${escapeHtml(sourceHref)}" target="_blank" rel="noopener" data-181103-answer-source-html="1">打开来源 HTML</a>` : ''}
-                    ${sourceImage ? `<a href="${escapeHtml(sourceImage)}" target="_blank" rel="noopener" data-181103-answer-source-image-link="1">打开页图</a>` : ''}
-                </div>
-                ${sourceImage ? `
-                    <figure class="reference-source-evidence__figure" data-181103-answer-source-page-image="1">
-                        <img src="${escapeHtml(sourceImage)}" alt="181103 来源页图证据" loading="eager" fetchpriority="high" decoding="async">
-                        <figcaption>页图只作逐题核对证据；答题以站内 HTML 题面和参考答案为准。</figcaption>
-                    </figure>
-                ` : ''}
+            <section class="reference-source-evidence${compact ? ' is-compact' : ''}" data-181103-answer-source-evidence="1" data-round394-source-evidence-layer="1">
+                <details class="reference-source-evidence__details" open data-round394-source-evidence-visible="1">
+                    <summary>
+                        <span>来源证据（默认展开，可收起）</span>
+                        <small>${pageLabel}</small>
+                    </summary>
+                    <div class="reference-source-evidence__links">
+                        ${sourceHref ? `<a href="${escapeHtml(sourceHref)}" target="_blank" rel="noopener" data-181103-answer-source-html="1" data-round394-source-html-link="1">打开来源 HTML</a>` : ''}
+                        ${sourceImage ? `<a href="${escapeHtml(sourceImage)}" target="_blank" rel="noopener" data-181103-answer-source-image-link="1" data-round394-source-image-link="1">打开页图</a>` : ''}
+                    </div>
+                    ${sourceImage ? `
+                        <figure class="reference-source-evidence__figure" data-181103-answer-source-page-image="1" data-round394-source-page-image-visible="1">
+                            <img src="${escapeHtml(sourceImage)}" alt="181103 来源页图证据" loading="eager" fetchpriority="high" decoding="async">
+                            <figcaption>页图只作逐题核对证据；答题以站内 HTML 题面和参考答案为准。</figcaption>
+                        </figure>
+                    ` : ''}
+                </details>
             </section>
         `;
     }
@@ -356,21 +382,28 @@ window.QuestionBankPractice = (function() {
         const answerBadge = hasHtml
             ? (material181103 ? '来源答案已同步' : '参考答案已整理')
             : '文本答案已整理';
+        const preview = answerPreviewText(answerHtml, question && (question.answer || question.referenceAnswer || question.sampleAnswer || ''));
         const sourceHref = escapeHtml(question && (question.sourceHtmlUrl || question.htmlQuestionSourceUrl || question.htmlQuestionCardUrl || ''));
         const evidenceHtml = material181103 ? sourceEvidenceBlock(question, { compact }) : '';
         const sourceHint = material181103
             ? `<footer class="reference-answer-source-note" data-round374-181103-answer-source-note="1" role="note"><strong>答案边界</strong><span>本答案为站内整理参考答案；来源 HTML/页图只用于逐题核对题面、公式和资料语境。</span>${sourceHref ? ` <a href="${sourceHref}" target="_blank" rel="noopener">打开来源核对</a>` : ''}</footer>`
             : '';
         return `
-            <section class="reference-answer-block${compact ? ' is-compact' : ''}" data-round374-reference-answer="1" data-round374-181103-reference-answer="${material181103 ? '1' : '0'}" data-reference-answer-source="${hasHtml ? 'answerHtml' : 'textFallback'}" data-round392-answer-format="${answerFormat}">
+            <section class="reference-answer-block${compact ? ' is-compact' : ''}" data-round374-reference-answer="1" data-round374-181103-reference-answer="${material181103 ? '1' : '0'}" data-round394="reference-answer-visible" data-reference-answer-visible="1" data-round394-reference-answer-visible="1" data-round394-reference-answer-layer="1" data-reference-answer-source="${hasHtml ? 'answerHtml' : 'textFallback'}" data-round392-answer-format="${answerFormat}">
                 <div class="reference-answer-head">
                     <strong>${escapeHtml(heading)}</strong>
                     <span class="reference-answer-badge">${answerBadge}</span>
                 </div>
-                <div class="reference-answer-body" data-round392-reference-answer-body="1">
-                    <div class="reference-answer-final-label">最终答案</div>
-                    <div class="reference-answer-html" data-round374-reference-answer-html="1">${answerHtml}</div>
-                </div>
+                <details class="reference-answer-details" open data-round394-answer-default-open="1" data-round394-reference-answer-visible="1" data-reference-answer-visible="1">
+                    <summary>
+                        <span>参考答案（默认展开，可收起）</span>
+                        <small class="reference-answer-summary-preview" data-round394-answer-summary-preview="1">${escapeHtml(preview)}</small>
+                    </summary>
+                    <div class="reference-answer-body" data-round392-reference-answer-body="1" data-round394-answer-body-visible="1">
+                        <div class="reference-answer-final-label">答案正文</div>
+                        <div class="reference-answer-html" data-round374-reference-answer-html="1" data-round394-reference-answer-html="1" data-round394-answer-linebreaks-preserved="1" data-round394-formula-render-root="1">${answerHtml}</div>
+                    </div>
+                </details>
                 ${evidenceHtml}
                 ${sourceHint}
             </section>
@@ -382,9 +415,13 @@ window.QuestionBankPractice = (function() {
         if (!html) return '';
         const compact = Boolean(options.compact);
         return `
-            <section class="answer-explanation-block${compact ? ' is-compact' : ''}" data-round374-answer-explanation="1">
-                <strong>解析与核对说明</strong>
-                <div>${html}</div>
+            <section class="answer-explanation-block${compact ? ' is-compact' : ''}" data-round374-answer-explanation="1" data-round394-solution-layer="1">
+                <details class="answer-explanation-details" open data-round394-solution-visible="1">
+                    <summary>
+                        <span>解题思路（默认展开，可收起）</span>
+                    </summary>
+                    <div data-round394-solution-body="1" data-round394-formula-render-root="1">${html}</div>
+                </details>
             </section>
         `;
     }
@@ -477,6 +514,11 @@ window.QuestionBankPractice = (function() {
         answerDisplay.setAttribute('role', 'region');
         answerDisplay.setAttribute('aria-label', '批改结果、参考答案、解析与来源证据');
         answerDisplay.setAttribute('tabindex', '-1');
+        answerDisplay.setAttribute('data-round394-answer-ui', '1');
+        answerDisplay.setAttribute('data-round394-reference-answer-visible', '1');
+        answerDisplay.setAttribute('data-reference-answer-visible', '1');
+        answerDisplay.setAttribute('data-round394-mobile-no-overflow', '1');
+        answerDisplay.setAttribute('data-round394-latex-trigger', 'local-mathjax');
         answerDisplay.classList.add('is-open');
         setAnswerButtonState(true);
         setAnswerStatus(statusMessage || '参考答案已展开，正在排队渲染公式。', 'info');
@@ -506,6 +548,8 @@ window.QuestionBankPractice = (function() {
 
     function renderFormulaInRoot(root, statusNode) {
         if (!root) return;
+        root.setAttribute('data-round394-mathjax-triggered', '1');
+        root.setAttribute('data-round394-latex-trigger', 'local-mathjax');
         const setStatus = (message, tone = 'info') => {
             if (statusNode) {
                 statusNode.textContent = message;
@@ -518,38 +562,45 @@ window.QuestionBankPractice = (function() {
             try {
                 const bridge = window.FMFormulaLite || window.FormulaLite;
                 if (bridge && typeof bridge.ensureMathJax === 'function') {
+                    root.setAttribute('data-round394-mathjax-state', 'queued');
                     bridge.ensureMathJax(root);
                     setStatus('参考答案已展开，公式渲染队列已提交。', 'ok');
                     window.setTimeout(() => replaceResidualTexNoise(root), 1200);
                     return;
                 }
                 if (window.FMQueueMath && typeof window.FMQueueMath === 'function') {
+                    root.setAttribute('data-round394-mathjax-state', 'queued');
                     window.FMQueueMath(root);
                     setStatus('参考答案已展开，公式渲染队列已提交。', 'ok');
                     window.setTimeout(() => replaceResidualTexNoise(root), 1200);
                     return;
                 }
                 if (window.FMTypesetMath && typeof window.FMTypesetMath === 'function') {
+                    root.setAttribute('data-round394-mathjax-state', 'queued');
                     window.FMTypesetMath(root);
                     setStatus('参考答案已展开，公式渲染队列已提交。', 'ok');
                     window.setTimeout(() => replaceResidualTexNoise(root), 1200);
                     return;
                 }
                 if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
+                    root.setAttribute('data-round394-mathjax-state', 'rendering');
                     setStatus('参考答案已展开，公式正在渲染。', 'info');
                     window.MathJax.typesetPromise([root])
                         .then(() => {
                             replaceResidualTexNoise(root);
+                            root.setAttribute('data-round394-mathjax-state', 'complete');
                             setStatus('参考答案已展开，公式渲染完成。', 'ok');
                         })
                         .catch(() => {
                             replaceResidualTexNoise(root);
+                            root.setAttribute('data-round394-mathjax-state', 'fallback');
                             setStatus('参考答案已展开，公式渲染失败；已切换为可读公式文本。', 'warn');
                         });
                     return;
                 }
             } catch (_) {
                 replaceResidualTexNoise(root);
+                root.setAttribute('data-round394-mathjax-state', 'fallback');
                 setStatus('参考答案已展开，公式渲染遇到异常；已切换为可读公式文本。', 'warn');
                 return;
             }
@@ -558,6 +609,7 @@ window.QuestionBankPractice = (function() {
                 window.setTimeout(tryRender, 300);
             } else {
                 replaceResidualTexNoise(root);
+                root.setAttribute('data-round394-mathjax-state', 'fallback');
                 setStatus('参考答案已展开，公式渲染器未就绪；已切换为可读公式文本。', 'warn');
             }
         });
@@ -786,7 +838,7 @@ window.QuestionBankPractice = (function() {
         } catch (_) {}
     }
 
-    async function syncLearningProgressEvent(type, data) {
+    async function postLearningProgressEvent(type, data) {
         if (!LEARNING_PROGRESS_EVENT_TYPES.has(type)) return false;
         const event = {
             type,
@@ -828,6 +880,13 @@ window.QuestionBankPractice = (function() {
             }
         }
         return false;
+    }
+
+    function syncLearningProgressEvent(type, data) {
+        learningProgressWriteChain = learningProgressWriteChain
+            .catch(() => false)
+            .then(() => postLearningProgressEvent(type, data || {}));
+        return learningProgressWriteChain;
     }
 
     async function hydrateLearningProgressFromServer() {
@@ -1028,7 +1087,7 @@ window.QuestionBankPractice = (function() {
 
     function trackPracticeEvent(type, data) {
         if (LEARNING_PROGRESS_EVENT_TYPES.has(type)) {
-            syncLearningProgressEvent(type, data || {});
+            void syncLearningProgressEvent(type, data || {});
             return;
         }
         const payload = {
@@ -1730,10 +1789,63 @@ window.QuestionBankPractice = (function() {
 	                        overflow-wrap: anywhere;
 	                    }
 
-	                    .reference-answer-body {
-	                        display: grid;
-	                        gap: 10px;
-	                    }
+		                    .reference-answer-body {
+		                        display: grid;
+		                        gap: 10px;
+		                    }
+
+		                    .reference-answer-details,
+		                    .answer-explanation-details,
+		                    .reference-source-evidence__details {
+		                        width: 100%;
+		                        max-width: 100%;
+		                        min-width: 0;
+		                    }
+
+		                    .reference-answer-details > summary,
+		                    .answer-explanation-details > summary,
+		                    .reference-source-evidence__details > summary {
+		                        display: flex;
+		                        align-items: flex-start;
+		                        justify-content: space-between;
+		                        gap: 12px;
+		                        min-height: 44px;
+		                        padding: 10px 12px;
+		                        border-radius: 10px;
+		                        background: rgba(255,247,237,0.92);
+		                        color: #9a3412;
+		                        font-weight: 900;
+		                        line-height: 1.45;
+		                        cursor: pointer;
+		                        overflow-wrap: anywhere;
+		                    }
+
+		                    .answer-explanation-details > summary {
+		                        background: rgba(239,246,255,0.95);
+		                        color: #1d4ed8;
+		                    }
+
+		                    .reference-source-evidence__details > summary {
+		                        background: rgba(240,249,255,0.95);
+		                        color: #0f766e;
+		                    }
+
+		                    .reference-answer-details > summary small,
+		                    .reference-source-evidence__details > summary small {
+		                        flex: 1 1 220px;
+		                        min-width: 0;
+		                        color: #64748b;
+		                        font-size: 0.78em;
+		                        font-weight: 800;
+		                        line-height: 1.45;
+		                        overflow-wrap: anywhere;
+		                    }
+
+		                    .reference-answer-details[open] > .reference-answer-body,
+		                    .answer-explanation-details[open] > div,
+		                    .reference-source-evidence__details[open] > .reference-source-evidence__links {
+		                        margin-top: 12px;
+		                    }
 
 	                    .reference-answer-final-label {
 	                        width: fit-content;
@@ -1864,28 +1976,9 @@ window.QuestionBankPractice = (function() {
 		                        color: #075985;
 		                    }
 
-		                    .reference-source-evidence__head {
-		                        display: flex;
-		                        align-items: flex-start;
-		                        justify-content: space-between;
-		                        gap: 10px;
-		                        flex-wrap: wrap;
-		                        margin-bottom: 10px;
-		                    }
-
-		                    .reference-source-evidence__head strong {
-		                        color: #0f766e;
-		                    }
-
-		                    .reference-source-evidence__head span {
-		                        color: #0369a1;
-		                        font-size: 0.86em;
-		                        font-weight: 800;
-		                    }
-
-		                    .reference-source-evidence__links {
-		                        display: flex;
-		                        gap: 8px;
+			                    .reference-source-evidence__links {
+			                        display: flex;
+			                        gap: 8px;
 		                        flex-wrap: wrap;
 		                        margin-bottom: 12px;
 		                    }
@@ -1959,16 +2052,17 @@ window.QuestionBankPractice = (function() {
 	                        color: #1e3a8a;
 	                    }
 
-	                    .answer-explanation-block > strong {
-	                        display: block;
-	                        margin-bottom: 10px;
-	                        color: #1d4ed8;
-	                    }
+		                    .answer-explanation-block > strong,
+		                    .answer-explanation-details > summary span {
+		                        display: block;
+		                        color: #1d4ed8;
+		                    }
 
-	                    .answer-explanation-block > div {
-	                        background: #fff;
-	                        border-radius: 10px;
-	                        padding: 16px;
+		                    .answer-explanation-block > div,
+		                    .answer-explanation-details > div {
+		                        background: #fff;
+		                        border-radius: 10px;
+		                        padding: 16px;
 	                        color: #334155;
 	                        overflow-x: auto;
 	                        overflow-wrap: anywhere;
@@ -2004,16 +2098,24 @@ window.QuestionBankPractice = (function() {
 		                            font-size: 16px !important;
 		                        }
 
-	                        .reference-answer-block,
-	                        .answer-explanation-block {
-	                            padding: 14px;
-	                            border-radius: 12px;
-	                        }
-
-		                        .reference-answer-html,
-		                        .answer-explanation-block > div {
+		                        .reference-answer-block,
+		                        .answer-explanation-block {
 		                            padding: 14px;
-		                            font-size: 0.98em;
+		                            border-radius: 12px;
+		                        }
+
+			                        .reference-answer-details > summary,
+			                        .answer-explanation-details > summary,
+			                        .reference-source-evidence__details > summary {
+			                            flex-direction: column;
+			                            gap: 6px;
+			                        }
+
+			                        .reference-answer-html,
+			                        .answer-explanation-block > div,
+			                        .answer-explanation-details > div {
+			                            padding: 14px;
+			                            font-size: 0.98em;
 		                            line-height: 1.85;
 		                        }
 
@@ -6173,9 +6275,9 @@ window.QuestionBankPractice = (function() {
             
             // 保存到本地存储
             try {
-                const existingProgress = JSON.parse(localStorage.getItem('learningProgress') || '[]');
+                const existingProgress = JSON.parse(localStorage.getItem('localStudyPlanProgress') || '[]');
                 existingProgress.push(progress);
-                localStorage.setItem('learningProgress', JSON.stringify(existingProgress));
+                localStorage.setItem('localStudyPlanProgress', JSON.stringify(existingProgress));
             } catch (error) {
                 console.error('保存学习进度失败:', error);
             }
@@ -8168,7 +8270,7 @@ ${report.suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
             const today = new Date().toISOString().split('T')[0];
             let existing = {};
             try {
-                existing = JSON.parse(localStorage.getItem('learningProgress_' + today) || '{}') || {};
+                existing = JSON.parse(localStorage.getItem('localStudyPlanProgress_' + today) || '{}') || {};
             } catch (error) {
                 existing = {};
             }
@@ -8184,7 +8286,7 @@ ${report.suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
                 source: 'local-study-plan-helper'
             };
             
-            localStorage.setItem('learningProgress_' + today, JSON.stringify(progress));
+            localStorage.setItem('localStudyPlanProgress_' + today, JSON.stringify(progress));
             
             // 启动进度跟踪
             this.startProgressTracking();
@@ -8195,7 +8297,7 @@ ${report.suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
             if (this.progressTrackingInterval) clearInterval(this.progressTrackingInterval);
             const progressInterval = setInterval(() => {
                 const today = new Date().toISOString().split('T')[0];
-                const progress = JSON.parse(localStorage.getItem('learningProgress_' + today) || '{}');
+                const progress = JSON.parse(localStorage.getItem('localStudyPlanProgress_' + today) || '{}');
                 
                 if (progress.startTime) {
                     const baseStudyTime = Number(progress.baseStudyTime || progress.studyTime || 0);
@@ -8203,7 +8305,7 @@ ${report.suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
                     progress.studyTime = Math.max(Number(progress.studyTime || 0), baseStudyTime + Math.floor((Date.now() - Number(progress.startTime || Date.now())) / 1000));
                     progress.localOnly = true;
                     progress.source = progress.source || 'local-study-plan-helper';
-                    localStorage.setItem('learningProgress_' + today, JSON.stringify(progress));
+                    localStorage.setItem('localStudyPlanProgress_' + today, JSON.stringify(progress));
                 }
             }, 60000); // 每分钟更新一次
             
@@ -8267,7 +8369,7 @@ ${report.suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
                 const date = new Date(today);
                 date.setDate(date.getDate() - i);
                 const dateStr = date.toISOString().split('T')[0];
-                const progress = localStorage.getItem('learningProgress_' + dateStr);
+                const progress = localStorage.getItem('localStudyPlanProgress_' + dateStr);
                 
                 if (progress) {
                     const progressData = JSON.parse(progress);
@@ -8293,7 +8395,7 @@ ${report.suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
                 const date = new Date(today);
                 date.setDate(date.getDate() - i);
                 const dateStr = date.toISOString().split('T')[0];
-                const progress = localStorage.getItem('learningProgress_' + dateStr);
+                const progress = localStorage.getItem('localStudyPlanProgress_' + dateStr);
                 
                 if (progress) {
                     const progressData = JSON.parse(progress);

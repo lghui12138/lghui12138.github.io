@@ -1,43 +1,56 @@
 [
   {
-    "version": "round393-progress-durability-monitor-gate-20260618",
+    "version": "round394-progress-accounting-181103-html-answer-sync-20260618",
     "date": "2026-06-18",
-    "time": "12:31",
-    "updatedAt": "2026-06-18T12:31:15+08:00",
-    "previousVersion": "round392-progress-monitor-181103-answer-lock-20260618",
-    "tag": "Round393",
-    "focus": "progress-durability-monitor-gate",
-    "title": "Round393 进度持久化门禁与监控标签",
-    "summary": "本轮只收紧学习进度持久化和监控口径：GET /api/progress 与 GET /api/stats 继续保持 noMutationRead=true、server-progress-snapshot，只作为只读累计快照；POST 仍是 progress-write-confirmation，不能直接水合累计。新增 writeDurabilityGate / strictCumulativeServer 机器口径，write_quota_exceeded、storage_unavailable 或缺 FM_PROGRESS_DB / FM_PROGRESS_R2 时必须显示 block-full-production-cumulative，不能写成 working cumulative server。学生进度页把 server snapshot no-drift、KV fallback、D1/R2 严格累计服务器和写入 blocker 分开；教师监控把 audit-event-window 固定为最近诊断，累计 answers / sessions / studyTimeSeconds 只认 server-progress-snapshot。lghui.top、公开壳、真实账号 QA 和发布门禁都必须按 Round393 重新验证；默认学生账号基线保持 qi、chenlei、anxin、sunruze 四个活跃学生，本轮未加入额外默认账号，FM_PRIVATE_MEDIA 仍是私有视频完整存储清理的生产阻塞项。",
+    "time": "14:02",
+    "updatedAt": "2026-06-18T14:02:00+08:00",
+    "previousVersion": "round393-progress-durability-monitor-gate-20260618",
+    "tag": "Round394",
+    "focus": "progress-accounting-181103-html-answer-sync",
+    "title": "Round394 累计时长监控与 181103 HTML 答案同步",
+    "summary": "本轮把学习进度累计口径、做题监控和 181103 资料答案同步收口到同一个当前版本：GET /api/progress 与 GET /api/stats 仍是 noMutationRead=true 的 server-progress-snapshot，POST 只代表 progress-write-confirmation；题库练习和模块练习写入改为串行队列，成功后必须重新 GET 快照，不能用 POST 回包直接水合累计。学生进度页不再把没有 user 的本地 fm_scores / fm_sessions 套到当前账号，教师监控的 learningProgress 表只收持久化累计快照或答题事件窗，不再因登录、页面访问或私有视频观看而新增累计行。181103 题库 522 条全部有答案，381 道进入默认练习，141 条资料线索卡有来源边界；17 个资料 HTML 页已从题库重写 150 个答案块，38 份资料页、522 张题卡、522 个可见答案块、406 个公式答案全部通过 HTML parity。生产仍必须绑定 FM_PROGRESS_DB 或 FM_PROGRESS_R2 才能宣称完整 durable 累计服务器；当前 KV fallback 只能证明读不漂移。私有视频完整管理仍要求 FM_PRIVATE_MEDIA R2。lghui.top 公开壳和真实账号 QA/发布门禁继续按当前版本验证；历年真题仍锁定 325 原文原子小题、68 组题和 217 grouped 小题。默认学生账号基线继续只保留 qi、chenlei、anxin、sunruze；本轮未加入额外默认账号，不再扩入未知学生。",
     "links": [
       {
         "label": "学生学习进度",
-        "href": "/modules/progress-module.html?edge_refresh=round393-progress-durability-monitor-gate-20260618"
+        "href": "/modules/progress-module.html?edge_refresh=round394-progress-accounting-181103-html-answer-sync-20260618"
       },
       {
         "label": "教师进度监控",
-        "href": "/teacher-panel?view=students&edge_refresh=round393-progress-durability-monitor-gate-20260618"
+        "href": "/teacher-panel?view=students&edge_refresh=round394-progress-accounting-181103-html-answer-sync-20260618"
+      },
+      {
+        "label": "181103 资料题库",
+        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round394-progress-accounting-181103-html-answer-sync-20260618#questionBanksList"
+      },
+      {
+        "label": "181103 HTML 资料",
+        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round394-progress-accounting-181103-html-answer-sync-20260618"
       }
     ],
     "evidence": {
-      "staticGate": "node tools/check-round393-progress-durability-gate.mjs --json => middleware, student page, teacher monitor, and site-updates require writeDurabilityGate, strictCumulativeServer=false blocker labels, write_quota_exceeded, missing FM_PROGRESS_DB/FM_PROGRESS_R2, and GET noMutationRead server-progress-snapshot.",
-      "legacyCarryForward": "node tools/check-round392-progress-monitor-audit.mjs --json remains PASS for POST write-confirmation and GET snapshot separation.",
-      "syntaxGate": "node --check functions/_middleware.js && node -e progress-module script extraction/new Function check"
+      "progressStaticGate": "node tools/check-round394-progress-durability-static-gate.mjs --json => PASS; locks server snapshots, serialized writes, user-scoped local reference rows, and teacher learningProgress row filtering.",
+      "answerQualityGate": "node tools/check-round394-181103-answer-quality.mjs --json => PASS; 522 total, 381 practice, 141 source cards, 0 empty answers, 0 placeholders, 406 formula answers.",
+      "materialHtmlGate": "node tools/check-round394-181103-material-answer-html.mjs --json => PASS; 38 pages, 522/522 visible answer blocks, 522/522 bank parity, 406/406 formula answers.",
+      "answerUiGate": "node tools/check-round394-181103-answer-ui.mjs --json => PASS; answer/details/source layers visible by default with MathJax trigger markers.",
+      "legacyCarryForward": "node tools/check-round392-progress-monitor-audit.mjs --json and node tools/check-round393-progress-durability-gate.mjs --json remain PASS for read/write truth separation and missing FM_PROGRESS_DB/FM_PROGRESS_R2 blocker labels."
     },
     "requiredTerms": [
-      "writeDurabilityGate",
-      "strictCumulativeServer=false",
-      "write_quota_exceeded",
-      "missing-primary-d1-r2",
-      "FM_PROGRESS_DB",
-      "FM_PROGRESS_R2",
-      "noMutationRead",
       "server-progress-snapshot",
       "progress-write-confirmation",
-      "working cumulative server",
-      "audit-event-window"
+      "noMutationRead",
+      "learningProgressWriteChain",
+      "progressWriteChain",
+      "fm_scores user filter",
+      "audit-event-window 非累计",
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2",
+      "FM_PRIVATE_MEDIA",
+      "522",
+      "381",
+      "141",
+      "406"
     ],
-    "visibleProof": "functions/_middleware.js progress APIs and teacher monitor labels, modules/progress-module.html truth panel, tools/check-round393-progress-durability-gate.mjs, site-updates.json top entry."
+    "visibleProof": "functions/_middleware.js, modules/progress-module.html, modules/question-bank-practice.js, modules/js/practice-main.js, resources/fluid-181103-html/materials, question-banks/181103-material-extracted.json, tools/check-round394-*.mjs, tests/edge-fluid-upgrade-check.js, site-updates.json, public shell."
   },
   {
     "version": "round392-progress-monitor-181103-answer-lock-20260618",
@@ -113,6 +126,114 @@
       "不再扩入未知学生"
     ],
     "visibleProof": "functions/_middleware.js, modules/question-bank.html, modules/question-bank-practice.js, modules/js/practice-main.js, modules/progress-module.html, modules/real-exams-dynamic.html, question-banks/181103-material-extracted.json, resources/fluid-181103-html/materials, tests/edge-fluid-upgrade-check.js, site-updates.json, roadmap, and public shell must use round392-progress-monitor-181103-answer-lock-20260618 as current."
+  },
+  {
+    "version": "round394-public-shell-181103-html-answer-sync-20260618",
+    "date": "2026-06-18",
+    "time": "13:45",
+    "updatedAt": "2026-06-18T13:45:00+08:00",
+    "previousVersion": "round393-progress-durability-monitor-gate-20260618",
+    "tag": "Round394",
+    "focus": "round394-public-shell-181103-html-answer-sync",
+    "title": "Round394 lghui.top 公开壳入口、181103 HTML 与答案同步",
+    "summary": "公开壳第一屏现在展示 Round394 public-shell 同步版本，源站内容真值来自 Round393（round393-progress-durability-monitor-gate-20260618）：/api/progress 与 /api/track 的 POST 只代表 progress-write-confirmation，累计题数、学习时长和教师监控必须重新读取 server-progress-snapshot；当前生产仍是 server-kv-learning-progress / kv-single-write-fallback，完整生产持久化继续要求 FM_PROGRESS_DB 或 FM_PROGRESS_R2。181103 入口继续保留 38 份 HTML 总表、522 张资料来源卡、381 道默认练习和 141 条线索展示；题库 JSON/GZ、HTML 正文页和 public shell 入口同步到同一版本，不再使用 lghui.top 旧样本、旧 round 或答案旧版。私有视频生产恢复仍要求 FM_PRIVATE_MEDIA R2。lghui.top 只做入口，不伪造 auth，不提供 PDF/PPT/DOC/ZIP 下载。",
+    "links": [
+      {
+        "label": "Round393 累计监控真值",
+        "href": "/modules/progress-module.html?edge_refresh=round394-public-shell-181103-html-answer-sync-20260618"
+      },
+      {
+        "label": "Round394 181103 HTML 总表",
+        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round394-public-shell-181103-html-answer-sync-20260618"
+      },
+      {
+        "label": "Round394 181103 题库入口",
+        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round394-public-shell-181103-html-answer-sync-20260618#questionBanksList"
+      },
+      {
+        "label": "私有视频入口",
+        "href": "/private-video.html?edge_refresh=round394-public-shell-181103-html-answer-sync-20260618"
+      }
+    ],
+    "evidence": {
+      "currentRound": 394,
+      "sourceProgressTruthVersion": "round393-progress-durability-monitor-gate-20260618",
+      "sourceProgressTruthTitle": "Round393 进度持久化门禁与监控标签",
+      "publicShellBoundary": "lghui.top is a static public shell and route entry. It does not mint auth, does not prove authenticated QA, and does not provide raw downloads.",
+      "progressStorageBoundary": "Round394 keeps the source progress truth from Round393: progress-write-confirmation is not cumulative truth and server-progress-snapshot readback is required; full durable progress still requires FM_PROGRESS_DB or FM_PROGRESS_R2.",
+      "privateVideoBoundary": "FM_PRIVATE_MEDIA R2 remains required before claiming private-video production upload/delete/access/archive recovery.",
+      "supplemental181103Boundary": "181103 remains 38 HTML material pages, 522 source cards, 381 default-practice questions, and 141 display-only source/content leads.",
+      "generator": "tools/generate-public-redirects.mjs",
+      "generatedPublicShellFiles": "index.html, index-complete.html, resources.html, question-bank-home.html, knowledge.html, modules/question-bank.html, and route aliases",
+      "sourceRoundEvidence": {
+        "staticGate": "node tools/check-round393-progress-durability-gate.mjs --json => middleware, student page, teacher monitor, and site-updates require writeDurabilityGate, strictCumulativeServer=false blocker labels, write_quota_exceeded, missing FM_PROGRESS_DB/FM_PROGRESS_R2, and GET noMutationRead server-progress-snapshot.",
+        "legacyCarryForward": "node tools/check-round392-progress-monitor-audit.mjs --json remains PASS for POST write-confirmation and GET snapshot separation.",
+        "syntaxGate": "node --check functions/_middleware.js && node -e progress-module script extraction/new Function check"
+      },
+      "verificationPlan": [
+        "node --check tools/generate-public-redirects.mjs",
+        "node tools/generate-public-redirects.mjs",
+        "static public-shell first-screen term check for Round394/181103/storage boundaries",
+        "hash compare public shell resources/fluid-181103-html and question-banks/181103-material-extracted.json(.gz) against the source repo"
+      ]
+    },
+    "requiredTerms": [
+      "Round394",
+      "round393-progress-durability-monitor-gate-20260618",
+      "server-progress-snapshot",
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2",
+      "FM_PRIVATE_MEDIA",
+      "181103",
+      "38",
+      "522",
+      "381",
+      "141",
+      "不伪造 auth",
+      "不提供 PDF/PPT/DOC/ZIP 下载",
+      "不再使用 lghui.top 旧样本、旧 round 或答案旧版"
+    ],
+    "visibleProof": "The generated lghui.top public shell first screen shows Round394 shell status, Round393 source truth, 181103 HTML/question-bank entries, and private-video/progress storage boundaries."
+  },
+  {
+    "version": "round393-progress-durability-monitor-gate-20260618",
+    "date": "2026-06-18",
+    "time": "12:31",
+    "updatedAt": "2026-06-18T12:31:15+08:00",
+    "previousVersion": "round392-progress-monitor-181103-answer-lock-20260618",
+    "tag": "Round393",
+    "focus": "progress-durability-monitor-gate",
+    "title": "Round393 进度持久化门禁与监控标签",
+    "summary": "本轮只收紧学习进度持久化和监控口径：GET /api/progress 与 GET /api/stats 继续保持 noMutationRead=true、server-progress-snapshot，只作为只读累计快照；POST 仍是 progress-write-confirmation，不能直接水合累计。新增 writeDurabilityGate / strictCumulativeServer 机器口径，write_quota_exceeded、storage_unavailable 或缺 FM_PROGRESS_DB / FM_PROGRESS_R2 时必须显示 block-full-production-cumulative，不能写成 working cumulative server。学生进度页把 server snapshot no-drift、KV fallback、D1/R2 严格累计服务器和写入 blocker 分开；教师监控把 audit-event-window 固定为最近诊断，累计 answers / sessions / studyTimeSeconds 只认 server-progress-snapshot。lghui.top、公开壳、真实账号 QA 和发布门禁都必须按 Round393 重新验证；默认学生账号基线保持 qi、chenlei、anxin、sunruze 四个活跃学生，本轮未加入额外默认账号，FM_PRIVATE_MEDIA 仍是私有视频完整存储清理的生产阻塞项。",
+    "links": [
+      {
+        "label": "学生学习进度",
+        "href": "/modules/progress-module.html?edge_refresh=round393-progress-durability-monitor-gate-20260618"
+      },
+      {
+        "label": "教师进度监控",
+        "href": "/teacher-panel?view=students&edge_refresh=round393-progress-durability-monitor-gate-20260618"
+      }
+    ],
+    "evidence": {
+      "staticGate": "node tools/check-round393-progress-durability-gate.mjs --json => middleware, student page, teacher monitor, and site-updates require writeDurabilityGate, strictCumulativeServer=false blocker labels, write_quota_exceeded, missing FM_PROGRESS_DB/FM_PROGRESS_R2, and GET noMutationRead server-progress-snapshot.",
+      "legacyCarryForward": "node tools/check-round392-progress-monitor-audit.mjs --json remains PASS for POST write-confirmation and GET snapshot separation.",
+      "syntaxGate": "node --check functions/_middleware.js && node -e progress-module script extraction/new Function check"
+    },
+    "requiredTerms": [
+      "writeDurabilityGate",
+      "strictCumulativeServer=false",
+      "write_quota_exceeded",
+      "missing-primary-d1-r2",
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2",
+      "noMutationRead",
+      "server-progress-snapshot",
+      "progress-write-confirmation",
+      "working cumulative server",
+      "audit-event-window"
+    ],
+    "visibleProof": "functions/_middleware.js progress APIs and teacher monitor labels, modules/progress-module.html truth panel, tools/check-round393-progress-durability-gate.mjs, site-updates.json top entry."
   },
   {
     "version": "round391-server-progress-truth-lock-20260618",
