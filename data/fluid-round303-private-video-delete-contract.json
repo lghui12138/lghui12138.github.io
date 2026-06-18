@@ -1,6 +1,6 @@
 {
   "version": "round303-private-video-delete-contract-20260614",
-  "generatedAt": "2026-06-16T06:53:16.871Z",
+  "generatedAt": "2026-06-18T04:36:00.803Z",
   "targetRound": 303,
   "pass": true,
   "productionRecovery": false,
@@ -37,8 +37,8 @@
     "sourceChecksTotal": 18,
     "sourceChecksPassed": 18,
     "mockGateExitCode": 0,
-    "moduleTeacherPanelCurrentPrivateVideoSurface": false,
-    "currentUiSurface": "functions/_middleware.js renderAdmin embedded admin UI",
+    "moduleTeacherPanelCurrentPrivateVideoSurface": true,
+    "currentUiSurface": "functions/_middleware.js renderAdmin embedded admin UI plus modules/teacher-panel.html resources/private-videos management view",
     "blockersPreserved": [
       "real-account-browser-qa",
       "FM_PRIVATE_MEDIA-R2-production-binding"
@@ -62,7 +62,7 @@
     {
       "id": "module-teacher-boundary",
       "label": "modules/teacher-panel.html/js private-video management boundary",
-      "state": "not-current-management-surface",
+      "state": "ready-current-management-surface",
       "ready": true,
       "productionClaimAllowed": false
     },
@@ -509,6 +509,22 @@
           "present": true
         },
         {
+          "marker": "deleteOutcome",
+          "present": true
+        },
+        {
+          "marker": "metadataRevoked",
+          "present": true
+        },
+        {
+          "marker": "studentPlaybackRevoked",
+          "present": true
+        },
+        {
+          "marker": "productionRecoveryStatus",
+          "present": true
+        },
+        {
           "marker": "productionBlocker",
           "present": true
         },
@@ -523,7 +539,7 @@
           "present": true
         },
         {
-          "pattern": "/if \\(dryRun\\)[\\s\\S]*dryRun:\\s*true[\\s\\S]*canDelete[\\s\\S]*deleteReadiness[\\s\\S]*course:\\s*beforeDelete/",
+          "pattern": "/if \\(dryRun\\)[\\s\\S]*dryRun:\\s*true[\\s\\S]*canDelete[\\s\\S]*deleteReadiness[\\s\\S]*deleteOutcome[\\s\\S]*course:\\s*beforeDelete/",
           "present": true
         }
       ],
@@ -557,11 +573,19 @@
         {
           "marker": "delete_cleanup_pending",
           "present": true
+        },
+        {
+          "marker": "metadata-revoked-cleanup-pending",
+          "present": true
         }
       ],
       "patterns": [
         {
           "pattern": "/if \\(deleteReadiness\\.state === 'blocked'\\)[\\s\\S]*delete_blocked_by_storage/",
+          "present": true
+        },
+        {
+          "pattern": "/deleteOutcome:\\s*privateVideoDeleteOutcome/",
           "present": true
         },
         {
@@ -858,24 +882,24 @@
         {
           "first": "delete?dryRun=1&writeProbe=1",
           "second": "pvConfirm('永久删除专属课",
-          "firstIndex": 234391,
-          "secondIndex": 774094,
+          "firstIndex": 274092,
+          "secondIndex": 859157,
           "present": true,
           "ordered": true
         },
         {
           "first": "pvConfirm('永久删除专属课",
           "second": "pvPromptCourseId(courseId,title)",
-          "firstIndex": 774094,
-          "secondIndex": 774901,
+          "firstIndex": 859157,
+          "secondIndex": 859964,
           "present": true,
           "ordered": true
         },
         {
           "first": "pvPromptCourseId(courseId,title)",
           "second": "body:JSON.stringify({confirmCourseId:confirmedCourseId})",
-          "firstIndex": 774901,
-          "secondIndex": 775591,
+          "firstIndex": 859964,
+          "secondIndex": 860654,
           "present": true,
           "ordered": true
         }
@@ -887,27 +911,109 @@
     },
     {
       "id": "module-teacher-boundary",
-      "label": "modules/teacher-panel.html is not the current private-video management surface",
+      "label": "modules/teacher-panel.html exposes the current private-video management surface with the same blocker-safe delete contract",
       "target": "modules/teacher-panel.html",
-      "surface": "ui-boundary",
+      "surface": "ui",
       "markers": [
         {
-          "marker": "guardPage",
+          "marker": "data-v=\"resources\"",
           "present": true
         },
         {
-          "marker": "access_denied",
+          "marker": "id=\"private-videos\"",
+          "present": true
+        },
+        {
+          "marker": "data-pv-auth-401-safety",
+          "present": true
+        },
+        {
+          "marker": "teacher_required/admin_required",
+          "present": true
+        },
+        {
+          "marker": "data-pv-delete-course",
+          "present": true
+        },
+        {
+          "marker": "data-pv-access-course",
+          "present": true
+        },
+        {
+          "marker": "data-pv-publish-course",
+          "present": true
+        },
+        {
+          "marker": "data-pv-archive-course",
+          "present": true
+        },
+        {
+          "marker": "delete?dryRun=1&writeProbe=1",
+          "present": true
+        },
+        {
+          "marker": "confirmCourseId",
+          "present": true
+        },
+        {
+          "marker": "data-pv-production-blocker",
+          "present": true
+        },
+        {
+          "marker": "data-pv-management-production-ready",
           "present": true
         }
       ],
       "patterns": [
         {
-          "pattern": "no data-pv controls in module teacher panel",
+          "pattern": "/fetch\\('\\/api\\/admin\\/private-videos\\?includeArchived=1&refresh=1&writeProbe=1'/",
           "present": true
         },
         {
-          "pattern": "no private-video admin API calls in module teacher panel",
+          "pattern": "/fetch\\('\\/api\\/admin\\/private-videos\\/course\\/'\\+encodeURIComponent\\(courseId\\)\\+'\\/delete\\?dryRun=1&writeProbe=1'/",
           "present": true
+        },
+        {
+          "pattern": "/const\\s+typedCourseId\\s*=\\s*String\\(typed\\s*\\|\\|\\s*''\\)\\.trim\\(\\)/",
+          "present": true
+        },
+        {
+          "pattern": "/typedCourseId\\s*!==\\s*expected/",
+          "present": true
+        },
+        {
+          "pattern": "/body:JSON\\.stringify\\(\\{confirmCourseId:confirmedCourseId\\}\\)/",
+          "present": true
+        },
+        {
+          "pattern": "/if\\s*\\(status\\s*===\\s*401\\s*\\|\\|\\s*code\\s*===\\s*'authentication_required'\\)/",
+          "present": true
+        }
+      ],
+      "order": [
+        {
+          "first": "PV_COURSE_BUSY.set(courseId, 'delete-check')",
+          "second": "PV_COURSE_BUSY.set(courseId, 'delete-confirm')",
+          "firstIndex": 123313,
+          "secondIndex": 124201,
+          "present": true,
+          "ordered": true
+        },
+        {
+          "first": "await pvConfirm",
+          "second": "const confirmedCourseId = pvPromptCourseId(courseId, title)",
+          "firstIndex": 124924,
+          "secondIndex": 125407,
+          "present": true,
+          "ordered": true
+        },
+        {
+          "first": "const confirmedCourseId = pvPromptCourseId(courseId, title)",
+          "second": "fetch('/api/admin/private-videos/course/'+encodeURIComponent(courseId)+'/delete'",
+          "firstIndex": 125407,
+          "secondIndex": 125833,
+          "present": true,
+          "ordered": true
         }
       ],
       "ok": true,
@@ -1021,13 +1127,14 @@
           "edge": "functions/_middleware.js",
           "privatePage": "private-video.html",
           "teacher": "teacher-panel.html",
+          "teacherModule": "modules/teacher-panel.html",
           "browser": "tools/check-private-video-management-browser.mjs",
           "binding": "tools/check-cloudflare-pages-private-video-bindings.mjs",
           "validate": "tools/validate-site-content.mjs",
           "runbook": "docs/private-video-management-runbook.md"
         },
         "summary": {
-          "version": "round371-181103-usable-ocr-html-practice-20260616",
+          "version": "round393-progress-durability-monitor-gate-20260618",
           "edgeRoutes": [
             "list",
             "publish",
@@ -1045,6 +1152,7 @@
             "archive",
             "delete"
           ],
+          "teacherModuleRoute": "modules/teacher-panel.html includes the private-video management view, 401 safety, disabled reasons, dry-run delete, and typed confirmCourseId contract",
           "standalonePage": "private-video.html shows management actions, disabled reasons, confirmCourseId delete contract, and production blockers without real credentials",
           "readinessStates": [
             "ready",
@@ -1125,7 +1233,7 @@
   ],
   "boundary": [
     "Local UI/API coverage is ready only if all six requested actions have backend, embedded admin UI, and existing no-credential mock coverage.",
-    "The current private-video management UI proof is the embedded admin UI in functions/_middleware.js; modules/teacher-panel.html/js is recorded as not owning this management surface.",
+    "The current private-video management UI proof covers both the embedded admin UI in functions/_middleware.js and the modules/teacher-panel.html resources/private-videos management view.",
     "Delete remains destructive-only-after dry-run plus exact course-ID confirmation; Round303 does not perform real delete.",
     "Production recovery remains false until real-account browser QA and FM_PRIVATE_MEDIA R2 production binding are both proven."
   ]

@@ -1,5 +1,45 @@
 [
   {
+    "version": "round393-progress-durability-monitor-gate-20260618",
+    "date": "2026-06-18",
+    "time": "12:31",
+    "updatedAt": "2026-06-18T12:31:15+08:00",
+    "previousVersion": "round392-progress-monitor-181103-answer-lock-20260618",
+    "tag": "Round393",
+    "focus": "progress-durability-monitor-gate",
+    "title": "Round393 进度持久化门禁与监控标签",
+    "summary": "本轮只收紧学习进度持久化和监控口径：GET /api/progress 与 GET /api/stats 继续保持 noMutationRead=true、server-progress-snapshot，只作为只读累计快照；POST 仍是 progress-write-confirmation，不能直接水合累计。新增 writeDurabilityGate / strictCumulativeServer 机器口径，write_quota_exceeded、storage_unavailable 或缺 FM_PROGRESS_DB / FM_PROGRESS_R2 时必须显示 block-full-production-cumulative，不能写成 working cumulative server。学生进度页把 server snapshot no-drift、KV fallback、D1/R2 严格累计服务器和写入 blocker 分开；教师监控把 audit-event-window 固定为最近诊断，累计 answers / sessions / studyTimeSeconds 只认 server-progress-snapshot。lghui.top、公开壳、真实账号 QA 和发布门禁都必须按 Round393 重新验证；默认学生账号基线保持 qi、chenlei、anxin、sunruze 四个活跃学生，本轮未加入额外默认账号，FM_PRIVATE_MEDIA 仍是私有视频完整存储清理的生产阻塞项。",
+    "links": [
+      {
+        "label": "学生学习进度",
+        "href": "/modules/progress-module.html?edge_refresh=round393-progress-durability-monitor-gate-20260618"
+      },
+      {
+        "label": "教师进度监控",
+        "href": "/teacher-panel?view=students&edge_refresh=round393-progress-durability-monitor-gate-20260618"
+      }
+    ],
+    "evidence": {
+      "staticGate": "node tools/check-round393-progress-durability-gate.mjs --json => middleware, student page, teacher monitor, and site-updates require writeDurabilityGate, strictCumulativeServer=false blocker labels, write_quota_exceeded, missing FM_PROGRESS_DB/FM_PROGRESS_R2, and GET noMutationRead server-progress-snapshot.",
+      "legacyCarryForward": "node tools/check-round392-progress-monitor-audit.mjs --json remains PASS for POST write-confirmation and GET snapshot separation.",
+      "syntaxGate": "node --check functions/_middleware.js && node -e progress-module script extraction/new Function check"
+    },
+    "requiredTerms": [
+      "writeDurabilityGate",
+      "strictCumulativeServer=false",
+      "write_quota_exceeded",
+      "missing-primary-d1-r2",
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2",
+      "noMutationRead",
+      "server-progress-snapshot",
+      "progress-write-confirmation",
+      "working cumulative server",
+      "audit-event-window"
+    ],
+    "visibleProof": "functions/_middleware.js progress APIs and teacher monitor labels, modules/progress-module.html truth panel, tools/check-round393-progress-durability-gate.mjs, site-updates.json top entry."
+  },
+  {
     "version": "round392-progress-monitor-181103-answer-lock-20260618",
     "date": "2026-06-18",
     "time": "16:18",

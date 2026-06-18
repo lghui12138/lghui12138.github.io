@@ -40,7 +40,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round392-progress-monitor-181103-answer-lock-20260618';
+    const practiceModuleVersion = 'round393-progress-durability-monitor-gate-20260618';
 
     function removeFailedPracticeScripts() {
         document.querySelectorAll('script[data-question-bank-practice-module],script[src*="question-bank-practice.js"]').forEach(script => {
