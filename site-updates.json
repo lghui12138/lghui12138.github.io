@@ -8,7 +8,7 @@
     "tag": "progress-server-truth",
     "focus": "round389-progress-server-truth",
     "title": "Round389 学习时长与做题累计生产真值证明",
-    "summary": "进度页、题库统计、教师监控和 /api/progress /api/stats 均以服务器快照为累计真值；真实学生 QA 账号已证明登录/重登不改变累计题数、会话数和学习时长。当前生产仍是 server-kv-learning-progress / kv-single-write-fallback，严格完整生产持久化继续要求绑定 FM_PROGRESS_DB 或 FM_PROGRESS_R2。181103 参考答案与 HTML 题卡继续保持 522/522 可见、381 道可刷、141 条线索展示。",
+    "summary": "进度页、题库统计、教师监控和 /api/progress /api/stats 均以服务器快照为累计真值；真实学生 QA 账号已证明登录/重登不改变累计题数、会话数和学习时长。当前生产仍是 server-kv-learning-progress / kv-single-write-fallback，严格完整生产持久化继续要求绑定 FM_PROGRESS_DB 或 FM_PROGRESS_R2。181103 参考答案与 HTML 题卡继续保持 522/522 可见、381 道可刷、141 条线索展示。 账号基线继续保持 qi、chenlei、anxin、sunruze；未加入额外默认账号，不再扩入未知学生。",
     "links": [
       {
         "label": "学生学习进度",
@@ -38,7 +38,8 @@
       "strictDurabilityBlocker": "node tools/check-production-progress-real-account.mjs --json --require-public-chain --require-persistent-write => expected fail before POST because FM_PROGRESS_DB/FM_PROGRESS_R2 are not bound",
       "bindingAudit": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json => production kvBindings [FM_AUDIT], r2Bindings [], d1Bindings [], missing FM_PROGRESS_DB/FM_PROGRESS_R2 and FM_PRIVATE_MEDIA",
       "answerGate": "node tools/check-round388-181103-answer-release-gate.mjs --json => ok true; 522 HTML answer blocks; 381 practice; 141 source-content cards",
-      "productionBoundary": "KV fallback proves no-drift and survives login/relogin reads, but must not be called full durable production progress until FM_PROGRESS_DB or FM_PROGRESS_R2 is bound and strict real-account write passes."
+      "productionBoundary": "KV fallback proves no-drift and survives login/relogin reads, but must not be called full durable production progress until FM_PROGRESS_DB or FM_PROGRESS_R2 is bound and strict real-account write passes.",
+      "studentAccountBaseline": "activeCommonUsers: qi, chenlei, anxin, sunruze; unknownStudentsLocked true; no extra default accounts added."
     },
     "requiredTerms": [
       "服务器快照",
@@ -50,7 +51,13 @@
       "181103",
       "522",
       "381",
-      "141"
+      "141",
+      "qi",
+      "chenlei",
+      "anxin",
+      "sunruze",
+      "未加入额外默认账号",
+      "不再扩入"
     ],
     "visibleProof": "index.html, index-complete.html, resources.html, question-bank-home.html, modules/progress-module.html, functions/_middleware.js, site-updates.json, and public shell use round389-progress-server-truth-20260618 as current."
   },
