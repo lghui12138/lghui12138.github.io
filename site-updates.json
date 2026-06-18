@@ -1,5 +1,69 @@
 [
   {
+    "version": "round391-server-progress-truth-lock-20260618",
+    "date": "2026-06-18",
+    "time": "10:55",
+    "updatedAt": "2026-06-18T10:55:00+08:00",
+    "previousVersion": "round390-server-stable-progress-181103-html-sync-20260618",
+    "tag": "Round391",
+    "focus": "server-progress-truth-lock",
+    "title": "Round391 服务端累计真值锁定",
+    "summary": "本轮专门修正学习时长和做题监控的累计口径：题库页、模块练习页、学生进度页和教师汇总都不能把 localStorage、本机 session、最近审计事件窗或登录读请求当作累计题数/累计时长。累计真值只接受 /api/progress 与 /api/stats 的 noMutationRead=true、cumulativeSourceOfTruth=server-progress-snapshot 服务端快照；没有服务器快照时页面显示等待/待同步，本地记录只作参考。真实 Cloudflare 绑定审计仍显示 FM_PROGRESS_DB、FM_PROGRESS_R2 和 FM_PRIVATE_MEDIA 缺失，因此完整生产持久写入/私有视频生产恢复继续被门禁阻塞，不能误报。181103 保持 38 个材料 HTML、522 张题卡、522 个答案块、381 道可刷题和 141 张来源内容卡的上线状态。 默认学生账号基线不扩入：仍只保留 qi、chenlei、anxin、sunruze；未加入额外默认账号，不再扩入未知学生，真实账号验收只认当前 QA 配置。",
+    "links": [
+      {
+        "label": "学生学习进度",
+        "href": "/modules/progress-module.html?edge_refresh=round391-server-progress-truth-lock-20260618"
+      },
+      {
+        "label": "题库练习",
+        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round391-server-progress-truth-lock-20260618#questionBanksList"
+      },
+      {
+        "label": "教师进度监控",
+        "href": "/teacher-panel?view=students&edge_refresh=round391-server-progress-truth-lock-20260618"
+      },
+      {
+        "label": "181103 HTML 总表",
+        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round391-server-progress-truth-lock-20260618"
+      },
+      {
+        "label": "私有视频管理",
+        "href": "/private-video.html?edge_refresh=round391-server-progress-truth-lock-20260618"
+      }
+    ],
+    "evidence": {
+      "staticGate": "node tests/edge-fluid-upgrade-check.js must assert Round391 local cumulative lock and D1/R2 blocker boundaries.",
+      "realStudentNoDriftMode": "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain verifies first login/relogin/secondRelogin stable server-progress-snapshot reads.",
+      "strictDurabilityBlocker": "node tools/check-production-progress-real-account.mjs --json --require-public-chain --require-persistent-write must fail until FM_PROGRESS_DB or FM_PROGRESS_R2 is bound.",
+      "bindingAudit": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json currently shows FM_AUDIT present and FM_PROGRESS_DB/FM_PROGRESS_R2/FM_PRIVATE_MEDIA missing.",
+      "localCumulativeLock": "modules/js/practice-main.js no longer restores cumulative stats from PracticeConfig.storageKeys.userStats or saved progress.stats; modules/question-bank-user.js zeroes cumulative totals without server snapshot.",
+      "postWriteReadback": "modules/question-bank-practice.js and modules/js/practice-main.js re-read /api/progress after POST instead of treating mutation responses as noMutationRead snapshots.",
+      "online181103Html": "Live 181103 material sweep returned 38 pages, 522 cards, 522 answer blocks, 0 problems.",
+      "studentAccountBaseline": "activeCommonUsers: qi, chenlei, anxin, sunruze; unknownStudentsLocked true; no extra default accounts added; 未加入额外默认账号，不再扩入未知学生。"
+    },
+    "requiredTerms": [
+      "server-progress-snapshot",
+      "noMutationRead",
+      "server-progress-snapshot-pending",
+      "localStorage 不是累计真值",
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2",
+      "FM_PRIVATE_MEDIA",
+      "真实账号",
+      "登录不漂移",
+      "服务器升级不重算",
+      "181103",
+      "522 HTML answer blocks",
+      "qi",
+      "chenlei",
+      "anxin",
+      "sunruze",
+      "未加入额外默认账号",
+      "不再扩入未知学生"
+    ],
+    "visibleProof": "functions/_middleware.js, modules/question-bank.html, modules/question-bank-user.js, modules/question-bank-stats.js, modules/question-bank-practice.js, modules/js/practice-main.js, modules/real-exams-dynamic.html, tests/edge-fluid-upgrade-check.js, site-updates.json, and public shell must use round391-server-progress-truth-lock-20260618 as current."
+  },
+  {
     "version": "round390-server-stable-progress-181103-html-sync-20260618",
     "date": "2026-06-18",
     "time": "09:58",

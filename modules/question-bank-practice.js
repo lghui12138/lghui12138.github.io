@@ -712,6 +712,7 @@ window.QuestionBankPractice = (function() {
             if (payload && payload.ok) {
                 saveProgressOutbox([]);
                 applyServerProgressSnapshot(payload);
+                await hydrateLearningProgressFromServer();
             }
         } catch (_) {}
     }
@@ -744,6 +745,7 @@ window.QuestionBankPractice = (function() {
             }
             if (payload && payload.ok) {
                 applyServerProgressSnapshot(payload);
+                await hydrateLearningProgressFromServer();
                 flushProgressOutbox();
                 return true;
             }

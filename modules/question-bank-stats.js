@@ -12,7 +12,7 @@ window.QuestionBankStats = (function() {
         streakDays: 0,
         favoriteCount: 0,
         wrongQuestionCount: 0,
-        source: 'localStorage-offline-fallback',
+        source: 'server-progress-snapshot-pending',
         serverManaged: false,
 	        localOnly: true
 	    };

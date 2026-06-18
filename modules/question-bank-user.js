@@ -77,6 +77,20 @@ window.QuestionBankUser = (function() {
 	        } catch (_) {
 	            return null;
         }
+	    }
+
+    function localReferenceStats(stats) {
+        return {
+            ...(stats || {}),
+            totalStudyTime: 0,
+            totalQuestions: 0,
+            correctAnswers: 0,
+            source: 'server-progress-snapshot-pending',
+            cumulativeSourceOfTruth: 'server-progress-snapshot-pending',
+            noMutationRead: false,
+            serverManaged: false,
+            localOnly: true
+        };
     }
 
     function normalizeWrongQuestionRecord(record, fallbackBankId) {
@@ -129,10 +143,11 @@ window.QuestionBankUser = (function() {
             try {
                 // 加载主要用户数据
                 const storedData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
-                if (storedData) {
-                    const parsedData = JSON.parse(storedData);
-                    userData = { ...userData, ...parsedData };
-                }
+	                if (storedData) {
+	                    const parsedData = JSON.parse(storedData);
+	                    userData = { ...userData, ...parsedData };
+	                }
+                userData.stats = localReferenceStats(userData.stats);
                 
                 // 加载收藏数据（兼容旧版本）
                 const storedFavorites = localStorage.getItem(STORAGE_KEYS.FAVORITES);
@@ -486,10 +501,15 @@ window.QuestionBankUser = (function() {
                 userData.stats.localPendingQuestions = 0;
                 userData.stats.localPendingStudyTime = 0;
             } else {
-                // 没有服务器快照时才保留旧本地统计；有服务器快照时累计值不能由 localStorage 再加一遍。
-                userData.stats.totalQuestions += session.questionsAnswered;
-                userData.stats.correctAnswers += session.correctAnswers;
-                userData.stats.totalStudyTime += session.duration;
+                // 没有服务器快照时也不累加本地累计；本机记录只能作为待同步参考，不能成为累计真值。
+                userData.stats.totalQuestions = 0;
+                userData.stats.correctAnswers = 0;
+                userData.stats.totalStudyTime = 0;
+                userData.stats.source = 'server-progress-snapshot-pending';
+                userData.stats.cumulativeSourceOfTruth = 'server-progress-snapshot-pending';
+                userData.stats.noMutationRead = false;
+                userData.stats.serverManaged = false;
+                userData.stats.localOnly = true;
                 userData.stats.localPendingQuestions = Number(userData.stats.localPendingQuestions || 0) + session.questionsAnswered;
                 userData.stats.localPendingStudyTime = Number(userData.stats.localPendingStudyTime || 0) + session.duration;
             }
@@ -544,7 +564,12 @@ window.QuestionBankUser = (function() {
                 stats.serverProgressSyncedAt = serverStats.syncedAt;
                 stats.localOnly = false;
             } else {
-                stats.source = 'localStorage-offline-fallback';
+                stats.totalStudyTime = 0;
+                stats.totalQuestions = 0;
+                stats.correctAnswers = 0;
+                stats.source = 'server-progress-snapshot-pending';
+                stats.cumulativeSourceOfTruth = 'server-progress-snapshot-pending';
+                stats.noMutationRead = false;
                 stats.serverManaged = false;
                 stats.localOnly = true;
             }

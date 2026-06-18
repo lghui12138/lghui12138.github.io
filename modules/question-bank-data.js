@@ -40,7 +40,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round390-server-stable-progress-181103-html-sync-20260618-round383-progress-stability';
+    const practiceModuleVersion = 'round391-server-progress-truth-lock-20260618';
 
     function removeFailedPracticeScripts() {
         document.querySelectorAll('script[data-question-bank-practice-module],script[src*="question-bank-practice.js"]').forEach(script => {
