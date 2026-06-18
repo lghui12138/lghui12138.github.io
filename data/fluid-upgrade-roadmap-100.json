@@ -1,8 +1,8 @@
 {
-  "version": "round395-progress-primary-store-block-20260618",
+  "version": "round397-server-kv-progress-cumulative-hardening-20260618",
   "generatedAt": "2026-06-17T15:30:00+08:00",
   "goal": "round287 后继续推进至少 100 大轮升级；每轮必须给出证据、预算和生产验收边界。",
-  "currentRound": 395,
+  "currentRound": 397,
   "releaseGate": {
     "requirePublicShell": true,
     "requirePagesDev": true,
@@ -20,12 +20,12 @@
     "requireOptimizationPlaybookCheck": true,
     "requireMobilePerformanceBudgetCheck": true,
     "forbidClaimingRealQaWithoutCredentials": true,
-    "currentVersion": "round395-progress-primary-store-block-20260618",
-    "previousVersion": "round394-progress-accounting-181103-html-answer-sync-20260618",
-    "lastUpdated": "2026-06-18T17:02:00+08:00",
+    "currentVersion": "round397-server-kv-progress-cumulative-hardening-20260618",
+    "previousVersion": "round396-public-shell-release-gate-20260618",
+    "lastUpdated": "2026-06-18T19:40:00+08:00",
     "requireNoFakeAccountQa": true,
     "requirePrivateMediaR2": true,
-    "currentRound": 395,
+    "currentRound": 397,
     "requiredLocalChecks": [
       "node tools/patch-real-exam-atomic-overrides.mjs",
       "node tools/patch-round310-real-exam-subquestion-fixes.mjs",
@@ -85,7 +85,10 @@
       "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round371-181103-usable-ocr-html-practice-20260616",
       "node tools/check-round376-181103-visible-522-proof.mjs --write --json",
       "node tools/check-round378-181103-question-answer-website-verification.mjs --write --json",
-      "node tools/check-round379-181103-full-website-question-validation.mjs --apply-current-status --write --json"
+      "node tools/check-round379-181103-full-website-question-validation.mjs --apply-current-status --write --json",
+      "node tools/check-round397-server-kv-progress-cumulative-hardening.mjs --json",
+      "node tools/check-round396-release-readiness.mjs --assume-code-gate-change --require-ready --expected-version round397-server-kv-progress-cumulative-hardening-20260618 --json",
+      "node tools/check-production-progress-real-account.mjs --json --require-public-chain --expected-version round397-server-kv-progress-cumulative-hardening-20260618"
     ],
     "round311NoViewerGuard": true,
     "round312HtmlQualityGuard": true,
@@ -102,9 +105,11 @@
       "node tools/check-round388-181103-answer-release-gate.mjs --json",
       "node tools/check-private-video-management-mock.mjs --json",
       "node tools/check-cloudflare-pages-private-video-bindings.mjs --json",
-      "node tools/monitor-fluid-public-release.mjs --json --expected-version round395-progress-primary-store-block-20260618",
-      "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain --expected-version round395-progress-primary-store-block-20260618",
-      "node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain"
+      "node tools/monitor-fluid-public-release.mjs --json --expected-version round397-server-kv-progress-cumulative-hardening-20260618",
+      "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain --expected-version round397-server-kv-progress-cumulative-hardening-20260618",
+      "node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain",
+      "node tools/check-round396-progress-local-analytics-boundary.mjs --json",
+      "node tools/check-round396-release-readiness.mjs --assume-code-gate-change --require-ready --expected-version round397-server-kv-progress-cumulative-hardening-20260618 --json"
     ],
     "round317RealExamSourceCardinalityGuard": true,
     "round318ChapterPracticeShortcutGuard": true,
@@ -115,7 +120,7 @@
     "round323ObservabilityReleaseGuard": true,
     "required": true,
     "productionProofRequired": true,
-    "lastIntegratedRound": 395,
+    "lastIntegratedRound": 397,
     "lastIntegratedAt": "2026-06-18T12:31:15+08:00",
     "round325ReleaseReadinessGuard": true,
     "round325PublicAuthProofLedger": true,
@@ -128,8 +133,8 @@
     "round355181103HtmlPublicQualityGuard": true,
     "round356181103WorkbookHtmlOcrCleanGuard": true,
     "round357181103AuthWorkflowGuard": true,
-    "expectedVersion": "round395-progress-primary-store-block-20260618",
-    "updatedAt": "2026-06-18T17:20:00+08:00",
+    "expectedVersion": "round397-server-kv-progress-cumulative-hardening-20260618",
+    "updatedAt": "2026-06-18T18:58:00+08:00",
     "round369181103OcrPracticeQualityGuard": true,
     "round370181103ReadablePracticeGuard": true,
     "round371181103UsableOcrPracticeGuard": {
@@ -173,6 +178,32 @@
       "command": "node tools/check-round393-progress-durability-gate.mjs --json",
       "evidence": "functions/_middleware.js, modules/progress-module.html, teacher-panel.html, tests/edge-fluid-upgrade-check.js, site-updates.json",
       "summary": "writeDurabilityGate and strictCumulativeServer separate no-drift KV fallback from full D1/R2 durable cumulative production; missing FM_PROGRESS_DB/FM_PROGRESS_R2 blocks full production claims."
+    },
+    "round396ProgressLocalAnalyticsBoundary": {
+      "required": true,
+      "command": "node tools/check-round396-progress-local-analytics-boundary.mjs --json",
+      "evidence": "tools/check-round396-progress-local-analytics-boundary.mjs",
+      "summary": "Teacher monitor is server-first; localStorage sessions/scores/progress are sanitized before rendering and only labeled localStorage-offline-reference."
+    },
+    "round396ReleaseReadiness": {
+      "required": true,
+      "command": "node tools/check-round396-release-readiness.mjs --assume-code-gate-change --require-ready --json",
+      "evidence": "tools/check-round396-release-readiness.mjs",
+      "summary": "site-updates, EDGE_HOME_VERSION, EDGE_RUNTIME_JS_VERSION, and public shell generator must all align to Round396 before publish."
+    },
+    "progressCumulativeBoundary": {
+      "round": 397,
+      "version": "round397-server-kv-progress-cumulative-hardening-20260618",
+      "serverCumulativeLayer": "Cloudflare KV via FM_AUDIT",
+      "strictPrimaryStillRequires": [
+        "FM_PROGRESS_DB",
+        "FM_PROGRESS_R2"
+      ],
+      "privateMediaStillRequires": [
+        "FM_PRIVATE_MEDIA"
+      ],
+      "invariant": "login, refresh, deploy, localStorage, and audit-event-window cannot advance cumulative study time, question count, or sessions",
+      "gate": "node tools/check-round397-server-kv-progress-cumulative-hardening.mjs --json"
     }
   },
   "lanes": [
@@ -2499,7 +2530,7 @@
       "gate": "node tests/edge-fluid-upgrade-check.js",
       "proofBoundary": "Round380 fixes server-side learning-progress consistency. Round379 remains the 181103 522-question website validation content proof.",
       "completedAt": "2026-06-17T20:45:00+08:00",
-      "supersededBy": "round395-progress-primary-store-block-20260618"
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618"
     },
     {
       "round": 381,
@@ -2565,7 +2596,7 @@
       "gate": "node tools/check-round390-server-and-181103-regression.mjs --write --json && node tests/edge-fluid-upgrade-check.js",
       "proofBoundary": "Round390 proves server-snapshot-only cumulative semantics and 181103 HTML/answer parity locally. Production durability still requires real Cloudflare D1/R2 bindings and lghui.top real-account browser checks after deploy.",
       "completedAt": "2026-06-18T10:55:00+08:00",
-      "supersededBy": "round395-progress-primary-store-block-20260618"
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618"
     },
     {
       "round": 391,
@@ -2602,7 +2633,7 @@
       "gate": "node tests/edge-fluid-upgrade-check.js && node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain && node tools/check-cloudflare-pages-private-video-bindings.mjs --json",
       "proofBoundary": "Round391 proved read/login no-drift and local cumulative lock. Round392 supersedes it by making POST mutation responses explicit write confirmations and forcing server snapshot readback before any cumulative UI hydration.",
       "completedAt": "2026-06-18T16:18:00+08:00",
-      "supersededBy": "round395-progress-primary-store-block-20260618"
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618"
     },
     {
       "round": 392,
@@ -2642,7 +2673,7 @@
       ],
       "gate": "node tests/edge-fluid-upgrade-check.js && node tools/check-round392-progress-monitor-audit.mjs --json && node tools/check-round392-181103-html-answer-display.mjs --json && node tools/check-round392-real-exam-question-cardinality.mjs --check-only",
       "proofBoundary": "Round392 completed the POST write-confirmation and server-snapshot readback lock. Round393 supersedes it with explicit durability-gate labels and missing-D1/R2 production blockers.",
-      "supersededBy": "round395-progress-primary-store-block-20260618",
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618",
       "completedAt": "2026-06-18T12:31:15+08:00"
     },
     {
@@ -2680,7 +2711,7 @@
       ],
       "gate": "node tests/edge-fluid-upgrade-check.js && node tools/check-round393-progress-durability-gate.mjs --json && node tools/check-round393-real-exam-ui-cardinality.mjs --json && node tools/check-private-video-management-mock.mjs --json",
       "proofBoundary": "Round393 proves no-drift/readback semantics and visible blockers. Full durable production server status requires actual Cloudflare primary progress storage bindings and real-account write/browser QA after deploy.",
-      "supersededBy": "round395-progress-primary-store-block-20260618"
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618"
     },
     {
       "round": 394,
@@ -2715,7 +2746,7 @@
     {
       "round": 395,
       "id": "round395-progress-primary-store-block",
-      "status": "active",
+      "status": "integrated",
       "version": "round395-progress-primary-store-block-20260618",
       "integratedVersion": "round395-progress-primary-store-block-20260618",
       "title": "Round395 progress primary-store write block",
@@ -2737,6 +2768,72 @@
         "GET /api/progress and GET /api/stats remain noMutationRead=true server-progress-snapshot reads.",
         "Teacher monitoring continues to separate persistent cumulative rows from audit-event-window diagnostics.",
         "Full production durable cumulative progress remains blocked until FM_PROGRESS_DB or FM_PROGRESS_R2 is bound and real-account write/relogin QA passes."
+      ],
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618",
+      "integratedAt": "2026-06-18T18:58:00+08:00"
+    },
+    {
+      "round": 396,
+      "id": "round396-public-shell-release-gate",
+      "status": "integrated",
+      "version": "round396-public-shell-release-gate-20260618",
+      "integratedVersion": "round396-public-shell-release-gate-20260618",
+      "title": "Round396 public shell release gate and teacher-monitor cumulative truth",
+      "entryCriteria": "Round395 blocks fallback progress writes, but teacher monitoring and public shell release authorities must no longer surface localStorage or stale Round395 as current truth.",
+      "exitCriteria": "Teacher monitor cumulative duration and quiz counts are server-summary first; localStorage fallback is sanitized and labeled non-cumulative; public shell/source release gates aligned to Round396 before Round397 superseded it.",
+      "gate": "node tests/edge-fluid-upgrade-check.js && node tools/check-round396-progress-local-analytics-boundary.mjs --json && node tools/check-round396-release-readiness.mjs --assume-code-gate-change --require-ready --json && node tools/monitor-fluid-public-release.mjs --json --expected-version round397-server-kv-progress-cumulative-hardening-20260618",
+      "artifacts": [
+        "functions/_middleware.js",
+        "teacher-panel.html",
+        "modules/teacher-panel.html",
+        "site-updates.json",
+        "data/fluid-upgrade-roadmap-100.json",
+        "tools/check-round396-progress-local-analytics-boundary.mjs",
+        "tools/check-round396-release-readiness.mjs"
+      ],
+      "notes": "localStorage-offline-reference is never cumulative truth; server-progress-snapshot and progress-write-confirmation remain separated; Round397 supersedes the older strict-block stance by allowing Cloudflare KV as a server cumulative layer while still blocking D1/R2 full-production claims.",
+      "lane": "server-reliability",
+      "focus": "public-shell-release-progress-monitor-boundary",
+      "acceptance": [
+        "Teacher panel fetches /api/admin/events?view=summary before any local fallback.",
+        "When summary is unavailable, local fm_sessions/fm_scores/fm_learning_data_v2 are sanitized out of cumulative duration, quiz count, exports, and reports.",
+        "Legacy /modules/teacher-panel redirects to /teacher-panel so stale local analytics cannot remain the production monitor.",
+        "site-updates.json[0], EDGE_HOME_VERSION, EDGE_RUNTIME_JS_VERSION, and public shell generator all show Round396.",
+        "Real-account production proof must be rerun after deploy; missing FM_PROGRESS_DB/FM_PROGRESS_R2 and FM_PRIVATE_MEDIA remain blockers."
+      ],
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618"
+    },
+    {
+      "id": "round397-server-kv-progress-cumulative-hardening",
+      "status": "active",
+      "round": 397,
+      "version": "round397-server-kv-progress-cumulative-hardening-20260618",
+      "previousVersion": "round396-public-shell-release-gate-20260618",
+      "date": "2026-06-18",
+      "updatedAt": "2026-06-18T19:40:00+08:00",
+      "lane": "server-reliability",
+      "focus": "server-kv-cumulative-progress-monitoring",
+      "gate": "node tests/edge-fluid-upgrade-check.js && node tools/check-round397-server-kv-progress-cumulative-hardening.mjs --json && node tools/check-round396-release-readiness.mjs --assume-code-gate-change --require-ready --expected-version round397-server-kv-progress-cumulative-hardening-20260618 --json",
+      "changedSurfaces": [
+        "functions/_middleware.js",
+        "modules/progress-module.html",
+        "teacher-panel.html",
+        "modules/teacher-panel.html",
+        "tools/check-production-progress-real-account.mjs",
+        "site-updates.json",
+        "public shell"
+      ],
+      "notes": [
+        "Cloudflare KV server snapshots now persist cumulative study time, answered questions, sessions, and duplicate event markers across login/refresh/deploy.",
+        "GET remains noMutationRead server-progress-snapshot; POST remains progress-write-confirmation and requires fresh GET readback.",
+        "FM_PROGRESS_DB/FM_PROGRESS_R2 are still required for D1/R2 strict full production readiness; FM_PRIVATE_MEDIA still blocks full private-video storage management."
+      ],
+      "acceptance": [
+        "Cloudflare KV stores normalized per-user cumulative progress snapshots and duplicate event markers server-side.",
+        "Login, refresh, deployment, localStorage, and audit-window reads cannot advance cumulative study time or answered-question totals.",
+        "POST progress writes require server progress-write-confirmation with fresh GET readback before the UI treats them as saved.",
+        "Teacher monitoring labels KV as server cumulative and keeps D1/R2 strict production readiness visibly blocked.",
+        "Release acceptance runs the Round397 static gate, Round394/Round393 durability gates, release readiness, and real-account production progress proof after deploy."
       ]
     }
   ],
@@ -2766,21 +2863,21 @@
       "requiredCheck": "tools/check-fluid-mobile-performance-budget.mjs"
     }
   },
-  "updatedAt": "2026-06-18T17:02:00+08:00",
-  "lastUpdated": "2026-06-18T17:02:00+08:00",
-  "currentVersion": "round395-progress-primary-store-block-20260618",
-  "previousVersion": "round394-progress-accounting-181103-html-answer-sync-20260618",
-  "lastIntegratedRound": 395,
-  "lastUpdatedAt": "2026-06-18T17:02:00+08:00",
+  "updatedAt": "2026-06-18T18:58:00+08:00",
+  "lastUpdated": "2026-06-18T18:58:00+08:00",
+  "currentVersion": "round397-server-kv-progress-cumulative-hardening-20260618",
+  "previousVersion": "round395-progress-primary-store-block-20260618",
+  "lastIntegratedRound": 396,
+  "lastUpdatedAt": "2026-06-18T18:58:00+08:00",
   "round358ProductionProof": {
     "supersededBy": "round368-ten-round-upgrade-20260616",
     "supersededAt": "2026-06-16T09:10:00+08:00"
   },
   "release": {
-    "currentVersion": "round395-progress-primary-store-block-20260618",
-    "currentRound": 395,
-    "lastIntegratedRound": 395,
-    "expectedVersion": "round395-progress-primary-store-block-20260618",
+    "currentVersion": "round397-server-kv-progress-cumulative-hardening-20260618",
+    "currentRound": 397,
+    "lastIntegratedRound": 397,
+    "expectedVersion": "round397-server-kv-progress-cumulative-hardening-20260618",
     "gates": {
       "round372181103HtmlQuestionCards": {
         "status": "required",
@@ -2846,12 +2943,26 @@
     }
   },
   "roundCount": 111,
-  "currentReleaseVersion": "round395-progress-primary-store-block-20260618",
+  "currentReleaseVersion": "round397-server-kv-progress-cumulative-hardening-20260618",
   "qualityLanes": [
     {
       "id": "server-reliability",
       "title": "服务端可靠性",
       "summary": "持久进度、幂等写入、监控一致性和升级后数据稳定"
     }
-  ]
+  ],
+  "gateContracts": {
+    "round397ServerKvProgressCumulative": {
+      "status": "active",
+      "command": "node tools/check-round397-server-kv-progress-cumulative-hardening.mjs --json",
+      "evidence": "tools/check-round397-server-kv-progress-cumulative-hardening.mjs",
+      "summary": "Cloudflare KV is accepted as the server cumulative progress layer; D1/R2 full production claims remain blocked until FM_PROGRESS_DB or FM_PROGRESS_R2 is visible."
+    }
+  },
+  "latestRelease": {
+    "currentVersion": "round397-server-kv-progress-cumulative-hardening-20260618",
+    "currentRound": 397,
+    "expectedVersion": "round397-server-kv-progress-cumulative-hardening-20260618",
+    "updatedAt": "2026-06-18T19:40:00+08:00"
+  }
 }

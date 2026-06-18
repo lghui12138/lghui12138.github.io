@@ -508,6 +508,7 @@ window.QuestionBankPractice = (function() {
 
     function openAnswerPanel(answerDisplay, statusMessage) {
         if (!answerDisplay) return;
+        const narrowAnswerViewport = Boolean(window.matchMedia && window.matchMedia('(max-width: 768px)').matches);
         answerDisplay.style.display = 'block';
         answerDisplay.dataset.answerState = 'open';
         answerDisplay.setAttribute('aria-hidden', 'false');
@@ -518,6 +519,7 @@ window.QuestionBankPractice = (function() {
         answerDisplay.setAttribute('data-round394-reference-answer-visible', '1');
         answerDisplay.setAttribute('data-reference-answer-visible', '1');
         answerDisplay.setAttribute('data-round394-mobile-no-overflow', '1');
+        answerDisplay.setAttribute('data-round394-responsive-inline', narrowAnswerViewport ? 'mobile' : 'desktop');
         answerDisplay.setAttribute('data-round394-latex-trigger', 'local-mathjax');
         answerDisplay.classList.add('is-open');
         setAnswerButtonState(true);
@@ -526,6 +528,12 @@ window.QuestionBankPractice = (function() {
         answerDisplay.style.maxHeight = 'min(76vh, 820px)';
         answerDisplay.style.fontSize = '20px';
         answerDisplay.style.padding = '32px';
+        if (narrowAnswerViewport) {
+            answerDisplay.style.minHeight = 'clamp(300px, 50vh, 560px)';
+            answerDisplay.style.maxHeight = '72vh';
+            answerDisplay.style.fontSize = '16px';
+            answerDisplay.style.padding = '16px';
+        }
         answerDisplay.style.background = 'rgba(240,248,255,0.98)';
         answerDisplay.style.backdropFilter = 'blur(15px)';
         answerDisplay.style.boxShadow = '0 20px 60px rgba(0,0,0,0.2)';

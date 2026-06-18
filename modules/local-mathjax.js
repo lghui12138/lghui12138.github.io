@@ -1,6 +1,6 @@
 (() => {
   const SCRIPT_ID = 'MathJax-script';
-  const SCRIPT_VERSION = 'round395-progress-primary-store-block-20260618';
+  const SCRIPT_VERSION = 'round397-server-kv-progress-cumulative-hardening-20260618';
   const SCRIPT_SRC = `/vendor/mathjax/es5/tex-chtml-full.js?v=${SCRIPT_VERSION}`;
   const FONT_URL = '/vendor/mathjax/es5/output/chtml/fonts/woff-v2';
   const LOAD_TIMEOUT_MS = 45000;
@@ -16,10 +16,34 @@
   let recoveryAttempts = 0;
   let documentSweepSettled = false;
 
+  function textHasRawTex(value) {
+    RAW_TEX_PATTERN.lastIndex = 0;
+    return RAW_TEX_PATTERN.test(value || '');
+  }
+
+  function isIgnoredRawTexParent(parent) {
+    if (!parent) return true;
+    if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEXTAREA', 'PRE'].includes(parent.tagName)) return true;
+    return !!parent.closest?.('mjx-container');
+  }
+
   function countRawTex(nodes) {
     return normalizeNodes(nodes).reduce((sum, node) => {
-      const text = node?.innerText || node?.textContent || '';
-      return sum + ((text.match(RAW_TEX_PATTERN) || []).length);
+      if (!node || node.closest?.('mjx-container')) return sum;
+      if (typeof document.createTreeWalker !== 'function' || !window.NodeFilter) {
+        const text = node?.innerText || node?.textContent || '';
+        return sum + ((text.match(RAW_TEX_PATTERN) || []).length);
+      }
+      const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, {
+        acceptNode(textNode) {
+          const parent = textNode.parentElement;
+          if (isIgnoredRawTexParent(parent)) return NodeFilter.FILTER_REJECT;
+          return textHasRawTex(textNode.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        }
+      });
+      let count = 0;
+      while (walker.nextNode()) count += 1;
+      return sum + count;
     }, 0);
   }
 
@@ -28,6 +52,63 @@
       if (!node || typeof node.querySelectorAll !== 'function') return sum;
       return sum + node.querySelectorAll('mjx-merror').length;
     }, 0);
+  }
+
+  function needsTypeset(node) {
+    if (!node || typeof node.querySelectorAll !== 'function') return true;
+    if (countRawTex([node]) > 0) return true;
+    return node.querySelectorAll('mjx-container').length === 0;
+  }
+
+  function rawTexRenderTargets(node) {
+    if (!node || typeof document.createTreeWalker !== 'function' || !window.NodeFilter) return [];
+    const selector = [
+      '.math-inline',
+      '.math-display',
+      '.math',
+      '.inline-formula',
+      '.mini-math',
+      '.formula',
+      '.formula-mini',
+      '.box',
+      '.mathbox',
+      '.tex',
+      '.ns-role-code',
+      '.card',
+      '.topic-card',
+      '.section-card',
+      '.formula-card',
+      '.chapter-panel',
+      '.formula-panel',
+      '.ns-role',
+      '.blueprint',
+      '.path-step',
+      '.guide-card'
+    ].join(',');
+    const targets = [];
+    const walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT, {
+      acceptNode(textNode) {
+        const parent = textNode.parentElement;
+        if (isIgnoredRawTexParent(parent)) return NodeFilter.FILTER_REJECT;
+        return textHasRawTex(textNode.nodeValue) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+      }
+    });
+    while (walker.nextNode()) {
+      const parent = walker.currentNode.parentElement;
+      const target = parent?.closest?.(selector) || parent;
+      if (target && target.isConnected && !target.closest?.('mjx-container')) targets.push(target);
+    }
+    return compactRoots(targets);
+  }
+
+  function expandTypesetRoots(nodes) {
+    return normalizeNodes(nodes).flatMap((node) => {
+      if (!node || typeof node.querySelectorAll !== 'function') return node ? [node] : [];
+      const hasRenderedMath = node.querySelectorAll('mjx-container').length > 0;
+      const rawTexCount = countRawTex([node]);
+      if (hasRenderedMath && rawTexCount > 0) return rawTexRenderTargets(node);
+      return [node];
+    });
   }
 
   function documentMathSweepDisabled() {
@@ -382,7 +463,7 @@
 
   function typesetMath(root) {
     injectMathJaxQualityStyle();
-    const nodes = compactRoots(normalizeNodes(root));
+    const nodes = compactRoots(expandTypesetRoots(root)).filter(needsTypeset);
     if (!nodes.length) return Promise.resolve(null);
 
     const existingJobs = inFlightFor(nodes);
