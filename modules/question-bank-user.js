@@ -35,11 +35,19 @@ window.QuestionBankUser = (function() {
             const snapshot = raw ? JSON.parse(raw) : null;
             const stats = snapshot && snapshot.stats ? snapshot.stats : null;
             if (!stats) return null;
+            const source = String(snapshot.source || '').trim() || 'server-learning-progress-snapshot';
+            const cumulativeSourceOfTruth = String(snapshot.cumulativeSourceOfTruth || 'server-progress-snapshot').trim();
+            const noMutationRead = snapshot.noMutationRead === true || cumulativeSourceOfTruth === 'server-progress-snapshot';
             return {
                 totalStudyTime: Number(stats.studyTimeSeconds || stats.totalStudyTime || 0),
                 totalQuestions: Number(stats.answered || stats.totalQuestions || 0),
                 correctAnswers: Number(stats.correct || stats.correctAnswers || 0),
-                lastStudyDate: stats.lastAnsweredAt || stats.lastSessionAt || snapshot.syncedAt || null
+                lastStudyDate: stats.lastAnsweredAt || stats.lastSessionAt || snapshot.syncedAt || null,
+                source,
+                cumulativeSourceOfTruth,
+                noMutationRead,
+                syncedAt: snapshot.syncedAt || null,
+                serverManaged: /^server-/.test(source) && noMutationRead
             };
         } catch (_) {
             return null;
@@ -432,6 +440,8 @@ window.QuestionBankUser = (function() {
         
         // 学习记录相关方法
         recordStudySession: function(sessionData) {
+            const serverStats = readServerProgressStats();
+            const serverManaged = Boolean(serverStats && serverStats.serverManaged);
             const session = {
                 id: Date.now(),
                 bankId: sessionData.bankId || 'unknown',
@@ -444,10 +454,20 @@ window.QuestionBankUser = (function() {
             
             userData.studyHistory.push(session);
             
-            // 更新统计信息
-            userData.stats.totalQuestions += session.questionsAnswered;
-            userData.stats.correctAnswers += session.correctAnswers;
-            userData.stats.totalStudyTime += session.duration;
+            if (serverManaged) {
+                userData.stats.serverManaged = true;
+                userData.stats.serverProgressSource = serverStats.source;
+                userData.stats.serverProgressSyncedAt = serverStats.syncedAt;
+                userData.stats.localPendingQuestions = 0;
+                userData.stats.localPendingStudyTime = 0;
+            } else {
+                // 没有服务器快照时才保留旧本地统计；有服务器快照时累计值不能由 localStorage 再加一遍。
+                userData.stats.totalQuestions += session.questionsAnswered;
+                userData.stats.correctAnswers += session.correctAnswers;
+                userData.stats.totalStudyTime += session.duration;
+                userData.stats.localPendingQuestions = Number(userData.stats.localPendingQuestions || 0) + session.questionsAnswered;
+                userData.stats.localPendingStudyTime = Number(userData.stats.localPendingStudyTime || 0) + session.duration;
+            }
             userData.stats.lastStudyDate = session.endTime;
             
             this.saveUserData();
@@ -492,6 +512,16 @@ window.QuestionBankUser = (function() {
                 stats.totalQuestions = serverStats.totalQuestions;
                 stats.correctAnswers = serverStats.correctAnswers;
                 stats.lastStudyDate = serverStats.lastStudyDate || stats.lastStudyDate;
+                stats.source = serverStats.source;
+                stats.cumulativeSourceOfTruth = serverStats.cumulativeSourceOfTruth;
+                stats.noMutationRead = serverStats.noMutationRead === true;
+                stats.serverManaged = serverStats.serverManaged;
+                stats.serverProgressSyncedAt = serverStats.syncedAt;
+                stats.localOnly = false;
+            } else {
+                stats.source = 'localStorage-offline-fallback';
+                stats.serverManaged = false;
+                stats.localOnly = true;
             }
             
             // 计算正确率

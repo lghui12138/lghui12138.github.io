@@ -1,8 +1,8 @@
 {
-  "version": "round382-server-progress-monitoring-20260617",
+  "version": "round382-progress-snapshot-truth-20260618",
   "generatedAt": "2026-06-17T15:30:00+08:00",
   "goal": "round287 后继续推进至少 100 大轮升级；每轮必须给出证据、预算和生产验收边界。",
-  "currentRound": 380,
+  "currentRound": 382,
   "releaseGate": {
     "requirePublicShell": true,
     "requirePagesDev": true,
@@ -20,12 +20,12 @@
     "requireOptimizationPlaybookCheck": true,
     "requireMobilePerformanceBudgetCheck": true,
     "forbidClaimingRealQaWithoutCredentials": true,
-    "currentVersion": "round382-server-progress-monitoring-20260617",
-    "previousVersion": "round379-181103-full-website-question-validation-20260617",
-    "lastUpdated": "2026-06-17T15:30:00+08:00",
+    "currentVersion": "round382-progress-snapshot-truth-20260618",
+    "previousVersion": "round380-server-progress-persistence-20260617",
+    "lastUpdated": "2026-06-17T20:45:00+08:00",
     "requireNoFakeAccountQa": true,
     "requirePrivateMediaR2": true,
-    "currentRound": 380,
+    "currentRound": 382,
     "requiredLocalChecks": [
       "node tools/patch-real-exam-atomic-overrides.mjs",
       "node tools/patch-round310-real-exam-subquestion-fixes.mjs",
@@ -95,16 +95,16 @@
     "round316ReaderPolishGuard": true,
     "commands": [
       "node tools/check-cloudflare-pages-private-video-bindings.mjs --json",
-      "node tools/verify-fluid-release-gate.mjs --expected-edge-version round382-server-progress-monitoring-20260617 --require-cloudflare-version --timeout-ms 1200000 --json",
-      "node tools/monitor-fluid-public-release.mjs --json --expected-version round382-server-progress-monitoring-20260617",
-      "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round382-server-progress-monitoring-20260617",
+      "node tools/verify-fluid-release-gate.mjs --expected-edge-version round382-progress-snapshot-truth-20260618 --require-cloudflare-version --timeout-ms 1200000 --json",
+      "node tools/monitor-fluid-public-release.mjs --json --expected-version round382-progress-snapshot-truth-20260618",
+      "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round382-progress-snapshot-truth-20260618",
       "node tools/check-round311-181103-live-html-content.mjs --json --expected-version=round370-181103-readable-practice-20260616",
-      "node tools/check-round357-181103-auth-workflow.mjs --write --json --expected-version round382-server-progress-monitoring-20260617",
+      "node tools/check-round357-181103-auth-workflow.mjs --write --json --expected-version round382-progress-snapshot-truth-20260618",
       "node tools/check-round368-ten-round-upgrade.mjs --write --json --expected-version round370-181103-readable-practice-20260616",
       "node tools/check-round369-181103-ocr-practice-quality.mjs --write --json --expected-version round369-181103-ocr-practice-quality-20260616",
       "node tools/check-round370-181103-readable-practice.mjs --write --json --expected-version round370-181103-readable-practice-20260616",
       "node tools/check-round371-181103-usable-ocr-practice.mjs --write --json --expected-version round371-181103-usable-ocr-html-practice-20260616",
-      "node tools/check-round368-ten-round-upgrade.mjs --write --json --expected-version round382-server-progress-monitoring-20260617",
+      "node tools/check-round368-ten-round-upgrade.mjs --write --json --expected-version round382-progress-snapshot-truth-20260618",
       "node tools/check-round376-181103-visible-522-proof.mjs --write --json",
       "node tools/check-round378-181103-question-answer-website-verification.mjs --write --json",
       "node tools/check-round379-181103-full-website-question-validation.mjs --apply-current-status --write --json"
@@ -118,8 +118,8 @@
     "round323ObservabilityReleaseGuard": true,
     "required": true,
     "productionProofRequired": true,
-    "lastIntegratedRound": 380,
-    "lastIntegratedAt": "2026-06-17T15:30:00+08:00",
+    "lastIntegratedRound": 382,
+    "lastIntegratedAt": "2026-06-17T20:45:00+08:00",
     "round325ReleaseReadinessGuard": true,
     "round325PublicAuthProofLedger": true,
     "round350QuestionDiscoveryFiltersGuard": true,
@@ -131,8 +131,8 @@
     "round355181103HtmlPublicQualityGuard": true,
     "round356181103WorkbookHtmlOcrCleanGuard": true,
     "round357181103AuthWorkflowGuard": true,
-    "expectedVersion": "round382-server-progress-monitoring-20260617",
-    "updatedAt": "2026-06-17T15:30:00+08:00",
+    "expectedVersion": "round382-progress-snapshot-truth-20260618",
+    "updatedAt": "2026-06-17T20:45:00+08:00",
     "round369181103OcrPracticeQualityGuard": true,
     "round370181103ReadablePracticeGuard": true,
     "round371181103UsableOcrPracticeGuard": {
@@ -164,6 +164,12 @@
       "command": "node tests/edge-fluid-upgrade-check.js",
       "evidence": "functions/_middleware.js, modules/question-bank-practice.js, modules/question-bank-user.js, modules/question-bank-stats.js, modules/js/practice-main.js",
       "summary": "Learning time, answer counts, accuracy, recent answers, and practice sessions are stored in durable server KV snapshots with idempotent clientEventId markers; teacher monitoring reads server-kv-learning-progress instead of only the finite audit event window."
+    },
+    "round382MonitoringCumulativeGuard": {
+      "required": true,
+      "command": "node tests/edge-fluid-upgrade-check.js",
+      "evidence": "functions/_middleware.js, teacher-panel.html, tools/check-teacher-progress-summary-real-account.mjs",
+      "summary": "Teacher monitoring cumulative answers, sessions, accuracy, and study time are server-snapshot-only; audit-event-window is exposed only as a recent activity hint and cannot change cumulative totals on login."
     }
   },
   "lanes": [
@@ -2458,17 +2464,17 @@
       "gate": "node tools/check-round379-181103-full-website-question-validation.mjs --apply-current-status --write --json",
       "proofBoundary": "Round379 proves local/source website and browser behavior. Production closure still requires lghui.top fresh release proof and real-account auth QA; private-video management still requires FM_PRIVATE_MEDIA R2 proof before claiming recovery.",
       "completedAt": "2026-06-17T15:30:00+08:00",
-      "supersededBy": "round382-server-progress-monitoring-20260617"
+      "supersededBy": "round380-server-progress-persistence-20260617"
     },
     {
       "round": 380,
       "id": "round380-server-progress-persistence",
       "lane": "server-reliability",
-      "status": "active",
+      "status": "done",
       "title": "学习时长与做题监控服务端持久化",
       "focus": "make cumulative study time, answer counts, accuracy, recent answers, and practice sessions server-owned, durable, and idempotent across login, deploy, and cache refresh",
-      "version": "round382-server-progress-monitoring-20260617",
-      "integratedVersion": "round382-server-progress-monitoring-20260617",
+      "version": "round380-server-progress-persistence-20260617",
+      "integratedVersion": "round380-server-progress-persistence-20260617",
       "updatedAt": "2026-06-17T15:30:00+08:00",
       "previousVersion": "round379-181103-full-website-question-validation-20260617",
       "summary": "Round380 moves learning progress from browser-local values and finite audit-window aggregation to durable per-user server KV snapshots. /api/progress and /api/stats read/write server-kv-learning-progress; answer/session events carry stable clientEventId markers to prevent duplicate increments; the teacher dashboard merges these snapshots so cumulative study progress no longer drifts after login or server upgrades.",
@@ -2489,6 +2495,67 @@
       ],
       "gate": "node tests/edge-fluid-upgrade-check.js",
       "proofBoundary": "Round380 fixes server-side learning-progress consistency. Round379 remains the 181103 522-question website validation content proof.",
+      "completedAt": "2026-06-17T20:45:00+08:00",
+      "supersededBy": "round382-progress-snapshot-truth-20260618"
+    },
+    {
+      "round": 381,
+      "id": "round381-181103-standalone-html-index-audit",
+      "lane": "exam-quality",
+      "status": "done",
+      "title": "181103 全资料独立 HTML 总表与空页乱码审计",
+      "focus": "prove the 181103 top index and all 38 material pages are real in-site HTML content, not viewer shells, empty pages, question-mark garble, or raw-download links",
+      "version": "round381-181103-standalone-html-index-audit-20260617",
+      "integratedVersion": "round381-181103-standalone-html-index-audit-20260617",
+      "updatedAt": "2026-06-17T10:18:00+08:00",
+      "previousVersion": "round380-server-progress-persistence-20260617",
+      "summary": "Round381 audits the 181103 HTML package as standalone in-site content: the top index plus 38/38 material pages are checked, 39/39 pages pass content depth, 774 image references resolve, and the audit reports 0 empty/thin pages, 0 question-mark garble pages, 0 replacement-character pages, 0 viewer-shell elements, 0 binary download hrefs, 0 missing image references, 0 broken internal 181103 links, and 0 local path leaks.",
+      "acceptance": [
+        "The 181103 top index must link all 38 material HTML pages.",
+        "Every material page must be standalone in-site HTML content with visible text or rendered page/question content.",
+        "No 181103 HTML page may fall back to a PDF/viewer/download shell.",
+        "Question-mark garble, replacement characters, local paths, missing images, and broken internal 181103 links must remain zero."
+      ],
+      "evidence": [
+        "data/fluid-round381-181103-standalone-html-pages.json",
+        "data/fluid-round381-181103-standalone-html-pages.json.gz",
+        "docs/round381-181103-standalone-html-pages.md",
+        "tools/check-round381-181103-standalone-html-pages.mjs"
+      ],
+      "gate": "node tools/check-round381-181103-standalone-html-pages.mjs --write --json",
+      "proofBoundary": "Round381 proves standalone 181103 HTML package shape and route health. It does not replace Round379/Round382 source-answer and production-progress proofs.",
+      "completedAt": "2026-06-17T10:18:00+08:00",
+      "supersededBy": "round382-progress-snapshot-truth-20260618"
+    },
+    {
+      "round": 382,
+      "id": "round382-server-progress-monitoring",
+      "lane": "server-reliability",
+      "status": "active",
+      "title": "学习监控累计口径修正与真实服务器边界",
+      "focus": "make teacher monitoring cumulative values server-snapshot-only and keep audit-event-window activity separate",
+      "version": "round382-progress-snapshot-truth-20260618",
+      "integratedVersion": "round382-progress-snapshot-truth-20260618",
+      "updatedAt": "2026-06-17T20:45:00+08:00",
+      "previousVersion": "round380-server-progress-persistence-20260617",
+      "summary": "Round382 prevents per-user cumulative study time, answers, sessions, and accuracy from drifting when a login or deploy changes the finite audit event window. Rows without a persisted server progress snapshot now show cumulative-unpersisted plus a recent-window hint instead of pretending the window is a total. Full durable writes remain blocked until Cloudflare Pages production binds FM_PROGRESS_DB or FM_PROGRESS_R2.",
+      "acceptance": [
+        "Teacher admin cumulative answers, sessions, accuracy, and studyTimeSeconds must be zero/unpersisted unless a server learning-progress snapshot exists.",
+        "Audit-event-window fields must remain visible only as eventWindow* recent activity hints.",
+        "Teacher UI and CSV export must label unpersisted cumulative rows instead of showing recent-window totals.",
+        "Real-account production checks must verify login/relogin no-drift and teacher summary source from lghui.top public chain.",
+        "Cloudflare binding checks must keep FM_PROGRESS_DB/FM_PROGRESS_R2 and FM_PRIVATE_MEDIA blockers visible."
+      ],
+      "evidence": [
+        "functions/_middleware.js",
+        "teacher-panel.html",
+        "tests/edge-fluid-upgrade-check.js",
+        "tools/check-production-progress-real-account.mjs",
+        "tools/check-teacher-progress-summary-real-account.mjs",
+        "tools/check-cloudflare-pages-private-video-bindings.mjs"
+      ],
+      "gate": "node tests/edge-fluid-upgrade-check.js",
+      "proofBoundary": "Round382 fixes monitoring semantics and login no-drift proof. It does not claim full durable production writes until FM_PROGRESS_DB or FM_PROGRESS_R2 is bound.",
       "completedAt": ""
     }
   ],
@@ -2518,21 +2585,21 @@
       "requiredCheck": "tools/check-fluid-mobile-performance-budget.mjs"
     }
   },
-  "updatedAt": "2026-06-17T15:30:00+08:00",
-  "lastUpdated": "2026-06-17T15:30:00+08:00",
-  "currentVersion": "round382-server-progress-monitoring-20260617",
-  "previousVersion": "round379-181103-full-website-question-validation-20260617",
-  "lastIntegratedRound": 380,
-  "lastUpdatedAt": "2026-06-17T15:30:00+08:00",
+  "updatedAt": "2026-06-18T00:20:00+08:00",
+  "lastUpdated": "2026-06-17T20:45:00+08:00",
+  "currentVersion": "round382-progress-snapshot-truth-20260618",
+  "previousVersion": "round380-server-progress-persistence-20260617",
+  "lastIntegratedRound": 382,
+  "lastUpdatedAt": "2026-06-17T20:45:00+08:00",
   "round358ProductionProof": {
     "supersededBy": "round368-ten-round-upgrade-20260616",
     "supersededAt": "2026-06-16T09:10:00+08:00"
   },
   "release": {
-    "currentVersion": "round382-server-progress-monitoring-20260617",
-    "currentRound": 380,
-    "lastIntegratedRound": 380,
-    "expectedVersion": "round382-server-progress-monitoring-20260617",
+    "currentVersion": "round382-progress-snapshot-truth-20260618",
+    "currentRound": 382,
+    "lastIntegratedRound": 382,
+    "expectedVersion": "round382-progress-snapshot-truth-20260618",
     "gates": {
       "round372181103HtmlQuestionCards": {
         "status": "required",
@@ -2563,11 +2630,17 @@
         "command": "node tests/edge-fluid-upgrade-check.js",
         "evidence": "server-kv-learning-progress /api/progress /api/stats static gate",
         "summary": "Server-owned cumulative learning progress survives login, deploy, cache refresh, and duplicate client sends."
+      },
+      "round382MonitoringCumulativeGuard": {
+        "status": "required",
+        "command": "node tests/edge-fluid-upgrade-check.js",
+        "evidence": "functions/_middleware.js, teacher-panel.html",
+        "summary": "Cumulative monitoring values are never derived from the finite audit event window; unpersisted rows show a non-cumulative recent-window hint."
       }
     }
   },
   "roundCount": 106,
-  "currentReleaseVersion": "round382-server-progress-monitoring-20260617",
+  "currentReleaseVersion": "round382-progress-snapshot-truth-20260618",
   "qualityLanes": [
     {
       "id": "server-reliability",

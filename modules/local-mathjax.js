@@ -1,10 +1,10 @@
 (() => {
   const SCRIPT_ID = 'MathJax-script';
-  const SCRIPT_VERSION = 'round382-server-progress-monitoring-20260617';
+  const SCRIPT_VERSION = 'round382-progress-snapshot-truth-20260618';
   const SCRIPT_SRC = `/vendor/mathjax/es5/tex-chtml-full.js?v=${SCRIPT_VERSION}`;
   const FONT_URL = '/vendor/mathjax/es5/output/chtml/fonts/woff-v2';
-  const LOAD_TIMEOUT_MS = 15000;
-  const RECOVERY_DELAYS_MS = [1200, 3600, 9000, 18000];
+  const LOAD_TIMEOUT_MS = 45000;
+  const RECOVERY_DELAYS_MS = [1500, 4500, 9000, 18000, 36000];
   const RAW_TEX_PATTERN = /(\$\$|\\\(|\\\[|\\(?:frac|dfrac|tfrac|partial|nabla|rho|mu|sigma|tau|sqrt|vec|mathbf|boldsymbol|operatorname|mathrm|mathit|mathcal|overline|underline|bar|hat|dot|ddot|left|right|theta|Theta|pi|nu|varepsilon|epsilon|cdot|times|omega|phi|psi|varphi|alpha|beta|gamma|delta|Delta|Omega|lambda|eta|kappa|int|iint|iiint|oint|sum|prod|lim|max|min|sin|cos|tan|cot|ln|log|exp|infty|therefore|because|pm|mp|le|ge|leq|geq|lt|gt|approx|neq|equiv|sim|simeq|propto|to|rightarrow|leftarrow|Rightarrow|Leftarrow|begin|end)\b)/g;
   let loadingPromise = null;
   let renderPromise = Promise.resolve();

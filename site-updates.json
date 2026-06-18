@@ -1,5 +1,76 @@
 [
   {
+    "version": "round382-progress-snapshot-truth-20260618",
+    "date": "2026-06-18",
+    "time": "08:46",
+    "updatedAt": "2026-06-18T08:46:00+08:00",
+    "previousVersion": "round382-server-progress-monitoring-20260617",
+    "tag": "Round382",
+    "focus": "round382-progress-snapshot-truth",
+    "title": "Round382 学习时长与做题累计真值再加固",
+    "summary": "这轮把学习进度页、题库统计缓存和教师监控的累计口径再次收紧：累计题数、学习时长、做题场次只认 /api/stats 与 /api/progress 返回的 server-progress-snapshot；登录、刷新、换设备、旧 localStorage、本地会话记录、服务器升级和最近审计窗口都不能重算或覆盖累计值。本地记录仍保留用于最近活动、图表和离线辅助。当前生产若仍是 KV 单写降级，只能声明 no-drift 与幂等写入，完整生产持久化仍需要 FM_PROGRESS_DB 或 FM_PROGRESS_R2。181103 HTML 题卡答案默认展开和刷题答案面板门禁同步接入。",
+    "highlights": [
+      "学习进度页启动后先读 /api/stats；只有 noMutationRead=true 且 cumulativeSourceOfTruth=server-progress-snapshot 的快照能成为累计题数和学习时长来源。",
+      "题库统计缓存写入 fm_learning_progress_snapshot_v1 时保留 noMutationRead、cumulativeSourceOfTruth、storeMode，用户统计读取时不再让本地 studyHistory 覆盖服务器累计。",
+      "教师监控继续把 persisted progress 和 audit event window 分开显示；最近窗口只能提示活动，不能变成累计时长或累计答题真值。",
+      "本地烟测覆盖重复答题、重复完成、旧 heartbeat、增量 heartbeat、失败写入、恢复重试、登录和服务器升级不漂移。",
+      "181103 Round388 答案可见性门禁接入默认 release gate：522/522 HTML 题卡默认展开答案，381/141 刷题与来源线索边界保持。"
+    ],
+    "links": [
+      {
+        "label": "学习进度页",
+        "href": "/modules/progress-module.html?edge_refresh=round382-progress-snapshot-truth-20260618"
+      },
+      {
+        "label": "学习进度接口",
+        "href": "/api/progress"
+      },
+      {
+        "label": "181103 522全题核对与381练习入口",
+        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round382-progress-snapshot-truth-20260618#questionBanksList"
+      },
+      {
+        "label": "181103 HTML资料总入口",
+        "href": "/resources/fluid-181103-html/"
+      },
+      {
+        "label": "Round388 答案发布门禁说明",
+        "href": "/docs/round388-181103-answer-release-gate.md"
+      }
+    ],
+    "evidence": {
+      "currentRound": 382,
+      "integratedRounds": [
+        369,
+        370,
+        371,
+        372,
+        373,
+        374,
+        375,
+        376,
+        378,
+        379,
+        380,
+        382,
+        385,
+        387,
+        388
+      ],
+      "staticGate": "node tests/edge-fluid-upgrade-check.js",
+      "realStudentGate": "node tools/check-production-progress-real-account.mjs --json --require-public-chain --require-persistent-write",
+      "realTeacherGate": "node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain",
+      "cloudflareBindingGate": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json",
+      "productionBoundary": "Full durable progress still requires Cloudflare Pages production FM_PROGRESS_DB or FM_PROGRESS_R2; KV fallback is no-drift/idempotency only, not full production durability.",
+      "defaultStudentBaseline": "默认学生账号基线不再扩入：仍只保留 qi、chenlei、anxin、sunruze；真实账号验收只认当前 QA 配置。",
+      "privateVideoBoundary": "FM_PRIVATE_MEDIA R2 is still required before claiming private-video production delete/upload/access/archive recovery.",
+      "studentSmokeGate": "node tools/smoke-student-access.mjs",
+      "progressDashboardGate": "modules/progress-module.html reads /api/stats and displays cumulative totals only from server-progress-snapshot.",
+      "requiredTerms": "Round382 progress snapshot truth server-progress-snapshot noMutationRead cumulativeSourceOfTruth /api/progress /api/stats localStorage offline-only 181103 522 answers default-visible real-account-gate",
+      "visibleProof": "index.html, index-complete.html, resources.html, question-bank-home.html, modules/progress-module.html, site-updates.json, roadmap, middleware, and question-bank loader use round382-progress-snapshot-truth-20260618 as current."
+    }
+  },
+  {
     "version": "round382-server-progress-monitoring-20260617",
     "date": "2026-06-17",
     "time": "15:30",

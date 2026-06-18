@@ -12,7 +12,10 @@ window.QuestionBankPractice = (function() {
         questionTimes: [],
         bankId: null,
         sessionName: '',
-        practiceSessionId: null
+        practiceSessionId: null,
+        practiceCompletedEventSent: false,
+        answerAttemptCounts: [],
+        answerSubmitKeys: []
     };
     
     let practiceState = {
@@ -37,6 +40,8 @@ window.QuestionBankPractice = (function() {
     const PRACTICE_AUDIT_BROWSER_ID_KEY = 'fm_practice_browser_session_id';
     const LEARNING_PROGRESS_SNAPSHOT_KEY = 'fm_learning_progress_snapshot_v1';
     const LEARNING_PROGRESS_OUTBOX_KEY = 'fm_learning_progress_outbox_v1';
+    const LEARNING_PROGRESS_ERROR_KEY = 'fm_learning_progress_last_error_v1';
+    const LEARNING_PROGRESS_OUTBOX_MAX_AGE_MS = 24 * 60 * 60 * 1000;
     const LEARNING_PROGRESS_EVENT_TYPES = new Set([
         'practice_answer_submit',
         'practice_complete',
@@ -113,7 +118,7 @@ window.QuestionBankPractice = (function() {
     }
 
     function sourceImageFromQuestion(question) {
-        const explicit = String(question && question.sourcePageImageUrl || '').trim();
+        const explicit = String(question && (question.sourcePageImageUrl || question.sourcePageImageEvidenceUrl || question.practiceSourceImageUrl) || '').trim();
         if (explicit) return explicit;
         const sourceHtmlUrl = question && question.sourceHtmlUrl;
         const raw = String(sourceHtmlUrl || '').trim();
@@ -137,6 +142,102 @@ window.QuestionBankPractice = (function() {
             .replace(/\n/g, '<br>');
     }
 
+    function humanizeTexSource(value) {
+        return String(value || '')
+            .replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, '($1)/($2)')
+            .replace(/\\partial\b/g, '∂')
+            .replace(/\\nabla\b/g, '∇')
+            .replace(/\\rho\b/g, 'ρ')
+            .replace(/\\theta\b/g, 'θ')
+            .replace(/\\omega\b/g, 'ω')
+            .replace(/\\alpha\b/g, 'α')
+            .replace(/\\beta\b/g, 'β')
+            .replace(/\\gamma\b/g, 'γ')
+            .replace(/\\delta\b/g, 'δ')
+            .replace(/\\pi\b/g, 'π')
+            .replace(/\\vec\s*\{([^{}]+)\}/g, '$1')
+            .replace(/\\(?:mathrm|mathbf|text)\s*\{([^{}]+)\}/g, '$1')
+            .replace(/\\(?:left|right)\b/g, '')
+            .replace(/\\[a-zA-Z]+\b/g, '')
+            .replace(/[{}]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function replaceResidualTexNoise(root) {
+        if (!root || !document.createTreeWalker) return 0;
+        const rawTexPattern = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g;
+        const rawMacroPattern = /\\(?:frac|partial|nabla|rho|sigma|tau|sqrt|vec|mathbf|mathrm|text|theta|pi|omega|phi|psi|alpha|beta|gamma|delta|varepsilon|epsilon|int|sum)\b/;
+        const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+            acceptNode(node) {
+                const text = node.nodeValue || '';
+                rawTexPattern.lastIndex = 0;
+                if (!text || (!rawTexPattern.test(text) && !rawMacroPattern.test(text))) return NodeFilter.FILTER_REJECT;
+                rawTexPattern.lastIndex = 0;
+                const parent = node.parentElement;
+                if (!parent || parent.closest('mjx-container, script, style, textarea, code, [data-tex-fallback="1"], [data-preserve-tex="1"]')) {
+                    return NodeFilter.FILTER_REJECT;
+                }
+                return NodeFilter.FILTER_ACCEPT;
+            }
+        });
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        nodes.forEach(node => {
+            const text = node.nodeValue || '';
+            rawTexPattern.lastIndex = 0;
+            const frag = document.createDocumentFragment();
+            let lastIndex = 0;
+            let changed = false;
+            for (const match of text.matchAll(rawTexPattern)) {
+                changed = true;
+                if (match.index > lastIndex) frag.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+                const fallback = document.createElement('span');
+                fallback.className = 'tex-fallback';
+                fallback.setAttribute('data-tex-fallback', '1');
+                fallback.setAttribute('role', 'img');
+                fallback.setAttribute('aria-label', '公式已转换为可读文本');
+                fallback.textContent = humanizeTexSource(match[1] || match[2] || '') || '公式待渲染';
+                frag.appendChild(fallback);
+                lastIndex = match.index + match[0].length;
+            }
+            if (changed) {
+                if (lastIndex < text.length) frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+                node.parentNode.replaceChild(frag, node);
+                return;
+            }
+            const cleaned = humanizeTexSource(text);
+            if (cleaned && cleaned !== text.trim()) node.nodeValue = cleaned;
+        });
+        return nodes.length;
+    }
+
+    function sourceEvidenceBlock(question, options = {}) {
+        const sourceHref = String(question && (question.sourceHtmlUrl || question.htmlQuestionSourceUrl || question.htmlQuestionCardUrl || '') || '').trim();
+        const sourceImage = sourceImageFromQuestion(question);
+        if (!sourceHref && !sourceImage) return '';
+        const compact = Boolean(options.compact);
+        const pageLabel = question && question.sourcePage ? `第 ${escapeHtml(question.sourcePage)} 页` : '页图证据';
+        return `
+            <section class="reference-source-evidence${compact ? ' is-compact' : ''}" data-181103-answer-source-evidence="1">
+                <div class="reference-source-evidence__head">
+                    <strong>来源 HTML 与页图证据</strong>
+                    <span>${pageLabel}</span>
+                </div>
+                <div class="reference-source-evidence__links">
+                    ${sourceHref ? `<a href="${escapeHtml(sourceHref)}" target="_blank" rel="noopener" data-181103-answer-source-html="1">打开来源 HTML</a>` : ''}
+                    ${sourceImage ? `<a href="${escapeHtml(sourceImage)}" target="_blank" rel="noopener" data-181103-answer-source-image-link="1">打开页图</a>` : ''}
+                </div>
+                ${sourceImage ? `
+                    <figure class="reference-source-evidence__figure" data-181103-answer-source-page-image="1">
+                        <img src="${escapeHtml(sourceImage)}" alt="181103 来源页图证据" loading="eager" fetchpriority="high" decoding="async">
+                        <figcaption>页图只作逐题核对证据；答题以站内 HTML 题面和参考答案为准。</figcaption>
+                    </figure>
+                ` : ''}
+            </section>
+        `;
+    }
+
     function getQuestionHtml(question) {
         const explicit = String((question && (question.questionHtml || question.promptHtml)) || '').trim();
         if (explicit && !hasUnsafeInlineHtml(explicit)) return explicit;
@@ -149,6 +250,12 @@ window.QuestionBankPractice = (function() {
         if (explicit && !hasUnsafeInlineHtml(explicit)) return explicit;
         const answer = question.referenceAnswer || question.sampleAnswer || question.answer || question.correct || '';
         return answer ? formatTextAsHtml(answer) : '暂无参考答案';
+    }
+
+    function hasExplicitAnswerHtml(question) {
+        if (!question || typeof question !== 'object') return false;
+        const explicit = String(question.answerHtml || question.referenceAnswerHtml || question.sampleAnswerHtml || '').trim();
+        return Boolean(explicit && !hasUnsafeInlineHtml(explicit));
     }
 
     function getExplanationHtml(question) {
@@ -167,14 +274,21 @@ window.QuestionBankPractice = (function() {
         const heading = options.heading || '参考答案';
         const compact = Boolean(options.compact);
         const answerHtml = getAnswerHtml(question);
+        const hasHtml = hasExplicitAnswerHtml(question);
+        const material181103 = isMaterial181103Question(question);
         const sourceHref = escapeHtml(question && (question.sourceHtmlUrl || question.htmlQuestionSourceUrl || question.htmlQuestionCardUrl || ''));
-        const sourceHint = isMaterial181103Question(question)
-            ? `<div data-round374-181103-answer-source-note="1" style="margin-top:12px;color:#64748b;font-size:${compact ? '.86em' : '.92em'};line-height:1.65;">本答案为站内整理参考答案；来源 HTML/页图用于逐题核对题面、公式和资料语境。${sourceHref ? ` <a href="${sourceHref}" target="_blank" rel="noopener" style="font-weight:800;color:#0f766e;">打开来源核对</a>` : ''}</div>`
+        const evidenceHtml = material181103 ? sourceEvidenceBlock(question, { compact }) : '';
+        const sourceHint = material181103
+            ? `<footer class="reference-answer-source-note" data-round374-181103-answer-source-note="1" role="note"><strong>答案边界</strong><span>本答案为站内整理参考答案；来源 HTML/页图只用于逐题核对题面、公式和资料语境。</span>${sourceHref ? ` <a href="${sourceHref}" target="_blank" rel="noopener">打开来源核对</a>` : ''}</footer>`
             : '';
         return `
-            <section data-round374-reference-answer="1" data-round374-181103-reference-answer="${isMaterial181103Question(question) ? '1' : '0'}" style="background:#fff7ed;border:2px solid #fed7aa;border-radius:${compact ? '10px' : '18px'};padding:${compact ? '16px' : '28px'};margin:${compact ? '12px 0' : '0 0 28px'};line-height:1.9;color:#1f2937;">
-                <strong style="display:block;color:#9a3412;font-size:${compact ? '1.05em' : '1.35em'};margin-bottom:12px;">${escapeHtml(heading)}</strong>
-                <div data-round374-reference-answer-html="1" style="background:#fff;border-left:5px solid #f97316;border-radius:10px;padding:${compact ? '14px' : '22px'};font-size:${compact ? '1em' : '1.08em'};line-height:2;overflow-wrap:anywhere;">${answerHtml}</div>
+            <section class="reference-answer-block${compact ? ' is-compact' : ''}" data-round374-reference-answer="1" data-round374-181103-reference-answer="${material181103 ? '1' : '0'}" data-reference-answer-source="${hasHtml ? 'answerHtml' : 'textFallback'}">
+                <div class="reference-answer-head">
+                    <strong>${escapeHtml(heading)}</strong>
+                    <span class="reference-answer-badge">${hasHtml ? 'answerHtml 已载入' : '文本答案兜底'}</span>
+                </div>
+                <div class="reference-answer-html" data-round374-reference-answer-html="1">${answerHtml}</div>
+                ${evidenceHtml}
                 ${sourceHint}
             </section>
         `;
@@ -185,9 +299,9 @@ window.QuestionBankPractice = (function() {
         if (!html) return '';
         const compact = Boolean(options.compact);
         return `
-            <section data-round374-answer-explanation="1" style="background:#eff6ff;border:2px solid #bfdbfe;border-radius:${compact ? '10px' : '18px'};padding:${compact ? '14px' : '24px'};margin:${compact ? '12px 0' : '0 0 24px'};line-height:1.8;color:#1e3a8a;">
-                <strong style="display:block;margin-bottom:10px;color:#1d4ed8;">核对说明</strong>
-                <div style="background:#fff;border-radius:10px;padding:${compact ? '12px' : '18px'};color:#334155;overflow-wrap:anywhere;">${html}</div>
+            <section class="answer-explanation-block${compact ? ' is-compact' : ''}" data-round374-answer-explanation="1">
+                <strong>核对说明</strong>
+                <div>${html}</div>
             </section>
         `;
     }
@@ -233,20 +347,138 @@ window.QuestionBankPractice = (function() {
         return body;
     }
 
-    function renderFormulaInRoot(root) {
+    function setAnswerStatus(message, tone = 'info') {
+        const status = document.getElementById('answerStatus');
+        if (!status) return;
+        status.textContent = message;
+        status.dataset.answerStatusTone = tone;
+    }
+
+    function setAnswerButtonState(isOpen) {
+        const showAnswerBtn = document.getElementById('showAnswerBtn');
+        if (!showAnswerBtn) return;
+        if (isOpen) {
+            showAnswerBtn.innerHTML = '<i class="fas fa-eye-slash"></i> 隐藏答案';
+            showAnswerBtn.className = 'btn btn-outline-warning btn-sm btn-hover-effect';
+            showAnswerBtn.setAttribute('aria-expanded', 'true');
+            showAnswerBtn.title = '隐藏参考答案';
+        } else {
+            showAnswerBtn.innerHTML = '<i class="fas fa-eye"></i> 答案';
+            showAnswerBtn.className = 'btn btn-outline-success btn-sm btn-hover-effect';
+            showAnswerBtn.setAttribute('aria-expanded', 'false');
+            showAnswerBtn.title = '显示参考答案';
+        }
+    }
+
+    function resetAnswerPanelState() {
+        const answerDisplay = document.getElementById('answerDisplay');
+        const answerContent = document.getElementById('answerContent');
+        const explanationContent = document.getElementById('explanationContent');
+        if (answerDisplay) {
+            answerDisplay.style.display = 'none';
+            answerDisplay.dataset.answerState = 'closed';
+            answerDisplay.setAttribute('aria-hidden', 'true');
+            answerDisplay.classList.remove('is-open');
+        }
+        if (answerContent) answerContent.innerHTML = '';
+        if (explanationContent) explanationContent.innerHTML = '';
+        setAnswerStatus('参考答案未展开。', 'muted');
+        setAnswerButtonState(false);
+    }
+
+    function openAnswerPanel(answerDisplay, statusMessage) {
+        if (!answerDisplay) return;
+        answerDisplay.style.display = 'block';
+        answerDisplay.dataset.answerState = 'open';
+        answerDisplay.setAttribute('aria-hidden', 'false');
+        answerDisplay.setAttribute('role', 'region');
+        answerDisplay.setAttribute('aria-label', '批改结果、参考答案、解析与来源证据');
+        answerDisplay.setAttribute('tabindex', '-1');
+        answerDisplay.classList.add('is-open');
+        setAnswerButtonState(true);
+        setAnswerStatus(statusMessage || '参考答案已展开，正在排队渲染公式。', 'info');
+        answerDisplay.style.minHeight = 'clamp(320px, 54vh, 620px)';
+        answerDisplay.style.maxHeight = 'min(76vh, 820px)';
+        answerDisplay.style.fontSize = '20px';
+        answerDisplay.style.padding = '32px';
+        answerDisplay.style.background = 'rgba(240,248,255,0.98)';
+        answerDisplay.style.backdropFilter = 'blur(15px)';
+        answerDisplay.style.boxShadow = '0 20px 60px rgba(0,0,0,0.2)';
+        answerDisplay.style.border = '3px solid #007bff';
+        answerDisplay.style.borderRadius = '20px';
+        renderFormulaInRoot(answerDisplay, document.getElementById('answerStatus'));
+        window.setTimeout(() => replaceResidualTexNoise(answerDisplay), 1400);
+        window.setTimeout(() => {
+            answerDisplay.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+            try {
+                answerDisplay.focus({ preventScroll: true });
+            } catch (_) {
+                answerDisplay.focus();
+            }
+        }, 120);
+    }
+
+    function renderFormulaInRoot(root, statusNode) {
         if (!root) return;
-        window.requestAnimationFrame(() => {
+        const setStatus = (message, tone = 'info') => {
+            if (statusNode) {
+                statusNode.textContent = message;
+                statusNode.dataset.answerStatusTone = tone;
+            }
+        };
+        let attempt = 0;
+        const tryRender = () => window.requestAnimationFrame(() => {
+            attempt += 1;
             try {
                 const bridge = window.FMFormulaLite || window.FormulaLite;
                 if (bridge && typeof bridge.ensureMathJax === 'function') {
                     bridge.ensureMathJax(root);
+                    setStatus('参考答案已展开，公式渲染队列已提交。', 'ok');
+                    window.setTimeout(() => replaceResidualTexNoise(root), 1200);
+                    return;
+                }
+                if (window.FMQueueMath && typeof window.FMQueueMath === 'function') {
+                    window.FMQueueMath(root);
+                    setStatus('参考答案已展开，公式渲染队列已提交。', 'ok');
+                    window.setTimeout(() => replaceResidualTexNoise(root), 1200);
+                    return;
+                }
+                if (window.FMTypesetMath && typeof window.FMTypesetMath === 'function') {
+                    window.FMTypesetMath(root);
+                    setStatus('参考答案已展开，公式渲染队列已提交。', 'ok');
+                    window.setTimeout(() => replaceResidualTexNoise(root), 1200);
                     return;
                 }
                 if (window.MathJax && typeof window.MathJax.typesetPromise === 'function') {
-                    window.MathJax.typesetPromise([root]).catch(() => {});
+                    setStatus('参考答案已展开，公式正在渲染。', 'info');
+                    window.MathJax.typesetPromise([root])
+                        .then(() => {
+                            replaceResidualTexNoise(root);
+                            setStatus('参考答案已展开，公式渲染完成。', 'ok');
+                        })
+                        .catch(() => {
+                            replaceResidualTexNoise(root);
+                            setStatus('参考答案已展开，公式渲染失败；已切换为可读公式文本。', 'warn');
+                        });
+                    return;
                 }
-            } catch (_) {}
+            } catch (_) {
+                replaceResidualTexNoise(root);
+                setStatus('参考答案已展开，公式渲染遇到异常；已切换为可读公式文本。', 'warn');
+                return;
+            }
+            if (attempt < 6) {
+                setStatus('参考答案已展开，等待公式渲染器加载。', 'info');
+                window.setTimeout(tryRender, 300);
+            } else {
+                replaceResidualTexNoise(root);
+                setStatus('参考答案已展开，公式渲染器未就绪；已切换为可读公式文本。', 'warn');
+            }
         });
+        tryRender();
     }
 
     function getBrowserSessionId() {
@@ -307,6 +539,33 @@ window.QuestionBankPractice = (function() {
         }
     }
 
+    function progressSourceFromPayload(payload) {
+        const explicit = String(payload && payload.source || '').trim();
+        if (explicit) return explicit;
+        const mode = String(payload && (payload.storeMode || payload.store || '') || '').toLowerCase();
+        if (mode === 'd1') return 'server-d1-learning-progress';
+        if (mode === 'r2' || mode === 'r2-progress') return 'server-r2-learning-progress';
+        if (mode === 'kv' || mode === 'kv-single-write-fallback') return 'server-kv-learning-progress';
+        return 'server-learning-progress-unavailable';
+    }
+
+    function rememberProgressSyncError(payload, response) {
+        const first = payload && Array.isArray(payload.results) ? payload.results.find(item => item && item.error) : null;
+        const error = String((payload && payload.error) || (first && first.error) || `http_${response && response.status || 0}`);
+        writeJsonStorage(LEARNING_PROGRESS_ERROR_KEY, {
+            syncedAt: new Date().toISOString(),
+            error,
+            status: response && response.status || 0,
+            source: progressSourceFromPayload(payload || {})
+        });
+    }
+
+    function isServerRejectedProgress(payload, response) {
+        if (!response || response.ok) return false;
+        const text = JSON.stringify(payload || {});
+        return response.status >= 500 || /write_quota_exceeded|storage_unavailable|progress_write_failed|write_failed/.test(text);
+    }
+
     function stableProgressEventId(type, data) {
         if (data && (data.clientEventId || data.eventId || data.practiceEventId)) {
             return String(data.clientEventId || data.eventId || data.practiceEventId);
@@ -316,20 +575,34 @@ window.QuestionBankPractice = (function() {
             data && data.bankId,
             data && data.practiceSessionId,
             data && (data.questionId || data.questionNumber || ''),
-            data && (data.answered || ''),
-            data && (data.correct || ''),
-            data && (data.totalQuestions || '')
+            data && (data.attemptNumber || '')
         ].filter(value => value !== null && value !== undefined && String(value).trim() !== '');
         return parts.join(':').replace(/\s+/g, '-').slice(0, 220) || makeId(type || 'progress');
+    }
+
+    function answerSubmitKey(question, answer) {
+        const questionId = question && (question.id || question.questionId || question.qid || question.title || question.question || '');
+        const answerText = Array.isArray(answer) ? answer.join('|') : String(answer == null ? '' : answer);
+        return [
+            currentSession.practiceSessionId || '',
+            currentSession.bankId || '',
+            currentSession.currentIndex,
+            questionId,
+            answerText.replace(/\s+/g, ' ').trim()
+        ].join('::').slice(0, 420);
     }
 
     function applyServerProgressSnapshot(payload) {
         const progress = payload && (payload.progress || payload);
         const stats = payload && (payload.stats || (progress && progress.totals));
         if (!progress && !stats) return;
+        const source = progressSourceFromPayload(payload || {});
         writeJsonStorage(LEARNING_PROGRESS_SNAPSHOT_KEY, {
             syncedAt: new Date().toISOString(),
-            source: 'server-kv-learning-progress',
+            source,
+            storeMode: payload && (payload.storeMode || payload.store || ''),
+            cumulativeSourceOfTruth: payload && payload.cumulativeSourceOfTruth || 'server-progress-snapshot',
+            noMutationRead: payload && payload.noMutationRead === true,
             progress: progress || null,
             stats: stats || null
         });
@@ -344,7 +617,13 @@ window.QuestionBankPractice = (function() {
             totalQuestions,
             correctAnswers,
             totalStudyTime,
-            lastStudyDate
+            lastStudyDate,
+            serverManaged: /^server-/.test(source),
+            serverProgressSource: source,
+            serverProgressSyncedAt: new Date().toISOString(),
+            localPendingQuestions: 0,
+            localPendingStudyTime: 0,
+            localOnly: false
         };
         writeJsonStorage('questionBankUserData', userData);
         const legacyStats = readJsonStorage('userStats', {});
@@ -354,7 +633,9 @@ window.QuestionBankPractice = (function() {
             correctAnswers,
             correctRate: totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0,
             totalTime: totalStudyTime,
-            source: 'server-kv-learning-progress',
+            source,
+            serverManaged: /^server-/.test(source),
+            localOnly: false,
             syncedAt: new Date().toISOString()
         });
         if (typeof QuestionBankStats !== 'undefined' && typeof QuestionBankStats.updateStats === 'function') {
@@ -364,7 +645,12 @@ window.QuestionBankPractice = (function() {
 
     function progressOutbox() {
         const outbox = readJsonStorage(LEARNING_PROGRESS_OUTBOX_KEY, []);
-        return Array.isArray(outbox) ? outbox : [];
+        const now = Date.now();
+        return (Array.isArray(outbox) ? outbox : []).filter(item => {
+            if (!item || item.queuedReason !== 'network') return false;
+            const queuedAt = Date.parse(item.queuedAt || '');
+            return queuedAt && now - queuedAt <= LEARNING_PROGRESS_OUTBOX_MAX_AGE_MS;
+        });
     }
 
     function saveProgressOutbox(outbox) {
@@ -382,8 +668,15 @@ window.QuestionBankPractice = (function() {
                 keepalive: true,
                 credentials: 'same-origin'
             });
-            if (!response.ok) return;
             const payload = await response.json().catch(() => null);
+            if (!response.ok) {
+                if (isServerRejectedProgress(payload, response)) {
+                    saveProgressOutbox([]);
+                    rememberProgressSyncError(payload, response);
+                    applyServerProgressSnapshot(payload);
+                }
+                return;
+            }
             if (payload && payload.ok) {
                 saveProgressOutbox([]);
                 applyServerProgressSnapshot(payload);
@@ -408,8 +701,15 @@ window.QuestionBankPractice = (function() {
                 keepalive: true,
                 credentials: 'same-origin'
             });
-            if (!response.ok) throw new Error(`progress ${response.status}`);
             const payload = await response.json().catch(() => null);
+            if (!response.ok) {
+                if (isServerRejectedProgress(payload, response)) {
+                    rememberProgressSyncError(payload, response);
+                    applyServerProgressSnapshot(payload);
+                    return false;
+                }
+                throw new Error(`progress ${response.status}`);
+            }
             if (payload && payload.ok) {
                 applyServerProgressSnapshot(payload);
                 flushProgressOutbox();
@@ -418,7 +718,11 @@ window.QuestionBankPractice = (function() {
         } catch (_) {
             const outbox = progressOutbox();
             if (!outbox.some(item => item && item.data && item.data.clientEventId === event.data.clientEventId)) {
-                outbox.push(event);
+                outbox.push({
+                    ...event,
+                    queuedAt: new Date().toISOString(),
+                    queuedReason: 'network'
+                });
                 saveProgressOutbox(outbox);
             }
         }
@@ -436,7 +740,6 @@ window.QuestionBankPractice = (function() {
             const payload = await response.json().catch(() => null);
             if (payload && payload.ok) {
                 applyServerProgressSnapshot(payload);
-                flushProgressOutbox();
             }
         } catch (_) {}
     }
@@ -518,17 +821,22 @@ window.QuestionBankPractice = (function() {
         return answersMatch(question, userAnswer, getCorrectAnswer(question));
     }
 
-    function collectQuestionAudit(question, userAnswer, evaluation, questionTimeSeconds) {
+    function collectQuestionAudit(question, userAnswer, evaluation, questionTimeSeconds, attemptNumber) {
         const sessionId = currentSession.practiceSessionId || '';
+        const questionId = question && (question.id || question.questionId || question.qid || '');
+        const questionNumber = currentSession.currentIndex + 1;
+        const attempt = Math.max(1, Number(attemptNumber || currentSession.answerAttemptCounts[currentSession.currentIndex] || 1));
         const payload = {
             practiceSessionId: sessionId,
+            clientEventId: [sessionId, currentSession.bankId || 'bank', questionId || `q${questionNumber}`, `attempt${attempt}`].join(':').replace(/\s+/g, '-').slice(0, 220),
+            attemptNumber: attempt,
             browserSessionId: getBrowserSessionId(),
             bankId: currentSession.bankId,
             sessionName: currentSession.sessionName,
             questionIndex: currentSession.currentIndex,
-            questionNumber: currentSession.currentIndex + 1,
+            questionNumber,
             totalQuestions: currentSession.questions.length,
-            questionId: question && (question.id || question.questionId || question.qid || ''),
+            questionId,
             questionTitle: clampText(question && (question.title || question.question || ''), 220),
             questionType: getQuestionType(question),
             category: clampText(question && (question.category || ''), 120),
@@ -592,6 +900,11 @@ window.QuestionBankPractice = (function() {
         Object.values(byKnowledge).forEach((stat) => { stat.accuracy = stat.answered ? Math.round((stat.correct / stat.answered) * 100) : 0; });
         return {
             practiceSessionId: currentSession.practiceSessionId || '',
+            clientEventId: [
+                currentSession.practiceSessionId || 'practice',
+                currentSession.bankId || 'bank',
+                'complete'
+            ].join(':').replace(/\s+/g, '-').slice(0, 220),
             browserSessionId: getBrowserSessionId(),
             bankId: currentSession.bankId,
             sessionName: currentSession.sessionName,
@@ -646,11 +959,8 @@ window.QuestionBankPractice = (function() {
         if (progressSyncListenersBound) return;
         progressSyncListenersBound = true;
         window.addEventListener('online', flushProgressOutbox);
-        document.addEventListener('visibilitychange', () => {
-            if (document.visibilityState === 'visible') flushProgressOutbox();
-        });
     }
-    
+
     // 公有方法
     return {
         // 初始化模块
@@ -662,16 +972,16 @@ window.QuestionBankPractice = (function() {
             this.bindEnhancedEvents();
             return this;
         },
-        
+
         // 绑定事件
         bindEvents: function() {
             // 键盘快捷键
             document.addEventListener('keydown', (e) => {
                 if (!practiceState.isActive) return;
-                
+
                 // 防止在输入框中触发快捷键
                 if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-                
+
                 switch(e.key) {
                     case '1':
                     case '2':
@@ -712,44 +1022,44 @@ window.QuestionBankPractice = (function() {
                         break;
                 }
             });
-            
+
             // 优化鼠标滚轮处理 - 修复滚动问题
             this.setupWheelEvents();
         },
-        
+
         // 设置滚轮事件 - 优化页面滚动体验
         setupWheelEvents: function() {
             // 监听整个文档的滚轮事件
             document.addEventListener('wheel', (e) => {
                 if (!practiceState.isActive) return;
-                
+
                 // 如果目标元素是输入框或文本域，允许正常滚动
                 if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
                     return;
                 }
-                
+
                 // 获取题目显示容器
                 const questionDisplay = document.getElementById('questionDisplay');
                 if (!questionDisplay) return;
-                
+
                 // 检查是否在全屏模式
                 const isFullscreen = practiceState.isFullscreen;
-                
+
                 // 非全屏模式：优先保证页面正常滚动
                 if (!isFullscreen) {
                     // 只有当明确在题目区域内滚动，且该区域无滚动条时，才切换题目
                     const rect = questionDisplay.getBoundingClientRect();
-                    const isInQuestionArea = e.clientY >= rect.top && e.clientY <= rect.bottom && 
+                    const isInQuestionArea = e.clientY >= rect.top && e.clientY <= rect.bottom &&
                                            e.clientX >= rect.left && e.clientX <= rect.right;
-                    
+
                     if (isInQuestionArea) {
                         const hasQuestionScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
-                        
+
                         // 如果题目区域有滚动条，让它正常滚动
                         if (hasQuestionScrollbar) {
                             const isAtTop = questionDisplay.scrollTop <= 1;
                             const isAtBottom = questionDisplay.scrollTop + questionDisplay.clientHeight >= questionDisplay.scrollHeight - 1;
-                            
+
                             // 只在题目区域滚动到边界时切换题目
                             if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
                                 e.preventDefault();
@@ -761,11 +1071,11 @@ window.QuestionBankPractice = (function() {
                             }
                             return;
                         }
-                        
+
                         // 题目区域无滚动条，且页面已滚动到边界，才切换题目
                         const pageAtTop = window.scrollY <= 1;
                         const pageAtBottom = (window.scrollY + window.innerHeight) >= document.documentElement.scrollHeight - 1;
-                        
+
                         if ((e.deltaY < 0 && pageAtTop) || (e.deltaY > 0 && pageAtBottom)) {
                             e.preventDefault();
                             if (e.deltaY > 0) {
@@ -778,14 +1088,14 @@ window.QuestionBankPractice = (function() {
                     // 其他情况都允许页面正常滚动
                     return;
                 }
-                
+
                 // 全屏模式：保持原有的题目切换逻辑
                 const hasScrollbar = questionDisplay.scrollHeight > questionDisplay.clientHeight;
-                
+
                 if (hasScrollbar) {
                     const isAtTop = questionDisplay.scrollTop === 0;
                     const isAtBottom = questionDisplay.scrollTop + questionDisplay.clientHeight >= questionDisplay.scrollHeight;
-                    
+
                     if ((isAtTop && e.deltaY < 0) || (isAtBottom && e.deltaY > 0)) {
                         e.preventDefault();
                         if (e.deltaY > 0) {
@@ -804,46 +1114,46 @@ window.QuestionBankPractice = (function() {
                 }
             }, { passive: false });
         },
-        
+
         // 开始练习（从题库）
         startPractice: function(bank) {
             if (!bank || !bank.questions || bank.questions.length === 0) {
                 showNotification('该题库没有可用的题目', 'warning');
                 return;
             }
-            
+
             this.initSession({
                 questions: [...bank.questions],
                 bankId: bank.id,
                 sessionName: `练习: ${bank.name}`
             });
-            
+
             this.showPracticeInterface();
             showNotification(`开始练习 ${bank.name}`, 'success');
         },
-        
+
         // 开始自定义练习
         startCustomPractice: function(questions, sessionName = '自定义练习') {
             if (!questions || questions.length === 0) {
                 showNotification('没有可用的题目', 'warning');
                 return;
             }
-            
+
             this.initSession({
                 questions: [...questions],
                 bankId: 'custom',
                 sessionName: sessionName
             });
-            
+
             this.showPracticeInterface();
             showNotification(`开始${sessionName}`, 'success');
         },
-        
+
         // 开始单题练习
         startSingleQuestion: function(question) {
             this.startCustomPractice([question], '单题练习');
         },
-        
+
         // 初始化练习会话
         initSession: function(options) {
             currentSession = {
@@ -854,9 +1164,12 @@ window.QuestionBankPractice = (function() {
                 questionTimes: [],
                 bankId: options.bankId,
                 sessionName: options.sessionName,
-                practiceSessionId: makeId('practice')
+                practiceSessionId: makeId('practice'),
+                practiceCompletedEventSent: false,
+                answerAttemptCounts: new Array(options.questions.length).fill(0),
+                answerSubmitKeys: new Array(options.questions.length).fill('')
             };
-            
+
             practiceState = {
                 isActive: true,
                 isPaused: false,
@@ -864,12 +1177,12 @@ window.QuestionBankPractice = (function() {
                 questionTimer: Date.now(),
                 isFullscreen: false
             };
-            
+
             // 打乱题目顺序（如果需要）
             if (config.shuffleQuestions) {
                 this.shuffleArray(currentSession.questions);
             }
-            
+
             // 打乱选项顺序（如果需要）
             if (config.shuffleOptions) {
                 currentSession.questions.forEach(question => {
@@ -890,11 +1203,11 @@ window.QuestionBankPractice = (function() {
                 shuffleOptions: Boolean(config.shuffleOptions)
             });
         },
-        
+
         // 显示练习界面
         showPracticeInterface: function() {
             const content = this.generatePracticeHTML();
-            
+
             if (typeof QuestionBankUI !== 'undefined') {
                 QuestionBankUI.createModal({
                     title: currentSession.sessionName,
@@ -917,18 +1230,18 @@ window.QuestionBankPractice = (function() {
                     container.innerHTML = content;
                 }
             }
-            
+
             // 应用阅读模式样式
             this.applyReadingModeStyles();
-            
+
             // 恢复阅读模式状态
             this.restoreReadingMode();
-            
+
             this.displayCurrentQuestion();
             this.startTimer();
             this.setupFullscreenListener();
         },
-        
+
         // 生成练习界面HTML - 全面优化版本
         generatePracticeHTML: function() {
             return `
@@ -946,7 +1259,7 @@ window.QuestionBankPractice = (function() {
                         padding: 20px;
                         box-sizing: border-box;
                     }
-                    
+
                     .practice-fullscreen .practice-container {
                         max-width: 1400px;
                         margin: 0 auto;
@@ -954,7 +1267,7 @@ window.QuestionBankPractice = (function() {
                         display: flex;
                         flex-direction: column;
                     }
-                    
+
                     /* 题目显示区域优化 - 占据更大空间 */
                     #questionDisplay {
                         flex: 1;
@@ -972,7 +1285,7 @@ window.QuestionBankPractice = (function() {
                         border: 2px solid rgba(79,172,254,0.2);
                         scroll-behavior: smooth;
                     }
-                    
+
                     /* 全屏模式下的题目显示优化 - 最大化显示 */
                     .practice-fullscreen #questionDisplay {
                         min-height: 95vh;
@@ -982,37 +1295,37 @@ window.QuestionBankPractice = (function() {
                         padding: 80px;
                         margin: 5px 0;
                     }
-                    
+
                     /* 全屏模式下题目内容字体更大 */
                     .practice-fullscreen #questionDisplay h4 {
                         font-size: 36px !important;
                         margin-bottom: 35px !important;
                     }
-                    
+
                     .practice-fullscreen #questionDisplay div[style*="font-size: 1.1em"] {
                         font-size: 1.8em !important;
                         line-height: 2.6 !important;
                     }
-                    
+
                     .practice-fullscreen #questionDisplay div[style*="font-size: 1.2em"] {
                         font-size: 2.0em !important;
                         line-height: 2.8 !important;
                     }
-                    
+
                     /* 全屏模式下选项字体更大 */
                     .practice-fullscreen .option-item {
                         font-size: 26px !important;
                         padding: 25px !important;
                         margin: 20px 0 !important;
                     }
-                    
+
                     .practice-fullscreen .option-item span {
                         width: 45px !important;
                         height: 45px !important;
                         line-height: 45px !important;
                         font-size: 20px !important;
                     }
-                    
+
                     /* 全屏模式下输入框更大 */
                     .practice-fullscreen input[type="text"],
                     .practice-fullscreen textarea {
@@ -1020,18 +1333,18 @@ window.QuestionBankPractice = (function() {
                         padding: 30px !important;
                         min-height: 70px !important;
                     }
-                    
+
                     .practice-fullscreen textarea {
                         min-height: 250px !important;
                     }
-                    
+
                     /* 全屏模式下按钮更大 */
                     .practice-fullscreen .judge-btn {
                         font-size: 24px !important;
                         padding: 25px 50px !important;
                         min-width: 150px !important;
                     }
-                    
+
                     /* 字体大小调节按钮 - 优化版本 */
                     .font-size-controls {
                         position: fixed;
@@ -1047,7 +1360,7 @@ window.QuestionBankPractice = (function() {
                         box-shadow: 0 8px 30px rgba(0,0,0,0.15);
                         border: 2px solid rgba(79,172,254,0.2);
                     }
-                    
+
                     .font-size-controls button {
                         width: 45px;
                         height: 45px;
@@ -1061,19 +1374,19 @@ window.QuestionBankPractice = (function() {
                         transition: all 0.3s ease;
                         box-shadow: 0 3px 10px rgba(79,172,254,0.3);
                     }
-                    
+
                     .font-size-controls button:hover {
                         background: #00f2fe;
                         transform: scale(1.1);
                         box-shadow: 0 5px 15px rgba(0,242,254,0.4);
                     }
-                    
+
                     .font-size-controls button:disabled {
                         background: #ccc;
                         cursor: not-allowed;
                         box-shadow: none;
                     }
-                    
+
                     .font-size-display {
                         font-size: 16px;
                         font-weight: bold;
@@ -1081,7 +1394,7 @@ window.QuestionBankPractice = (function() {
                         min-width: 50px;
                         text-align: center;
                     }
-                    
+
                     /* 控制面板优化 - 更紧凑 */
                     .control-panel {
                         background: rgba(255,255,255,0.95);
@@ -1091,18 +1404,18 @@ window.QuestionBankPractice = (function() {
                         box-shadow: 0 8px 25px rgba(0,0,0,0.1);
                         border: 1px solid rgba(79,172,254,0.2);
                     }
-                    
+
                     /* 全屏模式下控制面板更紧凑 */
                     .practice-fullscreen .control-panel {
                         padding: 10px 15px;
                         margin-bottom: 10px;
                     }
-                    
+
                     .practice-fullscreen .control-panel button {
                         font-size: 14px !important;
                         padding: 6px 12px !important;
                     }
-                    
+
                     /* 进度条优化 */
                     .progress-section {
                         background: rgba(255,255,255,0.9);
@@ -1111,20 +1424,20 @@ window.QuestionBankPractice = (function() {
                         margin-bottom: 15px;
                         box-shadow: 0 5px 20px rgba(0,0,0,0.1);
                     }
-                    
+
                     /* 全屏模式下进度条更紧凑 */
                     .practice-fullscreen .progress-section {
                         padding: 10px 15px;
                         margin-bottom: 10px;
                     }
-                    
+
                     /* 自定义滚动条样式 - 优化版本 */
                     .practice-fullscreen::-webkit-scrollbar,
                     #questionDisplay::-webkit-scrollbar,
                     #answerDisplay::-webkit-scrollbar {
                         width: 16px;
                     }
-                    
+
                     .practice-fullscreen::-webkit-scrollbar-track,
                     #questionDisplay::-webkit-scrollbar-track,
                     #answerDisplay::-webkit-scrollbar-track {
@@ -1132,7 +1445,7 @@ window.QuestionBankPractice = (function() {
                         border-radius: 12px;
                         border: 1px solid rgba(79,172,254,0.2);
                     }
-                    
+
                     .practice-fullscreen::-webkit-scrollbar-thumb,
                     #questionDisplay::-webkit-scrollbar-thumb,
                     #answerDisplay::-webkit-scrollbar-thumb {
@@ -1141,7 +1454,7 @@ window.QuestionBankPractice = (function() {
                         border: 2px solid rgba(255,255,255,0.5);
                         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
                     }
-                    
+
                     .practice-fullscreen::-webkit-scrollbar-thumb:hover,
                     #questionDisplay::-webkit-scrollbar-thumb:hover,
                     #answerDisplay::-webkit-scrollbar-thumb:hover {
@@ -1149,7 +1462,7 @@ window.QuestionBankPractice = (function() {
                         box-shadow: 0 4px 12px rgba(0,0,0,0.3);
                         transform: scale(1.05);
                     }
-                    
+
                     /* 滚动条按钮样式 */
                     .practice-fullscreen::-webkit-scrollbar-button,
                     #questionDisplay::-webkit-scrollbar-button,
@@ -1157,32 +1470,35 @@ window.QuestionBankPractice = (function() {
                         background: rgba(79,172,254,0.3);
                         border-radius: 8px;
                     }
-                    
+
                     .practice-fullscreen::-webkit-scrollbar-button:hover,
                     #questionDisplay::-webkit-scrollbar-button:hover,
                     #answerDisplay::-webkit-scrollbar-button:hover {
                         background: rgba(79,172,254,0.5);
                     }
-                    
+
                     /* 全屏模式下底部操作区域更紧凑 */
                     .practice-fullscreen .question-card[style*="margin-top: 20px"] {
                         margin-top: 10px !important;
                         padding: 10px 15px !important;
                     }
-                    
+
                     .practice-fullscreen .question-card[style*="margin-top: 20px"] button {
                         font-size: 14px !important;
                         padding: 8px 15px !important;
                         border-radius: 15px !important;
                     }
-                    
-                    /* 全屏模式下答案显示区域更大 */
-                    .practice-fullscreen #answerDisplay {
-                        max-height: 30vh !important;
-                        font-size: 26px !important;
-                        padding: 30px !important;
-                        line-height: 1.8 !important;
-                    }
+
+	                    /* 全屏模式下答案显示区域更大 */
+	                    .practice-fullscreen #answerDisplay {
+	                        max-height: min(72vh, 760px) !important;
+	                        min-height: min(54vh, 520px) !important;
+	                        font-size: 22px !important;
+	                        padding: 28px !important;
+	                        line-height: 1.75 !important;
+	                        overflow-x: hidden !important;
+	                        overflow-y: auto !important;
+	                    }
                     
                     .practice-fullscreen #answerDisplay h5 {
                         font-size: 32px !important;
@@ -1196,15 +1512,295 @@ window.QuestionBankPractice = (function() {
                         font-weight: 500 !important;
                     }
                     
-                    .practice-fullscreen #explanationContent {
-                        font-size: 22px !important;
-                        line-height: 1.8 !important;
-                        color: #555 !important;
-                        margin-top: 30px !important;
-                    }
-                    
-                    /* 响应式设计 */
-                    @media (max-width: 768px) {
+	                    .practice-fullscreen #explanationContent {
+	                        font-size: 18px !important;
+	                        line-height: 1.8 !important;
+	                        color: #555 !important;
+	                        margin-top: 18px !important;
+	                    }
+
+	                    .answer-status {
+	                        display: flex;
+	                        align-items: center;
+	                        gap: 8px;
+	                        min-height: 44px;
+	                        margin: 0 0 12px;
+	                        padding: 10px 14px;
+	                        border-radius: 14px;
+	                        border: 1px solid rgba(15,118,110,0.22);
+	                        background: rgba(236,253,245,0.94);
+	                        color: #064e3b;
+	                        font-size: 14px;
+	                        font-weight: 800;
+	                        line-height: 1.45;
+	                        overflow-wrap: anywhere;
+	                    }
+
+	                    .answer-status::before {
+	                        content: '';
+	                        flex: 0 0 auto;
+	                        width: 9px;
+	                        height: 9px;
+	                        border-radius: 999px;
+	                        background: #0d9488;
+	                        box-shadow: 0 0 0 4px rgba(20,184,166,0.14);
+	                    }
+
+	                    .answer-status[data-answer-status-tone="muted"] {
+	                        border-color: rgba(100,116,139,0.22);
+	                        background: rgba(248,250,252,0.94);
+	                        color: #475569;
+	                    }
+
+	                    .answer-status[data-answer-status-tone="warn"] {
+	                        border-color: rgba(245,158,11,0.28);
+	                        background: rgba(255,251,235,0.96);
+	                        color: #92400e;
+	                    }
+
+	                    .answer-status[data-answer-status-tone="ok"] {
+	                        border-color: rgba(16,185,129,0.28);
+	                        background: rgba(236,253,245,0.96);
+	                        color: #065f46;
+	                    }
+
+	                    .answer-display-panel {
+	                        width: 100%;
+	                        max-width: 100%;
+	                        box-sizing: border-box;
+	                        scroll-margin-top: 16px;
+	                    }
+
+	                    .answer-display-panel[aria-hidden="true"] {
+	                        display: none !important;
+	                    }
+
+	                    .answer-display-panel, .answer-display-panel * {
+	                        max-width: 100%;
+	                    }
+
+	                    .reference-answer-block,
+	                    .answer-explanation-block {
+	                        background: #fff7ed;
+	                        border: 2px solid #fed7aa;
+	                        border-radius: 18px;
+	                        padding: 24px;
+	                        margin: 0 0 22px;
+	                        line-height: 1.9;
+	                        color: #1f2937;
+	                        overflow: hidden;
+	                    }
+
+	                    .reference-answer-block.is-compact,
+	                    .answer-explanation-block.is-compact {
+	                        border-radius: 10px;
+	                        padding: 14px;
+	                        margin: 12px 0;
+	                    }
+
+	                    .reference-answer-head {
+	                        display: flex;
+	                        align-items: flex-start;
+	                        justify-content: space-between;
+	                        gap: 12px;
+	                        margin-bottom: 12px;
+	                        flex-wrap: wrap;
+	                    }
+
+	                    .reference-answer-head strong {
+	                        display: block;
+	                        color: #9a3412;
+	                        font-size: 1.25em;
+	                        line-height: 1.35;
+	                    }
+
+	                    .reference-answer-badge {
+	                        display: inline-flex;
+	                        align-items: center;
+	                        min-height: 30px;
+	                        padding: 4px 10px;
+	                        border-radius: 999px;
+	                        background: #ffedd5;
+	                        color: #9a3412;
+	                        border: 1px solid #fdba74;
+	                        font-size: 0.78em;
+	                        font-weight: 900;
+	                        white-space: normal;
+	                        overflow-wrap: anywhere;
+	                    }
+
+	                    .reference-answer-html {
+	                        background: #fff;
+	                        border-left: 5px solid #f97316;
+	                        border-radius: 10px;
+	                        padding: 20px;
+	                        font-size: 1.02em;
+	                        line-height: 2;
+	                        overflow-x: auto;
+	                        overflow-y: hidden;
+	                        overflow-wrap: anywhere;
+	                        word-break: break-word;
+	                        -webkit-overflow-scrolling: touch;
+	                    }
+
+	                    .reference-answer-html mjx-container,
+	                    .answer-explanation-block mjx-container,
+	                    .reference-answer-html .math-display,
+	                    .answer-explanation-block .math-display {
+	                        max-width: 100%;
+	                        overflow-x: auto;
+	                        overflow-y: hidden;
+	                        -webkit-overflow-scrolling: touch;
+	                    }
+
+	                    .reference-answer-html table,
+	                    .answer-explanation-block table {
+	                        display: block;
+	                        width: max-content;
+	                        max-width: 100%;
+	                        overflow-x: auto;
+	                        border-collapse: collapse;
+	                    }
+
+		                    .reference-answer-html pre,
+		                    .answer-explanation-block pre {
+		                        white-space: pre-wrap;
+		                        overflow-wrap: anywhere;
+		                    }
+
+		                    .tex-fallback {
+		                        display: inline;
+		                        padding: 1px 5px;
+		                        border-radius: 6px;
+		                        background: rgba(14,165,233,0.12);
+		                        color: #075985;
+		                        font-family: inherit;
+		                        font-weight: 700;
+		                        overflow-wrap: anywhere;
+		                    }
+
+		                    .reference-source-evidence {
+		                        margin-top: 16px;
+		                        padding: 16px;
+		                        border-radius: 14px;
+		                        border: 1px solid #bae6fd;
+		                        background: #f0f9ff;
+		                        color: #075985;
+		                    }
+
+		                    .reference-source-evidence__head {
+		                        display: flex;
+		                        align-items: flex-start;
+		                        justify-content: space-between;
+		                        gap: 10px;
+		                        flex-wrap: wrap;
+		                        margin-bottom: 10px;
+		                    }
+
+		                    .reference-source-evidence__head strong {
+		                        color: #0f766e;
+		                    }
+
+		                    .reference-source-evidence__head span {
+		                        color: #0369a1;
+		                        font-size: 0.86em;
+		                        font-weight: 800;
+		                    }
+
+		                    .reference-source-evidence__links {
+		                        display: flex;
+		                        gap: 8px;
+		                        flex-wrap: wrap;
+		                        margin-bottom: 12px;
+		                    }
+
+		                    .reference-source-evidence__links a {
+		                        display: inline-flex;
+		                        align-items: center;
+		                        min-height: 34px;
+		                        padding: 7px 10px;
+		                        border-radius: 8px;
+		                        background: #fff;
+		                        border: 1px solid rgba(14,116,144,0.22);
+		                        color: #0f766e;
+		                        font-weight: 900;
+		                        text-decoration: none;
+		                    }
+
+		                    .reference-source-evidence__figure {
+		                        margin: 0;
+		                        padding: 10px;
+		                        border-radius: 12px;
+		                        background: #fff;
+		                        border: 1px solid rgba(14,116,144,0.16);
+		                    }
+
+		                    .reference-source-evidence__figure img {
+		                        display: block;
+		                        width: 100%;
+		                        max-height: 56vh;
+		                        object-fit: contain;
+		                        border-radius: 8px;
+		                        background: #fff;
+		                    }
+
+		                    .reference-source-evidence__figure figcaption {
+		                        margin-top: 8px;
+		                        color: #64748b;
+		                        font-size: 0.86em;
+		                        line-height: 1.55;
+		                    }
+
+		                    .reference-answer-source-note {
+		                        display: grid;
+		                        gap: 6px;
+	                        margin-top: 14px;
+	                        padding-top: 12px;
+	                        border-top: 1px dashed #fed7aa;
+	                        color: #64748b;
+	                        font-size: 0.9em;
+	                        line-height: 1.65;
+	                    }
+
+	                    .reference-answer-source-note strong {
+	                        color: #9a3412;
+	                        font-size: 0.9em;
+	                    }
+
+	                    .reference-answer-source-note a {
+	                        width: fit-content;
+	                        max-width: 100%;
+	                        color: #0f766e;
+	                        font-weight: 900;
+	                        overflow-wrap: anywhere;
+	                        text-decoration: underline;
+	                        text-underline-offset: 3px;
+	                    }
+
+	                    .answer-explanation-block {
+	                        background: #eff6ff;
+	                        border-color: #bfdbfe;
+	                        color: #1e3a8a;
+	                    }
+
+	                    .answer-explanation-block > strong {
+	                        display: block;
+	                        margin-bottom: 10px;
+	                        color: #1d4ed8;
+	                    }
+
+	                    .answer-explanation-block > div {
+	                        background: #fff;
+	                        border-radius: 10px;
+	                        padding: 16px;
+	                        color: #334155;
+	                        overflow-x: auto;
+	                        overflow-wrap: anywhere;
+	                        -webkit-overflow-scrolling: touch;
+	                    }
+
+	                    /* 响应式设计 */
+	                    @media (max-width: 768px) {
                         .practice-fullscreen {
                             padding: 10px;
                         }
@@ -1219,12 +1815,40 @@ window.QuestionBankPractice = (function() {
                             justify-content: center;
                         }
                         
-                        #questionDisplay {
-                            min-height: 50vh;
-                            font-size: 16px;
-                            padding: 20px;
-                        }
-                    }
+	                        #questionDisplay {
+	                            min-height: 50vh;
+	                            font-size: 16px;
+	                            padding: 20px;
+	                        }
+
+		                        .practice-fullscreen #answerDisplay {
+		                            max-height: 70vh !important;
+		                            min-height: clamp(300px, 50vh, 560px) !important;
+		                            padding: 16px !important;
+		                            font-size: 16px !important;
+		                        }
+
+	                        .reference-answer-block,
+	                        .answer-explanation-block {
+	                            padding: 14px;
+	                            border-radius: 12px;
+	                        }
+
+		                        .reference-answer-html,
+		                        .answer-explanation-block > div {
+		                            padding: 14px;
+		                            font-size: 0.98em;
+		                            line-height: 1.85;
+		                        }
+
+		                        .reference-source-evidence {
+		                            padding: 12px;
+		                        }
+
+		                        .reference-source-evidence__figure img {
+		                            max-height: 48vh;
+		                        }
+		                    }
                     
                     /* 动画效果 */
                     .fade-in {
@@ -1508,10 +2132,10 @@ window.QuestionBankPractice = (function() {
                                         <i class="fas fa-expand"></i>
                                     </button>
                                     
-                                    <!-- 显示答案按钮 -->
-                                    <button id="showAnswerBtn" class="btn btn-outline-success btn-sm btn-hover-effect" onclick="QuestionBankPractice.toggleAnswer()" title="显示答案" style="border-radius: 20px; padding: 8px 15px;">
-                                        <i class="fas fa-eye"></i> 答案
-                                    </button>
+	                                    <!-- 显示答案按钮 -->
+	                                    <button id="showAnswerBtn" type="button" class="btn btn-outline-success btn-sm btn-hover-effect" onclick="QuestionBankPractice.toggleAnswer()" title="显示参考答案" aria-expanded="false" aria-controls="answerDisplay" aria-keyshortcuts="Control+A" data-181103-answer-toggle="1" style="border-radius: 20px; padding: 8px 15px;">
+	                                        <i class="fas fa-eye"></i> 答案
+	                                    </button>
                                     
                                     <!-- 暂停按钮 -->
                                     <button id="pauseBtn" class="btn btn-warning btn-sm btn-hover-effect" onclick="QuestionBankPractice.togglePause()" title="暂停/继续 (空格)" style="border-radius: 20px; padding: 8px 15px;">
@@ -1563,19 +2187,23 @@ window.QuestionBankPractice = (function() {
                             </div>
                         </div>
                         
-                        <!-- 题目显示区域 - 优化后占据更大空间 -->
-                        <div id="questionDisplay" class="slide-in">
-                            <!-- 题目内容将在这里动态加载 -->
-                        </div>
+	                        <!-- 题目显示区域 - 优化后占据更大空间 -->
+	                        <div id="questionDisplay" class="slide-in">
+	                            <!-- 题目内容将在这里动态加载 -->
+	                        </div>
                         
-                        <!-- 答案显示区域 -->
-                        <div id="answerDisplay" class="question-card" style="background: rgba(240,248,255,0.98); border: 3px solid #007bff; display: none; min-height: 70vh; max-height: 85vh; overflow-y: auto; padding: 45px; margin: 30px 0; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);">
-                            <h5 style="color: #007bff; margin-bottom: 35px; font-size: 2.5em; font-weight: bold; text-align: center;">
-                                <i class="fas fa-lightbulb"></i> 🎯 批改结果
-                            </h5>
-                            <div id="answerContent" style="font-size: 28px; line-height: 1.8; font-weight: 500; margin-bottom: 35px; color: #2c3e50;"></div>
-                            <div id="explanationContent" style="font-size: 24px; line-height: 1.8; margin-top: 35px; color: #34495e; background: rgba(52,73,94,0.05); padding: 25px; border-radius: 10px;"></div>
-                        </div>
+	                        <div id="answerStatus" class="answer-status" data-answer-status-tone="muted" role="status" aria-live="polite" aria-atomic="true">
+	                            参考答案未展开。
+	                        </div>
+
+	                        <!-- 答案显示区域 -->
+		                        <div id="answerDisplay" class="question-card answer-display-panel" aria-hidden="true" data-answer-state="closed" role="region" aria-labelledby="answerDisplayTitle" tabindex="-1" style="background: rgba(240,248,255,0.98); border: 3px solid #007bff; display: none; min-height: clamp(320px, 54vh, 620px); max-height: min(76vh, 820px); overflow-y: auto; overflow-x: hidden; padding: 32px; margin: 20px 0; border-radius: 15px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);">
+		                            <h5 id="answerDisplayTitle" style="color: #007bff; margin-bottom: 20px; font-size: 1.65em; font-weight: bold; text-align: left;">
+		                                <i class="fas fa-lightbulb"></i> 批改结果与参考答案
+		                            </h5>
+	                            <div id="answerContent" style="font-size: 20px; line-height: 1.8; font-weight: 500; margin-bottom: 18px; color: #2c3e50;"></div>
+	                            <div id="explanationContent" style="font-size: 18px; line-height: 1.8; margin-top: 18px; color: #34495e; background: rgba(52,73,94,0.05); padding: 18px; border-radius: 10px;"></div>
+	                        </div>
                         
                         <!-- 底部操作区域 -->
                         <div class="question-card" style="margin-top: 20px;">
@@ -1618,32 +2246,33 @@ window.QuestionBankPractice = (function() {
             const questionHTML = this.generateQuestionHTML(question, currentSession.currentIndex);
             questionDisplay.innerHTML = questionHTML;
             renderFormulaInRoot(questionDisplay);
-            
+            resetAnswerPanelState();
+
             // 恢复保存的字体大小
             this.restoreFontSize();
-            
+
             // 内容自适应调整
             this.adjustContentLayout();
-            
+
             // 设置触摸手势支持
             this.setupTouchGestures();
-            
+
             // 显示滚动提示（如果需要）
             setTimeout(() => this.showScrollHint(), 1000);
-            
+
             // 更新进度信息
             this.updateProgress();
-            
+
             // 更新按钮状态
             this.updateButtonStates();
-            
+
             // 如果已经答过这题，显示之前的答案
             const userAnswer = currentSession.userAnswers[currentSession.currentIndex];
             if (userAnswer !== null) {
                 this.highlightAnswer(userAnswer);
             }
         },
-        
+
         // 生成题目HTML
         generateQuestionHTML: function(question, index) {
             const questionNumber = index + 1;
@@ -1677,11 +2306,11 @@ window.QuestionBankPractice = (function() {
                     ${sourceHtmlUrl ? `<a href="${escapeHtml(sourceHtmlUrl)}" target="_blank" rel="noopener" style="display:inline-flex;margin-top:8px;color:#2563eb;font-weight:700;">打开来源 HTML 核对页</a>` : ''}
                 </div>
             ` : '';
-            
+
             let optionsHTML = '';
             if (question.options && Array.isArray(question.options) && question.options.length > 0) {
                 optionsHTML = question.options.map((option, optIndex) => `
-                    <div class="option-item" onclick="QuestionBankPractice.selectOption(${optIndex})" 
+                    <div class="option-item" onclick="QuestionBankPractice.selectOption(${optIndex})"
                          style="background: white; border: 2px solid #e9ecef; border-radius: 15px; padding: 30px; margin: 20px 0; cursor: pointer; transition: all 0.3s ease; font-size: 1.5em; line-height: 2.0;"
                          data-option-index="${optIndex}">
                         <span style="display: inline-block; width: 45px; height: 45px; border-radius: 50%; background: #4facfe; color: white; text-align: center; line-height: 45px; margin-right: 30px; font-weight: bold; font-size: 1.3em;">
@@ -1694,18 +2323,18 @@ window.QuestionBankPractice = (function() {
                 // 没有选项时，不显示提示信息，直接显示输入框
                 optionsHTML = '';
             }
-            
+
             // 根据题型生成不同的输入方式
             let inputHTML = '';
-            
+
             // 检查是否有选项
             const hasOptions = question.options && Array.isArray(question.options) && question.options.length > 0;
-            
+
             if (questionType === '填空题') {
                 inputHTML = `
                     <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px;">
                         <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">📝 请输入答案：</label>
-                        <input type="text" id="fillAnswer" placeholder="请输入答案..." 
+                        <input type="text" id="fillAnswer" placeholder="请输入答案..."
                                style="width: 100%; padding: 25px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.4em; box-sizing: border-box; transition: all 0.3s ease;"
                                onchange="QuestionBankPractice.handleFillAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
                     </div>
@@ -1714,7 +2343,7 @@ window.QuestionBankPractice = (function() {
                 inputHTML = `
                     <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px;">
                         <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">📝 请输入详细答案：</label>
-                        <textarea id="essayAnswer" placeholder="请输入详细答案..." 
+                        <textarea id="essayAnswer" placeholder="请输入详细答案..."
                                   style="width: 100%; min-height: 200px; padding: 25px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.4em; box-sizing: border-box; resize: vertical; transition: all 0.3s ease; line-height: 2.0;"
                                   onchange="QuestionBankPractice.handleEssayAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'"></textarea>
                     </div>
@@ -1724,7 +2353,7 @@ window.QuestionBankPractice = (function() {
                     <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px; text-align: center;">
                         <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">📝 请选择答案：</label>
                         <div style="display: flex; gap: 40px; justify-content: center;">
-                            <button class="judge-btn" onclick="QuestionBankPractice.selectJudgeAnswer(true)" 
+                            <button class="judge-btn" onclick="QuestionBankPractice.selectJudgeAnswer(true)"
                                     style="padding: 22px 50px; font-size: 1.3em; border: 2px solid #28a745; background: white; color: #28a745; border-radius: 20px; cursor: pointer; transition: all 0.3s ease; font-weight: bold; min-width: 140px;">
                                 ✓ 正确
                             </button>
@@ -1740,7 +2369,7 @@ window.QuestionBankPractice = (function() {
                 inputHTML = `
                     <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px;">
                         <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">📝 请输入答案：</label>
-                        <input type="text" id="customAnswer" placeholder="请输入您的答案..." 
+                        <input type="text" id="customAnswer" placeholder="请输入您的答案..."
                                style="width: 100%; padding: 22px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.2em; box-sizing: border-box; transition: all 0.3s ease;"
                                onchange="QuestionBankPractice.handleCustomAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
                     </div>
@@ -1750,7 +2379,7 @@ window.QuestionBankPractice = (function() {
                 inputHTML = `
                     <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px;">
                         <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">💭 或者输入您的答案：</label>
-                        <input type="text" id="customAnswer" placeholder="请输入您的答案（可选）..." 
+                        <input type="text" id="customAnswer" placeholder="请输入您的答案（可选）..."
                                style="width: 100%; padding: 22px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.2em; box-sizing: border-box; transition: all 0.3s ease;"
                                onchange="QuestionBankPractice.handleCustomAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
                     </div>
@@ -1760,13 +2389,13 @@ window.QuestionBankPractice = (function() {
                 inputHTML = `
                     <div style="margin-top: 30px; background: rgba(248,249,250,0.8); border-radius: 20px; padding: 25px;">
                         <label style="display: block; margin-bottom: 20px; font-weight: bold; color: #333; font-size: 1.2em;">📝 请输入答案：</label>
-                        <input type="text" id="customAnswer" placeholder="请输入您的答案..." 
+                        <input type="text" id="customAnswer" placeholder="请输入您的答案..."
                                style="width: 100%; padding: 22px; border: 2px solid #e9ecef; border-radius: 15px; font-size: 1.2em; box-sizing: border-box; transition: all 0.3s ease;"
                                onchange="QuestionBankPractice.handleCustomAnswer(this.value)" onfocus="this.style.borderColor='#4facfe'" onblur="this.style.borderColor='#e9ecef'">
                     </div>
                 `;
             }
-            
+
             return `
                 <div>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
@@ -1781,35 +2410,35 @@ window.QuestionBankPractice = (function() {
                             ${question.category ? `<span style="background: #f8f9fa; color: #666; padding: 6px 15px; border-radius: 20px; font-size: 0.9em;">${question.category}</span>` : ''}
                         </div>
                     </div>
-                    
+
                     ${materialQualityHTML}
 
                     <div style="font-size: 1.6em; line-height: 2.4; margin-bottom: 40px; color: #333; text-align: justify; font-weight: 500;">
                         ${questionBodyHTML}
                     </div>
-                    
+
                     ${question.image ? `<img src="${question.image}" style="max-width: 100%; height: auto; border-radius: 12px; margin-bottom: 25px; box-shadow: 0 8px 25px rgba(0,0,0,0.1);" alt="题目图片">` : ''}
-                    
+
                     <div id="optionsContainer">
                         ${optionsHTML}
                     </div>
-                    
+
                     ${inputHTML}
                 </div>
             `;
         },
-        
+
         // 选择选项
         selectOption: function(optionIndex) {
             if (!practiceState.isActive || practiceState.isPaused) return;
-            
+
             // 清除之前的选择
             document.querySelectorAll('.option-item').forEach(item => {
                 item.style.background = 'white';
                 item.style.borderColor = '#e9ecef';
                 item.classList.remove('selected');
             });
-            
+
             // 高亮当前选择
             const selectedOption = document.querySelector(`[data-option-index="${optionIndex}"]`);
             if (selectedOption) {
@@ -1817,14 +2446,14 @@ window.QuestionBankPractice = (function() {
                 selectedOption.style.borderColor = '#4facfe';
                 selectedOption.classList.add('selected');
             }
-            
+
             // 记录答案
             currentSession.userAnswers[currentSession.currentIndex] = optionIndex;
-            
+
             // 显示通知
             showNotification(`已选择选项 ${String.fromCharCode(65 + optionIndex)}`, 'info', 1000);
         },
-        
+
         // 高亮答案
         highlightAnswer: function(answerIndex) {
             const option = document.querySelector(`[data-option-index="${answerIndex}"]`);
@@ -1833,44 +2462,44 @@ window.QuestionBankPractice = (function() {
                 option.style.borderColor = '#4facfe';
             }
         },
-        
+
         // 处理填空题答案
         handleFillAnswer: function(answer) {
             currentSession.userAnswers[currentSession.currentIndex] = answer.trim();
         },
-        
+
         // 处理解答题答案
         handleEssayAnswer: function(answer) {
             currentSession.userAnswers[currentSession.currentIndex] = answer.trim();
         },
-        
+
         // 处理自定义答案
         handleCustomAnswer: function(answer) {
             if (answer.trim()) {
                 currentSession.userAnswers[currentSession.currentIndex] = answer.trim();
             }
         },
-        
+
         // 选择判断题答案
         selectJudgeAnswer: function(answer) {
             document.querySelectorAll('.judge-btn').forEach(btn => {
                 btn.style.background = 'white';
             });
-            
+
             event.target.style.background = answer ? '#28a745' : '#dc3545';
             event.target.style.color = 'white';
-            
+
             currentSession.userAnswers[currentSession.currentIndex] = answer;
         },
-        
+
         // 提交答案
         submitAnswer: function() {
             const question = currentSession.questions[currentSession.currentIndex];
             const questionType = question.type || '选择题';
-            
+
             // 检查是否已输入答案
             let currentAnswer = currentSession.userAnswers[currentSession.currentIndex];
-            
+
             if (questionType === '填空题') {
                 const fillInput = document.getElementById('fillAnswer');
                 if (fillInput && fillInput.value.trim()) {
@@ -1894,31 +2523,40 @@ window.QuestionBankPractice = (function() {
                 }
                 // 如果已选择选项，currentAnswer 应该已经被设置
             }
-            
+
             if (currentAnswer === null || currentAnswer === undefined || currentAnswer === '') {
                 showNotification('请先选择或输入答案', 'warning');
                 return;
             }
-            
+
+            const submitKey = answerSubmitKey(question, currentAnswer);
+            if (currentSession.answerSubmitKeys[currentSession.currentIndex] === submitKey) {
+                showNotification('本题这次答案已经提交过，不会重复计入累计监控', 'info');
+                return;
+            }
+            currentSession.answerSubmitKeys[currentSession.currentIndex] = submitKey;
+            const attemptNumber = Number(currentSession.answerAttemptCounts[currentSession.currentIndex] || 0) + 1;
+            currentSession.answerAttemptCounts[currentSession.currentIndex] = attemptNumber;
+
             // 记录答题时间
             const questionTime = (Date.now() - practiceState.questionTimer) / 1000;
             currentSession.questionTimes[currentSession.currentIndex] = questionTime;
-            
+
             // 显示提交成功通知
             showNotification('答案已提交', 'success');
-            
+
             // 检查答案并显示解释
-            this.gradeCurrentAnswer();
+            this.gradeCurrentAnswer(attemptNumber);
         },
-        
+
         // 检查答案
-        gradeCurrentAnswer: function() {
+        gradeCurrentAnswer: function(attemptNumber) {
             const question = currentSession.questions[currentSession.currentIndex];
             const userAnswer = currentSession.userAnswers[currentSession.currentIndex];
-            
+
             const correctAnswer = getCorrectAnswer(question);
             const isCorrect = questionIsCorrect(question, userAnswer);
-            
+
             console.log('答案检查:', {
                 userAnswer,
                 correctAnswer,
@@ -1927,59 +2565,60 @@ window.QuestionBankPractice = (function() {
             });
 
             const questionTime = Number(currentSession.questionTimes[currentSession.currentIndex] || ((Date.now() - practiceState.questionTimer) / 1000));
-            trackPracticeEvent('practice_answer_submit', collectQuestionAudit(question, userAnswer, { isCorrect }, questionTime));
-            
+            trackPracticeEvent('practice_answer_submit', collectQuestionAudit(question, userAnswer, { isCorrect }, questionTime, attemptNumber));
+            practiceState.questionTimer = Date.now();
+
             // 显示结果
             this.showAnswerResult(isCorrect, question, userAnswer);
-            
+
             // 自动收集错题
             this.autoCollectWrongQuestions();
-            
+
             // 如果答错了，添加到错题本
             if (!isCorrect && typeof QuestionBankUser !== 'undefined') {
                 QuestionBankUser.addWrongQuestion(question, currentSession.bankId);
             }
         },
-        
+
         // 检查填空题答案
         checkFillAnswer: function(userAnswer, correctAnswer) {
             if (!userAnswer || !correctAnswer) return false;
-            
+
             // 如果正确答案是数组，检查是否匹配任一答案
             if (Array.isArray(correctAnswer)) {
-                return correctAnswer.some(ans => 
+                return correctAnswer.some(ans =>
                     userAnswer.toLowerCase().trim() === ans.toLowerCase().trim()
                 );
             }
-            
+
             return userAnswer.toLowerCase().trim() === correctAnswer.toLowerCase().trim();
         },
-        
+
         // 显示答案结果
         showAnswerResult: function(isCorrect, question, userAnswer) {
             const answerDisplay = document.getElementById('answerDisplay');
             const answerContent = document.getElementById('answerContent');
             const explanationContent = document.getElementById('explanationContent');
-            
+
             if (!answerDisplay || !answerContent) {
                 console.error('答案显示区域未找到');
                 return;
             }
-            
+
             const resultIcon = isCorrect ? '✅' : '❌';
             const resultText = isCorrect ? '回答正确！' : '回答错误';
             const resultColor = isCorrect ? '#28a745' : '#dc3545';
-            
+
             // AI智能分析用户答案
             this.analyzeAnswerWithAI(question, isCorrect, userAnswer);
-            
-            // 更新答案内容 - 使用更大的字体和更清晰的布局
-            answerContent.innerHTML = `
-                <div style="color: ${resultColor}; font-weight: bold; font-size: 3.0em; margin-bottom: 40px; text-align: center; padding: 35px; background: ${isCorrect ? '#d4edda' : '#f8d7da'}; border-radius: 20px; box-shadow: 0 8px 25px rgba(0,0,0,0.15);">
-                    ${resultIcon} ${resultText}
-                </div>
-                ${referenceAnswerBlock(question, { heading: '参考答案' })}
-            `;
+
+	            // 更新答案内容 - 使用更大的字体和更清晰的布局
+	            answerContent.innerHTML = `
+	                <div data-answer-result-banner="1" style="color: ${resultColor}; font-weight: bold; font-size: 1.35em; margin-bottom: 18px; text-align: left; padding: 16px 18px; background: ${isCorrect ? '#d4edda' : '#f8d7da'}; border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,0.08); overflow-wrap:anywhere;">
+	                    ${resultIcon} ${resultText}
+	                </div>
+	                ${referenceAnswerBlock(question, { heading: '参考答案' })}
+	            `;
             
             // 更新解释内容
             if (explanationContent) {
@@ -2005,28 +2644,8 @@ window.QuestionBankPractice = (function() {
                 `;
             }
             
-            // 显示答案区域
-            answerDisplay.style.display = 'block';
-            
-            // 优化答案显示区域的样式
-            answerDisplay.style.minHeight = '70vh';
-            answerDisplay.style.maxHeight = '85vh';
-            answerDisplay.style.fontSize = '28px';
-            answerDisplay.style.padding = '50px';
-            answerDisplay.style.background = 'rgba(240,248,255,0.98)';
-            answerDisplay.style.backdropFilter = 'blur(15px)';
-            renderFormulaInRoot(answerDisplay);
-            answerDisplay.style.boxShadow = '0 20px 60px rgba(0,0,0,0.2)';
-            answerDisplay.style.border = '4px solid #007bff';
-            answerDisplay.style.borderRadius = '20px';
-            
-            // 滚动到答案显示区域
-            setTimeout(() => {
-                answerDisplay.scrollIntoView({ 
-                    behavior: 'smooth', 
-                    block: 'start' 
-                });
-            }, 200);
+		            // 显示答案区域
+		            openAnswerPanel(answerDisplay, '参考答案已展开，正在排队渲染公式。');
             
             // 禁用答题控制
             const submitBtn = document.getElementById('submitBtn');
@@ -2223,6 +2842,15 @@ window.QuestionBankPractice = (function() {
                 if (currentSession.userAnswers) {
                     currentSession.userAnswers.splice(currentIndex, 1);
                 }
+                if (currentSession.questionTimes) {
+                    currentSession.questionTimes.splice(currentIndex, 1);
+                }
+                if (currentSession.answerAttemptCounts) {
+                    currentSession.answerAttemptCounts.splice(currentIndex, 1);
+                }
+                if (currentSession.answerSubmitKeys) {
+                    currentSession.answerSubmitKeys.splice(currentIndex, 1);
+                }
                 
                 // 如果删除的是最后一题，且不是第一题，则回到上一题
                 if (currentIndex >= currentSession.questions.length && currentIndex > 0) {
@@ -2355,6 +2983,15 @@ window.QuestionBankPractice = (function() {
                     currentSession.questions.splice(index, 1);
                     if (currentSession.userAnswers) {
                         currentSession.userAnswers.splice(index, 1);
+                    }
+                    if (currentSession.questionTimes) {
+                        currentSession.questionTimes.splice(index, 1);
+                    }
+                    if (currentSession.answerAttemptCounts) {
+                        currentSession.answerAttemptCounts.splice(index, 1);
+                    }
+                    if (currentSession.answerSubmitKeys) {
+                        currentSession.answerSubmitKeys.splice(index, 1);
                     }
                 });
                 
@@ -2493,7 +3130,10 @@ window.QuestionBankPractice = (function() {
             // 计算总结果
             const results = this.calculateResults();
 
-            trackPracticeEvent('practice_complete', collectPracticeSummary(results));
+            if (!currentSession.practiceCompletedEventSent) {
+                currentSession.practiceCompletedEventSent = true;
+                trackPracticeEvent('practice_complete', collectPracticeSummary(results));
+            }
             
             // 显示完成界面
             this.showCompletionInterface(results);
@@ -2773,17 +3413,17 @@ window.QuestionBankPractice = (function() {
             const questionDisplay = document.getElementById('questionDisplay');
             const answerDisplay = document.getElementById('answerDisplay');
             
-            if (questionDisplay) {
-                const currentSize = parseInt(window.getComputedStyle(questionDisplay).fontSize);
-                const newSize = Math.max(16, Math.min(32, currentSize + delta));
-                questionDisplay.style.fontSize = newSize + 'px';
-                if (answerDisplay) {
-                answerDisplay.style.fontSize = newSize + 'px';
-                const answerContent = document.getElementById('answerContent');
-                const explanationContent = document.getElementById('explanationContent');
-                if (answerContent) answerContent.style.fontSize = (newSize + 4) + 'px';
-                if (explanationContent) explanationContent.style.fontSize = newSize + 'px';
-            }
+	            if (questionDisplay) {
+	                const currentSize = parseInt(window.getComputedStyle(questionDisplay).fontSize);
+	                const newSize = Math.max(16, Math.min(32, currentSize + delta));
+	                questionDisplay.style.fontSize = newSize + 'px';
+	                if (answerDisplay) {
+	                    answerDisplay.style.fontSize = Math.min(newSize, 22) + 'px';
+	                    const answerContent = document.getElementById('answerContent');
+	                    const explanationContent = document.getElementById('explanationContent');
+	                    if (answerContent) answerContent.style.fontSize = Math.min(newSize + 2, 24) + 'px';
+	                    if (explanationContent) explanationContent.style.fontSize = Math.min(newSize, 20) + 'px';
+	                }
                 
                 // 同时调整选项和输入框的字体大小
                 const optionItems = questionDisplay.querySelectorAll('.option-item');
@@ -2965,42 +3605,37 @@ window.QuestionBankPractice = (function() {
             });
         },
         
-        // 显示/隐藏答案
-        toggleAnswer: function() {
-            const answerDisplay = document.getElementById('answerDisplay');
-            const showAnswerBtn = document.getElementById('showAnswerBtn');
-            const currentQuestion = currentSession.questions[currentSession.currentIndex];
+	        // 显示/隐藏答案
+	        toggleAnswer: function() {
+	            const answerDisplay = document.getElementById('answerDisplay');
+	            const currentQuestion = currentSession.questions[currentSession.currentIndex];
             
-            if (!answerDisplay || !currentQuestion) return;
+	            if (!answerDisplay || !currentQuestion) return;
             
-            if (answerDisplay.style.display === 'none') {
-                // 显示答案
-                const answerContent = document.getElementById('answerContent');
-                const explanationContent = document.getElementById('explanationContent');
+	            if (answerDisplay.dataset.answerState !== 'open') {
+	                // 显示答案
+	                const answerContent = document.getElementById('answerContent');
+	                const explanationContent = document.getElementById('explanationContent');
                 
-                if (answerContent) {
-                    answerContent.innerHTML = referenceAnswerBlock(currentQuestion, { heading: '参考答案' });
-                }
+	                if (answerContent) {
+	                    answerContent.innerHTML = referenceAnswerBlock(currentQuestion, { heading: '参考答案' });
+	                }
                 
                 if (explanationContent) {
-                    explanationContent.innerHTML = explanationBlock(currentQuestion) || '';
-                }
-                
-                answerDisplay.style.display = 'block';
-                renderFormulaInRoot(answerDisplay);
-                if (showAnswerBtn) {
-                    showAnswerBtn.innerHTML = '<i class="fas fa-eye-slash"></i> 隐藏';
-                    showAnswerBtn.className = 'btn btn-outline-warning btn-sm';
-                }
-            } else {
-                // 隐藏答案
-                answerDisplay.style.display = 'none';
-                if (showAnswerBtn) {
-                    showAnswerBtn.innerHTML = '<i class="fas fa-eye"></i> 答案';
-                    showAnswerBtn.className = 'btn btn-outline-success btn-sm';
-                }
-            }
-        },
+	                    explanationContent.innerHTML = explanationBlock(currentQuestion) || '';
+	                }
+
+		                openAnswerPanel(answerDisplay, '参考答案已展开，正在排队渲染公式。');
+		            } else {
+		                // 隐藏答案
+		                answerDisplay.style.display = 'none';
+		                answerDisplay.dataset.answerState = 'closed';
+		                answerDisplay.setAttribute('aria-hidden', 'true');
+		                answerDisplay.classList.remove('is-open');
+		                setAnswerButtonState(false);
+		                setAnswerStatus('参考答案已收起；再次点击“答案”可展开。', 'muted');
+		            }
+	        },
         
         // 字体大小控制功能
         changeFontSize: function(delta) {
@@ -3240,18 +3875,18 @@ window.QuestionBankPractice = (function() {
             const answerDisplay = document.getElementById('answerDisplay');
             const fontSizeDisplay = document.getElementById('fontSizeDisplay');
             
-            if (questionDisplay) {
-                questionDisplay.style.fontSize = '16px';
-                if (answerDisplay) {
-                answerDisplay.style.fontSize = '28px';
-                const answerContent = document.getElementById('answerContent');
-                const explanationContent = document.getElementById('explanationContent');
-                if (answerContent) answerContent.style.fontSize = '28px';
-                if (explanationContent) explanationContent.style.fontSize = '24px';
-            }
-                if (fontSizeDisplay) fontSizeDisplay.textContent = '16px';
-            }
-        },
+	            if (questionDisplay) {
+	                questionDisplay.style.fontSize = '16px';
+	                if (answerDisplay) {
+	                    answerDisplay.style.fontSize = '20px';
+	                    const answerContent = document.getElementById('answerContent');
+	                    const explanationContent = document.getElementById('explanationContent');
+	                    if (answerContent) answerContent.style.fontSize = '20px';
+	                    if (explanationContent) explanationContent.style.fontSize = '18px';
+	                }
+	                if (fontSizeDisplay) fontSizeDisplay.textContent = '16px';
+	            }
+	        },
         
         // 切换主题
         toggleTheme: function() {
@@ -3626,7 +4261,11 @@ window.QuestionBankPractice = (function() {
                 userAnswers: currentSession.userAnswers,
                 startTime: currentSession.startTime,
                 questionTimes: currentSession.questionTimes,
+                answerAttemptCounts: currentSession.answerAttemptCounts,
+                answerSubmitKeys: currentSession.answerSubmitKeys,
                 bankId: currentSession.bankId,
+                practiceSessionId: currentSession.practiceSessionId,
+                practiceCompletedEventSent: Boolean(currentSession.practiceCompletedEventSent),
                 timestamp: new Date().toISOString()
             };
             
@@ -6337,21 +6976,18 @@ ${report.learningPath.milestones.map(m => `- ${m.title}: ${m.description} (目�
             }
         },
 
-        // 隐藏答案显示
-        hideAnswerDisplay: function() {
-            const answerDisplay = document.getElementById('answerDisplay');
-            if (answerDisplay) {
-                answerDisplay.style.display = 'none';
-            }
-        },
+	        // 隐藏答案显示
+	        hideAnswerDisplay: function() {
+	            resetAnswerPanelState();
+	        },
 
-        // 显示答案显示
-        showAnswerDisplay: function() {
-            const answerDisplay = document.getElementById('answerDisplay');
-            if (answerDisplay) {
-                answerDisplay.style.display = 'block';
-            }
-        },
+	        // 显示答案显示
+	        showAnswerDisplay: function() {
+	            const answerDisplay = document.getElementById('answerDisplay');
+	            if (answerDisplay) {
+	                openAnswerPanel(answerDisplay, '参考答案区域已展开。');
+	            }
+	        },
 
         // 开始考试计时
         startExamTimer: function() {
@@ -7354,12 +7990,22 @@ ${report.suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
         // 跟踪学习进度
         trackLearningProgress: function() {
             const today = new Date().toISOString().split('T')[0];
+            let existing = {};
+            try {
+                existing = JSON.parse(localStorage.getItem('learningProgress_' + today) || '{}') || {};
+            } catch (error) {
+                existing = {};
+            }
             const progress = {
+                ...existing,
                 date: today,
-                questionsAnswered: 0,
-                correctAnswers: 0,
-                studyTime: 0,
-                startTime: Date.now()
+                questionsAnswered: Number(existing.questionsAnswered || 0),
+                correctAnswers: Number(existing.correctAnswers || 0),
+                studyTime: Number(existing.studyTime || 0),
+                baseStudyTime: Number(existing.baseStudyTime || existing.studyTime || 0),
+                startTime: existing.startTime || Date.now(),
+                localOnly: true,
+                source: 'local-study-plan-helper'
             };
             
             localStorage.setItem('learningProgress_' + today, JSON.stringify(progress));
@@ -7370,12 +8016,17 @@ ${report.suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
 
         // 启动进度跟踪
         startProgressTracking: function() {
+            if (this.progressTrackingInterval) clearInterval(this.progressTrackingInterval);
             const progressInterval = setInterval(() => {
                 const today = new Date().toISOString().split('T')[0];
                 const progress = JSON.parse(localStorage.getItem('learningProgress_' + today) || '{}');
                 
                 if (progress.startTime) {
-                    progress.studyTime = Math.floor((Date.now() - progress.startTime) / 1000);
+                    const baseStudyTime = Number(progress.baseStudyTime || progress.studyTime || 0);
+                    progress.baseStudyTime = baseStudyTime;
+                    progress.studyTime = Math.max(Number(progress.studyTime || 0), baseStudyTime + Math.floor((Date.now() - Number(progress.startTime || Date.now())) / 1000));
+                    progress.localOnly = true;
+                    progress.source = progress.source || 'local-study-plan-helper';
                     localStorage.setItem('learningProgress_' + today, JSON.stringify(progress));
                 }
             }, 60000); // 每分钟更新一次

@@ -11,12 +11,15 @@ window.QuestionBankStats = (function() {
         totalStudyTime: 0,
         streakDays: 0,
         favoriteCount: 0,
-        wrongQuestionCount: 0
+        wrongQuestionCount: 0,
+        source: 'localStorage-offline-fallback',
+        serverManaged: false,
+        localOnly: true
     };
     
-    // 公有方法
-    return {
-        // 初始化模块
+	    // 公有方法
+	    return {
+	        // 初始化模块
         init: function() {
             console.log('初始化统计模块...');
             this.updateStats();
@@ -24,22 +27,33 @@ window.QuestionBankStats = (function() {
             return this;
         },
 
-        hydrateServerStats: async function() {
-            try {
-                const response = await fetch('/api/stats', {
+	        hydrateServerStats: async function() {
+	            try {
+	                const response = await fetch('/api/stats', {
                     method: 'GET',
                     credentials: 'same-origin',
                     cache: 'no-store'
-                });
-                if (!response.ok) return;
-                const payload = await response.json();
-                if (!payload || !payload.ok || !payload.stats) return;
-                localStorage.setItem('fm_learning_progress_snapshot_v1', JSON.stringify({
-                    syncedAt: new Date().toISOString(),
-                    source: 'server-kv-learning-progress',
-                    progress: payload.progress || null,
-                    stats: payload.stats
-                }));
+	                });
+	                if (!response.ok) return;
+	                const payload = await response.json();
+	                if (!payload || !payload.ok || !payload.stats) return;
+	                const source = String(payload.source || '').trim()
+	                    || (payload.storeMode === 'd1'
+	                        ? 'server-d1-learning-progress'
+	                        : payload.storeMode === 'r2-progress'
+	                            ? 'server-r2-learning-progress'
+	                            : payload.storeMode === 'kv-single-write-fallback'
+	                                ? 'server-kv-learning-progress'
+	                                : 'server-learning-progress-unavailable');
+	                localStorage.setItem('fm_learning_progress_snapshot_v1', JSON.stringify({
+	                    syncedAt: new Date().toISOString(),
+	                    source,
+                    storeMode: payload.storeMode || '',
+                    cumulativeSourceOfTruth: payload.cumulativeSourceOfTruth || 'server-progress-snapshot',
+                    noMutationRead: payload.noMutationRead === true,
+	                    progress: payload.progress || null,
+	                    stats: payload.stats
+	                }));
                 this.updateStats();
             } catch (_) {}
         },
@@ -66,6 +80,9 @@ window.QuestionBankStats = (function() {
                 statsData.correctAnswers = userStats.correctAnswers || 0;
                 statsData.totalStudyTime = userStats.totalStudyTime || 0;
                 statsData.streakDays = userStats.streakDays || 0;
+                statsData.source = userStats.source || 'localStorage-offline-fallback';
+                statsData.serverManaged = userStats.serverManaged === true;
+                statsData.localOnly = userStats.localOnly !== false;
                 statsData.favoriteCount = QuestionBankUser.getFavoriteCount();
                 statsData.wrongQuestionCount = QuestionBankUser.getWrongQuestionCount();
             }
@@ -107,6 +124,10 @@ window.QuestionBankStats = (function() {
                     const element = document.getElementById(id);
                     if (element) {
                         element.textContent = statsValues[key];
+                        if (key === 'completedQuestions' || key === 'studyTime') {
+                            element.dataset.progressSource = statsData.source || '';
+                            element.dataset.serverManaged = statsData.serverManaged ? 'true' : 'false';
+                        }
                     }
                 });
             });
