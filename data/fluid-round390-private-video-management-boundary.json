@@ -1,0 +1,125 @@
+{
+  "version": "round390-private-video-management-boundary-20260618",
+  "generatedAt": "2026-06-18T01:36:03Z",
+  "worker": "C",
+  "scope": {
+    "projectRoot": "lghui-source-private-video-work",
+    "allowedFiles": [
+      "functions/_middleware.js",
+      "docs/round390-private-video-management-boundary.md",
+      "data/fluid-round390-private-video-management-boundary.json",
+      "data/fluid-round390-private-video-management-boundary.json.gz"
+    ],
+    "cloudflareMutationAttempted": false,
+    "privateVideoCourseMutationAttemptedAgainstProduction": false,
+    "realDeleteAttemptedAgainstProduction": false,
+    "vpnOrProxyTouched": false,
+    "pythonUsed": false,
+    "volumesMac2TTouched": false
+  },
+  "changedBehavior": [
+    "Teacher-side private-video controls in functions/_middleware.js now honor actionReadiness for upload-publish, change-access, archive-course, delete-dry-run, and delete-course.",
+    "Same-access save remains a safe no-op while true access changes are blocked in the teacher UI when the storage boundary is not proven.",
+    "Delete dry-run returns confirmation, typedConfirmation, storageCleanupPlan, blockers, and storageCleanupCompleteClaimAllowed.",
+    "Real delete remains metadata-first and may revoke the student playback entry, but missing FM_PRIVATE_MEDIA returns cleanupPending and storage_cleanup_unverified_missing_fm_private_media instead of claiming complete storage cleanup.",
+    "Publish/archive/access API success responses now include limits, productionBlocker, and productionAcceptance for direct callers."
+  ],
+  "actionBoundary": [
+    {
+      "id": "list",
+      "stateWhenFmPrivateMediaMissing": "ready",
+      "executablePath": "read-only list/status refresh",
+      "productionRecoveryClaimAllowed": false
+    },
+    {
+      "id": "same-access-save",
+      "stateWhenFmPrivateMediaMissing": "ready",
+      "executablePath": "same assigned student returns noop success",
+      "productionRecoveryClaimAllowed": false
+    },
+    {
+      "id": "delete-dry-run",
+      "stateWhenFmPrivateMediaMissing": "ready",
+      "executablePath": "reads course state, typed confirmation field, and cleanup plan only",
+      "productionRecoveryClaimAllowed": false
+    },
+    {
+      "id": "delete-course",
+      "stateWhenFmPrivateMediaMissing": "limited",
+      "executablePath": "metadata-first revoke after dry-run and exact confirmCourseId",
+      "storageCleanupCompleteClaimAllowed": false
+    },
+    {
+      "id": "upload-publish",
+      "stateWhenFmPrivateMediaMissing": "blocked",
+      "executablePath": "teacher UI blocked; API response carries blocker",
+      "productionRecoveryClaimAllowed": false
+    },
+    {
+      "id": "change-access",
+      "stateWhenFmPrivateMediaMissing": "blocked-for-real-change",
+      "executablePath": "same-access noop allowed; true reassignment blocked in teacher UI",
+      "productionRecoveryClaimAllowed": false
+    },
+    {
+      "id": "archive-course",
+      "stateWhenFmPrivateMediaMissing": "blocked",
+      "executablePath": "teacher UI blocked; API response carries blocker",
+      "productionRecoveryClaimAllowed": false
+    }
+  ],
+  "backendContract": {
+    "deleteDryRunFields": [
+      "confirmation",
+      "typedConfirmation",
+      "storageCleanupPlan",
+      "blockers",
+      "storageCleanupCompleteClaimAllowed",
+      "productionBlocker",
+      "productionAcceptance"
+    ],
+    "deleteConfirmationField": "confirmCourseId",
+    "deleteWarningWhenR2Missing": "storage_cleanup_unverified_missing_fm_private_media",
+    "safeMetadataRevokeAllowedWithoutR2": true,
+    "objectKeyLeakGuard": [
+      "private/videos/<redacted>",
+      "private-video-chunk:<redacted>",
+      "private-video:<redacted>:meta"
+    ]
+  },
+  "securityBoundary": {
+    "adminAuthenticationChanged": false,
+    "originCsrfGuardPreserved": true,
+    "typedConfirmationRequired": true,
+    "objectKeysExposed": false,
+    "secretsPrinted": false
+  },
+  "verification": [
+    {
+      "command": "node --check functions/_middleware.js",
+      "status": "passed"
+    },
+    {
+      "command": "node tools/check-private-video-management-mock.mjs --json",
+      "status": "passed",
+      "meaning": "mock gate still sees dry-run, typed confirmCourseId, blocker wording, and management UI markers"
+    },
+    {
+      "command": "node tools/smoke-student-access.mjs",
+      "status": "passed",
+      "meaning": "student/private-video access, cross-origin private mutations, archive, reassignment, and delete smoke remain green"
+    }
+  ],
+  "residualRisk": [
+    "Production private-video recovery remains blocked until Cloudflare Pages production proves FM_PRIVATE_MEDIA R2.",
+    "Real teacher/student browser QA was not run in this worker slot.",
+    "No production delete/archive/access mutation was attempted."
+  ],
+  "claims": {
+    "productionRecoveryClaimed": false,
+    "storageCleanupCompleteClaimedWithoutR2": false,
+    "safeMetadataRevokePathPreserved": true,
+    "round390BoundaryArtifact": true
+  },
+  "ok": true
+}

@@ -1,0 +1,62 @@
+{
+  "version": "round390-cloudflare-binding-runbook-20260618",
+  "date": "2026-06-18",
+  "scope": [
+    "learning-progress durability",
+    "private-video storage recovery",
+    "Cloudflare Pages production bindings"
+  ],
+  "projectName": "lghui-fluid-learning",
+  "publicOrigin": "https://lghui.top",
+  "sourceOrigin": "https://lghui-fluid-learning.pages.dev",
+  "requiredBindings": [
+    {
+      "name": "FM_AUDIT",
+      "type": "kv",
+      "statusAtRound389": "present",
+      "requiredFor": "audit and metadata fallback"
+    },
+    {
+      "name": "FM_PROGRESS_DB",
+      "type": "d1",
+      "statusAtRound389": "missing",
+      "requiredFor": "primary durable learning-progress store",
+      "acceptance": "FM_PROGRESS_DB or FM_PROGRESS_R2 must exist before full production progress readiness can pass."
+    },
+    {
+      "name": "FM_PROGRESS_R2",
+      "type": "r2",
+      "statusAtRound389": "missing",
+      "requiredFor": "primary durable learning-progress fallback store",
+      "acceptance": "FM_PROGRESS_DB or FM_PROGRESS_R2 must exist before full production progress readiness can pass."
+    },
+    {
+      "name": "FM_PRIVATE_MEDIA",
+      "type": "r2",
+      "statusAtRound389": "missing",
+      "requiredFor": "private-video storage-backed upload, archive, delete cleanup, and production recovery"
+    }
+  ],
+  "currentKnownBoundary": {
+    "progressSource": "server-kv-learning-progress",
+    "storeMode": "kv-single-write-fallback",
+    "cumulativeSourceOfTruth": "server-progress-snapshot",
+    "noMutationRead": true,
+    "fullProductionReady": false,
+    "strictWriteGate": "must fail before POST until FM_PROGRESS_DB or FM_PROGRESS_R2 is bound"
+  },
+  "verificationCommands": [
+    "node tools/check-cloudflare-pages-private-video-bindings.mjs --json",
+    "node tools/check-production-progress-real-account.mjs --json --require-public-chain --require-persistent-write",
+    "node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain --require-primary-store",
+    "node tests/edge-fluid-upgrade-check.js",
+    "node tools/smoke-student-access.mjs"
+  ],
+  "nonAcceptanceCases": [
+    "Only FM_AUDIT is present",
+    "kv-single-write-fallback is stable but no D1/R2 primary progress store exists",
+    "FM_PROGRESS_DB and FM_PROGRESS_R2 are both missing",
+    "FM_PRIVATE_MEDIA is missing",
+    "Cloudflare API token lacks D1/R2 permissions"
+  ]
+}

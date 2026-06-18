@@ -169,6 +169,99 @@
     "visibleProof": "functions/_middleware.js, modules/progress-module.html, modules/question-bank-practice.js, modules/js/practice-main.js, tools/check-round394-progress-durability-static-gate.mjs, tests/edge-fluid-upgrade-check.js, site-updates.json, public shell."
   },
   {
+    "version": "round394-progress-accounting-181103-html-answer-sync-20260618",
+    "date": "2026-06-18",
+    "time": "14:02",
+    "updatedAt": "2026-06-18T14:02:00+08:00",
+    "previousVersion": "round393-progress-durability-monitor-gate-20260618",
+    "tag": "Round394",
+    "focus": "progress-accounting-181103-html-answer-sync",
+    "title": "Round394 累计时长监控与 181103 HTML 答案同步",
+    "summary": "本轮把学习进度累计口径、做题监控和 181103 资料答案同步收口到同一个当前版本：GET /api/progress 与 GET /api/stats 仍是 noMutationRead=true 的 server-progress-snapshot，POST 只代表 progress-write-confirmation；题库练习和模块练习写入改为串行队列，成功后必须重新 GET 快照，不能用 POST 回包直接水合累计。学生进度页不再把没有 user 的本地 fm_scores / fm_sessions 套到当前账号，教师监控的 learningProgress 表只收持久化累计快照或答题事件窗，不再因登录、页面访问或私有视频观看而新增累计行。181103 题库 522 条全部有答案，381 道进入默认练习，141 条资料线索卡有来源边界；17 个资料 HTML 页已从题库重写 150 个答案块，38 份资料页、522 张题卡、522 个可见答案块、406 个公式答案全部通过 HTML parity。生产仍必须绑定 FM_PROGRESS_DB 或 FM_PROGRESS_R2 才能宣称完整 durable 累计服务器；当前 KV fallback 只能证明读不漂移。私有视频完整管理仍要求 FM_PRIVATE_MEDIA R2。lghui.top 公开壳和真实账号 QA/发布门禁继续按当前版本验证；历年真题仍锁定 325 原文原子小题、68 组题和 217 grouped 小题。默认学生账号基线继续只保留 qi、chenlei、anxin、sunruze；本轮未加入额外默认账号，不再扩入未知学生。",
+    "links": [
+      {
+        "label": "学生学习进度",
+        "href": "/modules/progress-module.html?edge_refresh=round394-progress-accounting-181103-html-answer-sync-20260618"
+      },
+      {
+        "label": "教师进度监控",
+        "href": "/teacher-panel?view=students&edge_refresh=round394-progress-accounting-181103-html-answer-sync-20260618"
+      },
+      {
+        "label": "181103 资料题库",
+        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round394-progress-accounting-181103-html-answer-sync-20260618#questionBanksList"
+      },
+      {
+        "label": "181103 HTML 资料",
+        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round394-progress-accounting-181103-html-answer-sync-20260618"
+      }
+    ],
+    "evidence": {
+      "progressStaticGate": "node tools/check-round394-progress-durability-static-gate.mjs --json => PASS; locks server snapshots, serialized writes, user-scoped local reference rows, and teacher learningProgress row filtering.",
+      "answerQualityGate": "node tools/check-round394-181103-answer-quality.mjs --json => PASS; 522 total, 381 practice, 141 source cards, 0 empty answers, 0 placeholders, 406 formula answers.",
+      "materialHtmlGate": "node tools/check-round394-181103-material-answer-html.mjs --json => PASS; 38 pages, 522/522 visible answer blocks, 522/522 bank parity, 406/406 formula answers.",
+      "answerUiGate": "node tools/check-round394-181103-answer-ui.mjs --json => PASS; answer/details/source layers visible by default with MathJax trigger markers.",
+      "legacyCarryForward": "node tools/check-round392-progress-monitor-audit.mjs --json and node tools/check-round393-progress-durability-gate.mjs --json remain PASS for read/write truth separation and missing FM_PROGRESS_DB/FM_PROGRESS_R2 blocker labels."
+    },
+    "requiredTerms": [
+      "server-progress-snapshot",
+      "progress-write-confirmation",
+      "noMutationRead",
+      "learningProgressWriteChain",
+      "progressWriteChain",
+      "fm_scores user filter",
+      "audit-event-window 非累计",
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2",
+      "FM_PRIVATE_MEDIA",
+      "522",
+      "381",
+      "141",
+      "406"
+    ],
+    "visibleProof": "functions/_middleware.js, modules/progress-module.html, modules/question-bank-practice.js, modules/js/practice-main.js, resources/fluid-181103-html/materials, question-banks/181103-material-extracted.json, tools/check-round394-*.mjs, tests/edge-fluid-upgrade-check.js, site-updates.json, public shell."
+  },
+  {
+    "version": "round393-progress-durability-monitor-gate-20260618",
+    "date": "2026-06-18",
+    "time": "12:31",
+    "updatedAt": "2026-06-18T12:31:15+08:00",
+    "previousVersion": "round392-progress-monitor-181103-answer-lock-20260618",
+    "tag": "Round393",
+    "focus": "progress-durability-monitor-gate",
+    "title": "Round393 进度持久化门禁与监控标签",
+    "summary": "本轮只收紧学习进度持久化和监控口径：GET /api/progress 与 GET /api/stats 继续保持 noMutationRead=true、server-progress-snapshot，只作为只读累计快照；POST 仍是 progress-write-confirmation，不能直接水合累计。新增 writeDurabilityGate / strictCumulativeServer 机器口径，write_quota_exceeded、storage_unavailable 或缺 FM_PROGRESS_DB / FM_PROGRESS_R2 时必须显示 block-full-production-cumulative，不能写成 working cumulative server。学生进度页把 server snapshot no-drift、KV fallback、D1/R2 严格累计服务器和写入 blocker 分开；教师监控把 audit-event-window 固定为最近诊断，累计 answers / sessions / studyTimeSeconds 只认 server-progress-snapshot。lghui.top、公开壳、真实账号 QA 和发布门禁都必须按 Round393 重新验证；默认学生账号基线保持 qi、chenlei、anxin、sunruze 四个活跃学生，本轮未加入额外默认账号，FM_PRIVATE_MEDIA 仍是私有视频完整存储清理的生产阻塞项。",
+    "links": [
+      {
+        "label": "学生学习进度",
+        "href": "/modules/progress-module.html?edge_refresh=round393-progress-durability-monitor-gate-20260618"
+      },
+      {
+        "label": "教师进度监控",
+        "href": "/teacher-panel?view=students&edge_refresh=round393-progress-durability-monitor-gate-20260618"
+      }
+    ],
+    "evidence": {
+      "staticGate": "node tools/check-round393-progress-durability-gate.mjs --json => middleware, student page, teacher monitor, and site-updates require writeDurabilityGate, strictCumulativeServer=false blocker labels, write_quota_exceeded, missing FM_PROGRESS_DB/FM_PROGRESS_R2, and GET noMutationRead server-progress-snapshot.",
+      "legacyCarryForward": "node tools/check-round392-progress-monitor-audit.mjs --json remains PASS for POST write-confirmation and GET snapshot separation.",
+      "syntaxGate": "node --check functions/_middleware.js && node -e progress-module script extraction/new Function check"
+    },
+    "requiredTerms": [
+      "writeDurabilityGate",
+      "strictCumulativeServer=false",
+      "write_quota_exceeded",
+      "missing-primary-d1-r2",
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2",
+      "noMutationRead",
+      "server-progress-snapshot",
+      "progress-write-confirmation",
+      "working cumulative server",
+      "audit-event-window"
+    ],
+    "visibleProof": "functions/_middleware.js progress APIs and teacher monitor labels, modules/progress-module.html truth panel, tools/check-round393-progress-durability-gate.mjs, site-updates.json top entry."
+  },
+  {
     "version": "round392-progress-monitor-181103-answer-lock-20260618",
     "date": "2026-06-18",
     "time": "16:18",
@@ -242,167 +335,6 @@
       "不再扩入未知学生"
     ],
     "visibleProof": "functions/_middleware.js, modules/question-bank.html, modules/question-bank-practice.js, modules/js/practice-main.js, modules/progress-module.html, modules/real-exams-dynamic.html, question-banks/181103-material-extracted.json, resources/fluid-181103-html/materials, tests/edge-fluid-upgrade-check.js, site-updates.json, roadmap, and public shell must use round392-progress-monitor-181103-answer-lock-20260618 as current."
-  },
-  {
-    "version": "round394-progress-accounting-181103-html-answer-sync-20260618",
-    "date": "2026-06-18",
-    "time": "14:02",
-    "updatedAt": "2026-06-18T14:02:00+08:00",
-    "previousVersion": "round393-progress-durability-monitor-gate-20260618",
-    "tag": "Round394",
-    "focus": "progress-accounting-181103-html-answer-sync",
-    "title": "Round394 累计时长监控与 181103 HTML 答案同步",
-    "summary": "本轮把学习进度累计口径、做题监控和 181103 资料答案同步收口到同一个当前版本：GET /api/progress 与 GET /api/stats 仍是 noMutationRead=true 的 server-progress-snapshot，POST 只代表 progress-write-confirmation；题库练习和模块练习写入改为串行队列，成功后必须重新 GET 快照，不能用 POST 回包直接水合累计。学生进度页不再把没有 user 的本地 fm_scores / fm_sessions 套到当前账号，教师监控的 learningProgress 表只收持久化累计快照或答题事件窗，不再因登录、页面访问或私有视频观看而新增累计行。181103 题库 522 条全部有答案，381 道进入默认练习，141 条资料线索卡有来源边界；17 个资料 HTML 页已从题库重写 150 个答案块，38 份资料页、522 张题卡、522 个可见答案块、406 个公式答案全部通过 HTML parity。生产仍必须绑定 FM_PROGRESS_DB 或 FM_PROGRESS_R2 才能宣称完整 durable 累计服务器；当前 KV fallback 只能证明读不漂移。私有视频完整管理仍要求 FM_PRIVATE_MEDIA R2。lghui.top 公开壳和真实账号 QA/发布门禁继续按当前版本验证；历年真题仍锁定 325 原文原子小题、68 组题和 217 grouped 小题。默认学生账号基线继续只保留 qi、chenlei、anxin、sunruze；本轮未加入额外默认账号，不再扩入未知学生。",
-    "links": [
-      {
-        "label": "学生学习进度",
-        "href": "/modules/progress-module.html?edge_refresh=round394-progress-accounting-181103-html-answer-sync-20260618"
-      },
-      {
-        "label": "教师进度监控",
-        "href": "/teacher-panel?view=students&edge_refresh=round394-progress-accounting-181103-html-answer-sync-20260618"
-      },
-      {
-        "label": "181103 资料题库",
-        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round394-progress-accounting-181103-html-answer-sync-20260618#questionBanksList"
-      },
-      {
-        "label": "181103 HTML 资料",
-        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round394-progress-accounting-181103-html-answer-sync-20260618"
-      }
-    ],
-    "evidence": {
-      "progressStaticGate": "node tools/check-round394-progress-durability-static-gate.mjs --json => PASS; locks server snapshots, serialized writes, user-scoped local reference rows, and teacher learningProgress row filtering.",
-      "answerQualityGate": "node tools/check-round394-181103-answer-quality.mjs --json => PASS; 522 total, 381 practice, 141 source cards, 0 empty answers, 0 placeholders, 406 formula answers.",
-      "materialHtmlGate": "node tools/check-round394-181103-material-answer-html.mjs --json => PASS; 38 pages, 522/522 visible answer blocks, 522/522 bank parity, 406/406 formula answers.",
-      "answerUiGate": "node tools/check-round394-181103-answer-ui.mjs --json => PASS; answer/details/source layers visible by default with MathJax trigger markers.",
-      "legacyCarryForward": "node tools/check-round392-progress-monitor-audit.mjs --json and node tools/check-round393-progress-durability-gate.mjs --json remain PASS for read/write truth separation and missing FM_PROGRESS_DB/FM_PROGRESS_R2 blocker labels."
-    },
-    "requiredTerms": [
-      "server-progress-snapshot",
-      "progress-write-confirmation",
-      "noMutationRead",
-      "learningProgressWriteChain",
-      "progressWriteChain",
-      "fm_scores user filter",
-      "audit-event-window 非累计",
-      "FM_PROGRESS_DB",
-      "FM_PROGRESS_R2",
-      "FM_PRIVATE_MEDIA",
-      "522",
-      "381",
-      "141",
-      "406"
-    ],
-    "visibleProof": "functions/_middleware.js, modules/progress-module.html, modules/question-bank-practice.js, modules/js/practice-main.js, resources/fluid-181103-html/materials, question-banks/181103-material-extracted.json, tools/check-round394-*.mjs, tests/edge-fluid-upgrade-check.js, site-updates.json, public shell."
-  },
-  {
-    "version": "round394-public-shell-181103-html-answer-sync-20260618",
-    "date": "2026-06-18",
-    "time": "13:45",
-    "updatedAt": "2026-06-18T13:45:00+08:00",
-    "previousVersion": "round393-progress-durability-monitor-gate-20260618",
-    "tag": "Round394",
-    "focus": "round394-public-shell-181103-html-answer-sync",
-    "title": "Round394 lghui.top 公开壳入口、181103 HTML 与答案同步",
-    "summary": "公开壳第一屏现在展示 Round394 public-shell 同步版本，源站内容真值来自 Round393（round393-progress-durability-monitor-gate-20260618）：/api/progress 与 /api/track 的 POST 只代表 progress-write-confirmation，累计题数、学习时长和教师监控必须重新读取 server-progress-snapshot；当前生产仍是 server-kv-learning-progress / kv-single-write-fallback，完整生产持久化继续要求 FM_PROGRESS_DB 或 FM_PROGRESS_R2。181103 入口继续保留 38 份 HTML 总表、522 张资料来源卡、381 道默认练习和 141 条线索展示；题库 JSON/GZ、HTML 正文页和 public shell 入口同步到同一版本，不再使用 lghui.top 旧样本、旧 round 或答案旧版。私有视频生产恢复仍要求 FM_PRIVATE_MEDIA R2。lghui.top 只做入口，不伪造 auth，不提供 PDF/PPT/DOC/ZIP 下载。",
-    "links": [
-      {
-        "label": "Round393 累计监控真值",
-        "href": "/modules/progress-module.html?edge_refresh=round394-public-shell-181103-html-answer-sync-20260618"
-      },
-      {
-        "label": "Round394 181103 HTML 总表",
-        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round394-public-shell-181103-html-answer-sync-20260618"
-      },
-      {
-        "label": "Round394 181103 题库入口",
-        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round394-public-shell-181103-html-answer-sync-20260618#questionBanksList"
-      },
-      {
-        "label": "私有视频入口",
-        "href": "/private-video.html?edge_refresh=round394-public-shell-181103-html-answer-sync-20260618"
-      }
-    ],
-    "evidence": {
-      "currentRound": 394,
-      "sourceProgressTruthVersion": "round393-progress-durability-monitor-gate-20260618",
-      "sourceProgressTruthTitle": "Round393 进度持久化门禁与监控标签",
-      "publicShellBoundary": "lghui.top is a static public shell and route entry. It does not mint auth, does not prove authenticated QA, and does not provide raw downloads.",
-      "progressStorageBoundary": "Round394 keeps the source progress truth from Round393: progress-write-confirmation is not cumulative truth and server-progress-snapshot readback is required; full durable progress still requires FM_PROGRESS_DB or FM_PROGRESS_R2.",
-      "privateVideoBoundary": "FM_PRIVATE_MEDIA R2 remains required before claiming private-video production upload/delete/access/archive recovery.",
-      "supplemental181103Boundary": "181103 remains 38 HTML material pages, 522 source cards, 381 default-practice questions, and 141 display-only source/content leads.",
-      "generator": "tools/generate-public-redirects.mjs",
-      "generatedPublicShellFiles": "index.html, index-complete.html, resources.html, question-bank-home.html, knowledge.html, modules/question-bank.html, and route aliases",
-      "sourceRoundEvidence": {
-        "staticGate": "node tools/check-round393-progress-durability-gate.mjs --json => middleware, student page, teacher monitor, and site-updates require writeDurabilityGate, strictCumulativeServer=false blocker labels, write_quota_exceeded, missing FM_PROGRESS_DB/FM_PROGRESS_R2, and GET noMutationRead server-progress-snapshot.",
-        "legacyCarryForward": "node tools/check-round392-progress-monitor-audit.mjs --json remains PASS for POST write-confirmation and GET snapshot separation.",
-        "syntaxGate": "node --check functions/_middleware.js && node -e progress-module script extraction/new Function check"
-      },
-      "verificationPlan": [
-        "node --check tools/generate-public-redirects.mjs",
-        "node tools/generate-public-redirects.mjs",
-        "static public-shell first-screen term check for Round394/181103/storage boundaries",
-        "hash compare public shell resources/fluid-181103-html and question-banks/181103-material-extracted.json(.gz) against the source repo"
-      ]
-    },
-    "requiredTerms": [
-      "Round394",
-      "round393-progress-durability-monitor-gate-20260618",
-      "server-progress-snapshot",
-      "FM_PROGRESS_DB",
-      "FM_PROGRESS_R2",
-      "FM_PRIVATE_MEDIA",
-      "181103",
-      "38",
-      "522",
-      "381",
-      "141",
-      "不伪造 auth",
-      "不提供 PDF/PPT/DOC/ZIP 下载",
-      "不再使用 lghui.top 旧样本、旧 round 或答案旧版"
-    ],
-    "visibleProof": "The generated lghui.top public shell first screen shows Round394 shell status, Round393 source truth, 181103 HTML/question-bank entries, and private-video/progress storage boundaries."
-  },
-  {
-    "version": "round393-progress-durability-monitor-gate-20260618",
-    "date": "2026-06-18",
-    "time": "12:31",
-    "updatedAt": "2026-06-18T12:31:15+08:00",
-    "previousVersion": "round392-progress-monitor-181103-answer-lock-20260618",
-    "tag": "Round393",
-    "focus": "progress-durability-monitor-gate",
-    "title": "Round393 进度持久化门禁与监控标签",
-    "summary": "本轮只收紧学习进度持久化和监控口径：GET /api/progress 与 GET /api/stats 继续保持 noMutationRead=true、server-progress-snapshot，只作为只读累计快照；POST 仍是 progress-write-confirmation，不能直接水合累计。新增 writeDurabilityGate / strictCumulativeServer 机器口径，write_quota_exceeded、storage_unavailable 或缺 FM_PROGRESS_DB / FM_PROGRESS_R2 时必须显示 block-full-production-cumulative，不能写成 working cumulative server。学生进度页把 server snapshot no-drift、KV fallback、D1/R2 严格累计服务器和写入 blocker 分开；教师监控把 audit-event-window 固定为最近诊断，累计 answers / sessions / studyTimeSeconds 只认 server-progress-snapshot。lghui.top、公开壳、真实账号 QA 和发布门禁都必须按 Round393 重新验证；默认学生账号基线保持 qi、chenlei、anxin、sunruze 四个活跃学生，本轮未加入额外默认账号，FM_PRIVATE_MEDIA 仍是私有视频完整存储清理的生产阻塞项。",
-    "links": [
-      {
-        "label": "学生学习进度",
-        "href": "/modules/progress-module.html?edge_refresh=round393-progress-durability-monitor-gate-20260618"
-      },
-      {
-        "label": "教师进度监控",
-        "href": "/teacher-panel?view=students&edge_refresh=round393-progress-durability-monitor-gate-20260618"
-      }
-    ],
-    "evidence": {
-      "staticGate": "node tools/check-round393-progress-durability-gate.mjs --json => middleware, student page, teacher monitor, and site-updates require writeDurabilityGate, strictCumulativeServer=false blocker labels, write_quota_exceeded, missing FM_PROGRESS_DB/FM_PROGRESS_R2, and GET noMutationRead server-progress-snapshot.",
-      "legacyCarryForward": "node tools/check-round392-progress-monitor-audit.mjs --json remains PASS for POST write-confirmation and GET snapshot separation.",
-      "syntaxGate": "node --check functions/_middleware.js && node -e progress-module script extraction/new Function check"
-    },
-    "requiredTerms": [
-      "writeDurabilityGate",
-      "strictCumulativeServer=false",
-      "write_quota_exceeded",
-      "missing-primary-d1-r2",
-      "FM_PROGRESS_DB",
-      "FM_PROGRESS_R2",
-      "noMutationRead",
-      "server-progress-snapshot",
-      "progress-write-confirmation",
-      "working cumulative server",
-      "audit-event-window"
-    ],
-    "visibleProof": "functions/_middleware.js progress APIs and teacher monitor labels, modules/progress-module.html truth panel, tools/check-round393-progress-durability-gate.mjs, site-updates.json top entry."
   },
   {
     "version": "round391-server-progress-truth-lock-20260618",
@@ -2286,6 +2218,48 @@
   },
   {
     "date": "2026-06-12",
+    "time": "20:19",
+    "title": "历年真题入口旧轮次文案纠偏",
+    "version": "round286-real-exam-source-atomic-ledger-20260612",
+    "description": "round286-real-exam-source-atomic-ledger-20260612 继续保持为当前历年真题入口版本；本次把首页、极速首页和学习工作台里容易误读成当前入口的 round264 可见标签降级为“公式条件历史包”，历年真题入口继续明确指向 round286 真题原文原子账本、308/308 原文原子题和 56/56 组题已拆。真实 QA 学生账号仍会从 lghui.top 登录到真题页核对 round286 面板，公式条件数据只作为历史回查包保留。默认学生账号仍只保留 qi、chenlei、anxin、sunruze，未加入额外默认账号。",
+    "category": "真题入口、旧轮次文案纠偏、公式条件历史包与真实登录校对",
+    "details": [
+      "完整首页首屏不再把 round264-formula-condition-checklist 显示成当前入口或主入口，改为“公式条件历史包”。",
+      "学习工作台标题改为“round286 真题主线，公式条件随后回查”，避免把历年真题入口误读成 round264。",
+      "边缘极速首页的公式回查条从可见 round264 标签改为“条件表”，但保留历史公式条件数据用于搜索和回查。",
+      "静态门禁新增当前首页、真题首屏、学习工作台脚本和边缘极速首页的旧轮次可见文案防回归检查。",
+      "真实生产验收继续使用 QA 教师/学生账号从 lghui.top 进入 Cloudflare Pages 源站，确认历年真题面板是 round286、308/308 原文原子题、56/56 组题已拆。",
+      "默认学生账号基线保持 qi、chenlei、anxin、sunruze 四个活跃学生，不因本轮入口文案纠偏扩入额外默认账号。"
+    ],
+    "url": "/modules/real-exams-dynamic.html#sourceGranularityNote",
+    "path": "/modules/real-exams-dynamic.html",
+    "focus": "real-exam-current-entry-copy",
+    "updatedAt": "2026-06-12T20:19:00+08:00"
+  },
+  {
+    "date": "2026-06-12",
+    "time": "16:40",
+    "title": "真题原文小问全量拆分复核",
+    "version": "round286-real-exam-source-atomic-ledger-20260612",
+    "description": "round286-real-exam-source-atomic-ledger-20260612 按原文连续编号小问重新核对全部真题，不再只看题型标题里的“每题/每小题”。当前真题账本锁定 308/308 原文原子题、56/56 组题已拆、188 道 grouped 小题、alignment 308/308、weak/missing 0；2013、2015、2020、2021、2008 等年份的简答、简述、概念和计算子问都按原文边界展开。默认学生账号仍只保留 qi、chenlei、anxin、sunruze，未加入额外默认账号。",
+    "category": "真题题数、原文连续编号小问、全量拆题复核与真实登录校对",
+    "details": [
+      "原文颗粒度审计现在把 section 内连续编号 1/2/3... 的小问全部计入原文原子题，不再因标题未写“每小题”而合并。",
+      "data/fluid-real-exam-source-granularity-audit.json 显示 expectedAtomicQuestionCount=308、webQuestionCount=308、groupedSectionCount=56、splitGroupedSectionCount=56、incompleteGroupedSections=0。",
+      "data/fluid-real-exam-alignment-audit.json 显示 alignedQuestions=308、splitQuestionCount=308、weakSourceMatches=0、missingSourceMatches=0。",
+      "逐年题型结构账本更新为 groupedParentCount=56、groupedQuestionCount=188，并锁定 2013、2015、2020、2021、2008 等原文连续小问年份。",
+      "2015 年不再只算旧的“简答题×5 / 计算题×4”合并结构；当前题型签名为“简答题×8 / 计算题×1 / 简答题×5”，以原文原子题为准。",
+      "tools/check-real-exam-integrity-browser.mjs 和 release gate 会用真实 QA 学生账号核对前台 308/308、56/56、188 grouped 小题和 weak/missing 0。",
+      "知识点反向链接、章节真题包、题型包、题源包、首页搜索、PDF fidelity、证据矩阵、复习计划和年度掌握矩阵已按 308 题重建。",
+      "默认学生账号基线保持 qi、chenlei、anxin、sunruze 四个活跃学生，不因本轮真题复核扩入额外默认账号。"
+    ],
+    "url": "/modules/real-exams-dynamic.html#sourceGranularityNote",
+    "path": "/modules/real-exams-dynamic.html",
+    "focus": "real-exam-source-atomic-ledger",
+    "updatedAt": "2026-06-12T16:40:00+08:00"
+  },
+  {
+    "date": "2026-06-12",
     "time": "15:50",
     "title": "真题原文题数完整性修复",
     "version": "round285-real-exam-original-count-ledger-20260612",
@@ -2531,6 +2505,51 @@
   },
   {
     "date": "2026-06-01",
+    "time": "11:52",
+    "title": "公式增量扫描与页面顺滑度修复",
+    "version": "round272-home-math-security-polish-20260531",
+    "description": "round272-home-math-security-polish-20260531 继续修复公式渲染和页面卡顿：在 gzip 回退恢复后，本轮把公式动态修复从全页 document.body 重扫改成变更节点局部 root 批处理，并让本地 MathJax 在原始 TeX 清空后停止后续全页扫尾，减少题库、知识页和公式页动态内容插入时的主线程抖动。账号基线仍只保留 qi、chenlei、anxin、sunruze 四个默认活跃学生，未加入额外默认账号。",
+    "category": "公式渲染与性能修复",
+    "details": [
+      "js/formula-lite.js 的 MutationObserver 现在只把新增节点或字符变更所在的局部公式 root 加入 pendingMathScanRoots，再合并父子 root 后触发 MathJax 修复。",
+      "公式脚本会跳过 script/style/pre 与 mjx-container 内部变更，避免 MathJax 自身插入节点时反复触发全页扫描。",
+      "js/core/local-mathjax.js 新增 documentSweepSettled，页面已无 raw TeX 后不再继续 12s/24s 全页扫尾。",
+      "tests/edge-fluid-upgrade-check.js 与 tools/validate-site-content.mjs 新增局部扫描和扫尾停止门禁，防止公式修复再次退回全页重扫导致页面卡顿。"
+    ]
+  },
+  {
+    "date": "2026-06-01",
+    "time": "11:28",
+    "title": "公式渲染 gzip 回退修复",
+    "version": "round272-home-math-security-polish-20260531",
+    "description": "round272-home-math-security-polish-20260531 继续收口公式渲染与页面卡顿：线上探针确认 MathJax 与部分静态资源会在 gzip sidecar 直传路径下暴露压缩字节，导致公式脚本可能被浏览器当作异常 JS 处理并反复超时重试；本轮把边缘 gzip 兜底改回 Worker 内解压后交付，保留 data/js/vendor sidecar 兜底和 HTML fallback 拒绝，公式脚本、知识页 JSON 与资料索引都以普通可解析内容进入浏览器。账号基线仍只保留 qi、chenlei、anxin、sunruze 四个默认活跃学生，未加入额外默认账号。",
+    "category": "公式渲染与性能修复",
+    "details": [
+      "functions/_middleware.js 的 gzipStaticAssetResponse 不再按 Accept-Encoding 直传压缩字节，而是删除 Content-Encoding/Content-Length 后用 DecompressionStream 解压 sidecar。",
+      "/vendor/mathjax/es5/tex-chtml-full.js.gz、/data/*.json.gz 等 sidecar 仍保留发布兜底，但响应标记改为 X-Fluid-Asset-Encoding:gzip-static-decoded，避免脚本和 JSON 解析器拿到 gzip 原始字节。",
+      "tools/validate-site-content.mjs、tests/edge-fluid-upgrade-check.js 与 smoke-student-access 覆盖“解压后交付”门禁，防止公式脚本再次走压缩直传导致 MathJax 超时。",
+      "公开壳更新记录同步本轮公式修复，学生从 lghui.top 看到的最新状态与源站一致。"
+    ]
+  },
+  {
+    "date": "2026-06-01",
+    "time": "10:36",
+    "title": "知识页资料直达、静态缓存与 gzip 直传",
+    "version": "round272-home-math-security-polish-20260531",
+    "description": "round272-home-math-security-polish-20260531 继续做首页与学习链路的缓存、可访问性和安全闭合：知识点详情页的资料源检索索引、章节映射和知识点数据改用默认静态缓存策略；资料对照和本页学习线索改成可点击受保护源资料链接；无直接真题的知识点显示本章练习池下一步；资源中心视频卡补齐 Enter/Space 键盘等价激活；Pages staging 预检新增敏感旧 HTML fail-closed 门禁；边缘 gzip sidecar 改为按 Accept-Encoding 直传压缩响应，并为 fluid-source-materials.json 补齐 gzip sidecar。账号基线仍只保留 qi、chenlei、anxin、sunruze 四个默认活跃学生，未加入额外默认账号。",
+    "category": "缓存与发布安全",
+    "details": [
+      "modules/knowledge-detail.html 统一 STATIC_JSON_FETCH={cache:'default'}，资料源检索索引、章节图谱和知识点主数据不再强制 no-store。",
+      "知识点页的“本页学习线索”和“资料对照”现在使用 routeUrl 打开登录后可访问的课程笔记、课件与资料源，不再只是不可点击文本。",
+      "没有直接真题的 35 个知识点显示“真题下一步”，提示学生先做本章完整练习池，再按关键词检索真题。",
+      "公式安全卡最多展示 3 个动作入口，资源中心视频卡支持 Enter/Space 打开播放器。",
+      "tools/prepare-fluid-pages-deploy.mjs 对 github-token-setup、github-setup、login-test、token/debug/backup HTML fail-closed，防止敏感旧页进入发布包。",
+      "functions/_middleware.js 仅在客户端接受 gzip 时返回 .json.gz/.js.gz/.mjs.gz sidecar，并设置 Content-Encoding:gzip；data/fluid-source-materials.json.gz 已加入发布必需资产。",
+      "validate-site-content 与 edge-fluid-upgrade-check 覆盖缓存策略、资料链接、无真题提示、视频键盘激活、gzip 直传和部署包敏感 HTML 门禁。"
+    ]
+  },
+  {
+    "date": "2026-06-01",
     "time": "01:18",
     "title": "密码重置主邮件繁忙自动兜底",
     "version": "round272-home-math-security-polish-20260531",
@@ -2541,6 +2560,112 @@
       "密码重置 smoke 新增“主邮件通道 busy 仍走 MailChannels 兜底”的动态断言，生产域名继续不回显 devCode。",
       "静态发布门禁新增 provider 早退回归检查，防止后续改动再次把 cloudflare_email_failed/resend_failed/postmark_failed/webhook_failed 直接暴露给学生。",
       "公开壳与源站更新记录重新同步，保留忘记密码、稳定入口、题库 canonical 和粘性流/knowledge 公开迁移记录。"
+    ]
+  },
+  {
+    "date": "2026-06-01",
+    "time": "00:26",
+    "title": "公开入口同步密码重置兜底与稳定入口记录",
+    "version": "round272-home-math-security-polish-20260531",
+    "description": "lghui.top 公共入口更新记录已把忘记密码邮箱验证码的生产 MailChannels 兜底放到最前：匹配账号不会因为未显式配置 Resend/Postmark/Webhook provider secret 就只显示繁忙；若 KV 存储异常，页面会提示老师临时密码通道。同时保留粘性流、knowledge、题库、真题/模拟题等公开迁移页的稳定入口修复记录。账号基线继续只保留 qi、chenlei、anxin、sunruze 四个默认活跃学生，未加入额外默认账号。",
+    "category": "密码重置与公开入口同步",
+    "details": [
+      "公开 lghui.top 的 site-updates 顶部明确同步源站 20:54 的忘记密码 MailChannels 兜底说明，避免学生从公开入口看到旧记录后误以为仍会一直繁忙。",
+      "继续保留通用提示防枚举：未知账号、邮箱不匹配、教师/管理员账号和停用账号不会泄露具体状态。",
+      "若验证码存储异常，前端提示找老师走临时密码通道，不再把所有失败都压成“系统繁忙”。",
+      "合并远端 22:37 的粘性流公开迁移页稳定入口记录，以及 knowledge/题库/真题/模拟题公开入口记录。"
+    ]
+  },
+  {
+    "date": "2026-05-31",
+    "time": "22:37",
+    "title": "平行平板层流题口径收口并补稳粘性流公开入口",
+    "version": "round272-home-math-security-polish-20260531",
+    "description": "本轮围绕平行平板压降层流题做小范围收口：exam 与 notes 主稿删去混入成品正文的口语化说明，统一保留速度分布、剪切应力、单位质量黏性力与耗散率四项结论；公开 /modules/viscous-flow-dynamic.html 同步补上直达完整主页的稳定入口按钮。",
+    "category": "粘性流文档与公开入口同步",
+    "details": [
+      "exam 主稿把两处平行平板压降层流答案中的分号残句和过程化点评压回成品口径，仅保留可直接判分的速度分布、剪切应力、单位质量黏性力与局部耗散表达式。",
+      "notes 主稿把同题讲解中的口语化总结改回中性表述，明确压强梯度力与黏性力在定常充分发展条件下逐层平衡。",
+      "公开 /modules/viscous-flow-dynamic.html 新增“打开稳定入口”按钮，固定指向 https://lghui.top/index-complete.html?full=1，并在运行时继续保留当前查询参数与 hash。"
+    ]
+  },
+  {
+    "date": "2026-05-31",
+    "time": "20:54",
+    "title": "首页公式渲染、教师重置边界、更新记录与样式缓存再加固",
+    "version": "round272-home-math-security-polish-20260531",
+    "description": "round272-home-math-security-polish-20260531 接在密码找回上线之后继续收口：完整首页的 Navier-Stokes 主公式和核心公式预览全部纳入 MathJax 处理，普通学生使用时不再被调试版本浮层遮挡题卡，章节练习首开也不再露出 Vue 模板花括号；教师后台重置学生临时密码时必须命中已注册学生账号，拼错账号不会创建新学生，也不会改变购买/开通状态；忘记密码邮箱验证码重置继续保留，验证码 hash 必须依赖 AUTH_COOKIE_SECRET，生产域名不会因为 EMAIL_DEV_MODE 误设而回显 devCode，前端也只在本地域名显示调试验证码；生产邮件服务未显式配置 Resend/Postmark/Webhook 时新增受域名白名单限制的 MailChannels 兜底，匹配账号不再因为缺少 provider secret 直接显示繁忙；历史更新记录的 ts/changes/task/desc 字段已纳入静态门禁识别，三条早期短记录按 git 提交时间补齐 timestamp；完整首页 200KB 级主体样式已外置为可缓存 CSS，仅保留登录状态确认 critical CSS；真实登录后看到的 Edge 快速首页也改用 styles/edge-fast-home.css 外置样式，并给首页搜索补上 role=search、隐藏标签、aria-controls 与 aria-live 结果数播报；首页搜索和快捷键浮层补齐 dialog/listbox/expanded 状态，键盘和读屏用户不再只看到视觉浮层。账号基线继续只保留 qi、chenlei、anxin、sunruze 四个默认活跃学生，未加入额外默认账号。",
+    "category": "首页体验、账号边界、更新记录与缓存加固",
+    "details": [
+      "首页 N-S 方程和 4 张核心公式卡补齐 math-display / tex2jax_process 标记，formula-lite 与 local MathJax 的待渲染样式同步覆盖 .math 与 .box，避免真实浏览器里看到裸 $$ 与 \\begin 文本。",
+      "Edge 版本状态胶囊改成 debug=1、edge_debug=1 或 localStorage efu_debug=1 时才显示，正常学生练习页不再被左下角调试浮层压住题卡标签。",
+      "章节练习页根节点补 v-cloak，公式脚本 cachebuster 升到 round272，真实浏览器首开资源尚未完成时不会显示 {{ loadingText }} 等模板文本。",
+      "教师端学生临时密码重置新增 student_not_found / not_student_account 边界：只允许已存在学生账号，拼写错误不会写入 account:*，教师/管理员账号仍禁止走学生重置入口。",
+      "自助忘记密码保留通用提示防枚举；新增 AUTH_COOKIE_SECRET 缺失时 fail closed，API devCode 回显限制到本地或显式 PASSWORD_RESET_DEV_CODE，页面显示再加本地域名门禁。",
+      "烟测补充缺 secret、生产域名 devCode 不泄露、未知学生重置不创建账号；静态门禁补充首页公式标记、默认学生名单精确断言和状态浮层 debug 门禁。",
+      "site-updates 历史记录门禁接受真实历史别名 ts/changes/task/desc，并用 git 历史核到的提交时间补齐 ocean-2016-22、ocean-2002-02/03/04、ocean-2016-11/13 三条早期短记录 timestamp。",
+      "完整首页主体样式从 index-complete.html 拆到 styles/fluid-home-complete.css，head 顶部提前加载；index-complete 只保留登录状态确认 critical CSS，静态回归收敛到 WARN 0。",
+      "Edge 登录态快速首页 renderFastHome 的主体样式拆到 styles/edge-fast-home.css，真实学生登录后的首页不再携带大段内联样式。",
+      "Edge 登录态快速首页搜索区补齐 role=search、sr-only label、aria-controls、aria-describedby 和 aria-live 结果数播报，筛选入口时读屏用户能听到剩余入口数量。",
+      "首页站内搜索浮层和快捷键浮层补齐 aria-controls、aria-expanded、aria-hidden、role=dialog、搜索结果 listbox/option 与 activedescendant，同步静态门禁防回退。",
+      "忘记密码验证码发送新增生产 MailChannels 兜底：只在 lghui.top / pages.dev 白名单域名、非本地 dev 模式下启用；若 KV 存储异常则提示老师临时密码通道，不再只显示“繁忙”。"
+    ]
+  },
+  {
+    "date": "2026-05-31",
+    "time": "19:29",
+    "title": "knowledge 公开迁移页稳定入口补回 full=1 参数",
+    "version": "round272-home-math-security-polish-20260531",
+    "description": "本轮只收口 knowledge 公开迁移页入口参数：knowledge.html 与 modules/knowledge-detail.html 的“打开稳定入口”固定指向 https://lghui.top/index-complete.html?full=1，且运行时继续保留 full=1、当前查询参数与 hash，避免拦截场景退回非完整主页参数。",
+    "category": "公开入口同步",
+    "details": [
+      "knowledge.html 与 modules/knowledge-detail.html 的稳定入口按钮初始 href 统一改为 /index-complete.html?full=1。",
+      "运行时脚本生成的稳定入口 href 改为显式补回 full=1，再附加当前查询参数与 hash，避免脚本重写后丢失完整主页参数。",
+      "本轮仅收口 knowledge 公开迁移页两个紧密相关入口，不改知识点正文、题库、资源页或其它公开迁移壳。"
+    ]
+  },
+  {
+    "date": "2026-05-31",
+    "time": "17:45",
+    "title": "真题与模拟题公开别名、稳定入口和缓存壳再收口",
+    "version": "round272-home-math-security-polish-20260531",
+    "description": "公开 lghui.top 迁移壳新增 /real-exams、/real-exams.html、/simulated-exams、/simulated-exams.html 四个根别名；稳定入口按钮统一保留 full=1、当前查询参数与 hash，避免公开路径回退到非完整主页。",
+    "category": "公开入口同步",
+    "details": [
+      "新增 /real-exams 和 /real-exams.html，统一进入 Cloudflare 源站 /modules/real-exams-dynamic.html。",
+      "补齐 /simulated-exams 和 /simulated-exams.html 的实际生成页，统一进入 /modules/simulated-exams-dynamic.html。",
+      "生成器层面把“打开稳定入口”固定为 https://lghui.top/index-complete.html?full=1，并在运行时继续保留查询参数与 hash。",
+      "生成器现在保留公开壳本地更新记录，后续同步源站 site-updates.json 时不再冲掉公开入口专用记录。"
+    ]
+  },
+  {
+    "date": "2026-05-31",
+    "time": "17:12",
+    "title": "题库公开迁移页稳定入口补 full=1 参数",
+    "version": "round272-home-math-security-polish-20260531",
+    "description": "本轮只收口题库公开迁移页入口参数：question-bank-home.html、question-bank.html 与 /modules/question-bank.html canonical 的“打开稳定入口”现在固定指向 https://lghui.top/index-complete.html?full=1，且运行时继续保留 full=1、当前查询参数与 hash，避免拦截场景退回非完整主页参数。",
+    "category": "公开入口同步",
+    "details": [
+      "公开 question-bank-home.html 与 question-bank.html 均明确指向 Cloudflare 源站 /modules/question-bank.html，避免旧题库别名停留在非 canonical 入口。",
+      "question-bank-home.html 与 question-bank.html 的稳定入口按钮初始 href 统一改为 /index-complete.html?full=1。",
+      "运行时脚本生成的稳定入口 href 改为显式补回 full=1，再附加当前查询参数与 hash，避免脚本重写后丢失完整主页参数。",
+      "本轮仅收口题库公开迁移页两个紧密相关入口，不改题库正文、知识页或其它公开迁移壳。"
+    ]
+  },
+  {
+    "date": "2026-05-31",
+    "time": "16:40",
+    "title": "首页公式渲染、教师重置边界与入口体验再加固",
+    "version": "round272-home-math-security-polish-20260531",
+    "description": "round272-home-math-security-polish-20260531 接在密码找回上线之后继续收口：完整首页的 Navier-Stokes 主公式和核心公式预览全部纳入 MathJax 处理，普通学生使用时不再被调试版本浮层遮挡题卡，章节练习首开也不再露出 Vue 模板花括号；教师后台重置学生临时密码时必须命中已注册学生账号，拼错账号不会创建新学生，也不会改变购买/开通状态；忘记密码邮箱验证码重置继续保留，验证码 hash 必须依赖 AUTH_COOKIE_SECRET，生产域名不会因为 EMAIL_DEV_MODE 误设而回显 devCode。账号基线继续只保留 qi、chenlei、anxin、sunruze 四个默认活跃学生，未加入额外默认账号。",
+    "category": "首页体验与账号边界加固",
+    "details": [
+      "首页 N-S 方程和 4 张核心公式卡补齐 math-display / tex2jax_process 标记，formula-lite 与 local MathJax 的待渲染样式同步覆盖 .math 与 .box，避免真实浏览器里看到裸 $$ 与 \\begin 文本。",
+      "Edge 版本状态胶囊改成 debug=1、edge_debug=1 或 localStorage efu_debug=1 时才显示，正常学生练习页不再被左下角调试浮层压住题卡标签。",
+      "章节练习页根节点补 v-cloak，公式脚本 cachebuster 升到 round272，真实浏览器首开资源尚未完成时不会显示 {{ loadingText }} 等模板文本。",
+      "教师端学生临时密码重置新增 student_not_found / not_student_account 边界：只允许已存在学生账号，拼写错误不会写入 account:*，教师/管理员账号仍禁止走学生重置入口。",
+      "自助忘记密码保留通用提示防枚举；新增 AUTH_COOKIE_SECRET 缺失时 fail closed，并把 devCode 回显限制到本地或显式 PASSWORD_RESET_DEV_CODE。",
+      "烟测补充缺 secret、生产域名 devCode 不泄露、未知学生重置不创建账号；静态门禁补充首页公式标记、默认学生名单精确断言和状态浮层 debug 门禁。"
     ]
   },
   {
@@ -2555,6 +2680,35 @@
       "exam 主稿把 2016 年源+点涡镜像题的 b^2、p_\\infty 与平方项，以及 2019 年均匀来流绕圆柱题的 a^2/r、V_\\infty、p_a、\\sin^2\\theta 残留统一修回成品公式。",
       "exam 主稿把 2020 年同轴圆管旋转层流题中的 a^2、b^2、\\tau_{r\\theta} 与力矩表达式收回标准记号，notes 主稿同步把势流镜像法链统一为 \\Gamma/(4\\pi h)=V_\\infty。",
       "公开 /modules/potential-flow-dynamic.html 新增“打开稳定入口”按钮，指向 https://lghui.top/index-complete.html?full=1，并保留当前查询参数与 hash。"
+    ]
+  },
+  {
+    "date": "2026-05-31",
+    "time": "15:37",
+    "title": "resources 公开迁移页稳定入口补齐 full=1 参数",
+    "version": "round271-password-reset-recovery-20260531",
+    "description": "继续收口 lghui.top 的 resources 公开迁移壳：稳定入口按钮现在固定指向 https://lghui.top/index-complete.html?full=1，并在运行时继续保留 full=1、当前查询参数、hash 与统一后的 edge_refresh，避免资源入口在拦截场景退回非完整主页参数。",
+    "category": "公开入口同步",
+    "details": [
+      "resources.html 的‘打开稳定入口’按钮初始 href 统一改为 /index-complete.html?full=1。",
+      "运行时脚本生成的稳定入口 href 现在会显式补回 full=1，再附加当前查询参数、hash 与 round271 edge_refresh，避免脚本重写后丢失完整主页参数。",
+      "本轮只收口 resources 单页迁移壳，不改资源正文、知识库、题库或全站其它公开入口。"
+    ]
+  },
+  {
+    "date": "2026-05-31",
+    "time": "15:12",
+    "title": "忘记密码邮箱重置与教师临时密码通道",
+    "version": "round271-password-reset-recovery-20260531",
+    "description": "学生忘记密码时不再需要找回旧密码，入口改为登记邮箱验证码重置；教师后台新增学生临时密码重置面板，只能处理学生账号，不改变购买/开通状态。账号基线继续只保留 qi、chenlei、anxin、sunruze，未加入额外默认账号。",
+    "category": "账号恢复与安全升级",
+    "details": [
+      "新增 /_edge-forgot-password 页面和 /api/auth/password-reset/send-code、/api/auth/password-reset/confirm 两个边缘接口，旧密码不会展示、不会返回、不会写入日志。",
+      "验证码发送接口对未知账号、邮箱不匹配、教师/管理员账号、停用账号都返回同样提示，避免枚举账号。",
+      "学生自助重置必须同时匹配用户名和登记邮箱，验证码有过期时间、次数限制和 IP/账号组合限流。",
+      "教师后台新增“学生密码重置”面板，可给学生设置临时密码；教师/管理员账号不走公开自助重置，也不能被学生管理接口重置。",
+      "登录页、快速登录页、注册页、完整首页和公开 lghui.top 跳转壳都补上忘记密码入口。",
+      "回归烟测覆盖自助重置、邮箱不匹配不泄露、教师账号不可公开重置、教师后台重置不自动开通学生权限。"
     ]
   },
   {
@@ -2589,6 +2743,142 @@
       "吴望一教材加入 MathJax 完成、mjx-merror、fallback 和可见 raw TeX 检查，避免只用字数判断页面正常。",
       "知识全库卡片现在保留 1052 条真题链接、1139 条课件小节链接；q 只在对应题存在于章节池时定位所点题，否则进入完整章节练习池。",
       "第 1/2/3/5/6/8 章完整练习池为 42、73、15、14、31、94 题，合计 269 条严格主章节练习；第 1 章只保留物性、连续介质、黏性、压缩性、正压和静力入门范围。"
+    ]
+  },
+  {
+    "date": "2026-05-26",
+    "time": "09:30",
+    "title": "六章练习按课程顺序与知识全库入口重新收口",
+    "version": "round268-auth-redirect-practice-20260526",
+    "description": "修正章节练习只追求题量导致第 1 章混入后续内容的问题：现在题目按课程学习顺序只进入一个主练习章，知识全库入口进入整章练习池，q 参数只定位题目不缩小题池；round264 公式适用条件学习包继续保留，学生仍可按适用条件、边界条件、单位方向、常见错因、真题训练和自制动画回查。",
+    "category": "真题练习与章节匹配",
+    "details": [
+      "第 1 章“流体的物理性质”只保留物性、连续介质、粘性、压缩性、正压流体和流体静止应力这类入门题，不再混入速度场、流线/迹线、欧拉/拉格朗日计算、复势、Stokes、边界层、涡量输运、控制体动量等后续章节题。",
+      "第 1/2/3/5/6/8 章课程顺序题池调整为 42、73、15、14、31、94 题，合计 269 条主章节练习映射；第 1 章仍只保留流体物理性质入门题。",
+      "知识全库的代表题链接现在带 q 参数定位所点题，但仍保留完整章节练习池，不再退回年份单题或只刷几题的专项子集。",
+      "第 1 章题卡可见字段同步清洗，答题抓手、补救任务、关联笔记和公式里不再出现第 2 章以后内容。",
+      "候选 fixed 主库题仍可进入练习，但必须经章节分类器归到一个主章节，并继续标注 candidate-fixed-bank 便于后续逐题核对原卷。",
+      "round264-formula-condition-checklist-20260522 的公式适用、适用条件、边界条件、单位方向、常见错因、真题训练和自制动画入口没有删除；本轮只修章节匹配和入口练习池。",
+      "生产验收继续强制使用专用真实 QA 教师/学生账号打开 pages.dev，检查教师端、学生端、知识全库、吴望一和六章练习。"
+    ]
+  },
+  {
+    "date": "2026-05-26",
+    "time": "04:11",
+    "title": "知识全库真题链接接入完整章节练习池",
+    "version": "round268-auth-redirect-practice-20260526",
+    "description": "修复从知识点全库点击真题链接时只进入代表题或年份小题集的问题：知识卡片现在优先给出本章完整练习池，代表题只作为定位入口，进入后仍保留全章题量。",
+    "category": "真题练习与知识全库",
+    "details": [
+      "知识点全库 202 页卡片都生成 chapterPracticeLinks，链接统一指向 /modules/practice-dynamic.html?type=real&chapter=N&mode=normal。",
+      "代表题链接保留 q 参数用于定位题目，但不再缩小题池；第 1/2/3/5/6/8 章现在分别加载 10、69、21、20、62、157 题。",
+      "题库页加载较慢时的 fallback 入口也改为使用章节 practiceUrl，避免退回到不可用的 bank=fluid-chapter-X 路径。",
+      "生产 QA 教师/学生浏览器门禁新增从知识全库进入六章练习的真实点击链路验收。"
+    ]
+  },
+  {
+    "date": "2026-05-25",
+    "time": "18:45",
+    "title": "教师端重定向与六章练习扩容修复",
+    "version": "round268-auth-redirect-practice-20260526",
+    "description": "修复教师登录后在教师后台和模块教师页之间反复重定向的问题，并把六章章节练习从 480 条章节-题目链接扩容到 966 条：当前入口仍是 round268-auth-redirect-practice-20260526，round264-formula-condition-checklist-20260522 的公式适用条件、边界条件、单位方向、常见错因、真题训练和自制动画回链继续保留，公式运行时继续使用 round268-auth-redirect-practice-20260526 缓存破除参数。",
+    "category": "登录稳定性与章节练习",
+    "details": [
+      "教师端共享 auth-guard 现在优先信任 Cloudflare edge 已验证会话，并在服务器确认教师角色后刷新本地兼容会话，避免本地设备指纹差异把有效教师会话清掉。",
+      "教师后台四个入口 /teacher-panel.html、/teacher-panel、/modules/teacher-panel.html、/modules/teacher-panel 纳入同一套登录态验收，学生账号进入教师端会被拦下。",
+      "旧 formula-lite 路径 /formula-lite.js、/modules/formula-lite.js、/modules/js/formula-lite.js 统一映射到真实公开 JS，避免浏览器把 401/HTML 当脚本执行。",
+      "第 1/2/3/5/6/8 章练习题量提升为 302、180、84、67、127、206；fixed 真题主库额外补入 172 道非占位候选真题，并标注 candidate-fixed-bank 以便继续逐题核对原卷。",
+      "round264 公式适用条件、边界条件、单位方向、常见错因、真题训练和自制动画回链仍作为学习内容包保留，本次改的是登录和运行时稳定性。",
+      "发布门禁新增生产模式，禁止生产发布时跳过 public monitor、浏览器入口和教师/学生登录态验收。"
+    ]
+  },
+  {
+    "date": "2026-05-25",
+    "time": "15:18",
+    "title": "公式脚本缓存与错误路径兜底修复",
+    "version": "round268-auth-redirect-practice-20260526",
+    "description": "修复知识点页在旧浏览器缓存或无扩展路由下把 HTML 登录壳当作 local-mathjax.js、edge-fluid-performance.js 执行的问题：当前入口仍是 round268-auth-redirect-practice-20260526，脚本引用新增 round268-auth-redirect-practice-20260526 缓存破除参数，并在边缘层兜底错误相对路径；round264-formula-condition-checklist-20260522 仍是公式适用条件学习内容包。",
+    "category": "公式渲染与脚本稳定性",
+    "details": [
+      "知识点、练习、真题、公式升级、资源和教材页的 MathJax 入口统一加版本参数，避开浏览器里已经缓存过的错误 HTML 响应。",
+      "边缘中间件把 /local-mathjax.js、/modules/local-mathjax.js、/edge-fluid-performance.js 和 /modules/edge-fluid-performance.js 统一映射到真实公开 JS 资源。",
+      "公开运行时脚本继续绕过登录门禁，返回 application/javascript，不再把登录页或 401 内容交给浏览器当脚本解析。",
+      "round264-formula-condition-checklist-20260522 的公式适用条件、边界条件、单位方向、常见错因和真题训练回链继续保留，修复目标是让公式重新渲染而不是改内容口径。"
+    ]
+  },
+  {
+    "date": "2026-05-25",
+    "time": "12:50",
+    "title": "六章全部真题练习池修复",
+    "version": "round268-auth-redirect-practice-20260526",
+    "description": "修复六章练习只进入少量精选题的问题：当前入口仍是 round268-auth-redirect-practice-20260526，round264-formula-condition-checklist-20260522 的公式适用条件、边界条件、单位方向、常见错因、真题训练和自制动画回链继续保留；章节练习现在按统一章节映射表载入全部真题练习池，并同步更新章节掌握矩阵和发布门禁。",
+    "category": "真题练习与章节训练",
+    "details": [
+      "第 1/2/3/5/6/8 章练习题量统一为 135、84、28、35、62、93，道数来自 176 道已核验真题的章节映射。",
+      "章节训练包新增 practiceQuestions 全量池，热身、核心、压轴、错因回炉保留为专项入口，不再替代全部练习。",
+      "首页学习路径、边缘学习路径和历年真题页的六章入口统一跳转到全部真题练习。",
+      "静态门禁和内容校验新增精确题量检查，防止后续回退到每章 10 多道精选题。",
+      "round264 公式适用条件学习包仍作为历史学习内容保留，学生可继续从边界条件、单位方向、常见错因、真题训练和自制动画入口回查。"
+    ]
+  },
+  {
+    "date": "2026-05-25",
+    "time": "04:52",
+    "title": "内容质量一致性审计：版本日期与学习路径收口",
+    "version": "round268-auth-redirect-practice-20260526",
+    "description": "本次只做内容质量、版本日期和学习路径审计，不新开部署版本：当前入口仍是 round268-auth-redirect-practice-20260526，round264-formula-condition-checklist-20260522 继续作为公式条件历史学习内容包保留。",
+    "category": "内容质量与版本一致性",
+    "details": [
+      "站点更新、复习计划和公式条件卡统一说明：round263 是题目选路图，round264 是公式条件学习包，round265 是历史入口恢复和缓存清理版本。",
+      "复习计划保留 2026-05-02 初始生成口径，并补充 2026-05-25 一致性审计字段、round263 选路图来源和 round264 公式条件来源。",
+      "阶段学习路径补上“先选路、再核公式条件、最后回真题/动画回看”的顺序，避免只看阶段复习计划时漏掉后续专题。",
+      "公式条件卡补齐可视化/自制动画回链，便于学生在边界条件、方向和错因卡住时从同一张卡回看。"
+    ]
+  },
+  {
+    "date": "2026-05-24",
+    "time": "23:45",
+    "title": "首页按需加载与练习错题链路稳定升级",
+    "version": "round268-auth-redirect-practice-20260526",
+    "description": "继续在 round268 当前入口上修复真实使用问题：首页大 JSON 改为按需加载，知识详情公式区补上 round264 公式条件卡，练习页错题本和选择题判题链路统一，避免加载过重、误判 A 或错题入口失效。",
+    "category": "稳定性与学习链路",
+    "details": [
+      "首页首屏只加载知识点、升级包、真题选路图和公式条件轻量数据，公式索引、搜索索引、复习/补救包改为点击对应标签后再加载。",
+      "知识详情页公式面板滚动或意图触发后加载 round264 公式适用条件、边界条件、单位方向、常见错因和真题重做入口。",
+      "错题本统一 wrapper 数据结构，并兼容旧 flat 错题记录；练习模块自动收错题时走同一结构。",
+      "选择题答案解析支持“选 B / 答案为 B”等文本，解析不到时显示需查看解析核对，不再默认按 A 判题。",
+      "发布门禁新增静态回归和负载预算检查；公开壳 sw.js 的托管层缓存头风险已纳入监控 warning。",
+      "round264-formula-condition-checklist-20260522 继续作为公式条件历史学习内容包保留；当前入口版本仍是 round268-auth-redirect-practice-20260526。"
+    ]
+  },
+  {
+    "date": "2026-05-24",
+    "time": "21:42",
+    "title": "旧题库首页与资料页补充稳定入口兜底按钮",
+    "version": "round268-auth-redirect-practice-20260526",
+    "description": "主站同步公开壳的稳定入口记录：question-bank-home.html 会指向真实题库模块，resources.html 保留公开稳定入口，避免旧链接得到 200 但还停在迁移壳或二级入口。",
+    "category": "公开入口同步",
+    "details": [
+      "公开壳记录和主站更新记录保持同名，发布门禁会检查两边同步。",
+      "旧题库首页入口改为 canonical target：/modules/question-bank.html。",
+      "旧练习动态入口改为 canonical target：/modules/practice-dynamic.html。",
+      "入口版本继续使用 round268-auth-redirect-practice-20260526。",
+      "round264-formula-condition-checklist-20260522 仍是公式条件学习内容包，不是当前入口部署日期。"
+    ]
+  },
+  {
+    "date": "2026-05-24",
+    "time": "19:05",
+    "title": "round265 入口恢复与旧缓存清理",
+    "version": "round268-auth-redirect-practice-20260526",
+    "description": "入口恢复版本日期是 2026-05-24，专门处理 pages.dev 和 lghui.top 之间的旧入口循环：当时公开壳临时改成手动进入来切断循环；当前 round270 已恢复为清旧缓存后自动进入 Cloudflare 源站，并保留按钮兜底。源站继续把旧 edge_refresh 规范化到当前入口版本。",
+    "category": "入口修复",
+    "details": [
+      "边缘版本已演进到 round270-six-agent-seven-round-simulated-release-20260531；round265 是历史事故修复基线。",
+      "旧链接中的 round264/round265/round268 edge_refresh 会在源站只重定向一次到当前入口版本，入口恢复日期不再停在 2026-05-22。",
+      "lghui.top 公开壳当前会先清理旧 Service Worker/cache，再自动进入 Cloudflare 源站；若浏览器拦截自动跳转，页面仍保留“立即打开”按钮。",
+      "登录、重置、Service Worker kill switch 和边缘入口继续发送缓存/存储清理信号。",
+      "公式条件学习专题编号仍为 round264-formula-condition-checklist-20260522，它表示学习内容包，不表示当前入口部署日期。"
     ]
   },
   {
@@ -8533,6 +8823,17 @@
     "time": "2026-04-27 18:36",
     "category": "内容修复",
     "content": "修正流体性质分类库中的连续介质假设误挂旧题号，保留并统一 ocean-2021-103 条目。"
+  },
+  {
+    "id": "ocean-2002-q-fill-20260425-2113",
+    "tag": "真题补全",
+    "title": "补全海洋大学 2002 年全部 12 题 question 字段（title→question）",
+    "files": [
+      "真题_中国海洋大学_2000-2024_perfect.json",
+      "真题_中国海洋大学_2000-2024_final_perfect.json",
+      "site-updates.json"
+    ],
+    "time": "2026-04-25T21:13+08:00"
   },
   {
     "id": "ocean-2002-q-fill-20260425-2113",

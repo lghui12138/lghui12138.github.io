@@ -1,0 +1,111 @@
+{
+  "ok": true,
+  "version": "round390-teacher-progress-monitoring-boundary-20260618",
+  "generatedAt": "2026-06-18T01:31:48Z",
+  "scope": {
+    "realTeacherAccountSummary": true,
+    "readOnlySummaryProof": true,
+    "strictSummaryPrimaryStoreGate": true,
+    "productionCredentialsStored": false,
+    "productionSecretsPrinted": false,
+    "runtimeCodeChanged": false
+  },
+  "truthModel": {
+    "cumulativeTruth": {
+      "name": "server snapshot cumulative truth",
+      "sourceOfTruth": "server-progress-snapshot",
+      "allowedCumulativeFields": [
+        "answers",
+        "sessions",
+        "studyTimeSeconds"
+      ],
+      "excludedSources": [
+        "audit-event-window"
+      ],
+      "acceptance": "Teacher summary cumulative answers, sessions, and study time are summed only from server snapshot rows."
+    },
+    "auditEventWindow": {
+      "name": "audit-event-window recent diagnostics",
+      "allowedDiagnosticFields": [
+        "eventWindowAnswers",
+        "eventWindowSessions",
+        "eventWindowStudyTimeSeconds"
+      ],
+      "excludedFromCumulative": true,
+      "cumulativeContributionAllowed": false,
+      "acceptance": "Audit-window rows may diagnose recent activity, but their cumulative answers, sessions, and studyTimeSeconds must stay zero."
+    }
+  },
+  "storageBoundary": {
+    "kvFallbackLabel": "degraded-no-drift-only",
+    "kvFallbackCanProve": [
+      "login/read no-drift",
+      "teacher summary source separation",
+      "audit window is non-cumulative"
+    ],
+    "kvFallbackCannotProve": [
+      "full production durable writes",
+      "D1/R2 primary progress persistence",
+      "strict production readiness"
+    ],
+    "strictModeRequiresAnyVisiblePrimaryBinding": [
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2"
+    ],
+    "strictBlocksWhenBothMissing": true
+  },
+  "scriptContract": {
+    "checker": "tools/check-teacher-progress-summary-real-account.mjs",
+    "readOnlyCommand": "node tools/check-teacher-progress-summary-real-account.mjs --json --read-only --require-public-chain",
+    "strictCommand": "node tools/check-teacher-progress-summary-real-account.mjs --json --read-only --require-public-chain --require-primary-store",
+    "machineReadableFields": [
+      "mode",
+      "readOnly",
+      "strictSummary",
+      "teacherSummary.truthModel.serverSnapshotCumulativeTruth",
+      "teacherSummary.truthModel.auditEventWindowDiagnostics",
+      "teacherSummary.truthModel.separationCheck",
+      "teacherSummary.missingPrimaryBindings",
+      "teacherSummary.primaryBindingVisible",
+      "teacherSummary.strictPrimaryStoreBlocked",
+      "assertions.noDriftOnly"
+    ],
+    "noSecretOutput": [
+      "no password",
+      "no cookie",
+      "no token"
+    ]
+  },
+  "checks": [
+    {
+      "id": "server-snapshot-cumulative-truth-separated",
+      "ok": true,
+      "evidence": "script emits teacherSummary.truthModel.serverSnapshotCumulativeTruth with sourceOfTruth=server-progress-snapshot"
+    },
+    {
+      "id": "audit-event-window-non-cumulative",
+      "ok": true,
+      "evidence": "script emits auditEventWindowDiagnostics.excludedFromCumulative=true and separationCheck.auditWindowNotCumulative"
+    },
+    {
+      "id": "kv-fallback-no-drift-only",
+      "ok": true,
+      "evidence": "script and docs label kv-single-write-fallback as degraded no-drift only"
+    },
+    {
+      "id": "strict-primary-store-blocks-d1-r2-missing",
+      "ok": true,
+      "evidence": "strict mode requires primaryBindingVisible from FM_PROGRESS_DB or FM_PROGRESS_R2"
+    },
+    {
+      "id": "credentials-not-persisted",
+      "ok": true,
+      "evidence": "artifact stores commands, boundaries, and non-secret field names only"
+    }
+  ],
+  "residualRisk": [
+    "This artifact does not prove Cloudflare has FM_PROGRESS_DB or FM_PROGRESS_R2 bound.",
+    "Read-only no-drift success is not full production durability.",
+    "Strict mode is expected to fail until a primary progress store is visible in the live teacher summary."
+  ]
+}

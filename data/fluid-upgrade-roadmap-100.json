@@ -2562,6 +2562,219 @@
       "supersededBy": "round390-server-stable-progress-181103-html-sync-20260618"
     },
     {
+      "round": 382,
+      "id": "round382-181103-answer-display-progress-boundary",
+      "lane": "exam-quality",
+      "status": "done",
+      "title": "181103 答案显示与进度边界证据",
+      "focus": "prove the 522/381/141 answer display split while keeping production progress writes blocked until primary storage exists",
+      "version": "round382-181103-answer-display-progress-boundary-20260617",
+      "integratedVersion": "round382-181103-answer-display-progress-boundary-20260617",
+      "updatedAt": "2026-06-18T19:55:00+08:00",
+      "previousVersion": "round381-181103-standalone-html-index-audit-20260617",
+      "summary": "Round382 records the 522 answer fields, 381 practice cards, 141 source/content cards, HTML answer display proof, and the production progress boundary that blocks full persistent-write claims until FM_PROGRESS_DB or FM_PROGRESS_R2 is bound.",
+      "acceptance": [
+        "181103 must keep 522 total answer records with answer, answerHtml, and explanation fields present.",
+        "381 practice cards and 141 source/content cards must remain visibly separated.",
+        "Answer display proof must not advance the runtime edge version by itself.",
+        "Production persistent write readiness remains blocked until FM_PROGRESS_DB or FM_PROGRESS_R2 is present."
+      ],
+      "evidence": [
+        "data/fluid-round382-181103-answer-progress-evidence.json",
+        "docs/round382-181103-answer-progress-evidence.md",
+        "question-banks/181103-material-extracted.json"
+      ],
+      "gate": "node tools/check-round382-181103-answer-progress-evidence.mjs --write --json",
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618"
+    },
+    {
+      "round": 383,
+      "id": "round383-production-real-account-server-boundary",
+      "lane": "server-reliability",
+      "status": "done",
+      "title": "生产真实账号服务器边界",
+      "focus": "separate read-only no-drift proof from full durable production write readiness",
+      "version": "round383-production-real-account-server-boundary-20260618",
+      "integratedVersion": "round383-production-real-account-server-boundary-20260618",
+      "updatedAt": "2026-06-18T19:55:00+08:00",
+      "previousVersion": "round382-181103-answer-display-progress-boundary-20260617",
+      "summary": "Round383 documents real-account auth and teacher summary reads, the degraded KV fallback boundary, and the missing FM_PROGRESS_DB/FM_PROGRESS_R2 and FM_PRIVATE_MEDIA production blockers.",
+      "acceptance": [
+        "Real-account read-only login and relogin checks must preserve cumulative progress totals.",
+        "Teacher summary reads must come from a server progress source, not browser localStorage.",
+        "KV fallback may prove no-drift only and must not be labeled full durable production readiness.",
+        "Missing FM_PROGRESS_DB, FM_PROGRESS_R2, and FM_PRIVATE_MEDIA remain visible production blockers."
+      ],
+      "evidence": [
+        "docs/round383-production-real-account-server-boundary.md",
+        "tools/check-production-progress-real-account.mjs",
+        "tools/check-teacher-progress-summary-real-account.mjs",
+        "tools/check-cloudflare-pages-private-video-bindings.mjs"
+      ],
+      "gate": "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain && node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain && node tools/check-cloudflare-pages-private-video-bindings.mjs --json",
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618"
+    },
+    {
+      "round": 384,
+      "id": "round384-181103-answer-quality-audit-staging",
+      "lane": "exam-quality",
+      "status": "done",
+      "title": "181103 答案质量审计分片",
+      "focus": "stage the 181103 answer quality review before the merged source-answer corrections",
+      "version": "round384-181103-answer-quality-audit-staging-20260618",
+      "integratedVersion": "round384-181103-answer-quality-audit-staging-20260618",
+      "updatedAt": "2026-06-18T19:55:00+08:00",
+      "previousVersion": "round383-production-real-account-server-boundary-20260618",
+      "summary": "Round384 is the answer-quality staging ledger folded into the later Round385 and Round386 source-answer fixes. It keeps the scope explicit: review candidates do not become final site truth until merged into the tracked bank and HTML.",
+      "acceptance": [
+        "Answer-quality review candidates must not become final site truth before tracked bank merge.",
+        "181103 answer release gates must keep OCR garbage and formula garble checks active.",
+        "Staging work must preserve the 522/381/141 bank split.",
+        "Review staging must not create viewer/download shells for 181103 material pages."
+      ],
+      "evidence": [
+        "question-banks/181103-material-extracted.json",
+        "tools/check-round388-181103-answer-release-gate.mjs",
+        "tools/check-round388-181103-formula-garbled-quality.mjs"
+      ],
+      "gate": "node tools/check-round388-181103-answer-release-gate.mjs --json && node tools/check-round388-181103-formula-garbled-quality.mjs --json",
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618"
+    },
+    {
+      "round": 385,
+      "id": "round385-progress-no-drift-and-181103-answer-fix",
+      "lane": "server-reliability",
+      "status": "done",
+      "title": "进度无漂移与 181103 答案修复",
+      "focus": "lock login/relogin/server-upgrade no-drift while landing the first 181103 answer-data fixes",
+      "version": "round385-progress-no-drift-20260618",
+      "integratedVersion": "round385-progress-no-drift-20260618",
+      "updatedAt": "2026-06-18T19:55:00+08:00",
+      "previousVersion": "round384-181103-answer-quality-audit-staging-20260618",
+      "summary": "Round385 locks that login, refresh, auth checks, and server upgrades cannot mutate cumulative answered, sessions, or studyTimeSeconds; duplicate clientEventId writes must dedupe; failed writes must preserve the previous snapshot.",
+      "acceptance": [
+        "Login, refresh, auth checks, and server upgrades must not mutate cumulative answered, sessions, or study time.",
+        "Repeated progress writes with the same clientEventId must be treated as duplicates.",
+        "Failed progress snapshot writes must return and preserve the previous snapshot.",
+        "Teacher monitoring and student progress must read the same server fact source."
+      ],
+      "evidence": [
+        "docs/round385-progress-no-drift.md",
+        "functions/_middleware.js",
+        "tools/smoke-student-access.mjs",
+        "tests/edge-fluid-upgrade-check.js"
+      ],
+      "gate": "node tools/smoke-student-access.mjs && node tests/edge-fluid-upgrade-check.js",
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618"
+    },
+    {
+      "round": 386,
+      "id": "round386-181103-answer-proposal-merge",
+      "lane": "exam-quality",
+      "status": "done",
+      "title": "181103 答案提案合并与 HTML 同步",
+      "focus": "merge reviewed answer proposals into the bank and keep HTML answer cards synchronized",
+      "version": "round386-181103-answer-proposal-merge-20260618",
+      "integratedVersion": "round386-181103-answer-proposal-merge-20260618",
+      "updatedAt": "2026-06-18T19:55:00+08:00",
+      "previousVersion": "round385-progress-no-drift-20260618",
+      "summary": "Round386 records the merged 181103 answer proposals in the tracked question bank, including confidence and source-review metadata, then preserves the 522 card and HTML-answer display contract.",
+      "acceptance": [
+        "Merged answer proposals must be recorded in the tracked 181103 question bank.",
+        "Answer proposal metadata must preserve confidence and source-review boundaries.",
+        "Material HTML answer cards must stay synchronized with the bank truth.",
+        "The 522 total card count and practice/source-content split must not change during merge."
+      ],
+      "evidence": [
+        "question-banks/181103-material-extracted.json",
+        "tools/apply-181103-answer-proposals.mjs",
+        "resources/fluid-181103-html/materials/"
+      ],
+      "gate": "node tools/check-round388-181103-html-answer-rendering.mjs --json && node tools/check-round388-181103-answer-release-gate.mjs --json",
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618"
+    },
+    {
+      "round": 387,
+      "id": "round387-progress-storage-and-live-entry-proof",
+      "lane": "server-reliability",
+      "status": "done",
+      "title": "进度服务器稳定与线上入口证明",
+      "focus": "prove progress server stability and keep the public/authenticated content boundary visible",
+      "version": "round387-progress-server-stability-20260618",
+      "integratedVersion": "round387-progress-server-stability-20260618",
+      "updatedAt": "2026-06-18T19:55:00+08:00",
+      "previousVersion": "round386-181103-answer-proposal-merge-20260618",
+      "summary": "Round387 documents the no-mutation progress/stat read contract, the student and teacher cumulative source boundary, public-shell versus authenticated content proof, and production durable storage preflight.",
+      "acceptance": [
+        "GET /api/progress and GET /api/stats must declare no-mutation server snapshot reads.",
+        "Student and teacher cumulative fields must share the same server source boundary.",
+        "Public shell proof must remain separate from authenticated content proof.",
+        "Durable production storage readiness must remain blocked until primary bindings are present."
+      ],
+      "evidence": [
+        "docs/round387-progress-server-stability.md",
+        "docs/round387-public-shell-vs-authenticated-content.md",
+        "docs/round387-production-durable-storage-preflight.md",
+        "docs/round387-live-entry-proof.md"
+      ],
+      "gate": "node tests/edge-fluid-upgrade-check.js && node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain",
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618"
+    },
+    {
+      "round": 388,
+      "id": "round388-181103-answer-release-gate",
+      "lane": "exam-quality",
+      "status": "done",
+      "title": "181103 答案发布门禁",
+      "focus": "ensure answers are student-usable in the bank, material HTML cards, and practice answer panel",
+      "version": "round388-181103-answer-release-gate-20260618",
+      "integratedVersion": "round388-181103-answer-release-gate-20260618",
+      "updatedAt": "2026-06-18T19:55:00+08:00",
+      "previousVersion": "round387-progress-server-stability-20260618",
+      "summary": "Round388 adds a repeatable release-gate subcheck for usable 181103 answers, visible HTML answer blocks, practice answer panel rendering, and formula/garble quality.",
+      "acceptance": [
+        "181103 practice answers must be student-usable and not source-note placeholders.",
+        "Material HTML cards must render visible answer blocks matching the bank.",
+        "Practice answer panels must expose answer, explanation, and source evidence.",
+        "Formula and garble quality gates must stay wired into the release path."
+      ],
+      "evidence": [
+        "tools/check-round388-181103-answer-release-gate.mjs",
+        "tools/check-round388-181103-reference-answer-experience.mjs",
+        "tools/check-round388-181103-formula-garbled-quality.mjs",
+        "data/fluid-round388-181103-reference-answer-experience.json"
+      ],
+      "gate": "node tools/check-round388-181103-answer-release-gate.mjs --json && node tools/check-round388-181103-reference-answer-experience.mjs --json && node tools/check-round388-181103-formula-garbled-quality.mjs --json",
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618"
+    },
+    {
+      "round": 389,
+      "id": "round389-progress-server-truth",
+      "lane": "server-reliability",
+      "status": "done",
+      "title": "学习时长与做题累计生产真值证明",
+      "focus": "make the public shell, student progress, 181103 entry, and teacher monitoring show server-owned cumulative truth",
+      "version": "round389-progress-server-truth-20260618",
+      "integratedVersion": "round389-progress-server-truth-20260618",
+      "updatedAt": "2026-06-18T19:55:00+08:00",
+      "previousVersion": "round388-181103-answer-release-gate-20260618",
+      "summary": "Round389 is the visible progress-truth release marker: current public surfaces point users to server-snapshot progress, 181103 HTML/practice entry, and teacher monitoring without treating login or audit windows as cumulative totals.",
+      "acceptance": [
+        "Public progress surfaces must point to server-snapshot cumulative truth.",
+        "Login events and audit windows must not be displayed as cumulative progress totals.",
+        "181103 HTML and practice entries must remain visible from the public shell.",
+        "Teacher monitoring must label recent audit activity separately from persistent cumulative values."
+      ],
+      "evidence": [
+        "site-updates.json",
+        "functions/_middleware.js",
+        "modules/progress-module.html",
+        "teacher-panel.html"
+      ],
+      "gate": "node tests/edge-fluid-upgrade-check.js && node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain",
+      "supersededBy": "round397-server-kv-progress-cumulative-hardening-20260618"
+    },
+    {
       "round": 390,
       "id": "round390-server-stable-progress-181103-html-sync",
       "lane": "server-reliability",
@@ -2716,7 +2929,7 @@
     {
       "round": 394,
       "id": "round394-progress-accounting-181103-html-answer-sync",
-      "status": "integrated",
+      "status": "done",
       "version": "round394-progress-accounting-181103-html-answer-sync-20260618",
       "integratedVersion": "round394-progress-accounting-181103-html-answer-sync-20260618",
       "title": "Round394 progress accounting and 181103 HTML answer sync",
@@ -2746,7 +2959,7 @@
     {
       "round": 395,
       "id": "round395-progress-primary-store-block",
-      "status": "integrated",
+      "status": "done",
       "version": "round395-progress-primary-store-block-20260618",
       "integratedVersion": "round395-progress-primary-store-block-20260618",
       "title": "Round395 progress primary-store write block",
@@ -2775,7 +2988,7 @@
     {
       "round": 396,
       "id": "round396-public-shell-release-gate",
-      "status": "integrated",
+      "status": "done",
       "version": "round396-public-shell-release-gate-20260618",
       "integratedVersion": "round396-public-shell-release-gate-20260618",
       "title": "Round396 public shell release gate and teacher-monitor cumulative truth",

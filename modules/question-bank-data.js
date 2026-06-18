@@ -1347,6 +1347,11 @@ window.QuestionBankData = (function() {
                 const sourceContentCardCount = isMaterial181103
                     ? questions.filter(q => q && (q.sourceSemanticQuestionCardKind === 'source-content-card' || q.round373QuestionCardKind === 'source-content-card' || q.round372QuestionCardKind === 'source-content-card')).length
                     : 0;
+                const randomPracticeQuestionCount = isMaterial181103 ? defaultPracticeQuestions.length : questions.length;
+                const randomButtonStyle = randomPracticeQuestionCount
+                    ? 'flex: 1; padding: 8px; background: #2196F3; color: white; border: none; border-radius: 3px; cursor: pointer;'
+                    : 'flex: 1; padding: 8px; background: #9ca3af; color: white; border: none; border-radius: 3px; cursor: not-allowed;';
+                const randomButtonDisabled = randomPracticeQuestionCount === 0 ? 'disabled aria-disabled="true"' : '';
                 const defaultButtonStyle = defaultPracticeQuestions.length
                     ? 'width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 10px;'
                     : 'width: 100%; padding: 10px; background: #9ca3af; color: white; border: none; border-radius: 5px; cursor: not-allowed; margin-bottom: 10px;';
@@ -1401,10 +1406,10 @@ window.QuestionBankData = (function() {
                     <div style="margin-bottom: 20px;">
                         <h4 style="margin: 0 0 10px 0; color: #333;">🎲 随机练习</h4>
                         <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                            <input type="number" id="randomCount" value="5" min="1" max="${questions.length}" 
+                            <input type="number" id="randomCount" value="${Math.min(5, Math.max(randomPracticeQuestionCount, 1))}" min="1" max="${Math.max(randomPracticeQuestionCount, 1)}"
                                    style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
-                            <button onclick="QuestionBankData.startRandomPractice('${bank.id}')" 
-                                    style="flex: 1; padding: 8px; background: #2196F3; color: white; border: none; border-radius: 3px; cursor: pointer;">
+                            <button onclick="QuestionBankData.startRandomPractice('${bank.id}')" ${randomButtonDisabled}
+                                    style="${randomButtonStyle}">
                                 随机练习
                             </button>
                         </div>
@@ -1456,16 +1461,16 @@ window.QuestionBankData = (function() {
                 return;
             }
             
+            if (bankData.bank && bankData.bank.id === '181103-material-extracted' && (!bankData.defaultPracticeQuestions || bankData.defaultPracticeQuestions.length === 0)) {
+                showNotification('181103 当前没有可刷独立题；已阻止退回全量来源卡或旧真题入口。', 'error');
+                return;
+            }
             const fullBank = {
                 ...bankData.bank,
                 questions: bankData.defaultPracticeQuestions && bankData.defaultPracticeQuestions.length
                     ? bankData.defaultPracticeQuestions
                     : bankData.questions
             };
-            if (bankData.bank && bankData.bank.id === '181103-material-extracted' && (!bankData.defaultPracticeQuestions || bankData.defaultPracticeQuestions.length === 0)) {
-                fullBank.questions = bankData.questions;
-                fullBank.practiceIncludesOcrReview = true;
-            }
             
             // 移除对话框
             document.querySelector('.practice-dialog')?.remove();
@@ -1504,12 +1509,13 @@ window.QuestionBankData = (function() {
             }
             
             const count = parseInt(document.getElementById('randomCount').value) || 5;
+            if (bankData.bank && bankData.bank.id === '181103-material-extracted' && (!bankData.defaultPracticeQuestions || bankData.defaultPracticeQuestions.length === 0)) {
+                showNotification('181103 随机练习只使用语义确认的独立题；当前默认池为空，已阻止退回全量来源卡。', 'error');
+                return;
+            }
             const pool = bankData.defaultPracticeQuestions && bankData.defaultPracticeQuestions.length
                 ? bankData.defaultPracticeQuestions
                 : bankData.questions;
-            if (bankData.bank && bankData.bank.id === '181103-material-extracted' && (!bankData.defaultPracticeQuestions || bankData.defaultPracticeQuestions.length === 0)) {
-                showNotification('181103 随机练习只使用语义确认的独立题；源文线索只在资料页展示。', 'info');
-            }
             const randomQuestions = this.getRandomQuestions(pool, count);
             
             const fullBank = {

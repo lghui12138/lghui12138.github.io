@@ -1,0 +1,72 @@
+{
+  "ok": true,
+  "version": "round390-progress-server-truth-visibility-20260618",
+  "generatedAt": "2026-06-18T09:45:00+08:00",
+  "worker": "A",
+  "scope": [
+    "student-progress-visible-source-of-truth",
+    "server-progress-snapshot-cumulative-question-count",
+    "server-progress-snapshot-study-time",
+    "login-refresh-no-mutation-proof",
+    "kv-fallback-no-drift-boundary",
+    "d1-r2-production-durability-boundary"
+  ],
+  "studentVisibleTruth": {
+    "cumulativeSourceOfTruth": "server-progress-snapshot",
+    "visibleCumulativeMetrics": [
+      "completedQuestions",
+      "totalHours"
+    ],
+    "serverSnapshotFields": [
+      "stats.answered",
+      "stats.studyTimeSeconds",
+      "source",
+      "storeMode",
+      "cumulativeSourceOfTruth",
+      "noMutationRead"
+    ],
+    "readContract": {
+      "noMutationRead": true,
+      "meaning": "Login, refresh, and GET /api/stats are read-only proof paths. They must not recompute or increment cumulative question count or study time."
+    },
+    "localFallbackBoundary": "Local browser records are offline context and recent-activity display only. They are not cumulative truth when a server-progress-snapshot exists."
+  },
+  "storageBoundary": {
+    "degradedFallback": {
+      "storeMode": "kv-single-write-fallback",
+      "source": "server-kv-learning-progress",
+      "claimAllowed": "degraded no-drift only",
+      "claimNotAllowed": "complete production durability"
+    },
+    "primaryDurableBindings": [
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2"
+    ],
+    "fullProductionDurabilityRequiresPrimaryBinding": true,
+    "privateVideoProductionRecoveryRequires": "FM_PRIVATE_MEDIA R2 proof"
+  },
+  "artifacts": {
+    "ui": "modules/progress-module.html",
+    "doc": "docs/round390-progress-server-truth.md",
+    "json": "data/fluid-round390-progress-server-truth.json",
+    "gzip": "data/fluid-round390-progress-server-truth.json.gz"
+  },
+  "uiAnchors": [
+    "累计题数和学习时长来自 server-progress-snapshot",
+    "noMutationRead=true",
+    "KV fallback 只是降级 no-drift",
+    "D1/R2 未绑定不能叫完整生产"
+  ],
+  "verificationCommands": [
+    "node --check tests/edge-fluid-upgrade-check.js",
+    "node -e \"const fs=require('fs'); const html=fs.readFileSync('modules/progress-module.html','utf8'); const script=html.match(/<script>\\\\s*([\\\\s\\\\S]*?)<\\\\/script>\\\\s*<\\\\/body>/)[1]; new Function(script);\"",
+    "node tests/edge-fluid-upgrade-check.js",
+    "node -e \"const fs=require('fs'); const zlib=require('zlib'); const raw=fs.readFileSync('data/fluid-round390-progress-server-truth.json'); JSON.parse(raw); const gz=zlib.gunzipSync(fs.readFileSync('data/fluid-round390-progress-server-truth.json.gz')); if (!raw.equals(gz)) throw new Error('gzip mismatch');\""
+  ],
+  "nonClaims": [
+    "No account credentials are recorded.",
+    "This worker did not bind D1/R2 or R2 resources.",
+    "KV fallback is not described as full production.",
+    "Private-video production recovery is not claimed."
+  ]
+}

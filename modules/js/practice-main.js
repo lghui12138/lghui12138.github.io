@@ -55,9 +55,16 @@ window.PracticeApp = {
                         correctRate: 0,
                         startTime: null,
                         totalTime: 0
-                    }
-                };
-            },
+                    },
+	                    practiceSessionId: null,
+	                    serverProgressHydrated: false,
+		                    serverProgressSource: '',
+		                    serverProgressStoreMode: '',
+		                    serverProgressLastError: '',
+		                    progressWritePendingCount: 0,
+		                    progressWriteChain: Promise.resolve()
+	                };
+	            },
 
             computed: {
                 currentQuestion() {
@@ -85,6 +92,271 @@ window.PracticeApp = {
                 showNotification(message, type = 'info') {
                     this.notification = { show: true, message, type };
                 },
+
+	                stableProgressEventId(type, data = {}) {
+                    const questionKey = data.questionId || data.questionNumber || this.currentQuestionIndex + 1;
+                    const attemptKey = data.attemptNumber || data.practiceAttempt || '';
+	                    return [
+	                        type,
+	                        data.practiceSessionId || this.practiceSessionId || '',
+                        data.bankId || data.questionBank || '',
+                        questionKey,
+                        attemptKey
+	                    ].filter(value => value !== null && value !== undefined && String(value).trim() !== '').join(':').replace(/\s+/g, '-').slice(0, 220);
+	                },
+
+		                progressSourceFromPayload(payload) {
+		                    const explicit = String(payload && payload.source || '').trim();
+		                    if (explicit) return explicit;
+	                    const mode = String(payload && (payload.storeMode || payload.store || '') || '').toLowerCase();
+	                    if (mode === 'd1') return 'server-d1-learning-progress';
+	                    if (mode === 'r2' || mode === 'r2-progress') return 'server-r2-learning-progress';
+	                    if (mode === 'kv' || mode === 'kv-single-write-fallback') return 'server-kv-learning-progress';
+		                    return 'server-learning-progress-unavailable';
+		                },
+
+			                progressSnapshotKey(username) {
+			                    const safeUser = String(username || 'unknown')
+			                        .normalize('NFKC')
+		                        .trim()
+		                        .replace(/\s+/g, '-')
+		                        .replace(/[^a-z0-9_.:@-]/gi, '_')
+		                        .slice(0, 120) || 'unknown';
+			                    return 'fm_learning_progress_snapshot_v1:' + safeUser;
+			                },
+
+			                progressOutboxKey() {
+			                    return 'fm_learning_progress_outbox_v1';
+			                },
+
+			                progressErrorKey() {
+			                    return 'fm_learning_progress_last_error_v1';
+			                },
+
+			                readProgressJson(key, fallback) {
+			                    try {
+			                        const raw = localStorage.getItem(key);
+			                        return raw ? JSON.parse(raw) : fallback;
+			                    } catch (_) {
+			                        return fallback;
+			                    }
+			                },
+
+			                writeProgressJson(key, value) {
+			                    try {
+			                        localStorage.setItem(key, JSON.stringify(value));
+			                    } catch (_) {}
+			                },
+
+			                progressOutbox() {
+			                    const items = this.readProgressJson(this.progressOutboxKey(), []);
+			                    const now = Date.now();
+			                    return (Array.isArray(items) ? items : []).filter(item => {
+			                        if (!item || item.queuedReason !== 'network') return false;
+			                        const queuedAt = Date.parse(item.queuedAt || '');
+			                        return queuedAt && now - queuedAt <= 24 * 60 * 60 * 1000;
+			                    });
+			                },
+
+			                saveProgressOutbox(items) {
+			                    const next = (Array.isArray(items) ? items : []).slice(-200);
+			                    this.writeProgressJson(this.progressOutboxKey(), next);
+			                    this.progressWritePendingCount = next.length;
+			                },
+
+			                progressErrorFromPayload(payload, response) {
+			                    const first = payload && Array.isArray(payload.results)
+			                        ? payload.results.find(item => item && item.error)
+			                        : null;
+			                    return String((payload && payload.error) || (first && first.error) || `http_${response && response.status || 0}`);
+			                },
+
+			                rememberProgressWriteError(payload, response, event) {
+			                    const error = this.progressErrorFromPayload(payload || {}, response || {});
+			                    const source = this.progressSourceFromPayload(payload || {});
+			                    const storeMode = payload && (payload.storeMode || payload.configuredStoreMode || payload.store || '');
+			                    this.serverProgressLastError = error;
+			                    this.serverProgressStoreMode = storeMode || this.serverProgressStoreMode || '';
+			                    this.writeProgressJson(this.progressErrorKey(), {
+			                        syncedAt: new Date().toISOString(),
+			                        error,
+			                        status: response && response.status || 0,
+			                        source,
+			                        storeMode,
+			                        eventType: event && event.type || '',
+			                        clientEventId: event && event.data && event.data.clientEventId || '',
+			                        serverUpgradeInvariant: payload && payload.serverUpgradeInvariant || ''
+			                    });
+			                    return error;
+			                },
+
+			                isServerRejectedProgress(payload, response) {
+			                    if (!response || response.ok) return false;
+			                    const text = JSON.stringify(payload || {});
+			                    return response.status >= 500 || /write_quota_exceeded|storage_unavailable|progress_write_failed|write_failed/.test(text);
+			                },
+
+			                queueNetworkProgressEvent(event) {
+			                    const outbox = this.progressOutbox();
+			                    const clientEventId = event && event.data && event.data.clientEventId;
+			                    if (!outbox.some(item => item && item.data && item.data.clientEventId === clientEventId)) {
+			                        outbox.push({
+			                            ...event,
+			                            queuedAt: new Date().toISOString(),
+			                            queuedReason: 'network'
+			                        });
+			                    }
+			                    this.saveProgressOutbox(outbox);
+			                },
+
+			                async flushProgressOutbox() {
+			                    const outbox = this.progressOutbox();
+			                    this.progressWritePendingCount = outbox.length;
+			                    if (!outbox.length) return false;
+			                    try {
+			                        const response = await fetch('/api/progress', {
+			                            method: 'POST',
+			                            headers: { 'Content-Type': 'application/json' },
+			                            body: JSON.stringify({ events: outbox }),
+			                            keepalive: true,
+			                            credentials: 'same-origin'
+			                        });
+			                        const payload = await response.json().catch(() => null);
+			                        if (!response.ok) {
+			                            const error = this.rememberProgressWriteError(payload, response, outbox[0]);
+			                            if (this.isServerRejectedProgress(payload, response)) {
+			                                this.saveProgressOutbox([]);
+			                                this.showNotification(`服务器学习进度写入失败：${error}；旧累计未变，请联系管理员绑定 D1/R2 主存储。`, 'error');
+			                            }
+			                            return false;
+			                        }
+			                        if (payload && payload.ok) {
+			                            this.saveProgressOutbox([]);
+			                            await this.syncProgressFromServer();
+			                            return true;
+			                        }
+			                    } catch (error) {
+			                        this.serverProgressLastError = error && error.message ? error.message : 'progress_outbox_flush_failed';
+			                    }
+			                    return false;
+			                },
+
+			                progressSnapshotUser(payload) {
+			                    const explicit = String(payload && (payload.user || (payload.progress && payload.progress.user)) || '').trim();
+		                    if (explicit) return explicit;
+		                    if (window.FMSecurity && typeof window.FMSecurity.getUser === 'function') {
+		                        const guarded = window.FMSecurity.getUser();
+		                        if (guarded && guarded.username) return String(guarded.username).trim();
+		                    }
+		                    try {
+		                        const session = JSON.parse(localStorage.getItem('fm_session_v2') || localStorage.getItem('fm_auth_session_v2') || 'null');
+		                        const user = session && session.payload && session.payload.user ? session.payload.user : (session && session.user ? session.user : null);
+		                        if (user && user.username) return String(user.username).trim();
+		                    } catch (_) {}
+		                    return 'unknown';
+		                },
+
+		                applyServerProgress(payload) {
+		                    const stats = payload && (payload.stats || (payload.progress && payload.progress.totals));
+		                    if (!stats) return;
+	                    const source = this.progressSourceFromPayload(payload || {});
+		                    const cumulativeSourceOfTruth = String(payload && payload.cumulativeSourceOfTruth || '').trim();
+		                    const noMutationRead = payload && payload.noMutationRead === true && cumulativeSourceOfTruth === 'server-progress-snapshot';
+		                    if (!/^(server-d1-learning-progress|server-r2-learning-progress|server-kv-learning-progress)$/.test(source) || !noMutationRead) return;
+		                    const snapshotUser = this.progressSnapshotUser(payload);
+		                    try {
+		                        localStorage.setItem(this.progressSnapshotKey(snapshotUser), JSON.stringify({
+		                            syncedAt: new Date().toISOString(),
+		                            user: snapshotUser,
+		                            source,
+		                            progress: payload.progress || null,
+		                            storeMode: payload.storeMode || '',
+		                            cumulativeSourceOfTruth,
+		                            noMutationRead,
+		                            stats
+		                        }));
+                    } catch (_) {}
+			                    this.serverProgressHydrated = true;
+			                    this.serverProgressSource = source;
+			                    this.serverProgressStoreMode = payload && (payload.storeMode || payload.store || '');
+			                    this.serverProgressLastError = '';
+			                    this.progressWritePendingCount = this.progressOutbox().length;
+			                    this.stats = {
+                        ...this.stats,
+                        answeredQuestions: Number(stats.answered || 0),
+                        correctAnswers: Number(stats.correct || 0),
+                        correctRate: Number(stats.accuracy || 0),
+                        totalTime: Number(stats.studyTimeSeconds || 0)
+                    };
+                },
+
+                async syncProgressFromServer() {
+                    try {
+                        const response = await fetch('/api/progress', {
+                            method: 'GET',
+                            credentials: 'same-origin',
+                            cache: 'no-store'
+	                        });
+		                        const payload = await response.json().catch(() => null);
+		                        if (!response.ok) {
+		                            this.rememberProgressWriteError(payload, response, { type: 'progress_get' });
+		                            if (payload && payload.progress && payload.stats) this.applyServerProgress(payload);
+		                            return false;
+	                        }
+	                        if (payload && payload.ok) {
+                            this.applyServerProgress(payload);
+                            return true;
+                        }
+	                    } catch (error) {
+                        this.serverProgressLastError = error && error.message ? error.message : 'progress_sync_failed';
+                    }
+                    return false;
+	                },
+
+		                async postProgressEvent(type, data = {}) {
+		                    const event = {
+                            type,
+                            data: {
+                                ...data,
+                                clientEventId: this.stableProgressEventId(type, data)
+                            }
+                        };
+		                    try {
+	                        const response = await fetch('/api/progress', {
+	                            method: 'POST',
+	                            headers: { 'Content-Type': 'application/json' },
+	                            body: JSON.stringify(event),
+	                            keepalive: true,
+	                            credentials: 'same-origin'
+	                        });
+			                        const payload = await response.json().catch(() => null);
+			                        if (!response.ok) {
+			                            const error = this.rememberProgressWriteError(payload, response, event);
+			                            if (this.isServerRejectedProgress(payload, response)) {
+			                                await this.syncProgressFromServer();
+			                                this.showNotification(`服务器学习进度写入失败：${error}；本次做题没有进入累计账本，旧累计未被改动。`, 'error');
+			                            }
+			                            return false;
+			                        }
+			                        if (payload && payload.ok) {
+	                            await this.syncProgressFromServer();
+	                            this.flushProgressOutbox();
+	                            return true;
+	                        }
+		                    } catch (error) {
+		                        this.serverProgressLastError = error && error.message ? error.message : 'progress_event_failed';
+		                        this.queueNetworkProgressEvent(event);
+		                        this.showNotification('网络中断，做题进度已暂存本机，恢复连接后会自动同步。', 'warning');
+		                    }
+			                    return false;
+			                },
+
+			                sendProgressEvent(type, data = {}) {
+			                    this.progressWriteChain = this.progressWriteChain
+			                        .catch(() => false)
+			                        .then(() => this.postProgressEvent(type, data));
+			                    return this.progressWriteChain;
+			                },
 
                 // 全屏功能
                 toggleFullscreen() {
@@ -181,6 +453,7 @@ window.PracticeApp = {
                     this.currentView = 'practice';
                     this.currentQuestionIndex = 0;
                     this.stats.startTime = Date.now();
+                    this.practiceSessionId = `modular-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
                     this.resetQuestionState();
                     
                     this.showNotification(`开始练习！共 ${selectedQuestions.length} 道题目`, 'success');
@@ -197,6 +470,7 @@ window.PracticeApp = {
                     this.currentView = 'practice';
                     this.currentQuestionIndex = 0;
                     this.stats.startTime = Date.now();
+                    this.practiceSessionId = `modular-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
                     this.resetQuestionState();
                     
                     this.showNotification(`开始随机练习！共 ${this.questions.length} 道题目`, 'success');
@@ -226,6 +500,22 @@ window.PracticeApp = {
                     
                     // 发送学生反馈数据给教师
                     this.sendStudentFeedback(data);
+
+                    this.sendProgressEvent('practice_answer_submit', {
+                        practiceSessionId: this.practiceSessionId,
+                        bankId: this.currentQuestion?.bankId || this.currentQuestion?.bank || '',
+                        sessionName: this.currentQuestion?.bank || this.currentQuestion?.category || '模块化练习',
+                        questionId: data.questionId || this.currentQuestion?.id || this.currentQuestion?.questionId || this.currentQuestionIndex + 1,
+                        questionNumber: this.currentQuestionIndex + 1,
+                        totalQuestions: this.questions.length,
+                        questionTitle: this.currentQuestion?.title || this.currentQuestion?.question || '',
+                        questionType: this.currentQuestion?.type || this.currentQuestion?.questionType || '',
+                        knowledge: this.currentQuestion?.knowledge || this.currentQuestion?.category || '',
+                        userAnswer: data.selectedAnswer || data.userAnswer || '',
+                        correctAnswer: this.currentQuestion?.answer || this.currentQuestion?.correct || '',
+                        isCorrect: data.isCorrect,
+                        questionTimeSeconds: data.timeSpent || 0
+                    });
                 },
 
                 navigateQuestion(direction) {
@@ -258,6 +548,8 @@ window.PracticeApp = {
                     const progress = {
                         currentQuestionIndex: this.currentQuestionIndex,
                         stats: this.stats,
+                        serverManaged: this.serverProgressHydrated === true,
+                        serverProgressSource: this.serverProgressSource || '',
                         timestamp: new Date().toISOString(),
                         questionsLength: this.questions.length
                     };
@@ -270,7 +562,10 @@ window.PracticeApp = {
                         const saved = localStorage.getItem(PracticeConfig.storageKeys.progress);
                         if (saved) {
                             const progress = JSON.parse(saved);
-                            this.stats = { ...this.stats, ...progress.stats };
+	                            if (Number.isFinite(Number(progress.currentQuestionIndex))) {
+	                                const index = Number(progress.currentQuestionIndex);
+	                                if (index >= 0 && index < this.questions.length) this.currentQuestionIndex = index;
+	                            }
                         }
                     } catch (error) {
                         console.error('Failed to load progress:', error);
@@ -279,14 +574,20 @@ window.PracticeApp = {
 
                 // 统计更新
                 updateStats() {
-                    // 从localStorage获取用户统计
-                    const userStats = JSON.parse(localStorage.getItem(PracticeConfig.storageKeys.userStats) || '{}');
+                    if (this.serverProgressHydrated) {
+                        this.stats = {
+                            ...this.stats,
+                            totalQuestions: this.totalQuestions
+                        };
+                        return;
+                    }
                     this.stats = {
                         ...this.stats,
                         totalQuestions: this.totalQuestions,
-                        answeredQuestions: userStats.answeredQuestions || 0,
-                        correctAnswers: userStats.correctAnswers || 0,
-                        correctRate: userStats.correctRate || 0
+                        answeredQuestions: this.currentView === 'practice' ? this.stats.answeredQuestions : 0,
+                        correctAnswers: this.currentView === 'practice' ? this.stats.correctAnswers : 0,
+                        correctRate: this.currentView === 'practice' ? this.stats.correctRate : 0,
+                        totalTime: this.currentView === 'practice' ? this.stats.totalTime : 0
                     };
                 },
 
@@ -490,6 +791,7 @@ window.PracticeApp = {
                     this.currentView = 'practice';
                     this.currentQuestionIndex = 0;
                     this.stats.startTime = Date.now();
+                    this.practiceSessionId = `real-${year}-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
                     this.resetQuestionState();
                     
                     const yearText = year === 'all' ? '所有年份' : `${year}年`;
@@ -624,10 +926,12 @@ window.PracticeApp = {
                     this.handleRealExamPractice(examId, examYear, examMode);
                 } else {
                     // 普通练习模式
-                    setTimeout(() => {
-                        this.loadProgress();
-                        this.updateStats();
-                        this.initParticles();
+	                    setTimeout(async () => {
+	                        await this.syncProgressFromServer();
+	                        await this.flushProgressOutbox();
+	                        this.loadProgress();
+	                        this.updateStats();
+	                        this.initParticles();
                         this.loading = false;
                         this.showNotification('欢迎来到智能题库！点击"批量加载所有题库"开始', 'info');
                     }, 1500);
@@ -642,11 +946,12 @@ window.PracticeApp = {
                 });
 
                 // 定期保存进度
-                setInterval(() => {
-                    if (this.currentView === 'practice' && this.stats.answeredQuestions > 0) {
-                        this.saveProgress();
-                    }
-                }, PracticeConfig.defaults.saveProgressInterval);
+	                setInterval(() => {
+	                    if (this.currentView === 'practice' && this.stats.answeredQuestions > 0) {
+	                        this.saveProgress();
+	                    }
+	                    this.flushProgressOutbox();
+	                }, PracticeConfig.defaults.saveProgressInterval);
             },
 
             beforeUnmount() {
@@ -677,4 +982,4 @@ document.addEventListener('DOMContentLoaded', () => {
     window.practiceAppInstance = PracticeApp.mount('#app');
 });
 
-console.log('🚀 主应用逻辑模块已加载'); 
+console.log('🚀 主应用逻辑模块已加载');

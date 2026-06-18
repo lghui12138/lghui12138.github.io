@@ -1,0 +1,127 @@
+{
+  "version": "round392-release-readiness-gate-20260618",
+  "date": "2026-06-18",
+  "worker": "Round392 Worker F",
+  "purpose": "release gate hardening for public shell freshness, real-account progress proof, Cloudflare binding boundaries, and private-video management claim safety",
+  "sourceRepo": "/Users/kili/Documents/Codex/lghui-source-private-video-work",
+  "publicShellRepo": "/Users/kili/Documents/Codex/lghui-private-video-fix",
+  "publicShellMode": "read-only",
+  "currentRuntimeVersionAtAuthoring": "round392-progress-monitor-181103-answer-lock-20260618",
+  "allowedWriteScope": [
+    "tests/edge-fluid-upgrade-check.js",
+    "tools/check-cloudflare-pages-private-video-bindings.mjs",
+    "tools/check-production-progress-real-account.mjs",
+    "data/fluid-round392-release-readiness.json",
+    "data/fluid-round392-release-readiness.json.gz",
+    "docs/round392-release-readiness.md"
+  ],
+  "scopeGuards": {
+    "pythonUsed": false,
+    "mac2TProcessedByPython": false,
+    "questionBankJsonEdited": false,
+    "materials181103Edited": false,
+    "commitOrPushAttempted": false,
+    "cloudflareMutationAttempted": false,
+    "publicShellWritten": false
+  },
+  "releaseGateLocks": {
+    "lghuiTopPublicSampleFreshness": {
+      "gate": "tools/check-production-progress-real-account.mjs",
+      "requiredWhen": "--require-public-chain",
+      "publicOrigin": "https://lghui.top",
+      "sourceOrigin": "https://lghui-fluid-learning.pages.dev",
+      "checks": [
+        "public site-updates.json latest version must match the expected gate version",
+        "source site-updates.json is cross-checked when it is publicly available",
+        "latest version must match the expected gate version when provided",
+        "latest public sample must not carry stale edge_refresh round markers",
+        "old lghui.top samples cannot satisfy the real-account production proof"
+      ],
+      "lockedFields": [
+        "publicReleaseSample.checked",
+        "publicReleaseSample.expectedVersion",
+        "publicReleaseSample.publicMatchesExpected",
+        "publicReleaseSample.sourceMatchesExpected",
+        "publicReleaseSample.publicMatchesSource",
+        "publicReleaseSample.sourceSampleOptionalWhenExpectedVersionProvided",
+        "publicReleaseSample.oldLghuiTopSampleRejected"
+      ]
+    },
+    "realAccountProgress": {
+      "gate": "tools/check-production-progress-real-account.mjs",
+      "readOnlyMode": "read-only-login-no-drift",
+      "strictWriteMode": "strict-persistent-write-preflight or persistent write",
+      "requires": [
+        "dedicated qa-student account",
+        "lghui.top to pages.dev public login handoff",
+        "first login, relogin, and second relogin totals are stable",
+        "progress and stats agree on server-progress-snapshot",
+        "strict persistent write refuses KV-only fallback"
+      ],
+      "blockedUntil": "FM_PROGRESS_DB or FM_PROGRESS_R2 is bound and a real student write survives relogin on that primary store"
+    },
+    "progressBindings": {
+      "gate": "tools/check-cloudflare-pages-private-video-bindings.mjs",
+      "requiredPrimaryStore": "FM_PROGRESS_DB or FM_PROGRESS_R2",
+      "kvFallbackBoundary": "kv-single-write-fallback is degraded no-drift only, not full production durability",
+      "claimGuard": "progressFullProductionRequiresFmProgressDbOrR2"
+    },
+    "privateVideoBindings": {
+      "gate": "tools/check-cloudflare-pages-private-video-bindings.mjs",
+      "requiredBinding": "FM_PRIVATE_MEDIA",
+      "bindingReadyField": "privateVideoBindingReady",
+      "recoveryClaimField": "privateVideoProductionRecoveryClaimAllowed",
+      "claimGuard": "privateVideoRecoveryRequiresFmPrivateMediaR2"
+    },
+    "privateVideoManagementClaims": {
+      "gate": "tools/check-cloudflare-pages-private-video-bindings.mjs",
+      "matrixField": "privateVideoActionMatrix",
+      "requiredActions": [
+        "list",
+        "same-access-save",
+        "delete-dry-run",
+        "delete-course",
+        "upload-publish",
+        "change-access",
+        "archive-course"
+      ],
+      "nonAcceptance": [
+        "delete-dry-run is not destructive delete completion",
+        "delete-course remains limited until dry-run, exact course-id confirmation, storage cleanup, and real-account QA pass together",
+        "upload, publish, access-change, and archive cannot be claimed recovered from UI presence or binding audit alone",
+        "binding audit alone is not real teacher/student management QA"
+      ]
+    }
+  },
+  "claimBoundaries": {
+    "releaseGateHardeningPass": true,
+    "fullProductionProgressReady": false,
+    "privateVideoProductionRecoveryClaimAllowed": false,
+    "deleteManagementClaimComplete": false,
+    "oldPublicShellSampleAccepted": false,
+    "readOnlyRealAccountNoDriftCanPassWithoutDurableWrite": true,
+    "strictPersistentWriteMustBlockWithoutPrimaryProgressStore": true
+  },
+  "verificationCommands": [
+    "node --check tools/check-production-progress-real-account.mjs",
+    "node --check tools/check-cloudflare-pages-private-video-bindings.mjs",
+    "node tests/edge-fluid-upgrade-check.js",
+    "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain --expected-version round392-progress-monitor-181103-answer-lock-20260618",
+    "node tools/check-production-progress-real-account.mjs --json --require-public-chain --require-persistent-write --expected-version round392-progress-monitor-181103-answer-lock-20260618",
+    "node tools/check-cloudflare-pages-private-video-bindings.mjs --json"
+  ],
+  "expectedProductionBlockersUntilCloudflareIsFixed": [
+    "FM_PROGRESS_DB missing and FM_PROGRESS_R2 missing",
+    "FM_PRIVATE_MEDIA missing or unproven",
+    "real teacher/student private-video management QA not paired with storage binding proof"
+  ],
+  "acceptance": {
+    "staticGateReady": true,
+    "productionReadyClaimAllowed": false,
+    "privateVideoRecoveryClaimAllowed": false,
+    "progressDurabilityClaimAllowed": false,
+    "reason": "This Round392 artifact hardens the release gate and proof boundary. It does not claim Cloudflare binding remediation, deployment, commit, push, or production private-video recovery."
+  },
+  "integratedRuntimeVersion": "round392-progress-monitor-181103-answer-lock-20260618",
+  "integratedAt": "2026-06-18T16:18:00+08:00"
+}

@@ -1,0 +1,141 @@
+{
+  "version": "round393-release-online-qa-gates-20260618",
+  "worker": "Round393 Task F",
+  "sourceRepo": "/Users/kili/Documents/Codex/lghui-source-private-video-work",
+  "publicShellRepo": "/Users/kili/Documents/Codex/lghui-private-video-fix",
+  "currentRuntimeVersionAtAuthoring": "round397-server-kv-progress-cumulative-hardening-20260618",
+  "localMiddlewareEdgeVersionObserved": "round397-server-kv-progress-cumulative-hardening-20260618",
+  "livePagesDevEdgeVersionObserved": "round397-server-kv-progress-cumulative-hardening-20260618",
+  "allowedWriteScope": [
+    "tools/monitor-fluid-public-release.mjs",
+    "tools/verify-fluid-public-deployment.mjs",
+    "tests/edge-fluid-upgrade-check.js",
+    "data/fluid-round393-release-online-qa-gates.json",
+    "data/fluid-round393-release-online-qa-gates.json.gz",
+    "docs/round393-release-online-qa-gates.md"
+  ],
+  "scopeGuards": {
+    "mac2TTouched": false,
+    "vpnOrProxyTouched": false,
+    "secretsCommitted": false,
+    "cloudflareMutationAttempted": false
+  },
+  "gateContracts": {
+    "publicMonitorBoundedRuntime": {
+      "gate": "tools/monitor-fluid-public-release.mjs",
+      "env": [
+        "FLUID_PUBLIC_MONITOR_TIMEOUT_MS",
+        "FLUID_PUBLIC_MONITOR_CURL_MAX_TIME",
+        "FLUID_PUBLIC_MONITOR_CONCURRENCY",
+        "FLUID_PUBLIC_MONITOR_ATTEMPTS",
+        "FLUID_PUBLIC_MONITOR_RETRY_MS"
+      ],
+      "outputFields": [
+        "networkBudget",
+        "direct181103FreshnessPairs",
+        "direct181103Freshness"
+      ],
+      "acceptance": "The public monitor must finish with bounded fetch/curl timeouts and must report timeout failures instead of hanging."
+    },
+    "publicVerifierBoundedRuntime": {
+      "gate": "tools/verify-fluid-public-deployment.mjs",
+      "env": [
+        "FLUID_PUBLIC_VERIFY_TIMEOUT_MS",
+        "FLUID_PUBLIC_VERIFY_CURL_MAX_TIME",
+        "FLUID_PUBLIC_VERIFY_ATTEMPTS",
+        "FLUID_PUBLIC_VERIFY_RETRY_MS"
+      ],
+      "outputFields": [
+        "networkBudget",
+        "direct181103Freshness"
+      ],
+      "acceptance": "The verifier must fail fast on edge-status mismatch or stale direct 181103 copies and must include the timeout budget in JSON summaries."
+    },
+    "pagesDevEdgeStatus": {
+      "url": "https://lghui-fluid-learning.pages.dev/_edge-status",
+      "requiredField": "edgeHomeVersion",
+      "expectedVersion": "round397-server-kv-progress-cumulative-hardening-20260618",
+      "localMiddlewareExpectedVersionObserved": "round397-server-kv-progress-cumulative-hardening-20260618",
+      "failureMessage": "Cloudflare edgeHomeVersion mismatch"
+    },
+    "lghuiTop181103DirectFreshness": {
+      "failureMessage": "lghui.top direct 181103 copy is stale or divergent from pages.dev source",
+      "pairs": [
+        {
+          "id": "181103-index",
+          "kind": "html-index",
+          "publicUrl": "https://lghui.top/resources/fluid-181103-html/index.html",
+          "sourceUrl": "https://lghui-fluid-learning.pages.dev/resources/fluid-181103-html/index.html",
+          "requiredSignals": [
+            "current edge version marker",
+            "38 material cards",
+            "522 total source questions",
+            "381 default-practice questions",
+            "141 source-content cards",
+            "no viewer/raw binary fallback"
+          ]
+        },
+        {
+          "id": "181103-material-01",
+          "kind": "html-material",
+          "publicUrl": "https://lghui.top/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html",
+          "sourceUrl": "https://lghui-fluid-learning.pages.dev/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html",
+          "requiredSignals": [
+            "current edge version marker",
+            "standalone in-site HTML material content",
+            "question cards",
+            "page anchors",
+            "no viewer/raw binary fallback"
+          ]
+        },
+        {
+          "id": "181103-question-bank",
+          "kind": "question-bank-json",
+          "publicUrl": "https://lghui.top/question-banks/181103-material-extracted.json",
+          "sourceUrl": "https://lghui-fluid-learning.pages.dev/question-banks/181103-material-extracted.json",
+          "requiredSignals": [
+            "522 total rows",
+            "381 default-practice rows",
+            "141 source-content rows",
+            "522 source HTML URLs",
+            "522 answer rows",
+            "522 current website validated rows",
+            "no viewer/raw binary fallback"
+          ]
+        }
+      ]
+    },
+    "authChain": {
+      "gate": "tools/check-lghui-top-auth-chain.mjs",
+      "publicOrigin": "https://lghui.top",
+      "sourceOrigin": "https://lghui-fluid-learning.pages.dev",
+      "acceptance": "Start on the public shell, prove the login-chain handoff to pages.dev, and keep credentials out of committed artifacts."
+    },
+    "progressNoDrift": {
+      "gate": "tools/check-production-progress-real-account.mjs",
+      "mode": "read-only-login-no-drift",
+      "acceptance": "Use real-account QA only when credentials are locally available; do not mutate production progress while checking public release freshness."
+    },
+    "bindingBlockers": {
+      "gate": "tools/check-cloudflare-pages-private-video-bindings.mjs",
+      "requiredProgressStore": "FM_PROGRESS_DB or FM_PROGRESS_R2",
+      "requiredPrivateVideoStore": "FM_PRIVATE_MEDIA",
+      "acceptance": "Binding presence alone is not a production recovery claim; missing durable stores remain blockers."
+    }
+  },
+  "claimBoundaries": {
+    "authenticatedQaCoveredByPublicMonitor": false,
+    "progressDurabilityClaimAllowed": false,
+    "privateVideoRecoveryClaimAllowed": false,
+    "direct181103FreshnessCoveredByPublicMonitor": true,
+    "direct181103FreshnessCoveredByVerifier": true
+  },
+  "commands": [
+    "FLUID_PUBLIC_MONITOR_ATTEMPTS=1 FLUID_PUBLIC_MONITOR_TIMEOUT_MS=12000 FLUID_PUBLIC_MONITOR_CURL_MAX_TIME=14 FLUID_PUBLIC_MONITOR_CONCURRENCY=6 node tools/monitor-fluid-public-release.mjs",
+    "FLUID_PUBLIC_VERIFY_ATTEMPTS=1 FLUID_PUBLIC_VERIFY_TIMEOUT_MS=12000 FLUID_PUBLIC_VERIFY_CURL_MAX_TIME=14 node tools/verify-fluid-public-deployment.mjs",
+    "node tools/check-lghui-top-auth-chain.mjs --public-origin https://lghui.top --source-origin https://lghui-fluid-learning.pages.dev",
+    "node tools/check-production-progress-real-account.mjs --public-origin https://lghui.top --source-origin https://lghui-fluid-learning.pages.dev --expected-version round397-server-kv-progress-cumulative-hardening-20260618",
+    "node tools/check-cloudflare-pages-private-video-bindings.mjs",
+    "node tests/edge-fluid-upgrade-check.js"
+  ]
+}
