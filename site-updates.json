@@ -1,5 +1,70 @@
 [
   {
+    "version": "round398-server-progress-no-drift-accounting-20260618",
+    "date": "2026-06-19",
+    "time": "06:23",
+    "updatedAt": "2026-06-19T06:23:00+08:00",
+    "previousVersion": "round397-server-kv-progress-cumulative-hardening-20260618",
+    "tag": "Round398",
+    "focus": "server-progress-no-drift-accounting",
+    "title": "Round398 累计时长与做题统计不漂移修复",
+    "summary": "本轮专门处理每次登录后累计时长、做题数和教师监控看起来会变化的问题：真实账号只读验证已经证明 /api/progress 与 /api/stats 在登录、刷新、退出重登和第二次重登后 totals 完全一致，且都声明 noMutationRead=true / server-progress-snapshot；教师 summary 不把 audit-event-window 并入累计。前端首页同步收紧：累计练习、服务端时长、正确率、知识点雷达和累计类成就只读 FMServerProgress 的 server-progress-snapshot，本机 fm_sessions / fm_scores 只保留最近活动、离线辅助和本周体验，不再解锁累计题数或累计学习时长。生产写入验证也暴露真实 blocker：POST /api/progress 当前返回 write_quota_exceeded，且 Cloudflare Pages 生产缺 FM_PROGRESS_DB / FM_PROGRESS_R2；当前 API token 可部署 Pages，但不能列出或管理 KV/D1/R2 资源，因此本轮不能把新增做题写入恢复说成完整生产就绪。网站会明确报告 Cloudflare KV / D1/R2 边界：读不漂移已验证，新增累计写入仍需绑定 FM_PROGRESS_DB 或 FM_PROGRESS_R2 后再验。181103、历年真题拆题和私有视频管理边界继续保持 Round397/Round396 已上线规则，缺 FM_PRIVATE_MEDIA 时仍不宣称私有视频完整管理恢复。 默认学生账号基线继续只保留 qi、chenlei、anxin、sunruze；未加入额外默认账号，不再扩入未知学生。",
+    "links": [
+      {
+        "label": "学生学习进度",
+        "href": "/modules/progress-module.html?edge_refresh=round398-server-progress-no-drift-accounting-20260618"
+      },
+      {
+        "label": "教师进度监控",
+        "href": "/teacher-panel?view=students&edge_refresh=round398-server-progress-no-drift-accounting-20260618"
+      },
+      {
+        "label": "首页服务端累计",
+        "href": "/index-complete.html?edge_refresh=round398-server-progress-no-drift-accounting-20260618#stats"
+      },
+      {
+        "label": "181103 资料题库",
+        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round398-server-progress-no-drift-accounting-20260618#questionBanksList"
+      },
+      {
+        "label": "181103 HTML 资料",
+        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round398-server-progress-no-drift-accounting-20260618"
+      },
+      {
+        "label": "私有视频管理",
+        "href": "/teacher-panel?view=resources&edge_refresh=round398-server-progress-no-drift-accounting-20260618#private-videos"
+      }
+    ],
+    "evidence": {
+      "localNoDriftGate": "NODE_PATH=<codex-runtime-node_modules> node tools/check-round398-progress-event-idempotency-contract.mjs --json => PASS 14/14; includes home FMServerProgress cumulative-only assertions.",
+      "realAccountReadOnly": "NODE_PATH=<codex-runtime-node_modules> node tools/check-production-progress-real-account.mjs --json --require-public-chain --read-only --expected-version round398-server-progress-no-drift-accounting-20260618 => ok=true; loginReadStable, refreshStatsStable, reloginStable, teacherSummaryOk all true.",
+      "realAccountWriteBoundary": "NODE_PATH=<codex-runtime-node_modules> node tools/check-production-progress-real-account.mjs --json --require-public-chain --expected-version round398-server-progress-no-drift-accounting-20260618 => blocked by write_quota_exceeded and missing FM_PROGRESS_DB/FM_PROGRESS_R2; postPayloadNotUsedAsCumulative remains true.",
+      "cloudflareResourcePermission": "wrangler pages project list succeeds for lghui-fluid-learning; wrangler kv namespace list, d1 list, and r2 bucket list fail with Cloudflare authentication error 10000, so this session cannot bind FM_PROGRESS_DB/FM_PROGRESS_R2/FM_PRIVATE_MEDIA.",
+      "releaseGate": "Run node tools/verify-fluid-release-gate.mjs --expected-version round398-server-progress-no-drift-accounting-20260618 after deploy; strict production write gate remains blocked until D1/R2 binding is restored."
+    },
+    "requiredTerms": [
+      "Round398",
+      "server-progress-snapshot",
+      "noMutationRead",
+      "FMServerProgress",
+      "localStorage-offline-reference",
+      "audit-event-window 非累计",
+      "write_quota_exceeded",
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2",
+      "FM_PRIVATE_MEDIA",
+      "真实账号只读 no-drift 已验证",
+      "新增累计写入仍被生产 blocker 阻断",
+      "qi",
+      "chenlei",
+      "anxin",
+      "sunruze",
+      "未加入额外默认账号",
+      "不再扩入未知学生"
+    ],
+    "visibleProof": "functions/_middleware.js, js/fluid-home-complete.js, index-complete.html, teacher-panel.html, tools/check-production-progress-real-account.mjs, tools/check-round398-progress-event-idempotency-contract.mjs, tests/edge-fluid-upgrade-check.js, site-updates.json."
+  },
+  {
     "version": "round397-server-kv-progress-cumulative-hardening-20260618",
     "date": "2026-06-18",
     "time": "19:40",
@@ -169,6 +234,81 @@
     "visibleProof": "functions/_middleware.js, modules/progress-module.html, modules/question-bank-practice.js, modules/js/practice-main.js, tools/check-round394-progress-durability-static-gate.mjs, tests/edge-fluid-upgrade-check.js, site-updates.json, public shell."
   },
   {
+    "version": "round392-progress-monitor-181103-answer-lock-20260618",
+    "date": "2026-06-18",
+    "time": "16:18",
+    "updatedAt": "2026-06-18T16:18:00+08:00",
+    "previousVersion": "round391-server-progress-truth-lock-20260618",
+    "tag": "Round392",
+    "focus": "progress-monitor-181103-answer-lock",
+    "title": "Round392 累计监控与 181103 答案锁定",
+    "summary": "本轮继续修正学习时长和做题监控的累计口径：/api/progress 与 /api/track 的 POST 返回只代表 progress-write-confirmation，不能直接水合累计题数、累计时长或教师监控；题库练习和模块练习写入成功后必须重新 GET noMutationRead=true、cumulativeSourceOfTruth=server-progress-snapshot 的服务器快照。旧 userStats/localStorage/session/audit-event-window 只作本地参考或最近活动，不能在登录、刷新、换设备、服务器升级后改写累计显示。181103 资料题库 522 条答案已复核为 0 findings，381 道可刷题与 141 张 source-content 卡保持分层；38 个材料 HTML 页面 522 个答案块与题库 522/522 同步，公式 MathJax 渲染和语义边界保留。历年真题继续锁 325 原文原子小题、68 组题 section、217 grouped 小题，五题简答和多小问不合并。完整 durable 生产进度和私有视频生产存储仍要求 FM_PROGRESS_DB/FM_PROGRESS_R2/FM_PRIVATE_MEDIA 真实绑定；KV fallback 只能证明 read-only 登录不漂移。 默认学生账号基线继续只保留 qi、chenlei、anxin、sunruze；未加入额外默认账号，不再扩入未知学生。",
+    "links": [
+      {
+        "label": "学生学习进度",
+        "href": "/modules/progress-module.html?edge_refresh=round392-progress-monitor-181103-answer-lock-20260618"
+      },
+      {
+        "label": "题库练习",
+        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round392-progress-monitor-181103-answer-lock-20260618#questionBanksList"
+      },
+      {
+        "label": "181103 HTML 总表",
+        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round392-progress-monitor-181103-answer-lock-20260618"
+      },
+      {
+        "label": "历年真题新版",
+        "href": "/modules/real-exams-dynamic.html?edge_refresh=round392-progress-monitor-181103-answer-lock-20260618"
+      },
+      {
+        "label": "教师进度监控",
+        "href": "/teacher-panel?view=students&edge_refresh=round392-progress-monitor-181103-answer-lock-20260618"
+      },
+      {
+        "label": "私有视频管理",
+        "href": "/private-video.html?edge_refresh=round392-progress-monitor-181103-answer-lock-20260618"
+      }
+    ],
+    "evidence": {
+      "staticGate": "node tests/edge-fluid-upgrade-check.js must assert Round392 POST write-confirmation boundaries, snapshot readback hydration, 181103 answer parity, and real-exam cardinality.",
+      "progressMonitorGate": "node tools/check-round392-progress-monitor-audit.mjs --write --json => POST payloads are not server snapshots; practice and question-bank clients force GET readback; legacy userStats cumulative writes are absent.",
+      "answerDataGate": "node tools/check-round392-181103-answer-data-quality.mjs --strict --json => 522 total, 381 practice, 141 source-content, semantic/watch/review/high/critical findings all 0.",
+      "answerHtmlGate": "node tools/check-round392-181103-html-answer-display.mjs --json => 38 material pages, 522 HTML cards, 522 visible answers, 522 bank parity.",
+      "realExamCardinalityGate": "node tools/check-round392-real-exam-question-cardinality.mjs --check-only => 325 atomic small questions, 68 grouped sections, 217 child cards, five-item sections locked.",
+      "realStudentNoDriftMode": "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain --expected-version round392-progress-monitor-181103-answer-lock-20260618 must verify lghui.top public sample freshness and first login/relogin/secondRelogin no-drift.",
+      "strictDurabilityBlocker": "node tools/check-production-progress-real-account.mjs --json --require-public-chain --require-persistent-write must fail until FM_PROGRESS_DB or FM_PROGRESS_R2 is bound.",
+      "bindingAudit": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json must keep FM_PROGRESS_DB/FM_PROGRESS_R2/FM_PRIVATE_MEDIA missing as production blockers instead of overclaiming recovery.",
+      "studentAccountBaseline": "activeCommonUsers: qi, chenlei, anxin, sunruze; unknownStudentsLocked true; no extra default accounts added; 未加入额外默认账号，不再扩入未知学生。"
+    },
+    "requiredTerms": [
+      "progress-write-confirmation",
+      "server-progress-snapshot",
+      "noMutationRead",
+      "writeRequiresSnapshotRead",
+      "localStorage 不是累计真值",
+      "服务器升级不重算",
+      "登录不漂移",
+      "181103",
+      "522 HTML answer blocks",
+      "381 practice",
+      "141 source-content",
+      "325 原文原子小题",
+      "68 组题 section",
+      "217 grouped 小题",
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2",
+      "FM_PRIVATE_MEDIA",
+      "真实账号",
+      "qi",
+      "chenlei",
+      "anxin",
+      "sunruze",
+      "未加入额外默认账号",
+      "不再扩入未知学生"
+    ],
+    "visibleProof": "functions/_middleware.js, modules/question-bank.html, modules/question-bank-practice.js, modules/js/practice-main.js, modules/progress-module.html, modules/real-exams-dynamic.html, question-banks/181103-material-extracted.json, resources/fluid-181103-html/materials, tests/edge-fluid-upgrade-check.js, site-updates.json, roadmap, and public shell must use round392-progress-monitor-181103-answer-lock-20260618 as current."
+  },
+  {
     "version": "round394-progress-accounting-181103-html-answer-sync-20260618",
     "date": "2026-06-18",
     "time": "14:02",
@@ -260,81 +400,6 @@
       "audit-event-window"
     ],
     "visibleProof": "functions/_middleware.js progress APIs and teacher monitor labels, modules/progress-module.html truth panel, tools/check-round393-progress-durability-gate.mjs, site-updates.json top entry."
-  },
-  {
-    "version": "round392-progress-monitor-181103-answer-lock-20260618",
-    "date": "2026-06-18",
-    "time": "16:18",
-    "updatedAt": "2026-06-18T16:18:00+08:00",
-    "previousVersion": "round391-server-progress-truth-lock-20260618",
-    "tag": "Round392",
-    "focus": "progress-monitor-181103-answer-lock",
-    "title": "Round392 累计监控与 181103 答案锁定",
-    "summary": "本轮继续修正学习时长和做题监控的累计口径：/api/progress 与 /api/track 的 POST 返回只代表 progress-write-confirmation，不能直接水合累计题数、累计时长或教师监控；题库练习和模块练习写入成功后必须重新 GET noMutationRead=true、cumulativeSourceOfTruth=server-progress-snapshot 的服务器快照。旧 userStats/localStorage/session/audit-event-window 只作本地参考或最近活动，不能在登录、刷新、换设备、服务器升级后改写累计显示。181103 资料题库 522 条答案已复核为 0 findings，381 道可刷题与 141 张 source-content 卡保持分层；38 个材料 HTML 页面 522 个答案块与题库 522/522 同步，公式 MathJax 渲染和语义边界保留。历年真题继续锁 325 原文原子小题、68 组题 section、217 grouped 小题，五题简答和多小问不合并。完整 durable 生产进度和私有视频生产存储仍要求 FM_PROGRESS_DB/FM_PROGRESS_R2/FM_PRIVATE_MEDIA 真实绑定；KV fallback 只能证明 read-only 登录不漂移。 默认学生账号基线继续只保留 qi、chenlei、anxin、sunruze；未加入额外默认账号，不再扩入未知学生。",
-    "links": [
-      {
-        "label": "学生学习进度",
-        "href": "/modules/progress-module.html?edge_refresh=round392-progress-monitor-181103-answer-lock-20260618"
-      },
-      {
-        "label": "题库练习",
-        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round392-progress-monitor-181103-answer-lock-20260618#questionBanksList"
-      },
-      {
-        "label": "181103 HTML 总表",
-        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round392-progress-monitor-181103-answer-lock-20260618"
-      },
-      {
-        "label": "历年真题新版",
-        "href": "/modules/real-exams-dynamic.html?edge_refresh=round392-progress-monitor-181103-answer-lock-20260618"
-      },
-      {
-        "label": "教师进度监控",
-        "href": "/teacher-panel?view=students&edge_refresh=round392-progress-monitor-181103-answer-lock-20260618"
-      },
-      {
-        "label": "私有视频管理",
-        "href": "/private-video.html?edge_refresh=round392-progress-monitor-181103-answer-lock-20260618"
-      }
-    ],
-    "evidence": {
-      "staticGate": "node tests/edge-fluid-upgrade-check.js must assert Round392 POST write-confirmation boundaries, snapshot readback hydration, 181103 answer parity, and real-exam cardinality.",
-      "progressMonitorGate": "node tools/check-round392-progress-monitor-audit.mjs --write --json => POST payloads are not server snapshots; practice and question-bank clients force GET readback; legacy userStats cumulative writes are absent.",
-      "answerDataGate": "node tools/check-round392-181103-answer-data-quality.mjs --strict --json => 522 total, 381 practice, 141 source-content, semantic/watch/review/high/critical findings all 0.",
-      "answerHtmlGate": "node tools/check-round392-181103-html-answer-display.mjs --json => 38 material pages, 522 HTML cards, 522 visible answers, 522 bank parity.",
-      "realExamCardinalityGate": "node tools/check-round392-real-exam-question-cardinality.mjs --check-only => 325 atomic small questions, 68 grouped sections, 217 child cards, five-item sections locked.",
-      "realStudentNoDriftMode": "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain --expected-version round392-progress-monitor-181103-answer-lock-20260618 must verify lghui.top public sample freshness and first login/relogin/secondRelogin no-drift.",
-      "strictDurabilityBlocker": "node tools/check-production-progress-real-account.mjs --json --require-public-chain --require-persistent-write must fail until FM_PROGRESS_DB or FM_PROGRESS_R2 is bound.",
-      "bindingAudit": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json must keep FM_PROGRESS_DB/FM_PROGRESS_R2/FM_PRIVATE_MEDIA missing as production blockers instead of overclaiming recovery.",
-      "studentAccountBaseline": "activeCommonUsers: qi, chenlei, anxin, sunruze; unknownStudentsLocked true; no extra default accounts added; 未加入额外默认账号，不再扩入未知学生。"
-    },
-    "requiredTerms": [
-      "progress-write-confirmation",
-      "server-progress-snapshot",
-      "noMutationRead",
-      "writeRequiresSnapshotRead",
-      "localStorage 不是累计真值",
-      "服务器升级不重算",
-      "登录不漂移",
-      "181103",
-      "522 HTML answer blocks",
-      "381 practice",
-      "141 source-content",
-      "325 原文原子小题",
-      "68 组题 section",
-      "217 grouped 小题",
-      "FM_PROGRESS_DB",
-      "FM_PROGRESS_R2",
-      "FM_PRIVATE_MEDIA",
-      "真实账号",
-      "qi",
-      "chenlei",
-      "anxin",
-      "sunruze",
-      "未加入额外默认账号",
-      "不再扩入未知学生"
-    ],
-    "visibleProof": "functions/_middleware.js, modules/question-bank.html, modules/question-bank-practice.js, modules/js/practice-main.js, modules/progress-module.html, modules/real-exams-dynamic.html, question-banks/181103-material-extracted.json, resources/fluid-181103-html/materials, tests/edge-fluid-upgrade-check.js, site-updates.json, roadmap, and public shell must use round392-progress-monitor-181103-answer-lock-20260618 as current."
   },
   {
     "version": "round391-server-progress-truth-lock-20260618",

@@ -18,7 +18,7 @@
   var R264_VERSION = 'round264-formula-condition-checklist-20260522';
   var LEARNING_CONTENT_VERSION = R264_VERSION;
   var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
-  var ROADMAP100_VERSION = 'round397-server-kv-progress-cumulative-hardening-20260618';
+  var ROADMAP100_VERSION = 'round398-server-progress-no-drift-accounting-20260618';
   var ROADMAP100_URL = '/data/fluid-upgrade-roadmap-100.json';
   var R278_VERSION = 'round279-real-exam-source-granularity-20260612';
   var R278_YEAR_COMPARE_URL = '/data/fluid-round278-pdf-web-year-compare.json';
@@ -89,7 +89,7 @@
       title: '历年真题新版',
       desc: '2000-2024 历年真题，325 原文小题和 68 个已拆组题 section。',
       keywords: '历年真题 真题新版 325原文小题 68组题 803流体力学',
-      url: '/modules/real-exams-dynamic.html?edge_refresh=round397-server-kv-progress-cumulative-hardening-20260618&from=round342-edge-search'
+      url: '/modules/real-exams-dynamic.html?edge_refresh=round398-server-progress-no-drift-accounting-20260618&from=round342-edge-search'
     },
     {
       id: 'round342-formula',
@@ -2801,7 +2801,7 @@
       ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
       ['05', '错因订正', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
     ];
-    return '<div class="eflu-review-rail" data-round274-workbench-loop="round397-server-kv-progress-cumulative-hardening-20260618" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
+    return '<div class="eflu-review-rail" data-round274-workbench-loop="round398-server-progress-no-drift-accounting-20260618" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
       return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
     }).join('') + '</div>';
   }

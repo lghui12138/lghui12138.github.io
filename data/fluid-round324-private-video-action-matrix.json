@@ -39,22 +39,22 @@
         {
           "id": "ready-limited-blocked-vocabulary",
           "ok": true,
-          "target": "private-video.html + runbook"
+          "target": "teacher-panel.html + runbook"
         },
         {
           "id": "r2-blocker-visible",
           "ok": true,
-          "target": "private-video.html + teacher-panel.html + runbook"
+          "target": "teacher-panel.html + runbook"
         },
         {
           "id": "real-account-qa-boundary-visible",
           "ok": true,
-          "target": "private-video.html + teacher-panel.html + runbook"
+          "target": "teacher-panel.html + runbook"
         },
         {
           "id": "no-r2-repair-claim",
           "ok": true,
-          "target": "private-video.html + teacher-panel.html + runbook"
+          "target": "teacher-panel.html + runbook"
         }
       ]
     },
@@ -105,7 +105,7 @@
       "ok": true,
       "status": "ready-to-run-browser-gate",
       "mode": "production",
-      "expectedVersion": "round390-server-stable-progress-181103-html-sync-20260618",
+      "expectedVersion": "round398-server-progress-no-drift-accounting-20260618",
       "realAccountQaCompletedHere": false,
       "browserGateRunHere": false,
       "credentialsPrinted": false,
@@ -130,13 +130,15 @@
           "edge": "functions/_middleware.js",
           "privatePage": "private-video.html",
           "teacher": "teacher-panel.html",
+          "teacherModule": "modules/teacher-panel.html",
           "browser": "tools/check-private-video-management-browser.mjs",
+          "round396": "tools/check-round396-private-video-action-readiness.mjs",
           "binding": "tools/check-cloudflare-pages-private-video-bindings.mjs",
           "validate": "tools/validate-site-content.mjs",
           "runbook": "docs/private-video-management-runbook.md"
         },
         "summary": {
-          "version": "round390-server-stable-progress-181103-html-sync-20260618",
+          "version": "round398-server-progress-no-drift-accounting-20260618",
           "edgeRoutes": [
             "list",
             "publish",
@@ -154,6 +156,7 @@
             "archive",
             "delete"
           ],
+          "teacherModuleRoute": "modules/teacher-panel.html is a teacher-auth guarded canonical redirect to /teacher-panel; private-video management UI lives only on the root teacher panel to avoid stale copies.",
           "standalonePage": "private-video.html shows management actions, disabled reasons, confirmCourseId delete contract, and production blockers without real credentials",
           "readinessStates": [
             "ready",
@@ -162,6 +165,44 @@
           ],
           "cloudflareBindingAudit": "read-only Pages deployment config check; production requires FM_AUDIT KV plus FM_PRIVATE_MEDIA R2",
           "destructiveProof": "dry-run plus typed course-id mismatch; no real delete credentials required",
+          "round396ActionReadiness": {
+            "ok": true,
+            "gate": "round396-private-video-action-readiness",
+            "filesChecked": {
+              "edge": "functions/_middleware.js",
+              "browser": "tools/check-private-video-management-browser.mjs",
+              "mock": "tools/check-private-video-management-mock.mjs",
+              "teacher": "teacher-panel.html",
+              "teacherModule": "modules/teacher-panel.html"
+            },
+            "expectedMissingR2States": {
+              "list": "ready",
+              "same-access-save": "ready",
+              "delete-dry-run": "ready",
+              "delete-course": "limited",
+              "upload-publish": "blocked",
+              "change-access": "blocked",
+              "archive-course": "blocked"
+            },
+            "visibleBoundary": {
+              "usableWithoutFmPrivateMedia": [
+                "list",
+                "same-access-save",
+                "delete-dry-run"
+              ],
+              "limitedWithoutFmPrivateMedia": [
+                "delete-course"
+              ],
+              "blockedWithoutFmPrivateMedia": [
+                "upload-publish",
+                "change-access",
+                "archive-course"
+              ],
+              "legacyModuleCanonicalRedirect": true,
+              "fullStorageCleanupClaimAllowedWithoutFmPrivateMedia": false,
+              "productionRecoveryAllowedWithoutRealTeacherQa": false
+            }
+          },
           "productionAccountQA": false
         }
       },
@@ -175,6 +216,78 @@
       "parsed": {
         "ok": false,
         "projectName": "lghui-fluid-learning",
+        "hasAuditKv": true,
+        "hasPrivateMediaR2": false,
+        "hasPrimaryProgressStore": false,
+        "privateVideoBindingReady": false,
+        "privateVideoProductionReady": false,
+        "privateVideoProductionRecoveryClaimAllowed": false,
+        "productionActionsReady": false,
+        "storageActionsBindingReady": false,
+        "privateVideoReadiness": "blocked",
+        "privateVideoBlockers": [
+          "missing FM_PRIVATE_MEDIA R2 binding"
+        ],
+        "learningProgressBlockers": [
+          "missing FM_PROGRESS_DB or FM_PROGRESS_R2 primary learning-progress store"
+        ],
+        "learningProgressProductionBlocker": "Learning progress production writes are blocked until Cloudflare Pages production binds FM_PROGRESS_DB or FM_PROGRESS_R2; write_quota_exceeded or KV fallback is not production write recovery.",
+        "privateVideoProductionBlocker": "Private-video production recovery is blocked until Cloudflare Pages production binds FM_PRIVATE_MEDIA R2; KV-only fallback is not a complete private-media server boundary.",
+        "privateVideoActionMatrix": [
+          {
+            "id": "list",
+            "state": "ready",
+            "productionRecoveryClaimAllowed": false,
+            "boundary": "List/read metadata can be audited, but it is not upload/delete/archive recovery."
+          },
+          {
+            "id": "same-access-save",
+            "state": "ready",
+            "productionRecoveryClaimAllowed": false,
+            "boundary": "Saving the same assigned student is a no-op confirmation; it is usable but not a storage-write recovery proof."
+          },
+          {
+            "id": "delete-dry-run",
+            "state": "ready",
+            "productionRecoveryClaimAllowed": false,
+            "boundary": "Dry-run is a preflight only; it must never be counted as destructive delete completion."
+          },
+          {
+            "id": "delete-course",
+            "state": "limited",
+            "productionRecoveryClaimAllowed": false,
+            "boundary": "Delete can only be a limited metadata-first revoke: dry-run and typed confirmation may run, but complete storage cleanup and production recovery stay blocked until FM_PRIVATE_MEDIA R2 is bound."
+          },
+          {
+            "id": "upload-publish",
+            "state": "blocked",
+            "productionRecoveryClaimAllowed": false,
+            "boundary": "Upload/publish is blocked until FM_PRIVATE_MEDIA R2 is bound."
+          },
+          {
+            "id": "change-access",
+            "state": "blocked",
+            "productionRecoveryClaimAllowed": false,
+            "boundary": "Access changes are blocked until FM_PRIVATE_MEDIA R2 is bound."
+          },
+          {
+            "id": "archive-course",
+            "state": "blocked",
+            "productionRecoveryClaimAllowed": false,
+            "boundary": "Archive is blocked until FM_PRIVATE_MEDIA R2 is bound."
+          }
+        ],
+        "productionClaimGuards": {
+          "bindingAuditIsNotRealAccountQa": true,
+          "privateVideoRecoveryRequiresRealTeacherStudentQa": true,
+          "privateVideoRecoveryRequiresFmPrivateMediaR2": true,
+          "deleteDryRunIsNotDeleteCompletion": true,
+          "deleteCourseRequiresTypedCourseIdAndDryRun": true,
+          "progressFullProductionRequiresFmProgressDbOrR2": true,
+          "kvFallbackIsNoDriftOnly": true,
+          "productionRecoveryClaimAllowed": false
+        },
+        "productionBlocker": "Learning progress production writes are blocked until Cloudflare Pages production binds FM_PROGRESS_DB or FM_PROGRESS_R2; write_quota_exceeded or KV fallback is not production write recovery. Private-video production recovery is blocked until Cloudflare Pages production binds FM_PRIVATE_MEDIA R2; KV-only fallback is not a complete private-media server boundary.",
         "production": {
           "kvBindings": [
             "FM_AUDIT"
@@ -183,18 +296,75 @@
           "d1Bindings": [],
           "hasAuditKv": true,
           "hasPrivateMediaR2": false,
+          "privateVideo": {
+            "ok": false,
+            "bindingReady": false,
+            "hasAuditKv": true,
+            "hasPrivateMediaR2": false,
+            "productionActionsReady": false,
+            "storageActionsBindingReady": false,
+            "productionRecoveryClaimAllowed": false,
+            "actionMatrix": [
+              {
+                "id": "list",
+                "state": "ready",
+                "productionRecoveryClaimAllowed": false,
+                "boundary": "List/read metadata can be audited, but it is not upload/delete/archive recovery."
+              },
+              {
+                "id": "same-access-save",
+                "state": "ready",
+                "productionRecoveryClaimAllowed": false,
+                "boundary": "Saving the same assigned student is a no-op confirmation; it is usable but not a storage-write recovery proof."
+              },
+              {
+                "id": "delete-dry-run",
+                "state": "ready",
+                "productionRecoveryClaimAllowed": false,
+                "boundary": "Dry-run is a preflight only; it must never be counted as destructive delete completion."
+              },
+              {
+                "id": "delete-course",
+                "state": "limited",
+                "productionRecoveryClaimAllowed": false,
+                "boundary": "Delete can only be a limited metadata-first revoke: dry-run and typed confirmation may run, but complete storage cleanup and production recovery stay blocked until FM_PRIVATE_MEDIA R2 is bound."
+              },
+              {
+                "id": "upload-publish",
+                "state": "blocked",
+                "productionRecoveryClaimAllowed": false,
+                "boundary": "Upload/publish is blocked until FM_PRIVATE_MEDIA R2 is bound."
+              },
+              {
+                "id": "change-access",
+                "state": "blocked",
+                "productionRecoveryClaimAllowed": false,
+                "boundary": "Access changes are blocked until FM_PRIVATE_MEDIA R2 is bound."
+              },
+              {
+                "id": "archive-course",
+                "state": "blocked",
+                "productionRecoveryClaimAllowed": false,
+                "boundary": "Archive is blocked until FM_PRIVATE_MEDIA R2 is bound."
+              }
+            ],
+            "boundary": "Private-video production recovery is blocked until FM_PRIVATE_MEDIA R2 is bound; KV-only fallback is not a complete private-media server boundary."
+          },
           "learningProgress": {
+            "ok": false,
             "hasProgressD1": false,
             "hasProgressR2": false,
             "hasProgressKv": true,
             "hasPrimaryProgressStore": false,
             "durableProductionReady": false,
+            "noDriftOnly": true,
             "storeMode": "kv-single-write-fallback",
             "source": "server-kv-learning-progress",
             "missingPrimaryBindings": {
               "FM_PROGRESS_DB": true,
               "FM_PROGRESS_R2": true
-            }
+            },
+            "boundary": "Learning progress is at most degraded no-drift through KV fallback; it is not full production readiness until FM_PROGRESS_DB or FM_PROGRESS_R2 exists."
           }
         },
         "preview": {
@@ -202,6 +372,17 @@
           "r2Bindings": [],
           "d1Bindings": []
         },
+        "blocking": [
+          "missing FM_PRIVATE_MEDIA R2 binding",
+          "missing FM_PROGRESS_DB or FM_PROGRESS_R2 primary learning-progress store"
+        ],
+        "missingPrimaryBindings": {
+          "FM_AUDIT": false,
+          "FM_PRIVATE_MEDIA": true,
+          "FM_PROGRESS_DB": true,
+          "FM_PROGRESS_R2": true
+        },
+        "expectedFailure": "Expected exit 2 until production bindings are fixed: missing FM_PRIVATE_MEDIA R2 binding; missing FM_PROGRESS_DB or FM_PROGRESS_R2 primary learning-progress store.",
         "message": "Cloudflare Pages production binding audit is not fully ready. Private-video recovery requires FM_PRIVATE_MEDIA R2; fully durable learning progress requires FM_PROGRESS_DB or FM_PROGRESS_R2. Current learning progress resolves to kv-single-write-fallback, with FM_PROGRESS_DB missing=true and FM_PROGRESS_R2 missing=true; kv-single-write-fallback/write_quota_exceeded is a degraded no-drift state, not full production readiness. Delete remains a separate limited path that requires dry-run, typed confirmation, and real-account QA."
       },
       "stdoutPreview": "<json>",
@@ -214,11 +395,11 @@
       "parsed": {
         "ok": true,
         "mode": "production",
-        "expectedVersion": "round390-server-stable-progress-181103-html-sync-20260618",
-        "siteUpdatesVersion": "round390-server-stable-progress-181103-html-sync-20260618",
+        "expectedVersion": "round398-server-progress-no-drift-accounting-20260618",
+        "siteUpdatesVersion": "round398-server-progress-no-drift-accounting-20260618",
         "versionBinding": {
-          "expectedVersion": "round390-server-stable-progress-181103-html-sync-20260618",
-          "siteUpdatesVersion": "round390-server-stable-progress-181103-html-sync-20260618",
+          "expectedVersion": "round398-server-progress-no-drift-accounting-20260618",
+          "siteUpdatesVersion": "round398-server-progress-no-drift-accounting-20260618",
           "versionSource": "site-updates.json[0].version",
           "matchesSiteUpdates": true
         },
@@ -457,9 +638,9 @@
         ],
         "nextVerificationCommands": [
           "node tools/monitor-fluid-public-release.mjs --json",
-          "node tools/check-public-entry-browser.mjs --expected-edge-version round390-server-stable-progress-181103-html-sync-20260618",
-          "node tools/check-authenticated-browser-gate.mjs --production --expected-version round390-server-stable-progress-181103-html-sync-20260618",
-          "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round390-server-stable-progress-181103-html-sync-20260618",
+          "node tools/check-public-entry-browser.mjs --expected-edge-version round398-server-progress-no-drift-accounting-20260618",
+          "node tools/check-authenticated-browser-gate.mjs --production --expected-version round398-server-progress-no-drift-accounting-20260618",
+          "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round398-server-progress-no-drift-accounting-20260618",
           "node tools/check-private-video-management-browser.mjs --production --json",
           "node tools/check-cloudflare-pages-private-video-bindings.mjs --json"
         ],
@@ -491,13 +672,8 @@
           "ok": true
         },
         {
-          "file": "private-video.html",
-          "marker": "['list','查看专属课']",
-          "ok": true
-        },
-        {
-          "file": "private-video.html",
-          "marker": "includeArchived=1&refresh=1&writeProbe=1",
+          "file": "teacher-panel.html",
+          "marker": "/api/admin/private-videos?includeArchived=1&writeProbe=1",
           "ok": true
         },
         {
@@ -616,18 +792,18 @@
           "ok": true
         },
         {
-          "file": "private-video.html",
+          "file": "teacher-panel.html",
           "marker": "delete?dryRun=1&writeProbe=1",
           "ok": true
         },
         {
-          "file": "private-video.html",
+          "file": "teacher-panel.html",
           "marker": "confirmCourseId",
           "ok": true
         },
         {
-          "file": "private-video.html",
-          "marker": "没有发送真实删除请求",
+          "file": "teacher-panel.html",
+          "marker": "只有完全一致才会继续删除",
           "ok": true
         },
         {
@@ -690,16 +866,6 @@
           "ok": true
         },
         {
-          "file": "private-video.html",
-          "marker": "['upload-publish','上传/发布']",
-          "ok": true
-        },
-        {
-          "file": "private-video.html",
-          "marker": "data-pv-publish-course",
-          "ok": true
-        },
-        {
           "file": "teacher-panel.html",
           "marker": "id:'upload-publish'",
           "ok": true
@@ -755,16 +921,6 @@
           "ok": true
         },
         {
-          "file": "private-video.html",
-          "marker": "['change-access','改授权']",
-          "ok": true
-        },
-        {
-          "file": "private-video.html",
-          "marker": "data-pv-access-course",
-          "ok": true
-        },
-        {
           "file": "teacher-panel.html",
           "marker": "id:'change-access'",
           "ok": true
@@ -817,16 +973,6 @@
         {
           "file": "functions/_middleware.js",
           "marker": "courseArchiveMatch",
-          "ok": true
-        },
-        {
-          "file": "private-video.html",
-          "marker": "['archive-course','下架']",
-          "ok": true
-        },
-        {
-          "file": "private-video.html",
-          "marker": "data-pv-archive-course",
           "ok": true
         },
         {

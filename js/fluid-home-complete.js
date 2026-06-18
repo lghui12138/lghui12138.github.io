@@ -14,9 +14,120 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 /* ============ 页面业务 ============ */
 (function(){
-function fd(ms){const m=Math.round((ms||0)/60000);if(m<1)return '< 1 分';if(m<60)return m+' 分钟';const h=m/60;return (h<10?h.toFixed(1):Math.round(h))+' 小时';}
+	function fd(ms){const m=Math.round((ms||0)/60000);if(m<1)return '< 1 分';if(m<60)return m+' 分钟';const h=m/60;return (h<10?h.toFixed(1):Math.round(h))+' 小时';}
+	const HOME_SERVER_PROGRESS_CACHE_PREFIX='fm_home_server_progress_snapshot:';
+	const HOME_SERVER_PROGRESS_EVENT='fm:server-progress-snapshot';
+	const HOME_SERVER_PROGRESS_STATE={status:'pending',snapshot:null,syncedAt:''};
 
-function ab(){
+	window.FMServerProgress={
+	  get:()=>HOME_SERVER_PROGRESS_STATE.snapshot,
+	  isReady:()=>!!(HOME_SERVER_PROGRESS_STATE.snapshot&&HOME_SERVER_PROGRESS_STATE.snapshot.cumulativeSourceOfTruth==='server-progress-snapshot'&&HOME_SERVER_PROGRESS_STATE.snapshot.noMutationRead===true),
+	  status:()=>HOME_SERVER_PROGRESS_STATE.status,
+	  invariant:'server-progress-snapshot-only: login/refresh/server-upgrade/localStorage/audit-window must not advance cumulative totals'
+	};
+
+	function safeUserKey(u){
+	  return String(u&&(u.username||u.name)||'_anon').normalize('NFKC').trim().toLowerCase().replace(/[^a-z0-9_.:@-]/gi,'_').slice(0,120)||'_anon';
+	}
+
+	function homeProgressCacheKey(u){return HOME_SERVER_PROGRESS_CACHE_PREFIX+safeUserKey(u)}
+
+	function setHomeStat(id,text,meta){
+	  const el=document.getElementById(id);
+	  if(!el)return;
+	  el.textContent=text;
+	  if(meta){
+	    Object.keys(meta).forEach(k=>{
+	      if(meta[k]===undefined||meta[k]===null)return;
+	      el.dataset[k]=String(meta[k]);
+	    });
+	  }
+	}
+
+	function normalizeHomeServerStats(payload){
+	  const stats=payload&&(payload.stats||(payload.progress&&payload.progress.totals));
+	  if(!stats||typeof stats!=='object')return null;
+	  const source=String(payload.source||payload.progressSource||'').trim();
+	  const truth=String(payload.cumulativeSourceOfTruth||'').trim();
+	  const noMutation=payload.noMutationRead===true&&truth==='server-progress-snapshot';
+	  const serverManaged=/^(server-d1-learning-progress|server-r2-learning-progress|server-kv-learning-progress)$/.test(source)&&noMutation;
+	  if(!serverManaged)return null;
+	  const progress=payload.progress&&typeof payload.progress==='object'?payload.progress:{};
+	  return {
+	    source,
+	    storeMode:String(payload.storeMode||payload.store||'').trim(),
+	    cumulativeSourceOfTruth:truth,
+	    noMutationRead:noMutation,
+	    sessions:Number(stats.sessions||0),
+	    answered:Number(stats.answered||0),
+	    correct:Number(stats.correct||0),
+	    accuracy:Number(stats.accuracy||0),
+	    averageQuestionTimeSeconds:Number(stats.averageQuestionTimeSeconds||0),
+	    studyTimeSeconds:Number(stats.studyTimeSeconds||0),
+	    byKnowledge:progress.byKnowledge&&typeof progress.byKnowledge==='object'?progress.byKnowledge:{},
+	    byType:progress.byType&&typeof progress.byType==='object'?progress.byType:{},
+	    recentAnswers:Array.isArray(progress.recentAnswers)?progress.recentAnswers.slice(0,160):[],
+	    recentSessions:Array.isArray(progress.recentSessions)?progress.recentSessions.slice(0,60):[],
+	    syncedAt:new Date().toISOString()
+	  };
+	}
+
+	function applyHomeServerStats(snapshot,opts){
+	  opts=opts||{};
+	  if(!snapshot)return false;
+	  HOME_SERVER_PROGRESS_STATE.status='ready';
+	  HOME_SERVER_PROGRESS_STATE.snapshot=snapshot;
+	  HOME_SERVER_PROGRESS_STATE.syncedAt=snapshot.syncedAt||new Date().toISOString();
+	  try{window.dispatchEvent(new CustomEvent(HOME_SERVER_PROGRESS_EVENT,{detail:snapshot}))}catch(_){}
+	  const meta={
+	    progressSource:snapshot.source,
+	    storeMode:snapshot.storeMode||'',
+	    cumulativeSourceOfTruth:snapshot.cumulativeSourceOfTruth,
+	    noMutationRead:snapshot.noMutationRead?'true':'false',
+	    cached:opts.cached?'true':'false'
+	  };
+	  const practiceText=snapshot.sessions?String(snapshot.sessions)+' 场':String(snapshot.answered||0)+' 题';
+	  setHomeStat('sV',practiceText,meta);
+	  setHomeStat('sD',fd(Math.max(0,snapshot.studyTimeSeconds||0)*1000),meta);
+	  setHomeStat('sA',snapshot.answered?String(snapshot.accuracy||0)+'%':'—',meta);
+	  const statsBox=document.getElementById('stats');
+	  if(statsBox){
+	    statsBox.dataset.progressSource=snapshot.source;
+	    statsBox.dataset.cumulativeSourceOfTruth=snapshot.cumulativeSourceOfTruth;
+	    statsBox.dataset.noMutationRead=snapshot.noMutationRead?'true':'false';
+	    statsBox.setAttribute('aria-label','我的服务端累计统计：登录、刷新和服务器升级不会从本机重新计算');
+	  }
+	  return true;
+	}
+
+	function setHomeStatsPending(){
+	  HOME_SERVER_PROGRESS_STATE.status=HOME_SERVER_PROGRESS_STATE.snapshot?'cached':'pending';
+	  const meta={progressSource:'server-progress-snapshot-pending',cumulativeSourceOfTruth:'server-progress-snapshot-pending',noMutationRead:'pending'};
+	  setHomeStat('sV','待同步',meta);
+	  setHomeStat('sD','待同步',meta);
+	  setHomeStat('sA','—',meta);
+	}
+
+	async function loadHomeServerStats(u){
+	  setHomeStatsPending();
+	  try{
+	    const cached=JSON.parse(localStorage.getItem(homeProgressCacheKey(u))||'null');
+	    if(cached&&cached.cumulativeSourceOfTruth==='server-progress-snapshot'&&cached.noMutationRead===true)applyHomeServerStats(cached,{cached:true});
+	  }catch(_){}
+	  try{
+	    const response=await fetch('/api/stats',{method:'GET',credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
+	    if(!response.ok)return false;
+	    const payload=await response.json().catch(()=>null);
+	    const snapshot=normalizeHomeServerStats(payload);
+	    if(!snapshot)return false;
+	    try{localStorage.setItem(homeProgressCacheKey(u),JSON.stringify(snapshot))}catch(_){}
+	    return applyHomeServerStats(snapshot);
+	  }catch(_){
+	    return false;
+	  }
+	}
+
+	function ab(){
   const e=document.getElementById('authAlert');
   const p=new URLSearchParams(location.search);
   const a=p.get('auth');
@@ -120,26 +231,14 @@ function dash(u){
   const accName=document.getElementById('accName');if(accName)accName.textContent=u.name||'同学';
   const accUser=document.getElementById('accUser');if(accUser)accUser.textContent='@'+(u.username||'visitor')+(u.role==='teacher'?' · 教师':' · 学生');
   const accT=document.getElementById('accTeacher');
-  if(accT){
-    if(u.role==='teacher'){accT.hidden=false}
-    else{accT.hidden=true}
-  }
-  try{
-    const a=FMAnalytics.aggregateByUser();
-    const me=a[u.username]||a[u.name];
-    if(me){
-      document.getElementById('sV').textContent=me.visits||0;
-      document.getElementById('sD').textContent=fd(me.totalDuration);
-      document.getElementById('sA').textContent=me.avgScore!=null?(me.avgScore+' 分'):'—';
-    }else{
-      document.getElementById('sV').textContent='首次';
-      document.getElementById('sD').textContent='刚开始';
-      document.getElementById('sA').textContent='—';
-    }
-  }catch(e){}
-  setTimeout(()=>{if(window.FMArmMathJax)window.FMArmMathJax()},120);
-  loadUpd();
-}
+	  if(accT){
+	    if(u.role==='teacher'){accT.hidden=false}
+	    else{accT.hidden=true}
+	  }
+	  loadHomeServerStats(u);
+	  setTimeout(()=>{if(window.FMArmMathJax)window.FMArmMathJax()},120);
+	  loadUpd();
+	}
 
 function guest(){
   document.getElementById('vAuthed').hidden=true;
@@ -675,6 +774,27 @@ function renderHeat(){
 /* --- 雷达图 --- */
 function renderRadar(){
   const box=$('#radBox');if(!box)return;
+  const serverProgress=window.FMServerProgress&&window.FMServerProgress.isReady&&window.FMServerProgress.isReady()?window.FMServerProgress.get():null;
+  if(serverProgress){
+    const knowledgeRows=Object.entries(serverProgress.byKnowledge||{}).map(([k,v])=>[k,Math.max(0,Math.min(100,Number(v&&v.accuracy||0))),Number(v&&v.answered||0)]).filter(x=>x[2]>0).sort((a,b)=>b[2]-a[2]||a[0].localeCompare(b[0])).slice(0,6);
+    $('#stkT').textContent=String(serverProgress.answered||0);
+    $('#stkAv').textContent=serverProgress.answered?String(serverProgress.accuracy||0)+'%':'—';
+    $('#stkM').textContent=serverProgress.averageQuestionTimeSeconds?Math.round(serverProgress.averageQuestionTimeSeconds)+' 秒':'—';
+    if(knowledgeRows.length<3){
+      box.innerHTML='<div style="padding:40px 0;text-align:center;color:var(--text-muted);font-size:.88rem">等待至少 3 个服务端知识点统计<br><small style="opacity:.7">累计只读来源：server-progress-snapshot</small></div>';
+      box.dataset.cumulativeSourceOfTruth='server-progress-snapshot';
+      return;
+    }
+    const W=300,H=300,cx=W/2,cy=H/2,R=100;const n=knowledgeRows.length;
+    let rings='';for(let r=1;r<=4;r++){const rr=R*r/4;const pts=[];for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;pts.push((cx+rr*Math.cos(a)).toFixed(1)+','+(cy+rr*Math.sin(a)).toFixed(1))}rings+=`<polygon class="rad-grid" points="${pts.join(' ')}"/>`}
+    let axes='';for(let i=0;i<n;i++){const a=-Math.PI/2+i*2*Math.PI/n;axes+=`<line class="rad-ax" x1="${cx}" y1="${cy}" x2="${(cx+R*Math.cos(a)).toFixed(1)}" y2="${(cy+R*Math.sin(a)).toFixed(1)}"/>`}
+    const polyPts=knowledgeRows.map(([,v],i)=>{const a=-Math.PI/2+i*2*Math.PI/n;const r=R*v/100;return(cx+r*Math.cos(a)).toFixed(1)+','+(cy+r*Math.sin(a)).toFixed(1)}).join(' ');
+    const dots=knowledgeRows.map(([k,v,c],i)=>{const a=-Math.PI/2+i*2*Math.PI/n;const r=R*v/100;return`<circle class="rad-dot" cx="${(cx+r*Math.cos(a)).toFixed(1)}" cy="${(cy+r*Math.sin(a)).toFixed(1)}" r="3.5"><title>${esc(k)}: ${v}% · ${c} 题</title></circle>`}).join('');
+    const labs=knowledgeRows.map(([k,v],i)=>{const a=-Math.PI/2+i*2*Math.PI/n;const lr=R+18;const x=cx+lr*Math.cos(a);const y=cy+lr*Math.sin(a);const anc=Math.cos(a)>0.1?'start':Math.cos(a)<-0.1?'end':'middle';return`<text class="rad-lab" x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anc}" dy="3">${esc(k.length>6?k.slice(0,6)+'…':k)}</text><text class="rad-val" x="${x.toFixed(1)}" y="${(y+12).toFixed(1)}" text-anchor="${anc}">${v}%</text>`}).join('');
+    box.dataset.cumulativeSourceOfTruth='server-progress-snapshot';
+    box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" aria-label="服务端累计知识点正确率雷达">${rings}${axes}<polygon class="rad-poly" points="${polyPts}"/>${dots}${labs}</svg>`;
+    return;
+  }
   const scs=(window.FMAnalytics&&FMAnalytics.getScores())||[];const u=uk();
   const mine=scs.filter(s=>s.user===u);
   $('#stkT').textContent=mine.length;
@@ -820,6 +940,7 @@ function initPhase2(){
   renderHeat();renderRadar();renderTasks();renderRecent();renderReco();renderNotes();renderWrongFav();renderAnn();
   // FAB 已移除
   window.addEventListener('fm:activity',()=>{renderHeat();renderRadar();renderTasks();renderRecent()});
+  window.addEventListener('fm:server-progress-snapshot',()=>{try{renderRadar()}catch(_){}});
 }
 setTimeout(initPhase2,500);
 setInterval(()=>{if(document.visibilityState==='visible'&&window.FMSecurity&&FMSecurity.isAuthenticated()){renderHeat();renderTasks();renderRecent()}},60000);
@@ -1045,16 +1166,17 @@ const ACHIEVEMENTS=[
 ];
 function achStats(){
   const u=uk();
+  const serverProgress=window.FMServerProgress&&window.FMServerProgress.isReady&&window.FMServerProgress.isReady()?window.FMServerProgress.get():null;
   const ses=(window.FMAnalytics&&FMAnalytics.getSessions()||[]).filter(s=>s.user===u);
   const scs=(window.FMAnalytics&&FMAnalytics.getScores()||[]).filter(s=>s.user===u);
   const prog=(window.FMAnalytics&&FMAnalytics.getProgress()||{})[u]||{};
   const notes=(LS.g('fm_notes',{})||{})[u]||[];
   const pomos=((LS.g(POMO_KEY,{records:[]})||{}).records||[]).filter(r=>r&&r.mode!==5).length;
   const visits=ses.length;
-  const totalMin=Math.round(ses.reduce((a,s)=>a+(s.duration||0),0)/60000);
-  const quizzes=scs.length;
+  const totalMin=serverProgress?Math.round(Math.max(0,Number(serverProgress.studyTimeSeconds||0))/60):0;
+  const quizzes=serverProgress?Number(serverProgress.answered||0):0;
   const maxScore=scs.length?Math.max.apply(null,scs.map(r=>r.score)):0;
-  const modules=new Set([...scs.map(s=>s.module),...Object.keys(prog.modules||{})]).size;
+  const modules=serverProgress&&serverProgress.byKnowledge?Object.keys(serverProgress.byKnowledge).length:new Set([...scs.map(s=>s.module),...Object.keys(prog.modules||{})]).size;
   // streak
   const dSet=new Set();ses.forEach(s=>{const d=new Date(s.startedAt);d.setHours(0,0,0,0);dSet.add(d.getTime())});
   const sorted=Array.from(dSet).sort((a,b)=>a-b);
@@ -1063,6 +1185,7 @@ function achStats(){
 }
 function renderAch(){
   const box=$('#achG');if(!box)return;const a=achStats();let cnt=0;
+  box.dataset.cumulativeSourceOfTruth=window.FMServerProgress&&window.FMServerProgress.isReady&&window.FMServerProgress.isReady()?'server-progress-snapshot':'server-progress-snapshot-pending';
   box.innerHTML=ACHIEVEMENTS.map(ac=>{const done=!!ac.chk(a);if(done)cnt++;return `<div class="ach ${done?'on':'off'}" style="--ach-fg:${ac.c};--ach-fg2:${ac.c2};--ach-bg:${ac.c}22;--ach-br:${ac.c}48;--ach-sh:${ac.c}60"><div class="ach-ic">${ac.ic}</div><div class="ach-t">${esc(ac.n)}</div><div class="ach-d">${esc(ac.d)}</div>${!done?'<span class="ach-lk">🔒</span>':''}</div>`}).join('');
   $('#achCnt').textContent=cnt;$('#achTot').textContent=ACHIEVEMENTS.length;
 }
@@ -1075,6 +1198,7 @@ function initPhase3B(){
     pomoDraw();
     renderGrowth();renderAch();
     window.addEventListener('fm:activity',()=>{try{renderGrowth();renderAch()}catch(_){}});
+    window.addEventListener('fm:server-progress-snapshot',()=>{try{renderAch()}catch(_){}});
   }catch(_){}
 }
 setTimeout(initPhase3B,600);
