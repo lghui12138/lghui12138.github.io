@@ -38,7 +38,7 @@ window.QuestionBankPractice = (function() {
     };
 
     const PRACTICE_AUDIT_BROWSER_ID_KEY = 'fm_practice_browser_session_id';
-    const LEARNING_PROGRESS_SNAPSHOT_KEY = 'fm_learning_progress_snapshot_v1';
+    const LEARNING_PROGRESS_SNAPSHOT_KEY_PREFIX = 'fm_learning_progress_snapshot_v1:';
     const LEARNING_PROGRESS_OUTBOX_KEY = 'fm_learning_progress_outbox_v1';
     const LEARNING_PROGRESS_ERROR_KEY = 'fm_learning_progress_last_error_v1';
     const LEARNING_PROGRESS_OUTBOX_MAX_AGE_MS = 24 * 60 * 60 * 1000;
@@ -549,6 +549,31 @@ window.QuestionBankPractice = (function() {
         return 'server-learning-progress-unavailable';
     }
 
+    function progressSnapshotKey(username) {
+        const safeUser = String(username || 'unknown')
+            .normalize('NFKC')
+            .trim()
+            .replace(/\s+/g, '-')
+            .replace(/[^a-z0-9_.:@-]/gi, '_')
+            .slice(0, 120) || 'unknown';
+        return LEARNING_PROGRESS_SNAPSHOT_KEY_PREFIX + safeUser;
+    }
+
+    function currentProgressUser(payload = null) {
+        const explicit = String(payload && (payload.user || (payload.progress && payload.progress.user)) || '').trim();
+        if (explicit) return explicit;
+        if (window.FMSecurity && typeof window.FMSecurity.getUser === 'function') {
+            const guarded = window.FMSecurity.getUser();
+            if (guarded && guarded.username) return String(guarded.username).trim();
+        }
+        try {
+            const session = JSON.parse(localStorage.getItem('fm_session_v2') || localStorage.getItem('fm_auth_session_v2') || 'null');
+            const user = session && session.payload && session.payload.user ? session.payload.user : (session && session.user ? session.user : null);
+            if (user && user.username) return String(user.username).trim();
+        } catch (_) {}
+        return 'unknown';
+    }
+
     function rememberProgressSyncError(payload, response) {
         const first = payload && Array.isArray(payload.results) ? payload.results.find(item => item && item.error) : null;
         const error = String((payload && payload.error) || (first && first.error) || `http_${response && response.status || 0}`);
@@ -597,12 +622,19 @@ window.QuestionBankPractice = (function() {
         const stats = payload && (payload.stats || (progress && progress.totals));
         if (!progress && !stats) return;
         const source = progressSourceFromPayload(payload || {});
-        writeJsonStorage(LEARNING_PROGRESS_SNAPSHOT_KEY, {
-            syncedAt: new Date().toISOString(),
+        const cumulativeSourceOfTruth = String(payload && payload.cumulativeSourceOfTruth || '').trim();
+        const noMutationRead = payload && payload.noMutationRead === true && cumulativeSourceOfTruth === 'server-progress-snapshot';
+        const serverManaged = /^(server-d1-learning-progress|server-r2-learning-progress|server-kv-learning-progress)$/.test(source) && noMutationRead;
+        if (!serverManaged) return;
+        const snapshotUser = currentProgressUser(payload);
+        const syncedAt = new Date().toISOString();
+        writeJsonStorage(progressSnapshotKey(snapshotUser), {
+            syncedAt,
+            user: snapshotUser,
             source,
             storeMode: payload && (payload.storeMode || payload.store || ''),
-            cumulativeSourceOfTruth: payload && payload.cumulativeSourceOfTruth || 'server-progress-snapshot',
-            noMutationRead: payload && payload.noMutationRead === true,
+            cumulativeSourceOfTruth,
+            noMutationRead,
             progress: progress || null,
             stats: stats || null
         });
@@ -610,7 +642,7 @@ window.QuestionBankPractice = (function() {
         const totalQuestions = Number(stats.answered || stats.totalQuestions || 0);
         const correctAnswers = Number(stats.correct || stats.correctAnswers || 0);
         const totalStudyTime = Number(stats.studyTimeSeconds || stats.totalStudyTime || 0);
-        const lastStudyDate = stats.lastAnsweredAt || stats.lastSessionAt || new Date().toISOString();
+        const lastStudyDate = stats.lastAnsweredAt || stats.lastSessionAt || payload.syncedAt || '';
         const userData = readJsonStorage('questionBankUserData', {});
         userData.stats = {
             ...(userData.stats || {}),
@@ -618,9 +650,9 @@ window.QuestionBankPractice = (function() {
             correctAnswers,
             totalStudyTime,
             lastStudyDate,
-            serverManaged: /^server-/.test(source),
+            serverManaged: true,
             serverProgressSource: source,
-            serverProgressSyncedAt: new Date().toISOString(),
+            serverProgressSyncedAt: syncedAt,
             localPendingQuestions: 0,
             localPendingStudyTime: 0,
             localOnly: false
@@ -634,9 +666,9 @@ window.QuestionBankPractice = (function() {
             correctRate: totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0,
             totalTime: totalStudyTime,
             source,
-            serverManaged: /^server-/.test(source),
+            serverManaged: true,
             localOnly: false,
-            syncedAt: new Date().toISOString()
+            syncedAt
         });
         if (typeof QuestionBankStats !== 'undefined' && typeof QuestionBankStats.updateStats === 'function') {
             try { QuestionBankStats.updateStats(); } catch (_) {}

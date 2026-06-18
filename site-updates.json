@@ -1,5 +1,147 @@
 [
   {
+    "version": "round390-server-stable-progress-181103-html-sync-20260618",
+    "date": "2026-06-18",
+    "time": "09:58",
+    "updatedAt": "2026-06-18T09:58:00+08:00",
+    "previousVersion": "round389-progress-server-truth-20260618",
+    "tag": "Round390",
+    "focus": "server-stable-progress-and-181103-html-sync",
+    "title": "Round390 服务端累计稳定与 181103 HTML 答案同步",
+    "summary": "本轮把学生学习进度、题库统计、模块练习和教师监控继续收紧到服务器快照真值：累计题数、学习时长、会话和正确数只认 /api/progress 与 /api/stats 返回的 noMutationRead=true、cumulativeSourceOfTruth=server-progress-snapshot，并按用户名写入 fm_learning_progress_snapshot_v1:<user>，登录、刷新、换设备、服务器升级和旧 localStorage 都不能重算或覆盖累计值。181103 题库与资料 HTML 同步到 522/522 答案块一致，381 道独立题保持可刷，141 条源文/父卡/续页只展示线索。私有视频管理继续暴露删除 dry-run、typed confirmation 和 cleanupPending 边界；FM_PRIVATE_MEDIA、FM_PROGRESS_DB、FM_PROGRESS_R2 未绑定前不宣称完整生产恢复。",
+    "links": [
+      {
+        "label": "学生学习进度",
+        "href": "/modules/progress-module.html?edge_refresh=round390-server-stable-progress-181103-html-sync-20260618"
+      },
+      {
+        "label": "教师进度监控",
+        "href": "/teacher-panel?view=students&edge_refresh=round390-server-stable-progress-181103-html-sync-20260618"
+      },
+      {
+        "label": "181103 题库入口",
+        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round390-server-stable-progress-181103-html-sync-20260618#questionBanksList"
+      },
+      {
+        "label": "181103 HTML 总表",
+        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round390-server-stable-progress-181103-html-sync-20260618"
+      },
+      {
+        "label": "私有视频管理",
+        "href": "/private-video.html?edge_refresh=round390-server-stable-progress-181103-html-sync-20260618"
+      }
+    ],
+    "evidence": {
+      "staticGate": "FLUID_SKIP_PUBLIC=1 node tests/edge-fluid-upgrade-check.js => PASS 1170 WARN 1 FAIL 0 before public-shell regeneration",
+      "aggregateGate": "node tools/check-round390-server-and-181103-regression.mjs --write --json => ok true; noDriftPass true; strictD1R2Blocked true; 181103 answer release gate pass true",
+      "answerGate": "node tools/check-round388-181103-answer-release-gate.mjs --json => ok true; 522 HTML answer blocks; 381 practice; 141 source-content; htmlAnswerTextMatches 522/522",
+      "answerSync": "node tools/sync-181103-html-answers-from-bank.mjs --write --json => ok true; touchedFiles 3; changedAnswers 20; source of truth question-banks/181103-material-extracted.json",
+      "renderingGate": "node tools/check-181103-answer-rendering-data.mjs --json => ok true; no placeholder/garbled markers; balanced TeX; no raw TeX outside delimiters",
+      "qualityGate": "node tools/check-181103-answer-quality.mjs --json => ok true; failFindings 0; reviewFindings 0",
+      "realStudentNoDriftMode": "tools/check-production-progress-real-account.mjs now performs first login, relogin, and secondRelogin comparisons and rejects any total drift when noMutationRead/server-progress-snapshot is missing",
+      "teacherMonitoringBoundary": "tools/check-teacher-progress-summary-real-account.mjs separates serverSnapshotCumulativeTruth from auditEventWindowDiagnostics; auditWindowCumulativeViolationCount 0 remains required",
+      "productionBoundary": "Current KV fallback may prove no-drift/idempotent reads only. Full durable production progress still requires FM_PROGRESS_DB or FM_PROGRESS_R2 and strict real-account write pass.",
+      "privateVideoBoundary": "FM_PRIVATE_MEDIA R2 remains required before claiming private-video production upload/delete/access/archive storage cleanup recovery.",
+      "studentAccountBaseline": "activeCommonUsers: qi, chenlei, anxin, sunruze; unknownStudentsLocked true; no extra default accounts added.",
+      "realStudentAccountNoDrift": "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain => requires noMutationRead true, cumulativeSourceOfTruth server-progress-snapshot, first login/relogin/secondRelogin total stability, and rejects any login drift.",
+      "realTeacherSummary": "node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain => requires server admin summary, serverSnapshotCumulativeTruth, auditWindowCumulativeViolationCount 0, auditWindowNotCumulative, notClientLocalStorage, and server-progress-snapshot source.",
+      "strictDurabilityBlocker": "node tools/check-production-progress-real-account.mjs --json --require-public-chain --require-persistent-write => expected fail until FM_PROGRESS_DB or FM_PROGRESS_R2 is bound; strict persistent-write preflight blocks overclaiming KV fallback.",
+      "bindingAudit": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json => production must bind FM_PROGRESS_DB or FM_PROGRESS_R2 for durable progress and FM_PRIVATE_MEDIA for private-video storage cleanup; current missing bindings keep strict production recovery blocked."
+    },
+    "requiredTerms": [
+      "server-progress-snapshot",
+      "noMutationRead",
+      "fm_learning_progress_snapshot_v1:<user>",
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2",
+      "FM_PRIVATE_MEDIA",
+      "auditWindowCumulativeViolationCount 0",
+      "181103",
+      "522 HTML answer blocks",
+      "381 practice",
+      "141 source-content",
+      "真实账号",
+      "登录不漂移",
+      "服务器升级不重算"
+    ],
+    "visibleProof": "index.html, index-complete.html, resources.html, question-bank-home.html, modules/question-bank.html, modules/progress-module.html, functions/_middleware.js, tests/edge-fluid-upgrade-check.js, site-updates.json, and public shell must use round390-server-stable-progress-181103-html-sync-20260618 as current."
+  },
+  {
+    "version": "round390-public-shell-181103-visible-entry-20260618",
+    "date": "2026-06-18",
+    "time": "09:30",
+    "updatedAt": "2026-06-18T09:30:00+08:00",
+    "previousVersion": "round389-progress-server-truth-20260618",
+    "tag": "Round390",
+    "focus": "round390-public-shell-181103-visible-entry",
+    "title": "Round390 lghui.top 公开壳入口与 181103 可见路径升级",
+    "summary": "公开壳第一屏现在同时展示 Round390 壳层入口版本与 Round389 学习进度生产真值：/api/progress 与 /api/stats 的累计值只认 server-progress-snapshot，当前生产仍是 server-kv-learning-progress / kv-single-write-fallback，完整生产持久化继续要求 FM_PROGRESS_DB 或 FM_PROGRESS_R2。181103 入口继续保留 38 份 HTML 总表、522 张资料来源卡、381 道默认练习和 141 条线索展示；私有视频生产恢复仍要求 FM_PRIVATE_MEDIA R2。lghui.top 只做入口，不伪造 auth，不提供 PDF/PPT/DOC/ZIP 下载。",
+    "links": [
+      {
+        "label": "Round389 学习进度真值",
+        "href": "/modules/progress-module.html?edge_refresh=round390-public-shell-181103-visible-entry-20260618"
+      },
+      {
+        "label": "181103 HTML 总表",
+        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round390-public-shell-181103-visible-entry-20260618"
+      },
+      {
+        "label": "181103 题库入口",
+        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round390-public-shell-181103-visible-entry-20260618#questionBanksList"
+      },
+      {
+        "label": "私有视频入口",
+        "href": "/private-video.html?edge_refresh=round390-public-shell-181103-visible-entry-20260618"
+      }
+    ],
+    "evidence": {
+      "currentRound": 390,
+      "sourceProgressTruthVersion": "round389-progress-server-truth-20260618",
+      "sourceProgressTruthTitle": "Round389 学习时长与做题累计生产真值证明",
+      "publicShellBoundary": "lghui.top is a static public shell and route entry. It does not mint auth, does not prove authenticated QA, and does not provide raw downloads.",
+      "progressStorageBoundary": "Round389 proves server-progress-snapshot no-drift on the current KV fallback; full durable progress still requires FM_PROGRESS_DB or FM_PROGRESS_R2.",
+      "privateVideoBoundary": "FM_PRIVATE_MEDIA R2 remains required before claiming private-video production upload/delete/access/archive recovery.",
+      "supplemental181103Boundary": "181103 remains 38 HTML material pages, 522 source cards, 381 default-practice questions, and 141 display-only source/content leads.",
+      "generator": "tools/generate-public-redirects.mjs",
+      "generatedPublicShellFiles": "index.html, index-complete.html, resources.html, question-bank-home.html, knowledge.html, modules/question-bank.html, and route aliases",
+      "sourceRound389Evidence": {
+        "sourceCommit": "bbde48b plus round389 version marker",
+        "deployedPreview": "https://98420398.lghui-fluid-learning.pages.dev",
+        "publicShellCommit": "86ab0a2",
+        "staticGate": "node tests/edge-fluid-upgrade-check.js => PASS 1206 WARN 0 FAIL 0 before round389 marker; rerun required after marker",
+        "studentSmokeGate": "node tools/smoke-student-access.mjs => ok true, learningProgressServerSnapshot true, duplicate no double-count true",
+        "realStudentAccountNoDrift": "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain => ok true; source server-kv-learning-progress; noMutationRead true; cumulativeSourceOfTruth server-progress-snapshot; loginStable true; reloginStable true",
+        "realTeacherSummary": "node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain => ok true; source server-kv-learning-progress; auditWindowCumulativeViolationCount 0",
+        "strictDurabilityBlocker": "node tools/check-production-progress-real-account.mjs --json --require-public-chain --require-persistent-write => expected fail before POST because FM_PROGRESS_DB/FM_PROGRESS_R2 are not bound",
+        "bindingAudit": "node tools/check-cloudflare-pages-private-video-bindings.mjs --json => production kvBindings [FM_AUDIT], r2Bindings [], d1Bindings [], missing FM_PROGRESS_DB/FM_PROGRESS_R2 and FM_PRIVATE_MEDIA",
+        "answerGate": "node tools/check-round388-181103-answer-release-gate.mjs --json => ok true; 522 HTML answer blocks; 381 practice; 141 source-content cards",
+        "productionBoundary": "KV fallback proves no-drift and survives login/relogin reads, but must not be called full durable production progress until FM_PROGRESS_DB or FM_PROGRESS_R2 is bound and strict real-account write passes.",
+        "studentAccountBaseline": "activeCommonUsers: qi, chenlei, anxin, sunruze; unknownStudentsLocked true; no extra default accounts added."
+      },
+      "verificationPlan": [
+        "node --check tools/generate-public-redirects.mjs",
+        "node tools/generate-public-redirects.mjs",
+        "static public-shell first-screen term check for Round390/Round389/181103/storage boundaries"
+      ]
+    },
+    "requiredTerms": [
+      "Round390",
+      "Round389",
+      "server-progress-snapshot",
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2",
+      "FM_PRIVATE_MEDIA",
+      "181103",
+      "38",
+      "522",
+      "381",
+      "141",
+      "不伪造 auth",
+      "不提供 PDF/PPT/DOC/ZIP 下载"
+    ],
+    "visibleProof": "The generated lghui.top public shell first screen shows Round390 shell status, Round389 progress truth, 181103 HTML/question-bank entries, and private-video/progress storage boundaries."
+  },
+  {
     "version": "round389-progress-server-truth-20260618",
     "date": "2026-06-18",
     "time": "09:06",

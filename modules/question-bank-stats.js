@@ -4,7 +4,7 @@
  */
 window.QuestionBankStats = (function() {
     // 私有变量
-    let statsData = {
+	    let statsData = {
         totalQuestions: 0,
         completedQuestions: 0,
         correctAnswers: 0,
@@ -14,8 +14,33 @@ window.QuestionBankStats = (function() {
         wrongQuestionCount: 0,
         source: 'localStorage-offline-fallback',
         serverManaged: false,
-        localOnly: true
-    };
+	        localOnly: true
+	    };
+
+	    function progressSnapshotKey(username) {
+	        const safeUser = String(username || 'unknown')
+	            .normalize('NFKC')
+	            .trim()
+	            .replace(/\s+/g, '-')
+	            .replace(/[^a-z0-9_.:@-]/gi, '_')
+	            .slice(0, 120) || 'unknown';
+	        return 'fm_learning_progress_snapshot_v1:' + safeUser;
+	    }
+
+	    function currentProgressUser(payload = null) {
+	        const explicit = String(payload && (payload.user || (payload.progress && payload.progress.user)) || '').trim();
+	        if (explicit) return explicit;
+	        if (window.FMSecurity && typeof window.FMSecurity.getUser === 'function') {
+	            const guarded = window.FMSecurity.getUser();
+	            if (guarded && guarded.username) return String(guarded.username).trim();
+	        }
+	        try {
+	            const session = JSON.parse(localStorage.getItem('fm_session_v2') || localStorage.getItem('fm_auth_session_v2') || 'null');
+	            const user = session && session.payload && session.payload.user ? session.payload.user : (session && session.user ? session.user : null);
+	            if (user && user.username) return String(user.username).trim();
+	        } catch (_) {}
+	        return 'unknown';
+	    }
     
 	    // 公有方法
 	    return {
@@ -36,22 +61,26 @@ window.QuestionBankStats = (function() {
 	                });
 	                if (!response.ok) return;
 	                const payload = await response.json();
-	                if (!payload || !payload.ok || !payload.stats) return;
-	                const source = String(payload.source || '').trim()
-	                    || (payload.storeMode === 'd1'
-	                        ? 'server-d1-learning-progress'
-	                        : payload.storeMode === 'r2-progress'
-	                            ? 'server-r2-learning-progress'
-	                            : payload.storeMode === 'kv-single-write-fallback'
-	                                ? 'server-kv-learning-progress'
-	                                : 'server-learning-progress-unavailable');
-	                localStorage.setItem('fm_learning_progress_snapshot_v1', JSON.stringify({
-	                    syncedAt: new Date().toISOString(),
-	                    source,
-                    storeMode: payload.storeMode || '',
-                    cumulativeSourceOfTruth: payload.cumulativeSourceOfTruth || 'server-progress-snapshot',
-                    noMutationRead: payload.noMutationRead === true,
-	                    progress: payload.progress || null,
+		                if (!payload || !payload.ok || !payload.stats) return;
+		                if (payload.noMutationRead !== true || payload.cumulativeSourceOfTruth !== 'server-progress-snapshot') return;
+		                const source = String(payload.source || '').trim()
+		                    || (payload.storeMode === 'd1'
+		                        ? 'server-d1-learning-progress'
+		                        : payload.storeMode === 'r2-progress'
+		                            ? 'server-r2-learning-progress'
+		                            : payload.storeMode === 'kv-single-write-fallback'
+		                                ? 'server-kv-learning-progress'
+		                                : 'server-learning-progress-unavailable');
+		                if (!/^(server-d1-learning-progress|server-r2-learning-progress|server-kv-learning-progress)$/.test(source)) return;
+		                const snapshotUser = currentProgressUser(payload);
+		                localStorage.setItem(progressSnapshotKey(snapshotUser), JSON.stringify({
+		                    syncedAt: new Date().toISOString(),
+		                    user: snapshotUser,
+		                    source,
+	                    storeMode: payload.storeMode || '',
+	                    cumulativeSourceOfTruth: payload.cumulativeSourceOfTruth || 'server-progress-snapshot',
+	                    noMutationRead: payload.noMutationRead === true,
+		                    progress: payload.progress || null,
 	                    stats: payload.stats
 	                }));
                 this.updateStats();
@@ -73,19 +102,20 @@ window.QuestionBankStats = (function() {
                 statsData.totalQuestions = allBanks.reduce((sum, bank) => sum + bank.questionCount, 0);
             }
             
-            // 从用户数据模块获取用户统计
-            if (typeof QuestionBankUser !== 'undefined') {
-                const userStats = QuestionBankUser.getStats();
-                statsData.completedQuestions = userStats.totalQuestions || 0;
-                statsData.correctAnswers = userStats.correctAnswers || 0;
-                statsData.totalStudyTime = userStats.totalStudyTime || 0;
-                statsData.streakDays = userStats.streakDays || 0;
-                statsData.source = userStats.source || 'localStorage-offline-fallback';
-                statsData.serverManaged = userStats.serverManaged === true;
-                statsData.localOnly = userStats.localOnly !== false;
-                statsData.favoriteCount = QuestionBankUser.getFavoriteCount();
-                statsData.wrongQuestionCount = QuestionBankUser.getWrongQuestionCount();
-            }
+	            // 从用户数据模块获取用户统计
+	            if (typeof QuestionBankUser !== 'undefined') {
+	                const userStats = QuestionBankUser.getStats();
+	                const serverManaged = userStats.serverManaged === true;
+	                statsData.completedQuestions = serverManaged ? (userStats.totalQuestions || 0) : 0;
+	                statsData.correctAnswers = serverManaged ? (userStats.correctAnswers || 0) : 0;
+	                statsData.totalStudyTime = serverManaged ? (userStats.totalStudyTime || 0) : 0;
+	                statsData.streakDays = userStats.streakDays || 0;
+	                statsData.source = userStats.source || 'localStorage-offline-fallback';
+	                statsData.serverManaged = serverManaged;
+	                statsData.localOnly = userStats.localOnly !== false;
+	                statsData.favoriteCount = QuestionBankUser.getFavoriteCount();
+	                statsData.wrongQuestionCount = QuestionBankUser.getWrongQuestionCount();
+	            }
         },
         
         // 更新统计显示
@@ -109,14 +139,14 @@ window.QuestionBankStats = (function() {
                 wrongQuestionCount: ['wrongQuestionCount']
             };
 
-            const statsValues = {
-                totalQuestions: statsData.totalQuestions,
-                completedQuestions: statsData.completedQuestions,
-                correctRate: correctRate + '%',
-                studyTime: formattedTime,
-                streakDays: statsData.streakDays + '天',
-                favoriteCount: statsData.favoriteCount,
-                wrongQuestionCount: statsData.wrongQuestionCount
+	            const statsValues = {
+	                totalQuestions: statsData.totalQuestions,
+	                completedQuestions: statsData.serverManaged ? statsData.completedQuestions : '等待',
+	                correctRate: correctRate + '%',
+	                studyTime: statsData.serverManaged ? formattedTime : '等待服务器',
+	                streakDays: statsData.streakDays + '天',
+	                favoriteCount: statsData.favoriteCount,
+	                wrongQuestionCount: statsData.wrongQuestionCount
             };
             
             Object.entries(statsElements).forEach(([key, ids]) => {

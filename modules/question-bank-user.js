@@ -26,31 +26,56 @@ window.QuestionBankUser = (function() {
         WRONG_QUESTIONS: 'wrongQuestions',
         STUDY_HISTORY: 'studyHistory',
         PREFERENCES: 'userPreferences'
-    };
-    const SERVER_PROGRESS_SNAPSHOT_KEY = 'fm_learning_progress_snapshot_v1';
+	    };
+	    function progressSnapshotKey(username) {
+	        const safeUser = String(username || 'unknown')
+	            .normalize('NFKC')
+	            .trim()
+	            .replace(/\s+/g, '-')
+	            .replace(/[^a-z0-9_.:@-]/gi, '_')
+	            .slice(0, 120) || 'unknown';
+	        return 'fm_learning_progress_snapshot_v1:' + safeUser;
+	    }
 
-    function readServerProgressStats() {
-        try {
-            const raw = localStorage.getItem(SERVER_PROGRESS_SNAPSHOT_KEY);
-            const snapshot = raw ? JSON.parse(raw) : null;
-            const stats = snapshot && snapshot.stats ? snapshot.stats : null;
-            if (!stats) return null;
-            const source = String(snapshot.source || '').trim() || 'server-learning-progress-snapshot';
-            const cumulativeSourceOfTruth = String(snapshot.cumulativeSourceOfTruth || 'server-progress-snapshot').trim();
-            const noMutationRead = snapshot.noMutationRead === true || cumulativeSourceOfTruth === 'server-progress-snapshot';
-            return {
-                totalStudyTime: Number(stats.studyTimeSeconds || stats.totalStudyTime || 0),
-                totalQuestions: Number(stats.answered || stats.totalQuestions || 0),
+	    function currentProgressUser() {
+	        if (window.FMSecurity && typeof window.FMSecurity.getUser === 'function') {
+	            const guarded = window.FMSecurity.getUser();
+	            if (guarded && guarded.username) return String(guarded.username).trim();
+	        }
+	        try {
+	            const session = JSON.parse(localStorage.getItem('fm_session_v2') || localStorage.getItem('fm_auth_session_v2') || 'null');
+	            const user = session && session.payload && session.payload.user ? session.payload.user : (session && session.user ? session.user : null);
+	            if (user && user.username) return String(user.username).trim();
+	        } catch (_) {}
+	        return '';
+	    }
+
+	    function readServerProgressStats() {
+	        try {
+	            const expectedUser = currentProgressUser();
+	            if (!expectedUser) return null;
+	            const raw = localStorage.getItem(progressSnapshotKey(expectedUser));
+	            const snapshot = raw ? JSON.parse(raw) : null;
+	            const stats = snapshot && snapshot.stats ? snapshot.stats : null;
+	            if (!stats) return null;
+	            const snapshotUser = String(snapshot.user || (snapshot.progress && snapshot.progress.user) || '').trim();
+	            if (snapshotUser && snapshotUser !== expectedUser) return null;
+	            const source = String(snapshot.source || '').trim() || 'server-learning-progress-snapshot';
+	            const cumulativeSourceOfTruth = String(snapshot.cumulativeSourceOfTruth || '').trim();
+	            const noMutationRead = snapshot.noMutationRead === true && cumulativeSourceOfTruth === 'server-progress-snapshot';
+	            return {
+	                totalStudyTime: Number(stats.studyTimeSeconds || stats.totalStudyTime || 0),
+	                totalQuestions: Number(stats.answered || stats.totalQuestions || 0),
                 correctAnswers: Number(stats.correct || stats.correctAnswers || 0),
                 lastStudyDate: stats.lastAnsweredAt || stats.lastSessionAt || snapshot.syncedAt || null,
-                source,
-                cumulativeSourceOfTruth,
-                noMutationRead,
-                syncedAt: snapshot.syncedAt || null,
-                serverManaged: /^server-/.test(source) && noMutationRead
-            };
-        } catch (_) {
-            return null;
+	                source,
+	                cumulativeSourceOfTruth,
+	                noMutationRead,
+	                syncedAt: snapshot.syncedAt || null,
+	                serverManaged: /^(server-d1-learning-progress|server-r2-learning-progress|server-kv-learning-progress)$/.test(source) && noMutationRead
+	            };
+	        } catch (_) {
+	            return null;
         }
     }
 
