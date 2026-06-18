@@ -355,13 +355,13 @@ function publicShellSiteUpdateRecord() {
     time: '09:30',
     updatedAt: '2026-06-18T09:30:00+08:00',
     previousVersion: sourceTruthVersion,
-    tag: 'Round390',
-    focus: 'round390-public-shell-181103-visible-entry',
-    title: 'Round390 lghui.top 公开壳入口与 181103 可见路径升级',
-    summary: '公开壳第一屏现在展示 Round390 源站入口版本与学习进度生产真值：/api/progress 与 /api/stats 的累计值只认 server-progress-snapshot，当前生产仍是 server-kv-learning-progress / kv-single-write-fallback，完整生产持久化继续要求 FM_PROGRESS_DB 或 FM_PROGRESS_R2。181103 入口继续保留 38 份 HTML 总表、522 张资料来源卡、381 道默认练习和 141 条线索展示；私有视频生产恢复仍要求 FM_PRIVATE_MEDIA R2。lghui.top 只做入口，不伪造 auth，不提供 PDF/PPT/DOC/ZIP 下载。',
+    tag: 'Round391',
+    focus: 'round391-public-shell-server-progress-truth-lock',
+    title: 'Round391 lghui.top 公开壳入口与学习进度真值锁',
+    summary: '公开壳第一屏现在展示 Round391 源站入口版本与学习进度生产真值：/api/progress 与 /api/stats 的累计值只认 server-progress-snapshot，当前生产仍是 server-kv-learning-progress / kv-single-write-fallback，完整生产持久化继续要求 FM_PROGRESS_DB 或 FM_PROGRESS_R2。181103 入口继续保留 38 份 HTML 总表、522 张资料来源卡、381 道默认练习和 141 条线索展示；私有视频生产恢复仍要求 FM_PRIVATE_MEDIA R2。lghui.top 只做入口，不伪造 auth，不提供 PDF/PPT/DOC/ZIP 下载。',
     links: [
       {
-        label: 'Round390 学习进度真值',
+        label: 'Round391 学习进度真值',
         href: `/modules/progress-module.html?edge_refresh=${edgeRefresh}`
       },
       {
@@ -378,24 +378,24 @@ function publicShellSiteUpdateRecord() {
       }
     ],
     evidence: {
-      currentRound: 390,
+      currentRound: 391,
       sourceProgressTruthVersion: sourceTruthVersion,
       sourceProgressTruthTitle: sourceLatestSiteUpdate.title || '',
       publicShellBoundary: 'lghui.top is a static public shell and route entry. It does not mint auth, does not prove authenticated QA, and does not provide raw downloads.',
-      progressStorageBoundary: 'Round390 proves server-progress-snapshot no-drift on the current KV fallback; full durable progress still requires FM_PROGRESS_DB or FM_PROGRESS_R2.',
+      progressStorageBoundary: 'Round391 proves server-progress-snapshot no-drift on the current KV fallback; full durable progress still requires FM_PROGRESS_DB or FM_PROGRESS_R2.',
       privateVideoBoundary: 'FM_PRIVATE_MEDIA R2 remains required before claiming private-video production upload/delete/access/archive recovery.',
       supplemental181103Boundary: '181103 remains 38 HTML material pages, 522 source cards, 381 default-practice questions, and 141 display-only source/content leads.',
       generator: 'tools/generate-public-redirects.mjs',
       generatedPublicShellFiles: 'index.html, index-complete.html, resources.html, question-bank-home.html, knowledge.html, modules/question-bank.html, and route aliases',
-      sourceRound390Evidence: sourceLatestSiteUpdate.evidence || {},
+      sourceRound391Evidence: sourceLatestSiteUpdate.evidence || {},
       verificationPlan: [
         'node --check tools/generate-public-redirects.mjs',
         'node tools/generate-public-redirects.mjs',
-        'static public-shell first-screen term check for Round390/181103/storage boundaries'
+        'static public-shell first-screen term check for Round391/181103/storage boundaries'
       ]
     },
     requiredTerms: [
-      'Round390',
+      'Round391',
       'server-progress-snapshot',
       'FM_PROGRESS_DB',
       'FM_PROGRESS_R2',
@@ -408,7 +408,7 @@ function publicShellSiteUpdateRecord() {
       '不伪造 auth',
       '不提供 PDF/PPT/DOC/ZIP 下载'
     ],
-    visibleProof: 'The generated lghui.top public shell first screen shows Round390 source status, progress truth, 181103 HTML/question-bank entries, and private-video/progress storage boundaries.'
+    visibleProof: 'The generated lghui.top public shell first screen shows Round391 source status, progress truth, 181103 HTML/question-bank entries, and private-video/progress storage boundaries.'
   };
 }
 
@@ -502,15 +502,15 @@ function resourcesHref() {
 
 function routeSpecificMarkupFor(route) {
   const currentStatus = `<div class="status-pills" aria-label="当前公开壳版本状态">
-      <span>Public shell · Round390</span>
-      <span>Progress truth · Round390</span>
+      <span>Public shell · Round391</span>
+      <span>Progress truth · Round391</span>
       <span>181103 proof · Round379/Round388</span>
       <span>38 HTML · 522 sources · 381 practice · 141 leads</span>
       <span>Storage boundary · FM_PROGRESS_DB/FM_PROGRESS_R2/FM_PRIVATE_MEDIA</span>
     </div>`;
   const homeMarkup = `${currentStatus}
     <div class="route-cards" aria-label="181103 首页直达入口">
-      <a class="route-card" href="${progressHref()}">Round390 学习进度真值<span>累计学习时长、题数和会话只认 /api/progress、/api/stats 的 server-progress-snapshot；当前仍是 KV fallback，完整持久化要等 FM_PROGRESS_DB 或 FM_PROGRESS_R2。</span></a>
+      <a class="route-card" href="${progressHref()}">Round391 学习进度真值<span>累计学习时长、题数和会话只认 /api/progress、/api/stats 的 server-progress-snapshot；当前仍是 KV fallback，完整持久化要等 FM_PROGRESS_DB 或 FM_PROGRESS_R2。</span></a>
       <a class="route-card" href="${questionBankHref('181103-material-extracted')}">181103 522 全题核对 / 381 练习<span>资料内习题、例题、名词解释、证明计算题已入题库；141 条参考答案页、父卡和源文续页只作线索。</span></a>
       <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 38 份 HTML 正文<span>全部是站内 HTML 内容页，不发布 PDF/PPT/DOC/ZIP 原件，也不走 viewer 壳。</span></a>
       <a class="route-card" href="${privateVideoHref()}">私有视频 / 存储边界<span>公开壳只做入口，不伪造 auth；FM_PRIVATE_MEDIA 未绑定前不宣称上传、删除、授权访问或归档恢复。</span></a>
@@ -520,7 +520,7 @@ function routeSpecificMarkupFor(route) {
       <a class="route-card" href="${questionBankHref('181103-material-extracted')}">181103 资料内题目全集<span>522 张来源 HTML 卡已经进入题库可见面；381 道独立题进入默认练习池。</span></a>
       <a class="route-card" href="${questionBankHref('181103-material-review')}">181103 真题复核边界<span>68 个真题复核任务保留独立边界，辅助题干、章节和题型复核，不冒充原卷答案 PDF 证据。</span></a>
       <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 HTML 来源总表<span>需要回看来源时打开站内 HTML 正文页；公开壳不提供原始文件下载。</span></a>
-      <a class="route-card" href="${progressHref()}">Round390 进度真值边界<span>题库练习累计展示以服务器快照为准；FM_PROGRESS_DB/FM_PROGRESS_R2 未绑定前只声明 no-drift，不声明完整生产持久化。</span></a>
+      <a class="route-card" href="${progressHref()}">Round391 进度真值边界<span>题库练习累计展示以服务器快照为准；FM_PROGRESS_DB/FM_PROGRESS_R2 未绑定前只声明 no-drift，不声明完整生产持久化。</span></a>
     </div>`;
   const resourcesMarkup = `${currentStatus}
     <div class="route-cards" aria-label="181103 资料直达入口">
@@ -533,8 +533,8 @@ function routeSpecificMarkupFor(route) {
     <div class="route-cards" aria-label="181103 知识升级直达入口">
       <a class="route-card" href="${questionBankHref('181103-material-extracted')}">181103 知识点关联题库<span>522 张资料来源卡和 381 道默认练习继续从知识点页回连，不把 141 条线索混入刷题池。</span></a>
       <a class="route-card" href="/resources/fluid-181103-html/index.html">181103 38 份 HTML 讲义<span>知识升级页只链接站内 HTML 正文，不发布 PDF/PPT/DOC/ZIP 原件，也不走 viewer 壳。</span></a>
-      <a class="route-card" href="${resourcesHref()}">资源中心 181103 工作台<span>从知识点复习跳回资料、路线、真题复核和题库入口，保持 Round390 公开壳入口标签。</span></a>
-      <a class="route-card" href="${progressHref()}">Round390 进度真值边界<span>学习进度累计只认服务器快照；公开壳不伪造登录态，也不把 KV fallback 说成完整持久化。</span></a>
+      <a class="route-card" href="${resourcesHref()}">资源中心 181103 工作台<span>从知识点复习跳回资料、路线、真题复核和题库入口，保持 Round391 公开壳入口标签。</span></a>
+      <a class="route-card" href="${progressHref()}">Round391 进度真值边界<span>学习进度累计只认服务器快照；公开壳不伪造登录态，也不把 KV fallback 说成完整持久化。</span></a>
     </div>`;
   if (route === '/index-complete') return homeMarkup;
   if (['/knowledge.html', '/knowledge', '/modules/knowledge-detail.html', '/modules/knowledge-detail', '/modules/knowledge-upgrade-2026.html'].includes(route)) return knowledgeMarkup;
