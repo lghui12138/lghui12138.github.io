@@ -131,6 +131,80 @@ window.QuestionBankPractice = (function() {
         return /<\s*script\b|on[a-z]+\s*=|javascript:/i.test(String(value || ''));
     }
 
+    function hasAnswerHtmlMarkup(value) {
+        return /<\s*\/?\s*(?:p|div|span|br|strong|em|b|i|ul|ol|li|table|thead|tbody|tr|td|th|section|article|blockquote|pre|code|math|mjx-container|h[1-6])\b/i.test(String(value || ''));
+    }
+
+    function cleanAnswerText(value) {
+        return String(value == null ? '' : value)
+            .replace(/^\s*[【\[]?\s*(?:参考答案|标准答案|最终答案|答案)\s*[】\]]?\s*[:：]\s*/i, '')
+            .replace(/EMBED\s+Equation(?:\.[A-Za-z0-9]+)?/gi, '\\(\\text{公式待复核}\\)')
+            .replace(/EMBED\s+Equation\.DSMT4/gi, '\\(\\text{公式待复核}\\)')
+            .replace(/501\s+501\s+\d{3,}\s+\d{3,}\s+0\s+0\s+\d+\s+\d+\s+1\s+0\s+1\s+high-resolution\s+ja\s+JP[\s\S]{0,260}/gi, '【字体/OCR噪声已隐藏，请查看来源 HTML 核对】')
+            .replace(/\r\n?/g, '\n')
+            .replace(/\u00a0/g, ' ')
+            .replace(/[ \t]+\n/g, '\n')
+            .replace(/\n[ \t]+/g, '\n')
+            .replace(/\n{3,}/g, '\n\n')
+            .trim();
+    }
+
+    function splitAnswerTextSegments(value) {
+        const cleaned = cleanAnswerText(value)
+            .replace(/([。！？；;])\s*((?:\(\d+\)|（\d+）|[①②③④⑤⑥⑦⑧⑨⑩]|\d+[、．])\s*)/g, '$1\n$2')
+            .replace(/\s+((?:\(\d+\)|（\d+）|[①②③④⑤⑥⑦⑧⑨⑩])\s*)/g, '\n$1');
+        if (!cleaned) return [];
+        const rough = cleaned.split(/\n+/).map(item => item.trim()).filter(Boolean);
+        const segments = [];
+        rough.forEach(item => {
+            if (item.length < 120 || /^(?:\(\d+\)|（\d+）|[①②③④⑤⑥⑦⑧⑨⑩]|\d+[、．])/.test(item)) {
+                segments.push(item);
+                return;
+            }
+            const sentenceParts = item.match(/[^。！？；;]+[。！？；;]?/g);
+            if (sentenceParts && sentenceParts.length > 1) {
+                sentenceParts.map(part => part.trim()).filter(Boolean).forEach(part => segments.push(part));
+            } else {
+                segments.push(item);
+            }
+        });
+        return segments;
+    }
+
+    function numberedAnswerPart(value) {
+        const match = String(value || '').match(/^(?:\((\d+)\)|（(\d+)）|([①②③④⑤⑥⑦⑧⑨⑩])|(\d+)[、．])\s*([\s\S]+)$/);
+        if (!match) return null;
+        return {
+            marker: match[1] || match[2] || match[3] || match[4] || '',
+            body: match[5] || ''
+        };
+    }
+
+    function renderAnswerTextPart(value) {
+        const text = String(value || '').trim();
+        const labelMatch = text.match(/^([^：:\n]{2,14})[：:]\s*([\s\S]+)$/);
+        if (labelMatch && /(答案|结论|理由|步骤|证明|计算|结果|说明|欧拉|拉格朗日|由|故|其中|代入|整理)/.test(labelMatch[1])) {
+            return `<span class="reference-answer-step-label">${escapeHtml(labelMatch[1])}</span><span>${escapeHtml(labelMatch[2])}</span>`;
+        }
+        return escapeHtml(text);
+    }
+
+    function formatAnswerTextAsHtml(value) {
+        const segments = splitAnswerTextSegments(value);
+        if (!segments.length) return '暂无参考答案';
+        const numbered = segments.map(numberedAnswerPart);
+        if (segments.length > 1 && numbered.every(Boolean)) {
+            return `<ol class="reference-answer-list" data-round392-answer-list="1">${numbered.map(item => `<li>${renderAnswerTextPart(item.body)}</li>`).join('')}</ol>`;
+        }
+        return segments.map(segment => {
+            const numberedPart = numberedAnswerPart(segment);
+            if (numberedPart) {
+                return `<p class="reference-answer-paragraph has-marker" data-round392-answer-paragraph="1"><span class="reference-answer-marker">${escapeHtml(numberedPart.marker)}</span>${renderAnswerTextPart(numberedPart.body)}</p>`;
+            }
+            return `<p class="reference-answer-paragraph" data-round392-answer-paragraph="1">${renderAnswerTextPart(segment)}</p>`;
+        }).join('');
+    }
+
     function formatTextAsHtml(value) {
         const cleaned = String(value == null ? '' : value)
             .replace(/EMBED\s+Equation(?:\.[A-Za-z0-9]+)?/gi, '\\(\\text{公式待复核}\\)')
@@ -247,9 +321,11 @@ window.QuestionBankPractice = (function() {
     function getAnswerHtml(question) {
         if (!question || typeof question !== 'object') return '暂无参考答案';
         const explicit = String(question.answerHtml || question.referenceAnswerHtml || question.sampleAnswerHtml || '').trim();
-        if (explicit && !hasUnsafeInlineHtml(explicit)) return explicit;
+        if (explicit && !hasUnsafeInlineHtml(explicit)) {
+            return hasAnswerHtmlMarkup(explicit) ? explicit : formatAnswerTextAsHtml(explicit);
+        }
         const answer = question.referenceAnswer || question.sampleAnswer || question.answer || question.correct || '';
-        return answer ? formatTextAsHtml(answer) : '暂无参考答案';
+        return answer ? formatAnswerTextAsHtml(answer) : '暂无参考答案';
     }
 
     function hasExplicitAnswerHtml(question) {
@@ -275,19 +351,26 @@ window.QuestionBankPractice = (function() {
         const compact = Boolean(options.compact);
         const answerHtml = getAnswerHtml(question);
         const hasHtml = hasExplicitAnswerHtml(question);
+        const answerFormat = hasHtml && hasAnswerHtmlMarkup(question.answerHtml || question.referenceAnswerHtml || question.sampleAnswerHtml) ? 'html' : 'plain-text';
         const material181103 = isMaterial181103Question(question);
+        const answerBadge = hasHtml
+            ? (material181103 ? '来源答案已同步' : '参考答案已整理')
+            : '文本答案已整理';
         const sourceHref = escapeHtml(question && (question.sourceHtmlUrl || question.htmlQuestionSourceUrl || question.htmlQuestionCardUrl || ''));
         const evidenceHtml = material181103 ? sourceEvidenceBlock(question, { compact }) : '';
         const sourceHint = material181103
             ? `<footer class="reference-answer-source-note" data-round374-181103-answer-source-note="1" role="note"><strong>答案边界</strong><span>本答案为站内整理参考答案；来源 HTML/页图只用于逐题核对题面、公式和资料语境。</span>${sourceHref ? ` <a href="${sourceHref}" target="_blank" rel="noopener">打开来源核对</a>` : ''}</footer>`
             : '';
         return `
-            <section class="reference-answer-block${compact ? ' is-compact' : ''}" data-round374-reference-answer="1" data-round374-181103-reference-answer="${material181103 ? '1' : '0'}" data-reference-answer-source="${hasHtml ? 'answerHtml' : 'textFallback'}">
+            <section class="reference-answer-block${compact ? ' is-compact' : ''}" data-round374-reference-answer="1" data-round374-181103-reference-answer="${material181103 ? '1' : '0'}" data-reference-answer-source="${hasHtml ? 'answerHtml' : 'textFallback'}" data-round392-answer-format="${answerFormat}">
                 <div class="reference-answer-head">
                     <strong>${escapeHtml(heading)}</strong>
-                    <span class="reference-answer-badge">${hasHtml ? 'answerHtml 已载入' : '文本答案兜底'}</span>
+                    <span class="reference-answer-badge">${answerBadge}</span>
                 </div>
-                <div class="reference-answer-html" data-round374-reference-answer-html="1">${answerHtml}</div>
+                <div class="reference-answer-body" data-round392-reference-answer-body="1">
+                    <div class="reference-answer-final-label">最终答案</div>
+                    <div class="reference-answer-html" data-round374-reference-answer-html="1">${answerHtml}</div>
+                </div>
                 ${evidenceHtml}
                 ${sourceHint}
             </section>
@@ -300,7 +383,7 @@ window.QuestionBankPractice = (function() {
         const compact = Boolean(options.compact);
         return `
             <section class="answer-explanation-block${compact ? ' is-compact' : ''}" data-round374-answer-explanation="1">
-                <strong>核对说明</strong>
+                <strong>解析与核对说明</strong>
                 <div>${html}</div>
             </section>
         `;
@@ -658,18 +741,6 @@ window.QuestionBankPractice = (function() {
             localOnly: false
         };
         writeJsonStorage('questionBankUserData', userData);
-        const legacyStats = readJsonStorage('userStats', {});
-        writeJsonStorage('userStats', {
-            ...legacyStats,
-            answeredQuestions: totalQuestions,
-            correctAnswers,
-            correctRate: totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0,
-            totalTime: totalStudyTime,
-            source,
-            serverManaged: true,
-            localOnly: false,
-            syncedAt
-        });
         if (typeof QuestionBankStats !== 'undefined' && typeof QuestionBankStats.updateStats === 'function') {
             try { QuestionBankStats.updateStats(); } catch (_) {}
         }
@@ -705,13 +776,11 @@ window.QuestionBankPractice = (function() {
                 if (isServerRejectedProgress(payload, response)) {
                     saveProgressOutbox([]);
                     rememberProgressSyncError(payload, response);
-                    applyServerProgressSnapshot(payload);
                 }
                 return;
             }
             if (payload && payload.ok) {
                 saveProgressOutbox([]);
-                applyServerProgressSnapshot(payload);
                 await hydrateLearningProgressFromServer();
             }
         } catch (_) {}
@@ -738,13 +807,11 @@ window.QuestionBankPractice = (function() {
             if (!response.ok) {
                 if (isServerRejectedProgress(payload, response)) {
                     rememberProgressSyncError(payload, response);
-                    applyServerProgressSnapshot(payload);
                     return false;
                 }
                 throw new Error(`progress ${response.status}`);
             }
             if (payload && payload.ok) {
-                applyServerProgressSnapshot(payload);
                 await hydrateLearningProgressFromServer();
                 flushProgressOutbox();
                 return true;
@@ -1663,6 +1730,23 @@ window.QuestionBankPractice = (function() {
 	                        overflow-wrap: anywhere;
 	                    }
 
+	                    .reference-answer-body {
+	                        display: grid;
+	                        gap: 10px;
+	                    }
+
+	                    .reference-answer-final-label {
+	                        width: fit-content;
+	                        max-width: 100%;
+	                        padding: 5px 10px;
+	                        border-radius: 8px;
+	                        background: #9a3412;
+	                        color: #fff7ed;
+	                        font-size: 0.82em;
+	                        font-weight: 900;
+	                        letter-spacing: 0;
+	                    }
+
 	                    .reference-answer-html {
 	                        background: #fff;
 	                        border-left: 5px solid #f97316;
@@ -1675,6 +1759,64 @@ window.QuestionBankPractice = (function() {
 	                        overflow-wrap: anywhere;
 	                        word-break: break-word;
 	                        -webkit-overflow-scrolling: touch;
+	                    }
+
+	                    .reference-answer-paragraph {
+	                        margin: 0 0 12px;
+	                    }
+
+	                    .reference-answer-paragraph:last-child {
+	                        margin-bottom: 0;
+	                    }
+
+	                    .reference-answer-paragraph.has-marker {
+	                        display: grid;
+	                        grid-template-columns: auto minmax(0, 1fr);
+	                        column-gap: 10px;
+	                        align-items: start;
+	                    }
+
+	                    .reference-answer-marker {
+	                        display: inline-flex;
+	                        align-items: center;
+	                        justify-content: center;
+	                        min-width: 28px;
+	                        min-height: 28px;
+	                        padding: 2px 7px;
+	                        border-radius: 999px;
+	                        background: #ffedd5;
+	                        color: #9a3412;
+	                        border: 1px solid #fdba74;
+	                        font-size: 0.82em;
+	                        font-weight: 900;
+	                        line-height: 1.2;
+	                    }
+
+	                    .reference-answer-step-label {
+	                        display: inline-flex;
+	                        align-items: center;
+	                        min-height: 28px;
+	                        margin-right: 8px;
+	                        padding: 2px 8px;
+	                        border-radius: 7px;
+	                        background: #fef3c7;
+	                        color: #92400e;
+	                        font-size: 0.88em;
+	                        font-weight: 900;
+	                    }
+
+	                    .reference-answer-list {
+	                        margin: 0;
+	                        padding-left: 1.4em;
+	                    }
+
+	                    .reference-answer-list li {
+	                        margin: 0 0 10px;
+	                        padding-left: 4px;
+	                    }
+
+	                    .reference-answer-list li:last-child {
+	                        margin-bottom: 0;
 	                    }
 
 	                    .reference-answer-html mjx-container,
