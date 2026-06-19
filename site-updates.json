@@ -1,5 +1,95 @@
 [
   {
+    "version": "round400-progress-monitoring-primary-truth-20260619",
+    "date": "2026-06-19",
+    "time": "10:40",
+    "updatedAt": "2026-06-19T10:40:00+08:00",
+    "previousVersion": "round398-server-progress-no-drift-accounting-20260618",
+    "tag": "Round400",
+    "focus": "progress-monitoring-primary-truth",
+    "title": "Round400 累计时长与做题监控主真值修复",
+    "summary": "本轮专门把每个人的累计时长、做题数、场次、正确率和教师监控从“最近事件/本机缓存/登录状态”里彻底拆出来：/api/progress 与 /api/stats 的 GET/HEAD 只能返回 noMutationRead=true 的 server-progress-snapshot；登录、刷新、退出重登、服务器升级、本机 localStorage、service worker 缓存和 audit-event-window 都不能推进累计值。教师后台 summary 也必须暴露 learningProgressStore.noMutationRead、cumulativeSourceOfTruth=server-progress-snapshot、auditEventWindowExcludedFromCumulative=true，并把最近审计窗口只标成活跃/诊断，不再混成累计题数或累计学习时长。当前生产仍显示 server-kv-learning-progress / kv-single-write-fallback 时，只允许声明服务器端 KV no-drift，不允许冒充完整 D1/R2 主存储；完整生产持久化仍要求 FM_PROGRESS_DB 或 FM_PROGRESS_R2 绑定并通过真实账号写入、重登和教师汇总复验。181103 资料继续保持 38 份 HTML、522 张资料来源卡、381 道默认练习和 141 条来源/答案线索可见；私有视频仍按缺 FM_PRIVATE_MEDIA 时 ready/limited/blocked 展示。默认学生账号基线继续只保留 qi、chenlei、anxin、sunruze；未加入额外默认账号，不再扩入未知学生。",
+    "links": [
+      {
+        "label": "学生学习进度",
+        "href": "/modules/progress-module.html?edge_refresh=round400-progress-monitoring-primary-truth-20260619"
+      },
+      {
+        "label": "教师进度监控",
+        "href": "/teacher-panel?view=students&edge_refresh=round400-progress-monitoring-primary-truth-20260619"
+      },
+      {
+        "label": "首页服务端累计",
+        "href": "/index-complete.html?edge_refresh=round400-progress-monitoring-primary-truth-20260619#stats"
+      },
+      {
+        "label": "181103 资料题库",
+        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round400-progress-monitoring-primary-truth-20260619#questionBanksList"
+      },
+      {
+        "label": "181103 HTML 资料",
+        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round400-progress-monitoring-primary-truth-20260619"
+      },
+      {
+        "label": "私有视频管理",
+        "href": "/teacher-panel?view=resources&edge_refresh=round400-progress-monitoring-primary-truth-20260619#private-videos"
+      }
+    ],
+    "evidence": {
+      "localNoDriftGate": "node tools/check-round399-progress-no-drift-contract.mjs --write --json && node tools/check-round398-progress-event-idempotency-contract.mjs --json => local PASS before deploy.",
+      "teacherSummaryGate": "node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain must prove teacher summary exposes noMutationRead + server-progress-snapshot and excludes audit-event-window from cumulative truth.",
+      "realAccountReadOnly": "node tools/check-production-progress-real-account.mjs --json --require-public-chain --read-only --expected-version round400-progress-monitoring-primary-truth-20260619 must prove login/read/refresh/relogin stable and teacherSummaryOk=true.",
+      "realAccountStrictWriteBoundary": "node tools/check-production-progress-real-account.mjs --json --require-public-chain --require-full-production-ready --expected-version round400-progress-monitoring-primary-truth-20260619 remains a strict D1/R2 blocker until FM_PROGRESS_DB or FM_PROGRESS_R2 is visible.",
+      "releaseGate": "node tools/verify-fluid-release-gate.mjs --expected-version round400-progress-monitoring-primary-truth-20260619 after deploy; full production write durability still requires D1/R2 primary progress binding."
+    },
+    "round399WorkerFReleaseGates": {
+      "version": "round399-worker-f-release-gates-20260619",
+      "runtimeVersion": "round400-progress-monitoring-primary-truth-20260619",
+      "worker": "F",
+      "status": "integrated-into-round400-visible-release",
+      "deployed": false,
+      "committed": false,
+      "gateIds": [
+        "181103-answer-stack",
+        "progress-no-drift",
+        "private-video-status",
+        "source-home-entry",
+        "public-shell-entry",
+        "anonymous-public-proof",
+        "old-round-label-risk"
+      ],
+      "summary": "Round399 Worker F 固化发布门禁和公网 proof 汇总：181103 答案栈、进度 no-drift、私有视频 ready/limited/blocked、首页入口、public shell 入口、匿名公网 proof 和旧轮次标签风险都进入 gate；runtime 仍是 Round398，主线程集成后再切发布版本。",
+      "commands": [
+        "node tools/check-round399-181103-answer-experience-contract.mjs --write --json",
+        "node tools/check-round399-progress-no-drift-contract.mjs --write --json",
+        "node tools/monitor-fluid-public-release.mjs --json --expected-version round400-progress-monitoring-primary-truth-20260619",
+        "node tools/verify-fluid-release-gate.mjs --expected-version round400-progress-monitoring-primary-truth-20260619"
+      ]
+    },
+    "requiredTerms": [
+      "Round400",
+      "server-progress-snapshot",
+      "noMutationRead",
+      "cumulativeSourceOfTruth",
+      "audit-event-window 非累计",
+      "localStorage-offline-reference",
+      "kv-single-write-fallback",
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2",
+      "真实账号只读 no-drift",
+      "教师汇总累计真值",
+      "181103 522 资料题库",
+      "FM_PRIVATE_MEDIA",
+      "qi",
+      "chenlei",
+      "anxin",
+      "sunruze",
+      "未加入额外默认账号",
+      "不再扩入未知学生"
+    ],
+    "visibleProof": "functions/_middleware.js, js/fluid-home-complete.js, modules/js/practice-main.js, teacher-panel.html, modules/progress-module.html, tools/check-production-progress-real-account.mjs, tools/check-teacher-progress-summary-real-account.mjs, tools/check-round399-progress-no-drift-contract.mjs, tests/edge-fluid-upgrade-check.js, site-updates.json."
+  },
+  {
     "version": "round398-server-progress-no-drift-accounting-20260618",
     "date": "2026-06-19",
     "time": "06:23",
