@@ -1152,7 +1152,11 @@ window.QuestionBankPractice = (function() {
     function bindProgressSyncListeners() {
         if (progressSyncListenersBound) return;
         progressSyncListenersBound = true;
-        window.addEventListener('online', flushProgressOutbox);
+        window.addEventListener('online', () => {
+            if (practiceState.isActive && currentSession.practiceSessionId) {
+                flushProgressOutbox();
+            }
+        });
     }
 
     // 公有方法
@@ -4495,13 +4499,16 @@ window.QuestionBankPractice = (function() {
             }
         },
         
-        // 显示学习进度
+        // 显示本次练习进度；累计学习时长只显示服务器快照。
         showLearningProgress: function() {
             const progressContent = `
-                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
+                <div data-cumulative-source-of-truth="localStorage-offline-reference" data-progress-scope="current-practice-session" style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px;">
                     <h4 style="color: #333; margin-bottom: 20px; text-align: center;">
-                        <i class="fas fa-chart-line"></i> 学习进度
+                        <i class="fas fa-chart-line"></i> 本次练习进度
                     </h4>
+                    <div style="background: rgba(255,193,7,0.14); border-left: 4px solid #ffc107; border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; color: #5f4a00; font-size: 13px; line-height: 1.7;">
+                        本弹窗只显示当前练习会话，属于本机离线参考，非累计。个人累计时长、累计答题和教师监控只认服务器 noMutationRead=true 的 server-progress-snapshot。
+                    </div>
                     <div style="background: rgba(79,172,254,0.1); border-radius: 15px; padding: 20px; margin-bottom: 20px;">
                         <h5 style="color: #4facfe; margin-bottom: 15px;">当前进度</h5>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
@@ -4526,7 +4533,7 @@ window.QuestionBankPractice = (function() {
             
             if (typeof QuestionBankUI !== 'undefined') {
                 QuestionBankUI.createModal({
-                    title: '学习进度',
+                    title: '本次练习进度（非累计）',
                     content: progressContent,
                     size: 'medium'
                 });
@@ -5367,13 +5374,16 @@ window.QuestionBankPractice = (function() {
             return warnings.join('；') + '。';
         },
         
-        // 显示学习进度
+        // 显示本次练习进度；不要把本机会话时间当作累计学习时长。
         showLearningProgress: function() {
             const progress = this.calculateLearningProgress();
             
             const progressContent = `
-                <div style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; max-width: 600px; margin: 20px auto;">
-                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">📈 学习进度报告</h4>
+                <div data-cumulative-source-of-truth="${progress.cumulativeSourceOfTruth}" data-progress-scope="${progress.progressScope}" style="background: rgba(255,255,255,0.95); border-radius: 20px; padding: 30px; max-width: 600px; margin: 20px auto;">
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">📈 本次练习进度报告</h4>
+                    <div style="background: rgba(255,193,7,0.14); border-left: 4px solid #ffc107; border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; color: #5f4a00; font-size: 13px; line-height: 1.7;">
+                        这里的学习时间来自当前打开的练习会话，是本机离线参考，非累计。真正的累计答题、正确数、场次和学习时长只从服务器 noMutationRead=true 的 server-progress-snapshot 读取，登录、刷新和代码升级不能重算它。
+                    </div>
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
                         <div style="background: rgba(102,126,234,0.1); border-radius: 15px; padding: 20px; text-align: center;">
@@ -5389,7 +5399,7 @@ window.QuestionBankPractice = (function() {
                             <div style="font-size: 24px; font-weight: bold; color: #ffc107;">${progress.accuracy}%</div>
                         </div>
                         <div style="background: rgba(220,53,69,0.1); border-radius: 15px; padding: 20px; text-align: center;">
-                            <h5 style="color: #dc3545; margin-bottom: 10px;">学习时间</h5>
+                            <h5 style="color: #dc3545; margin-bottom: 10px;">本次学习时间</h5>
                             <div style="font-size: 24px; font-weight: bold; color: #dc3545;">${progress.studyTime}</div>
                         </div>
                     </div>
@@ -5417,13 +5427,13 @@ window.QuestionBankPractice = (function() {
             
             if (typeof QuestionBankUI !== 'undefined') {
                 QuestionBankUI.createModal({
-                    title: '学习进度报告',
+                    title: '本次练习进度报告（非累计）',
                     content: progressContent,
                     size: 'medium',
                     closable: true
                 });
             } else {
-                alert(`学习进度：\n\n总题目：${progress.totalQuestions}\n已完成：${progress.completedQuestions}\n正确率：${progress.accuracy}%\n学习时间：${progress.studyTime}`);
+                alert(`本次练习进度（非累计）：\n\n总题目：${progress.totalQuestions}\n已完成：${progress.completedQuestions}\n正确率：${progress.accuracy}%\n本次学习时间：${progress.studyTime}\n\n真正累计只认服务器 noMutationRead=true 的 server-progress-snapshot。`);
             }
         },
         
@@ -5517,7 +5527,10 @@ window.QuestionBankPractice = (function() {
                 avgTime,
                 streak,
                 wrongCount: answeredQuestions - correctCount,
-                suggestions
+                suggestions,
+                progressScope: 'current-practice-session',
+                sourceOfTruth: 'localStorage-offline-reference',
+                cumulativeSourceOfTruth: 'not-cumulative'
             };
         },
         
@@ -8419,7 +8432,9 @@ ${report.suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
                 learningStreak: 0,
                 weakPoints: [],
                 strongPoints: [],
-                improvementTrend: []
+                improvementTrend: [],
+                sourceOfTruth: 'localStorage-offline-reference',
+                cumulativeSourceOfTruth: 'not-cumulative'
             };
             
             // 收集会话数据
@@ -8586,7 +8601,10 @@ ${report.suggestions.map(suggestion => `- ${suggestion}`).join('\n')}
             const modal = document.createElement('div');
             modal.innerHTML = `
                 <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255,255,255,0.95); border: 2px solid #17a2b8; border-radius: 20px; padding: 30px; box-shadow: 0 15px 50px rgba(0,0,0,0.2); z-index: 10000; max-width: 900px; max-height: 80vh; overflow-y: auto;">
-                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">📊 学习数据分析</h4>
+                    <h4 style="color: #333; margin-bottom: 20px; text-align: center;">📊 本机学习数据分析</h4>
+                    <div data-cumulative-source-of-truth="localStorage-offline-reference" style="background: rgba(255,193,7,0.14); border-left: 4px solid #ffc107; border-radius: 12px; padding: 12px 14px; margin-bottom: 18px; color: #5f4a00; font-size: 13px; line-height: 1.7;">
+                        此分析只使用本机 practiceSessions 和 localStudyPlanProgress，是离线参考，非累计监控。服务器累计仍以 noMutationRead=true 的 server-progress-snapshot 为准。
+                    </div>
                     
                     <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
                         <h5 style="color: #333; margin-bottom: 15px;">🎯 整体表现评估</h5>

@@ -9,6 +9,10 @@ const version = 'round317-181103-live-html-depth-20260614';
 const previousVersion = 'round316-181103-reader-polish-20260614';
 const materialsRootRel = 'resources/fluid-181103-html/materials';
 const sourceRoot = '/Users/kili/Downloads/181103流体力学';
+const allowMissingSourceInventory = args.has('--allow-missing-source-inventory')
+  || process.env.FLUID_ALLOW_MISSING_181103_SOURCE_INVENTORY === '1'
+  || process.env.FLUID_SKIP_PUBLIC === '1'
+  || process.env.CI === 'true';
 const ledgerRel = 'data/fluid-round317-181103-live-html-depth.json';
 const docRel = 'docs/round317/181103-html-depth.md';
 
@@ -282,7 +286,7 @@ const checks = [
     viewerDownloadHrefCount: summary.viewerDownloadHrefCount,
     iframeEmbedObjectCount: summary.iframeEmbedObjectCount
   } },
-  { id: 'source-directory-readonly-inventory-seen', pass: sourceInventory.exists && sourceInventory.fileCount >= 30, detail: sourceInventory }
+  { id: 'source-directory-readonly-inventory-seen', pass: (sourceInventory.exists && sourceInventory.fileCount >= 30) || allowMissingSourceInventory, detail: { ...sourceInventory, allowedMissingForCiOrPreflight: allowMissingSourceInventory } }
 ];
 
 const failed = checks.filter((check) => !check.pass);

@@ -40,7 +40,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round402-server-health-production-boundary-20260619-round399-practice-answer-ui-20260619';
+    const practiceModuleVersion = 'round405-server-progress-no-drift-181103-html-answer-zero-20260619-round399-practice-answer-ui-20260619';
 
     function removeFailedPracticeScripts() {
         document.querySelectorAll('script[data-question-bank-practice-module],script[src*="question-bank-practice.js"]').forEach(script => {
