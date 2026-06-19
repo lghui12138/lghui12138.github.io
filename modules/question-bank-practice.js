@@ -760,6 +760,20 @@ window.QuestionBankPractice = (function() {
         return response.status >= 500 || /write_quota_exceeded|storage_unavailable|progress_write_failed|write_failed/.test(text);
     }
 
+    function progressWriteErrorMessage(payload, response) {
+        const first = payload && Array.isArray(payload.results) ? payload.results.find(item => item && item.error) : null;
+        const error = String((payload && payload.error) || (first && first.error) || `http_${response && response.status || 0}`);
+        return `服务器学习进度写入失败：${error}；本次做题没有进入累计账本，旧累计未被改动，请联系管理员绑定 D1/R2 主存储。`;
+    }
+
+    function notifyServerProgressRejected(payload, response) {
+        const message = progressWriteErrorMessage(payload, response);
+        if (typeof showNotification === 'function') {
+            showNotification(message, 'error', 7000);
+        }
+        return message;
+    }
+
     function stableProgressEventId(type, data) {
         if (data && (data.clientEventId || data.eventId || data.practiceEventId)) {
             return String(data.clientEventId || data.eventId || data.practiceEventId);
@@ -862,6 +876,7 @@ window.QuestionBankPractice = (function() {
                 if (isServerRejectedProgress(payload, response)) {
                     saveProgressOutbox([]);
                     rememberProgressSyncError(payload, response);
+                    notifyServerProgressRejected(payload, response);
                 }
                 return;
             }
@@ -893,6 +908,7 @@ window.QuestionBankPractice = (function() {
             if (!response.ok) {
                 if (isServerRejectedProgress(payload, response)) {
                     rememberProgressSyncError(payload, response);
+                    notifyServerProgressRejected(payload, response);
                     return false;
                 }
                 throw new Error(`progress ${response.status}`);
