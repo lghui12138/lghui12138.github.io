@@ -71,21 +71,24 @@ window.QuestionBankStats = (function() {
 		                            : payload.storeMode === 'kv-single-write-fallback'
 		                                ? 'server-kv-learning-progress'
 		                                : 'server-learning-progress-unavailable');
-		                if (!/^(server-d1-learning-progress|server-r2-learning-progress|server-kv-learning-progress)$/.test(source)) return;
-		                const snapshotUser = currentProgressUser(payload);
-		                localStorage.setItem(progressSnapshotKey(snapshotUser), JSON.stringify({
-		                    syncedAt: new Date().toISOString(),
+			                if (!/^(server-d1-learning-progress|server-r2-learning-progress|server-kv-learning-progress)$/.test(source)) return;
+			                const snapshotUser = currentProgressUser(payload);
+			                localStorage.setItem(progressSnapshotKey(snapshotUser), JSON.stringify({
+			                    syncedAt: new Date().toISOString(),
 		                    user: snapshotUser,
 		                    source,
 	                    storeMode: payload.storeMode || '',
 	                    cumulativeSourceOfTruth: payload.cumulativeSourceOfTruth || 'server-progress-snapshot',
 	                    noMutationRead: payload.noMutationRead === true,
-		                    progress: payload.progress || null,
-	                    stats: payload.stats
-	                }));
-                this.updateStats();
-            } catch (_) {}
-        },
+			                    progress: payload.progress || null,
+		                    stats: payload.stats
+		                }));
+		                if (window.QuestionBankUser && typeof window.QuestionBankUser.acceptServerProgressSnapshot === 'function') {
+		                    window.QuestionBankUser.acceptServerProgressSnapshot(payload);
+		                }
+	                this.updateStats();
+	            } catch (_) {}
+	        },
         
         // 更新统计数据
         updateStats: function() {
@@ -152,13 +155,14 @@ window.QuestionBankStats = (function() {
             Object.entries(statsElements).forEach(([key, ids]) => {
                 ids.forEach(id => {
                     const element = document.getElementById(id);
-                    if (element) {
-                        element.textContent = statsValues[key];
-                        if (key === 'completedQuestions' || key === 'studyTime') {
-                            element.dataset.progressSource = statsData.source || '';
-                            element.dataset.serverManaged = statsData.serverManaged ? 'true' : 'false';
-                        }
-                    }
+	                    if (element) {
+	                        element.textContent = statsValues[key];
+	                        if (key === 'completedQuestions' || key === 'studyTime') {
+	                            element.dataset.progressSource = statsData.source || '';
+	                            element.dataset.cumulativeSourceOfTruth = statsData.serverManaged ? 'server-progress-snapshot' : 'server-progress-snapshot-pending';
+	                            element.dataset.serverManaged = statsData.serverManaged ? 'true' : 'false';
+	                        }
+	                    }
                 });
             });
         },

@@ -822,28 +822,12 @@ window.QuestionBankPractice = (function() {
             stats: stats || null
         });
         if (!stats) return;
-        const totalQuestions = Number(stats.answered || stats.totalQuestions || 0);
-        const correctAnswers = Number(stats.correct || stats.correctAnswers || 0);
-        const totalStudyTime = Number(stats.studyTimeSeconds || stats.totalStudyTime || 0);
-        const lastStudyDate = stats.lastAnsweredAt || stats.lastSessionAt || payload.syncedAt || '';
-        const userData = readJsonStorage('questionBankUserData', {});
-        userData.stats = {
-            ...(userData.stats || {}),
-            totalQuestions,
-            correctAnswers,
-            totalStudyTime,
-            lastStudyDate,
-            serverManaged: true,
-            serverProgressSource: source,
-            serverProgressSyncedAt: syncedAt,
-            localPendingQuestions: 0,
-            localPendingStudyTime: 0,
-            localOnly: false
-        };
-        writeJsonStorage('questionBankUserData', userData);
-        if (typeof QuestionBankStats !== 'undefined' && typeof QuestionBankStats.updateStats === 'function') {
-            try { QuestionBankStats.updateStats(); } catch (_) {}
-        }
+	        if (window.QuestionBankUser && typeof window.QuestionBankUser.acceptServerProgressSnapshot === 'function') {
+	            try { window.QuestionBankUser.acceptServerProgressSnapshot({ ...payload, source, syncedAt }); } catch (_) {}
+	        }
+	        if (typeof QuestionBankStats !== 'undefined' && typeof QuestionBankStats.updateStats === 'function') {
+	            try { QuestionBankStats.updateStats(); } catch (_) {}
+	        }
     }
 
     function progressOutbox() {
@@ -7359,9 +7343,16 @@ ${report.learningPath.milestones.map(m => `- ${m.title}: ${m.description} (目�
 	        // 显示答案显示
 	        showAnswerDisplay: function() {
 	            const answerDisplay = document.getElementById('answerDisplay');
-	            if (answerDisplay) {
+	            const answerContent = document.getElementById('answerContent');
+	            const hasRenderedAnswer = Boolean(answerContent && answerContent.querySelector('[data-round374-reference-answer="1"]'));
+	            if (answerDisplay && answerDisplay.dataset.answerState === 'open' && hasRenderedAnswer) {
 	                openAnswerPanel(answerDisplay, '参考答案区域已展开。');
+	                return;
 	            }
+	            if (answerDisplay && answerDisplay.dataset.answerState === 'open' && !hasRenderedAnswer) {
+	                answerDisplay.dataset.answerState = 'closed';
+	            }
+	            this.toggleAnswer();
 	        },
 
         // 开始考试计时

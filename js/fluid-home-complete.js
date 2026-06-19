@@ -15,16 +15,18 @@ document.addEventListener('DOMContentLoaded',()=>{
 /* ============ 页面业务 ============ */
 (function(){
 	function fd(ms){const m=Math.round((ms||0)/60000);if(m<1)return '< 1 分';if(m<60)return m+' 分钟';const h=m/60;return (h<10?h.toFixed(1):Math.round(h))+' 小时';}
-	const HOME_SERVER_PROGRESS_CACHE_PREFIX='fm_home_server_progress_snapshot:';
-	const HOME_SERVER_PROGRESS_EVENT='fm:server-progress-snapshot';
-	const HOME_SERVER_PROGRESS_STATE={status:'pending',snapshot:null,syncedAt:''};
+		const HOME_SERVER_PROGRESS_CACHE_PREFIX='fm_home_server_progress_snapshot:';
+		const HOME_SERVER_PROGRESS_EVENT='fm:server-progress-snapshot';
+		const HOME_SERVER_PROGRESS_STATE={status:'pending',snapshot:null,syncedAt:''};
+		const HOME_SERVER_HEALTH_STATE={status:'pending',snapshot:null,syncedAt:''};
 
-	window.FMServerProgress={
-	  get:()=>HOME_SERVER_PROGRESS_STATE.snapshot,
-	  isReady:()=>!!(HOME_SERVER_PROGRESS_STATE.snapshot&&HOME_SERVER_PROGRESS_STATE.snapshot.cumulativeSourceOfTruth==='server-progress-snapshot'&&HOME_SERVER_PROGRESS_STATE.snapshot.noMutationRead===true),
-	  status:()=>HOME_SERVER_PROGRESS_STATE.status,
-	  invariant:'server-progress-snapshot-only: login/refresh/server-upgrade/localStorage/audit-window must not advance cumulative totals; cache is never rendered as cumulative truth'
-	};
+		window.FMServerProgress={
+		  get:()=>HOME_SERVER_PROGRESS_STATE.snapshot,
+		  isReady:()=>!!(HOME_SERVER_PROGRESS_STATE.snapshot&&HOME_SERVER_PROGRESS_STATE.snapshot.cumulativeSourceOfTruth==='server-progress-snapshot'&&HOME_SERVER_PROGRESS_STATE.snapshot.noMutationRead===true),
+		  status:()=>HOME_SERVER_PROGRESS_STATE.status,
+		  health:()=>HOME_SERVER_HEALTH_STATE.snapshot,
+		  invariant:'server-progress-snapshot-only: login/refresh/server-upgrade/localStorage/audit-window must not advance cumulative totals; cache is never rendered as cumulative truth'
+		};
 
 	function safeUserKey(u){
 	  return String(u&&(u.username||u.name)||'_anon').normalize('NFKC').trim().toLowerCase().replace(/[^a-z0-9_.:@-]/gi,'_').slice(0,120)||'_anon';
@@ -62,11 +64,17 @@ document.addEventListener('DOMContentLoaded',()=>{
 	    answered:Number(stats.answered||0),
 	    correct:Number(stats.correct||0),
 	    accuracy:Number(stats.accuracy||0),
-	    averageQuestionTimeSeconds:Number(stats.averageQuestionTimeSeconds||0),
-	    studyTimeSeconds:Number(stats.studyTimeSeconds||0),
-	    byKnowledge:progress.byKnowledge&&typeof progress.byKnowledge==='object'?progress.byKnowledge:{},
-	    byType:progress.byType&&typeof progress.byType==='object'?progress.byType:{},
-	    recentAnswers:Array.isArray(progress.recentAnswers)?progress.recentAnswers.slice(0,160):[],
+		    averageQuestionTimeSeconds:Number(stats.averageQuestionTimeSeconds||0),
+		    studyTimeSeconds:Number(stats.studyTimeSeconds||0),
+		    durablePrimary:payload.durablePrimary===true,
+		    fullProductionReady:payload.fullProductionReady===true,
+		    degradedKvFallback:payload.degradedKvFallback===true,
+		    strictCumulativeServer:payload.strictCumulativeServer===true,
+		    serverUpgradeInvariant:String(payload.serverUpgradeInvariant||''),
+		    writeDurabilityGate:payload.writeDurabilityGate&&typeof payload.writeDurabilityGate==='object'?payload.writeDurabilityGate:{},
+		    byKnowledge:progress.byKnowledge&&typeof progress.byKnowledge==='object'?progress.byKnowledge:{},
+		    byType:progress.byType&&typeof progress.byType==='object'?progress.byType:{},
+		    recentAnswers:Array.isArray(progress.recentAnswers)?progress.recentAnswers.slice(0,160):[],
 	    recentSessions:Array.isArray(progress.recentSessions)?progress.recentSessions.slice(0,60):[],
 	    syncedAt:new Date().toISOString()
 	  };
@@ -91,14 +99,17 @@ document.addEventListener('DOMContentLoaded',()=>{
 	  setHomeStat('sD',fd(Math.max(0,snapshot.studyTimeSeconds||0)*1000),meta);
 	  setHomeStat('sA',snapshot.answered?String(snapshot.accuracy||0)+'%':'—',meta);
 	  const statsBox=document.getElementById('stats');
-	  if(statsBox){
-	    statsBox.dataset.progressSource=snapshot.source;
-	    statsBox.dataset.cumulativeSourceOfTruth=snapshot.cumulativeSourceOfTruth;
-	    statsBox.dataset.noMutationRead=snapshot.noMutationRead?'true':'false';
-	    statsBox.setAttribute('aria-label','我的服务端累计统计：登录、刷新和服务器升级不会从本机重新计算');
-	  }
-	  return true;
-	}
+		  if(statsBox){
+		    statsBox.dataset.progressSource=snapshot.source;
+		    statsBox.dataset.cumulativeSourceOfTruth=snapshot.cumulativeSourceOfTruth;
+		    statsBox.dataset.noMutationRead=snapshot.noMutationRead?'true':'false';
+		    statsBox.dataset.strictCumulativeServer=snapshot.strictCumulativeServer?'true':'false';
+		    statsBox.dataset.storeMode=snapshot.storeMode||'';
+		    statsBox.setAttribute('aria-label','我的服务端累计统计：登录、刷新和服务器升级不会从本机重新计算');
+		  }
+		  renderHomeServerHealthStatus();
+		  return true;
+		}
 
 	function setHomeStatsPending(){
 	  HOME_SERVER_PROGRESS_STATE.status='pending';
@@ -117,17 +128,52 @@ document.addEventListener('DOMContentLoaded',()=>{
 	  setHomeStat('sD','待读面',meta);
 	  setHomeStat('sA','—',meta);
 	  const statsBox=document.getElementById('stats');
-	  if(statsBox){
-	    statsBox.dataset.progressSource=meta.progressSource;
-	    statsBox.dataset.cumulativeSourceOfTruth=meta.cumulativeSourceOfTruth;
-	    statsBox.dataset.noMutationRead=meta.noMutationRead;
-	    statsBox.setAttribute('aria-label','累计统计等待服务端 noMutationRead 快照');
-	  }
-	}
+		  if(statsBox){
+		    statsBox.dataset.progressSource=meta.progressSource;
+		    statsBox.dataset.cumulativeSourceOfTruth=meta.cumulativeSourceOfTruth;
+		    statsBox.dataset.noMutationRead=meta.noMutationRead;
+		    statsBox.setAttribute('aria-label','累计统计等待服务端 noMutationRead 快照');
+		  }
+		  renderHomeServerHealthStatus();
+		}
 
-	async function loadHomeServerStats(u){
-	  setHomeStatsPending();
-	  try{
+		function renderHomeServerHealthStatus(){
+		  const el=document.getElementById('serverHealthLine');
+		  if(!el)return;
+		  const h=HOME_SERVER_HEALTH_STATE.snapshot;
+		  const p=HOME_SERVER_PROGRESS_STATE.snapshot;
+		  if(h&&h.claims){
+		    const lp=h.learningProgress||{};
+		    const pv=h.privateVideo||{};
+		    const pe=h.publicEntry||{};
+		    el.dataset.serverHealth='round402';
+		    el.dataset.noMutationRead=h.noMutationRead?'true':'false';
+		    el.dataset.cumulativeSourceOfTruth=h.cumulativeSourceOfTruth||'server-progress-snapshot';
+		    el.dataset.progressStoreMode=lp.storeMode||'';
+		    el.dataset.strictProgressWritesReady=h.claims.strictProgressWritesReady?'true':'false';
+		    el.dataset.privateVideoStorageReady=h.claims.privateVideoStorageReady?'true':'false';
+		    el.dataset.httpEntryReady=h.claims.httpEntryReady?'true':'false';
+		    const progressLabel=h.claims.strictProgressWritesReady?'D1/R2 strict':(h.claims.serverKvCumulativeFallback?'KV 服务端累计，D1/R2 strict 未绑定':'进度存储未就绪');
+		    const videoLabel=h.claims.privateVideoStorageReady?'私有视频 R2 就绪':'私有视频 R2 未就绪';
+		    const publicLabel=h.claims.httpEntryReady?'HTTP 入口已证':'HTTP 入口需外部复验';
+		    el.textContent='服务器状态：'+progressLabel+'；'+videoLabel+'；'+publicLabel+'。累计显示只认 /api/stats noMutationRead 快照，本机记录和最近事件窗不入累计。';
+		    el.title=[lp.boundary,pv.boundary,pe.lastKnownBlocker].filter(Boolean).join(' ');
+		    return;
+		  }
+		  if(p){
+		    el.dataset.serverHealth='progress-only';
+		    el.dataset.noMutationRead=p.noMutationRead?'true':'false';
+		    el.dataset.cumulativeSourceOfTruth=p.cumulativeSourceOfTruth||'server-progress-snapshot';
+		    el.textContent='服务器状态：已读取服务端累计快照；等待生产绑定健康检查。';
+		    return;
+		  }
+		  el.dataset.serverHealth='pending';
+		  el.textContent=HOME_SERVER_PROGRESS_STATE.status==='blocked'?'服务器状态：累计快照不可用，页面不使用本机数据冒充累计。':'服务器状态：正在读取 noMutationRead 服务端累计快照。';
+		}
+
+		async function loadHomeServerStats(u){
+		  setHomeStatsPending();
+		  try{
 	    const response=await fetch('/api/stats',{method:'GET',credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
 	    if(!response.ok){setHomeStatsBlocked();return false}
 	    const payload=await response.json().catch(()=>null);
@@ -137,9 +183,29 @@ document.addEventListener('DOMContentLoaded',()=>{
 	    return applyHomeServerStats(snapshot);
 	  }catch(_){
 	    setHomeStatsBlocked();
-	    return false;
-	  }
-	}
+		    return false;
+		  }
+		}
+
+		async function loadHomeServerHealth(){
+		  renderHomeServerHealthStatus();
+		  try{
+		    const response=await fetch('/_edge-server-health',{method:'GET',credentials:'same-origin',cache:'no-store',headers:{Accept:'application/json'}});
+		    if(!response.ok){renderHomeServerHealthStatus();return false}
+		    const payload=await response.json().catch(()=>null);
+		    if(!payload||payload.noMutationRead!==true){renderHomeServerHealthStatus();return false}
+		    HOME_SERVER_HEALTH_STATE.status='ready';
+		    HOME_SERVER_HEALTH_STATE.snapshot=payload;
+		    HOME_SERVER_HEALTH_STATE.syncedAt=payload.generatedAt||new Date().toISOString();
+		    renderHomeServerHealthStatus();
+		    return true;
+		  }catch(_){
+		    HOME_SERVER_HEALTH_STATE.status='blocked';
+		    HOME_SERVER_HEALTH_STATE.snapshot=null;
+		    renderHomeServerHealthStatus();
+		    return false;
+		  }
+		}
 
 	function ab(){
   const e=document.getElementById('authAlert');
@@ -248,9 +314,10 @@ function dash(u){
 	  if(accT){
 	    if(u.role==='teacher'){accT.hidden=false}
 	    else{accT.hidden=true}
-	  }
-	  loadHomeServerStats(u);
-	  setTimeout(()=>{if(window.FMArmMathJax)window.FMArmMathJax()},120);
+		  }
+		  loadHomeServerStats(u);
+		  loadHomeServerHealth();
+		  setTimeout(()=>{if(window.FMArmMathJax)window.FMArmMathJax()},120);
 	  loadUpd();
 	}
 
@@ -602,7 +669,7 @@ const SEARCH_IDX=[
 {t:'入口',n:'题库练习',u:'/modules/question-bank.html?from=home-search',d:'六章真题练习 · 分类题库 · 错题本与薄弱点提醒',k:'题库 练习 错题 题目 六章 真题'},
 {t:'入口',n:'181103 资料题库与练习入口',u:'/modules/question-bank.html?focus=181103-material-extracted#questionBanksList',d:'Round373：首页搜索 181103 可直接进入 522 张来源 HTML 卡，其中 448 道独立题可刷、74 条源文线索只展示；同时保留 38/38 HTML 资料总表和 68 个真题复核任务；用户搜“181103去哪了、181103那些资源去哪了、181103里面还有别的题目、资料题库”也直达这里。',k:'181103 181103资料 181103资料题库 181103去哪了 181103那些资源去哪了 181103资源看不见 181103资料去哪了 181103里面的题目 181103里面还有别的题目 181103资料内题 181103题库 资料题库 448可刷题 74源文线索 522来源卡 522资料内题 522个题 38/38 HTML 68真题复核 题库 练习 搜索入口'},
 {t:'入口',n:'181103 全资料 HTML 总表',u:'/resources/fluid-181103-html/index.html',d:'38/38 份 181103 资料已写成站内 HTML 正文；不走下载、viewer、raw 或原件壳；用户搜“181103资料在哪、181103不能下载、全部写成HTML”也直达这里。',k:'181103 181103资料在哪 181103去哪了 181103全资料 181103全部HTML 181103不能下载 不能下载 不许下载 不是viewer 不要viewer 全部写成HTML 全做成html格式 全资料 HTML 正文 38/38 站内阅读 资料总表 资料页'},
-{t:'入口',n:'历年真题新版入口',u:'/modules/real-exams-dynamic.html?edge_refresh=round401-progress-cumulative-server-hardening-20260619&from=round342-home-search',d:'2000-2024 历年真题；325 原文小题和 68 个已拆组题 section，适合从题库、练习和搜索直接进入；用户搜“历年真题新版、round264不是当前真题、旧round264、简答题五题、本来五题别合并”也直达这里。',k:'历年真题 真题新版 历年真题新版 round264不是当前真题 不是round264 旧round264 不要旧版真题 325原文小题 68组题 简答题五题 本来五题 别合并 防合并 小题拆分 题数应该更多 2000-2024 803流体力学 搜索入口'},
+{t:'入口',n:'历年真题新版入口',u:'/modules/real-exams-dynamic.html?edge_refresh=round402-server-health-production-boundary-20260619&from=round342-home-search',d:'2000-2024 历年真题；325 原文小题和 68 个已拆组题 section，适合从题库、练习和搜索直接进入；用户搜“历年真题新版、round264不是当前真题、旧round264、简答题五题、本来五题别合并”也直达这里。',k:'历年真题 真题新版 历年真题新版 round264不是当前真题 不是round264 旧round264 不要旧版真题 325原文小题 68组题 简答题五题 本来五题 别合并 防合并 小题拆分 题数应该更多 2000-2024 803流体力学 搜索入口'},
 {t:'入口',n:'错题订正入口',u:'/index-complete.html#tabsW',d:'首页错题本、收藏和笔记；先按错因订正，再回同类真题或公式条件继续练。',k:'错题 错题本 错题订正 错因回查 订正 收藏 笔记 搜索入口'},
 {t:'入口',n:'私有课程状态入口',u:'/resources.html?from=round342-home-search-private-course#sourceStatus',d:'查看账号可见的专属课/私有课程状态；生产私有视频恢复仍以 FM_PRIVATE_MEDIA R2 binding 为边界；用户搜“无法删除视频、不能管理视频、私有视频管理不对”也直达状态页。',k:'私有课程 私有课程状态 专属课 专属课程状态 私有视频 私有视频管理 私有视频管理不对 无法删除视频 不能删除视频 不能管理视频 删除视频 视频管理 课程状态 账号状态 FM_PRIVATE_MEDIA R2 blocker 搜索入口'},
 {t:'入口',n:'模拟章节题',u:'/modules/simulated-exams-dynamic.html?from=home-search',d:'72 道教材启发的模拟章节题；sourceKind=simulated，isRealExam=false，和正式真题隔离。',k:'模拟章节题 仿真题 mock 教材 吴望一 王洪伟 sourceKind simulated isRealExam false notRealExam 真题不混用'},
@@ -1456,12 +1523,12 @@ const PATH_NODES=[
 ];
 function pathMatchKeys(node){return (node.keys&&node.keys.length?node.keys:[node.k,node.n]).map(x=>String(x||'').toLowerCase())}
 function renderChapterPracticeLinks(nodes){
-  return '<div class="path-links" aria-label="六章全部真题练习入口与独立模拟章节题入口">'+nodes.map(n=>'<a href="'+esc(n.p||'/modules/real-exams-dynamic.html?edge_refresh=round401-progress-cumulative-server-hardening-20260619&from=round287-student-path')+'">'+esc(n.n)+'做全部真题练习</a><a href="'+esc(n.m||'/modules/simulated-exams-dynamic.html?from=student-path')+'">'+esc(n.n)+'模拟题（非真题）</a>').join('')+'<span class="path-note">模拟章节题来自教材主题启发，独立题包，不混入正式真题。</span></div>';
+  return '<div class="path-links" aria-label="六章全部真题练习入口与独立模拟章节题入口">'+nodes.map(n=>'<a href="'+esc(n.p||'/modules/real-exams-dynamic.html?edge_refresh=round402-server-health-production-boundary-20260619&from=round287-student-path')+'">'+esc(n.n)+'做全部真题练习</a><a href="'+esc(n.m||'/modules/simulated-exams-dynamic.html?from=student-path')+'">'+esc(n.n)+'模拟题（非真题）</a>').join('')+'<span class="path-note">模拟章节题来自教材主题启发，独立题包，不混入正式真题。</span></div>';
 }
 function renderPathNext(nodeStatus,doneCount,total){
   const box=$('#pathNext');if(!box)return;
   if(doneCount>=total){
-    box.innerHTML='<strong>六章主线已完成。</strong> 下一步进入 <a href="/modules/real-exams-dynamic.html?edge_refresh=round401-progress-cumulative-server-hardening-20260619&from=round287-student-path-complete">历年真题</a> 做一套限时回顾。'+renderChapterPracticeLinks(nodeStatus);
+    box.innerHTML='<strong>六章主线已完成。</strong> 下一步进入 <a href="/modules/real-exams-dynamic.html?edge_refresh=round402-server-health-production-boundary-20260619&from=round287-student-path-complete">历年真题</a> 做一套限时回顾。'+renderChapterPracticeLinks(nodeStatus);
     return;
   }
   const current=nodeStatus.find(n=>n.cur)||nodeStatus.find(n=>!n.done)||nodeStatus[0];
@@ -2078,12 +2145,13 @@ function loadJSON(k,f){try{const x=localStorage.getItem(k);if(!x)return f;const 
 const ALL_MODS=['fluid-statics','kinematics','dynamics','viscous','boundary','compress','potential','oceanography'];
 const MOD_NAMES={'fluid-statics':'流体静力学','kinematics':'运动学','dynamics':'动力学','viscous':'粘性流动','boundary':'边界层','compress':'可压缩流','potential':'势流','oceanography':'物理海洋学'};
 
-function calcProgress(){
-  try{
-    const u=uk();
-    const ses=loadJSON('fm_sessions',[]).filter(s=>s&&s.user===u);
-    const scs=loadJSON('fm_scores',[]).filter(s=>s&&s.user===u);
-    const visited=new Set();
+	function calcProgress(){
+	  try{
+	    const u=uk();
+	    const ses=loadJSON('fm_sessions',[]).filter(s=>s&&s.user===u);
+	    const scs=loadJSON('fm_scores',[]).filter(s=>s&&s.user===u);
+	    const serverProgress=window.FMServerProgress&&window.FMServerProgress.isReady&&window.FMServerProgress.isReady()?window.FMServerProgress.get():null;
+	    const visited=new Set();
     ses.forEach(s=>{
       (s.pages||[]).forEach(p=>{
         const path=(p.path||'').toLowerCase();
@@ -2097,10 +2165,19 @@ function calcProgress(){
       });
     });
     const pct=Math.round(visited.size/ALL_MODS.length*100);
-    const avg=scs.length?Math.round(scs.reduce((a,s)=>a+(s.score||0),0)/scs.length):null;
-    return {pct,visited:visited.size,total:ALL_MODS.length,quizzes:scs.length,avgScore:avg};
-  }catch(_){return {pct:0,visited:0,total:8,quizzes:0,avgScore:null}}
-}
+	    const serverAnswered=serverProgress?Number(serverProgress.answered||0):null;
+	    const serverAccuracy=serverProgress&&serverAnswered?Number(serverProgress.accuracy||0):null;
+	    return {
+	      pct,
+	      visited:visited.size,
+	      total:ALL_MODS.length,
+	      quizzes:serverProgress?serverAnswered:null,
+	      avgScore:serverProgress?serverAccuracy:null,
+	      localQuizDiagnostic:scs.length,
+	      serverTruth:!!serverProgress
+	    };
+	  }catch(_){return {pct:0,visited:0,total:8,quizzes:null,avgScore:null,localQuizDiagnostic:0,serverTruth:false}}
+	}
 
 function renderGauge(){
   try{
@@ -2111,8 +2188,8 @@ function renderGauge(){
     const fill=$('#gaugeFill');if(fill)fill.style.strokeDashoffset=offset;
     const pctEl=$('#gaugePct');if(pctEl)pctEl.innerHTML=p.pct+'<sup>%</sup>';
     const mods=$('#gMods');if(mods)mods.textContent=p.visited;
-    const qz=$('#gQz');if(qz)qz.textContent=p.quizzes;
-    const avg=$('#gAvg');if(avg)avg.textContent=p.avgScore!=null?p.avgScore:'—';
+	    const qz=$('#gQz');if(qz)qz.textContent=p.serverTruth?String(p.quizzes||0):'同步中';
+	    const avg=$('#gAvg');if(avg)avg.textContent=p.avgScore!=null?p.avgScore:'—';
     return p;
   }catch(_){return null}
 }
@@ -2139,11 +2216,11 @@ function renderFocus(){
       title='你有 '+wrongList.length+' 道错题等回顾';
       desc='间隔重练比直接做新题效率高 3 倍。先把错题清掉，再开新章节更高效。';
       cta='查看错题本';href='#tabsW';
-    }else if(p.quizzes===0){
-      title='做一次测验，校准学习节奏';
-      desc='你已经访问 '+p.visited+' 个模块。做一次测验能清晰看到自己掌握程度。';
-      cta='进入题库';href='/modules/question-bank.html?from=focus-card';
-    }else if(p.avgScore!=null&&p.avgScore<60){
+	    }else if(p.serverTruth&&p.quizzes===0){
+	      title='做一次测验，校准学习节奏';
+	      desc='你已经访问 '+p.visited+' 个模块。做一次测验能清晰看到自己掌握程度。';
+	      cta='进入题库';href='/modules/question-bank.html?from=focus-card';
+	    }else if(p.avgScore!=null&&p.avgScore<60){
       title='平均 '+p.avgScore+' 分 · 该回炉了';
       desc='当前测验平均分偏低。建议先复习薄弱环节，再做新题。';
       cta='查看错题';href='#tabsW';
@@ -2151,7 +2228,7 @@ function renderFocus(){
       const next=ALL_MODS.find(m=>!loadJSON('fm_sessions',[]).some(s=>(s.pages||[]).some(p=>(p.path||'').toLowerCase().includes(m))));
       const nm=MOD_NAMES[next]||'下一章节';
       title='继续学《'+nm+'》';
-      desc='你已学 '+p.visited+'/'+p.total+' 个模块，正确率 '+(p.avgScore||0)+' 分。保持节奏，下一章见。';
+	      desc='你已访问 '+p.visited+'/'+p.total+' 个模块；服务端累计正确率 '+(p.avgScore!=null?p.avgScore:'待同步')+'%。保持节奏，下一章见。';
       cta='进入'+nm;href='/modules/'+next+'-dynamic.html';
     }else{
       title='8 大模块全部访问 ✓';
@@ -2213,6 +2290,7 @@ function initV10(){
 }
 setTimeout(initV10,900);
 window.addEventListener('fm:activity',()=>{try{renderGauge();renderFocus()}catch(_){}});
+window.addEventListener('fm:server-progress-snapshot',()=>{try{renderGauge();renderFocus()}catch(_){}});
 setInterval(()=>{try{if(document.visibilityState==='visible'&&window.FMSecurity&&FMSecurity.isAuthenticated()){renderGauge();renderFocus()}}catch(_){}},120000);
 })();
 

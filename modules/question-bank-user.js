@@ -16,67 +16,69 @@ window.QuestionBankUser = (function() {
             correctAnswers: 0,
             streakDays: 0,
             lastStudyDate: null
-        }
-    };
-    
-    // 存储键名
-    const STORAGE_KEYS = {
-        USER_DATA: 'questionBankUserData',
-        FAVORITES: 'favoriteBanks',
+	        }
+	    };
+    let runtimeServerProgressStats = null;
+
+	    // 存储键名
+	    const STORAGE_KEYS = {
+	        USER_DATA: 'questionBankUserData',
+	        FAVORITES: 'favoriteBanks',
         WRONG_QUESTIONS: 'wrongQuestions',
         STUDY_HISTORY: 'studyHistory',
         PREFERENCES: 'userPreferences'
 	    };
-	    function progressSnapshotKey(username) {
-	        const safeUser = String(username || 'unknown')
-	            .normalize('NFKC')
-	            .trim()
-	            .replace(/\s+/g, '-')
-	            .replace(/[^a-z0-9_.:@-]/gi, '_')
-	            .slice(0, 120) || 'unknown';
-	        return 'fm_learning_progress_snapshot_v1:' + safeUser;
-	    }
-
-	    function currentProgressUser() {
-	        if (window.FMSecurity && typeof window.FMSecurity.getUser === 'function') {
-	            const guarded = window.FMSecurity.getUser();
-	            if (guarded && guarded.username) return String(guarded.username).trim();
+		    function currentProgressUser() {
+		        if (window.FMSecurity && typeof window.FMSecurity.getUser === 'function') {
+		            const guarded = window.FMSecurity.getUser();
+		            if (guarded && guarded.username) return String(guarded.username).trim();
 	        }
 	        try {
 	            const session = JSON.parse(localStorage.getItem('fm_session_v2') || localStorage.getItem('fm_auth_session_v2') || 'null');
 	            const user = session && session.payload && session.payload.user ? session.payload.user : (session && session.user ? session.user : null);
 	            if (user && user.username) return String(user.username).trim();
 	        } catch (_) {}
-	        return '';
-	    }
+		        return '';
+		    }
 
-	    function readServerProgressStats() {
+	    function normalizeServerProgressStats(payload) {
 	        try {
 	            const expectedUser = currentProgressUser();
-	            if (!expectedUser) return null;
-	            const raw = localStorage.getItem(progressSnapshotKey(expectedUser));
-	            const snapshot = raw ? JSON.parse(raw) : null;
-	            const stats = snapshot && snapshot.stats ? snapshot.stats : null;
-	            if (!stats) return null;
-	            const snapshotUser = String(snapshot.user || (snapshot.progress && snapshot.progress.user) || '').trim();
-	            if (snapshotUser && snapshotUser !== expectedUser) return null;
-	            const source = String(snapshot.source || '').trim() || 'server-learning-progress-snapshot';
-	            const cumulativeSourceOfTruth = String(snapshot.cumulativeSourceOfTruth || '').trim();
-	            const noMutationRead = snapshot.noMutationRead === true && cumulativeSourceOfTruth === 'server-progress-snapshot';
+	            const stats = payload && (payload.stats || (payload.progress && payload.progress.totals));
+	            if (!payload || !stats) return null;
+	            const snapshotUser = String(payload.user || (payload.progress && payload.progress.user) || expectedUser || '').trim();
+	            if (expectedUser && snapshotUser && snapshotUser !== expectedUser) return null;
+	            const source = String(payload.source || payload.progressSource || '').trim()
+	                || (payload.storeMode === 'd1'
+	                    ? 'server-d1-learning-progress'
+	                    : payload.storeMode === 'r2-progress' || payload.storeMode === 'r2'
+	                        ? 'server-r2-learning-progress'
+	                        : payload.storeMode === 'kv-single-write-fallback' || payload.storeMode === 'kv'
+	                            ? 'server-kv-learning-progress'
+	                            : 'server-learning-progress-unavailable');
+	            const cumulativeSourceOfTruth = String(payload.cumulativeSourceOfTruth || '').trim();
+	            const noMutationRead = payload.noMutationRead === true && cumulativeSourceOfTruth === 'server-progress-snapshot';
+	            const serverManaged = /^(server-d1-learning-progress|server-r2-learning-progress|server-kv-learning-progress)$/.test(source) && noMutationRead;
+	            if (!serverManaged) return null;
 	            return {
 	                totalStudyTime: Number(stats.studyTimeSeconds || stats.totalStudyTime || 0),
 	                totalQuestions: Number(stats.answered || stats.totalQuestions || 0),
-                correctAnswers: Number(stats.correct || stats.correctAnswers || 0),
-                lastStudyDate: stats.lastAnsweredAt || stats.lastSessionAt || snapshot.syncedAt || null,
+	                correctAnswers: Number(stats.correct || stats.correctAnswers || 0),
+	                lastStudyDate: stats.lastAnsweredAt || stats.lastSessionAt || payload.syncedAt || new Date().toISOString(),
 	                source,
 	                cumulativeSourceOfTruth,
 	                noMutationRead,
-	                syncedAt: snapshot.syncedAt || null,
-	                serverManaged: /^(server-d1-learning-progress|server-r2-learning-progress|server-kv-learning-progress)$/.test(source) && noMutationRead
+	                syncedAt: payload.syncedAt || new Date().toISOString(),
+	                serverManaged: true,
+	                runtimeFresh: true
 	            };
 	        } catch (_) {
 	            return null;
-        }
+	        }
+	    }
+
+	    function readServerProgressStats() {
+	        return runtimeServerProgressStats && runtimeServerProgressStats.runtimeFresh === true ? runtimeServerProgressStats : null;
 	    }
 
     function localReferenceStats(stats) {
@@ -139,8 +141,8 @@ window.QuestionBankUser = (function() {
         },
         
         // 加载用户数据
-        loadUserData: function() {
-            try {
+	        loadUserData: function() {
+	            try {
                 // 加载主要用户数据
                 const storedData = localStorage.getItem(STORAGE_KEYS.USER_DATA);
 	                if (storedData) {
@@ -176,10 +178,33 @@ window.QuestionBankUser = (function() {
                 
                 console.log('用户数据加载完成:', userData);
             } catch (error) {
-                console.error('加载用户数据失败:', error);
-                this.resetUserData();
-            }
-        },
+	                console.error('加载用户数据失败:', error);
+	                this.resetUserData();
+	            }
+	        },
+
+	        acceptServerProgressSnapshot: function(payload) {
+	            const serverStats = normalizeServerProgressStats(payload);
+	            if (!serverStats) return false;
+	            runtimeServerProgressStats = serverStats;
+	            userData.stats = {
+	                ...localReferenceStats(userData.stats),
+	                totalStudyTime: serverStats.totalStudyTime,
+	                totalQuestions: serverStats.totalQuestions,
+	                correctAnswers: serverStats.correctAnswers,
+	                lastStudyDate: serverStats.lastStudyDate,
+	                source: serverStats.source,
+	                cumulativeSourceOfTruth: serverStats.cumulativeSourceOfTruth,
+	                noMutationRead: true,
+	                serverManaged: true,
+	                localOnly: false,
+	                serverProgressSource: serverStats.source,
+	                serverProgressSyncedAt: serverStats.syncedAt,
+	                localPendingQuestions: 0,
+	                localPendingStudyTime: 0
+	            };
+	            return true;
+	        },
         
         // 保存用户数据
         saveUserData: function() {
