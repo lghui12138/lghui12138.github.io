@@ -9,7 +9,7 @@ Round319 把资源页收成一个学生可执行链路：181103 资料必须是�
 - 181103 HTML 资料页：38
 - 站内 HTML 深度通过：38
 - Round319 资源页章节练习入口：1
-- Round319 真题入口：2
+- Round319 真题入口：1
 - 真题题数基线：325/68/217
 - 章节练习覆盖：6 个章节，325 道原题
 - 禁止 href：0
@@ -20,7 +20,7 @@ Round319 把资源页收成一个学生可执行链路：181103 资料必须是�
 | 检查 | 状态 | 细节 |
 |---|---|---|
 | 181103-all-materials-are-in-site-html | PASS | {"materialPageCount":38,"indexMaterialCards":38,"liveHtmlPassCount":38,"liveHtmlContentMapCount":38,"liveHtmlContentStartIdCount":38} |
-| round319-visible-practice-chain | PASS | {"practiceHrefs":["/modules/practice-dynamic.html?type=real&chapter=1&mode=normal&from=round319-resource-route"],"realExamHrefs":["/modules/real-exams-dynamic.html?from=round319-resources-181103-return-path","/modules/real-exams-dynamic.html?chapter=1&from=round319-resource-true-exam"],"runtimeChapterCount":6,"hasRuntimePracticeTemplate":true,"hasRuntimeRealExamTemplate":true} |
+| round319-visible-practice-chain | PASS | {"practiceHrefs":["/modules/practice-dynamic.html?type=real&chapter=1&mode=normal&from=resource-route"],"realExamHrefs":["/modules/real-exams-dynamic.html?chapter=1&from=resource-true-exam"],"runtimeChapterCount":6,"hasRuntimePracticeTemplate":true,"hasRuntimeRealExamTemplate":true} |
 | real-exam-no-merge-counts-preserved | PASS | {"sourceAtomicQuestionCount":325,"groupedSectionCount":68,"groupedWebQuestionIdCount":217,"chapterShortcutCount":6,"shortcutPrimaryQuestionCount":325,"chapterPracticeQuestionCount":302} |
 | 181103-bridge-still-reaches-real-exam | PASS | {"bridgeMaterialPagesWithRealExamBridge":38,"bridgeRouteFamilyTotal":30,"bridgeChapterPracticeHrefCount":6} |
 | no-viewer-download-raw-binary-hrefs | PASS | {"forbiddenHrefCount":0,"forbiddenWrapperTokenCount":0,"sample":[],"tokenSample":[]} |

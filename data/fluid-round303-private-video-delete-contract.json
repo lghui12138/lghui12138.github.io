@@ -2,6 +2,35 @@
   "version": "round303-private-video-delete-contract-20260614",
   "generatedAt": "2026-06-18T04:36:00.803Z",
   "targetRound": 303,
+  "round399WorkerEUpgrade": {
+    "status": "visible-action-state-upgraded",
+    "updatedAt": "2026-06-19T08:39:18+08:00",
+    "worker": "Round399 Worker E",
+    "currentUiSurface": "functions/_middleware.js renderAdmin embedded admin UI plus root teacher-panel.html resources/private-videos management view; modules/teacher-panel.html is a teacher-auth guarded canonical redirect to /teacher-panel.",
+    "actionStateTaxonomy": {
+      "readyWithoutFmPrivateMedia": [
+        "list",
+        "same-access-save",
+        "delete-dry-run"
+      ],
+      "limitedWithoutFmPrivateMedia": [
+        "delete-course"
+      ],
+      "blockedWithoutFmPrivateMedia": [
+        "upload-publish",
+        "change-access",
+        "archive-course"
+      ]
+    },
+    "guards": {
+      "deleteDryRunDeletesData": false,
+      "deleteCourseRequiresDryRun": true,
+      "deleteCourseRequiresTypedCourseId": true,
+      "deleteCourseProductionClaimAllowedWithoutFmPrivateMedia": false,
+      "fullStorageCleanupClaimAllowedWithoutFmPrivateMedia": false,
+      "realDeleteAttemptedByWorkerE": false
+    }
+  },
   "pass": true,
   "productionRecovery": false,
   "productionRecoveryAllowed": false,
@@ -37,8 +66,10 @@
     "sourceChecksTotal": 18,
     "sourceChecksPassed": 18,
     "mockGateExitCode": 0,
-    "moduleTeacherPanelCurrentPrivateVideoSurface": true,
-    "currentUiSurface": "functions/_middleware.js renderAdmin embedded admin UI plus modules/teacher-panel.html resources/private-videos management view",
+    "moduleTeacherPanelCurrentPrivateVideoSurface": false,
+    "rootTeacherPanelCurrentPrivateVideoSurface": true,
+    "moduleTeacherPanelCanonicalRedirectOnly": true,
+    "currentUiSurface": "functions/_middleware.js renderAdmin embedded admin UI plus root teacher-panel.html resources/private-videos management view; modules/teacher-panel.html redirects to /teacher-panel",
     "blockersPreserved": [
       "real-account-browser-qa",
       "FM_PRIVATE_MEDIA-R2-production-binding"
@@ -60,8 +91,8 @@
       "productionClaimAllowed": false
     },
     {
-      "id": "module-teacher-boundary",
-      "label": "modules/teacher-panel.html/js private-video management boundary",
+      "id": "root-teacher-boundary",
+      "label": "root teacher-panel.html private-video management boundary; modules/teacher-panel.html is canonical redirect only",
       "state": "ready-current-management-surface",
       "ready": true,
       "productionClaimAllowed": false
@@ -910,9 +941,9 @@
       "failedOrder": []
     },
     {
-      "id": "module-teacher-boundary",
-      "label": "modules/teacher-panel.html exposes the current private-video management surface with the same blocker-safe delete contract",
-      "target": "modules/teacher-panel.html",
+      "id": "root-teacher-boundary",
+      "label": "root teacher-panel.html exposes the current private-video management surface with the same blocker-safe delete contract; modules/teacher-panel.html redirects to /teacher-panel",
+      "target": "teacher-panel.html",
       "surface": "ui",
       "markers": [
         {
@@ -1152,7 +1183,7 @@
             "archive",
             "delete"
           ],
-          "teacherModuleRoute": "modules/teacher-panel.html includes the private-video management view, 401 safety, disabled reasons, dry-run delete, and typed confirmCourseId contract",
+          "teacherModuleRoute": "modules/teacher-panel.html is a teacher-auth guarded canonical redirect to /teacher-panel; private-video management UI lives only on the root teacher panel to avoid stale copies.",
           "standalonePage": "private-video.html shows management actions, disabled reasons, confirmCourseId delete contract, and production blockers without real credentials",
           "readinessStates": [
             "ready",
@@ -1233,7 +1264,7 @@
   ],
   "boundary": [
     "Local UI/API coverage is ready only if all six requested actions have backend, embedded admin UI, and existing no-credential mock coverage.",
-    "The current private-video management UI proof covers both the embedded admin UI in functions/_middleware.js and the modules/teacher-panel.html resources/private-videos management view.",
+    "The current private-video management UI proof covers the embedded admin UI in functions/_middleware.js and the root teacher-panel.html resources/private-videos management view; modules/teacher-panel.html is canonical redirect only.",
     "Delete remains destructive-only-after dry-run plus exact course-ID confirmation; Round303 does not perform real delete.",
     "Production recovery remains false until real-account browser QA and FM_PRIVATE_MEDIA R2 production binding are both proven."
   ]

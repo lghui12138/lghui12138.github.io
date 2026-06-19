@@ -590,6 +590,7 @@ function htmlFor(route) {
     </div>`
     : `<p><a id="targetLink" href="${target}">立即打开</a></p>`;
   const routeSpecificMarkup = routeSpecificMarkupFor(route);
+  const routeSpecificSection = routeSpecificMarkup ? `\n    ${routeSpecificMarkup}` : '';
   const stableScript = stableFallback
     ? "\n    const stableUrl = new URL('https://lghui.top/index-complete.html');\n    const stableParams = new URLSearchParams(location.search);\n    stableParams.set('full', '1');\n    stableParams.set('edge_refresh', EDGE_REFRESH);\n    stableUrl.search = stableParams.toString();\n    stableUrl.hash = location.hash;\n    document.getElementById('stableLink').href = stableUrl.toString();"
     : '';
@@ -621,7 +622,7 @@ function htmlFor(route) {
     <p>181103 资料当前已写成 HTML 正文：38 份资料、30 条学习路线、68 个真题复核任务和 522 张资料来源卡；381 道独立题进入刷题，141 条参考答案页、父卡、源文/答案续页/讲义正文只作线索展示；公开壳不提供原始文件下载。</p>
     <p>lghui.top 只做公开入口，不伪造 auth；学习进度完整持久化仍要求 FM_PROGRESS_DB 或 FM_PROGRESS_R2，私有视频生产恢复仍要求 FM_PRIVATE_MEDIA R2。</p>
     <p><code>${route}</code></p>
-    ${routeSpecificMarkup}
+${routeSpecificSection}
     ${actionMarkup}
   </main>
   <script>

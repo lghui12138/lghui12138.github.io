@@ -40,7 +40,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round398-server-progress-no-drift-accounting-20260618';
+    const practiceModuleVersion = 'round398-server-progress-no-drift-accounting-20260618-round399-practice-answer-ui-20260619';
 
     function removeFailedPracticeScripts() {
         document.querySelectorAll('script[data-question-bank-practice-module],script[src*="question-bank-practice.js"]').forEach(script => {
@@ -126,7 +126,7 @@ window.QuestionBankData = (function() {
         try {
             const practice = await ensurePracticeModule();
             if (practice && typeof practice.startPractice === 'function') {
-                practice.startPractice(fullBank);
+                practice.startPractice(normalize181103PracticeBank(fullBank));
                 return true;
             }
             notify('练习模块暂不可用', 'warning');
@@ -170,6 +170,147 @@ window.QuestionBankData = (function() {
             '资料题',
             '答案线索'
         ])];
+    }
+
+    function escapeHtml(value) {
+        return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[ch]);
+    }
+
+    function stripHtmlText(value) {
+        return String(value == null ? '' : value)
+            .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+            .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+            .replace(/<br\s*\/?>/gi, '\n')
+            .replace(/<\/(?:p|div|li|tr|section|article|h[1-6])>/gi, '\n')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/&lt;/gi, '<')
+            .replace(/&gt;/gi, '>')
+            .replace(/&amp;/gi, '&')
+            .replace(/&quot;/gi, '"')
+            .replace(/&#39;/g, "'")
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function firstText(values) {
+        for (const value of values) {
+            const text = stripHtmlText(value);
+            if (text) return text;
+        }
+        return '';
+    }
+
+    function is181103MaterialQuestion(question) {
+        return Boolean(question && question.extractedFromMaterial === true
+            && /\/resources\/fluid-181103-html\/materials\//.test(String(question.sourceHtmlUrl || question.htmlQuestionSourceUrl || '')));
+    }
+
+    function sourceImageFromQuestion(question) {
+        const explicit = String(question && (question.sourcePageImageUrl || question.sourcePageImageEvidenceUrl || question.practiceSourceImageUrl) || '').trim();
+        if (explicit) return explicit;
+        const sourceHtmlUrl = String(question && (question.sourceHtmlUrl || question.htmlQuestionSourceUrl || '') || '').trim();
+        const match = sourceHtmlUrl.match(/^(.*\/materials\/[^/]+\/)index\.html#page-(\d{1,4})$/);
+        return match ? `${match[1]}pages${match[2].padStart(3, '0')}.jpg` : '';
+    }
+
+    function hasReviewableAnswer(question) {
+        return firstText([
+            question && question.answerHtml,
+            question && question.referenceAnswerHtml,
+            question && question.sampleAnswerHtml,
+            question && question.referenceAnswer,
+            question && question.sampleAnswer,
+            question && question.answer,
+            question && question.correct
+        ]).length > 0;
+    }
+
+    function normalize181103AnswerUiQuestion(question) {
+        if (!is181103MaterialQuestion(question)) return question;
+        const sourceHtmlUrl = String(question.sourceHtmlUrl || question.htmlQuestionSourceUrl || question.htmlQuestionCardUrl || '').trim();
+        const sourceImageUrl = sourceImageFromQuestion(question);
+        const answerText = firstText([
+            question.answerHtml,
+            question.referenceAnswerHtml,
+            question.sampleAnswerHtml,
+            question.referenceAnswer,
+            question.sampleAnswer,
+            question.answer,
+            question.correct
+        ]);
+        const sourceLine = sourceHtmlUrl ? `来源 HTML：${sourceHtmlUrl}` : '来源 HTML：待补充';
+        const imageLine = sourceImageUrl ? `页图证据：${sourceImageUrl}` : '页图证据：待补充';
+        const fallbackAnswer = [
+            '参考答案待复核：这道 181103 资料题暂未整理出可靠答案文本，不能用空白或旧题库答案替代。',
+            sourceLine,
+            imageLine
+        ].join('\n');
+        const explanationText = firstText([
+            question.explanationHtml,
+            question.explanation,
+            question.solutionHtml,
+            question.solution,
+            question.analysis
+        ]);
+        let explanation = explanationText || '解析思路待复核：请先打开来源 HTML 核对题面、公式和上下文，再补正式解析。';
+        if (sourceHtmlUrl && !explanation.includes(sourceHtmlUrl)) explanation += `\n${sourceLine}`;
+        if (sourceImageUrl && !explanation.includes(sourceImageUrl)) explanation += `\n${imageLine}`;
+        const next = {
+            ...question,
+            answer: answerText || fallbackAnswer,
+            referenceAnswer: question.referenceAnswer || question.sampleAnswer || question.answer || answerText || fallbackAnswer,
+            explanation,
+            sourceHtmlUrl,
+            sourcePageImageUrl: sourceImageUrl || question.sourcePageImageUrl || question.sourcePageImageEvidenceUrl || '',
+            answerEvidenceHtmlUrl: sourceHtmlUrl,
+            answerEvidencePageImageUrl: sourceImageUrl,
+            answerUiStatus: answerText ? 'reference-answer-ready' : 'reference-answer-needs-review',
+            round399AnswerUiReady: Boolean(answerText && explanation && sourceHtmlUrl && sourceImageUrl),
+            round399AnswerUiFallbackHonest: !answerText
+        };
+        if (!answerText && !firstText([question.answerHtml, question.referenceAnswerHtml, question.sampleAnswerHtml])) {
+            next.referenceAnswerHtml = `<p>${escapeHtml(fallbackAnswer).replace(/\n/g, '<br>')}</p>`;
+        }
+        return next;
+    }
+
+    function normalize181103PracticeBank(fullBank) {
+        if (!fullBank || typeof fullBank !== 'object') return fullBank;
+        const is181103Bank = fullBank.id === '181103-material-extracted'
+            || fullBank.filename === '181103-material-extracted.json'
+            || fullBank.file === '181103-material-extracted.json';
+        if (!is181103Bank || !Array.isArray(fullBank.questions)) return fullBank;
+        return {
+            ...fullBank,
+            questions: fullBank.questions.map(normalize181103AnswerUiQuestion),
+            round399PracticeAnswerUi: true
+        };
+    }
+
+    function build181103AnswerUiLedger(questions, practiceQuestions) {
+        const rows = Array.isArray(questions) ? questions.filter(is181103MaterialQuestion) : [];
+        const practiceRows = Array.isArray(practiceQuestions) ? practiceQuestions.filter(is181103MaterialQuestion) : [];
+        const readyRows = practiceRows.filter(row => {
+            const normalized = normalize181103AnswerUiQuestion(row);
+            return normalized.round399AnswerUiReady === true;
+        });
+        return {
+            total: rows.length,
+            practice: practiceRows.length,
+            ready: readyRows.length,
+            withAnswer: practiceRows.filter(hasReviewableAnswer).length,
+            withExplanation: practiceRows.filter(row => firstText([row.explanationHtml, row.explanation, row.solutionHtml, row.solution, row.analysis])).length,
+            withSourceHtml: practiceRows.filter(row => String(row.sourceHtmlUrl || row.htmlQuestionSourceUrl || '').trim()).length,
+            withPageImage: practiceRows.filter(row => sourceImageFromQuestion(row)).length,
+            fallbackReview: practiceRows.filter(row => !hasReviewableAnswer(row)).length
+        };
     }
 
     function normalizeQuestionBankEntry(bank = {}) {
@@ -1335,6 +1476,9 @@ window.QuestionBankData = (function() {
                 const htmlQuestionCount = isMaterial181103
                     ? questions.filter(q => q && (q.questionHtml || q.promptHtml)).length
                     : 0;
+                const answerUiLedger = isMaterial181103
+                    ? build181103AnswerUiLedger(questions, defaultPracticeQuestions)
+                    : null;
                 const highConfidenceCount = isMaterial181103
                     ? questions.filter(q => q && q.questionTextConfidence === 'high').length
                     : 0;
@@ -1389,6 +1533,9 @@ window.QuestionBankData = (function() {
                     ${isMaterial181103 ? `
                     <div data-181103-practice-quality-panel="1" style="margin:0 0 18px 0;padding:12px 14px;border:1px solid #fde68a;background:#fffbeb;color:#78350f;border-radius:10px;line-height:1.55;">
                         Round373：181103 资料内 ${questions.length} 张来源卡已生成 ${htmlQuestionCount} 条 HTML 题面；${defaultPracticeQuestions.length} 道独立题进入刷题，${sourceContentCardCount} 张源文/答案续页/讲义正文只作线索展示；无 HTML 题面占位 ${placeholderCount} 题。
+                        <div data-round399-181103-answer-ui-ledger="1" role="status" aria-live="polite">
+                            Round399：可刷题 ${answerUiLedger.ready}/${answerUiLedger.practice} 题具备参考答案、解析思路、来源 HTML 和页图证据；待复核提示 ${answerUiLedger.fallbackReview} 题，缺答案时显示诚实提示而不是空白。
+                        </div>
                     </div>` : ''}
 
                     <div style="margin-bottom: 20px;">
@@ -1629,10 +1776,10 @@ window.QuestionBankData = (function() {
                 // 处理不同格式的数据
                 if (Array.isArray(data)) {
                     console.log(`返回数组数据，长度: ${data.length}`);
-                    return data;
+                    return isMaterial181103Bank ? data.map(normalize181103AnswerUiQuestion) : data;
                 } else if (data.questions && Array.isArray(data.questions)) {
                     console.log(`返回questions数组，长度: ${data.questions.length}`);
-                    return data.questions;
+                    return isMaterial181103Bank ? data.questions.map(normalize181103AnswerUiQuestion) : data.questions;
                 } else {
                     console.warn('题库数据格式未知:', data);
                     console.warn('数据键:', Object.keys(data || {}));

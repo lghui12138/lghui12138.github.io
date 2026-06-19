@@ -372,6 +372,30 @@ window.QuestionBankPractice = (function() {
             && /\/resources\/fluid-181103-html\/materials\//.test(String(question.sourceHtmlUrl || question.htmlQuestionSourceUrl || '')));
     }
 
+    function answerExperienceStatusStrip(question, answerHtml, options = {}) {
+        const material181103 = isMaterial181103Question(question);
+        if (!material181103) return '';
+        const compact = Boolean(options.compact);
+        const sourceHref = String(question && (question.sourceHtmlUrl || question.htmlQuestionSourceUrl || question.htmlQuestionCardUrl || '') || '').trim();
+        const sourceImage = sourceImageFromQuestion(question);
+        const explanationHtml = getExplanationHtml(question);
+        const answerText = stripInlineHtml(answerHtml || question?.answer || question?.referenceAnswer || question?.sampleAnswer || '');
+        const hasFormula = /\\\(|\\\[|\$[^$\n]+\$|\\(?:frac|partial|nabla|rho|mu|vec|sqrt|theta|varphi|omega|psi|phi)\b/.test(String(answerHtml || ''));
+        const labels = [
+            answerText.length >= 90 ? '参考答案可读' : '参考答案待补强',
+            explanationHtml ? '解析思路已同步' : '解析思路待补',
+            sourceHref ? '来源 HTML 可核对' : '来源 HTML 待补',
+            sourceImage ? '页图证据可打开' : '页图证据待补',
+            hasFormula ? '公式排队渲染' : '无复杂公式',
+            '非原卷逐字答案'
+        ];
+        return `
+            <div class="reference-answer-status-strip${compact ? ' is-compact' : ''}" data-round399-reference-answer-status="1" data-round399-181103-answer-experience="1" role="list" aria-label="181103 参考答案状态">
+                ${labels.map(label => `<span role="listitem">${escapeHtml(label)}</span>`).join('')}
+            </div>
+        `;
+    }
+
     function referenceAnswerBlock(question, options = {}) {
         const heading = options.heading || '参考答案';
         const compact = Boolean(options.compact);
@@ -385,15 +409,17 @@ window.QuestionBankPractice = (function() {
         const preview = answerPreviewText(answerHtml, question && (question.answer || question.referenceAnswer || question.sampleAnswer || ''));
         const sourceHref = escapeHtml(question && (question.sourceHtmlUrl || question.htmlQuestionSourceUrl || question.htmlQuestionCardUrl || ''));
         const evidenceHtml = material181103 ? sourceEvidenceBlock(question, { compact }) : '';
+        const statusStrip = answerExperienceStatusStrip(question, answerHtml, { compact });
         const sourceHint = material181103
             ? `<footer class="reference-answer-source-note" data-round374-181103-answer-source-note="1" role="note"><strong>答案边界</strong><span>本答案为站内整理参考答案；来源 HTML/页图只用于逐题核对题面、公式和资料语境。</span>${sourceHref ? ` <a href="${sourceHref}" target="_blank" rel="noopener">打开来源核对</a>` : ''}</footer>`
             : '';
         return `
-            <section class="reference-answer-block${compact ? ' is-compact' : ''}" data-round374-reference-answer="1" data-round374-181103-reference-answer="${material181103 ? '1' : '0'}" data-round394="reference-answer-visible" data-reference-answer-visible="1" data-round394-reference-answer-visible="1" data-round394-reference-answer-layer="1" data-reference-answer-source="${hasHtml ? 'answerHtml' : 'textFallback'}" data-round392-answer-format="${answerFormat}">
+            <section class="reference-answer-block${compact ? ' is-compact' : ''}" data-round374-reference-answer="1" data-round374-181103-reference-answer="${material181103 ? '1' : '0'}" data-round394="reference-answer-visible" data-reference-answer-visible="1" data-round394-reference-answer-visible="1" data-round394-reference-answer-layer="1" data-round399-reference-answer-experience="1" data-reference-answer-source="${hasHtml ? 'answerHtml' : 'textFallback'}" data-round392-answer-format="${answerFormat}">
                 <div class="reference-answer-head">
                     <strong>${escapeHtml(heading)}</strong>
                     <span class="reference-answer-badge">${answerBadge}</span>
                 </div>
+                ${statusStrip}
                 <details class="reference-answer-details" open data-round394-answer-default-open="1" data-round394-reference-answer-visible="1" data-reference-answer-visible="1">
                     <summary>
                         <span>参考答案（默认展开，可收起）</span>
@@ -1712,6 +1738,53 @@ window.QuestionBankPractice = (function() {
 	                        border-radius: 999px;
 	                        background: #0d9488;
 	                        box-shadow: 0 0 0 4px rgba(20,184,166,0.14);
+	                    }
+
+	                    .reference-answer-status-strip {
+	                        display: flex;
+	                        flex-wrap: wrap;
+	                        gap: 8px;
+	                        margin: 12px 0 14px;
+	                        padding: 10px 12px;
+	                        border-radius: 14px;
+	                        border: 1px solid rgba(14,165,233,0.24);
+	                        background: #f0f9ff;
+	                        color: #075985;
+	                    }
+
+	                    .reference-answer-status-strip span {
+	                        min-height: 32px;
+	                        display: inline-flex;
+	                        align-items: center;
+	                        padding: 5px 9px;
+	                        border-radius: 999px;
+	                        background: #fff;
+	                        border: 1px solid rgba(14,165,233,0.22);
+	                        font-size: 13px;
+	                        font-weight: 800;
+	                        line-height: 1.35;
+	                        overflow-wrap: anywhere;
+	                    }
+
+	                    .reference-answer-status-strip.is-compact {
+	                        margin-top: 8px;
+	                        padding: 8px;
+	                    }
+
+	                    @media (max-width: 768px) {
+	                        .reference-answer-status-strip {
+	                            display: grid;
+	                            grid-template-columns: 1fr 1fr;
+	                            gap: 6px;
+	                        }
+
+	                        .reference-answer-status-strip span {
+	                            min-width: 0;
+	                            border-radius: 12px;
+	                            justify-content: center;
+	                            text-align: center;
+	                            font-size: 12px;
+	                        }
 	                    }
 
 	                    .answer-status[data-answer-status-tone="muted"] {

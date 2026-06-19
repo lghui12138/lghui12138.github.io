@@ -21,7 +21,7 @@
     "requireMobilePerformanceBudgetCheck": true,
     "forbidClaimingRealQaWithoutCredentials": true,
     "currentVersion": "round398-server-progress-no-drift-accounting-20260618",
-    "previousVersion": "round398-server-progress-no-drift-accounting-20260618",
+    "previousVersion": "round397-server-kv-progress-cumulative-hardening-20260618",
     "lastUpdated": "2026-06-19T06:23:00+08:00",
     "requireNoFakeAccountQa": true,
     "requirePrivateMediaR2": true,
@@ -212,6 +212,33 @@
       "command": "node tools/check-round398-progress-event-idempotency-contract.mjs --json",
       "evidence": "tools/check-round398-progress-event-idempotency-contract.mjs, js/fluid-home-complete.js, functions/_middleware.js",
       "summary": "Home cumulative cards, radar, achievements, practice events, teacher summaries, and real-account read-only verification use server-progress-snapshot; localStorage/audit windows remain non-cumulative."
+    },
+    "round399WorkerFReleaseGates": {
+      "required": true,
+      "version": "round399-worker-f-release-gates-20260619",
+      "runtimeVersion": "round398-server-progress-no-drift-accounting-20260618",
+      "worker": "F",
+      "status": "gate-recorded-for-main-thread-integration",
+      "evidence": "output/qa/round399-worker-f-release-gates.json",
+      "gateIds": [
+        "181103-answer-stack",
+        "progress-no-drift",
+        "private-video-status",
+        "source-home-entry",
+        "public-shell-entry",
+        "anonymous-public-proof",
+        "old-round-label-risk"
+      ],
+      "commands": [
+        "node tests/edge-fluid-upgrade-check.js",
+        "node tools/check-round388-181103-answer-release-gate.mjs --json",
+        "node tools/check-round396-181103-live-html-material-budget.mjs --json",
+        "node tools/check-round396-private-video-action-readiness.mjs --json",
+        "node tools/check-round398-progress-event-idempotency-contract.mjs --json",
+        "node tools/monitor-fluid-public-release.mjs --json --expected-version round398-server-progress-no-drift-accounting-20260618",
+        "node tools/verify-fluid-release-gate.mjs --expected-version round398-server-progress-no-drift-accounting-20260618"
+      ],
+      "summary": "Round399 Worker F release-gate layer requires 181103 answer proof, no-drift progress proof, private-video ready/limited/blocked boundary, source/public-shell entry proof, anonymous public monitor proof, and old-round-label risk tracking without claiming a new deployed runtime."
     }
   },
   "lanes": [
@@ -3001,7 +3028,7 @@
       "integratedVersion": "round396-public-shell-release-gate-20260618",
       "title": "Round396 public shell release gate and teacher-monitor cumulative truth",
       "entryCriteria": "Round395 blocks fallback progress writes, but teacher monitoring and public shell release authorities must no longer surface localStorage or stale Round395 as current truth.",
-      "exitCriteria": "Teacher monitor cumulative duration and quiz counts are server-summary first; localStorage fallback is sanitized and labeled non-cumulative; public shell/source release gates aligned to Round396 before Round398 superseded it.",
+      "exitCriteria": "Teacher monitor cumulative duration and quiz counts are server-summary first; localStorage fallback is sanitized and labeled non-cumulative; public shell/source release gates aligned to Round396 before Round397 superseded it.",
       "gate": "node tests/edge-fluid-upgrade-check.js && node tools/check-round396-progress-local-analytics-boundary.mjs --json && node tools/check-round396-release-readiness.mjs --assume-code-gate-change --require-ready --json && node tools/monitor-fluid-public-release.mjs --json --expected-version round398-server-progress-no-drift-accounting-20260618",
       "artifacts": [
         "functions/_middleware.js",
@@ -3012,7 +3039,7 @@
         "tools/check-round396-progress-local-analytics-boundary.mjs",
         "tools/check-round396-release-readiness.mjs"
       ],
-      "notes": "localStorage-offline-reference is never cumulative truth; server-progress-snapshot and progress-write-confirmation remain separated; Round398 supersedes the older strict-block stance by allowing Cloudflare KV as a server cumulative layer while still blocking D1/R2 full-production claims.",
+      "notes": "localStorage-offline-reference is never cumulative truth; server-progress-snapshot and progress-write-confirmation remain separated; Round397 supersedes the older strict-block stance by allowing Cloudflare KV as a server cumulative layer while still blocking D1/R2 full-production claims.",
       "lane": "server-reliability",
       "focus": "public-shell-release-progress-monitor-boundary",
       "acceptance": [
@@ -3028,13 +3055,13 @@
       "id": "round397-server-kv-progress-cumulative-hardening",
       "status": "done",
       "round": 397,
-      "version": "round398-server-progress-no-drift-accounting-20260618",
+      "version": "round397-server-kv-progress-cumulative-hardening-20260618",
       "previousVersion": "round396-public-shell-release-gate-20260618",
       "date": "2026-06-18",
       "updatedAt": "2026-06-18T19:40:00+08:00",
       "lane": "server-reliability",
       "focus": "server-kv-cumulative-progress-monitoring",
-      "gate": "node tests/edge-fluid-upgrade-check.js && node tools/check-round397-server-kv-progress-cumulative-hardening.mjs --json && node tools/check-round396-release-readiness.mjs --assume-code-gate-change --require-ready --expected-version round398-server-progress-no-drift-accounting-20260618 --json",
+      "gate": "node tests/edge-fluid-upgrade-check.js && node tools/check-round397-server-kv-progress-cumulative-hardening.mjs --json && node tools/check-round396-release-readiness.mjs --assume-code-gate-change --require-ready --expected-version round397-server-kv-progress-cumulative-hardening-20260618 --json",
       "changedSurfaces": [
         "functions/_middleware.js",
         "modules/progress-module.html",
@@ -3054,7 +3081,7 @@
         "Login, refresh, deployment, localStorage, and audit-window reads cannot advance cumulative study time or answered-question totals.",
         "POST progress writes require server progress-write-confirmation with fresh GET readback before the UI treats them as saved.",
         "Teacher monitoring labels KV as server cumulative and keeps D1/R2 strict production readiness visibly blocked.",
-        "Release acceptance runs the Round398 static gate, Round394/Round393 durability gates, release readiness, and real-account production progress proof after deploy."
+        "Release acceptance runs the Round397 static gate, Round394/Round393 durability gates, release readiness, and real-account production progress proof after deploy."
       ],
       "supersededBy": "round398-server-progress-no-drift-accounting-20260618",
       "completedAt": "2026-06-19T06:23:00+08:00"
@@ -3063,7 +3090,7 @@
       "round": 398,
       "id": "round398-server-progress-no-drift-accounting",
       "version": "round398-server-progress-no-drift-accounting-20260618",
-      "previousVersion": "round398-server-progress-no-drift-accounting-20260618",
+      "previousVersion": "round397-server-kv-progress-cumulative-hardening-20260618",
       "status": "active",
       "lane": "server-reliability",
       "title": "Round398 累计时长与做题统计不漂移修复",
@@ -3115,7 +3142,7 @@
   "updatedAt": "2026-06-19T06:23:00+08:00",
   "lastUpdated": "2026-06-19T06:23:00+08:00",
   "currentVersion": "round398-server-progress-no-drift-accounting-20260618",
-  "previousVersion": "round398-server-progress-no-drift-accounting-20260618",
+  "previousVersion": "round397-server-kv-progress-cumulative-hardening-20260618",
   "lastIntegratedRound": 398,
   "lastUpdatedAt": "2026-06-19T06:23:00+08:00",
   "round358ProductionProof": {
@@ -3191,7 +3218,7 @@
       "summary": "Locks progress durability gate labels, write_quota_exceeded handling, missing primary D1/R2 blocker display, and teacher audit-window non-cumulative semantics."
     },
     "updatedAt": "2026-06-19T06:23:00+08:00",
-    "previousVersion": "round398-server-progress-no-drift-accounting-20260618"
+    "previousVersion": "round397-server-kv-progress-cumulative-hardening-20260618"
   },
   "roundCount": 111,
   "currentReleaseVersion": "round398-server-progress-no-drift-accounting-20260618",
@@ -3222,6 +3249,6 @@
     "currentRound": 398,
     "expectedVersion": "round398-server-progress-no-drift-accounting-20260618",
     "updatedAt": "2026-06-19T06:23:00+08:00",
-    "previousVersion": "round398-server-progress-no-drift-accounting-20260618"
+    "previousVersion": "round397-server-kv-progress-cumulative-hardening-20260618"
   }
 }
