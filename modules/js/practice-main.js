@@ -93,27 +93,121 @@ window.PracticeApp = {
                     this.notification = { show: true, message, type };
                 },
 
-	                stableProgressEventId(type, data = {}) {
+                stripAnswerUiText(value) {
+                    return String(value == null ? '' : value)
+                        .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+                        .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+                        .replace(/<br\s*\/?>/gi, '\n')
+                        .replace(/<\/(?:p|div|li|tr|section|article|h[1-6])>/gi, '\n')
+                        .replace(/<[^>]+>/g, ' ')
+                        .replace(/&nbsp;/gi, ' ')
+                        .replace(/&lt;/gi, '<')
+                        .replace(/&gt;/gi, '>')
+                        .replace(/&amp;/gi, '&')
+                        .replace(/&quot;/gi, '"')
+                        .replace(/&#39;/g, "'")
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                },
+
+                firstAnswerUiText(values) {
+                    for (const value of values) {
+                        const text = this.stripAnswerUiText(value);
+                        if (text) return text;
+                    }
+                    return '';
+                },
+
+                is181103MaterialQuestion(question) {
+                    return Boolean(question && question.extractedFromMaterial === true
+                        && /\/resources\/fluid-181103-html\/materials\//.test(String(question.sourceHtmlUrl || question.htmlQuestionSourceUrl || '')));
+                },
+
+                sourceImageFrom181103Question(question) {
+                    const explicit = String(question && (question.sourcePageImageUrl || question.sourcePageImageEvidenceUrl || question.practiceSourceImageUrl) || '').trim();
+                    if (explicit) return explicit;
+                    const sourceHtmlUrl = String(question && (question.sourceHtmlUrl || question.htmlQuestionSourceUrl || '') || '').trim();
+                    const match = sourceHtmlUrl.match(/^(.*\/materials\/[^/]+\/)index\.html#page-(\d{1,4})$/);
+                    return match ? `${match[1]}pages${match[2].padStart(3, '0')}.jpg` : '';
+                },
+
+                normalize181103AnswerUiQuestion(question) {
+                    if (!this.is181103MaterialQuestion(question)) return question;
+                    const sourceHtmlUrl = String(question.sourceHtmlUrl || question.htmlQuestionSourceUrl || question.htmlQuestionCardUrl || '').trim();
+                    const sourceImageUrl = this.sourceImageFrom181103Question(question);
+                    const answerText = this.firstAnswerUiText([
+                        question.answerHtml,
+                        question.referenceAnswerHtml,
+                        question.sampleAnswerHtml,
+                        question.referenceAnswer,
+                        question.sampleAnswer,
+                        question.answer,
+                        question.correct
+                    ]);
+                    const sourceLine = sourceHtmlUrl ? `来源 HTML：${sourceHtmlUrl}` : '来源 HTML：待补充';
+                    const imageLine = sourceImageUrl ? `页图证据：${sourceImageUrl}` : '页图证据：待补充';
+                    const fallbackAnswer = [
+                        '参考答案待复核：这道 181103 资料题暂未整理出可靠答案文本，不能用空白或旧题库答案替代。',
+                        sourceLine,
+                        imageLine
+                    ].join('\n');
+                    let explanation = this.firstAnswerUiText([
+                        question.explanationHtml,
+                        question.explanation,
+                        question.solutionHtml,
+                        question.solution,
+                        question.analysis
+                    ]) || '解析思路待复核：请先打开来源 HTML 核对题面、公式和上下文，再补正式解析。';
+                    if (sourceHtmlUrl && !explanation.includes(sourceHtmlUrl)) explanation += `\n${sourceLine}`;
+                    if (sourceImageUrl && !explanation.includes(sourceImageUrl)) explanation += `\n${imageLine}`;
+                    return {
+                        ...question,
+                        answer: answerText || fallbackAnswer,
+                        referenceAnswer: question.referenceAnswer || question.sampleAnswer || question.answer || answerText || fallbackAnswer,
+                        explanation,
+                        sourceHtmlUrl,
+                        sourcePageImageUrl: sourceImageUrl || question.sourcePageImageUrl || question.sourcePageImageEvidenceUrl || '',
+                        answerEvidenceHtmlUrl: sourceHtmlUrl,
+                        answerEvidencePageImageUrl: sourceImageUrl,
+                        answerUiStatus: answerText ? 'reference-answer-ready' : 'reference-answer-needs-review',
+                        round399AnswerUiReady: Boolean(answerText && explanation && sourceHtmlUrl && sourceImageUrl),
+                        round399AnswerUiFallbackHonest: !answerText
+                    };
+                },
+
+                normalizePracticeQuestions(questions) {
+                    return Array.isArray(questions)
+                        ? questions.map(question => this.normalize181103AnswerUiQuestion(question))
+                        : [];
+                },
+
+                stableProgressEventId(type, data = {}) {
                     const questionKey = data.questionId || data.questionNumber || this.currentQuestionIndex + 1;
                     const attemptKey = data.attemptNumber || data.practiceAttempt || '';
-	                    return [
-	                        type,
-	                        data.practiceSessionId || this.practiceSessionId || '',
+                    return [
+                        type,
+                        data.practiceSessionId || this.practiceSessionId || '',
                         data.bankId || data.questionBank || '',
                         questionKey,
                         attemptKey
-	                    ].filter(value => value !== null && value !== undefined && String(value).trim() !== '').join(':').replace(/\s+/g, '-').slice(0, 220);
-	                },
+                    ].filter(value => value !== null && value !== undefined && String(value).trim() !== '').join(':').replace(/\s+/g, '-').slice(0, 220);
+                },
 
-		                progressSourceFromPayload(payload) {
-		                    const explicit = String(payload && payload.source || '').trim();
-		                    if (explicit) return explicit;
-	                    const mode = String(payload && (payload.storeMode || payload.store || '') || '').toLowerCase();
-	                    if (mode === 'd1') return 'server-d1-learning-progress';
-	                    if (mode === 'r2' || mode === 'r2-progress') return 'server-r2-learning-progress';
-	                    if (mode === 'kv' || mode === 'kv-single-write-fallback') return 'server-kv-learning-progress';
-		                    return 'server-learning-progress-unavailable';
-		                },
+                durationMsToSeconds(value) {
+                    const numeric = Number(value);
+                    if (!Number.isFinite(numeric) || numeric <= 0) return 0;
+                    return Math.max(1, Math.round(numeric / 1000));
+                },
+
+                progressSourceFromPayload(payload) {
+                    const explicit = String(payload && payload.source || '').trim();
+                    if (explicit) return explicit;
+                    const mode = String(payload && (payload.storeMode || payload.store || '') || '').toLowerCase();
+                    if (mode === 'd1') return 'server-d1-learning-progress';
+                    if (mode === 'r2' || mode === 'r2-progress') return 'server-r2-learning-progress';
+                    if (mode === 'kv' || mode === 'kv-single-write-fallback') return 'server-kv-learning-progress';
+                    return 'server-learning-progress-unavailable';
+                },
 
 			                progressSnapshotKey(username) {
 			                    const safeUser = String(username || 'unknown')
@@ -449,7 +543,7 @@ window.PracticeApp = {
                         return;
                     }
                     
-                    this.questions = selectedQuestions;
+                    this.questions = this.normalizePracticeQuestions(selectedQuestions);
                     this.currentView = 'practice';
                     this.currentQuestionIndex = 0;
                     this.stats.startTime = Date.now();
@@ -466,7 +560,7 @@ window.PracticeApp = {
                     }
                     
                     // 随机打乱所有题目
-                    this.questions = PracticeUtils.shuffleArray([...this.allQuestions]);
+                    this.questions = this.normalizePracticeQuestions(PracticeUtils.shuffleArray([...this.allQuestions]));
                     this.currentView = 'practice';
                     this.currentQuestionIndex = 0;
                     this.stats.startTime = Date.now();
@@ -478,6 +572,8 @@ window.PracticeApp = {
 
                 // 题目操作
                 submitAnswer(data) {
+                    const timeSpentMs = Number(data.timeSpent || data.timeSpentMs || 0);
+                    const questionTimeSeconds = this.durationMsToSeconds(timeSpentMs);
                     this.stats.answeredQuestions++;
                     
                     if (data.isCorrect) {
@@ -488,7 +584,7 @@ window.PracticeApp = {
                     }
                     
                     // 记录答题时间
-                    this.stats.totalTime += data.timeSpent || 0;
+                    this.stats.totalTime += timeSpentMs || 0;
                     
                     // 更新正确率
                     this.stats.correctRate = Math.round(
@@ -514,7 +610,9 @@ window.PracticeApp = {
                         userAnswer: data.selectedAnswer || data.userAnswer || '',
                         correctAnswer: this.currentQuestion?.answer || this.currentQuestion?.correct || '',
                         isCorrect: data.isCorrect,
-                        questionTimeSeconds: data.timeSpent || 0
+                        questionTimeSeconds,
+                        timeSpentMs: timeSpentMs || 0,
+                        durationUnit: 'seconds'
                     });
                 },
 
@@ -637,7 +735,7 @@ window.PracticeApp = {
                         const allExamQuestions = await response.json();
                         
                         // 处理题目数据
-                        const processedQuestions = allExamQuestions.map(q => ({
+                        const processedQuestions = allExamQuestions.map(q => this.normalize181103AnswerUiQuestion({
                             ...q,
                             bankId: 'real-exam',
                             bank: '历年真题',
@@ -685,7 +783,7 @@ window.PracticeApp = {
                     this.isRealExamMode = true;
                     
                     // 设置练习题目
-                    this.questions = [...this.allQuestions];
+                    this.questions = this.normalizePracticeQuestions(this.allQuestions);
                     
                     // 根据模式处理题目
                     if (examMode === 'random') {
@@ -787,7 +885,7 @@ window.PracticeApp = {
                         selectedQuestions = PracticeUtils.shuffleArray([...selectedQuestions]);
                     }
                     
-                    this.questions = selectedQuestions;
+                    this.questions = this.normalizePracticeQuestions(selectedQuestions);
                     this.currentView = 'practice';
                     this.currentQuestionIndex = 0;
                     this.stats.startTime = Date.now();
