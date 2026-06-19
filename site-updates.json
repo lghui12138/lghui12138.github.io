@@ -1,5 +1,103 @@
 [
   {
+    "version": "round407-progress-visible-no-drift-hardening-20260619",
+    "date": "2026-06-19",
+    "time": "23:45",
+    "updatedAt": "2026-06-19T23:45:00+08:00",
+    "previousVersion": "round405-server-progress-no-drift-181103-html-answer-zero-20260619",
+    "tag": "Round407",
+    "focus": "progress-visible-no-drift-hardening",
+    "title": "Round407 可见登录累计不漂移加固",
+    "summary": "本轮专门收紧“每次登录累计时长/做题监控会变”的问题：所有会推进 answered、sessions、studyTimeSeconds 的学习事件必须带明确稳定的 clientEventId/eventId/practiceEventId；login/auth/session/read 事件一律标记 noMutationWrite，不会进入累计账本；study_heartbeat 只允许来自当前可见练习会话和 practiceSessionId，首页刷新、登录读数、退出重登不能伪装成学习时长。教师监控和内嵌管理面板的可见累计也不再只相信 progressSource 字符串，必须同时满足 progressCumulativePersisted=true、progressNoMutationRead=true、progressCumulativeSourceOfTruth=server-progress-snapshot；audit-event-window、localStorage、离线 outbox、最近事件窗只能作为诊断，不得显示成累计题数或累计时长。新增 Round407 浏览器真实账号门禁会用学生/教师账号连续登录读取，不做题、不写事件，断言学生首页、/api/progress、/api/stats 和教师可见总览都不漂移。181103 HTML/题库数据沿用 Round405 的已上线口径；完整生产持久化仍保持诚实边界：如果生产缺 FM_PROGRESS_DB/FM_PROGRESS_R2，只能声明 server-progress-snapshot no-drift 或 Cloudflare KV 服务器累计受限，不能冒充完整 D1/R2 主存储；私有视频完整管理仍要求 FM_PRIVATE_MEDIA 绑定和真实教师 QA。",
+    "links": [
+      {
+        "label": "学生学习进度",
+        "href": "/modules/progress-module.html?edge_refresh=round407-progress-visible-no-drift-hardening-20260619"
+      },
+      {
+        "label": "教师进度监控",
+        "href": "/teacher-panel?view=students&edge_refresh=round407-progress-visible-no-drift-hardening-20260619"
+      },
+      {
+        "label": "首页服务端累计",
+        "href": "/index-complete.html?edge_refresh=round407-progress-visible-no-drift-hardening-20260619#stats"
+      },
+      {
+        "label": "181103 资料题库",
+        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round407-progress-visible-no-drift-hardening-20260619#questionBanksList"
+      },
+      {
+        "label": "181103 HTML 资料",
+        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round407-progress-visible-no-drift-hardening-20260619"
+      },
+      {
+        "label": "私有视频管理",
+        "href": "/teacher-panel?view=resources&edge_refresh=round407-progress-visible-no-drift-hardening-20260619#private-videos"
+      }
+    ],
+    "evidence": {
+      "localNoDriftGate": "node tools/check-round399-progress-no-drift-contract.mjs --write --json && node tools/check-round398-progress-event-idempotency-contract.mjs --json => PASS; login/refresh/GET/stats/teacher summary no-mutation contract fixed.",
+      "answerSemanticGate": "node tools/check-181103-answer-semantic-quality.mjs --json --write => ok=true, findings=0 across 381 practice questions.",
+      "answerHtmlGate": "node tools/check-round394-181103-material-answer-html.mjs --json => 522/522 visible readable answer blocks, 387/387 formula answers OK, totalIssues=0.",
+      "browserAnswerGate": "node tools/check-round396-181103-practice-answer-browser-contract.mjs --json --timeout-ms 60000 => desktop/mobile answer panel visible, MathJax containers present, no viewer/download shell.",
+      "releaseGate": "node tools/verify-fluid-release-gate.mjs --expected-version round407-progress-visible-no-drift-hardening-20260619 after deploy; real-account production proof must be rerun against lghui.top/pages.dev.",
+      "visibleBrowserNoDrift": "NODE_PATH=/Users/kili/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules /Users/kili/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node tools/check-round407-progress-visible-login-no-drift-browser.mjs --production --write --json must prove student visible/API totals and teacher visible cumulative totals do not drift across login-only cycles.",
+      "realAccountReadOnly": "node tools/check-production-progress-real-account.mjs --json --require-public-chain --read-only --expected-version round407-progress-visible-no-drift-hardening-20260619 must prove login/read/refresh/relogin stable and teacherSummaryOk=true.",
+      "realAccountStrictWriteBoundary": "node tools/check-production-progress-real-account.mjs --json --require-public-chain --require-full-production-ready --expected-version round407-progress-visible-no-drift-hardening-20260619 remains a strict D1/R2 blocker until FM_PROGRESS_DB or FM_PROGRESS_R2 is visible."
+    },
+    "round399WorkerFReleaseGates": {
+      "version": "round399-worker-f-release-gates-20260619",
+      "runtimeVersion": "round407-progress-visible-no-drift-hardening-20260619",
+      "worker": "F",
+      "status": "integrated-into-round407-visible-release",
+      "deployed": false,
+      "committed": false,
+      "gateIds": [
+        "181103-answer-stack",
+        "progress-no-drift",
+        "private-video-status",
+        "source-home-entry",
+        "public-shell-entry",
+        "anonymous-public-proof",
+        "old-round-label-risk"
+      ],
+      "summary": "Round399 Worker F release gate checklist remains bound to the current Round407 runtime, including 181103 answer-stack, progress no-drift, private-video status, source/public shell entry, anonymous public proof, and old-round label risk.",
+      "commands": [
+        "node tools/check-round399-181103-answer-experience-contract.mjs --write --json",
+        "node tools/check-round399-progress-no-drift-contract.mjs --write --json",
+        "node tools/monitor-fluid-public-release.mjs --json --expected-version round407-progress-visible-no-drift-hardening-20260619",
+        "node tools/verify-fluid-release-gate.mjs --expected-version round407-progress-visible-no-drift-hardening-20260619"
+      ],
+      "privateVideoStatusClaim": "ready/limited/blocked; full recovery still requires FM_PRIVATE_MEDIA and real teacher QA",
+      "progressNoDriftClaim": "no-drift server-progress-snapshot; durable writes still require FM_PROGRESS_DB/FM_PROGRESS_R2",
+      "publicShellClaim": "public shell entry remains required for lghui.top before production closure"
+    },
+    "requiredTerms": [
+      "Round407",
+      "server-progress-snapshot",
+      "noMutationRead",
+      "noMutationWrite",
+      "localStorage 不入累计",
+      "audit-event-window 非累计",
+      "181103 522 资料题库",
+      "381 默认练习",
+      "141 资料线索",
+      "语义发现 0",
+      "FM_PROGRESS_DB",
+      "FM_PROGRESS_R2",
+      "FM_PRIVATE_MEDIA",
+      "真实账号只读 no-drift",
+      "qi",
+      "chenlei",
+      "anxin",
+      "sunruze",
+      "未加入额外默认账号",
+      "不再扩入"
+    ],
+    "visibleProof": "functions/_middleware.js, modules/js/practice-main.js, modules/question-bank-practice.js, question-banks/181103-material-extracted.json, resources/fluid-181103-html/materials, tools/check-round399-progress-no-drift-contract.mjs, tools/check-181103-answer-semantic-quality.mjs, tools/fix-round404-181103-semantic-findings.mjs, tests/edge-fluid-upgrade-check.js, site-updates.json.",
+    "defaultAccountBoundary": "默认学生基线仍为 qi、chenlei、anxin、sunruze；未加入额外默认账号，不再扩入账号名单。"
+  },
+  {
     "version": "round405-server-progress-no-drift-181103-html-answer-zero-20260619",
     "date": "2026-06-19",
     "time": "18:45",
