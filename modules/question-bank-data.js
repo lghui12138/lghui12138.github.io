@@ -40,7 +40,29 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round408-release-gate-public-consistency-20260620-round399-practice-answer-ui-20260619';
+    const practiceModuleVersion = 'round410-181103-practice-status-cardinality-20260620-round410-progress-no-drift-20260620';
+
+    function requestedFocusBankId() {
+        try {
+            return new URLSearchParams(location.search).get('focus') || '';
+        } catch (_) {
+            return '';
+        }
+    }
+
+    function bankListHasId(list, bankId) {
+        if (!bankId || !Array.isArray(list)) return false;
+        return list.some(bank => bank && (favoriteMatchesBank(bankId, bank) || bank.id === bankId));
+    }
+
+    function cachedIndexIsCurrentForFocus(cachedData, focusId) {
+        if (!focusId) return true;
+        const banks = cachedData && cachedData.questionBanks;
+        if (!bankListHasId(banks, focusId)) return false;
+        if (focusId !== '181103-material-extracted') return true;
+        const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
+        return /round410-181103-practice-status-cardinality-20260620/.test(versionText);
+    }
 
     function removeFailedPracticeScripts() {
         document.querySelectorAll('script[data-question-bank-practice-module],script[src*="question-bank-practice.js"]').forEach(script => {
@@ -456,11 +478,17 @@ window.QuestionBankData = (function() {
                 console.log('开始加载题库数据...');
 
                 let cachedData = null;
+                const focusId = requestedFocusBankId();
                 const cachedIndex = localStorage.getItem('questionBankIndex');
                 if (cachedIndex) {
                     try {
                         cachedData = JSON.parse(cachedIndex);
-                        if (cachedData.questionBanks && cachedData.questionBanks.length > 0) {
+                        if (!cachedIndexIsCurrentForFocus(cachedData, focusId)) {
+                            cachedData = null;
+                            localStorage.removeItem('questionBankIndex');
+                            console.warn('题库缓存缺少当前 focus 或版本过旧，已强制刷新索引:', focusId);
+                        }
+                        if (cachedData && cachedData.questionBanks && cachedData.questionBanks.length > 0) {
                             questionBanks = cachedData.questionBanks
                                 .map(normalizeQuestionBankEntry)
                                 .filter(item => item.filename && !item.archived);
@@ -481,7 +509,9 @@ window.QuestionBankData = (function() {
                         || !cachedData.questionBanks
                         || cachedData.questionBanks.length === 0
                         || fetchedUpdatedAt > cachedUpdatedAt
-                        || fetchedCount !== cachedCount;
+                        || fetchedCount !== cachedCount
+                        || (focusId && !bankListHasId(questionBanks, focusId) && bankListHasId(indexData.questionBanks, focusId))
+                        || (focusId === '181103-material-extracted' && !cachedIndexIsCurrentForFocus(cachedData, focusId));
 
                     if (shouldUseFetched) {
                         questionBanks = indexData.questionBanks
@@ -959,14 +989,19 @@ window.QuestionBankData = (function() {
         },
 
         applyUrlFocus: function() {
-            let focusId = '';
-            try {
-                focusId = new URLSearchParams(location.search).get('focus') || '';
-            } catch (_) {}
+            const focusId = requestedFocusBankId();
             if (!focusId) return false;
 
             const targetBank = questionBanks.find(bank => favoriteMatchesBank(focusId, bank) || bank.id === focusId);
-            if (!targetBank) return false;
+            if (!targetBank) {
+                if (focusId === '181103-material-extracted') {
+                    try { localStorage.removeItem('questionBankIndex'); } catch (_) {}
+                    if (typeof showNotification === 'function') {
+                        showNotification('没有加载到 181103 资料题库，已清理旧索引缓存；请刷新后重试。', 'warning', 5200);
+                    }
+                }
+                return false;
+            }
 
             filteredBanks = [targetBank];
             currentPage = 1;
@@ -1532,9 +1567,9 @@ window.QuestionBankData = (function() {
                     <p style="margin: 0 0 20px 0; color: #666;">题库: ${bank.name} (共${questions.length}题)</p>
                     ${isMaterial181103 ? `
                     <div data-181103-practice-quality-panel="1" style="margin:0 0 18px 0;padding:12px 14px;border:1px solid #fde68a;background:#fffbeb;color:#78350f;border-radius:10px;line-height:1.55;">
-                        Round373：181103 资料内 ${questions.length} 张来源卡已生成 ${htmlQuestionCount} 条 HTML 题面；${defaultPracticeQuestions.length} 道独立题进入刷题，${sourceContentCardCount} 张源文/答案续页/讲义正文只作线索展示；无 HTML 题面占位 ${placeholderCount} 题。
+                        当前 181103 资料内 ${questions.length} 张来源卡已生成 ${htmlQuestionCount} 条 HTML 题面；${defaultPracticeQuestions.length} 道独立题进入刷题，${sourceContentCardCount} 张源文/答案续页/讲义正文只作线索展示；无 HTML 题面占位 ${placeholderCount} 题。
                         <div data-round399-181103-answer-ui-ledger="1" role="status" aria-live="polite">
-                            Round399：可刷题 ${answerUiLedger.ready}/${answerUiLedger.practice} 题具备参考答案、解析思路、来源 HTML 和页图证据；待复核提示 ${answerUiLedger.fallbackReview} 题，缺答案时显示诚实提示而不是空白。
+                            当前答案面：可刷题 ${answerUiLedger.ready}/${answerUiLedger.practice} 题具备参考答案、解析思路、来源 HTML 和页图证据；待复核提示 ${answerUiLedger.fallbackReview} 题，缺答案时显示诚实提示而不是空白。
                         </div>
                     </div>` : ''}
 
@@ -1835,6 +1870,8 @@ window.QuestionBankData = (function() {
                     && question.defaultPracticeEligible !== false
                     && question.practiceEntryEnabled !== false
                     && question.defaultHidden !== true
+                    && question.qualityTier !== 'hide'
+                    && question.reviewStatus !== 'hidden-needs-human-review'
                     && question.sourceSemanticPracticeEligible !== false
                     && question.sourceSemanticQuestionCardKind !== 'source-content-card'
                     && question.round373QuestionCardKind !== 'source-content-card'

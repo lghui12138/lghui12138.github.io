@@ -133,7 +133,8 @@ window.QuestionBankPractice = (function() {
     }
 
     function hasAnswerHtmlMarkup(value) {
-        return /<\s*\/?\s*(?:p|div|span|br|strong|em|b|i|ul|ol|li|table|thead|tbody|tr|td|th|section|article|blockquote|pre|code|math|mjx-container|h[1-6])\b/i.test(String(value || ''));
+        // data-round410-safe-answer-html-markup: do not treat TeX inequalities such as \(a<R<b\) as HTML tags.
+        return /<\s*\/?\s*(?:p|div|span|br|strong|em|b|i|ul|ol|li|table|thead|tbody|tr|td|th|section|article|blockquote|pre|code|math|mjx-container|h[1-6])(?:\s[^>]*|\/)?>/i.test(String(value || ''));
     }
 
     function cleanAnswerText(value) {

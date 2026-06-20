@@ -10,7 +10,7 @@ const sourceTruthVersion = sourceLatestSiteUpdate.version || '';
 const publicShellSyncVersion = sourceTruthVersion || 'round408-release-gate-public-consistency-20260620';
 const publicShellRoundLabel = roundLabelFromVersion(publicShellSyncVersion) || 'Round407';
 const sourceTruthRoundLabel = roundLabelFromVersion(sourceTruthVersion) || '当前源站版本';
-const answerProofRoundLabel = 'Round394';
+const answerProofRoundLabel = sourceTruthRoundLabel;
 const defaultPublicShellVersion = publicShellSyncVersion;
 if (!sourceTruthVersion && !process.env.FLUID_PUBLIC_EDGE_REFRESH) {
   throw new Error(`Missing latest source site-updates.json version in ${sourceRepoRoot}`);

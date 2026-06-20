@@ -2801,7 +2801,7 @@
       ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
       ['05', '错因订正', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
     ];
-    return '<div class="eflu-review-rail" data-round274-workbench-loop="round408-release-gate-public-consistency-20260620" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
+    return '<div class="eflu-review-rail" data-round274-workbench-loop="round410-181103-practice-status-cardinality-20260620" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
       return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
     }).join('') + '</div>';
   }
