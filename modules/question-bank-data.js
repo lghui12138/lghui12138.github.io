@@ -40,7 +40,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round411-server-progress-monotonic-no-drift-20260620-round410-progress-no-drift-20260620';
+    const practiceModuleVersion = 'round412-server-progress-stable-monitoring-20260620-round410-progress-no-drift-20260620';
 
     function requestedFocusBankId() {
         try {
@@ -61,7 +61,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round411-server-progress-monotonic-no-drift-20260620/.test(versionText);
+        return /round412-server-progress-stable-monitoring-20260620/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {

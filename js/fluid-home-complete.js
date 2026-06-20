@@ -20,13 +20,25 @@ document.addEventListener('DOMContentLoaded',()=>{
 		const HOME_SERVER_PROGRESS_STATE={status:'pending',snapshot:null,syncedAt:''};
 		const HOME_SERVER_HEALTH_STATE={status:'pending',snapshot:null,syncedAt:''};
 
-		window.FMServerProgress={
-		  get:()=>HOME_SERVER_PROGRESS_STATE.snapshot,
-		  isReady:()=>!!(HOME_SERVER_PROGRESS_STATE.snapshot&&HOME_SERVER_PROGRESS_STATE.snapshot.cumulativeSourceOfTruth==='server-progress-snapshot'&&HOME_SERVER_PROGRESS_STATE.snapshot.noMutationRead===true),
-		  status:()=>HOME_SERVER_PROGRESS_STATE.status,
-		  health:()=>HOME_SERVER_HEALTH_STATE.snapshot,
-		  invariant:'server-progress-snapshot-only: login/refresh/server-upgrade/localStorage/audit-window must not advance cumulative totals; cache is never rendered as cumulative truth'
-		};
+			window.FMServerProgress={
+			  get:()=>HOME_SERVER_PROGRESS_STATE.snapshot,
+			  isReady:()=>!!(HOME_SERVER_PROGRESS_STATE.snapshot&&HOME_SERVER_PROGRESS_STATE.snapshot.cumulativeSourceOfTruth==='server-progress-snapshot'&&HOME_SERVER_PROGRESS_STATE.snapshot.noMutationRead===true),
+			  status:()=>HOME_SERVER_PROGRESS_STATE.status,
+			  health:()=>HOME_SERVER_HEALTH_STATE.snapshot,
+			  invariant:'server-progress-snapshot-only: login/refresh/server-upgrade/localStorage/audit-window must not advance cumulative totals; cache is never rendered as cumulative truth'
+			};
+
+			const LOCAL_DIAGNOSTIC_WRITE_KEY='fm_allow_local_diagnostic_writes';
+			function localDiagnosticReadsEnabled(){try{return localStorage.getItem(LOCAL_DIAGNOSTIC_WRITE_KEY)==='1'}catch(_){return false}}
+			function localCumulativeKeyBlocked(key){return !localDiagnosticReadsEnabled()&&/^(fm_sessions|fm_scores|fm_learning_data_v2|practiceSessions|localStudyPlanProgress|questionBankProgress)$/.test(String(key||''))}
+			window.FMLocalDiagnostic={
+			  enabled:localDiagnosticReadsEnabled,
+			  blocksKey:localCumulativeKeyBlocked,
+			  readJSON:(key,fallback)=>{if(localCumulativeKeyBlocked(key))return fallback;try{const x=localStorage.getItem(key);if(!x)return fallback;const v=JSON.parse(x);if(Array.isArray(fallback)&&!Array.isArray(v))return fallback;if(fallback&&typeof fallback==='object'&&!Array.isArray(fallback)&&(v===null||typeof v!=='object'||Array.isArray(v)))return fallback;return v}catch(_){return fallback}},
+			  getSessions:()=>localCumulativeKeyBlocked('fm_sessions')?[]:((window.FMAnalytics&&FMAnalytics.getSessions&&FMAnalytics.getSessions())||[]),
+			  getScores:()=>localCumulativeKeyBlocked('fm_scores')?[]:((window.FMAnalytics&&FMAnalytics.getScores&&FMAnalytics.getScores())||[]),
+			  getProgress:()=>localCumulativeKeyBlocked('fm_learning_data_v2')?{}:((window.FMAnalytics&&FMAnalytics.getProgress&&FMAnalytics.getProgress())||{})
+			};
 
 	function safeUserKey(u){
 	  return String(u&&(u.username||u.name)||'_anon').normalize('NFKC').trim().toLowerCase().replace(/[^a-z0-9_.:@-]/gi,'_').slice(0,120)||'_anon';
@@ -1576,6 +1588,7 @@ function renderPath(){
 
 function round273ReadJSON(key,fallback){
   try{
+    if(window.FMLocalDiagnostic&&FMLocalDiagnostic.blocksKey&&FMLocalDiagnostic.blocksKey(key))return fallback;
     const raw=localStorage.getItem(key);
     if(!raw)return fallback;
     const value=JSON.parse(raw);
@@ -1915,7 +1928,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#accPnl')&&$('#a
 function uk(){
   try{const u=window.FMSecurity&&FMSecurity.getUser&&FMSecurity.getUser();return u?(u.username||u.name):'_anon'}catch(_){return '_anon'}
 }
-function loadJSON(k,f){try{const x=localStorage.getItem(k);if(!x)return f;const v=JSON.parse(x);if(Array.isArray(f)&&!Array.isArray(v))return f;return v}catch(_){return f}}
+	function loadJSON(k,f){try{if(window.FMLocalDiagnostic&&FMLocalDiagnostic.blocksKey&&FMLocalDiagnostic.blocksKey(k))return f;const x=localStorage.getItem(k);if(!x)return f;const v=JSON.parse(x);if(Array.isArray(f)&&!Array.isArray(v))return f;return v}catch(_){return f}}
 
 const MODULE_LIST=[
   {k:'fluid-statics',n:'流体静力学',u:'/modules/fluid-statics-dynamic.html',ord:1},
@@ -2020,10 +2033,10 @@ setInterval(()=>{try{if(document.visibilityState==='visible'&&window.FMSecurity&
 
 /* ---- FMState ---- */
 const subs={};
-const FMState={
-  get(k,f){
-    try{const x=localStorage.getItem(k);if(!x)return f;const v=JSON.parse(x);return v}catch(_){return f}
-  },
+	const FMState={
+	  get(k,f){
+	    try{if(window.FMLocalDiagnostic&&FMLocalDiagnostic.blocksKey&&FMLocalDiagnostic.blocksKey(k))return f;const x=localStorage.getItem(k);if(!x)return f;const v=JSON.parse(x);return v}catch(_){return f}
+	  },
   set(k,v){
     try{
       localStorage.setItem(k,JSON.stringify(v));
@@ -2139,7 +2152,7 @@ const $=s=>{try{return document.querySelector(s)}catch(_){return null}};
 const $$=s=>{try{return Array.prototype.slice.call(document.querySelectorAll(s))}catch(_){return []}};
 
 function uk(){try{const u=window.FMSecurity&&FMSecurity.getUser&&FMSecurity.getUser();return u?(u.username||u.name):'_anon'}catch(_){return '_anon'}}
-function loadJSON(k,f){try{const x=localStorage.getItem(k);if(!x)return f;const v=JSON.parse(x);if(Array.isArray(f)&&!Array.isArray(v))return f;return v}catch(_){return f}}
+	function loadJSON(k,f){try{if(window.FMLocalDiagnostic&&FMLocalDiagnostic.blocksKey&&FMLocalDiagnostic.blocksKey(k))return f;const x=localStorage.getItem(k);if(!x)return f;const v=JSON.parse(x);if(Array.isArray(f)&&!Array.isArray(v))return f;return v}catch(_){return f}}
 
 /* --- 学习进度环：按访问过的模块数 / 总模块数 计算 --- */
 const ALL_MODS=['fluid-statics','kinematics','dynamics','viscous','boundary','compress','potential','oceanography'];
@@ -2312,7 +2325,7 @@ const ALL_MODS=[
 ];
 
 function uk(){try{const u=window.FMSecurity&&FMSecurity.getUser&&FMSecurity.getUser();return u?(u.username||u.name):'_anon'}catch(_){return '_anon'}}
-function loadJSON(k,f){try{const x=localStorage.getItem(k);if(!x)return f;const v=JSON.parse(x);if(Array.isArray(f)&&!Array.isArray(v))return f;if(f&&typeof f==='object'&&!Array.isArray(f)&&(v===null||typeof v!=='object'||Array.isArray(v)))return f;return v}catch(_){return f}}
+function loadJSON(k,f){try{if(window.FMLocalDiagnostic&&FMLocalDiagnostic.blocksKey&&FMLocalDiagnostic.blocksKey(k))return f;const x=localStorage.getItem(k);if(!x)return f;const v=JSON.parse(x);if(Array.isArray(f)&&!Array.isArray(v))return f;if(f&&typeof f==='object'&&!Array.isArray(f)&&(v===null||typeof v!=='object'||Array.isArray(v)))return f;return v}catch(_){return f}}
 
 let _cache=null;let _cacheT=0;const TTL=1500;
 function getStore(force){
