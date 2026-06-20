@@ -828,6 +828,33 @@ window.QuestionBankPractice = (function() {
         return message;
     }
 
+    function stableProgressText(value, length = 160) {
+        return clampText(String(value == null ? '' : value)
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/&nbsp;/gi, ' ')
+            .replace(/\s+/g, ' ')
+            .trim(), length)
+            .toLowerCase();
+    }
+
+    function stableQuestionIdentity(question, fallback = '') {
+        const source = question && (
+            question.id
+            || question.questionId
+            || question.qid
+            || question.sourceQuestionId
+            || question.originalQuestionId
+            || question.title
+            || question.question
+            || question.content
+        );
+        return stableProgressText(source || fallback || `q${currentSession.currentIndex + 1}`, 180) || `q${currentSession.currentIndex + 1}`;
+    }
+
+    function stableAnswerIdentity(answer, question) {
+        return stableProgressText(answerToLabel(answer, question), 180) || 'blank-answer';
+    }
+
     function stableProgressEventId(type, data) {
         if (data && (data.clientEventId || data.eventId || data.practiceEventId)) {
             return String(data.clientEventId || data.eventId || data.practiceEventId);
@@ -835,22 +862,19 @@ window.QuestionBankPractice = (function() {
         const parts = [
             type,
             data && data.bankId,
-            data && data.practiceSessionId,
-            data && (data.questionId || data.questionNumber || ''),
+            data && (data.questionStableId || data.questionId || data.questionNumber || ''),
+            data && (data.answerStableId || data.userAnswer || ''),
             data && (data.attemptNumber || '')
         ].filter(value => value !== null && value !== undefined && String(value).trim() !== '');
         return parts.join(':').replace(/\s+/g, '-').slice(0, 220) || makeId(type || 'progress');
     }
 
     function answerSubmitKey(question, answer) {
-        const questionId = question && (question.id || question.questionId || question.qid || question.title || question.question || '');
-        const answerText = Array.isArray(answer) ? answer.join('|') : String(answer == null ? '' : answer);
         return [
-            currentSession.practiceSessionId || '',
             currentSession.bankId || '',
             currentSession.currentIndex,
-            questionId,
-            answerText.replace(/\s+/g, ' ').trim()
+            stableQuestionIdentity(question, `q${currentSession.currentIndex + 1}`),
+            stableAnswerIdentity(answer, question)
         ].join('::').slice(0, 420);
     }
 
@@ -1086,9 +1110,11 @@ window.QuestionBankPractice = (function() {
         const questionId = question && (question.id || question.questionId || question.qid || '');
         const questionNumber = currentSession.currentIndex + 1;
         const attempt = Math.max(1, Number(attemptNumber || currentSession.answerAttemptCounts[currentSession.currentIndex] || 1));
+        const questionStableId = stableQuestionIdentity(question, questionId || `q${questionNumber}`);
+        const answerStableId = stableAnswerIdentity(userAnswer, question);
         const payload = {
             practiceSessionId: sessionId,
-            clientEventId: [sessionId, currentSession.bankId || 'bank', questionId || `q${questionNumber}`, `attempt${attempt}`].join(':').replace(/\s+/g, '-').slice(0, 220),
+            clientEventId: ['practice-answer', currentSession.bankId || 'bank', questionStableId, answerStableId, `attempt${attempt}`].join(':').replace(/\s+/g, '-').slice(0, 220),
             attemptNumber: attempt,
             browserSessionId: getBrowserSessionId(),
             bankId: currentSession.bankId,
@@ -1097,6 +1123,8 @@ window.QuestionBankPractice = (function() {
             questionNumber,
             totalQuestions: currentSession.questions.length,
             questionId,
+            questionStableId,
+            answerStableId,
             questionTitle: clampText(question && (question.title || question.question || ''), 220),
             questionType: getQuestionType(question),
             category: clampText(question && (question.category || ''), 120),
