@@ -8,7 +8,7 @@
     "tag": "Round417",
     "focus": "progress-primary-store-quota-hardening",
     "title": "Round417 累计时长与做题监控服务器降写保护",
-    "summary": "本轮针对真实账号发现的生产问题继续收口：学生登录、刷新、登出重登和教师汇总只读链路已验证不会改变累计时长、答题数或准确率；写入链路暴露出生产仍只有 kv-single-write-fallback，且 POST /api/progress 被 write_quota_exceeded 与缺 FM_PROGRESS_DB/FM_PROGRESS_R2 同时阻断。服务端已把 KV fallback 从多写入改成单写累计快照：去重依靠 server-progress-snapshot 内的 recentEventIds，不再为 fallback 额外写 learning-progress-event marker，也不再把每次进度事件复制进审计 KV，避免审计流量继续挤占做题累计写额度。真实完整生产仍必须在 Cloudflare Pages 生产环境绑定 FM_PROGRESS_DB 或 FM_PROGRESS_R2，并用真实学生写入、重复提交去重、重登回读和教师汇总通过后才能声明 durable primary。当前 API token 可读 Pages 项目，但 D1/R2 权限返回 401/403，因此这条绑定仍是外部权限 blocker，不会被包装成已完成。默认学生账号基线继续只保留 qi、chenlei、anxin、sunruze 四个活跃学生，本轮未加入额外默认账号。 当前只能声明 Cloudflare KV 服务器累计 server-kv-cumulative-limited；fullProductionCumulativeBlocked=true，直到 FM_PROGRESS_DB/FM_PROGRESS_R2 绑定并通过真实账号写入/重登/教师汇总证明。",
+    "summary": "本轮针对真实账号发现的生产问题继续收口：学生登录、刷新、登出重登和教师汇总只读链路已验证不会改变累计时长、答题数或准确率；写入链路暴露出生产仍只有 kv-single-write-fallback，且 POST /api/progress 被 write_quota_exceeded 与缺 FM_PROGRESS_DB/FM_PROGRESS_R2 同时阻断。服务端已把 KV fallback 从多写入改成单写累计快照：去重依靠 server-progress-snapshot 内的 recentEventIds，不再为 fallback 额外写 learning-progress-event marker，也不再把每次进度事件复制进审计 KV，避免审计流量继续挤占做题累计写额度。部署后真实账号验证确认：读链不会随登录/刷新/重登改变累计时长、答题数或准确率；写链真实 POST 仍被 write_quota_exceeded 阻断，失败写入没有进入累计。Cloudflare Pages 生产绑定当前只见 FM_AUDIT，未见 FM_PROGRESS_DB、FM_PROGRESS_R2 或 FM_PRIVATE_MEDIA；因此完整 durable primary 与私有视频完整管理仍是外部绑定 blocker，不会被包装成已完成。默认学生账号基线继续只保留 qi、chenlei、anxin、sunruze 四个活跃学生，本轮未加入额外默认账号。 当前只能声明 Cloudflare KV 服务器累计 server-kv-cumulative-limited；fullProductionCumulativeBlocked=true，直到 FM_PROGRESS_DB/FM_PROGRESS_R2 绑定并通过真实账号写入/重登/教师汇总证明。",
     "links": [
       {
         "label": "学生学习进度",
@@ -36,12 +36,22 @@
       }
     ],
     "evidence": {
-      "localStaticGate": "node tests/edge-fluid-upgrade-check.js => PASS after single-write KV fallback and staged HTTPS verifier hardening.",
+      "localStaticGate": "node tests/edge-fluid-upgrade-check.js => PASS 1308 / FAIL 0 after single-write KV fallback, Round417 version surface, and public shell hash sync.",
       "kvFallbackGate": "node tools/check-round397-server-kv-progress-cumulative-hardening.mjs --json => KV fallback uses single server-progress-snapshot write plus recentEventIds dedupe.",
       "idempotencyGate": "node tools/check-round398-progress-event-idempotency-contract.mjs --json => stable answer event ids and no stale outbox replay remain locked.",
-      "liveReadOnlyProof": "node tools/check-production-progress-real-account.mjs --json --read-only --skip-public-chain --expected-version round417-progress-primary-store-quota-hardening-20260621 => PASS on pages.dev real QA student/teacher read-only no-drift chain before this deploy.",
-      "liveWriteBlocker": "node tools/check-production-progress-real-account.mjs --json --require-server-kv-write --skip-public-chain --expected-version round417-progress-primary-store-quota-hardening-20260621 => FAIL as expected: write_quota_exceeded plus missing FM_PROGRESS_DB/FM_PROGRESS_R2; failed write not counted as cumulative.",
-      "cloudflareBindingProof": "Cloudflare API Pages project shows production kv_namespaces=[FM_AUDIT], d1_databases=[], r2_buckets=[]; same token returns D1 401 and R2 403, so creating/binding primary storage requires Cloudflare permission expansion or dashboard action."
+      "liveReadOnlyProof": "NODE_OPTIONS=--dns-result-order=ipv4first node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain --expected-version round417-progress-primary-store-quota-hardening-20260621 => PASS postdeploy: login/logout/relogin/stats stable, cumulativeStableKey unchanged, noMutationRead=true.",
+      "liveWriteBlocker": "AUTH_BROWSER_FETCH_ATTEMPTS=1 NODE_OPTIONS=--dns-result-order=ipv4first node tools/check-production-progress-real-account.mjs --json --require-server-kv-write --require-public-chain --expected-version round417-progress-primary-store-quota-hardening-20260621 => FAIL expected postdeploy: POST /api/progress status 503, writeDurabilityStatus=write_quota_exceeded, failed write not counted as cumulative.",
+      "cloudflareBindingProof": "Cloudflare Pages production binding audit via API/curl after deploy: kv_namespaces=[FM_AUDIT], d1_databases=[], r2_buckets=[]; blockers missing FM_PROGRESS_DB/FM_PROGRESS_R2 and missing FM_PRIVATE_MEDIA.",
+      "postdeployPublicFreshness": "lghui.top site-updates/home/181103 entry and pages.dev _edge-status sampled after deploy => Round417 visible; public shell HEAD cae575f4 synced with origin/main. Proof artifact: output/qa/round417-public-freshness-curl-postdeploy.json.",
+      "liveTeacherProof": "NODE_OPTIONS=--dns-result-order=ipv4first node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain => PASS postdeploy: teacher summary uses server-progress-snapshot, audit-event-window excluded from cumulative totals.",
+      "proofArtifacts": [
+        "output/qa/round417-public-freshness-curl-postdeploy.json",
+        "output/qa/round417-progress-readonly-public-chain-postdeploy.json",
+        "output/qa/round417-progress-server-kv-write-public-chain-single-attempt.json",
+        "output/qa/round417-teacher-progress-summary-public-chain-postdeploy.json",
+        "output/qa/round417-cloudflare-pages-bindings-curl-postdeploy.json",
+        "output/qa/round417-progress-primary-store-preflight-postdeploy.json"
+      ]
     },
     "currentRound": 417,
     "runtimeVersion": "round417-progress-primary-store-quota-hardening-20260621",
@@ -61,7 +71,18 @@
       ],
       "cloudflarePermissionBlocker": "current API token can read Pages but cannot list/create D1 or R2",
       "readLayer": "Cloudflare KV 服务器累计 server-kv-cumulative-limited",
-      "fullProductionCumulativeBlocked": true
+      "fullProductionCumulativeBlocked": true,
+      "postdeployReadOnlyNoDriftVerified": true,
+      "postdeployWritePersisted": false,
+      "postdeployFailedWriteNotCounted": true,
+      "postdeployTeacherSummaryNoMutationVerified": true,
+      "cloudflareProductionBindingsObserved": {
+        "kv_namespaces": [
+          "FM_AUDIT"
+        ],
+        "d1_databases": [],
+        "r2_buckets": []
+      }
     },
     "sourceBoundaries": {
       "materialRows": 522,
@@ -86,7 +107,17 @@
       ],
       "noExtraDefaultStudents": true,
       "fullProductionCumulativeBlocked": true,
-      "serverKvCumulativeLimited": "server-kv-cumulative-limited"
+      "serverKvCumulativeLimited": "server-kv-cumulative-limited",
+      "postdeployVerifiedAt": "2026-06-21T06:36:46+08:00",
+      "readOnlyNoDrift": "verified with real student/teacher QA accounts through lghui.top -> pages.dev public chain",
+      "writePersistence": "blocked by write_quota_exceeded until FM_PROGRESS_DB or FM_PROGRESS_R2 is bound",
+      "cloudflareProductionBindingsObserved": {
+        "kv_namespaces": [
+          "FM_AUDIT"
+        ],
+        "d1_databases": [],
+        "r2_buckets": []
+      }
     },
     "round399WorkerFReleaseGates": {
       "version": "round399-worker-f-release-gates-20260619",
@@ -101,6 +132,7 @@
         "old-round-label-risk"
       ],
       "progressNoDrift": "read-only no-drift through server-progress-snapshot; durable writes still require FM_PROGRESS_DB/FM_PROGRESS_R2",
+      "privateVideoStatus": "ready/limited/blocked; full recovery still requires FM_PRIVATE_MEDIA and real teacher QA",
       "publicProof": {
         "publicShell": "https://lghui.top",
         "sourceOrigin": "https://lghui-fluid-learning.pages.dev"
@@ -111,7 +143,24 @@
         "middlewareTouched": true,
         "publicShellHtmlTouched": true
       },
-      "privateVideoStatus": "ready/limited/blocked; full recovery still requires FM_PRIVATE_MEDIA and real teacher QA"
+      "entrySurfaces": {
+        "sourceHome": {
+          "id": "source-home-entry",
+          "required": true,
+          "claim": "source home entry is required"
+        },
+        "publicShell": {
+          "id": "public-shell-entry",
+          "required": true,
+          "claim": "public shell entry is required"
+        }
+      },
+      "publicShell": "public shell release surface is https://lghui.top",
+      "oldRoundLabelRisk": {
+        "id": "old-round-label-risk",
+        "checked": true,
+        "findings": []
+      }
     },
     "defaultActiveStudents": [
       "qi",
