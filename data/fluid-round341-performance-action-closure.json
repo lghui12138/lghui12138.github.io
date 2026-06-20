@@ -51,19 +51,19 @@
     {
       "relPath": "data/fluid-round336-performance-next-actions.json",
       "exists": true,
-      "bytes": 51525,
-      "sizeText": "50 KB"
+      "bytes": 54074,
+      "sizeText": "53 KB"
     },
     {
       "relPath": "docs/round336/performance-next-actions.md",
       "exists": true,
-      "bytes": 16173,
+      "bytes": 16320,
       "sizeText": "16 KB"
     },
     {
       "relPath": "data/fluid-round330-performance-cache.json",
       "exists": true,
-      "bytes": 28242,
+      "bytes": 28887,
       "sizeText": "28 KB"
     },
     {
@@ -75,14 +75,16 @@
     {
       "relPath": "modules/physical-oceanography-home.html",
       "exists": true,
-      "bytes": 20619,
-      "sizeText": "20 KB"
+      "bytes": 21383,
+      "sizeText": "21 KB"
     },
     {
       "relPath": "_headers",
+      "displayPath": "public-shell:_headers",
+      "source": "/Users/kili/Documents/Codex/lghui-private-video-fix",
       "exists": true,
-      "bytes": 485,
-      "sizeText": "485 B"
+      "bytes": 1873,
+      "sizeText": "1.8 KB"
     }
   ],
   "summary": {
@@ -106,7 +108,7 @@
       "implementation": [
         "js/edge-fluid-performance.js blocks manual document assets from runtime prefetch.",
         "modules/physical-oceanography-home.html marks PPTX links as download-only and data-no-prefetch.",
-        "_headers gives PPTX restore paths an explicit manual-download cache policy."
+        "public-shell:_headers gives PPTX restore paths an explicit manual-download cache policy."
       ],
       "boundary": "PPTX files are still large repo-wide static candidates; Round341 only prevents eager/preload/prefetch delivery and makes explicit-click behavior gateable."
     },
@@ -115,7 +117,7 @@
       "round336Priority": "P2",
       "status": "closed-by-round341",
       "implementation": [
-        "_headers distinguishes JSON, precompressed JSON sidecars, and PPTX restore paths.",
+        "public-shell:_headers distinguishes JSON, precompressed JSON sidecars, and PPTX restore paths.",
         "Target large JSON gzip sidecars inflate byte-for-byte to current JSON payloads.",
         "PPTX cache policy deliberately does not use Content-Encoding: gzip."
       ],
@@ -192,17 +194,9 @@
     "findings": []
   },
   "headers": {
-    "relPath": "_headers",
+    "relPath": "public-shell:_headers",
+    "source": "/Users/kili/Documents/Codex/lghui-private-video-fix",
     "relevantBlocks": [
-      {
-        "pattern": "/data/*",
-        "headers": [
-          {
-            "name": "Cache-Control",
-            "value": "public, max-age=300, stale-while-revalidate=86400"
-          }
-        ]
-      },
       {
         "pattern": "/data/*.json.gz",
         "headers": [
@@ -216,7 +210,16 @@
           },
           {
             "name": "Cache-Control",
-            "value": "public, max-age=3600, stale-while-revalidate=86400"
+            "value": "public, max-age=300, must-revalidate"
+          }
+        ]
+      },
+      {
+        "pattern": "/data/*",
+        "headers": [
+          {
+            "name": "Cache-Control",
+            "value": "public, max-age=300, must-revalidate"
           }
         ]
       },
@@ -225,7 +228,7 @@
         "headers": [
           {
             "name": "Cache-Control",
-            "value": "public, max-age=31536000, immutable"
+            "value": "public, max-age=86400, must-revalidate"
           },
           {
             "name": "X-Round341-Delivery",
@@ -238,7 +241,7 @@
         "headers": [
           {
             "name": "Cache-Control",
-            "value": "public, max-age=31536000, immutable"
+            "value": "public, max-age=86400, must-revalidate"
           },
           {
             "name": "X-Round341-Delivery",
@@ -332,17 +335,8 @@
       "status": "pass",
       "pass": true,
       "evidence": {
-        "headers": "_headers",
+        "headers": "public-shell:_headers",
         "jsonHeaders": [
-          {
-            "pattern": "/data/*",
-            "headers": [
-              {
-                "name": "Cache-Control",
-                "value": "public, max-age=300, stale-while-revalidate=86400"
-              }
-            ]
-          },
           {
             "pattern": "/data/*.json.gz",
             "headers": [
@@ -356,7 +350,16 @@
               },
               {
                 "name": "Cache-Control",
-                "value": "public, max-age=3600, stale-while-revalidate=86400"
+                "value": "public, max-age=300, must-revalidate"
+              }
+            ]
+          },
+          {
+            "pattern": "/data/*",
+            "headers": [
+              {
+                "name": "Cache-Control",
+                "value": "public, max-age=300, must-revalidate"
               }
             ]
           }
@@ -368,14 +371,14 @@
       "status": "pass",
       "pass": true,
       "evidence": {
-        "headers": "_headers",
+        "headers": "public-shell:_headers",
         "pptxHeaders": [
           {
             "pattern": "/resources/physical-oceanography/ppt/*",
             "headers": [
               {
                 "name": "Cache-Control",
-                "value": "public, max-age=31536000, immutable"
+                "value": "public, max-age=86400, must-revalidate"
               },
               {
                 "name": "X-Round341-Delivery",
@@ -388,7 +391,7 @@
             "headers": [
               {
                 "name": "Cache-Control",
-                "value": "public, max-age=31536000, immutable"
+                "value": "public, max-age=86400, must-revalidate"
               },
               {
                 "name": "X-Round341-Delivery",
@@ -497,9 +500,9 @@
     "node tools/check-fluid-public-load-budget.mjs --json --limit 20"
   ],
   "outputBudget": {
-    "jsonBytes": 14796,
-    "gzipBytes": 3018,
-    "markdownBytes": 3079,
+    "jsonBytes": 15007,
+    "gzipBytes": 3026,
+    "markdownBytes": 3105,
     "gzipByteExact": true
   },
   "acceptance": {

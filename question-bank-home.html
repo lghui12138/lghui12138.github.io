@@ -1,95 +1,744 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="noindex,nofollow,noarchive">
-  <meta http-equiv="cache-control" content="no-store">
-  <link rel="canonical" href="https://lghui-fluid-learning.pages.dev/modules/question-bank.html?edge_refresh=round410-181103-practice-status-cardinality-20260620">
-  <title>正在进入流体力学主站</title>
-  <style>
-    :root{color-scheme:light dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f7fbff;color:#07111f}
-    *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#f7fbff,#eef7f8)}
-    main{width:min(560px,100%);border:1px solid rgba(7,17,31,.12);border-radius:8px;background:rgba(255,255,255,.88);padding:28px;box-shadow:0 18px 50px rgba(7,17,31,.12)}
-    h1{margin:0 0 10px;font-size:28px;letter-spacing:0}
-    p{margin:0 0 14px;color:#425466;line-height:1.7}
-    a{display:inline-flex;align-items:center;min-height:42px;border-radius:8px;background:#0f766e;color:#fff;padding:0 16px;text-decoration:none;font-weight:800}
-    .actions{display:flex;flex-wrap:wrap;gap:12px}
-    .secondary{background:#155eef}
-    .route-cards{display:grid;gap:10px;margin:16px 0}.route-card{display:block;background:#fff;color:#0f172a;border:1px solid rgba(15,23,42,.12);border-radius:8px;padding:12px 14px;text-decoration:none;font-weight:700}.route-card span{display:block;margin-top:4px;color:#475569;font-size:14px;font-weight:500;line-height:1.5}.status-pills{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.status-pills span{border:1px solid rgba(15,23,42,.14);border-radius:999px;background:#f8fafc;color:#334155;padding:6px 10px;font-size:13px;font-weight:760}
-    code{word-break:break-all}
+  <style data-auth-boot>
+    html[data-auth-pending="1"] body { visibility: hidden !important; opacity: 0 !important; }
+    [v-cloak] { display: none !important; }
   </style>
+  <script data-auth-boot>document.documentElement.setAttribute('data-auth-pending', '1');</script>
+  <script src="/js/security/auth-guard.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>题库与专题入口 - 流体力学学习平台</title>
+  <link rel="stylesheet" href="/styles/edge-fluid-upgrade.css">
+  <style>
+    :root {
+      --bg: linear-gradient(135deg, #eff6ff 0%, #f8fafc 48%, #eef2ff 100%);
+      --card: rgba(255,255,255,0.94);
+      --line: rgba(148, 163, 184, 0.18);
+      --text: #1e293b;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --secondary: #0f766e;
+      --accent: #7c3aed;
+      --shadow: 0 22px 50px rgba(30, 41, 59, 0.10);
+    }
+    * { box-sizing: border-box; }
+    html { overflow-x: hidden; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', Arial, sans-serif;
+      background: var(--bg);
+      overflow-x: hidden;
+    }
+    .wrap {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 18px 56px;
+      min-width: 0;
+    }
+    .hero {
+      background: linear-gradient(135deg, #1d4ed8 0%, #0f766e 100%);
+      color: #fff;
+      border-radius: 28px;
+      padding: 34px 28px;
+      box-shadow: 0 24px 54px rgba(37, 99, 235, 0.18);
+      margin-bottom: 24px;
+    }
+    .hero h1 {
+      margin: 0 0 12px;
+      font-size: clamp(2rem, 3vw, 2.8rem);
+    }
+    .hero p {
+      margin: 0;
+      line-height: 1.85;
+      opacity: 0.96;
+      max-width: 900px;
+    }
+    .hero-stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 100%;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+    .chip strong { font-size: 1.08em; }
+    .index-status {
+      margin-top: 14px;
+      color: rgba(255,255,255,0.88);
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+    .index-status[data-state="warn"] { color: #fef3c7; }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      max-width: 100%;
+      padding: 11px 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 800;
+      text-align: center;
+      overflow-wrap: anywhere;
+      transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn:focus-visible {
+      outline: 3px solid #fbbf24;
+      outline-offset: 3px;
+      box-shadow: 0 0 0 6px rgba(251,191,36,0.18);
+    }
+    .btn-primary {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 10px 28px rgba(37, 99, 235, 0.12);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.7);
+      color: var(--secondary);
+      border: 1px solid rgba(15,118,110,0.12);
+    }
+    .section-title {
+      margin: 0 0 14px;
+      font-size: 1.2rem;
+      color: #334155;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(255px, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 24px 22px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .card .icon {
+      font-size: 2rem;
+      line-height: 1;
+    }
+    .card .icon--round385 {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0f766e, #2563eb);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.26);
+    }
+    .card h2 {
+      margin: 0;
+      font-size: 1.35rem;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 0.96rem;
+      line-height: 1.7;
+    }
+    .desc {
+      color: #334155;
+      line-height: 1.8;
+      flex: 1;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 4px;
+    }
+    .actions .btn {
+      padding: 10px 14px;
+      font-size: 0.98rem;
+      border-radius: 14px;
+    }
+    .round385-181103-main-entry {
+      display: grid;
+      grid-template-columns: minmax(0, 1.18fr) minmax(240px, 0.82fr);
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 20px;
+      border: 1px solid rgba(15,118,110,0.18);
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(240,253,250,0.9));
+      box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .round385-181103-main-entry__main {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 14px;
+      min-width: 0;
+      align-items: start;
+    }
+    .round385-181103-main-entry__kicker {
+      margin: 0 0 4px;
+      color: #0f766e;
+      font-size: 0.82rem;
+      font-weight: 900;
+      line-height: 1.35;
+    }
+    .round385-181103-main-entry h2 {
+      margin: 0;
+      font-size: clamp(1.32rem, 2.3vw, 1.8rem);
+      line-height: 1.22;
+      letter-spacing: 0;
+    }
+    .round385-181103-main-entry p {
+      margin: 7px 0 0;
+      color: #334155;
+      line-height: 1.72;
+    }
+    .round385-181103-main-entry__stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 12px;
+    }
+    .round385-181103-main-entry__stats span {
+      display: grid;
+      gap: 2px;
+      min-width: 0;
+      padding: 9px 10px;
+      border: 1px solid rgba(15,118,110,0.14);
+      border-radius: 12px;
+      background: rgba(255,255,255,0.84);
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 760;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .round385-181103-main-entry__stats b {
+      color: #1e293b;
+      font-size: 1.08rem;
+      line-height: 1.1;
+    }
+    .round385-181103-main-entry__actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 9px;
+      align-content: start;
+      min-width: 0;
+    }
+    .round385-181103-main-entry__actions a {
+      display: grid;
+      align-content: center;
+      min-height: 58px;
+      padding: 10px 13px;
+      border: 1px solid rgba(15,118,110,0.16);
+      border-radius: 14px;
+      background: #fff;
+      color: #1e293b;
+      text-decoration: none;
+      font-weight: 850;
+      line-height: 1.3;
+      overflow-wrap: anywhere;
+    }
+    .round385-181103-main-entry__actions a[data-round385-primary] {
+      background: linear-gradient(135deg, #0f766e, #2563eb);
+      color: #fff;
+      border-color: transparent;
+    }
+    .round385-181103-main-entry__actions a span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 720;
+    }
+    .round385-181103-main-entry__actions a[data-round385-primary] span {
+      color: rgba(255,255,255,0.82);
+    }
+    .round385-181103-main-entry__actions a:focus-visible {
+      outline: 3px solid #fbbf24;
+      outline-offset: 3px;
+      box-shadow: 0 0 0 6px rgba(251,191,36,0.18);
+    }
+    .round399-answer-proof {
+      margin-top: 12px;
+      padding: 11px 13px;
+      border: 1px solid rgba(37, 99, 235, 0.18);
+      border-radius: 14px;
+      background: rgba(239, 246, 255, 0.86);
+      color: #1e3a8a;
+      line-height: 1.65;
+      font-size: 0.92rem;
+      overflow-wrap: anywhere;
+    }
+    .round399-answer-proof b { color: #0f766e; }
+    .intent-panel {
+      margin-bottom: 24px;
+      padding: 18px;
+      border: 1px solid rgba(37, 99, 235, 0.14);
+      border-radius: 22px;
+      background: rgba(255,255,255,0.82);
+      box-shadow: 0 12px 34px rgba(15, 23, 42, 0.06);
+    }
+    .intent-panel__head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 8px 14px;
+      margin-bottom: 12px;
+    }
+    .intent-panel__head h2 {
+      margin: 0;
+      font-size: 1.12rem;
+      color: #1e293b;
+    }
+    .intent-panel__head span {
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+    .intent-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .intent-link {
+      min-height: 74px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      padding: 12px;
+      border: 1px solid rgba(148, 163, 184, 0.22);
+      border-radius: 16px;
+      background: #fff;
+      color: #1e293b;
+      text-decoration: none;
+      overflow-wrap: anywhere;
+    }
+    .intent-link:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 26px rgba(15, 23, 42, 0.08);
+    }
+    .intent-link:focus-visible {
+      outline: 3px solid #fbbf24;
+      outline-offset: 3px;
+    }
+    .intent-link[data-round337-intent] {
+      min-height: 88px;
+    }
+    .intent-link[data-round337-intent]:focus-visible {
+      box-shadow: 0 0 0 6px rgba(251,191,36,0.18);
+    }
+    .intent-link b { font-size: 0.98rem; }
+    .intent-link span { color: var(--muted); font-size: 0.86rem; line-height: 1.45; }
+    .round351-mobile-shortcuts {
+      display: grid;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding: 14px;
+      border: 1px solid rgba(15, 118, 110, 0.16);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.86);
+      box-shadow: 0 12px 34px rgba(15, 23, 42, 0.06);
+    }
+    .round351-mobile-shortcuts__head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+    .round351-mobile-shortcuts__head b { display: block; color: #0f766e; font-size: 1rem; }
+    .round351-mobile-shortcuts__head span { display: block; overflow-wrap: anywhere; }
+    .round351-mobile-shortcuts__grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .round351-mobile-shortcuts a {
+      min-height: 48px;
+      display: grid;
+      align-content: center;
+      padding: 10px 12px;
+      border: 1px solid rgba(15, 118, 110, 0.18);
+      border-radius: 14px;
+      background: #fff;
+      color: #0f766e;
+      text-decoration: none;
+      font-size: 0.86rem;
+      font-weight: 850;
+      line-height: 1.35;
+      overflow-wrap: anywhere;
+    }
+    .round351-mobile-shortcuts a span { display: block; margin-top: 2px; color: var(--muted); font-size: 0.78rem; font-weight: 760; }
+    .round351-mobile-shortcuts a:focus-visible {
+      outline: 3px solid #fbbf24;
+      outline-offset: 3px;
+      box-shadow: 0 0 0 6px rgba(251,191,36,0.18);
+    }
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: 8px;
+      z-index: 1000;
+      max-width: calc(100vw - 24px);
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 8px;
+      background: #0f766e;
+      color: #fff;
+      font-weight: 850;
+      text-decoration: none;
+      transform: translateY(-150%);
+      transition: transform .16s ease;
+      overflow-wrap: anywhere;
+    }
+    .skip-link:focus-visible {
+      transform: none;
+      outline: 3px solid #fbbf24;
+      outline-offset: 3px;
+    }
+    .panel {
+      background: rgba(255,255,255,0.88);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 22px 20px;
+      box-shadow: 0 12px 34px rgba(15, 23, 42, 0.06);
+    }
+    .panel ul {
+      margin: 10px 0 0;
+      padding-left: 20px;
+      color: #334155;
+      line-height: 1.85;
+    }
+    @media (max-width: 768px) {
+      .wrap { padding: 20px 14px 40px; }
+      .hero { padding: 24px 18px; border-radius: 22px; }
+      .grid { grid-template-columns: 1fr; }
+      .intent-grid { grid-template-columns: 1fr; }
+      .round385-181103-main-entry { grid-template-columns: 1fr; }
+      .round385-181103-main-entry__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .round351-mobile-shortcuts__grid { grid-template-columns: 1fr 1fr; }
+      .round351-mobile-shortcuts__head { display: grid; }
+      .toolbar { flex-direction: column; }
+      .btn { width: 100%; }
+    }
+    @media (max-width: 390px) {
+      .wrap { padding-inline: 12px; }
+      .hero { padding: 22px 14px; }
+      .chip { width: 100%; border-radius: 16px; align-items: flex-start; }
+      .round385-181103-main-entry { padding: 16px; }
+      .round385-181103-main-entry__main { grid-template-columns: 1fr; }
+      .round385-181103-main-entry__stats { grid-template-columns: 1fr; }
+      .round351-mobile-shortcuts__grid { grid-template-columns: 1fr; }
+      .actions { display: grid; grid-template-columns: 1fr; }
+      .actions .btn { width: 100%; border-radius: 12px; }
+    }
+  </style>
+  <script>const EDGE_REFRESH = 'round410-181103-practice-status-cardinality-20260620';</script>
 </head>
 <body>
-  <main>
-    <h1>正在进入主站</h1>
-    <p>这个公开路径已迁移到 Cloudflare 源站，正在自动打开完整主站。若浏览器拦截自动跳转，请点击按钮进入。</p>
-    <p>当前公开壳版本是 round410-181103-practice-status-cardinality-20260620，进度生产真值来自 round410-181103-practice-status-cardinality-20260620。跳转会保留当前路径并把旧 edge_refresh 统一改到当前入口版本，主站会继续显示完整内容、公式和练习。</p>
-    <p>181103 资料当前已写成 HTML 正文：38 份资料、30 条学习路线、68 个真题复核任务和 522 张资料来源卡；381 道独立题进入刷题，141 条参考答案页、父卡、源文/答案续页/讲义正文只作线索展示；公开壳不提供原始文件下载。</p>
-    <p>lghui.top 只做公开入口，不伪造 auth；学习进度完整持久化仍要求 FM_PROGRESS_DB 或 FM_PROGRESS_R2，私有视频生产恢复仍要求 FM_PRIVATE_MEDIA R2。</p>
-    <p><code>/question-bank-home.html</code></p>
+  <a class="skip-link" href="#questionBankHomeMain">跳到题库入口</a>
+  <main class="wrap" id="questionBankHomeMain" tabindex="-1">
+    <section class="hero">
+      <h1>题库与专题入口</h1>
+      <p>这个入口页按当前站点结构组织。找 181103 时先点全 HTML 或资料题库；做正式训练时回历年真题拆题；私有视频只看账号状态和 R2 边界。其他专题仍从这里进入当前维护的主入口。</p>
+      <div class="hero-stats">
+        <span class="chip">📚 全站题库 <strong id="statTotalBanks">48</strong> 个</span>
+        <span class="chip">🧮 题库总量 <strong id="statTotalQuestions">9212</strong> 题</span>
+        <span class="chip">🌊 海赛专题 <strong id="statSeaBanks">17</strong> 个 / <strong id="statSeaQuestions">4096</strong> 题</span>
+        <span class="chip">📝 真题训练索引 <strong id="statRealTraining">325</strong> 题</span>
+        <span class="chip">入口数据已更新：进度、题库和资源状态分开验收</span>
+        <span class="chip">181103 68 复核题 + 381 可刷题 + 141 源文线索</span>
+        <span class="chip">217 grouped 小题不合并</span>
+        <span class="chip">🧠 物理海洋学导论核心 132 题 + 扩展 304 题</span>
+      </div>
+      <p class="index-status" id="indexStatus" role="status" aria-live="polite" aria-atomic="true" data-round337-learning-a11y-flow="question-bank-status">正在读取题库索引，若索引暂时不可用会保留最近一次核验数字。Round337：保留 Round326 意图词，181103、历年真题、公式回查、错题订正和私有课程状态都能用键盘直达。</p>
+    </section>
 
-    <div class="status-pills" aria-label="当前公开壳版本状态">
-      <span>Public shell · Round410</span>
-      <span>Source truth · Round410</span>
-      <span>181103 answer · Round410</span>
-      <span>38 HTML · 522 sources · 381 practice · 141 leads</span>
-      <span>Storage boundary · FM_PROGRESS_DB/FM_PROGRESS_R2/FM_PRIVATE_MEDIA</span>
+    <div class="toolbar">
+      <a class="btn btn-primary" href="./index-complete.html?full=1&edge_refresh=round410-181103-practice-status-cardinality-20260620">返回正式首页</a>
+      <a class="btn btn-secondary" href="./resources/fluid-181103-html/index.html" aria-label="打开 181103 全部 38 个站内 HTML 资料">181103 全 HTML</a>
+      <a class="btn btn-secondary" href="./modules/question-bank.html?focus=181103-material-extracted#questionBanksList" aria-label="打开 181103 资料题库，381 道独立题可刷，141 条源文线索只展示">181103 题库</a>
+      <a class="btn btn-secondary" href="./modules/question-bank.html?edge_refresh=round410-181103-practice-status-cardinality-20260620">进入题库页</a>
+      <a class="btn btn-secondary" href="./modules/site-updates.html">查看更新记录</a>
     </div>
-    <div class="route-cards" aria-label="181103 题库直达入口">
-      <a class="route-card" href="https://lghui-fluid-learning.pages.dev/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round410-181103-practice-status-cardinality-20260620#questionBanksList">181103 资料内题目全集<span>522 张来源 HTML 卡已经进入题库可见面；381 道独立题进入默认练习池。</span></a>
-      <a class="route-card" href="https://lghui-fluid-learning.pages.dev/modules/question-bank.html?focus=181103-material-review&edge_refresh=round410-181103-practice-status-cardinality-20260620#questionBanksList">181103 真题复核边界<span>68 个真题复核任务保留独立边界，辅助题干、章节和题型复核，不冒充原卷答案 PDF 证据。</span></a>
-      <a class="route-card" href="/resources/fluid-181103-html/index.html?edge_refresh=round410-181103-practice-status-cardinality-20260620">181103 HTML 来源总表<span>需要回看来源时打开站内 HTML 正文页；公开壳不提供原始文件下载。</span></a>
-      <a class="route-card" href="https://lghui-fluid-learning.pages.dev/modules/progress-module.html?edge_refresh=round410-181103-practice-status-cardinality-20260620">Round410 进度真值边界<span>题库练习写入后必须回读服务器快照；FM_PROGRESS_DB/FM_PROGRESS_R2 未绑定前只声明 no-drift，不声明完整生产持久化。</span></a>
-    </div>
-    <div class="actions">
-      <a id="targetLink" href="https://lghui-fluid-learning.pages.dev/modules/question-bank.html?edge_refresh=round410-181103-practice-status-cardinality-20260620">立即打开</a>
-      <a id="stableLink" class="secondary" href="https://lghui.top/index-complete.html?full=1&edge_refresh=round410-181103-practice-status-cardinality-20260620">打开稳定入口</a>
-    </div>
+
+    <section class="round385-181103-main-entry" data-round385-181103-main-entry="question-bank-home" aria-labelledby="round385QuestionBank181103Title" aria-describedby="round385QuestionBank181103Desc">
+      <div class="round385-181103-main-entry__main">
+        <span class="icon--round385" data-round385-icon="html-bank" aria-hidden="true">181103</span>
+        <div>
+          <p class="round385-181103-main-entry__kicker">181103 题库入口</p>
+          <h2 id="round385QuestionBank181103Title">181103：381 道可刷题，答案、解析和来源证据做题后可见</h2>
+          <p id="round385QuestionBank181103Desc">题库入口页顶部直接给 181103：38/38 份站内 HTML 资料，522/522 张来源 HTML 卡和网页答案块，381 道独立题进入默认练习，141 条参考答案页、父卡、源文/答案续页/讲义正文只展示。Round378/Round379/Round399 参考答案修复状态、最终校正、质量门禁和逐题改记录都回到题库答案面板；刷题时参考答案、解析思路、来源 HTML 和页图证据同屏给出，没有可靠答案时显示待复核提示，不冒充原卷答案。</p>
+          <div class="round399-answer-proof" data-round399-181103-home-answer-proof="1"><b>答案展示口径</b>：默认练习只放 381 道语义确认独立题，提交后看参考答案和证据链；141 条线索仍只展示，不混进默认刷题。</div>
+          <div class="round385-181103-main-entry__stats" aria-label="181103 题库入口状态">
+            <span><b>522/522</b>来源 HTML 卡</span>
+            <span><b>381</b>默认可刷题</span>
+            <span><b>141</b>源文线索只展示</span>
+            <span><b>4 层</b>答案 / 解析 / HTML / 页图</span>
+          </div>
+        </div>
+      </div>
+      <div class="round385-181103-main-entry__actions" aria-label="181103 题库入口动作">
+        <a data-round385-primary="practice" href="./modules/question-bank.html?focus=181103-material-extracted#questionBanksList" aria-label="进入 181103 资料题库，刷 381 道独立题，做题后查看参考答案、解析和来源证据">刷 381 资料题<span>答案与证据同屏</span></a>
+        <a href="./resources/fluid-181103-html/index.html" aria-label="打开 181103 全部 38 个站内 HTML 资料总表">看 38 份 HTML<span>站内阅读，不下载原件</span></a>
+        <a href="./modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList" aria-label="查看 181103 刷题模式参考答案、解析和来源证据链">答案证据链<span>缺答案给提示</span></a>
+      </div>
+    </section>
+
+    <nav class="round351-mobile-shortcuts" data-round351-mobile-shortcuts="question-bank-home" aria-label="题库首页手机和键盘直达入口">
+      <div class="round351-mobile-shortcuts__head">
+        <div><b>找 181103 / 真题 / 视频状态</b><span>先确认 181103 全 HTML 与资料题，再回历年真题拆题；私有视频只看真实账号状态和 R2 边界。</span></div>
+        <span>入口状态已同步</span>
+      </div>
+      <div class="round351-mobile-shortcuts__grid" role="list">
+        <a href="./resources/fluid-181103-html/index.html" aria-label="打开 181103 全部 38 个站内 HTML 资料，不下载原件">181103 全 HTML<span>38/38 站内观看</span></a>
+        <a href="./modules/question-bank.html?focus=181103-material-extracted#questionBanksList" aria-label="打开 181103 资料内 522 张来源 HTML 卡和 522 个网页答案块，其中 381 道独立题默认可刷，141 条源文线索只展示">181103 题库<span>522 核对 / 381 练习</span></a>
+        <a href="./resources.html?from=round357-question-bank-textbook#resourceList" aria-label="打开吴望一第二版和王洪伟理解流体力学两本教材 HTML 整理稿">教材依据<span>吴望一 / 王洪伟</span></a>
+        <a href="./modules/real-exams-dynamic.html?edge_refresh=round410-181103-practice-status-cardinality-20260620&from=round368-question-bank-shortcut" aria-label="打开历年真题新版，核对 325 原文小题和五题简答防合并">真题拆题<span>325 / 68 / 217</span></a>
+        <a href="./resources.html?from=round368-question-bank-shortcut#sourceStatus" aria-label="查看私有视频管理状态和 FM_PRIVATE_MEDIA R2 阻塞边界">视频状态<span>删除/管理边界</span></a>
+      </div>
+    </nav>
+
+    <section class="intent-panel"
+      data-round361-form-labels="round410-181103-practice-status-cardinality-20260620"
+      data-round366-learning-shortcuts="round410-181103-practice-status-cardinality-20260620"
+      aria-labelledby="round368QuestionBankRouteTitle">
+      <div class="intent-panel__head">
+        <h2 id="round368QuestionBankRouteTitle">可刷题路径</h2>
+        <span role="status" aria-live="polite" aria-atomic="true">181103 资料题必须先过原文语义复核；381 道独立题进入可刷模式，141 条源文线索只展示。真实真题继续按 325 原文小题、68 组题和五题简答不合并的口径训练。</span>
+      </div>
+      <div class="intent-grid">
+        <a class="intent-link" href="./modules/question-bank.html?focus=181103-material-extracted&round=375#questionBanksList" aria-label="打开 181103 资料内 381 道可刷题和 141 条源文线索">
+          <b>181103 资料题</b><span>381 道可刷；141 条源文线索可回查</span>
+        </a>
+        <a class="intent-link" href="./resources/fluid-181103-html/index.html?round=368" aria-label="打开 181103 三十八个站内 HTML 资料页">
+          <b>资料 HTML</b><span>38/38 站内阅读，不下载原件</span>
+        </a>
+        <a class="intent-link" href="./modules/real-exams-dynamic.html?round=368#sourceGranularityNote" aria-label="打开历年真题拆题和综合题路线">
+          <b>真题拆题</b><span>五题简答、名词解释和连续小问不得合并</span>
+        </a>
+        <a class="intent-link" href="./index-complete.html#round368TenRoundRadar" aria-label="回到首页总控面板">
+          <b>首页总控</b><span>入口、账号、资源、公式和发布门禁同屏</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="intent-panel" aria-labelledby="round326IntentTitle" data-round337-learning-a11y-flow="question-bank">
+      <div class="intent-panel__head">
+        <h2 id="round326IntentTitle">按学习意图直达</h2>
+        <span role="status" aria-live="polite" aria-atomic="true">把 181103、真题、公式、专属课、错题复盘做成可 Tab 到达的入口。</span>
+      </div>
+      <div class="intent-grid">
+        <a class="intent-link" data-round326-intent="181103" data-round337-intent="181103" href="./resources/fluid-181103-html/index.html" aria-label="打开 181103 站内 HTML 正文总表">
+          <b>181103</b><span>38 页 HTML 总表；381 资料题另刷，141 线索只看</span>
+        </a>
+        <a class="intent-link" data-round357-intent="textbook-foundation" href="./resources.html?from=round357-question-bank-intent#resourceList" aria-label="打开吴望一第二版和王洪伟理解流体力学教材整理稿">
+          <b>教材依据</b><span>吴望一 / 王洪伟；推导和公式回查</span>
+        </a>
+        <a class="intent-link" data-round326-intent="real-exam" data-round337-intent="real-exam" href="./modules/real-exams-dynamic.html?edge_refresh=round410-181103-practice-status-cardinality-20260620&from=round337-question-bank-intent" aria-label="打开 2000 到 2024 历年真题动态页">
+          <b>真题</b><span>325 原文小题；先看源文拆题</span>
+        </a>
+        <a class="intent-link" data-round326-intent="formula" data-round337-intent="formula" href="./index-complete.html#formula-checklist" aria-label="打开首页公式条件回查工作台，先核适用条件和边界条件">
+          <b>公式</b><span>条件、边界、单位方向同屏核对</span>
+        </a>
+        <a class="intent-link" data-round326-intent="private-course" data-round337-intent="private-course" href="./resources.html?from=round326-intent-private-course#sourceStatus" aria-label="查看当前账号专属课状态和 R2 边界">
+          <b>专属课</b><span>资源/私有课状态；不宣称 R2 恢复</span>
+        </a>
+        <a class="intent-link" data-round326-intent="mistake-review" data-round337-intent="mistake-review" href="./index-complete.html#tabsW" aria-label="打开首页错题本、收藏和笔记复盘区">
+          <b>错题 / 复盘</b><span>订正错因后回到同公式真题</span>
+        </a>
+      </div>
+    </section>
+
+    <h2 class="section-title">主入口分组：181103、历年真题、视频状态</h2>
+    <section class="grid">
+      <article class="card">
+        <div class="icon">📝</div>
+        <h2>流体力学历年真题</h2>
+        <div class="meta">2000-2024 历年真题 · 当前主库 <span id="realMainCount">325</span> 题 · 动态训练 <span id="realTrainingCount">325</span> 题</div>
+        <div class="desc">适合按年份复盘 803 流体力学真题。当前按原文连续编号小问拆为 325/325 道练习，68/68 个多小问父题已拆开，217 个 grouped 小题不再合并；继续锁定 18 个 4/5 小问题数锁、21 个 4 题及以上高风险父题、16 个简答/概念/名词 4/5 小问锁。若想先看年份卡、知识点网络和动态筛选，优先进入动态真题页。</div>
+        <div class="actions">
+          <a class="btn btn-primary" href="./modules/real-exams-dynamic.html?edge_refresh=round410-181103-practice-status-cardinality-20260620">动态真题页</a>
+          <a class="btn btn-secondary" href="./modules/question-bank.html?edge_refresh=round410-181103-practice-status-cardinality-20260620">从题库页进入</a>
+        </div>
+      </article>
+
+      <article class="card" id="entry-181103-materials">
+        <div class="icon">📄</div>
+        <h2>181103 资料题库与 HTML 正文</h2>
+        <div class="meta">38 个 HTML 资料页 · 68 个复核题 · 522 来源卡 · 381 可刷题 · 141 源文线索</div>
+        <div class="desc">181103 资料不是下载包，也不是中转壳；已做成站内 HTML 正文。902 张资料页图已完成 OCR 处理，其中 685 页有可抽取文本、217 页为空白或图表页；资料内习题、例题、名词解释、证明计算题已单独入库为 522 张来源卡，其中 381 道独立题可刷，141 条父题、答案续页和讲义正文只作源文线索，并和 68 个真题复核任务分开。</div>
+        <div class="actions">
+          <a class="btn btn-primary" href="./modules/question-bank.html?focus=181103-material-extracted#questionBanksList">刷 381 个资料内题</a>
+          <a class="btn btn-secondary" href="./modules/question-bank.html?focus=181103-material-review#questionBanksList">68 个真题复核</a>
+          <a class="btn btn-secondary" href="./resources/fluid-181103-html/index.html">38 页 HTML 总表</a>
+        </div>
+      </article>
+
+      <article class="card" id="entry-textbook-foundation" data-round357-textbook-foundation="wu-wangyi-second-wang-hongwei-understanding">
+        <div class="icon">📘</div>
+        <h2>教材依据与公式回查</h2>
+        <div class="meta">吴望一第二版 · 王洪伟《理解流体力学》 · 站内 HTML 整理稿</div>
+        <div class="desc">用于把题库题目、181103 资料题和历年真题回查到教材推导层。优先看适用条件、边界条件、量纲方向和常见误用，不把教材推导答案冒充为原卷答案。</div>
+        <div class="actions">
+          <a class="btn btn-primary" href="./resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html">吴望一第二版</a>
+          <a class="btn btn-secondary" href="./resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html">王洪伟教材</a>
+          <a class="btn btn-secondary" href="./resources.html?from=round357-question-bank-textbook#resourceList">资源页索引</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon">🌪️</div>
+        <h2>流体专题题库</h2>
+        <div class="meta">动量 / 势流 / 粘性 / 边界层 / 湍流等专题</div>
+        <div class="desc">用于系统刷流体力学专题题库。保留当前站内题库筛选、统计和推荐入口，不引向已停用的全屏练习路径。</div>
+        <div class="actions">
+          <a class="btn btn-primary" href="./modules/question-bank.html?edge_refresh=round410-181103-practice-status-cardinality-20260620">题库练习页</a>
+          <a class="btn btn-secondary" href="./modules/fluid-dynamics-dynamic.html">流体动力学页</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon">🐋</div>
+        <h2>海赛专题练习</h2>
+        <div class="meta"><span id="seaBankCount">17</span> 个专题 · 当前索引 <span id="seaQuestionCount">4096</span> 题</div>
+        <div class="desc">覆盖海洋科技、物理海洋、地质地理时事、法律权益海岛、调查极地减灾等专题，适合从总入口继续下钻到专题知识页和对应题库。</div>
+        <div class="actions">
+          <a class="btn btn-primary" href="./modules/practice-dynamic.html?category=sea-contest">海赛总入口</a>
+          <a class="btn btn-secondary" href="./modules/ocean-competition-marine-technology.html">海洋科技知识页</a>
+        </div>
+      </article>
+
+      <article class="card">
+        <div class="icon">🌊</div>
+        <h2>物理海洋学专区</h2>
+        <div class="meta">导论混合题 480 题 · 核心 132 题 · 扩展 304 题</div>
+        <div class="desc">先看 11 章知识骨架，再刷导论主力题库和扩展题库；也可继续进入高描专题、名词填空和问答训练。</div>
+        <div class="actions">
+          <a class="btn btn-primary" href="./modules/physical-oceanography-home.html">专区首页</a>
+          <a class="btn btn-secondary" href="./modules/physical-oceanography-knowledge.html">知识点页</a>
+        </div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <h2 class="section-title">建议使用顺序</h2>
+      <ul>
+        <li>想确认站点当前主入口：先走 <strong>正式首页</strong> 与 <strong>更新记录页</strong>。</li>
+        <li>想系统刷流体：先走 <strong>题库练习页</strong>，再按需要进入动态真题页或专题页。</li>
+        <li>想刷海赛：直接进入 <strong>海赛总入口</strong>，再按专题细分。</li>
+        <li>想补物理海洋学：先看 <strong>物理海洋学知识点页</strong>，再刷核心库和扩展库。</li>
+        <li>想有针对性地复习流体：按 <strong>181103 → 真题 → 公式 → 错题复盘</strong> 的顺序走；私有课只看当前账号资源状态。</li>
+      </ul>
+    </section>
   </main>
   <script>
-    const TARGET_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-    const ROUTE = '/modules/question-bank.html';
-    const BASE_SEARCH = '?edge_refresh=round410-181103-practice-status-cardinality-20260620';
-    const EDGE_REFRESH = 'round410-181103-practice-status-cardinality-20260620';
-    function timeout(ms){
-      return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-    async function clearOldPublicState(){
-      try{
-        if('serviceWorker' in navigator){
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(registrations.map((registration)=>registration.unregister()));
+    (function(){
+      var fallback = {
+        totalBanks: 48,
+        totalQuestions: 9101,
+        seaBanks: 17,
+        seaQuestions: 4096,
+        realMain: 325,
+        realTraining: 325
+      };
+      function byId(id){ return document.getElementById(id); }
+      function countOf(item){ return Number(item && (item.questionCount || item.count || 0)) || 0; }
+      function setText(id, value){
+        var el = byId(id);
+        if (el && Number.isFinite(Number(value))) el.textContent = String(Number(value));
+      }
+      function isSeaContest(bank){
+        var tags = Array.isArray(bank && bank.tags) ? bank.tags.join(' ') : '';
+        return /海赛/.test(String((bank && bank.category) || '') + ' ' + tags);
+      }
+      function fetchJson(path){
+        return fetch(path, { cache: 'no-cache', credentials: 'same-origin' }).then(function(response){
+          if (!response.ok) throw new Error(path + ' ' + response.status);
+          return response.json();
+        });
+      }
+      Promise.allSettled([
+        fetchJson('/question-banks/index.json'),
+        fetchJson('/question-banks/real-exams-index.json')
+      ]).then(function(results){
+        var status = byId('indexStatus');
+        var index = results[0].status === 'fulfilled' ? results[0].value : null;
+        var realIndex = results[1].status === 'fulfilled' ? results[1].value : null;
+        var banks = Array.isArray(index && index.questionBanks) ? index.questionBanks : [];
+        var stats = (index && index.statistics) || {};
+        var seaBanks = banks.filter(isSeaContest);
+        // 旧 fixed monolith 仅保留为历史候选；真题主入口的数字只读 real-exams-index。
+        var historicalFixedMonolith = banks.find(function(bank){ return bank && bank.id === 'real-exam-2000-2024-fixed'; });
+        var totalBanks = Number(stats.totalQuestionBanks || stats.totalBanks || banks.length || fallback.totalBanks);
+        var totalQuestions = Number(stats.totalQuestions || banks.reduce(function(sum, bank){ return sum + countOf(bank); }, 0) || fallback.totalQuestions);
+        var seaQuestionCount = Number(stats.seaContestQuestionCount || seaBanks.reduce(function(sum, bank){ return sum + countOf(bank); }, 0) || fallback.seaQuestions);
+        var realTraining = Number(realIndex && realIndex.statistics && realIndex.statistics.questionCount) || fallback.realTraining;
+        var realMain = realTraining || fallback.realMain;
+        setText('statTotalBanks', totalBanks);
+        setText('statTotalQuestions', totalQuestions);
+        setText('statSeaBanks', seaBanks.length || fallback.seaBanks);
+        setText('statSeaQuestions', seaQuestionCount);
+        setText('statRealTraining', realTraining);
+        setText('realMainCount', realMain);
+        setText('realTrainingCount', realTraining);
+        setText('seaBankCount', seaBanks.length || fallback.seaBanks);
+        setText('seaQuestionCount', seaQuestionCount);
+        if (status) {
+          if (index || realIndex) {
+            var updated = stats.updatedAt || index && index.updatedAt || index && index.lastUpdated || '当前索引';
+            status.textContent = '已按 real-exams-index.json 的 325/325 原文原子题更新真题主入口；固定单页题库仅作为历史候选。索引时间：' + updated + '。';
+            status.dataset.state = 'ok';
+          } else {
+            status.textContent = '题库索引暂时不可用，页面保留最近一次核验数字；进入题库页后仍会再次读取索引。';
+            status.dataset.state = 'warn';
+          }
         }
-        if(window.caches){
-          const keys = await caches.keys();
-          await Promise.all(keys.map((key)=>caches.delete(key)));
+      }).catch(function(){
+        var status = byId('indexStatus');
+        if (status) {
+          status.textContent = '题库索引暂时不可用，页面保留最近一次核验数字；进入题库页后仍会再次读取索引。';
+          status.dataset.state = 'warn';
         }
-      }catch(_){}
-    }
-    const searchParams = new URLSearchParams(BASE_SEARCH);
-    for (const [key, value] of new URLSearchParams(location.search)) searchParams.set(key, value);
-    searchParams.delete('go');
-    searchParams.set('edge_refresh', EDGE_REFRESH);
-    const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
-    document.getElementById('targetLink').href = target;
-    const stableUrl = new URL('https://lghui.top/index-complete.html');
-    const stableParams = new URLSearchParams(location.search);
-    stableParams.set('full', '1');
-    stableParams.set('edge_refresh', EDGE_REFRESH);
-    stableUrl.search = stableParams.toString();
-    stableUrl.hash = location.hash;
-    document.getElementById('stableLink').href = stableUrl.toString();
-    let entering = false;
-    function enterTarget(){
-      if (entering || location.href === target) return;
-      entering = true;
-      location.replace(target);
-    }
-    requestAnimationFrame(enterTarget);
-    setTimeout(enterTarget, 250);
-    Promise.race([clearOldPublicState(), timeout(600)]).finally(enterTarget);
+      });
+    })();
   </script>
 </body>
 </html>

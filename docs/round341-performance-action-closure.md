@@ -17,8 +17,8 @@ Round341 closes two low-risk Round336 performance next actions with source chang
 
 | Action | Status | Implementation | Boundary |
 |---|---|---|---|
-| `static-pptx-delivery-policy` | `closed-by-round341` | `js/edge-fluid-performance.js blocks manual document assets from runtime prefetch.`<br>`modules/physical-oceanography-home.html marks PPTX links as download-only and data-no-prefetch.`<br>`_headers gives PPTX restore paths an explicit manual-download cache policy.` | PPTX files are still large repo-wide static candidates; Round341 only prevents eager/preload/prefetch delivery and makes explicit-click behavior gateable. |
-| `gzip-and-cache-negotiation` | `closed-by-round341` | `_headers distinguishes JSON, precompressed JSON sidecars, and PPTX restore paths.`<br>`Target large JSON gzip sidecars inflate byte-for-byte to current JSON payloads.`<br>`PPTX cache policy deliberately does not use Content-Encoding: gzip.` | This is a cache/negotiation gate closure, not a user-facing payload-sharding closure. |
+| `static-pptx-delivery-policy` | `closed-by-round341` | `js/edge-fluid-performance.js blocks manual document assets from runtime prefetch.`<br>`modules/physical-oceanography-home.html marks PPTX links as download-only and data-no-prefetch.`<br>`public-shell:_headers gives PPTX restore paths an explicit manual-download cache policy.` | PPTX files are still large repo-wide static candidates; Round341 only prevents eager/preload/prefetch delivery and makes explicit-click behavior gateable. |
+| `gzip-and-cache-negotiation` | `closed-by-round341` | `public-shell:_headers distinguishes JSON, precompressed JSON sidecars, and PPTX restore paths.`<br>`Target large JSON gzip sidecars inflate byte-for-byte to current JSON payloads.`<br>`PPTX cache policy deliberately does not use Content-Encoding: gzip.` | This is a cache/negotiation gate closure, not a user-facing payload-sharding closure. |
 
 ## Remaining Open Round336 Actions
 
@@ -62,7 +62,7 @@ Round341 closes two low-risk Round336 performance next actions with source chang
 
 ## Output Budget
 
-- JSON bytes: 14754
-- Gzip bytes: 3029
-- Markdown bytes: 3079
+- JSON bytes: 15007
+- Gzip bytes: 3026
+- Markdown bytes: 3105
 - Gzip byte exact: yes

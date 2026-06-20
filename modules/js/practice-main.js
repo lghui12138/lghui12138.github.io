@@ -586,8 +586,9 @@ window.PracticeApp = {
                         this.showNotification('回答错误，请查看解析', 'error');
                     }
                     
-                    // 记录答题时间
-                    this.stats.totalTime += timeSpentMs || 0;
+                    // `stats.totalTime` is displayed beside server `studyTimeSeconds`,
+                    // so keep it in seconds instead of mixing milliseconds into the same field.
+                    this.stats.totalTime += questionTimeSeconds || 0;
                     
                     // 更新正确率
                     this.stats.correctRate = Math.round(
@@ -615,7 +616,8 @@ window.PracticeApp = {
                         isCorrect: data.isCorrect,
                         questionTimeSeconds,
                         timeSpentMs: timeSpentMs || 0,
-                        durationUnit: 'seconds'
+                        durationUnit: 'seconds',
+                        timeSpentUnit: 'milliseconds'
                     });
                 },
 
