@@ -7,8 +7,8 @@
 - questions: 522/522
 - existing material anchors: 522/522
 - material pages: 38/38
-- playable/source-first/OCR/hidden: 381/522/379/13
-- original OCR show candidates: 110
+- playable/source-first/OCR/hidden: 381/522/379/24
+- original OCR show candidates: 99
 - quality noise marker/source fallback: 77/77 marked, 77/77 source-backed, naked 0
 - human enrichment candidates: 443 (non-failing)
 
@@ -77,7 +77,7 @@ These rows are intentionally warnings rather than failures. They are short, low-
 | question | material | chars | CJK | tier | reasons | source anchor |
 |---|---:|---:|---:|---|---|---|
 | 181103-material-extracted-0494 | fluid-181103-03 | 15 | 11 | ocr-review | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html#page-009` |
-| 181103-material-extracted-0087 | fluid-181103-01 | 20 | 11 | show | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-101` |
+| 181103-material-extracted-0087 | fluid-181103-01 | 20 | 11 | hide | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-tier-hide | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-101` |
 | 181103-material-extracted-0178 | fluid-181103-01 | 20 | 14 | show | short-question-text, low-cjk-density | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-221` |
 | 181103-material-extracted-0009 | fluid-181103-01 | 22 | 13 | ocr-review | short-question-text, low-cjk-density, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-010` |
 | 181103-material-extracted-0048 | fluid-181103-01 | 23 | 18 | ocr-review | short-question-text, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-059` |
@@ -87,7 +87,7 @@ These rows are intentionally warnings rather than failures. They are short, low-
 | 181103-material-extracted-0224 | fluid-181103-01 | 25 | 19 | ocr-review | short-question-text, latin-symbol-noise, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-278` |
 | 181103-material-extracted-0361 | fluid-181103-25 | 25 | 23 | ocr-review | short-question-text, weak-question-cue, quality-flag-low-cjk-density, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/25-fluid-181103-25-turbulent/index.html#page-029` |
 | 181103-material-extracted-0207 | fluid-181103-01 | 26 | 13 | show | short-question-text, low-cjk-density | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-252` |
-| 181103-material-extracted-0063 | fluid-181103-01 | 26 | 16 | show | short-question-text, weak-question-cue, quality-flag-short-fragment, quality-flag-low-cjk-density | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-076` |
+| 181103-material-extracted-0063 | fluid-181103-01 | 26 | 16 | hide | short-question-text, weak-question-cue, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-tier-hide | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-076` |
 | 181103-material-extracted-0296 | fluid-181103-05 | 26 | 20 | ocr-review | short-question-text, quality-flag-short-fragment, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/05-fluid-181103-05-1-2/index.html#page-023` |
 | 181103-material-extracted-0049 | fluid-181103-01 | 26 | 21 | ocr-review | short-question-text, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-060` |
 | 181103-material-extracted-0089 | fluid-181103-01 | 27 | 11 | show | short-question-text, low-cjk-density | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-101` |
@@ -105,7 +105,7 @@ These rows are intentionally warnings rather than failures. They are short, low-
 | 181103-material-extracted-0500 | fluid-181103-03 | 29 | 23 | ocr-review | short-question-text, quality-flag-short-fragment, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/03-fluid-181103-03-material/index.html#page-010` |
 | 181103-material-extracted-0390 | fluid-181103-38 | 29 | 25 | ocr-review | short-question-text, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/38-fluid-181103-38-3-3/index.html#page-023` |
 | 181103-material-extracted-0294 | fluid-181103-05 | 30 | 22 | show | short-question-text, weak-question-cue | `/resources/fluid-181103-html/materials/05-fluid-181103-05-1-2/index.html#page-014` |
-| 181103-material-extracted-0213 | fluid-181103-01 | 30 | 23 | show | short-question-text, quality-flag-low-cjk-density | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-265` |
+| 181103-material-extracted-0213 | fluid-181103-01 | 30 | 23 | hide | short-question-text, quality-flag-low-cjk-density, quality-tier-hide | `/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-265` |
 | 181103-material-extracted-0384 | fluid-181103-38 | 30 | 23 | show | short-question-text, weak-question-cue | `/resources/fluid-181103-html/materials/38-fluid-181103-38-3-3/index.html#page-015` |
 | 181103-material-extracted-0374 | fluid-181103-38 | 30 | 24 | hide | short-question-text, weak-question-cue, quality-flag-short-fragment, quality-flag-low-cjk-density, quality-flag-weak-question-cue, quality-tier-hide | `/resources/fluid-181103-html/materials/38-fluid-181103-38-3-3/index.html#page-004` |
 | 181103-material-extracted-0360 | fluid-181103-23 | 30 | 27 | ocr-review | short-question-text, weak-question-cue, quality-flag-low-cjk-density, quality-tier-ocr-review | `/resources/fluid-181103-html/materials/23-fluid-181103-23-material/index.html#page-008` |

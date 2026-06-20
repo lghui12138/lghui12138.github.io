@@ -1870,8 +1870,6 @@ window.QuestionBankData = (function() {
                     && question.defaultPracticeEligible !== false
                     && question.practiceEntryEnabled !== false
                     && question.defaultHidden !== true
-                    && question.qualityTier !== 'hide'
-                    && question.reviewStatus !== 'hidden-needs-human-review'
                     && question.sourceSemanticPracticeEligible !== false
                     && question.sourceSemanticQuestionCardKind !== 'source-content-card'
                     && question.round373QuestionCardKind !== 'source-content-card'
