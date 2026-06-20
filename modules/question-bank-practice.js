@@ -244,8 +244,8 @@ window.QuestionBankPractice = (function() {
     function hasStudentAnswerContent(question) {
         if (!question || typeof question !== 'object') return false;
         const raw = [
-            question.answerHtml,
             question.referenceAnswerHtml,
+            question.answerHtml,
             question.sampleAnswerHtml,
             question.referenceAnswer,
             question.sampleAnswer,
@@ -387,7 +387,7 @@ window.QuestionBankPractice = (function() {
 
     function getAnswerHtml(question) {
         if (!question || typeof question !== 'object') return honestAnswerFallback(question);
-        const explicit = String(question.answerHtml || question.referenceAnswerHtml || question.sampleAnswerHtml || '').trim();
+        const explicit = String(question.referenceAnswerHtml || question.answerHtml || question.sampleAnswerHtml || '').trim();
         if (explicit && !hasUnsafeInlineHtml(explicit)) {
             return hasAnswerHtmlMarkup(explicit) ? explicit : formatAnswerTextAsHtml(explicit);
         }
@@ -397,7 +397,7 @@ window.QuestionBankPractice = (function() {
 
     function hasExplicitAnswerHtml(question) {
         if (!question || typeof question !== 'object') return false;
-        const explicit = String(question.answerHtml || question.referenceAnswerHtml || question.sampleAnswerHtml || '').trim();
+        const explicit = String(question.referenceAnswerHtml || question.answerHtml || question.sampleAnswerHtml || '').trim();
         return Boolean(explicit && !hasUnsafeInlineHtml(explicit));
     }
 
@@ -861,7 +861,12 @@ window.QuestionBankPractice = (function() {
         const source = progressSourceFromPayload(payload || {});
         const cumulativeSourceOfTruth = String(payload && payload.cumulativeSourceOfTruth || '').trim();
         const noMutationRead = payload && payload.noMutationRead === true && cumulativeSourceOfTruth === 'server-progress-snapshot';
-        const serverManaged = /^(server-d1-learning-progress|server-r2-learning-progress|server-kv-learning-progress)$/.test(source) && noMutationRead;
+        const snapshotPersisted = payload
+            && payload.hasServerProgressSnapshot === true
+            && payload.snapshotPersisted !== false
+            && payload.emptyServerProgressSnapshot !== true
+            && payload.emptySnapshotDoesNotCreateCumulative !== true;
+        const serverManaged = /^(server-d1-learning-progress|server-r2-learning-progress|server-kv-learning-progress)$/.test(source) && noMutationRead && snapshotPersisted;
         if (!serverManaged) return;
         const snapshotUser = currentProgressUser(payload);
         const syncedAt = new Date().toISOString();
@@ -872,6 +877,10 @@ window.QuestionBankPractice = (function() {
             storeMode: payload && (payload.storeMode || payload.store || ''),
             cumulativeSourceOfTruth,
             noMutationRead,
+            hasServerProgressSnapshot: true,
+            snapshotPersisted: true,
+            emptyServerProgressSnapshot: false,
+            emptySnapshotDoesNotCreateCumulative: false,
             progress: progress || null,
             stats: stats || null
         });

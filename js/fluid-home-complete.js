@@ -64,7 +64,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 	  const source=String(payload.source||payload.progressSource||'').trim();
 	  const truth=String(payload.cumulativeSourceOfTruth||'').trim();
 	  const noMutation=payload.noMutationRead===true&&truth==='server-progress-snapshot';
-	  const serverManaged=/^(server-d1-learning-progress|server-r2-learning-progress|server-kv-learning-progress)$/.test(source)&&noMutation;
+	  const snapshotPersisted=payload.hasServerProgressSnapshot===true
+	    && payload.snapshotPersisted!==false
+	    && payload.emptyServerProgressSnapshot!==true
+	    && payload.emptySnapshotDoesNotCreateCumulative!==true;
+	  const serverManaged=/^(server-d1-learning-progress|server-r2-learning-progress|server-kv-learning-progress)$/.test(source)&&noMutation&&snapshotPersisted;
 	  if(!serverManaged)return null;
 	  const progress=payload.progress&&typeof payload.progress==='object'?payload.progress:{};
 	  return {
@@ -72,6 +76,10 @@ document.addEventListener('DOMContentLoaded',()=>{
 	    storeMode:String(payload.storeMode||payload.store||'').trim(),
 	    cumulativeSourceOfTruth:truth,
 	    noMutationRead:noMutation,
+	    hasServerProgressSnapshot:snapshotPersisted,
+	    snapshotPersisted:snapshotPersisted,
+	    emptyServerProgressSnapshot:false,
+	    emptySnapshotDoesNotCreateCumulative:false,
 	    sessions:Number(stats.sessions||0),
 	    answered:Number(stats.answered||0),
 	    correct:Number(stats.correct||0),
@@ -681,9 +689,9 @@ const SEARCH_IDX=[
 {t:'入口',n:'题库练习',u:'/modules/question-bank.html?from=home-search',d:'六章真题练习 · 分类题库 · 错题本与薄弱点提醒',k:'题库 练习 错题 题目 六章 真题'},
 {t:'入口',n:'181103 资料题库与练习入口',u:'/modules/question-bank.html?focus=181103-material-extracted#questionBanksList',d:'首页搜索 181103 可直接进入 522 张来源 HTML 卡，其中 381 道独立题可刷、141 条源文线索只展示；同时保留 38/38 HTML 资料总表和 68 个真题复核任务；用户搜“181103去哪了、181103那些资源去哪了、181103里面还有别的题目、资料题库”也直达这里。',k:'181103 181103资料 181103资料题库 181103去哪了 181103那些资源去哪了 181103资源看不见 181103资料去哪了 181103里面的题目 181103里面还有别的题目 181103资料内题 181103题库 资料题库 381可刷题 141源文线索 522来源卡 522资料内题 522个题 38/38 HTML 68真题复核 题库 练习 搜索入口'},
 {t:'入口',n:'181103 全资料 HTML 总表',u:'/resources/fluid-181103-html/index.html',d:'38/38 份 181103 资料已写成站内 HTML 正文；不走下载、中转页或原件壳；用户搜“181103资料在哪、181103不能下载、全部写成HTML”也直达这里。',k:'181103 181103资料在哪 181103去哪了 181103全资料 181103全部HTML 181103不能下载 不能下载 不许下载 全部写成HTML 全做成html格式 全资料 HTML 正文 38/38 站内阅读 资料总表 资料页'},
-{t:'入口',n:'历年真题新版入口',u:'/modules/real-exams-dynamic.html?edge_refresh=round402-server-health-production-boundary-20260619&from=round342-home-search',d:'2000-2024 历年真题；325 原文小题和 68 个已拆组题 section，适合从题库、练习和搜索直接进入；用户搜“历年真题新版、简答题五题、本来五题别合并”也直达这里。',k:'历年真题 真题新版 历年真题新版 325原文小题 68组题 简答题五题 本来五题 别合并 防合并 小题拆分 题数应该更多 2000-2024 803流体力学 搜索入口'},
+{t:'入口',n:'历年真题新版入口',u:'/modules/real-exams-dynamic.html?edge_refresh=round414-progress-snapshot-181103-video-release-20260620&from=current-home-search',d:'2000-2024 历年真题；325 原文小题和 68 个已拆组题 section，适合从题库、练习和搜索直接进入；用户搜“历年真题新版、简答题五题、本来五题别合并”也直达这里。',k:'历年真题 真题新版 历年真题新版 325原文小题 68组题 简答题五题 本来五题 别合并 防合并 小题拆分 题数应该更多 2000-2024 803流体力学 搜索入口'},
 {t:'入口',n:'错题订正入口',u:'/index-complete.html#tabsW',d:'首页错题本、收藏和笔记；先按错因订正，再回同类真题或公式条件继续练。',k:'错题 错题本 错题订正 错因回查 订正 收藏 笔记 搜索入口'},
-{t:'入口',n:'私有课程状态入口',u:'/resources.html?from=round342-home-search-private-course#sourceStatus',d:'查看账号可见的专属课/私有课程状态；生产私有视频恢复仍以 FM_PRIVATE_MEDIA R2 binding 为边界；用户搜“无法删除视频、不能管理视频、私有视频管理不对”也直达状态页。',k:'私有课程 私有课程状态 专属课 专属课程状态 私有视频 私有视频管理 私有视频管理不对 无法删除视频 不能删除视频 不能管理视频 删除视频 视频管理 课程状态 账号状态 FM_PRIVATE_MEDIA R2 blocker 搜索入口'},
+{t:'入口',n:'私有课程状态入口',u:'/resources.html?from=current-home-search-private-course#sourceStatus',d:'查看账号可见的专属课/私有课程状态；生产私有视频恢复仍以 FM_PRIVATE_MEDIA R2 binding 为边界；用户搜“无法删除视频、不能管理视频、私有视频管理不对”也直达状态页。',k:'私有课程 私有课程状态 专属课 专属课程状态 私有视频 私有视频管理 私有视频管理不对 无法删除视频 不能删除视频 不能管理视频 删除视频 视频管理 课程状态 账号状态 FM_PRIVATE_MEDIA R2 blocker 搜索入口'},
 {t:'入口',n:'模拟章节题',u:'/modules/simulated-exams-dynamic.html?from=home-search',d:'72 道教材启发的模拟章节题；sourceKind=simulated，isRealExam=false，和正式真题隔离。',k:'模拟章节题 仿真题 mock 教材 吴望一 王洪伟 sourceKind simulated isRealExam false notRealExam 真题不混用'},
 {t:'入口',n:'知识点全集',u:'/modules/knowledge-detail.html',d:'202 页已接章；共 202 页 · 1139 条课件小节 · 416 道真题练习 · 教材补充 221 张卡',k:'知识 章节 教材 真题 课程笔记 公式 吴望一 王洪伟'},
 {t:'入口',n:'流体力学集训',u:'/modules/fluid-intensive-training.html',d:'章节日程、小节练习、真题起笔、答案核对、完整答案展开、题型专项、教材入口和对应真题放在同一页',k:'集训 冲刺 训练 复习 公式 真题起笔 答案核对 完整答案 第一行方程 适用条件 错因 真题 教材 小节 吴望一 王洪伟'},
@@ -1535,12 +1543,12 @@ const PATH_NODES=[
 ];
 function pathMatchKeys(node){return (node.keys&&node.keys.length?node.keys:[node.k,node.n]).map(x=>String(x||'').toLowerCase())}
 function renderChapterPracticeLinks(nodes){
-  return '<div class="path-links" aria-label="六章全部真题练习入口与独立模拟章节题入口">'+nodes.map(n=>'<a href="'+esc(n.p||'/modules/real-exams-dynamic.html?edge_refresh=round402-server-health-production-boundary-20260619&from=round287-student-path')+'">'+esc(n.n)+'做全部真题练习</a><a href="'+esc(n.m||'/modules/simulated-exams-dynamic.html?from=student-path')+'">'+esc(n.n)+'模拟题（非真题）</a>').join('')+'<span class="path-note">模拟章节题来自教材主题启发，独立题包，不混入正式真题。</span></div>';
+  return '<div class="path-links" aria-label="六章全部真题练习入口与独立模拟章节题入口">'+nodes.map(n=>'<a href="'+esc(n.p||'/modules/real-exams-dynamic.html?edge_refresh=round414-progress-snapshot-181103-video-release-20260620&from=current-student-path')+'">'+esc(n.n)+'做全部真题练习</a><a href="'+esc(n.m||'/modules/simulated-exams-dynamic.html?from=student-path')+'">'+esc(n.n)+'模拟题（非真题）</a>').join('')+'<span class="path-note">模拟章节题来自教材主题启发，独立题包，不混入正式真题。</span></div>';
 }
 function renderPathNext(nodeStatus,doneCount,total){
   const box=$('#pathNext');if(!box)return;
   if(doneCount>=total){
-    box.innerHTML='<strong>六章主线已完成。</strong> 下一步进入 <a href="/modules/real-exams-dynamic.html?edge_refresh=round402-server-health-production-boundary-20260619&from=round287-student-path-complete">历年真题</a> 做一套限时回顾。'+renderChapterPracticeLinks(nodeStatus);
+    box.innerHTML='<strong>六章主线已完成。</strong> 下一步进入 <a href="/modules/real-exams-dynamic.html?edge_refresh=round414-progress-snapshot-181103-video-release-20260620&from=current-student-path-complete">历年真题</a> 做一套限时回顾。'+renderChapterPracticeLinks(nodeStatus);
     return;
   }
   const current=nodeStatus.find(n=>n.cur)||nodeStatus.find(n=>!n.done)||nodeStatus[0];

@@ -105,7 +105,7 @@
       "ok": true,
       "status": "ready-to-run-browser-gate",
       "mode": "production",
-      "expectedVersion": "round398-server-progress-no-drift-accounting-20260618",
+      "expectedVersion": "round414-progress-snapshot-181103-video-release-20260620",
       "realAccountQaCompletedHere": false,
       "browserGateRunHere": false,
       "credentialsPrinted": false,
@@ -138,7 +138,7 @@
           "runbook": "docs/private-video-management-runbook.md"
         },
         "summary": {
-          "version": "round398-server-progress-no-drift-accounting-20260618",
+          "version": "round414-progress-snapshot-181103-video-release-20260620",
           "edgeRoutes": [
             "list",
             "publish",
@@ -203,6 +203,13 @@
               "productionRecoveryAllowedWithoutRealTeacherQa": false
             }
           },
+          "round399PrivateVideoManagement": {
+            "visibleStateAttrs": true,
+            "effectiveReadinessFallback": true,
+            "dryRunDeletesData": false,
+            "deleteCourseProductionClaimAllowed": false,
+            "missingFmPrivateMediaBlocksProductionDeleteClaim": true
+          },
           "productionAccountQA": false
         }
       },
@@ -237,52 +244,127 @@
           {
             "id": "list",
             "state": "ready",
+            "destructive": false,
+            "dryRunOnly": false,
+            "requiresFmPrivateMediaR2": false,
+            "usableWithoutFmPrivateMedia": true,
+            "deleteCourseProductionClaimAllowed": false,
+            "fullStorageCleanupClaimAllowed": false,
             "productionRecoveryClaimAllowed": false,
             "boundary": "List/read metadata can be audited, but it is not upload/delete/archive recovery."
           },
           {
             "id": "same-access-save",
             "state": "ready",
+            "destructive": false,
+            "dryRunOnly": false,
+            "requiresFmPrivateMediaR2": false,
+            "usableWithoutFmPrivateMedia": true,
+            "deleteCourseProductionClaimAllowed": false,
+            "fullStorageCleanupClaimAllowed": false,
             "productionRecoveryClaimAllowed": false,
             "boundary": "Saving the same assigned student is a no-op confirmation; it is usable but not a storage-write recovery proof."
           },
           {
             "id": "delete-dry-run",
             "state": "ready",
+            "destructive": false,
+            "dryRunOnly": true,
+            "dryRunDeletesData": false,
+            "requiresFmPrivateMediaR2": false,
+            "usableWithoutFmPrivateMedia": true,
+            "deleteCourseProductionClaimAllowed": false,
+            "fullStorageCleanupClaimAllowed": false,
             "productionRecoveryClaimAllowed": false,
             "boundary": "Dry-run is a preflight only; it must never be counted as destructive delete completion."
           },
           {
             "id": "delete-course",
             "state": "limited",
+            "destructive": true,
+            "dryRunOnly": false,
+            "requiresDryRun": true,
+            "requiresTypedCourseId": true,
+            "requiresFmPrivateMediaR2": true,
+            "usableWithoutFmPrivateMedia": "limited-metadata-first-revoke-only",
+            "deleteCourseProductionClaimAllowed": false,
+            "fullStorageCleanupClaimAllowed": false,
             "productionRecoveryClaimAllowed": false,
             "boundary": "Delete can only be a limited metadata-first revoke: dry-run and typed confirmation may run, but complete storage cleanup and production recovery stay blocked until FM_PRIVATE_MEDIA R2 is bound."
           },
           {
             "id": "upload-publish",
             "state": "blocked",
+            "destructive": false,
+            "dryRunOnly": false,
+            "requiresFmPrivateMediaR2": true,
+            "usableWithoutFmPrivateMedia": false,
+            "deleteCourseProductionClaimAllowed": false,
+            "fullStorageCleanupClaimAllowed": false,
             "productionRecoveryClaimAllowed": false,
             "boundary": "Upload/publish is blocked until FM_PRIVATE_MEDIA R2 is bound."
           },
           {
             "id": "change-access",
             "state": "blocked",
+            "destructive": false,
+            "dryRunOnly": false,
+            "requiresFmPrivateMediaR2": true,
+            "usableWithoutFmPrivateMedia": false,
+            "deleteCourseProductionClaimAllowed": false,
+            "fullStorageCleanupClaimAllowed": false,
             "productionRecoveryClaimAllowed": false,
             "boundary": "Access changes are blocked until FM_PRIVATE_MEDIA R2 is bound."
           },
           {
             "id": "archive-course",
             "state": "blocked",
+            "destructive": false,
+            "dryRunOnly": false,
+            "requiresFmPrivateMediaR2": true,
+            "usableWithoutFmPrivateMedia": false,
+            "deleteCourseProductionClaimAllowed": false,
+            "fullStorageCleanupClaimAllowed": false,
             "productionRecoveryClaimAllowed": false,
             "boundary": "Archive is blocked until FM_PRIVATE_MEDIA R2 is bound."
           }
         ],
+        "round399PrivateVideoManagement": {
+          "actionStateSummary": {
+            "ready": 3,
+            "limited": 1,
+            "blocked": 3
+          },
+          "whenFmPrivateMediaMissing": {
+            "ready": [
+              "list",
+              "same-access-save",
+              "delete-dry-run"
+            ],
+            "limited": [
+              "delete-course"
+            ],
+            "blocked": [
+              "upload-publish",
+              "change-access",
+              "archive-course"
+            ]
+          },
+          "deleteDryRunDeletesData": false,
+          "deleteCourseRequiresDryRun": true,
+          "deleteCourseRequiresTypedCourseId": true,
+          "deleteCourseProductionClaimAllowed": false,
+          "fullStorageCleanupClaimAllowedByBindingAuditOnly": false,
+          "missingFmPrivateMediaMustBlockProductionDeleteClaim": true
+        },
         "productionClaimGuards": {
           "bindingAuditIsNotRealAccountQa": true,
           "privateVideoRecoveryRequiresRealTeacherStudentQa": true,
           "privateVideoRecoveryRequiresFmPrivateMediaR2": true,
           "deleteDryRunIsNotDeleteCompletion": true,
           "deleteCourseRequiresTypedCourseIdAndDryRun": true,
+          "deleteCourseProductionClaimAllowed": false,
+          "fullStorageCleanupClaimAllowedByBindingAuditOnly": false,
           "progressFullProductionRequiresFmProgressDbOrR2": true,
           "kvFallbackIsNoDriftOnly": true,
           "productionRecoveryClaimAllowed": false
@@ -308,42 +390,87 @@
               {
                 "id": "list",
                 "state": "ready",
+                "destructive": false,
+                "dryRunOnly": false,
+                "requiresFmPrivateMediaR2": false,
+                "usableWithoutFmPrivateMedia": true,
+                "deleteCourseProductionClaimAllowed": false,
+                "fullStorageCleanupClaimAllowed": false,
                 "productionRecoveryClaimAllowed": false,
                 "boundary": "List/read metadata can be audited, but it is not upload/delete/archive recovery."
               },
               {
                 "id": "same-access-save",
                 "state": "ready",
+                "destructive": false,
+                "dryRunOnly": false,
+                "requiresFmPrivateMediaR2": false,
+                "usableWithoutFmPrivateMedia": true,
+                "deleteCourseProductionClaimAllowed": false,
+                "fullStorageCleanupClaimAllowed": false,
                 "productionRecoveryClaimAllowed": false,
                 "boundary": "Saving the same assigned student is a no-op confirmation; it is usable but not a storage-write recovery proof."
               },
               {
                 "id": "delete-dry-run",
                 "state": "ready",
+                "destructive": false,
+                "dryRunOnly": true,
+                "dryRunDeletesData": false,
+                "requiresFmPrivateMediaR2": false,
+                "usableWithoutFmPrivateMedia": true,
+                "deleteCourseProductionClaimAllowed": false,
+                "fullStorageCleanupClaimAllowed": false,
                 "productionRecoveryClaimAllowed": false,
                 "boundary": "Dry-run is a preflight only; it must never be counted as destructive delete completion."
               },
               {
                 "id": "delete-course",
                 "state": "limited",
+                "destructive": true,
+                "dryRunOnly": false,
+                "requiresDryRun": true,
+                "requiresTypedCourseId": true,
+                "requiresFmPrivateMediaR2": true,
+                "usableWithoutFmPrivateMedia": "limited-metadata-first-revoke-only",
+                "deleteCourseProductionClaimAllowed": false,
+                "fullStorageCleanupClaimAllowed": false,
                 "productionRecoveryClaimAllowed": false,
                 "boundary": "Delete can only be a limited metadata-first revoke: dry-run and typed confirmation may run, but complete storage cleanup and production recovery stay blocked until FM_PRIVATE_MEDIA R2 is bound."
               },
               {
                 "id": "upload-publish",
                 "state": "blocked",
+                "destructive": false,
+                "dryRunOnly": false,
+                "requiresFmPrivateMediaR2": true,
+                "usableWithoutFmPrivateMedia": false,
+                "deleteCourseProductionClaimAllowed": false,
+                "fullStorageCleanupClaimAllowed": false,
                 "productionRecoveryClaimAllowed": false,
                 "boundary": "Upload/publish is blocked until FM_PRIVATE_MEDIA R2 is bound."
               },
               {
                 "id": "change-access",
                 "state": "blocked",
+                "destructive": false,
+                "dryRunOnly": false,
+                "requiresFmPrivateMediaR2": true,
+                "usableWithoutFmPrivateMedia": false,
+                "deleteCourseProductionClaimAllowed": false,
+                "fullStorageCleanupClaimAllowed": false,
                 "productionRecoveryClaimAllowed": false,
                 "boundary": "Access changes are blocked until FM_PRIVATE_MEDIA R2 is bound."
               },
               {
                 "id": "archive-course",
                 "state": "blocked",
+                "destructive": false,
+                "dryRunOnly": false,
+                "requiresFmPrivateMediaR2": true,
+                "usableWithoutFmPrivateMedia": false,
+                "deleteCourseProductionClaimAllowed": false,
+                "fullStorageCleanupClaimAllowed": false,
                 "productionRecoveryClaimAllowed": false,
                 "boundary": "Archive is blocked until FM_PRIVATE_MEDIA R2 is bound."
               }
@@ -395,11 +522,11 @@
       "parsed": {
         "ok": true,
         "mode": "production",
-        "expectedVersion": "round398-server-progress-no-drift-accounting-20260618",
-        "siteUpdatesVersion": "round398-server-progress-no-drift-accounting-20260618",
+        "expectedVersion": "round414-progress-snapshot-181103-video-release-20260620",
+        "siteUpdatesVersion": "round414-progress-snapshot-181103-video-release-20260620",
         "versionBinding": {
-          "expectedVersion": "round398-server-progress-no-drift-accounting-20260618",
-          "siteUpdatesVersion": "round398-server-progress-no-drift-accounting-20260618",
+          "expectedVersion": "round414-progress-snapshot-181103-video-release-20260620",
+          "siteUpdatesVersion": "round414-progress-snapshot-181103-video-release-20260620",
           "versionSource": "site-updates.json[0].version",
           "matchesSiteUpdates": true
         },
@@ -638,9 +765,9 @@
         ],
         "nextVerificationCommands": [
           "node tools/monitor-fluid-public-release.mjs --json",
-          "node tools/check-public-entry-browser.mjs --expected-edge-version round398-server-progress-no-drift-accounting-20260618",
-          "node tools/check-authenticated-browser-gate.mjs --production --expected-version round398-server-progress-no-drift-accounting-20260618",
-          "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round398-server-progress-no-drift-accounting-20260618",
+          "node tools/check-public-entry-browser.mjs --expected-edge-version round414-progress-snapshot-181103-video-release-20260620",
+          "node tools/check-authenticated-browser-gate.mjs --production --expected-version round414-progress-snapshot-181103-video-release-20260620",
+          "node tools/check-lghui-top-auth-chain.mjs --json --production --expected-version round414-progress-snapshot-181103-video-release-20260620",
           "node tools/check-private-video-management-browser.mjs --production --json",
           "node tools/check-cloudflare-pages-private-video-bindings.mjs --json"
         ],
