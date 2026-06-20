@@ -2,7 +2,7 @@
 
 Version: `round355-visible-quality-regression-20260615`
 
-Expected current version: `round368-ten-round-upgrade-20260616`
+Expected current version: `round411-server-progress-monotonic-no-drift-20260620`
 
 ## Summary
 

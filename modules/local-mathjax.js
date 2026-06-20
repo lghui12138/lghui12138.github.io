@@ -1,6 +1,6 @@
 (() => {
   const SCRIPT_ID = 'MathJax-script';
-  const SCRIPT_VERSION = 'round408-release-gate-public-consistency-20260620';
+  const SCRIPT_VERSION = 'round411-server-progress-monotonic-no-drift-20260620';
   const SCRIPT_SRC = `/vendor/mathjax/es5/tex-chtml-full.js?v=${SCRIPT_VERSION}`;
   const FONT_URL = '/vendor/mathjax/es5/output/chtml/fonts/woff-v2';
   const LOAD_TIMEOUT_MS = 45000;

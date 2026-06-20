@@ -14,8 +14,8 @@ Round330 worker 5 records the local deployment package, public load budget, gzip
 - Public load budget: warn, warnings 16, failures 0
 - Gzip mismatches: 0
 - Missing large gzip sidecars: 0
-- Source cache version: `round410-181103-practice-status-cardinality-20260620`
-- Public-shell cache version: `round410-181103-practice-status-cardinality-20260620`
+- Source cache version: `round411-server-progress-monotonic-no-drift-20260620`
+- Public-shell cache version: `round411-server-progress-monotonic-no-drift-20260620`
 - Source/public-shell version aligned: true
 - Service worker kill switch pass: true
 
