@@ -871,6 +871,23 @@ removeGeneratedAppleDoubleFiles(repoRoot);
 fs.writeFileSync(path.join(repoRoot, '_headers'), `/*.html
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 
+/data/*
+  Cache-Control: public, max-age=300, must-revalidate
+
+/data/*.json.gz
+  Content-Type: application/json; charset=utf-8
+  Content-Encoding: gzip
+  Cache-Control: public, max-age=300, must-revalidate
+  Vary: Accept-Encoding
+
+/resources/physical-oceanography/ppt/*
+  X-Round341-Delivery: manual-download
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/resources/fluid-sources/*
+  X-Round341-Delivery: manual-download
+  Cache-Control: public, max-age=86400, must-revalidate
+
 /*
   Cache-Control: no-store, no-cache, must-revalidate, max-age=0
 
