@@ -1,5 +1,179 @@
 [
   {
+    "version": "round413-progress-invariant-key-20260620",
+    "date": "2026-06-20",
+    "time": "17:36",
+    "updatedAt": "2026-06-20T17:36:00+08:00",
+    "previousVersion": "round412-server-progress-stable-monitoring-20260620",
+    "tag": "Round413",
+    "focus": "progress-invariant-key",
+    "title": "Round413 学习进度稳定指纹与监控隔离",
+    "summary": "本轮专门处理“每次登录累计时长、做题数、教师监控会变”的底层问题：/api/progress、/api/stats 和教师汇总都公开 cumulativeStableKey，并声明 stableCumulativeFields 与 volatileDiagnosticFieldsExcludedFromCumulative。累计学习时长、做题数、正确率、会话数只从 server-progress-snapshot 的稳定字段得出；lastSeen、pageViews、eventWindowStudyTimeSeconds、recent sessions/answers 只作为诊断字段，登录、刷新、CDN 缓存、部署升级和监控轮询都不能改变累计事实。真实账号脚本和浏览器脚本现在同时比较 totals、store identity 与 cumulativeStableKey。线上边界保持诚实：当前仍是 KV fallback 可读不漂移；完整 D1/R2 strict durable writes 仍要求 FM_PROGRESS_DB 或 FM_PROGRESS_R2，私有视频完整管理仍要求 FM_PRIVATE_MEDIA。 学生账号基线不再扩入额外默认账号；qi、chenlei、anxin、sunruze 仍只作历史或显式 QA 身份，不加入默认监控样本。",
+    "links": [
+      {
+        "label": "学生学习进度",
+        "href": "/modules/progress-module.html?edge_refresh=round413-progress-invariant-key-20260620"
+      },
+      {
+        "label": "教师进度监控",
+        "href": "/teacher-panel?view=students&edge_refresh=round413-progress-invariant-key-20260620"
+      },
+      {
+        "label": "181103 资料题库",
+        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round413-progress-invariant-key-20260620#questionBanksList"
+      },
+      {
+        "label": "181103 HTML 资料",
+        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round413-progress-invariant-key-20260620"
+      },
+      {
+        "label": "历年真题拆题",
+        "href": "/modules/real-exams-dynamic.html?edge_refresh=round413-progress-invariant-key-20260620#sourceGranularityNote"
+      },
+      {
+        "label": "私有视频管理边界",
+        "href": "/teacher-panel?view=resources&edge_refresh=round413-progress-invariant-key-20260620#private-videos"
+      }
+    ],
+    "evidence": {
+      "progressInvariantGate": "node tools/check-round408-progress-monitor-no-drift-contract.mjs --json --write => Round413 cumulativeStableKey, stableCumulativeFields, volatileDiagnosticFieldsExcludedFromCumulative, heartbeat and cross-store snapshot contract; 21 checks.",
+      "releaseGate": "node tools/verify-fluid-release-gate.mjs --expected-version round413-progress-invariant-key-20260620 => default release gate runs check-round413-progress-invariant-key before publish.",
+      "realAccountReadOnly": "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain --expected-version round413-progress-invariant-key-20260620 must prove lghui.top/pages.dev login/read/refresh/relogin totals, storage identity, and cumulativeStableKey stay stable after deploy.",
+      "teacherBrowserGate": "node tools/check-round407-progress-visible-login-no-drift-browser.mjs --production --json --write --expected-version round413-progress-invariant-key-20260620 checks real browser student/teacher login cycles and stable cumulative keys.",
+      "strictDurableBoundary": "Strict durable write/teacher primary-store proof still requires FM_PROGRESS_DB or FM_PROGRESS_R2; KV fallback/no-drift is not full primary storage recovery.",
+      "privateVideoBoundary": "Full private video upload/delete/archive production management still requires FM_PRIVATE_MEDIA."
+    },
+    "currentRound": 413,
+    "runtimeVersion": "round413-progress-invariant-key-20260620",
+    "sourceBoundaries": {
+      "materialRows": 522,
+      "defaultPracticeRows": 381,
+      "sourceContentRows": 141,
+      "staleHiddenPracticeRowsCleared": 11,
+      "realExamAtomicQuestions": 325,
+      "groupedSections": 68,
+      "groupedSubquestions": 217,
+      "fiveItemParents": 5,
+      "fiveItemAtomicQuestions": 25
+    },
+    "progressDurability": {
+      "cumulativeSourceOfTruth": "server-progress-snapshot",
+      "stableIdentityFields": [
+        "source",
+        "storeMode",
+        "configuredStoreMode",
+        "configuredSource",
+        "snapshotSelection",
+        "noMutationRead",
+        "cumulativeStableKey"
+      ],
+      "heartbeatRequires": [
+        "learning route",
+        "practiceSessionId",
+        "active question/focus id",
+        "pageVisible=true",
+        "explicit human interaction"
+      ],
+      "localStorageCumulativeKeysBlockedByDefault": [
+        "fm_sessions",
+        "fm_scores",
+        "fm_learning_data_v2",
+        "practiceSessions",
+        "localStudyPlanProgress",
+        "questionBankProgress"
+      ],
+      "strictPrimaryStoreReady": false,
+      "strictPrimaryStoreRequires": [
+        "FM_PROGRESS_DB",
+        "FM_PROGRESS_R2"
+      ],
+      "noOverclaim": "read-only no-drift through KV fallback is not full D1/R2 durable write proof",
+      "stableCumulativeFields": [
+        "source",
+        "storeMode",
+        "configuredStoreMode",
+        "configuredSource",
+        "snapshotSelection",
+        "answered",
+        "correct",
+        "incorrect",
+        "skipped",
+        "sessions",
+        "studyTimeSeconds",
+        "averageQuestionTimeSeconds",
+        "accuracy",
+        "lastAnsweredAt",
+        "lastSessionAt"
+      ],
+      "volatileDiagnosticFieldsExcludedFromCumulative": [
+        "lastSeen",
+        "lastSeenAt",
+        "loginSuccess",
+        "loginFailed",
+        "pageViews",
+        "resourceRequests",
+        "eventCount",
+        "eventWindowAnswers",
+        "eventWindowSessions",
+        "eventWindowStudyTimeSeconds",
+        "recentUserEvents",
+        "recentSessions",
+        "recentAnswers"
+      ]
+    },
+    "productionBoundaries": {
+      "progressPrimaryStoreRequired": [
+        "FM_PROGRESS_DB",
+        "FM_PROGRESS_R2"
+      ],
+      "privateVideoR2Required": "FM_PRIVATE_MEDIA",
+      "noOverclaim": "KV fallback/read-only no-drift and browser-visible UI are not full durable production proof."
+    },
+    "round399WorkerFReleaseGates": {
+      "version": "round399-worker-f-release-gates-20260619",
+      "runtimeVersion": "round413-progress-invariant-key-20260620",
+      "requiredGateIds": [
+        "181103-answer-stack",
+        "progress-no-drift",
+        "private-video-status",
+        "source-home-entry",
+        "public-shell-entry",
+        "anonymous-public-proof",
+        "old-round-label-risk"
+      ],
+      "progressNoDrift": "read-only no-drift through server-progress-snapshot plus Round411 monotonic D1/R2/KV snapshot selection; durable writes still require FM_PROGRESS_DB/FM_PROGRESS_R2",
+      "privateVideoStatus": "ready/limited/blocked; full recovery still requires FM_PRIVATE_MEDIA and real teacher QA",
+      "publicProof": {
+        "publicShell": "https://lghui.top",
+        "sourceOrigin": "https://lghui-fluid-learning.pages.dev"
+      },
+      "scope": {
+        "deployed": false,
+        "committed": false,
+        "middlewareTouched": true,
+        "publicShellHtmlTouched": true
+      },
+      "entrySurfaces": {
+        "sourceHome": {
+          "id": "source-home-entry",
+          "required": true,
+          "claim": "source home entry is required"
+        },
+        "publicShell": {
+          "id": "public-shell-entry",
+          "required": true,
+          "claim": "public shell entry is required"
+        }
+      },
+      "publicShell": "public shell release surface is https://lghui.top",
+      "oldRoundLabelRisk": {
+        "id": "old-round-label-risk",
+        "checked": true,
+        "findings": []
+      }
+    }
+  },
+  {
     "version": "round412-server-progress-stable-monitoring-20260620",
     "date": "2026-06-20",
     "time": "16:41",
