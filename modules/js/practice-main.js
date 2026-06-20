@@ -245,8 +245,11 @@ window.PracticeApp = {
 			                progressOutbox() {
 			                    const items = this.readProgressJson(this.progressOutboxKey(), []);
 			                    const now = Date.now();
+			                    const activeSessionId = String(this.practiceSessionId || '').trim();
 			                    return (Array.isArray(items) ? items : []).filter(item => {
 			                        if (!item || item.queuedReason !== 'network') return false;
+			                        const itemSessionId = String(item.data && item.data.practiceSessionId || '').trim();
+			                        if (!activeSessionId || !itemSessionId || itemSessionId !== activeSessionId) return false;
 			                        const queuedAt = Date.parse(item.queuedAt || '');
 			                        return queuedAt && now - queuedAt <= 24 * 60 * 60 * 1000;
 			                    });
@@ -434,7 +437,7 @@ window.PracticeApp = {
 			                        }
 			                        if (payload && payload.ok) {
 	                            await this.syncProgressFromServer();
-	                            this.flushProgressOutbox();
+	                            await this.flushProgressOutbox();
 	                            return true;
 	                        }
 		                    } catch (error) {
@@ -1026,7 +1029,6 @@ window.PracticeApp = {
                     // 普通练习模式
 	                    setTimeout(async () => {
 	                        await this.syncProgressFromServer();
-	                        await this.flushProgressOutbox();
 	                        this.loadProgress();
 	                        this.updateStats();
 	                        this.initParticles();
@@ -1048,7 +1050,9 @@ window.PracticeApp = {
 	                    if (this.currentView === 'practice' && this.stats.answeredQuestions > 0) {
 	                        this.saveProgress();
 	                    }
-	                    this.flushProgressOutbox();
+	                    if (this.currentView === 'practice' && this.stats.answeredQuestions > 0) {
+	                        this.flushProgressOutbox();
+	                    }
 	                }, PracticeConfig.defaults.saveProgressInterval);
             },
 

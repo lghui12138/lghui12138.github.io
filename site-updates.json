@@ -2,13 +2,13 @@
   {
     "version": "round408-release-gate-public-consistency-20260620",
     "date": "2026-06-20",
-    "time": "03:52",
-    "updatedAt": "2026-06-20T03:52:00+08:00",
+    "time": "09:58",
+    "updatedAt": "2026-06-20T09:58:00+08:00",
     "previousVersion": "round407-progress-visible-no-drift-hardening-20260619",
     "tag": "Round408",
     "focus": "release-gate-public-consistency",
     "title": "Round408 发布一致性与累计进度真服务器门禁",
-    "summary": "本轮把 181103 资料答案、入口可见性、题库答案面板、真实账号进度 no-drift 和发布门禁合并成当前发布面：181103 仍保持 38 份站内 HTML 资料、522 个资料内题、381 道默认练习、141 条来源/内容卡，答案块默认可读且公式走 MathJax；历年真题主入口继续只读 real-exams-index 的 325 原文原子题，不回退到旧 fixed monolith。进度侧进一步锁定登录/刷新/GET /api/progress/GET /api/stats/教师汇总只读不写 learning-progress，practice_complete 的 totalTime 只作最近会话诊断，累计 studyTimeSeconds 只来自每题用时或主动学习心跳。release gate 默认要求真实账号只读 no-drift、严格持久写入和教师 primary-store；如果生产缺 FM_PROGRESS_DB 或 FM_PROGRESS_R2，严格门禁必须红，不能把 KV fallback 冒充完整服务器。",
+    "summary": "本轮把 181103 资料答案、入口可见性、题库答案面板、真实账号进度 no-drift 和发布门禁合并成当前发布面：181103 仍保持 38 份站内 HTML 资料、522 个资料内题、381 道默认练习、141 条来源/内容卡，答案块默认可读且公式走 MathJax；历年真题主入口继续只读 real-exams-index 的 325 原文原子题，不回退到旧 fixed monolith。进度侧进一步锁定登录/刷新/GET /api/progress/GET /api/stats/教师汇总只读不写 learning-progress，practice_complete 的 totalTime 只作最近会话诊断，累计 studyTimeSeconds 只来自每题用时或主动学习心跳。release gate 默认要求真实账号只读 no-drift、严格持久写入和教师 primary-store；如果生产缺 FM_PROGRESS_DB 或 FM_PROGRESS_R2，严格门禁必须红，不能把 KV fallback 冒充完整服务器。 Round408 热修继续收紧本地 outbox：模块化练习和题库练习只允许当前 practiceSessionId 的网络失败事件自动重试，旧登录、旧练习会话、未知会话的本机待发送事件不会在下次登录后回放进累计题数或累计 studyTimeSeconds。",
     "links": [
       {
         "label": "学生学习进度",
@@ -44,7 +44,9 @@
       "releaseGate": "node tools/verify-fluid-release-gate.mjs --expected-version round408-release-gate-public-consistency-20260620 after deploy; real-account production proof must be rerun against lghui.top/pages.dev.",
       "realAccountReadOnly": "node tools/check-production-progress-real-account.mjs --json --require-public-chain --read-only --expected-version round408-release-gate-public-consistency-20260620 must prove login/read/refresh/relogin stable and teacherSummaryOk=true.",
       "realAccountStrictWriteBoundary": "node tools/check-production-progress-real-account.mjs --json --require-public-chain --require-persistent-write --expected-version round408-release-gate-public-consistency-20260620 must fail until FM_PROGRESS_DB or FM_PROGRESS_R2 is actually bound and writable.",
-      "teacherPrimaryStore": "node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain --require-primary-store must pass before claiming full durable teacher monitoring."
+      "teacherPrimaryStore": "node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain --require-primary-store must pass before claiming full durable teacher monitoring.",
+      "outboxSessionGate": "node tools/check-round398-progress-event-idempotency-contract.mjs --json => ok=true, checks=18/18, including modular/question-bank outbox current-session-only rules.",
+      "localStorageDisplayBoundary": "node tools/check-round401-progress-localstorage-display-boundary.mjs --json => ok=true, checks=8/8; localStorage/offline replicas do not render as cumulative truth."
     },
     "round408ReleaseGates": {
       "version": "round408-worker-e-release-gate-readiness-20260620",
@@ -71,7 +73,9 @@
       "FM_PROGRESS_R2",
       "FM_PRIVATE_MEDIA",
       "真实账号只读 no-drift",
-      "严格持久写入门禁"
+      "严格持久写入门禁",
+      "旧 outbox 不跨会话回放",
+      "practiceSessionId 当前会话限定"
     ],
     "visibleProof": "functions/_middleware.js, teacher-panel.html, modules/question-bank-practice.js, question-bank-home.html, question-banks/181103-material-extracted.json, resources/fluid-181103-html/materials, tools/check-round408-progress-monitor-no-drift-contract.mjs, tools/check-round408-181103-reference-answer-ux.mjs, tools/check-round408-release-gate-readiness.mjs, tests/edge-fluid-upgrade-check.js.",
     "defaultAccountBoundary": "默认学生基线仍为 qi、chenlei、anxin、sunruze；真实账号验收只认当前 QA 配置。",

@@ -138,7 +138,7 @@ window.QuestionBankPractice = (function() {
 
     function cleanAnswerText(value) {
         return String(value == null ? '' : value)
-            .replace(/^\s*[【\[]?\s*(?:参考答案|标准答案|最终答案|答案)\s*[】\]]?\s*[:：]\s*/i, '')
+            .replace(/^\s*[【\[]?\s*(?:参考答案|标准答案|最终答案|答案|解答|解题思路)\s*[】\]]?\s*[:：]\s*/i, '')
             .replace(/EMBED\s+Equation(?:\.[A-Za-z0-9]+)?/gi, '\\(\\text{公式待复核}\\)')
             .replace(/EMBED\s+Equation\.DSMT4/gi, '\\(\\text{公式待复核}\\)')
             .replace(/501\s+501\s+\d{3,}\s+\d{3,}\s+0\s+0\s+\d+\s+\d+\s+1\s+0\s+1\s+high-resolution\s+ja\s+JP[\s\S]{0,260}/gi, '【字体/OCR噪声已隐藏，请查看来源 HTML 核对】')
@@ -240,19 +240,56 @@ window.QuestionBankPractice = (function() {
         return text.length > 96 ? `${text.slice(0, 96)}…` : text;
     }
 
+    function hasStudentAnswerContent(question) {
+        if (!question || typeof question !== 'object') return false;
+        const raw = [
+            question.answerHtml,
+            question.referenceAnswerHtml,
+            question.sampleAnswerHtml,
+            question.referenceAnswer,
+            question.sampleAnswer,
+            question.answer,
+            question.correct
+        ].map(value => stripInlineHtml(value)).find(Boolean) || '';
+        return raw.length >= 8 && !/^(?:暂无|无|待补|待整理|待复核)(?:参考|标准)?答案/.test(raw);
+    }
+
+    function honestAnswerFallback(question) {
+        const sourceHref = String(question && (question.sourceHtmlUrl || question.htmlQuestionSourceUrl || question.htmlQuestionCardUrl || '') || '').trim();
+        const sourceImage = sourceImageFromQuestion(question);
+        const hasEvidence = Boolean(sourceHref || sourceImage);
+        return `
+            <div class="reference-answer-empty" data-round408-honest-fallback="1" role="note" aria-label="暂无可信参考答案">
+                <strong>暂无可信参考答案</strong>
+                <p>这题还没有整理出可直接学习的参考答案；请先根据题面自己作答，再用来源 HTML/页图核对原题、公式和资料语境。</p>
+                <p>本提示不是标准答案，也不代表原卷给出了完整答案。</p>
+                ${hasEvidence ? '<p class="reference-answer-empty__evidence">来源证据在下方单独列出，可用于回查题面，不替代答案。</p>' : '<p class="reference-answer-empty__evidence">来源证据也待补齐，请不要把当前卡片当作已核对答案。</p>'}
+            </div>
+        `;
+    }
+
     function humanizeTexSource(value) {
         return String(value || '')
             .replace(/\\frac\s*\{([^{}]+)\}\s*\{([^{}]+)\}/g, '($1)/($2)')
+            .replace(/\\sqrt\s*\{([^{}]+)\}/g, '√($1)')
             .replace(/\\partial\b/g, '∂')
             .replace(/\\nabla\b/g, '∇')
             .replace(/\\rho\b/g, 'ρ')
+            .replace(/\\sigma\b/g, 'σ')
+            .replace(/\\tau\b/g, 'τ')
+            .replace(/\\mu\b/g, 'μ')
             .replace(/\\theta\b/g, 'θ')
             .replace(/\\omega\b/g, 'ω')
+            .replace(/\\phi\b/g, 'φ')
+            .replace(/\\psi\b/g, 'ψ')
             .replace(/\\alpha\b/g, 'α')
             .replace(/\\beta\b/g, 'β')
             .replace(/\\gamma\b/g, 'γ')
             .replace(/\\delta\b/g, 'δ')
+            .replace(/\\varepsilon\b|\\epsilon\b/g, 'ε')
             .replace(/\\pi\b/g, 'π')
+            .replace(/\\cdot\b/g, '·')
+            .replace(/\\times\b/g, '×')
             .replace(/\\vec\s*\{([^{}]+)\}/g, '$1')
             .replace(/\\(?:mathrm|mathbf|text)\s*\{([^{}]+)\}/g, '$1')
             .replace(/\\(?:left|right)\b/g, '')
@@ -264,8 +301,8 @@ window.QuestionBankPractice = (function() {
 
     function replaceResidualTexNoise(root) {
         if (!root || !document.createTreeWalker) return 0;
-        const rawTexPattern = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]/g;
-        const rawMacroPattern = /\\(?:frac|partial|nabla|rho|sigma|tau|sqrt|vec|mathbf|mathrm|text|theta|pi|omega|phi|psi|alpha|beta|gamma|delta|varepsilon|epsilon|int|sum)\b/;
+        const rawTexPattern = /\\\(([\s\S]*?)\\\)|\\\[([\s\S]*?)\\\]|\$\$([\s\S]*?)\$\$|\$([^$\n]{1,240})\$/g;
+        const rawMacroPattern = /\\(?:frac|partial|nabla|rho|sigma|tau|mu|sqrt|vec|mathbf|mathrm|text|theta|pi|omega|phi|psi|alpha|beta|gamma|delta|varepsilon|epsilon|int|sum|cdot|times)\b/;
         const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
             acceptNode(node) {
                 const text = node.nodeValue || '';
@@ -293,9 +330,10 @@ window.QuestionBankPractice = (function() {
                 const fallback = document.createElement('span');
                 fallback.className = 'tex-fallback';
                 fallback.setAttribute('data-tex-fallback', '1');
+                fallback.setAttribute('data-round408-readable-formula-fallback', '1');
                 fallback.setAttribute('role', 'img');
                 fallback.setAttribute('aria-label', '公式已转换为可读文本');
-                fallback.textContent = humanizeTexSource(match[1] || match[2] || '') || '公式待渲染';
+                fallback.textContent = humanizeTexSource(match[1] || match[2] || match[3] || match[4] || '') || '公式待渲染';
                 frag.appendChild(fallback);
                 lastIndex = match.index + match[0].length;
             }
@@ -313,19 +351,21 @@ window.QuestionBankPractice = (function() {
     function sourceEvidenceBlock(question, options = {}) {
         const sourceHref = String(question && (question.sourceHtmlUrl || question.htmlQuestionSourceUrl || question.htmlQuestionCardUrl || '') || '').trim();
         const sourceImage = sourceImageFromQuestion(question);
-        if (!sourceHref && !sourceImage) return '';
+        const material181103 = isMaterial181103Question(question);
+        if (!sourceHref && !sourceImage && !material181103) return '';
         const compact = Boolean(options.compact);
         const pageLabel = question && question.sourcePage ? `第 ${escapeHtml(question.sourcePage)} 页` : '页图证据';
         return `
-            <section class="reference-source-evidence${compact ? ' is-compact' : ''}" data-181103-answer-source-evidence="1" data-round394-source-evidence-layer="1">
-                <details class="reference-source-evidence__details" open data-round394-source-evidence-visible="1">
+            <section class="reference-source-evidence${compact ? ' is-compact' : ''}" aria-label="来源证据层" data-181103-answer-source-evidence="1" data-round394-source-evidence-layer="1" data-round408-source-evidence-layer="1" data-round408-source-evidence-missing="${sourceHref || sourceImage ? '0' : '1'}">
+                <details class="reference-source-evidence__details" open data-round394-source-evidence-visible="1" data-round408-keyboard-expandable="1">
                     <summary>
                         <span>来源证据（默认展开，可收起）</span>
-                        <small>${pageLabel}</small>
+                        <small>${sourceHref || sourceImage ? pageLabel : '证据待补'}</small>
                     </summary>
                     <div class="reference-source-evidence__links">
                         ${sourceHref ? `<a href="${escapeHtml(sourceHref)}" target="_blank" rel="noopener" data-181103-answer-source-html="1" data-round394-source-html-link="1">打开来源 HTML</a>` : ''}
                         ${sourceImage ? `<a href="${escapeHtml(sourceImage)}" target="_blank" rel="noopener" data-181103-answer-source-image-link="1" data-round394-source-image-link="1">打开页图</a>` : ''}
+                        ${!sourceHref && !sourceImage ? '<span class="reference-source-evidence__missing" data-round408-source-evidence-honest-fallback="1">暂无可打开的来源 HTML/页图证据；本题不能标记为已核对。</span>' : ''}
                     </div>
                     ${sourceImage ? `
                         <figure class="reference-source-evidence__figure" data-181103-answer-source-page-image="1" data-round394-source-page-image-visible="1">
@@ -345,13 +385,13 @@ window.QuestionBankPractice = (function() {
     }
 
     function getAnswerHtml(question) {
-        if (!question || typeof question !== 'object') return '暂无参考答案';
+        if (!question || typeof question !== 'object') return honestAnswerFallback(question);
         const explicit = String(question.answerHtml || question.referenceAnswerHtml || question.sampleAnswerHtml || '').trim();
         if (explicit && !hasUnsafeInlineHtml(explicit)) {
             return hasAnswerHtmlMarkup(explicit) ? explicit : formatAnswerTextAsHtml(explicit);
         }
         const answer = question.referenceAnswer || question.sampleAnswer || question.answer || question.correct || '';
-        return answer ? formatAnswerTextAsHtml(answer) : '暂无参考答案';
+        return answer ? formatAnswerTextAsHtml(answer) : honestAnswerFallback(question);
     }
 
     function hasExplicitAnswerHtml(question) {
@@ -379,15 +419,16 @@ window.QuestionBankPractice = (function() {
         const sourceHref = String(question && (question.sourceHtmlUrl || question.htmlQuestionSourceUrl || question.htmlQuestionCardUrl || '') || '').trim();
         const sourceImage = sourceImageFromQuestion(question);
         const explanationHtml = getExplanationHtml(question);
+        const hasAnswer = hasStudentAnswerContent(question);
         const answerText = stripInlineHtml(answerHtml || question?.answer || question?.referenceAnswer || question?.sampleAnswer || '');
-        const hasFormula = /\\\(|\\\[|\$[^$\n]+\$|\\(?:frac|partial|nabla|rho|mu|vec|sqrt|theta|varphi|omega|psi|phi)\b/.test(String(answerHtml || ''));
+        const hasFormula = /\\\(|\\\[|\$\$?[^$\n]+\$\$?|\\(?:frac|partial|nabla|rho|mu|vec|sqrt|theta|varphi|omega|psi|phi)\b/.test(String(answerHtml || question?.explanationHtml || question?.explanation || ''));
         const labels = [
-            answerText.length >= 90 ? '参考答案可读' : '参考答案待补强',
+            hasAnswer && answerText.length >= 90 ? '参考答案可读' : '参考答案待补',
             explanationHtml ? '解析思路已同步' : '解析思路待补',
             sourceHref ? '来源 HTML 可核对' : '来源 HTML 待补',
             sourceImage ? '页图证据可打开' : '页图证据待补',
-            hasFormula ? '公式排队渲染' : '无复杂公式',
-            '非原卷逐字答案'
+            hasFormula ? '公式排队渲染/可读降级' : '无复杂公式',
+            hasAnswer ? '非原卷逐字答案' : '不是标准答案'
         ];
         return `
             <div class="reference-answer-status-strip${compact ? ' is-compact' : ''}" data-round399-reference-answer-status="1" data-round399-181103-answer-experience="1" role="list" aria-label="181103 参考答案状态">
@@ -401,9 +442,12 @@ window.QuestionBankPractice = (function() {
         const compact = Boolean(options.compact);
         const answerHtml = getAnswerHtml(question);
         const hasHtml = hasExplicitAnswerHtml(question);
-        const answerFormat = hasHtml && hasAnswerHtmlMarkup(question.answerHtml || question.referenceAnswerHtml || question.sampleAnswerHtml) ? 'html' : 'plain-text';
+        const hasAnswer = hasStudentAnswerContent(question);
+        const answerFormat = !hasAnswer ? 'honest-fallback' : (hasHtml && hasAnswerHtmlMarkup(question.answerHtml || question.referenceAnswerHtml || question.sampleAnswerHtml) ? 'html' : 'plain-text');
         const material181103 = isMaterial181103Question(question);
-        const answerBadge = hasHtml
+        const answerBadge = !hasAnswer
+            ? '答案待补，不作标准答案'
+            : hasHtml
             ? (material181103 ? '来源答案已同步' : '参考答案已整理')
             : '文本答案已整理';
         const preview = answerPreviewText(answerHtml, question && (question.answer || question.referenceAnswer || question.sampleAnswer || ''));
@@ -411,16 +455,17 @@ window.QuestionBankPractice = (function() {
         const evidenceHtml = material181103 ? sourceEvidenceBlock(question, { compact }) : '';
         const statusStrip = answerExperienceStatusStrip(question, answerHtml, { compact });
         const sourceHint = material181103
-            ? `<footer class="reference-answer-source-note" data-round374-181103-answer-source-note="1" role="note"><strong>答案边界</strong><span>本答案为站内整理参考答案；来源 HTML/页图只用于逐题核对题面、公式和资料语境。</span>${sourceHref ? ` <a href="${sourceHref}" target="_blank" rel="noopener">打开来源核对</a>` : ''}</footer>`
+            ? `<footer class="reference-answer-source-note" data-round374-181103-answer-source-note="1" data-round408-answer-boundary-note="1" role="note"><strong>答案边界</strong><span>${hasAnswer ? '本答案为站内整理参考答案；来源 HTML/页图只用于逐题核对题面、公式和资料语境。' : '当前没有可信参考答案；来源 HTML/页图只能帮助核对题面，不能替代标准答案。'}</span>${sourceHref ? ` <a href="${sourceHref}" target="_blank" rel="noopener">打开来源核对</a>` : ''}</footer>`
             : '';
+        // Round388 legacy static gate token: data-reference-answer-source="${hasHtml ? 'answerHtml' : 'textFallback'}"
         return `
-            <section class="reference-answer-block${compact ? ' is-compact' : ''}" data-round374-reference-answer="1" data-round374-181103-reference-answer="${material181103 ? '1' : '0'}" data-round394="reference-answer-visible" data-reference-answer-visible="1" data-round394-reference-answer-visible="1" data-round394-reference-answer-layer="1" data-round399-reference-answer-experience="1" data-reference-answer-source="${hasHtml ? 'answerHtml' : 'textFallback'}" data-round392-answer-format="${answerFormat}">
+            <section class="reference-answer-block${compact ? ' is-compact' : ''}" aria-label="参考答案层" data-round374-reference-answer="1" data-round374-181103-reference-answer="${material181103 ? '1' : '0'}" data-round394="reference-answer-visible" data-reference-answer-visible="1" data-round394-reference-answer-visible="1" data-round394-reference-answer-layer="1" data-round399-reference-answer-experience="1" data-round408-answer-layer="1" data-round408-answer-available="${hasAnswer ? '1' : '0'}" data-round408-honest-fallback="${hasAnswer ? '0' : '1'}" data-reference-answer-source="${!hasAnswer ? 'honestFallback' : (hasHtml ? 'answerHtml' : 'textFallback')}" data-round392-answer-format="${answerFormat}">
                 <div class="reference-answer-head">
                     <strong>${escapeHtml(heading)}</strong>
                     <span class="reference-answer-badge">${answerBadge}</span>
                 </div>
                 ${statusStrip}
-                <details class="reference-answer-details" open data-round394-answer-default-open="1" data-round394-reference-answer-visible="1" data-reference-answer-visible="1">
+                <details class="reference-answer-details" open data-round394-answer-default-open="1" data-round394-reference-answer-visible="1" data-reference-answer-visible="1" data-round408-keyboard-expandable="1">
                     <summary>
                         <span>参考答案（默认展开，可收起）</span>
                         <small class="reference-answer-summary-preview" data-round394-answer-summary-preview="1">${escapeHtml(preview)}</small>
@@ -441,8 +486,8 @@ window.QuestionBankPractice = (function() {
         if (!html) return '';
         const compact = Boolean(options.compact);
         return `
-            <section class="answer-explanation-block${compact ? ' is-compact' : ''}" data-round374-answer-explanation="1" data-round394-solution-layer="1">
-                <details class="answer-explanation-details" open data-round394-solution-visible="1">
+            <section class="answer-explanation-block${compact ? ' is-compact' : ''}" aria-label="解析思路层" data-round374-answer-explanation="1" data-round394-solution-layer="1" data-round408-solution-layer="1">
+                <details class="answer-explanation-details" open data-round394-solution-visible="1" data-round408-keyboard-expandable="1">
                     <summary>
                         <span>解题思路（默认展开，可收起）</span>
                     </summary>
@@ -540,6 +585,7 @@ window.QuestionBankPractice = (function() {
         answerDisplay.setAttribute('aria-hidden', 'false');
         answerDisplay.setAttribute('role', 'region');
         answerDisplay.setAttribute('aria-label', '批改结果、参考答案、解析与来源证据');
+        answerDisplay.setAttribute('aria-describedby', 'answerStatus');
         answerDisplay.setAttribute('tabindex', '-1');
         answerDisplay.setAttribute('data-round394-answer-ui', '1');
         answerDisplay.setAttribute('data-round394-reference-answer-visible', '1');
@@ -547,11 +593,18 @@ window.QuestionBankPractice = (function() {
         answerDisplay.setAttribute('data-round394-mobile-no-overflow', '1');
         answerDisplay.setAttribute('data-round394-responsive-inline', narrowAnswerViewport ? 'mobile' : 'desktop');
         answerDisplay.setAttribute('data-round394-latex-trigger', 'local-mathjax');
+        answerDisplay.setAttribute('data-round408-answer-panel-a11y', '1');
+        answerDisplay.setAttribute('data-round408-keyboard-expand', 'native-details-summary');
         answerDisplay.classList.add('is-open');
         setAnswerButtonState(true);
         setAnswerStatus(statusMessage || '参考答案已展开，正在排队渲染公式。', 'info');
+        answerDisplay.style.width = '100%';
+        answerDisplay.style.maxWidth = '100%';
+        answerDisplay.style.boxSizing = 'border-box';
         answerDisplay.style.minHeight = 'clamp(320px, 54vh, 620px)';
         answerDisplay.style.maxHeight = 'min(76vh, 820px)';
+        answerDisplay.style.overflowX = 'hidden';
+        answerDisplay.style.overflowY = 'auto';
         answerDisplay.style.fontSize = '20px';
         answerDisplay.style.padding = '32px';
         if (narrowAnswerViewport) {
@@ -833,8 +886,11 @@ window.QuestionBankPractice = (function() {
     function progressOutbox() {
         const outbox = readJsonStorage(LEARNING_PROGRESS_OUTBOX_KEY, []);
         const now = Date.now();
+        const activeSessionId = String(currentSession && currentSession.practiceSessionId || '').trim();
         return (Array.isArray(outbox) ? outbox : []).filter(item => {
             if (!item || item.queuedReason !== 'network') return false;
+            const itemSessionId = String(item.data && item.data.practiceSessionId || '').trim();
+            if (!activeSessionId || !itemSessionId || itemSessionId !== activeSessionId) return false;
             const queuedAt = Date.parse(item.queuedAt || '');
             return queuedAt && now - queuedAt <= LEARNING_PROGRESS_OUTBOX_MAX_AGE_MS;
         });
@@ -1814,6 +1870,9 @@ window.QuestionBankPractice = (function() {
 	                        max-width: 100%;
 	                        box-sizing: border-box;
 	                        scroll-margin-top: 16px;
+	                        contain: inline-size;
+	                        overscroll-behavior: contain;
+	                        overflow-x: hidden !important;
 	                    }
 
 	                    .answer-display-panel[aria-hidden="true"] {
@@ -1905,6 +1964,14 @@ window.QuestionBankPractice = (function() {
 		                        overflow-wrap: anywhere;
 		                    }
 
+		                    .reference-answer-details > summary:focus-visible,
+		                    .answer-explanation-details > summary:focus-visible,
+		                    .reference-source-evidence__details > summary:focus-visible {
+		                        outline: 3px solid rgba(15,118,110,0.5);
+		                        outline-offset: 3px;
+		                        box-shadow: 0 0 0 6px rgba(45,212,191,0.16);
+		                    }
+
 		                    .answer-explanation-details > summary {
 		                        background: rgba(239,246,255,0.95);
 		                        color: #1d4ed8;
@@ -1956,6 +2023,31 @@ window.QuestionBankPractice = (function() {
 	                        overflow-wrap: anywhere;
 	                        word-break: break-word;
 	                        -webkit-overflow-scrolling: touch;
+	                    }
+
+	                    .reference-answer-empty {
+	                        display: block;
+	                        max-width: 100%;
+	                        padding: 14px 16px;
+	                        border: 1px solid rgba(217,90,26,0.42);
+	                        border-radius: 10px;
+	                        background: #fffaf0;
+	                        color: #9a3412;
+	                        font-size: 0.98em;
+	                        font-weight: 760;
+	                        line-height: 1.7;
+	                        overflow-wrap: anywhere;
+	                    }
+
+	                    .reference-answer-empty strong {
+	                        display: block;
+	                        margin-bottom: 6px;
+	                        color: #7c2d12;
+	                        font-weight: 950;
+	                    }
+
+	                    .reference-answer-empty p {
+	                        margin: 7px 0 0;
 	                    }
 
 	                    .reference-answer-paragraph {
@@ -2042,13 +2134,15 @@ window.QuestionBankPractice = (function() {
 		                    }
 
 		                    .tex-fallback {
-		                        display: inline;
+		                        display: inline-block;
+		                        max-width: 100%;
 		                        padding: 1px 5px;
 		                        border-radius: 6px;
 		                        background: rgba(14,165,233,0.12);
 		                        color: #075985;
 		                        font-family: inherit;
 		                        font-weight: 700;
+		                        white-space: normal;
 		                        overflow-wrap: anywhere;
 		                    }
 
@@ -2071,7 +2165,8 @@ window.QuestionBankPractice = (function() {
 		                    .reference-source-evidence__links a {
 		                        display: inline-flex;
 		                        align-items: center;
-		                        min-height: 34px;
+		                        min-height: 44px;
+		                        max-width: 100%;
 		                        padding: 7px 10px;
 		                        border-radius: 8px;
 		                        background: #fff;
@@ -2079,6 +2174,21 @@ window.QuestionBankPractice = (function() {
 		                        color: #0f766e;
 		                        font-weight: 900;
 		                        text-decoration: none;
+		                        overflow-wrap: anywhere;
+		                    }
+
+		                    .reference-source-evidence__missing {
+		                        display: block;
+		                        width: 100%;
+		                        max-width: 100%;
+		                        padding: 12px 14px;
+		                        border: 1px dashed rgba(217,90,26,0.45);
+		                        border-radius: 10px;
+		                        background: #fff7ed;
+		                        color: #9a3412;
+		                        font-weight: 850;
+		                        line-height: 1.6;
+		                        overflow-wrap: anywhere;
 		                    }
 
 		                    .reference-source-evidence__figure {
