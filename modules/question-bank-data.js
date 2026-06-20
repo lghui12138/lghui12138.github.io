@@ -40,7 +40,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round414-progress-snapshot-181103-video-release-20260620-round410-progress-no-drift-20260620';
+    const practiceModuleVersion = 'round415-progress-durable-monitor-181103-release-20260620-round410-progress-no-drift-20260620';
 
     function requestedFocusBankId() {
         try {
@@ -61,7 +61,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round414-progress-snapshot-181103-video-release-20260620/.test(versionText);
+        return /round415-progress-durable-monitor-181103-release-20260620/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {
