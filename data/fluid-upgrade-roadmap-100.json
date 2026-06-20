@@ -1,8 +1,8 @@
 {
-  "version": "round414-progress-snapshot-181103-video-release-20260620",
+  "version": "round415-progress-durable-monitor-181103-release-20260620",
   "generatedAt": "2026-06-17T15:30:00+08:00",
   "goal": "round287 后继续推进至少 100 大轮升级；每轮必须给出证据、预算和生产验收边界。",
-  "currentRound": 414,
+  "currentRound": 415,
   "releaseGate": {
     "requirePublicShell": true,
     "requirePagesDev": true,
@@ -20,12 +20,12 @@
     "requireOptimizationPlaybookCheck": true,
     "requireMobilePerformanceBudgetCheck": true,
     "forbidClaimingRealQaWithoutCredentials": true,
-    "currentVersion": "round414-progress-snapshot-181103-video-release-20260620",
+    "currentVersion": "round415-progress-durable-monitor-181103-release-20260620",
     "previousVersion": "round413-progress-invariant-key-20260620",
     "lastUpdated": "2026-06-20T18:50:00+08:00",
     "requireNoFakeAccountQa": true,
     "requirePrivateMediaR2": true,
-    "currentRound": 414,
+    "currentRound": 415,
     "requiredLocalChecks": [
       "node tools/patch-real-exam-atomic-overrides.mjs",
       "node tools/patch-round310-real-exam-subquestion-fixes.mjs",
@@ -100,10 +100,12 @@
     "round315AllHtmlDirectPagesGuard": true,
     "round316ReaderPolishGuard": true,
     "commands": [
-      "node tools/monitor-fluid-public-release.mjs --json --expected-version round414-progress-snapshot-181103-video-release-20260620",
-      "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain --expected-version round414-progress-snapshot-181103-video-release-20260620",
-      "node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain --expected-version round414-progress-snapshot-181103-video-release-20260620",
-      "node tools/verify-fluid-release-gate.mjs --expected-version round414-progress-snapshot-181103-video-release-20260620"
+      "node tools/check-round408-progress-monitor-no-drift-contract.mjs --json --write",
+      "node tests/edge-fluid-upgrade-check.js",
+      "node tools/monitor-fluid-public-release.mjs --json --expected-version round415-progress-durable-monitor-181103-release-20260620",
+      "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain --expected-version round415-progress-durable-monitor-181103-release-20260620",
+      "node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain --expected-version round415-progress-durable-monitor-181103-release-20260620",
+      "node tools/verify-fluid-release-gate.mjs --expected-version round415-progress-durable-monitor-181103-release-20260620"
     ],
     "round317RealExamSourceCardinalityGuard": true,
     "round318ChapterPracticeShortcutGuard": true,
@@ -127,8 +129,8 @@
     "round355181103HtmlPublicQualityGuard": true,
     "round356181103WorkbookHtmlOcrCleanGuard": true,
     "round357181103AuthWorkflowGuard": true,
-    "expectedVersion": "round414-progress-snapshot-181103-video-release-20260620",
-    "updatedAt": "2026-06-20T17:36:00+08:00",
+    "expectedVersion": "round415-progress-durable-monitor-181103-release-20260620",
+    "updatedAt": "2026-06-20T21:52:00+08:00",
     "round369181103OcrPracticeQualityGuard": true,
     "round370181103ReadablePracticeGuard": true,
     "round371181103UsableOcrPracticeGuard": {
@@ -234,7 +236,7 @@
       ],
       "summary": "Round399 Worker F release-gate layer requires 181103 answer proof, no-drift progress proof, private-video ready/limited/blocked boundary, source/public-shell entry proof, anonymous public monitor proof, and old-round-label risk tracking without claiming a new deployed runtime."
     },
-    "runtimeVersion": "round414-progress-snapshot-181103-video-release-20260620",
+    "runtimeVersion": "round415-progress-durable-monitor-181103-release-20260620",
     "round411ServerProgressMonotonicNoDrift": {
       "required": true,
       "command": "node tools/check-round408-progress-monitor-no-drift-contract.mjs --json",
@@ -3706,7 +3708,7 @@
         "release": "lghui.top public shell and pages.dev source must both show this Round414 version before production closure."
       },
       "proofBoundary": "Round414 prevents display/cache drift and preserves honest blockers. It does not claim strict durable progress writes until FM_PROGRESS_DB/FM_PROGRESS_R2 are bound and write/relogin/teacher proof passes; it does not claim full private-video storage cleanup until FM_PRIVATE_MEDIA is bound and real teacher QA passes.",
-      "status": "active",
+      "status": "done",
       "updatedAt": "2026-06-20T18:50:00+08:00",
       "lane": "server-reliability",
       "acceptance": [
@@ -3727,6 +3729,53 @@
         "progress": "Full durable production writes still require FM_PROGRESS_DB or FM_PROGRESS_R2 plus strict real-account write/relogin/teacher proof.",
         "privateVideo": "Full private-video upload/delete/archive/storage cleanup still requires FM_PRIVATE_MEDIA R2 and real teacher QA.",
         "release": "lghui.top public shell and pages.dev source must both show this Round414 version before production closure."
+      },
+      "completedAt": "2026-06-20T21:52:00+08:00",
+      "supersededBy": "round415-progress-durable-monitor-181103-release-20260620"
+    },
+    {
+      "round": 415,
+      "id": "round415-progress-durable-monitor-181103-release",
+      "version": "round415-progress-durable-monitor-181103-release-20260620",
+      "title": "Round415 累计时长与做题监控不随登录/升级漂移",
+      "date": "2026-06-20",
+      "focus": "学生进度页、教师监控和服务器 API 都只把 fresh server-progress-snapshot 当累计真值；本机缓存和最近事件窗只作诊断。",
+      "changes": [
+        "学生进度页累计时长、累计题数、平均分无 fresh /api/stats 快照时显示待同步，不再显示本机离线累计。",
+        "服务器健康和 progress/stats API 暴露 readOnlyNoDrift、fallbackSnapshot、durablePrimaryWrite 与 progressPersistenceContract。",
+        "进度不漂移门禁新增学生页显示断言，防止 fm_sessions/fm_scores 回退为累计来源。",
+        "181103 和私有视频边界继续进入 release proof，但生产完整持久化仍要求 FM_PROGRESS_DB/FM_PROGRESS_R2/FM_PRIVATE_MEDIA。"
+      ],
+      "proof": {
+        "localGates": [
+          "node tools/check-round408-progress-monitor-no-drift-contract.mjs --json --write",
+          "node tests/edge-fluid-upgrade-check.js"
+        ],
+        "productionGates": [
+          "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain --expected-version round415-progress-durable-monitor-181103-release-20260620",
+          "node tools/check-production-progress-real-account.mjs --json --require-server-kv-write --require-public-chain --expected-version round415-progress-durable-monitor-181103-release-20260620",
+          "node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain --require-primary-store --expected-version round415-progress-durable-monitor-181103-release-20260620",
+          "node tools/monitor-fluid-public-release.mjs --json --expected-version round415-progress-durable-monitor-181103-release-20260620"
+        ]
+      },
+      "proofBoundary": "This round improves no-drift display and server contract truthfulness. It does not claim strict durable progress writes until FM_PROGRESS_DB/FM_PROGRESS_R2 pass real-account write/relogin/teacher proof, and does not claim full private-video management until FM_PRIVATE_MEDIA passes real teacher QA.",
+      "status": "active",
+      "updatedAt": "2026-06-20T21:52:00+08:00",
+      "lane": "server-reliability",
+      "acceptance": [
+        "登录、刷新、部署升级和空快照不能改变累计时长、题数、场次、正确率。",
+        "学生页无服务端快照时显示待同步，不用本机缓存冒充累计。",
+        "教师端累计只来自 server-progress-snapshot noMutationRead 行。",
+        "真实账号 live gate 必须重新跑当前版本，不能复用旧 Round414 证明。"
+      ],
+      "gates": [
+        "node tools/check-round408-progress-monitor-no-drift-contract.mjs --json --write",
+        "node tests/edge-fluid-upgrade-check.js",
+        "node tools/monitor-fluid-public-release.mjs --json --expected-version round415-progress-durable-monitor-181103-release-20260620"
+      ],
+      "boundaries": {
+        "progress": "Full durable production writes still require FM_PROGRESS_DB or FM_PROGRESS_R2 plus strict real-account write/relogin/teacher proof.",
+        "privateVideo": "Full private-video upload/delete/archive/storage cleanup still requires FM_PRIVATE_MEDIA R2 and real teacher QA."
       }
     }
   ],
@@ -3757,20 +3806,20 @@
     }
   },
   "updatedAt": "2026-06-19T04:20:00+08:00",
-  "lastUpdated": "2026-06-20T18:50:00+08:00",
-  "currentVersion": "round414-progress-snapshot-181103-video-release-20260620",
-  "previousVersion": "round413-progress-invariant-key-20260620",
+  "lastUpdated": "2026-06-20T21:52:00+08:00",
+  "currentVersion": "round415-progress-durable-monitor-181103-release-20260620",
+  "previousVersion": "round414-progress-snapshot-181103-video-release-20260620",
   "lastIntegratedRound": 382,
-  "lastUpdatedAt": "2026-06-20T18:50:00+08:00",
+  "lastUpdatedAt": "2026-06-20T21:52:00+08:00",
   "round358ProductionProof": {
     "supersededBy": "round368-ten-round-upgrade-20260616",
     "supersededAt": "2026-06-16T09:10:00+08:00"
   },
   "release": {
-    "currentVersion": "round414-progress-snapshot-181103-video-release-20260620",
-    "currentRound": 414,
-    "lastIntegratedRound": 414,
-    "expectedVersion": "round414-progress-snapshot-181103-video-release-20260620",
+    "currentVersion": "round415-progress-durable-monitor-181103-release-20260620",
+    "currentRound": 415,
+    "lastIntegratedRound": 415,
+    "expectedVersion": "round415-progress-durable-monitor-181103-release-20260620",
     "gates": {
       "round372181103HtmlQuestionCards": {
         "status": "required",
@@ -3834,10 +3883,10 @@
       "evidence": "data/fluid-round393-real-exam-ui-cardinality.json, functions/_middleware.js, modules/progress-module.html, teacher-panel.html",
       "summary": "Locks progress durability gate labels, write_quota_exceeded handling, missing primary D1/R2 blocker display, and teacher audit-window non-cumulative semantics."
     },
-    "updatedAt": "2026-06-20T18:50:00+08:00",
-    "previousVersion": "round413-progress-invariant-key-20260620",
-    "lastUpdated": "2026-06-20T18:50:00+08:00",
-    "runtimeVersion": "round414-progress-snapshot-181103-video-release-20260620",
+    "updatedAt": "2026-06-20T21:52:00+08:00",
+    "previousVersion": "round414-progress-snapshot-181103-video-release-20260620",
+    "lastUpdated": "2026-06-20T21:52:00+08:00",
+    "runtimeVersion": "round415-progress-durable-monitor-181103-release-20260620",
     "round413ProgressInvariantKey": {
       "status": "required",
       "command": "node tools/check-round408-progress-monitor-no-drift-contract.mjs --write --json",
@@ -3849,10 +3898,16 @@
       "command": "node tools/check-round408-progress-monitor-no-drift-contract.mjs --write --json",
       "evidence": "functions/_middleware.js, js/fluid-home-complete.js, modules/progress-module.html, modules/question-bank-practice.js",
       "summary": "Visible cumulative progress rejects empty server snapshots and local fallback; persistence blockers remain visible until D1/R2 binding is fixed."
+    },
+    "round415ProgressDurableMonitor181103Release": {
+      "status": "required",
+      "command": "node tools/check-round408-progress-monitor-no-drift-contract.mjs --write --json",
+      "evidence": "functions/_middleware.js, modules/progress-module.html, teacher-panel.html, tools/check-round408-progress-monitor-no-drift-contract.mjs",
+      "summary": "Student and teacher cumulative time/questions/accuracy render only from fresh noMutationRead server-progress-snapshot; login/localStorage/recent audit windows remain diagnostic only."
     }
   },
   "roundCount": 414,
-  "currentReleaseVersion": "round414-progress-snapshot-181103-video-release-20260620",
+  "currentReleaseVersion": "round415-progress-durable-monitor-181103-release-20260620",
   "qualityLanes": [
     {
       "id": "auth-security",
@@ -3965,17 +4020,27 @@
       "strictWriteBlockedUntil": "FM_PROGRESS_DB or FM_PROGRESS_R2",
       "privateVideoBlockedUntil": "FM_PRIVATE_MEDIA",
       "summary": "Round414 locks empty snapshot and production blocker visibility across student progress, stats, teacher summary, 181103 entry/resource gates, and private-video management results."
+    },
+    "round415ProgressDurableMonitor181103Release": {
+      "status": "active",
+      "expectedVersion": "round415-progress-durable-monitor-181103-release-20260620",
+      "readOnlyRealAccount": true,
+      "browserVisibleNoDrift": true,
+      "studentProgressRequiresFreshServerSnapshot": true,
+      "strictWriteBlockedUntil": "FM_PROGRESS_DB or FM_PROGRESS_R2",
+      "privateVideoBlockedUntil": "FM_PRIVATE_MEDIA",
+      "summary": "Round415 prevents login/localStorage/recent-window drift in student and teacher cumulative progress surfaces."
     }
   },
   "latestRelease": {
-    "currentVersion": "round414-progress-snapshot-181103-video-release-20260620",
-    "currentRound": 414,
-    "expectedVersion": "round414-progress-snapshot-181103-video-release-20260620",
-    "updatedAt": "2026-06-20T18:50:00+08:00",
-    "previousVersion": "round413-progress-invariant-key-20260620",
-    "version": "round414-progress-snapshot-181103-video-release-20260620",
-    "title": "Round414 进度空快照防漂移、181103 入口答案与私有视频管理收口",
-    "lastIntegratedRound": 414,
-    "lastUpdated": "2026-06-20T18:50:00+08:00"
+    "currentVersion": "round415-progress-durable-monitor-181103-release-20260620",
+    "currentRound": 415,
+    "expectedVersion": "round415-progress-durable-monitor-181103-release-20260620",
+    "updatedAt": "2026-06-20T21:52:00+08:00",
+    "previousVersion": "round414-progress-snapshot-181103-video-release-20260620",
+    "version": "round415-progress-durable-monitor-181103-release-20260620",
+    "title": "Round415 累计时长与做题监控不随登录/升级漂移",
+    "lastIntegratedRound": 415,
+    "lastUpdated": "2026-06-20T21:52:00+08:00"
   }
 }

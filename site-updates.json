@@ -1,5 +1,88 @@
 [
   {
+    "version": "round415-progress-durable-monitor-181103-release-20260620",
+    "date": "2026-06-20",
+    "time": "21:52",
+    "updatedAt": "2026-06-20T21:52:00+08:00",
+    "previousVersion": "round414-progress-snapshot-181103-video-release-20260620",
+    "tag": "Round415",
+    "focus": "progress-durable-monitor-181103-release",
+    "title": "Round415 累计时长与做题监控不随登录/升级漂移",
+    "summary": "本轮把学习进度口径继续收紧到服务端真实快照：学生进度页的累计时长、累计题数、平均分只在 fresh /api/stats noMutationRead server-progress-snapshot 存在时显示；没有快照时显示待同步，不再用 fm_sessions、fm_scores、本机缓存或最近事件窗冒充累计。服务器端进一步暴露 readOnlyNoDrift、fallbackSnapshot、durablePrimaryWrite 和 progressPersistenceContract，明确区分只读不漂移、KV fallback 快照和 D1/R2 严格主存储。181103 全 HTML/题库/参考答案与私有视频管理继续纳入同一 release gate，但完整生产持久化仍必须绑定 FM_PROGRESS_DB 或 FM_PROGRESS_R2 并通过真实账号写入、重登回读、教师汇总验证；私有视频完整管理仍要求 FM_PRIVATE_MEDIA。",
+    "links": [
+      {
+        "label": "学生学习进度",
+        "href": "/modules/progress-module.html?edge_refresh=round415-progress-durable-monitor-181103-release-20260620"
+      },
+      {
+        "label": "教师进度监控",
+        "href": "/teacher-panel?view=students&edge_refresh=round415-progress-durable-monitor-181103-release-20260620"
+      },
+      {
+        "label": "181103 资料题库",
+        "href": "/modules/question-bank.html?focus=181103-material-extracted&edge_refresh=round415-progress-durable-monitor-181103-release-20260620#questionBanksList"
+      },
+      {
+        "label": "181103 HTML 资料",
+        "href": "/resources/fluid-181103-html/index.html?edge_refresh=round415-progress-durable-monitor-181103-release-20260620"
+      },
+      {
+        "label": "历年真题拆题",
+        "href": "/modules/real-exams-dynamic.html?edge_refresh=round415-progress-durable-monitor-181103-release-20260620#sourceGranularityNote"
+      },
+      {
+        "label": "私有视频管理边界",
+        "href": "/teacher-panel?view=resources&edge_refresh=round415-progress-durable-monitor-181103-release-20260620#private-videos"
+      }
+    ],
+    "evidence": {
+      "progressInvariantGate": "node tools/check-round408-progress-monitor-no-drift-contract.mjs --json --write => Round415 adds student progress display gate: cumulative hours/questions/accuracy render only from fresh server-progress-snapshot.",
+      "edgeStaticGate": "node tests/edge-fluid-upgrade-check.js => must pass after current authority sync.",
+      "liveReadOnlyRequired": "node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain --expected-version round415-progress-durable-monitor-181103-release-20260620",
+      "liveWriteRequired": "node tools/check-production-progress-real-account.mjs --json --require-server-kv-write --require-public-chain --expected-version round415-progress-durable-monitor-181103-release-20260620",
+      "teacherPrimaryStoreRequired": "node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain --require-primary-store --expected-version round415-progress-durable-monitor-181103-release-20260620",
+      "publicReleaseMonitor": "node tools/monitor-fluid-public-release.mjs --json --expected-version round415-progress-durable-monitor-181103-release-20260620"
+    },
+    "currentRound": 415,
+    "runtimeVersion": "round415-progress-durable-monitor-181103-release-20260620",
+    "progressDurability": {
+      "cumulativeSourceOfTruth": "server-progress-snapshot",
+      "studentVisibleCumulativeRequires": [
+        "fresh /api/stats",
+        "noMutationRead=true",
+        "hasServerProgressSnapshot=true",
+        "snapshotPersisted=true"
+      ],
+      "localStorageCumulativeKeysBlockedByDefault": [
+        "fm_sessions",
+        "fm_scores",
+        "fm_learning_data_v2",
+        "practiceSessions",
+        "localStudyPlanProgress",
+        "questionBankProgress"
+      ],
+      "strictPrimaryStoreReady": false,
+      "strictPrimaryStoreRequires": [
+        "FM_PROGRESS_DB",
+        "FM_PROGRESS_R2"
+      ],
+      "visibleBoundaries": [
+        "readOnlyNoDrift",
+        "fallbackSnapshot",
+        "durablePrimaryWrite",
+        "progressPersistenceContract"
+      ]
+    },
+    "sourceBoundaries": {
+      "materialRows": 522,
+      "defaultPracticeRows": 381,
+      "sourceContentRows": 141,
+      "realExamAtomicQuestions": 325,
+      "groupedSections": 68,
+      "groupedSubquestions": 217
+    }
+  },
+  {
     "version": "round414-progress-snapshot-181103-video-release-20260620",
     "date": "2026-06-20",
     "time": "18:50",

@@ -7,15 +7,20 @@ const targetOrigin = 'https://lghui-fluid-learning.pages.dev';
 const sourceSiteUpdates = readJsonArray(path.join(sourceRepoRoot, 'site-updates.json'));
 const sourceLatestSiteUpdate = sourceSiteUpdates[0] || {};
 const sourceTruthVersion = sourceLatestSiteUpdate.version || '';
-const publicShellSyncVersion = sourceTruthVersion || 'round408-release-gate-public-consistency-20260620';
-const publicShellRoundLabel = roundLabelFromVersion(publicShellSyncVersion) || 'Round407';
+const publicShellSyncVersion = sourceTruthVersion || 'round415-release-gate-public-consistency-20260620';
+const publicShellRoundLabel = roundLabelFromVersion(publicShellSyncVersion) || 'Round415';
 const sourceTruthRoundLabel = roundLabelFromVersion(sourceTruthVersion) || '当前源站版本';
 const answerProofRoundLabel = sourceTruthRoundLabel;
 const defaultPublicShellVersion = publicShellSyncVersion;
+const forbiddenStaleReleaseVersions = new Set(['round264-formula-condition-checklist-20260522']);
 if (!sourceTruthVersion && !process.env.FLUID_PUBLIC_EDGE_REFRESH) {
   throw new Error(`Missing latest source site-updates.json version in ${sourceRepoRoot}`);
 }
 const edgeRefresh = process.env.FLUID_PUBLIC_EDGE_REFRESH || defaultPublicShellVersion;
+const publicShellCurrentRound = roundNumber(edgeRefresh) || roundNumber(sourceTruthVersion) || 415;
+if (forbiddenStaleReleaseVersions.has(edgeRefresh) || forbiddenStaleReleaseVersions.has(sourceTruthVersion)) {
+  throw new Error(`Refusing to generate public shell with stale release authority ${edgeRefresh || sourceTruthVersion}`);
+}
 const previousSiteUpdates = readJsonArray(path.join(repoRoot, 'site-updates.json'));
 
 const routes = [
@@ -347,6 +352,11 @@ function roundLabelFromVersion(version) {
   return match ? `Round${match[1]}` : '';
 }
 
+function roundNumber(version) {
+  const match = /^round(\d+)/i.exec(String(version || ''));
+  return match ? Number.parseInt(match[1], 10) : null;
+}
+
 function updateKey(item) {
   try {
     return JSON.stringify(item || null);
@@ -377,8 +387,8 @@ function publicShellSiteUpdateRecord() {
     updatedAt: '2026-06-18T13:45:00+08:00',
     previousVersion: sourceTruthVersion,
     tag: publicShellRoundLabel,
-    focus: 'round394-public-shell-181103-html-answer-sync',
-    title: 'Round394 lghui.top 公开壳入口、181103 HTML 与答案同步',
+    focus: 'current-public-shell-181103-html-answer-sync',
+    title: `${publicShellRoundLabel} lghui.top 公开壳入口、181103 HTML 与答案同步`,
     summary: `公开壳第一屏现在展示 ${publicShellRoundLabel} public-shell 同步版本，源站内容真值来自 ${sourceTruthRoundLabel}（${sourceTruthVersion}）：/api/progress 与 /api/track 的 POST 只代表 progress-write-confirmation，累计题数、学习时长和教师监控必须重新读取 server-progress-snapshot；当前生产仍是 server-kv-learning-progress / kv-single-write-fallback，完整生产持久化继续要求 FM_PROGRESS_DB 或 FM_PROGRESS_R2。181103 入口继续保留 38 份 HTML 总表、522 张资料来源卡、381 道默认练习和 141 条线索展示；题库 JSON/GZ、HTML 正文页和 public shell 入口同步到同一版本，不再使用 lghui.top 旧样本、旧 round 或答案旧版。私有视频生产恢复仍要求 FM_PRIVATE_MEDIA R2。lghui.top 只做入口，不伪造 auth，不提供 PDF/PPT/DOC/ZIP 下载。`,
     links: [
       {
@@ -399,20 +409,21 @@ function publicShellSiteUpdateRecord() {
       }
     ],
     evidence: {
-      currentRound: 394,
+      currentRound: publicShellCurrentRound,
       sourceProgressTruthVersion: sourceTruthVersion,
       sourceProgressTruthTitle: sourceLatestSiteUpdate.title || '',
       publicShellBoundary: 'lghui.top is a static public shell and route entry. It does not mint auth, does not prove authenticated QA, and does not provide raw downloads.',
       progressStorageBoundary: `${publicShellRoundLabel} keeps the source progress truth from ${sourceTruthRoundLabel}: progress-write-confirmation is not cumulative truth and server-progress-snapshot readback is required; full durable progress still requires FM_PROGRESS_DB or FM_PROGRESS_R2.`,
       privateVideoBoundary: 'FM_PRIVATE_MEDIA R2 remains required before claiming private-video production upload/delete/access/archive recovery.',
       supplemental181103Boundary: '181103 remains 38 HTML material pages, 522 source cards, 381 default-practice questions, and 141 display-only source/content leads.',
+      staleReleaseAuthorityRejected: [...forbiddenStaleReleaseVersions],
       generator: 'tools/generate-public-redirects.mjs',
       generatedPublicShellFiles: 'index.html, index-complete.html, resources.html, question-bank-home.html, knowledge.html, modules/question-bank.html, and route aliases',
       sourceRoundEvidence: sourceLatestSiteUpdate.evidence || {},
       verificationPlan: [
         'node --check tools/generate-public-redirects.mjs',
         'node tools/generate-public-redirects.mjs',
-        'static public-shell first-screen term check for Round394/181103/storage boundaries',
+        `static public-shell first-screen term check for ${publicShellRoundLabel}/181103/storage boundaries`,
         'hash compare public shell resources/fluid-181103-html and question-banks/181103-material-extracted.json(.gz) against the source repo'
       ]
     },
