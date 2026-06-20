@@ -18,7 +18,7 @@
   var R264_VERSION = 'round264-formula-condition-checklist-20260522';
   var LEARNING_CONTENT_VERSION = R264_VERSION;
   var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
-  var ROADMAP100_VERSION = 'round408-release-gate-public-consistency-20260620';
+  var ROADMAP100_VERSION = 'round410-181103-practice-status-cardinality-20260620';
   var ROADMAP100_URL = '/data/fluid-upgrade-roadmap-100.json';
   var R278_VERSION = 'round279-real-exam-source-granularity-20260612';
   var R278_YEAR_COMPARE_URL = '/data/fluid-round278-pdf-web-year-compare.json';
@@ -89,7 +89,7 @@
       title: '历年真题新版',
       desc: '2000-2024 历年真题，325 原文小题和 68 个已拆组题 section。',
       keywords: '历年真题 真题新版 325原文小题 68组题 803流体力学',
-      url: '/modules/real-exams-dynamic.html?edge_refresh=round408-release-gate-public-consistency-20260620&from=round342-edge-search'
+      url: '/modules/real-exams-dynamic.html?edge_refresh=round410-181103-practice-status-cardinality-20260620&from=round342-edge-search'
     },
     {
       id: 'round342-formula',
