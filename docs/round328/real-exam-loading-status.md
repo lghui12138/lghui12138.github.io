@@ -6,7 +6,7 @@ This local gate checks the real-exam page loading state after the Round328 worke
 
 ## Key Proof
 
-- current successor version visible: yes (Round358)
+- current successor version visible: yes (Round410)
 - visible no-merge locks: 325/68/217/5
 - source/web atomic questions: 325/325
 - grouped sections / grouped ids: 68/217

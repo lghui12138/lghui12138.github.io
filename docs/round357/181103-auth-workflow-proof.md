@@ -1,15 +1,15 @@
-# Round370 181103 Authenticated Workflow Proof
+# Round371 181103 Authenticated Workflow Proof
 
-- Version: `round370-181103-readable-practice-20260616`
-- Expected release: `round370-181103-readable-practice-20260616`
-- Generated at: `2026-06-15T17:36:37.000Z`
+- Version: `round410-181103-practice-status-cardinality-20260620`
+- Expected release: `round410-181103-practice-status-cardinality-20260620`
+- Generated at: `2026-06-20T05:33:16.522Z`
 - Acceptance: **PASS**
 - Browser runs skipped: `false`
 
 ## Local Data
 
-- Question bank: 522 total / 522 source-backed playable / 522 source-first review / 379 OCR review / 24 hidden review
-- Index source-first count: 522; legacy default diagnostic=522
+- Question bank: 522 total / 381 source-semantic practice / 141 source-content display-only / 522 source-first review / 379 OCR review / 24 hidden review
+- Index source-first count: 522; practice=381; source-content=141; default diagnostic=381
 - Source anchors: 522/522
 - Raw OCR/noise hits in source-backed practice pool: 0
 - Big workbook: 40 first-window images, 3 eager, 37 lazy, total pages=365, static anchors=325
@@ -18,16 +18,16 @@
 
 - `lghui.top/site-updates.json`: 200, current=true
 - `lghui.top/resources/fluid-181103-html/index.html`: 38/38 material links, binary links=0
-- `lghui.top/question-banks/181103-material-extracted.json`: 522 total / 522 source-backed playable / 522 source-first / 379 OCR / 24 hidden
-- `lghui.top/question-banks/index.json`: source-first=522, total=522, legacy default diagnostic=522
+- `lghui.top/question-banks/181103-material-extracted.json`: 522 total / 381 source-semantic practice / 141 source-content display-only / 522 source-first / 379 OCR / 24 hidden
+- `lghui.top/question-banks/index.json`: source-first=522, total=522, practice=381, source-content=141, default diagnostic=381
 - Public big workbook: 40 first-window images, 3 eager, 37 lazy, total pages=365, page anchors=365
 
 ## Real Student Account Browser
 
 - Auth chain: started on lghui.top=true, reached source=true, role=student, qa=qa-student, credentials=credentials-redacted
-- Bank ledger: 可刷题 522 来源页图 522 原 OCR show 119 OCR池 379 hidden提示 24 题面内置页图 重复簇 1
-- Practice dialog: 522 total / 522 legacy default diagnostic / 522 source-first / 379 OCR / 24 hidden / default garble 0
-- Rendered question: launched=522, counter=题目 1 / 522, bad tokens=false, formula bridge=true, source link=/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-003, source image=1946x2858
+- Bank ledger: 可刷题 381 HTML题面 522 高置信 352 低置信 0 来源证据 522 源文线索 141 纯占位 0 重复簇 1
+- Practice dialog: 522 total / 381 source-semantic practice / 141 source-content display-only / 522 source-first / 379 OCR / 24 hidden / default garble 0
+- Rendered question: launched=381, counter=题目 1 / 381, bad tokens=false, formula bridge=true, source link=/resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html#page-003, source image=1946x2858
 - Authenticated source index: 38/38 material links, binary links=0
 - Authenticated big workbook: 40 first-window images, 3 eager, 37 lazy, total pages=365, page anchors=365, binary links=0
 - User-pointed 03 material page: 12 images / 12 decoded, page ids=12, binary links=0, replacements=0, qmark runs=0
@@ -35,7 +35,7 @@
 ## Optimization Lessons
 
 - Large PDF-derived workbooks must render as direct in-site HTML page images and lazy-load after the first few pages; eager-loading hundreds of page images is treated as a release blocker.
-- The 181103 bank must expose a source-backed full-practice path that starts all 522 questions; legacy default-practice counters are diagnostics only.
+- The 181103 bank must expose 522 source-verified HTML cards while starting only 381 source-semantic practice questions; 141 source/content cards stay display-only.
 - Production closure needs both public-shell proof and authenticated source proof because lghui.top may expose static HTML while pages.dev returns a protected login shell to anonymous requests.
 - Real-account QA must write redacted counts and routes, not credentials or screenshots with secrets.
 

@@ -8,42 +8,42 @@ Round330 worker 5 records the local deployment package, public load budget, gzip
 
 - Status: WARN
 - Hard checks: 8/8
-- Warnings recorded: 10
-- Deploy dry-run package: 255 MB across 1985 files
-- Large included assets in top list: 3
-- Public load budget: warn, warnings 10, failures 0
+- Warnings recorded: 12
+- Deploy dry-run package: 266 MB across 2063 files
+- Large included assets in top list: 4
+- Public load budget: warn, warnings 16, failures 0
 - Gzip mismatches: 0
 - Missing large gzip sidecars: 0
-- Source cache version: `round358-181103-522-html-practice-release-20260616`
-- Public-shell cache version: `round358-181103-522-html-practice-release-20260616`
+- Source cache version: `round410-181103-practice-status-cardinality-20260620`
+- Public-shell cache version: `round410-181103-practice-status-cardinality-20260620`
 - Source/public-shell version aligned: true
 - Service worker kill switch pass: true
 
 ## Deploy Package
 
 - Prepare script dry-run ok: true
-- Included: 1985 files, 255 MB
-- Ignored: 1423 files, 130 MB
+- Included: 2063 files, 266 MB
+- Ignored: 1808 files, 173 MB
 - Missing required assets: 0
 
 | Largest included | Size |
 |---|---:|
+| `question-banks/181103-material-extracted.json` | 5.5 MB |
 | `resources/fluid-181103-html/materials/06-fluid-181103-06-2/media/slide13-1-image27.png` | 2.1 MB |
 | `data/fluid-chapter-exam-packs.json` | 1.4 MB |
-| `question-banks/181103-material-extracted.json` | 1.3 MB |
-| `data/fluid-round324-181103-question-discovery.json` | 950 KB |
-| `data/fluid-round323-181103-question-ledger.json` | 796 KB |
+| `data/fluid-round324-181103-question-discovery.json` | 1.1 MB |
+| `data/fluid-round323-181103-question-ledger.json` | 920 KB |
+| `site-updates.json` | 786 KB |
 | `data/fluid-real-exam-source-granularity-audit.json` | 751 KB |
-| `site-updates.json` | 664 KB |
-| `resources/fluid-181103-html/materials/01-fluid-181103-01-material/pages021.jpg` | 640 KB |
+| `resources/fluid-181103-html/materials/01-fluid-181103-01-material/index.html` | 691 KB |
 
 ## Public Load Budget
 
 | Warning | Size | Message |
 |---|---:|---|
-| `site-updates.json` | 664 KB | source:site-updates.json critical JSON size 664 KB |
-| `site-updates.json` | 664 KB | public-shell:site-updates.json critical JSON size 664 KB |
-| `js/edge-fluid-*.js` | 7.3 MB | source critical JS discoverable JSON refs 7.3 MB (13 files) |
+| `site-updates.json` | 786 KB | source:site-updates.json critical JSON size 786 KB |
+| `site-updates.json` | 749 KB | public-shell:site-updates.json critical JSON size 749 KB |
+| `js/edge-fluid-*.js` | 7.5 MB | source critical JS discoverable JSON refs 7.5 MB (13 files) |
 | `data/fluid-formula-index.json` | 3.0 MB | source boot/discoverable JSON data/fluid-formula-index.json 3.0 MB |
 | `data/fluid-formula-applications.json` | 15 MB | source large public static candidate data/fluid-formula-applications.json 15 MB |
 | `resources/physical-oceanography/ppt/物理海洋学导论_学生挖空版.pptx` | 12 MB | source large public static candidate resources/physical-oceanography/ppt/物理海洋学导论_学生挖空版.pptx 12 MB |
@@ -52,8 +52,8 @@ Round330 worker 5 records the local deployment package, public load budget, gzip
 
 ## Gzip Sidecars
 
-- Checked rows: 215
-- Matched sidecars: 215
+- Checked rows: 247
+- Matched sidecars: 247
 - Mismatches: 0
 - Missing large sidecars: 0
 

@@ -97,7 +97,7 @@ This ledger distills reusable website optimization lessons only from existing pr
 
 ## Output Budget
 
-- JSON bytes: 14304
-- Gzip bytes: 3344
+- JSON bytes: 14305
+- Gzip bytes: 3342
 - Markdown bytes: 6043
 - Gzip byte exact: yes

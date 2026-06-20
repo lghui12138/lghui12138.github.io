@@ -8,9 +8,9 @@ Round336 converts the Round330 performance/cache WARN state into an executable n
 ## Summary
 
 - Round330 status consumed: `warn` with 12 warnings and 8/8 hard checks passed
-- Deploy dry-run package: 256 MB across 1991 files
+- Deploy dry-run package: 266 MB across 2063 files
 - Action rows: 8; open: 8; high priority: 5
-- Impacted warning bytes represented: 82 MB
+- Impacted warning bytes represented: 89 MB
 - Visibility gates passed: yes
 - Source/public-shell version aligned in Round330: yes
 - Service worker kill switch pass in Round330: yes
@@ -19,13 +19,13 @@ Round336 converts the Round330 performance/cache WARN state into an executable n
 
 | Priority | Action | Warn paths | Next step | Degrade strategy | Gate |
 |---|---|---|---|---|---|
-| P0 | `site-updates-split-current-history` | site-updates.json (672 KB)<br>site-updates.json (635 KB) | Introduce a tiny current-release manifest for top-version checks and move historical update rows behind a paged or lazy history endpoint/file. | If the split is not ready, keep the current `site-updates.json` path as the fallback authority and cap UI history rendering to the newest rows. | Release gates must still prove source/public-shell version alignment and no stale-current wording. |
-| P1 | `edge-json-warmup-manifest` | js/edge-fluid-*.js (7.4 MB) | Replace broad hard-coded warmup lists with a small manifest of critical JSON plus route-level optional packs. | On constrained networks, disable optional warmup and fetch only the route-visible JSON needed for the current screen. | The edge script must not hide 181103 HTML entry links, 522 question counts, or real-exam current links when optional warmup is skipped. |
+| P0 | `site-updates-split-current-history` | site-updates.json (786 KB)<br>site-updates.json (749 KB) | Introduce a tiny current-release manifest for top-version checks and move historical update rows behind a paged or lazy history endpoint/file. | If the split is not ready, keep the current `site-updates.json` path as the fallback authority and cap UI history rendering to the newest rows. | Release gates must still prove source/public-shell version alignment and no stale-current wording. |
+| P1 | `edge-json-warmup-manifest` | js/edge-fluid-*.js (7.5 MB) | Replace broad hard-coded warmup lists with a small manifest of critical JSON plus route-level optional packs. | On constrained networks, disable optional warmup and fetch only the route-visible JSON needed for the current screen. | The edge script must not hide 181103 HTML entry links, 522 question counts, or real-exam current links when optional warmup is skipped. |
 | P1 | `formula-index-applications-shard` | data/fluid-formula-index.json (3.0 MB)<br>data/fluid-formula-applications.json (15 MB) | Split formula data into a compact searchable index and chapter/formula-id application shards loaded after user intent. | If a shard fetch fails, render the compact formula card and show applications as unavailable without blocking formula search. | Formula search and MathJax readiness checks must still pass without eager loading all application details. |
 | P1 | `source-search-index-shard` | data/fluid-source-search-index.json (5.6 MB) | Create a compact source-search manifest plus chapter/material/source-type shards; keep supplemental 181103 routing as safe in-site HTML links. | If full-text shards are unavailable, keep material cards and chapter filters working from the compact manifest. | 181103 material routes must remain 38/38 direct in-site HTML and 522 anchors must remain visible. |
-| P2 | `static-pptx-delivery-policy` | resources/physical-oceanography/ppt/物理海洋学导论_学生挖空版.pptx (12 MB)<br>resources/fluid-sources/chapter-8-viscous-incompressible-flow.pptx (6.3 MB) | Document and enforce a static-file policy: PPTX stays lazy/manual-download only, with lightweight HTML/PDF/metadata previews for discovery. | When bandwidth is constrained, show the preview/metadata and require an explicit user click before requesting PPTX. | Large PPTX mitigation must not delete protected source coverage or turn 181103 content back into raw-download-only routes. |
+| P2 | `static-pptx-delivery-policy` | resources/physical-oceanography/ppt/物理海洋学导论_学生挖空版.pptx (12 MB)<br>resources/fluid-sources/chapter-8-viscous-incompressible-flow.pptx (6.3 MB)<br>resources/physical-oceanography/ppt/物理海洋学导论_学生挖空版.pptx (12 MB) | Document and enforce a static-file policy: PPTX stays lazy/manual-download only, with lightweight HTML/PDF/metadata previews for discovery. | When bandwidth is constrained, show the preview/metadata and require an explicit user click before requesting PPTX. | Large PPTX mitigation must not delete protected source coverage or turn 181103 content back into raw-download-only routes. |
 | P2 | `formula-drills-lazy-pack` | data/fluid-formula-drills.json (5.6 MB) | Route formula drills through chapter-level packs with a small manifest of counts and availability. | If drill packs are unavailable, keep formula index/search visible and show drill mode as deferred. | No formula drill optimization may lower formula index discoverability or mask MathJax failures. |
-| P2 | `gzip-and-cache-negotiation` | data/fluid-formula-applications.json (15 MB)<br>resources/physical-oceanography/ppt/物理海洋学导论_学生挖空版.pptx (12 MB)<br>resources/fluid-sources/chapter-8-viscous-incompressible-flow.pptx (6.3 MB)<br>data/fluid-source-search-index.json (5.6 MB)<br>data/fluid-formula-drills.json (5.6 MB)<br>data/fluid-formula-applications.json (15 MB)<br>data/fluid-source-search-index.json (5.6 MB)<br>data/fluid-formula-drills.json (5.6 MB) | Make gzip/static cache expectations visible in the deployment gate and distinguish compressible JSON from already-compressed binary assets. | Serve existing full JSON with current gzip sidecars until sharded assets and gate checks both pass. | A gzip pass alone cannot mark user-facing performance fixed while boot/discoverable JSON warnings remain. |
+| P2 | `gzip-and-cache-negotiation` | data/fluid-formula-applications.json (15 MB)<br>resources/physical-oceanography/ppt/物理海洋学导论_学生挖空版.pptx (12 MB)<br>resources/fluid-sources/chapter-8-viscous-incompressible-flow.pptx (6.3 MB)<br>data/fluid-source-search-index.json (5.6 MB)<br>data/fluid-formula-drills.json (5.6 MB)<br>question-banks/181103-material-extracted.json (5.5 MB)<br>data/fluid-formula-applications.json (15 MB)<br>resources/physical-oceanography/ppt/物理海洋学导论_学生挖空版.pptx (12 MB) | Make gzip/static cache expectations visible in the deployment gate and distinguish compressible JSON from already-compressed binary assets. | Serve existing full JSON with current gzip sidecars until sharded assets and gate checks both pass. | A gzip pass alone cannot mark user-facing performance fixed while boot/discoverable JSON warnings remain. |
 | P0 | `visibility-regression-gates` | visibility guard | Run content and discovery gates after each payload split and before public release language. | If a split would hide counts or routes, keep the old full JSON/data path and ship only documentation/ledger changes. | Reject any optimization whose local gates pass but 181103 direct HTML, 522 question visibility, or real-exam source locks fail. |
 
 ## Detailed Actions
@@ -173,7 +173,7 @@ Round336 converts the Round330 performance/cache WARN state into an executable n
 - 181103 material-question anchors: 522
 - 181103 discovered questions: 522
 - Real-exam locks: 325 atoms, 68 grouped sections, 217 grouped subquestions
-- Resources discovery checks: 17/17
+- Resources discovery checks: 22/22
 
 | Check | Status |
 |---|---|
@@ -217,7 +217,7 @@ Round336 converts the Round330 performance/cache WARN state into an executable n
 - Static PPTX mitigation should prefer discoverability and lazy delivery changes before deleting or moving source materials.
 - Fallback behavior must keep current full JSON and static files reachable until replacement gates pass.
 - Warnings may be promoted to a failing gate with --strict-warnings for planning or release-readiness use.
-- JSON bytes: 36931
-- Gzip bytes: 5853
-- Markdown bytes: 15549
+- JSON bytes: 38076
+- Gzip bytes: 5903
+- Markdown bytes: 15696
 - Gzip byte exact: yes
