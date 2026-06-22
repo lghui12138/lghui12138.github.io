@@ -40,12 +40,12 @@
       "releaseCoverageGate": "node tools/check-round418-release-version-gate-coverage.mjs --json --expected-version round418-progress-visible-truth-181103-answer-ux-20260621 => required coverage audit for visible progress truth, 181103 522/381/141 answer display, real-exam 325/68/217 no-merge cardinality, lghui.top/pages.dev freshness, and current-version real-account proof gates.",
       "kvFallbackGate": "node tools/check-round397-server-kv-progress-cumulative-hardening.mjs --json => KV fallback uses single server-progress-snapshot write plus recentEventIds dedupe.",
       "idempotencyGate": "node tools/check-round398-progress-event-idempotency-contract.mjs --json => stable answer event ids and no stale outbox replay remain locked.",
-      "liveReadOnlyProof": "NODE_OPTIONS=--dns-result-order=ipv4first node tools/check-production-progress-real-account.mjs --json --read-only --require-public-chain --expected-version round418-progress-visible-truth-181103-answer-ux-20260621 => PASS postdeploy: login/logout/relogin/stats stable, cumulativeStableKey unchanged, noMutationRead=true.",
+      "liveReadOnlyProof": "Round418 read-only no-drift proof requires a fresh lghui.top/pages.dev real-account rerun before production closure. Prior postdeploy read-only proof is retained only as historical baseline; current progressDurability.postdeployReadOnlyNoDriftVerified=false.",
       "liveWriteBlocker": "AUTH_BROWSER_FETCH_ATTEMPTS=1 NODE_OPTIONS=--dns-result-order=ipv4first node tools/check-production-progress-real-account.mjs --json --require-server-kv-write --require-public-chain --expected-version round418-progress-visible-truth-181103-answer-ux-20260621 => FAIL expected postdeploy: POST /api/progress status 503, writeDurabilityStatus=write_quota_exceeded, failed write not counted as cumulative.",
       "cloudflareBindingProof": "Cloudflare Pages production binding audit via API/curl after deploy: kv_namespaces=[FM_AUDIT], d1_databases=[], r2_buckets=[]; blockers missing FM_PROGRESS_DB/FM_PROGRESS_R2 and missing FM_PRIVATE_MEDIA.",
-      "postdeployPublicFreshness": "lghui.top site-updates/home/181103 entry and pages.dev _edge-status sampled after deploy => Round417 visible; public shell HEAD cae575f4 synced with origin/main. Proof artifact: output/qa/round417-public-freshness-curl-postdeploy.json.",
+      "postdeployPublicFreshness": "Historical Round417 lghui.top/pages.dev freshness proof is retained as previous-version baseline only. Round418 current public freshness must be rerun before claiming current production closure. Historical artifact: output/qa/round417-public-freshness-curl-postdeploy.json.",
       "liveTeacherProof": "NODE_OPTIONS=--dns-result-order=ipv4first node tools/check-teacher-progress-summary-real-account.mjs --json --require-public-chain => PASS postdeploy: teacher summary uses server-progress-snapshot, audit-event-window excluded from cumulative totals.",
-      "proofArtifacts": [
+      "historicalProofArtifacts": [
         "output/qa/round417-public-freshness-curl-postdeploy.json",
         "output/qa/round417-progress-readonly-public-chain-postdeploy.json",
         "output/qa/round417-progress-server-kv-write-public-chain-single-attempt.json",
@@ -53,6 +53,7 @@
         "output/qa/round417-cloudflare-pages-bindings-curl-postdeploy.json",
         "output/qa/round417-progress-primary-store-preflight-postdeploy.json"
       ],
+      "currentProofArtifacts": [],
       "visibleProgressTruthGate": "node tools/check-round418-progress-visible-truth-contract.mjs --json => PASS 12/12: homepage, student progress, question-bank stats, teacher monitor render cumulative truth only from server-progress-snapshot; localStorage is explicit diagnostic/offline reference only."
     },
     "currentRound": 418,
@@ -113,7 +114,7 @@
       "fullProductionCumulativeBlocked": true,
       "serverKvCumulativeLimited": "server-kv-cumulative-limited",
       "postdeployVerifiedAt": "2026-06-21T06:36:46+08:00",
-      "readOnlyNoDrift": "verified with real student/teacher QA accounts through lghui.top -> pages.dev public chain",
+      "readOnlyNoDrift": "needs fresh real student/teacher QA rerun through lghui.top -> pages.dev public chain before current production closure; historical Round417 proof is not current Round418 proof",
       "writePersistence": "blocked by write_quota_exceeded until FM_PROGRESS_DB or FM_PROGRESS_R2 is bound",
       "cloudflareProductionBindingsObserved": {
         "kv_namespaces": [
