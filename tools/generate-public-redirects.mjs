@@ -162,6 +162,8 @@ const runtimeCopies = [
   ['data/fluid-round378-181103-question-answer-website-verification.json.gz', 'data/fluid-round378-181103-question-answer-website-verification.json.gz'],
   ['data/fluid-round379-181103-full-website-question-validation.json', 'data/fluid-round379-181103-full-website-question-validation.json'],
   ['data/fluid-round379-181103-full-website-question-validation.json.gz', 'data/fluid-round379-181103-full-website-question-validation.json.gz'],
+  ['data/fluid-round515-deep-upgrade-continuation-ledger.json', 'data/fluid-round515-deep-upgrade-continuation-ledger.json'],
+  ['data/fluid-round515-deep-upgrade-continuation-ledger.json.gz', 'data/fluid-round515-deep-upgrade-continuation-ledger.json.gz'],
   ['data/fluid-round373-181103-live-browser-all-questions.json', 'data/fluid-round373-181103-live-browser-all-questions.json'],
   ['data/fluid-round373-181103-live-browser-all-questions.json.gz', 'data/fluid-round373-181103-live-browser-all-questions.json.gz'],
   ['data/fluid-real-exam-source-granularity-audit.json', 'data/fluid-real-exam-source-granularity-audit.json'],
@@ -273,6 +275,7 @@ const runtimeCopies = [
   ['docs/round319/resources-video-practice-chain.md', 'docs/round319/resources-video-practice-chain.md'],
   ['docs/round321/181103-extracted-material-bank.md', 'docs/round321/181103-extracted-material-bank.md'],
   ['docs/round379-181103-full-website-question-validation.md', 'docs/round379-181103-full-website-question-validation.md'],
+  ['docs/round515-deep-upgrade-continuation-ledger.md', 'docs/round515-deep-upgrade-continuation-ledger.md'],
   ['tools/check-round313-181103-all-html-contract.mjs', 'tools/check-round313-181103-all-html-contract.mjs'],
   ['tools/check-round314-answer-source-layering.mjs', 'tools/check-round314-answer-source-layering.mjs'],
   ['tools/check-round315-181103-all-html-direct-pages.mjs', 'tools/check-round315-181103-all-html-direct-pages.mjs'],
@@ -539,14 +542,24 @@ function materialHtmlHref() {
   return `/resources/fluid-181103-html/index.html?edge_refresh=${edgeRefresh}`;
 }
 
+function round515ProofMarkup() {
+  return `<section class="round515-proof" data-round506-515-deep-upgrade="visible" aria-labelledby="round515ProofTitle">
+      <h2 id="round515ProofTitle">Round506-515 深度升级证明</h2>
+      <p>公开壳已暴露 Round506-515 深度总账；它证明 181103 522 可见块、381 练习、380+1 参考答案状态、141 条线索和真题派生核验边界，但不替代 D1/R2 进度持久化、严格答案 PDF 逐字证明或私有视频 R2 生产恢复。</p>
+      <a class="route-card" href="/data/fluid-round515-deep-upgrade-continuation-ledger.json">打开 Round515 深度总账<span>finalWithRound515=true · productionClaimAllowed=false · strictAnswerPdfProof=0</span></a>
+    </section>`;
+}
+
 function routeSpecificMarkupFor(route) {
   const currentStatus = `<div class="status-pills" aria-label="当前公开壳版本状态">
       <span>Public shell · ${publicShellRoundLabel}</span>
       <span>Source truth · ${sourceTruthRoundLabel}</span>
       <span>181103 answer · ${answerProofRoundLabel}</span>
       <span>38 HTML · 522 sources · 381 practice · 141 leads</span>
+      <span>Deep proof · Round506-515 · 380+1 answers</span>
       <span>Storage boundary · FM_PROGRESS_DB/FM_PROGRESS_R2/FM_PRIVATE_MEDIA</span>
-    </div>`;
+    </div>
+    ${round515ProofMarkup()}`;
   const homeMarkup = `${currentStatus}
     <div class="route-cards" aria-label="181103 首页直达入口">
       <a class="route-card" href="${progressHref()}">${sourceTruthRoundLabel} 累计监控真值<span>${publicShellRoundLabel} 公开壳只同步入口；POST 写入只作确认，累计学习时长、题数和会话只认重新读取的 server-progress-snapshot，完整持久化要等 FM_PROGRESS_DB 或 FM_PROGRESS_R2。</span></a>
@@ -604,7 +617,7 @@ function htmlFor(route) {
     '/modules/question-bank-module.html'
   ].includes(route);
   const actionStyles = stableFallback
-    ? '\n    .actions{display:flex;flex-wrap:wrap;gap:12px}\n    .secondary{background:#155eef}\n    .route-cards{display:grid;gap:10px;margin:16px 0}.route-card{display:block;background:#fff;color:#0f172a;border:1px solid rgba(15,23,42,.12);border-radius:8px;padding:12px 14px;text-decoration:none;font-weight:700}.route-card span{display:block;margin-top:4px;color:#475569;font-size:14px;font-weight:500;line-height:1.5}.status-pills{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.status-pills span{border:1px solid rgba(15,23,42,.14);border-radius:999px;background:#f8fafc;color:#334155;padding:6px 10px;font-size:13px;font-weight:760}'
+    ? '\n    .actions{display:flex;flex-wrap:wrap;gap:12px}\n    .secondary{background:#155eef}\n    .route-cards{display:grid;gap:10px;margin:16px 0}.route-card{display:block;background:#fff;color:#0f172a;border:1px solid rgba(15,23,42,.12);border-radius:8px;padding:12px 14px;text-decoration:none;font-weight:700}.route-card span{display:block;margin-top:4px;color:#475569;font-size:14px;font-weight:500;line-height:1.5}.status-pills{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}.status-pills span{border:1px solid rgba(15,23,42,.14);border-radius:999px;background:#f8fafc;color:#334155;padding:6px 10px;font-size:13px;font-weight:760}.round515-proof{margin:16px 0;padding:14px;border:1px solid rgba(15,118,110,.22);border-left:4px solid #0f766e;border-radius:8px;background:#f8fffd}.round515-proof h2{margin:0 0 6px;font-size:18px;letter-spacing:0}.round515-proof p{margin:0 0 10px}'
     : '';
   const actionMarkup = stableFallback
     ? `<div class="actions">
