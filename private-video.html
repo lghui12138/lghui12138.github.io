@@ -4,66 +4,451 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex,nofollow,noarchive">
-  <meta http-equiv="cache-control" content="no-store">
-  <link rel="canonical" href="https://lghui-fluid-learning.pages.dev/private-video.html?edge_refresh=round545-181103-proof-depth-upgrade-20260627">
-  <title>正在进入流体力学主站</title>
+  <title>教师私有视频管理</title>
   <style>
-    :root{color-scheme:light dark;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f7fbff;color:#07111f}
+    :root{color-scheme:light;--ink:#18212f;--muted:#667085;--line:#d9e1ea;--bg:#f7f9fb;--panel:#fff;--ok:#087443;--warn:#9a5b00;--bad:#b42318;--accent:#175cd3}
     *{box-sizing:border-box}
-    body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#f7fbff,#eef7f8)}
-    main{width:min(560px,100%);border:1px solid rgba(7,17,31,.12);border-radius:8px;background:rgba(255,255,255,.88);padding:28px;box-shadow:0 18px 50px rgba(7,17,31,.12)}
-    h1{margin:0 0 10px;font-size:28px;letter-spacing:0}
-    p{margin:0 0 14px;color:#425466;line-height:1.7}
-    a{display:inline-flex;align-items:center;min-height:42px;border-radius:8px;background:#0f766e;color:#fff;padding:0 16px;text-decoration:none;font-weight:800}
-    code{word-break:break-all}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}
+    main{max-width:1180px;margin:0 auto;padding:24px 16px 40px}
+    header{display:flex;gap:16px;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+    h1{font-size:24px;line-height:1.2;margin:0 0 6px}
+    h2{font-size:16px;margin:0 0 10px}
+    p{margin:0;color:var(--muted);line-height:1.55}
+    button,input{font:inherit}
+    button,.button-link{border:1px solid var(--line);background:#fff;color:var(--ink);min-height:36px;border-radius:8px;padding:0 12px;font-weight:700;cursor:pointer}
+    .button-link{display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+    button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+    button.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+    button:disabled{cursor:not-allowed;opacity:.58}
+    button:focus-visible,input:focus-visible,.button-link:focus-visible{outline:3px solid #fdb022;outline-offset:3px;box-shadow:0 0 0 6px rgba(253,176,34,.18)}
+    input{min-height:36px;border:1px solid var(--line);border-radius:8px;padding:0 10px;min-width:190px}
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+    .panel{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:12px}
+    .status{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;margin-bottom:12px;line-height:1.5}
+    .status.ok{border-color:#abefc6;color:var(--ok);background:#f6fef9}
+    .status.warn{border-color:#fedf89;color:var(--warn);background:#fffcf5}
+    .status.bad{border-color:#fecdca;color:var(--bad);background:#fffbfa}
+    .cell{border:1px solid var(--line);border-radius:8px;padding:10px;background:#fff}
+    .cell b{display:block;margin-bottom:5px}
+    .ready{border-color:#abefc6;background:#f6fef9}.ready b{color:var(--ok)}
+    .limited{border-color:#fedf89;background:#fffcf5}.limited b{color:var(--warn)}
+    .blocked{border-color:#fecdca;background:#fffbfa}.blocked b{color:var(--bad)}
+    .course{display:grid;grid-template-columns:minmax(0,1fr) minmax(260px,360px);gap:12px;border-top:1px solid var(--line);padding:14px 0}
+    .course:first-child{border-top:0}
+    .meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+    .tag{display:inline-flex;align-items:center;min-height:26px;border:1px solid var(--line);border-radius:999px;padding:0 9px;color:var(--muted);font-size:12px;background:#fff}
+    .actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+    .reason{margin-top:8px;color:var(--muted);font-size:13px;line-height:1.45}
+    .reason.bad{color:var(--bad)}
+    .op-log{display:grid;gap:8px;color:var(--muted);font-size:13px;line-height:1.5}
+    .op-log__item{padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;color:var(--ink)}
+    .op-log__item.ok{border-color:#abefc6;background:#f6fef9}.op-log__item.ok b{color:var(--ok)}
+    .op-log__item.warn{border-color:#fedf89;background:#fffcf5}.op-log__item.warn b{color:var(--warn)}
+    .op-log__item.bad{border-color:#fecdca;background:#fffbfa}.op-log__item.bad b{color:var(--bad)}
+    .op-log__item b{display:block;margin-bottom:3px}
+    .empty{padding:26px;text-align:center;color:var(--muted)}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#eef2f6;padding:1px 4px;border-radius:4px}
+    @media(max-width:760px){header,.course{display:block}.toolbar,.actions{justify-content:flex-start}.actions{margin-top:10px}input{width:100%}}
   </style>
 </head>
 <body>
   <main>
-    <h1>正在进入主站</h1>
-    <p>这个公开路径已迁移到 Cloudflare 源站，正在自动打开完整主站。若浏览器拦截自动跳转，请点击按钮进入。</p>
-    <p>当前公开壳版本是 round545-181103-proof-depth-upgrade-20260627，进度生产真值来自 round545-181103-proof-depth-upgrade-20260627。跳转会保留当前路径并把旧 edge_refresh 统一改到当前入口版本，主站会继续显示完整内容、公式和练习。</p>
-    <p>181103 资料当前已写成 HTML 正文：38 份资料、30 条学习路线、68 个真题复核任务和 522 张资料来源卡；381 道独立题进入刷题，141 条参考答案页、父卡、源文/答案续页/讲义正文只作线索展示；公开壳不提供原始文件下载。</p>
-    <p>lghui.top 只做公开入口，不伪造 auth；学习进度完整持久化仍要求 FM_PROGRESS_DB 或 FM_PROGRESS_R2，私有视频生产恢复仍要求 FM_PRIVATE_MEDIA R2。</p>
-    <p><code>/private-video.html</code></p>
+    <header>
+      <div>
+        <h1>教师私有视频管理</h1>
+        <p>教师专用审计页，只展示专属课管理状态、禁用原因和删除确认合同；学生端只从资源页看到被分配课程和状态边界。这里把只读列表/监控成功、学习进度 D1/R2、私有媒体 R2 分开显示；不读取本机凭据，不保存密码、cookie 或 token。</p>
+      </div>
+      <div class="toolbar">
+        <button id="refresh" class="primary" type="button">刷新专属课</button>
+        <a class="button-link" href="/teacher-panel.html">教师后台</a>
+      </div>
+    </header>
 
-    <p><a id="targetLink" href="https://lghui-fluid-learning.pages.dev/private-video.html?edge_refresh=round545-181103-proof-depth-upgrade-20260627">立即打开</a></p>
+    <div id="status" class="status warn">正在读取私有视频管理状态...</div>
+
+    <section class="panel" aria-labelledby="operationLogTitle">
+      <h2 id="operationLogTitle">最近管理结果</h2>
+      <div id="operationLog" class="op-log" role="status" aria-live="polite" aria-atomic="false" data-pv-operation-log>还没有执行管理动作；刷新列表只读取状态，不代表上传、发布、改授权、下架或删除生产恢复。</div>
+    </section>
+
+    <section class="panel">
+      <h2>生产 blocker</h2>
+      <div id="productionBlocker" class="status bad" data-pv-production-blocker>生产恢复必须同时通过 FM_PRIVATE_MEDIA R2 production binding 和真实教师账号浏览器 QA；本页的静态/mock 证明不能写成真实生产恢复。</div>
+      <div id="teacherStorageBoundary" class="grid" aria-label="教师监控与存储边界" data-round416-teacher-storage-boundary="read-only-monitor-success-vs-progress-primary-vs-private-media"></div>
+      <div id="storageSnapshot" class="grid" aria-label="存储诊断"></div>
+    </section>
+
+    <section class="panel">
+      <h2>可管理动作与禁用原因</h2>
+      <div id="actionReadiness" class="grid" role="list" aria-label="私有视频动作 readiness"></div>
+    </section>
+
+    <section class="panel">
+      <h2>课程</h2>
+      <div id="courseList" aria-live="polite"></div>
+    </section>
   </main>
+
   <script>
-    const TARGET_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-    const ROUTE = '/private-video.html';
-    const BASE_SEARCH = '?edge_refresh=round545-181103-proof-depth-upgrade-20260627';
-    const EDGE_REFRESH = 'round545-181103-proof-depth-upgrade-20260627';
-    function timeout(ms){
-      return new Promise((resolve) => setTimeout(resolve, ms));
+    const REQUIRED_ACTIONS = [
+      ['list','查看专属课'],
+      ['upload-publish','上传/发布'],
+      ['change-access','改授权'],
+      ['same-access-save','重复保存当前授权'],
+      ['archive-course','下架'],
+      ['delete-dry-run','删除 dry-run 预检'],
+      ['delete-course','永久删除']
+    ];
+    let courses = [];
+    let limits = null;
+    let operationLog = [];
+
+    function esc(value){
+      return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     }
-    async function clearOldPublicState(){
+    function stateText(state){
+      if(state === 'ready') return '可用';
+      if(state === 'blocked') return '不可用';
+      if(state === 'limited') return '受限可尝试';
+      return '待探测';
+    }
+    function defaultDetail(actionId){
+      const blocker = '生产恢复仍需 FM_PRIVATE_MEDIA R2 production binding + 真实教师账号浏览器 QA。';
+      if(actionId === 'list') return '读取列表不做写入；列表可见不等于生产恢复。 ' + blocker;
+      if(actionId === 'same-access-save') return '重复保存当前授权只确认当前设置，不触发元数据写入；这不是改授权或存储恢复证明。 ' + blocker;
+      if(actionId === 'delete-dry-run') return '删除前先请求 delete?dryRun=1&writeProbe=1，不会删除数据，会返回课程 ID、状态、分段、授权、缺片和存储计划。 ' + blocker;
+      if(actionId === 'delete-course') return '真正删除必须先 dry-run，再确认“永久删除专属课/不可恢复”，并把完整课程 ID 作为 confirmCourseId 发送。 ' + blocker;
+      return '该操作会依赖私有媒体或课程元数据写入；缺 FM_PRIVATE_MEDIA 或真实教师账号 QA 时只能显示 UI/API 已硬化，不能宣称生产恢复。';
+    }
+    function actionRows(){
+      const incoming = limits && Array.isArray(limits.actionReadiness) ? limits.actionReadiness : [];
+      const byId = new Map(incoming.filter(Boolean).map(item => [item.id, item]));
+      return REQUIRED_ACTIONS.map(([id,label]) => {
+        const known = byId.get(id) || {};
+        let state = known.state || (id === 'list' || id === 'same-access-save' || id === 'delete-dry-run' ? 'ready' : 'blocked');
+        if(!['ready','limited','blocked'].includes(state)) state = 'limited';
+        return { id, label: known.label || label, state, detail: known.detail || defaultDetail(id) };
+      });
+    }
+    function actionById(id){
+      return actionRows().find(action => action.id === id) || {state:'blocked', detail:defaultDetail(id)};
+    }
+    function renderStatus(text, kind){
+      const el = document.getElementById('status');
+      el.className = 'status ' + (kind || 'warn');
+      el.textContent = text;
+    }
+    function renderOperationLog(){
+      const box = document.getElementById('operationLog');
+      if(!box) return;
+      if(!operationLog.length){
+        box.textContent = '还没有执行管理动作；刷新列表只读取状态，不代表上传、发布、改授权、下架或删除生产恢复。';
+        return;
+      }
+      box.innerHTML = operationLog.slice(0, 4).map(row => (
+        '<div class="op-log__item '+esc(row.kind || 'warn')+'" data-pv-operation-kind="'+esc(row.kind || 'warn')+'">'
+        + '<b>'+esc(row.title)+'</b>'
+        + '<span>'+esc(row.detail)+'</span>'
+        + '</div>'
+      )).join('');
+    }
+    function rememberOperation(title, detail, kind){
+      operationLog.unshift({ title, detail, kind: kind || 'warn', at: Date.now() });
+      if(operationLog.length > 6) operationLog = operationLog.slice(0, 6);
+      renderOperationLog();
+    }
+    function renderTeacherStorageBoundary(){
+      const box = document.getElementById('teacherStorageBoundary');
+      if(!box) return;
+      const info = limits || {};
+      const r2Ready = info.r2Available === true || info.hasPrivateMediaR2 === true || info.fmPrivateMediaR2Ready === true;
+      const qaReady = info.realTeacherAccountQaPassed === true || info.realTeacherBrowserQaPassed === true || info.productionRealTeacherQaPassed === true;
+      const productionActionsReady = r2Ready && qaReady;
+      const cells = [
+        {
+          id: 'monitor-readonly',
+          state: 'ready',
+          title: '只读监控/列表',
+          value: limits ? 'read-only refresh 成功' : 'read-only 合同可见',
+          detail: '刷新列表或教师监控成功只证明读取路径可用；不会写 learning-progress，也不证明任何生产存储恢复。'
+        },
+        {
+          id: 'progress-primary',
+          state: 'limited',
+          title: '学习进度 D1/R2',
+          value: 'FM_PROGRESS_DB / FM_PROGRESS_R2 未由本页证明',
+          detail: '本页不能把 KV/no-drift 或只读监控成功写成 durablePrimary=true / fullProductionReady=true；进度恢复需单独绑定和严格写入证明。'
+        },
+        {
+          id: 'private-media',
+          state: productionActionsReady ? 'ready' : 'blocked',
+          title: '私有视频 R2',
+          value: productionActionsReady ? 'FM_PRIVATE_MEDIA + 真实教师 QA 已证明' : 'FM_PRIVATE_MEDIA 未证明',
+          detail: productionActionsReady
+            ? '生产动作仍以当前 actionReadiness 和真实账号结果为准。'
+            : '缺 FM_PRIVATE_MEDIA 或真实教师账号 QA 时，上传、发布、真正改授权、下架和完整清理都不能宣称生产恢复。'
+        }
+      ];
+      box.dataset.monitorReadOnly = 'true';
+      box.dataset.progressPrimaryReady = 'false';
+      box.dataset.privateMediaReady = String(productionActionsReady);
+      box.dataset.progressPrimaryBindings = 'FM_PROGRESS_DB/FM_PROGRESS_R2';
+      box.dataset.privateMediaBinding = 'FM_PRIVATE_MEDIA';
+      box.innerHTML = cells.map(cell => (
+        '<div class="cell '+esc(cell.state)+'" data-round416-boundary-cell="'+esc(cell.id)+'">'
+        + '<b>'+esc(cell.title)+'</b>'
+        + '<span>'+esc(cell.value)+'</span>'
+        + '<p>'+esc(cell.detail)+'</p>'
+        + '</div>'
+      )).join('');
+    }
+    function renderStorage(){
+      const info = limits || {};
+      const health = info.metadataWriteHealth || {};
+      const r2 = info.r2Available ? 'FM_PRIVATE_MEDIA 可用' : 'FM_PRIVATE_MEDIA 未绑定';
+      const productionAcceptance = info.productionAcceptance || '生产恢复还必须使用真实教师账号完成浏览器验收。';
+      const blocker = info.productionBlocker || '生产 blocker：Cloudflare Pages 缺少 FM_PRIVATE_MEDIA R2 binding；上传、发布、真正改授权、下架和存储清理不能声明生产恢复。';
+      document.getElementById('productionBlocker').textContent = blocker + ' ' + productionAcceptance + ' 本页不使用真实账号或 Cloudflare 凭据。';
+      renderTeacherStorageBoundary();
+      document.getElementById('storageSnapshot').innerHTML = [
+        ['元数据写入', stateText(health.state || (info.r2Available ? 'ready' : 'limited')), health.state || 'limited'],
+        ['元数据位置', health.metadataStore || info.metadataStore || 'FM_AUDIT', 'limited'],
+        ['R2 fallback', r2, info.r2Available ? 'ready' : 'blocked'],
+        ['生产动作', '未就绪', 'blocked']
+      ].map(item => '<div class="cell '+esc(item[2])+'"><b>'+esc(item[0])+'</b><span>'+esc(item[1])+'</span></div>').join('');
+    }
+    function renderActions(){
+      document.getElementById('actionReadiness').innerHTML = actionRows().map(action => (
+        '<div class="cell '+esc(action.state)+'" role="listitem" data-pv-action-id="'+esc(action.id)+'" data-pv-action-state="'+esc(action.state)+'">'
+        + '<b>'+esc(action.label)+'：'+esc(stateText(action.state))+'</b>'
+        + '<p>'+esc(action.detail)+'</p>'
+        + '</div>'
+      )).join('');
+    }
+    function courseSummary(course){
+      const segs = Number(course.segmentCount || 0) > 0
+        ? '分段 '+(course.uploadedSegments || 0)+' / '+course.segmentCount+'，已发布 '+(course.publishedSegments || 0)
+        : '分片 '+(course.uploadedChunks || 0)+' / '+(course.chunks || 0);
+      const assigned = Array.isArray(course.assignedUsers) && course.assignedUsers.length ? course.assignedUsers.join(' / ') : '未列出';
+      const missing = Array.isArray(course.missingSegments) && course.missingSegments.length ? '缺第 '+course.missingSegments.map(n => Number(n)+1).join(' / ')+' 段' : '无缺段记录';
+      return {segs, assigned, missing};
+    }
+    function renderCourses(){
+      const box = document.getElementById('courseList');
+      if(!courses.length){
+        box.innerHTML = '<div class="empty">暂无课程；如果没有真实教师登录，本页只能显示管理合同和 blocker。</div>';
+        return;
+      }
+      box.innerHTML = courses.map(course => {
+        const id = course.courseId || course.id || '';
+        const title = course.courseTitle || course.title || id || '未命名专属课';
+        const isStatic = course.static || String(course.storage || '').includes('static');
+        const summary = courseSummary(course);
+        const publish = actionById('upload-publish');
+        const access = actionById('change-access');
+        const sameAccess = actionById('same-access-save');
+        const archive = actionById('archive-course');
+        const del = actionById('delete-course');
+        const dryRun = actionById('delete-dry-run');
+        const currentAssigned = String((course.assignedUsers || [])[0] || '').trim().toLowerCase();
+        const accessDisabled = sameAccess.state === 'blocked' ? ' disabled' : '';
+        const writeDisabled = publish.state === 'blocked' ? ' disabled' : '';
+        const archiveDisabled = archive.state === 'blocked' ? ' disabled' : '';
+        const deleteDisabled = isStatic || del.state === 'blocked' ? ' disabled' : '';
+        return '<article class="course">'
+          + '<div><b>'+esc(title)+'</b><p><code>'+esc(id)+'</code></p><div class="meta">'
+          + '<span class="tag">'+esc(course.status || 'unknown')+'</span>'
+          + '<span class="tag">'+esc(summary.segs)+'</span>'
+          + '<span class="tag">授权 '+esc(summary.assigned)+'</span>'
+          + '<span class="tag">'+esc(summary.missing)+'</span>'
+          + '<span class="tag">'+esc(course.storage || (isStatic ? 'static' : 'private'))+'</span>'
+          + '</div><div class="reason">删除合同：先 dry-run，再确认永久删除和不可恢复，最后发送 <code>confirmCourseId</code>，课程 ID 不一致时前端取消，后端返回 <code>confirm_course_id_mismatch</code>。</div>'
+          + '<div class="reason '+(limits && limits.productionBlocker ? 'bad' : '')+'">'+esc((limits && limits.productionBlocker) || '生产恢复仍需 FM_PRIVATE_MEDIA R2 和真实账号 QA。')+'</div></div>'
+          + '<div><div class="actions">'
+          + '<input data-pv-access-input="'+esc(id)+'" data-pv-current-assigned="'+esc(currentAssigned)+'" value="'+esc((course.assignedUsers || [])[0] || '')+'" aria-label="授权学生账号" title="'+esc(access.detail)+'">'
+          + '<button data-pv-access-course="'+esc(id)+'" data-pv-button-action="same-access-save" data-pv-disabled-reason="'+esc(sameAccess.detail)+'" title="'+esc(sameAccess.detail+' 真正改授权：'+access.detail)+'"'+accessDisabled+'>保存授权</button>'
+          + (course.status !== 'published' ? '<button data-pv-publish-course="'+esc(id)+'" data-pv-disabled-reason="'+esc(publish.detail)+'" title="'+esc(publish.detail)+'"'+writeDisabled+'>发布</button>' : '')
+          + (course.status === 'published' ? '<button data-pv-archive-course="'+esc(id)+'" data-pv-disabled-reason="'+esc(archive.detail)+'" title="'+esc(archive.detail)+'"'+archiveDisabled+'>下架</button>' : '')
+          + '<button class="danger" data-pv-delete-course="'+esc(id)+'" data-pv-disabled-reason="'+esc(del.detail)+'" title="'+esc(dryRun.detail+' '+del.detail)+'"'+deleteDisabled+'>删除</button>'
+          + '</div><div class="reason" data-pv-row-action-reasons>重复保存：'+esc(stateText(sameAccess.state))+'；真正改授权：'+esc(stateText(access.state))+'；发布：'+esc(stateText(publish.state))+'；下架：'+esc(stateText(archive.state))+'；删除预检：'+esc(stateText(dryRun.state))+'；删除：'+esc(stateText(del.state))+'。</div></div>'
+          + '</article>';
+      }).join('');
+      syncAccessButtons();
+    }
+    function syncAccessButtons(){
+      document.querySelectorAll('[data-pv-access-course]').forEach(button => {
+        const courseId = button.getAttribute('data-pv-access-course') || '';
+        const input = document.querySelector('[data-pv-access-input="'+CSS.escape(courseId)+'"]');
+        const current = String(input && input.getAttribute('data-pv-current-assigned') || '').trim().toLowerCase();
+        const next = String(input && input.value || '').trim().toLowerCase();
+        const changed = next !== current;
+        const sameAccess = actionById('same-access-save');
+        const access = actionById('change-access');
+        const blocked = sameAccess.state === 'blocked' || (changed && access.state === 'blocked');
+        button.disabled = blocked;
+        button.textContent = changed && access.state === 'blocked' ? '存储恢复后可改授权' : '保存授权';
+        button.setAttribute('data-pv-button-action', changed ? 'change-access' : 'same-access-save');
+        button.setAttribute('data-pv-disabled-reason', changed ? access.detail : sameAccess.detail);
+        button.title = changed ? access.detail : sameAccess.detail;
+      });
+    }
+    function setBusy(value){
+      document.querySelectorAll('button,input').forEach(el => {
+        if(el.id === 'refresh') return;
+        if(value){
+          el.dataset.pvWasDisabled = el.disabled ? '1' : '0';
+          el.disabled = true;
+          return;
+        }
+        el.disabled = el.dataset.pvWasDisabled === '1';
+        delete el.dataset.pvWasDisabled;
+      });
+    }
+    async function jsonOrThrow(res){
+      const text = await res.text();
+      let data = {};
+      try{ data = text ? JSON.parse(text) : {}; }catch(_){}
+      if(!res.ok || !data.ok){
+        const error = new Error((data && (data.message || data.error)) || ('HTTP '+res.status));
+        error.status = res.status;
+        error.code = data && data.error || '';
+        error.payload = data && typeof data === 'object' ? data : null;
+        throw error;
+      }
+      return data;
+    }
+    function errorMessage(error){
+      const result = error && error.payload && error.payload.deleteResult || {};
+      if(result.teacherMessage || result.nextStep){
+        return [result.teacherMessage, result.nextStep ? '下一步：' + result.nextStep : ''].filter(Boolean).join(' ');
+      }
+      return error && error.message ? error.message : String(error || 'unknown_error');
+    }
+    async function load(){
+      renderStatus('正在刷新专属课列表和 readiness...', 'warn');
       try{
-        if('serviceWorker' in navigator){
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(registrations.map((registration)=>registration.unregister()));
-        }
-        if(window.caches){
-          const keys = await caches.keys();
-          await Promise.all(keys.map((key)=>caches.delete(key)));
-        }
-      }catch(_){}
+        const res = await fetch('/api/admin/private-videos?includeArchived=1&refresh=1&writeProbe=1', {cache:'no-store',credentials:'same-origin',headers:{Accept:'application/json'}});
+        const data = await jsonOrThrow(res);
+        limits = data.limits || null;
+        const staticCourses = (data.staticCourses || []).map(course => ({...course, static:true}));
+        courses = (data.courses || []).concat(staticCourses);
+        renderStorage();
+        renderActions();
+        renderCourses();
+        renderOperationLog();
+        renderStatus('列表已刷新；请按页面 blocker 区分源码/mock 证明与真实生产恢复。', 'ok');
+      }catch(error){
+        limits = null;
+        courses = [];
+        renderStorage();
+        renderActions();
+        renderCourses();
+        renderOperationLog();
+        renderStatus('没有拿到可管理列表：'+(error && error.message ? error.message : error)+'。未登录或缺真实账号时，本页仍展示管理合同、禁用原因和生产 blocker。', 'bad');
+      }
     }
-    const searchParams = new URLSearchParams(BASE_SEARCH);
-    for (const [key, value] of new URLSearchParams(location.search)) searchParams.set(key, value);
-    searchParams.delete('go');
-    searchParams.set('edge_refresh', EDGE_REFRESH);
-    const target = TARGET_ORIGIN + ROUTE + '?' + searchParams.toString() + location.hash;
-    document.getElementById('targetLink').href = target;
-    let entering = false;
-    function enterTarget(){
-      if (entering || location.href === target) return;
-      entering = true;
-      location.replace(target);
+    async function postCourse(courseId, action, body){
+      const res = await fetch('/api/admin/private-videos/course/'+encodeURIComponent(courseId)+'/'+action, {
+        method:'POST',
+        credentials:'same-origin',
+        headers:{Accept:'application/json','Content-Type':'application/json'},
+        body:JSON.stringify(body || {})
+      });
+      return jsonOrThrow(res);
     }
-    requestAnimationFrame(enterTarget);
-    setTimeout(enterTarget, 250);
-    Promise.race([clearOldPublicState(), timeout(600)]).finally(enterTarget);
+    async function deleteCourse(courseId){
+      const course = courses.find(item => String(item.courseId || item.id || '') === String(courseId));
+      const title = course && (course.courseTitle || course.title) || courseId;
+      renderStatus('正在做删除预检，不会删除数据...', 'warn');
+      let preflight = null;
+      try{
+        const res = await fetch('/api/admin/private-videos/course/'+encodeURIComponent(courseId)+'/delete?dryRun=1&writeProbe=1', {method:'GET',credentials:'same-origin',headers:{Accept:'application/json','Cache-Control':'no-cache'}});
+        preflight = await jsonOrThrow(res);
+        if(!preflight.canDelete) throw new Error(preflight.message || preflight.error || 'delete_preflight_blocked');
+      }catch(error){
+        const detail = '删除预检未通过：'+(error && error.message ? error.message : error)+'。未删除任何数据。';
+        rememberOperation('删除预检未通过：'+title, detail, 'bad');
+        renderStatus(detail, 'bad');
+        return;
+      }
+      const summary = preflight.course || course || {};
+      const bits = courseSummary(summary);
+      const ok = confirm('永久删除专属课“'+title+'”？\n课程 ID：'+courseId+'\n状态：'+(summary.status || '未知')+'\n分段/分片：'+bits.segs+'\n授权：'+bits.assigned+'\n缺片/缺段：'+bits.missing+'\n存储：'+(summary.storage || '未知')+'\n预检：'+(preflight.deleteReadiness && preflight.deleteReadiness.state || 'ready')+'\n\n下一步还需要输入完整课程 ID。此操作不可恢复。');
+      if(!ok){
+        rememberOperation('已取消删除：'+title, '用户取消不可恢复确认；课程仍可播放，未发送真实删除请求。', 'warn');
+        renderStatus('已取消删除，课程仍可播放。','warn');
+        return;
+      }
+      const confirmedCourseId = String(prompt('永久删除专属课“'+title+'”前，请输入课程 ID 确认：\n'+courseId+'\n\n只有完全一致才会继续删除。') || '').trim();
+      if(confirmedCourseId !== String(courseId || '').trim()){
+        const detail = '课程 ID 核对未通过，已取消删除；没有发送真实删除请求。';
+        rememberOperation('课程 ID 核对失败：'+title, detail, 'bad');
+        renderStatus(detail, 'bad');
+        return;
+      }
+      renderStatus('已通过课程 ID 核对，正在发送 confirmCourseId 删除请求...', 'warn');
+      const data = await postCourse(courseId, 'delete', {confirmCourseId:confirmedCourseId});
+      const outcome = data && data.deleteOutcome || {};
+      const result = data && data.deleteResult || {};
+      const failed = result.severity === 'error' || result.severity === 'err' || result.ok === false || outcome.metadataRevoked === false;
+      const pending = !failed && !!(data && (data.cleanupPending || data.warning) || outcome.cleanupPending || result.cleanupPending || outcome.productionRecoveryStatus === 'blocked-missing-fm-private-media');
+      const resultText = result.teacherMessage
+        ? result.teacherMessage + (result.nextStep ? ' 下一步：' + result.nextStep : '')
+        : (data.message || (failed ? '删除没有完成；课程仍按服务器返回状态处理。' : (pending ? '学生端入口已撤销；存储清理待验证，不能宣称完整存储删除。' : '专属课已删除，学生端播放入口已失效。')));
+      const statusKind = failed ? 'bad' : (pending ? 'warn' : 'ok');
+      const boundary = pending ? ' cleanupPending=true；缺 FM_PRIVATE_MEDIA 时不能宣称完整存储清理。' : '';
+      rememberOperation((failed ? '删除未完成：' : (pending ? '入口撤销，清理待验证：' : '删除完成：')) + title, resultText + boundary, statusKind);
+      if(!failed) await load();
+      renderStatus(resultText + boundary, statusKind);
+      renderOperationLog();
+    }
+    document.getElementById('refresh').addEventListener('click', load);
+    document.getElementById('courseList').addEventListener('click', async event => {
+      const button = event.target.closest('button');
+      if(!button) return;
+      const courseId = button.getAttribute('data-pv-access-course') || button.getAttribute('data-pv-publish-course') || button.getAttribute('data-pv-archive-course') || button.getAttribute('data-pv-delete-course');
+      if(!courseId) return;
+      const wasDisabled = button.disabled;
+      try{
+        button.disabled = true;
+        if(button.hasAttribute('data-pv-delete-course')) await deleteCourse(courseId);
+        else if(button.hasAttribute('data-pv-access-course')){
+          const input = Array.from(document.querySelectorAll('[data-pv-access-input]')).find(el => el.getAttribute('data-pv-access-input') === courseId);
+          const current = String(input && input.getAttribute('data-pv-current-assigned') || '').trim().toLowerCase();
+          const next = String(input && input.value || '').trim().toLowerCase();
+          if(next !== current && actionById('change-access').state === 'blocked'){
+            renderStatus('真正改授权被阻塞：'+actionById('change-access').detail+'。重复保存当前授权仍可确认。', 'bad');
+            return;
+          }
+          const data = await postCourse(courseId, 'access', {assignedUsers:input ? input.value.trim() : ''});
+          rememberOperation('授权保存：'+courseId, data.message || '授权已保存；若只是重复保存当前授权，不证明元数据写入恢复。', data.warning ? 'warn' : 'ok');
+          renderStatus(data.message || '授权已保存。', data.warning ? 'warn' : 'ok');
+          await load();
+        }else if(button.hasAttribute('data-pv-publish-course')){
+          const data = await postCourse(courseId, 'publish', {});
+          rememberOperation('发布请求：'+courseId, data.message || '专属课已发布。', data.warning ? 'warn' : 'ok');
+          renderStatus(data.message || '专属课已发布。', data.warning ? 'warn' : 'ok');
+          await load();
+        }else if(button.hasAttribute('data-pv-archive-course')){
+          const data = await postCourse(courseId, 'archive', {});
+          rememberOperation('下架请求：'+courseId, data.message || '专属课已下架。', data.warning ? 'warn' : 'ok');
+          renderStatus(data.message || '专属课已下架。', data.warning ? 'warn' : 'ok');
+          await load();
+        }
+      }catch(error){
+        const detail = '专属课操作失败：'+errorMessage(error);
+        rememberOperation('管理动作失败：'+(courseId || 'unknown'), detail, 'bad');
+        renderStatus(detail, 'bad');
+      }finally{
+        button.disabled = wasDisabled;
+        syncAccessButtons();
+      }
+    });
+    document.getElementById('courseList').addEventListener('input', event => {
+      if(event.target && event.target.matches('[data-pv-access-input]')) syncAccessButtons();
+    });
+    load();
   </script>
 </body>
 </html>
