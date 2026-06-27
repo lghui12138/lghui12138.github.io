@@ -1790,12 +1790,12 @@
 
 	        $('#truthSnapshotSource').textContent = sourceDisplayName(stats);
 	        $('#truthSnapshotNote').textContent = serverTruth
-	          ? '累计题数、学习时长和准确率来自 noMutationRead=true 的 server-progress-snapshot；这是读取/no-drift 证明，不等于 D1/R2 写入成功证明。'
-	          : '未取到 server-progress-snapshot 时，不显示本机离线副本为累计值；本机记录只保留最近活动提示。';
-        $('#truthNoMutation').textContent = stats.noMutationRead ? 'noMutationRead=true' : '未证明 noMutationRead';
+	          ? '累计题数、学习时长和准确率来自服务器累计快照；这是只读一致性校验，不等于存储写入验收。'
+	          : '未取到服务器累计快照时，不显示本机离线副本为累计值；本机记录只保留最近活动提示。';
+        $('#truthNoMutation').textContent = stats.noMutationRead ? '服务端快照已校验' : '服务端快照待校验';
         $('#truthNoMutationNote').textContent = stats.noMutationRead
-          ? '登录、刷新和 GET /api/stats 是只读证明，不会重算或新增累计题数、学习时长或准确率。'
-          : '当前没有服务端只读证明，刷新后需等待 /api/stats 返回 server-progress-snapshot。';
+          ? '登录、刷新和统计读取不会重算或新增累计题数、学习时长或准确率。'
+          : '当前还没有取到服务器累计快照，刷新后请等待统计接口返回。';
 	        $('#truthStoreMode').textContent = storeDisplayName(stats);
 	        $('#truthStoreNote').textContent = productionReady
           ? '已看到 D1/R2 主存储来源，仍需严格持久写入门禁复验。'
