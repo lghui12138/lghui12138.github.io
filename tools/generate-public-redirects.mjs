@@ -128,7 +128,7 @@ const targetRouteOverrides = new Map([
   ['/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt', '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt'],
   ['/practice-dynamic.html', '/modules/practice-dynamic.html'],
   ['/question-bank.html', '/modules/question-bank.html'],
-  ['/question-bank-home.html', '/modules/question-bank.html'],
+  ['/question-bank-home.html', '/question-bank-home.html'],
   ['/_edge-login', '/_edge-login'],
   ['/_edge-fast-login', '/_edge-fast-login'],
   ['/_edge-bridge', '/_edge-login'],
