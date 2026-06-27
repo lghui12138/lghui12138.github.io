@@ -5716,7 +5716,7 @@ function monitorScript() {
     bar.id = 'fm-edge-bar';
     bar.innerHTML = '<a href="/_edge-admin">监控</a><a href="/_edge-logout">退出</a>';
     bar.style.cssText = 'position:fixed;right:12px;bottom:12px;z-index:2147483000;display:flex;gap:6px;background:rgba(15,23,32,.78);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.18);border-radius:8px;padding:6px;box-shadow:0 12px 30px rgba(0,0,0,.22)';
-    bar.querySelectorAll('a').forEach(a => { a.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;min-height:30px;padding:0 10px;border-radius:6px;background:#0f766e;color:white;text-decoration:none;font:700 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0'; });
+    bar.querySelectorAll('a').forEach(a => { a.style.cssText = 'display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;border-radius:8px;background:#0f766e;color:white;text-decoration:none;font:700 13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:0'; });
     document.body.appendChild(bar);
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', edgeBar, { once: true });
