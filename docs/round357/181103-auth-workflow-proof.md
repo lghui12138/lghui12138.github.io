@@ -1,8 +1,8 @@
 # Round371 181103 Authenticated Workflow Proof
 
-- Version: `round411-server-progress-monotonic-no-drift-20260620`
-- Expected release: `round411-server-progress-monotonic-no-drift-20260620`
-- Generated at: `2026-06-20T06:47:53.271Z`
+- Version: `round547-181103-proof-depth-upgrade-20260627`
+- Expected release: `round547-181103-proof-depth-upgrade-20260627`
+- Generated at: `2026-06-21T02:24:27.484Z`
 - Acceptance: **PASS**
 - Browser runs skipped: `false`
 
