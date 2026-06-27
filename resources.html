@@ -462,8 +462,9 @@ body:hover .cur-glow,body.cur-on .cur-glow{opacity:1}
 @keyframes slideIn{from{opacity:0;transform:translateX(20px) scale(.96);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
 
 /* Scroll reveal */
-[data-rv]{opacity:0;transform:translateY(24px) scale(.99);filter:blur(4px);transition:opacity 900ms var(--e-expo),transform 900ms var(--e-expo),filter 700ms var(--e-expo)}
-[data-rv].in{opacity:1;transform:none;filter:none}
+[data-rv]{opacity:1;transform:none;filter:none}
+html.rv-ready [data-rv]{opacity:0;transform:translateY(24px) scale(.99);filter:blur(4px);transition:opacity 900ms var(--e-expo),transform 900ms var(--e-expo),filter 700ms var(--e-expo)}
+html.rv-ready [data-rv].in{opacity:1;transform:none;filter:none}
 
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:.15s!important;animation-duration:.15s!important}.cur-glow,.vp-wm-item{display:none!important}[data-rv]{opacity:1!important;transform:none!important;filter:none!important}}
 		@media (max-width:900px){.surface-boundaries,.resource-quick,.source-grid,.supplemental-stats,.supplemental-route-grid,.supplemental-queue,.supplemental-review__grid,.supplemental-clues,.supplemental-return-path__steps,.supplemental-student-path,.round319-practice-chain__grid,.round323-resource-finder__grid{grid-template-columns:repeat(2,minmax(0,1fr))}.round323-resource-finder__grid{grid-template-columns:repeat(2,minmax(0,1fr))}.round385-181103-main-entry{grid-template-columns:1fr}.round385-181103-main-entry__stats{grid-template-columns:repeat(2,minmax(0,1fr))}.round273-resource-route,.supplemental-learning__links,.supplemental-return-path__links{grid-template-columns:repeat(2,minmax(0,1fr))}.round273-route-note{grid-column:1/-1}}
@@ -528,7 +529,7 @@ body:hover .cur-glow,body.cur-on .cur-glow{opacity:1}
 <section class="page-hero" data-rv>
   <div class="page-hero__inner">
     <span class="hero-badge">资源 · 依据 · 专属课状态</span>
-    <p class="hero-version">当前发布 round544-181103-proof-depth-upgrade-20260627 · 历史进度基线 round418-progress-visible-truth-181103-answer-ux-20260621</p>
+    <p class="hero-version">当前发布 round545-181103-proof-depth-upgrade-20260627 · 历史进度基线 round418-progress-visible-truth-181103-answer-ux-20260621</p>
     <h1 class="hero-title">先找 <em>学习依据</em></h1>
     <p class="hero-desc">这页先给 181103、历年真题、私有视频状态和学习进度入口，再按老师复习顺序放资源。真题回 325 原文小题 / 68 组题；181103 已转成 38/38 个资料页 HTML 内容，并抽出 522 张来源卡，522 个网页答案块已验收，其中 381 道默认练习题已进入刷题，381 道默认练习题已可直接看参考答案、0 道保留待人工源页复核、141 条源文线索只展示，另保留 68 个真题复核题入口；公开索引固定为 181103-material-extracted 的 522 个资料内题目和 181103-material-review 的 68 个真题复核题；学习进度回首页服务端累计快照；专属课等老师分配并开放后才算可看。</p>
   </div>
@@ -853,6 +854,7 @@ function getUser(){
 (function(){
   try{
     var pr=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+    document.documentElement.classList.add('rv-ready');
     if(pr||!('IntersectionObserver' in window)){$$('[data-rv]').forEach(function(el){el.classList.add('in')});return}
     var io=new IntersectionObserver(function(ents){ents.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}})},{threshold:.06});
     $$('[data-rv]').forEach(function(el){io.observe(el)});
@@ -1128,7 +1130,7 @@ function sourceMaterialReadableUrl(material){
     return '/modules/knowledge-detail.html?query='+encodeURIComponent(material.title||'课程笔记')+'&from=resources-readable-source';
   }
   if(material.role==='exams'){
-    return '/modules/real-exams-dynamic.html?edge_refresh=round544-181103-proof-depth-upgrade-20260627&from=resources-readable-source';
+    return '/modules/real-exams-dynamic.html?edge_refresh=round545-181103-proof-depth-upgrade-20260627&from=resources-readable-source';
   }
   if(material.chapter){
     return '/modules/knowledge-detail.html?chapter='+encodeURIComponent(material.chapter)+'&from=resources-readable-source';

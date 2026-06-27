@@ -52,9 +52,9 @@ const RESERVED_STUDENT_REGISTRATION_USERS = ['qi'];
 // round373-181103-source-semantic-practice-20260616: 181103 522 来源卡逐题语义复核，381 可刷题，141 源文线索不进默认练习。
 // round374-181103-reference-answer-display-20260617: 181103 参考答案从来源说明中拆出，按 HTML/MathJax 独立渲染。
 // round375-181103-all-question-web-parity-20260617: 浏览器逐页打开 38 个资料 HTML，并验证 522 张来源卡与 522 个网页答案块。
-// round411-server-progress-monotonic-no-drift-20260620: keep 181103 default practice status, real-exam cardinality, and progress/private-video production boundaries visible in the live release.
-const EDGE_HOME_VERSION = 'round411-server-progress-monotonic-no-drift-20260620';
-const EDGE_RUNTIME_JS_VERSION = 'round411-server-progress-monotonic-no-drift-20260620';
+// Round544: publish the latest 181103 proof-depth answer upgrade while keeping progress durability and private-video claims separately gated.
+const EDGE_HOME_VERSION = 'round545-181103-proof-depth-upgrade-20260627';
+const EDGE_RUNTIME_JS_VERSION = 'round545-181103-proof-depth-upgrade-20260627';
 const WU_WANGYI_READING_PATH = '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html';
 const WANG_HONGWEI_READING_PATH = '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html';
 const SAFE_NEXT_HOSTS = new Set([
@@ -155,6 +155,9 @@ const PUBLIC_RUNTIME_ASSET_PREFIXES = [
   '/vendor/mathjax/'
 ];
 const PUBLIC_RUNTIME_ASSET_ALIASES = new Map([
+  ['/safari-compatibility.js', '/safari-compatibility.js'],
+  ['/fix-mathjax-rendering.js', '/fix-mathjax-rendering.js'],
+  ['/quick-mathjax-fix.js', '/quick-mathjax-fix.js'],
   ['/local-mathjax.js', '/js/core/local-mathjax.js'],
   ['/modules/local-mathjax.js', '/js/core/local-mathjax.js'],
   ['/modules/js/local-mathjax.js', '/js/core/local-mathjax.js'],
@@ -971,7 +974,8 @@ function canonicalRoutePath(pathname) {
   if (lower === '/teacher-panel' || lower === '/teacher-panel.html') return '/teacher-panel';
   if (lower === '/modules/teacher-panel' || lower === '/modules/teacher-panel.html') return '/teacher-panel';
   if (lower === '/knowledge' || lower === '/knowledge.html' || lower === '/modules/knowledge-detail' || lower === '/modules/knowledge-detail.html') return '/modules/knowledge-detail';
-  if (lower === '/question-bank' || lower === '/question-bank.html' || lower === '/question-bank-home.html' || lower === '/modules/question-bank' || lower === '/modules/question-bank.html') return '/modules/question-bank';
+  if (lower === '/question-bank-home' || lower === '/question-bank-home.html') return '/question-bank-home.html';
+  if (lower === '/question-bank' || lower === '/question-bank.html' || lower === '/modules/question-bank' || lower === '/modules/question-bank.html') return '/modules/question-bank';
   if (lower === '/practice-dynamic' || lower === '/practice-dynamic.html' || lower === '/modules/practice-dynamic' || lower === '/modules/practice-dynamic.html') return '/modules/practice-dynamic.html';
   if (lower === '/modules/real-exams-dynamic' || lower === '/modules/real-exams-dynamic.html' || lower === '/real-exams' || lower === '/real-exams.html') return '/modules/real-exams-dynamic';
   if (lower === '/modules/simulated-exams-dynamic' || lower === '/modules/simulated-exams-dynamic.html' || lower === '/simulated-exams' || lower === '/simulated-exams.html') return '/modules/simulated-exams-dynamic';
@@ -991,7 +995,8 @@ function routeAssetPath(pathname) {
   const textbookTarget = textbookReadingRoutePath(lower);
   if (textbookTarget && textbookTarget !== normalized) return textbookTarget;
   if (lower === '/knowledge' || lower === '/knowledge.html') return '/modules/knowledge-detail';
-  if (lower === '/question-bank' || lower === '/question-bank.html' || lower === '/question-bank-home.html') return '/modules/question-bank.html';
+  if (lower === '/question-bank-home' || lower === '/question-bank-home.html') return '/question-bank-home.html';
+  if (lower === '/question-bank' || lower === '/question-bank.html') return '/modules/question-bank.html';
   if (lower === '/practice-dynamic' || lower === '/practice-dynamic.html' || lower === '/modules/practice-dynamic' || lower === '/modules/practice-dynamic.html') return '/modules/practice-dynamic.html';
   return null;
 }
@@ -1551,6 +1556,12 @@ function queueAudit(context, type, data = {}, session = null) {
   return task;
 }
 
+function shouldQueueLearningProgressAudit(progressResult) {
+  if (!progressResult) return true;
+  const storeMode = String(progressResult.storeMode || progressResult.store || '').toLowerCase();
+  return storeMode !== 'kv-single-write-fallback';
+}
+
 function learningProgressStorage(env) {
   return env && (env.FM_PROGRESS || env.FM_AUDIT) ? (env.FM_PROGRESS || env.FM_AUDIT) : null;
 }
@@ -1584,9 +1595,12 @@ function learningProgressStoreHealth(env) {
   const durablePrimary = storeMode === 'd1' || storeMode === 'r2-progress';
   const boundary = learningProgressStoreBoundary(storeMode);
   const writeDurabilityGate = learningProgressWriteDurabilityGate(storeMode);
+  const persistenceContract = learningProgressPersistenceContract(storeMode);
   return {
     storeMode,
     source: learningProgressSourceFromStore(storeMode, env),
+    serverSnapshotStorageReady: storeMode !== 'unavailable',
+    serverSnapshotReadyRequiresUserSnapshot: true,
     durablePrimary,
     fullProductionReady: writeDurabilityGate.fullProductionReady,
     degradedKvFallback: storeMode === 'kv-single-write-fallback',
@@ -1595,6 +1609,11 @@ function learningProgressStoreHealth(env) {
     boundary: boundary.message,
     acceptance: boundary.acceptance,
     serverUpgradeInvariant: boundary.serverUpgradeInvariant,
+    persistenceContract,
+    progressPersistenceLayer: persistenceContract.layer,
+    readOnlyNoDrift: persistenceContract.readOnlyNoDrift,
+    durablePrimaryWrite: persistenceContract.durablePrimaryWrite,
+    fallbackSnapshot: persistenceContract.fallbackSnapshot,
     strictCumulativeServer: writeDurabilityGate.strictCumulativeServer,
     writeDurabilityGate,
     missingAllPrimaryBindings: writeDurabilityGate.missingAllPrimaryBindings,
@@ -1686,6 +1705,16 @@ function buildServerHealthSnapshot(env, session) {
       noMutationRead: true,
       cumulativeSourceOfTruth: 'server-progress-snapshot',
       serverUpgradeStable: progressStore.storeMode !== 'unavailable',
+      serverSnapshotStorageReady: progressStore.serverSnapshotStorageReady,
+      serverSnapshotReady: false,
+      progressSnapshotStatus: 'per-user-snapshot-not-read-by-health-endpoint',
+      emptySnapshotDoesNotProvePersistence: true,
+      serverSnapshotReadyRequiresUserSnapshot: true,
+      progressPersistenceLayer: progressStore.progressPersistenceLayer,
+      progressPersistenceContract: progressStore.persistenceContract,
+      readOnlyNoDrift: progressStore.readOnlyNoDrift,
+      durablePrimaryWrite: progressStore.durablePrimaryWrite,
+      fallbackSnapshot: progressStore.fallbackSnapshot,
       durablePrimary: progressStore.durablePrimary,
       strictCumulativeServer: progressGate.strictCumulativeServer,
       serverCumulativeWritesAccepted: progressGate.serverCumulativeWritesAccepted,
@@ -1696,6 +1725,8 @@ function buildServerHealthSnapshot(env, session) {
       boundary: progressStore.boundary,
       acceptance: progressStore.acceptance,
       serverUpgradeInvariant: progressStore.serverUpgradeInvariant,
+      stableCumulativeFields: LEARNING_PROGRESS_STABLE_FIELDS,
+      volatileDiagnosticFieldsExcludedFromCumulative: LEARNING_PROGRESS_VOLATILE_DIAGNOSTIC_FIELDS,
       displayContract: 'Student and teacher cumulative answered/correct/sessions/studyTimeSeconds must render only from GET /api/stats or admin server-progress-snapshot rows with noMutationRead=true.'
     },
     privateVideo: {
@@ -1807,6 +1838,50 @@ function learningProgressWriteDurabilityGate(storeMode, options = {}) {
       ? 'pass-strict-d1-r2-cumulative'
       : (serverCumulativeWritesAccepted ? 'pass-server-kv-cumulative-block-strict-d1-r2' : 'block-full-production-cumulative')
   };
+}
+
+function learningProgressPersistenceContract(storeMode, snapshotState = {}, options = {}) {
+  const normalized = learningProgressStoreModeFromStore(storeMode || '', {});
+  const gate = learningProgressWriteDurabilityGate(normalized, options);
+  const fallbackSnapshot = normalized === 'kv-single-write-fallback';
+  const hasServerProgressSnapshot = snapshotState && snapshotState.hasServerProgressSnapshot === true;
+  const readOnlyNoDrift = normalized !== 'unavailable';
+  const layer = gate.strictCumulativeServer
+    ? 'durable-primary-write'
+    : (fallbackSnapshot ? 'fallback-snapshot' : (readOnlyNoDrift ? 'read-only-no-drift' : 'storage-unavailable'));
+  return {
+    contractVersion: 'round415-worker-a-progress-storage-boundary',
+    layer,
+    cumulativeSourceOfTruth: 'server-progress-snapshot',
+    readOnlyNoDrift,
+    durablePrimaryWrite: gate.strictCumulativeServer === true,
+    fallbackSnapshot,
+    fallbackSnapshotOnly: fallbackSnapshot && gate.strictCumulativeServer !== true,
+    hasServerProgressSnapshot,
+    serverProgressSnapshotRequired: true,
+    nonEmptyServerSnapshotRequiredForCumulative: true,
+    emptySnapshotCanOverwriteServerTruth: false,
+    staleSnapshotCanOverwriteServerTruth: false,
+    localCacheCanOverwriteServerTruth: false,
+    auditWindowCanOverwriteServerTruth: false,
+    loginOrDeployCanMutateCumulative: false,
+    fallbackSnapshotDoesNotProveDurablePrimary: fallbackSnapshot,
+    strictPrimaryStoreRequiredForFullProduction: true,
+    requiredPrimaryBinding: gate.requiredPrimaryBinding,
+    readBoundary: 'read-only no-drift means GET/teacher-summary read a non-empty server-progress-snapshot without mutation; it is not a write-success proof.',
+    writeBoundary: fallbackSnapshot
+      ? 'KV fallback may preserve a server snapshot across login/redeploy, but it remains fallback-snapshot evidence until FM_PROGRESS_DB or FM_PROGRESS_R2 passes strict write/relogin/teacher-summary proof.'
+      : gate.readBoundary,
+    writeDurabilityGate: gate
+  };
+}
+
+function learningProgressProductionBlockers(gate = {}) {
+  const blockers = [];
+  if (gate.writeQuotaExceeded === true || gate.status === 'write_quota_exceeded') blockers.push('write_quota_exceeded');
+  if (gate.storageUnavailable === true || gate.status === 'storage_unavailable') blockers.push('storage_unavailable');
+  if (gate.strictCumulativeServer !== true) blockers.push('missing FM_PROGRESS_DB/FM_PROGRESS_R2');
+  return Array.from(new Set(blockers.filter(Boolean)));
 }
 
 function learningProgressWriteSignalsFromResults(results = []) {
@@ -2007,6 +2082,117 @@ function learningProgressSnapshotCandidateSummary(candidate) {
   };
 }
 
+const LEARNING_PROGRESS_STABLE_FIELDS = Object.freeze([
+  'source',
+  'storeMode',
+  'configuredStoreMode',
+  'configuredSource',
+  'snapshotSelection',
+  'answered',
+  'correct',
+  'incorrect',
+  'skipped',
+  'sessions',
+  'studyTimeSeconds',
+  'averageQuestionTimeSeconds',
+  'accuracy',
+  'lastAnsweredAt',
+  'lastSessionAt'
+]);
+
+const LEARNING_PROGRESS_VOLATILE_DIAGNOSTIC_FIELDS = Object.freeze([
+  'lastSeen',
+  'lastSeenAt',
+  'loginSuccess',
+  'loginFailed',
+  'pageViews',
+  'resourceRequests',
+  'eventCount',
+  'eventWindowAnswers',
+  'eventWindowSessions',
+  'eventWindowStudyTimeSeconds',
+  'recentUserEvents',
+  'recentSessions',
+  'recentAnswers'
+]);
+
+function learningProgressStableKeyFromTotals(totals = {}, identity = {}) {
+  const normalizedTotals = learningProgressTotals({ totals });
+  return [
+    'server-progress-snapshot',
+    identity.source || '',
+    identity.storeMode || '',
+    identity.configuredStoreMode || '',
+    identity.configuredSource || '',
+    identity.snapshotSelection || '',
+    normalizedTotals.answered,
+    normalizedTotals.correct,
+    normalizedTotals.incorrect,
+    normalizedTotals.skipped,
+    normalizedTotals.sessions,
+    normalizedTotals.studyTimeSeconds,
+    normalizedTotals.averageQuestionTimeSeconds,
+    normalizedTotals.accuracy,
+    normalizedTotals.lastAnsweredAt,
+    normalizedTotals.lastSessionAt
+  ].map((part) => String(part == null ? '' : part).replace(/[|\r\n]/g, ' ')).join('|');
+}
+
+function learningProgressReadInvariant(entry = {}) {
+  const progress = entry && entry.progress ? entry.progress : entry;
+  const totals = learningProgressTotals(progress || {});
+  const identity = {
+    source: entry.source || '',
+    storeMode: entry.storeMode || '',
+    configuredStoreMode: entry.configuredStoreMode || '',
+    configuredSource: entry.configuredSource || '',
+    snapshotSelection: entry.snapshotSelection || ''
+  };
+  return {
+    stableKey: learningProgressStableKeyFromTotals(totals, identity),
+    stableFields: LEARNING_PROGRESS_STABLE_FIELDS,
+    volatileDiagnosticFieldsExcludedFromCumulative: LEARNING_PROGRESS_VOLATILE_DIAGNOSTIC_FIELDS,
+    noMutationRead: true,
+    cumulativeSourceOfTruth: 'server-progress-snapshot',
+    loginRefreshDeployInvariant: true,
+    diagnosticFieldsMayChange: true,
+    diagnosticFieldsDoNotMutateCumulative: true
+  };
+}
+
+function learningProgressSnapshotState(entry = {}) {
+  const progress = entry && entry.progress ? entry.progress : entry;
+  const storeMode = String(entry && entry.storeMode || '').toLowerCase();
+  const source = String(entry && entry.source || '').toLowerCase();
+  const serverSnapshotStorageReady = storeMode !== 'unavailable' && source !== 'server-learning-progress-unavailable';
+  const hasSnapshot = hasLearningProgressActivity(progress);
+  const persistenceContract = learningProgressPersistenceContract(storeMode, { hasServerProgressSnapshot: hasSnapshot });
+  const emptySnapshotReason = hasSnapshot
+    ? ''
+    : (serverSnapshotStorageReady ? 'no-persisted-learning-progress-snapshot' : 'learning-progress-storage-unavailable');
+  return {
+    hasServerProgressSnapshot: hasSnapshot,
+    snapshotPersisted: hasSnapshot,
+    serverSnapshotStorageReady,
+    serverSnapshotReady: hasSnapshot,
+    emptyServerProgressSnapshot: !hasSnapshot,
+    progressSnapshotStatus: hasSnapshot ? 'server-progress-snapshot-present' : 'empty-server-progress-snapshot',
+    emptySnapshotReason,
+    emptySnapshotDoesNotCreateCumulative: !hasSnapshot,
+    emptySnapshotDoesNotProvePersistence: !hasSnapshot,
+    emptySnapshotCanOverwriteServerTruth: false,
+    staleSnapshotCanOverwriteServerTruth: false,
+    localCacheCanOverwriteServerTruth: false,
+    auditWindowCanOverwriteServerTruth: false,
+    progressPersistenceLayer: persistenceContract.layer,
+    readOnlyNoDrift: persistenceContract.readOnlyNoDrift,
+    durablePrimaryWrite: persistenceContract.durablePrimaryWrite,
+    fallbackSnapshot: persistenceContract.fallbackSnapshot,
+    progressPersistenceContract: persistenceContract,
+    snapshotSelection: entry.snapshotSelection || ''
+  };
+}
+
 function classifyStorageWriteError(error) {
   const message = String(error && (error.message || error.name) || '').toLowerCase();
   if (/limit exceeded|quota|too many writes|write.*limit/.test(message)) return 'write_quota_exceeded';
@@ -2162,19 +2348,12 @@ async function writeLearningProgressEventMarker(env, username, event) {
   }
   const storage = learningProgressStorage(env);
   if (storage && typeof storage.put === 'function') {
-    try {
-      await storage.put(learningProgressEventKey(username, event.eventId), JSON.stringify({
-        user: username,
-        eventId: event.eventId,
-        type: event.type,
-        iso: event.iso,
-        storedAt: new Date().toISOString(),
-        store: 'server-kv-learning-progress'
-      }));
-      return { ok: true, store: 'kv-single-write-fallback' };
-    } catch (error) {
-      return { ok: false, store: 'kv-single-write-fallback', error: classifyStorageWriteError(error) };
-    }
+    return {
+      ok: true,
+      store: 'snapshot',
+      skippedKvMarkerWrite: true,
+      reason: 'kv-fallback-dedupe-via-recentEventIds'
+    };
   }
   return { ok: true, store: 'snapshot' };
 }
@@ -2190,6 +2369,8 @@ async function readLearningProgressWithSource(env, username) {
       configuredStoreMode: storeMode,
       configuredSource,
       snapshotSelection: 'missing-username',
+      progressPersistenceContract: learningProgressPersistenceContract(storeMode, { hasServerProgressSnapshot: false }),
+      selectedSnapshotContract: 'non-empty-server-snapshot-required',
       snapshotCandidates: []
     };
   }
@@ -2222,6 +2403,8 @@ async function readLearningProgressWithSource(env, username) {
       configuredStoreMode: storeMode,
       configuredSource,
       snapshotSelection: selected.storeMode === storeMode ? 'configured-store' : 'monotonic-cross-store',
+      progressPersistenceContract: learningProgressPersistenceContract(selected.storeMode, { hasServerProgressSnapshot: true }),
+      selectedSnapshotContract: 'monotonic-non-empty-server-snapshot',
       snapshotCandidates: candidates.map(learningProgressSnapshotCandidateSummary)
     };
   }
@@ -2234,6 +2417,8 @@ async function readLearningProgressWithSource(env, username) {
       configuredStoreMode: storeMode,
       configuredSource,
       snapshotSelection: 'no-progress-storage',
+      progressPersistenceContract: learningProgressPersistenceContract(storeMode, { hasServerProgressSnapshot: false }),
+      selectedSnapshotContract: 'no-server-progress-storage',
       snapshotCandidates: []
     };
   }
@@ -2244,6 +2429,8 @@ async function readLearningProgressWithSource(env, username) {
     configuredStoreMode: storeMode,
     configuredSource,
     snapshotSelection: 'empty-server-progress-snapshot',
+    progressPersistenceContract: learningProgressPersistenceContract(storeMode, { hasServerProgressSnapshot: false }),
+    selectedSnapshotContract: 'empty-snapshot-does-not-create-cumulative',
     snapshotCandidates: []
   };
 }
@@ -2321,16 +2508,20 @@ function isActiveLearningHeartbeat(data = {}) {
   const kind = String(data.activityKind || data.learningActivity || data.context || '').toLowerCase();
   const allowedKind = /^(practice|question|review)$/.test(kind);
   const focusId = String(data.activeQuestionId || data.currentQuestionId || data.questionId || data.learningFocus || '').trim();
+  const path = String(data.pagePath || data.pathname || data.path || data.route || '').toLowerCase();
+  const learningRoute = /(^|\/)(modules\/question-bank|modules\/real-exams|practice|practice-dynamic|question-bank)(\.html)?(?:$|[/?#])/.test(path);
   const hasHumanInteraction = data.userInteraction === true
     || data.pointerActive === true
     || data.keyboardActive === true
-    || data.answerPanelVisible === true
-    || data.questionVisible === true;
+    || data.answerChanged === true
+    || data.answerSubmitted === true;
+  const pageVisible = data.pageVisible !== false && data.pageVisible === true;
   return allowedKind
     && Boolean(data.practiceSessionId)
     && Boolean(focusId)
+    && learningRoute
     && hasHumanInteraction
-    && data.pageVisible !== false
+    && pageVisible
     && data.loginRead !== true
     && data.authEvent !== true;
 }
@@ -3502,7 +3693,7 @@ function renderLogin(next = '/', message = '') {
           <div class="upgrade-links" aria-label="公式回查入口预览">
             <a href="/modules/knowledge-upgrade-2026.html">知识升级入口</a>
             <a href="/resources/fluid-181103-html/index.html" data-round356-home-181103-icon="legacy-login">181103 资料库</a>
-            <a href="/modules/question-bank.html?focus=181103-material-extracted#questionBanksList">181103 资料题库</a>
+            <a href="/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList">181103 资料题库</a>
             <a href="/modules/real-exams-dynamic.html?edge_refresh=${EDGE_HOME_VERSION}">真题训练</a>
             <a href="/resources/fluid-original-animations.html">自制动画</a>
             <a href="/ultimate-beautiful-formulas.html">公式回查</a>
@@ -3735,7 +3926,7 @@ function renderFastLogin(next = '/') {
       ? '<div class="mini-upgrade"><b>题库练习</b><span>进入题库页前需要先登录；登录后会回到当前题库入口。</span></div>'
       : ''
   ].join('');
-  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="theme-color" content="#f6f8fb"><title>流体力学学习平台</title><style>:root{color-scheme:light dark;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;background:#f6f8fb;color:#111827;--line:rgba(17,24,39,.11);--muted:#64748b;--accent:#0f766e}*{box-sizing:border-box}html{-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility}body{margin:0;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:max(22px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(22px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(241,245,249,.95)),linear-gradient(115deg,rgba(20,184,166,.12),transparent 48%,rgba(249,115,22,.1));-webkit-font-smoothing:antialiased}.card{width:min(460px,100%);padding:clamp(26px,6vw,40px);border:1px solid var(--line);border-radius:24px;background:rgba(255,255,255,.84);box-shadow:0 28px 84px rgba(15,23,42,.13);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}.mark{width:52px;height:52px;border-radius:17px;display:grid;place-items:center;margin-bottom:22px;color:#fff;font-size:23px;font-weight:850;background:linear-gradient(135deg,#14b8a6,#f97316);box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 16px 36px rgba(20,184,166,.23)}h1{margin:0 0 8px;font-size:40px;line-height:1.04;letter-spacing:0}p{margin:0 0 24px;color:var(--muted);line-height:1.7}.mini-upgrade{margin:0 0 16px;padding:12px 13px;border:1px solid rgba(15,118,110,.18);border-left:4px solid #f97316;border-radius:14px;background:linear-gradient(135deg,rgba(20,184,166,.09),rgba(249,115,22,.08));line-height:1.55}.mini-upgrade b{display:block;color:#0f172a}.mini-upgrade span{display:block;color:#64748b;font-size:13px}.mini-upgrade a{min-height:44px;display:inline-flex;align-items:center;color:#0f766e;font-weight:850;text-decoration:none;line-height:1.25}.field{margin:0 0 14px}label{display:block;margin:0 0 7px;color:#405066;font-size:13px;font-weight:760}input{width:100%;min-height:52px;border:1px solid var(--line);border-radius:14px;padding:0 15px;background:rgba(255,255,255,.76);color:#111827;font:500 16px/1.2 inherit;outline:none;transition:border-color .16s ease,box-shadow .16s ease,background .16s ease}input:focus{border-color:rgba(15,118,110,.62);box-shadow:0 0 0 5px rgba(20,184,166,.12);background:#fff}button{width:100%;min-height:52px;margin-top:4px;border:0;border-radius:14px;background:#111827;color:#fff;font:800 16px/1 inherit;cursor:pointer;box-shadow:0 14px 36px rgba(17,24,39,.18);touch-action:manipulation}.cta-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:2px 0 8px}.cta{min-height:52px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;padding:0 16px;border:1px solid var(--line);font-weight:850;text-decoration:none;transition:transform .16s ease,box-shadow .16s ease,background .16s ease,border-color .16s ease;touch-action:manipulation}.cta:hover{transform:translateY(-1px)}.cta.primary{background:linear-gradient(135deg,#0f766e,#111827);color:#fff;border-color:#0f766e;box-shadow:0 14px 36px rgba(15,118,110,.18)}.cta.secondary{background:rgba(15,118,110,.08);color:var(--accent)}.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.links a{min-height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:0 14px;background:rgba(15,118,110,.09);color:#0f766e;font-weight:800;text-decoration:none;font-size:13px;line-height:1.25}.fine{display:flex;align-items:center;gap:9px;margin-top:20px;color:#8b96a6;font-size:13px}.dot{width:8px;height:8px;border-radius:999px;background:#14b8a6;box-shadow:0 0 0 6px rgba(20,184,166,.12)}@media(max-width:520px){h1{font-size:32px}.card{border-radius:22px}.cta-row{grid-template-columns:1fr}}@media(prefers-color-scheme:dark){:root{background:#070d16;color:#f8fafc;--line:rgba(255,255,255,.12);--muted:#aab6c8;--accent:#5eead4}body{background:linear-gradient(135deg,rgba(7,13,22,.98),rgba(16,24,39,.96)),linear-gradient(115deg,rgba(20,184,166,.14),transparent 48%,rgba(249,115,22,.12))}.card{background:rgba(15,23,42,.78)}input{background:rgba(15,23,42,.74);color:#f8fafc}input:focus{background:#0f172a}button{background:#fff;color:#111827}.cta.secondary{background:rgba(94,234,212,.12);color:#5eead4}.mini-upgrade b{color:#f8fafc}.mini-upgrade span{color:#cbd5e1}}</style></head><body><main class="card"><div class="mark" aria-hidden="true">流</div><h1>安全登录</h1><p>已有账号直接进入；新账号可用邮箱验证码注册，忘记密码可用登记邮箱重置。</p>${routeHint}<div class="mini-upgrade"><b>181103 资料入口</b><span><a data-round356-home-181103-icon="fast-login" href="/resources/fluid-181103-html/index.html">打开 38 份 HTML 资料</a> · <a href="/modules/question-bank.html?focus=181103-material-extracted#questionBanksList">522 资料题库</a></span></div><div class="mini-upgrade"><b>快速登录已切到当前安全入口</b><span>${EDGE_HOME_VERSION} · 已清理旧 Service Worker、旧缓存和旧 edge_refresh；学习内容继续保留公式适用条件、边界条件、单位方向和常见错因回查。</span></div><div class="cta-row"><a class="cta primary" href="/_edge-register?next=${encodedNext}">注册账号</a><a class="cta secondary" href="/_edge-reset?next=${encodedNext}">修复入口</a></div><form method="post" action="/_edge-login"><input type="hidden" name="next" value="${escapedNext}"><div class="field"><label for="username">用户名</label><input id="username" name="username" autocomplete="username" autofocus required></div><div class="field"><label for="password">密码</label><input id="password" name="password" type="password" autocomplete="current-password" required></div><button id="submit" type="submit">进入系统</button></form><div class="links"><a href="/_edge-forgot-password?next=${encodedNext}">忘记密码</a><a href="/modules/knowledge-upgrade-2026.html">知识升级入口</a><a data-round356-home-181103-icon="fast-login-link" href="/resources/fluid-181103-html/index.html">181103 全 HTML</a><a href="/modules/question-bank.html?focus=181103-material-extracted#questionBanksList">181103 资料题库</a><a href="/modules/real-exams-dynamic.html?edge_refresh=${EDGE_HOME_VERSION}">真题训练</a><a href="/resources/fluid-original-animations.html">自制动画</a><a href="/ultimate-beautiful-formulas.html">公式回查</a><a href="/modules/knowledge-detail.html">变量/量纲</a><a href="/modules/fluid-intensive-training.html">推导与公式</a><a href="/resources.html">模型/原型换算</a><a href="/practice.html">错题复盘</a><a href="/_edge-login?next=${encodedNext}">完整入口</a><a href="/_edge-status">状态</a></div><div class="fine"><span class="dot" aria-hidden="true"></span><span>未开通账号会进入购买锁定页</span></div></main><script>const f=document.querySelector('form'),b=document.getElementById('submit'),n=f.querySelector('input[name=next]');function syncNextHash(){if(n&&location.hash&&!n.value.includes('#')){n.value+=location.hash;n.setAttribute('value',n.value)}}syncNextHash();f.addEventListener('submit',()=>{syncNextHash();b.disabled=true;b.textContent='正在进入...' });</script></body></html>`;
+  return `<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="robots" content="noindex,nofollow,noarchive"><meta name="theme-color" content="#f6f8fb"><title>流体力学学习平台</title><style>:root{color-scheme:light dark;font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;background:#f6f8fb;color:#111827;--line:rgba(17,24,39,.11);--muted:#64748b;--accent:#0f766e}*{box-sizing:border-box}html{-webkit-text-size-adjust:100%;text-rendering:optimizeLegibility}body{margin:0;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:max(22px,env(safe-area-inset-top)) max(18px,env(safe-area-inset-right)) max(22px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left));background:linear-gradient(135deg,rgba(255,255,255,.98),rgba(241,245,249,.95)),linear-gradient(115deg,rgba(20,184,166,.12),transparent 48%,rgba(249,115,22,.1));-webkit-font-smoothing:antialiased}.card{width:min(460px,100%);padding:clamp(26px,6vw,40px);border:1px solid var(--line);border-radius:24px;background:rgba(255,255,255,.84);box-shadow:0 28px 84px rgba(15,23,42,.13);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}.mark{width:52px;height:52px;border-radius:17px;display:grid;place-items:center;margin-bottom:22px;color:#fff;font-size:23px;font-weight:850;background:linear-gradient(135deg,#14b8a6,#f97316);box-shadow:inset 0 1px 0 rgba(255,255,255,.38),0 16px 36px rgba(20,184,166,.23)}h1{margin:0 0 8px;font-size:40px;line-height:1.04;letter-spacing:0}p{margin:0 0 24px;color:var(--muted);line-height:1.7}.mini-upgrade{margin:0 0 16px;padding:12px 13px;border:1px solid rgba(15,118,110,.18);border-left:4px solid #f97316;border-radius:14px;background:linear-gradient(135deg,rgba(20,184,166,.09),rgba(249,115,22,.08));line-height:1.55}.mini-upgrade b{display:block;color:#0f172a}.mini-upgrade span{display:block;color:#64748b;font-size:13px}.mini-upgrade a{min-height:44px;display:inline-flex;align-items:center;color:#0f766e;font-weight:850;text-decoration:none;line-height:1.25}.field{margin:0 0 14px}label{display:block;margin:0 0 7px;color:#405066;font-size:13px;font-weight:760}input{width:100%;min-height:52px;border:1px solid var(--line);border-radius:14px;padding:0 15px;background:rgba(255,255,255,.76);color:#111827;font:500 16px/1.2 inherit;outline:none;transition:border-color .16s ease,box-shadow .16s ease,background .16s ease}input:focus{border-color:rgba(15,118,110,.62);box-shadow:0 0 0 5px rgba(20,184,166,.12);background:#fff}button{width:100%;min-height:52px;margin-top:4px;border:0;border-radius:14px;background:#111827;color:#fff;font:800 16px/1 inherit;cursor:pointer;box-shadow:0 14px 36px rgba(17,24,39,.18);touch-action:manipulation}.cta-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:2px 0 8px}.cta{min-height:52px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;padding:0 16px;border:1px solid var(--line);font-weight:850;text-decoration:none;transition:transform .16s ease,box-shadow .16s ease,background .16s ease,border-color .16s ease;touch-action:manipulation}.cta:hover{transform:translateY(-1px)}.cta.primary{background:linear-gradient(135deg,#0f766e,#111827);color:#fff;border-color:#0f766e;box-shadow:0 14px 36px rgba(15,118,110,.18)}.cta.secondary{background:rgba(15,118,110,.08);color:var(--accent)}.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}.links a{min-height:44px;display:inline-flex;align-items:center;justify-content:center;border-radius:999px;padding:0 14px;background:rgba(15,118,110,.09);color:#0f766e;font-weight:800;text-decoration:none;font-size:13px;line-height:1.25}.fine{display:flex;align-items:center;gap:9px;margin-top:20px;color:#8b96a6;font-size:13px}.dot{width:8px;height:8px;border-radius:999px;background:#14b8a6;box-shadow:0 0 0 6px rgba(20,184,166,.12)}@media(max-width:520px){h1{font-size:32px}.card{border-radius:22px}.cta-row{grid-template-columns:1fr}}@media(prefers-color-scheme:dark){:root{background:#070d16;color:#f8fafc;--line:rgba(255,255,255,.12);--muted:#aab6c8;--accent:#5eead4}body{background:linear-gradient(135deg,rgba(7,13,22,.98),rgba(16,24,39,.96)),linear-gradient(115deg,rgba(20,184,166,.14),transparent 48%,rgba(249,115,22,.12))}.card{background:rgba(15,23,42,.78)}input{background:rgba(15,23,42,.74);color:#f8fafc}input:focus{background:#0f172a}button{background:#fff;color:#111827}.cta.secondary{background:rgba(94,234,212,.12);color:#5eead4}.mini-upgrade b{color:#f8fafc}.mini-upgrade span{color:#cbd5e1}}</style></head><body><main class="card"><div class="mark" aria-hidden="true">流</div><h1>安全登录</h1><p>已有账号直接进入；新账号可用邮箱验证码注册，忘记密码可用登记邮箱重置。</p>${routeHint}<div class="mini-upgrade"><b>181103 资料入口</b><span><a data-round356-home-181103-icon="fast-login" href="/resources/fluid-181103-html/index.html">打开 38 份 HTML 资料</a> · <a href="/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList">522 来源卡 / 381+0 答案状态</a></span></div><div class="mini-upgrade"><b>快速登录已切到当前安全入口</b><span>${EDGE_HOME_VERSION} · 已清理旧 Service Worker、旧缓存和旧 edge_refresh；学习内容继续保留公式适用条件、边界条件、单位方向和常见错因回查。</span></div><div class="cta-row"><a class="cta primary" href="/_edge-register?next=${encodedNext}">注册账号</a><a class="cta secondary" href="/_edge-reset?next=${encodedNext}">修复入口</a></div><form method="post" action="/_edge-login"><input type="hidden" name="next" value="${escapedNext}"><div class="field"><label for="username">用户名</label><input id="username" name="username" autocomplete="username" autofocus required></div><div class="field"><label for="password">密码</label><input id="password" name="password" type="password" autocomplete="current-password" required></div><button id="submit" type="submit">进入系统</button></form><div class="links"><a href="/_edge-forgot-password?next=${encodedNext}">忘记密码</a><a href="/modules/knowledge-upgrade-2026.html">知识升级入口</a><a data-round356-home-181103-icon="fast-login-link" href="/resources/fluid-181103-html/index.html">181103 全 HTML</a><a href="/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList">181103 资料题库</a><a href="/modules/real-exams-dynamic.html?edge_refresh=${EDGE_HOME_VERSION}">真题训练</a><a href="/resources/fluid-original-animations.html">自制动画</a><a href="/ultimate-beautiful-formulas.html">公式回查</a><a href="/modules/knowledge-detail.html">变量/量纲</a><a href="/modules/fluid-intensive-training.html">推导与公式</a><a href="/resources.html">模型/原型换算</a><a href="/practice.html">错题复盘</a><a href="/_edge-login?next=${encodedNext}">完整入口</a><a href="/_edge-status">状态</a></div><div class="fine"><span class="dot" aria-hidden="true"></span><span>未开通账号会进入购买锁定页</span></div></main><script>const f=document.querySelector('form'),b=document.getElementById('submit'),n=f.querySelector('input[name=next]');function syncNextHash(){if(n&&location.hash&&!n.value.includes('#')){n.value+=location.hash;n.setAttribute('value',n.value)}}syncNextHash();f.addEventListener('submit',()=>{syncNextHash();b.disabled=true;b.textContent='正在进入...' });</script></body></html>`;
 }
 
 function renderRegister(next = DEFAULT_ENTRY) {
@@ -3968,7 +4159,7 @@ function renderFastHome(session, env) {
             <p>极速首页先给公式回查顺序：写下刚选的公式，核适用条件是否满足，再把固壁、自由面、入口出口和初始条件代回去；算完查单位、方向和数量级，最后按常见错因重做同类真题。看不出流动图像时打开自制动画。</p>
             <div class="upgrade-actions">
               <a href="/resources/fluid-181103-html/index.html" data-round356-home-181103-icon="fast-home-primary"><b>181103 资料库</b><span>38 份资料全做成站内 HTML，直接看正文和图页</span></a>
-              <a href="/modules/question-bank.html?focus=181103-material-extracted#questionBanksList" data-round356-home-181103-icon="fast-home-bank"><b>181103 资料题库</b><span>522 个资料内题单独刷，不混历年真题</span></a>
+              <a href="/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList" data-round356-home-181103-icon="fast-home-bank"><b>181103 资料题库</b><span>522 来源卡 / 381 练习 / 381+0 答案 / 141 线索，不混历年真题</span></a>
               <a href="/modules/knowledge-upgrade-2026.html"><b>公式回查表</b><span>按适用条件、边界条件和单位方向复核</span></a>
               <a href="/modules/fluid-intensive-training.html"><b>适用条件</b><span>连续、伯努利、动量和量纲分析逐条核条件</span></a>
               <a href="/resources/fluid-original-animations.html"><b>自制动画</b><span>看不清边界和方向时先看动画，再回公式</span></a>
@@ -3981,7 +4172,7 @@ function renderFastHome(session, env) {
         </div>
         <aside class="panel" role="search" aria-label="快速入口搜索"><label class="sr-only" for="s">搜索首页入口</label><input id="s" class="search" autocomplete="off" placeholder="搜索入口" aria-controls="quick" aria-describedby="fastSearchStatus"><span id="fastSearchStatus" class="sr-only" aria-live="polite" aria-atomic="true">显示全部入口</span><div id="quick" class="quick" aria-label="快速入口">
           <a class="q featured" href="/resources/fluid-181103-html/index.html" data-round356-home-181103-icon="fast-home-search" data-k="${EDGE_HOME_VERSION} 181103 资料库 181103 全 HTML 38份资料 站内HTML 不下载原件 资料正文 图页 资料去哪了"><span class="ic">资</span><span><b>181103 资料库</b><span>38 份资料全做成 HTML，站内直接看</span></span><span class="arr">›</span></a>
-          <a class="q featured" href="/modules/question-bank.html?focus=181103-material-extracted#questionBanksList" data-k="${EDGE_HOME_VERSION} 181103 资料题库 522 资料内题 OCR 资料内题目 不混真题"><span class="ic">522</span><span><b>181103 资料题库</b><span>522 个资料内题独立练习</span></span><span class="arr">›</span></a>
+          <a class="q featured" href="/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList" data-k="${EDGE_HOME_VERSION} 181103 资料题库 522 来源卡 381 练习 381 可参考 0 待复核 141 线索 OCR 资料内题目 不混真题"><span class="ic">522</span><span><b>181103 资料题库</b><span>522 来源卡 / 381 练习 / 381+0 答案 / 141 线索</span></span><span class="arr">›</span></a>
           <a class="q featured" href="/modules/knowledge-upgrade-2026.html" data-k="round264-formula-condition-checklist-20260522 公式回查表 适用条件 边界条件 单位方向 常见错因 自制动画 连续方程 伯努利方程 动量方程 量纲分析 黏性近似"><span class="ic">路</span><span><b>公式回查表</b><span>先查适用条件，再代边界条件</span></span><span class="arr">›</span></a>
           <a class="q featured" href="/modules/fluid-intensive-training.html" data-k="round264-formula-condition-checklist-20260522 公式适用条件 连续方程 伯努利方程 动量方程 量纲分析 黏性近似 第一行方程 边界条件 单位方向"><span class="ic">式</span><span><b>适用条件</b><span>看条件够不够支持连续、伯努利、动量或量纲分析</span></span><span class="arr">›</span></a>
           <a class="q featured" href="/resources/fluid-original-animations.html" data-k="round264-formula-condition-checklist-20260522 动画 自制动画 适用条件 边界条件 单位方向 可视化 仿真 视频 公式 错因回查"><span class="ic">动</span><span><b>自制动画课</b><span>看不清边界和方向时，先看动画再回公式</span></span><span class="arr">›</span></a>
@@ -3994,7 +4185,7 @@ function renderFastHome(session, env) {
           <a class="q" href="/resources.html" data-k="round263-fluid-exam-route-map-20260522 视频 讲义 资源 自制动画 能量线 水头损失 伯努利方程 精修 读图核对 核心公式 MathJax 动画 可视化 仿真 湍流 伯努利 静水压 皮托管 文丘里管 毛细 源汇 兰金涡 马格努斯 激波 控制体动量 射流冲击 相似准则 模型试验 圆柱绕流 局部损失 临界流 剪切层 连续方程 质量守恒 欧拉方程 压强梯度 速度梯度 边界层分离 空化 蒸汽压 Moody 沿程损失 雷诺输运定理 Navier-Stokes 涡量拉伸 喷管阻塞 拉普拉斯压差 泵 管路 工作点 浮力 稳性 强迫涡 Couette Stokes 水击 量纲分析 自由涡 Kelvin 环量 边界层动量积分 湍流对数律 缓变流 面积-Mach Rossby 地转平衡 Ekman 螺旋 Ekman 输运 内波 浮力频率 斜压项 水力控制 雷诺应力 连续介质 尺度窗 Knudsen 物质导数 对流加速度 Cauchy 应力张量 镜像法 圆定理 Stokes 第一问题 非定常扩散 线性重力波 频散关系 重力-毛细波 旋转坐标系 科氏加速度 圆柱坐标 托里拆利公式 小孔出流 非定常 Bernoulli Rankine 半体 Taylor-Couette 欧拉法 拉格朗日法 迹线方程 速度势 流函数 固壁 无穿透 无滑移 管流 水跃 浅水波 边界层 卡门涡街 2000-2024 边界条件 错题 真题训练 单位检查"><span class="ic">课</span><span><b>视频与讲义</b><span>74 段精修自制动画课、底部核心公式、可视化精选、课件和真题资料</span></span><span class="arr">›</span></a>
         </div></aside>
 	      </section>
-	      <section class="upgrade-strip" aria-label="公式条件回查路线"><a class="upgrade-card primary" href="/resources/fluid-181103-html/index.html" data-round356-home-181103-icon="fast-home-strip"><small>181103</small><b>资料库</b><em>38 份资料全量 HTML 化，站内看正文、图页和资料题来源。</em></a><a class="upgrade-card" href="/modules/question-bank.html?focus=181103-material-extracted#questionBanksList"><small>522 题</small><b>资料题库</b><em>资料内题单独训练，与历年真题和原卷答案边界分开。</em></a><a class="upgrade-card" href="/modules/knowledge-upgrade-2026.html"><small>条件表</small><b>公式回查表</b><em>适用条件、边界条件、单位方向和错因按顺序查。</em></a><a class="upgrade-card" href="/ultimate-beautiful-formulas.html"><small>公式回查</small><b>逐条核条件</b><em>连续、伯努利、动量、量纲和黏性近似先问能不能用。</em></a><a class="upgrade-card" href="/resources/fluid-original-animations.html"><small>动画</small><b>看清边界方向</b><em>卡在控制体、边界层或管路图时，先看自制动画。</em></a><a class="upgrade-card" href="/modules/site-updates.html"><small>更新</small><b>最近修复</b><em>公式渲染、入口和资料索引的公开更新记录。</em></a>${accountRecordCard}</section>
+	      <section class="upgrade-strip" aria-label="公式条件回查路线"><a class="upgrade-card primary" href="/resources/fluid-181103-html/index.html" data-round356-home-181103-icon="fast-home-strip"><small>181103</small><b>资料库</b><em>38 份资料全量 HTML 化，站内看正文、图页和资料题来源。</em></a><a class="upgrade-card" href="/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList"><small>381+0</small><b>资料题库</b><em>381 练习、381 可参考、0 待复核和 141 线索，与历年真题和原卷答案边界分开。</em></a><a class="upgrade-card" href="/modules/knowledge-upgrade-2026.html"><small>条件表</small><b>公式回查表</b><em>适用条件、边界条件、单位方向和错因按顺序查。</em></a><a class="upgrade-card" href="/ultimate-beautiful-formulas.html"><small>公式回查</small><b>逐条核条件</b><em>连续、伯努利、动量、量纲和黏性近似先问能不能用。</em></a><a class="upgrade-card" href="/resources/fluid-original-animations.html"><small>动画</small><b>看清边界方向</b><em>卡在控制体、边界层或管路图时，先看自制动画。</em></a><a class="upgrade-card" href="/modules/site-updates.html"><small>更新</small><b>最近修复</b><em>公式渲染、入口和资料索引的公开更新记录。</em></a>${accountRecordCard}</section>
 	      <section class="ns-fast" aria-label="Navier-Stokes 主线"><div class="ns-fast-in"><div><span class="tag">N-S 主线</span><h2>从 Navier-Stokes 方程进入章节</h2><p>场量与物性定义未知量，守恒律搭出主方程；理想流体、涡量、势流、黏性流动都是 N-S 在不同假设下的展开。</p></div><div class="ns-eq math"><div class="eq-main">$$\\begin{aligned}\\rho\\left(\\frac{\\partial \\mathbf{v}}{\\partial t}+\\mathbf{v}\\cdot\\nabla\\mathbf{v}\\right)&=-\\nabla p+\\mu\\nabla^2\\mathbf{v}+\\rho\\mathbf{f}\\\\\\nabla\\cdot\\mathbf{v}&=0\\end{aligned}$$</div><div class="ns-points"><span><b>惯性项</b>局部变化 + 对流加速度</span><span><b>压力项</b>压强梯度驱动或阻滞流动</span><span><b>黏性项</b>动量扩散连接管流与边界层</span><span><b>体力项</b>重力与旋转系力进入动量平衡</span><span><b>连续方程</b>不可压约束让速度场闭合</span></div></div></div><div class="ns-fast-route"><a href="/modules/knowledge-detail.html?chapter=1"><b>1 场量与物性</b>速度场、物质导数、ρ/μ</a><a href="/modules/knowledge-detail.html?chapter=3"><b>3 守恒律</b>连续方程与动量方程</a><a href="/modules/knowledge-detail.html?chapter=2"><b>2 去黏极限</b>Euler 与 Bernoulli</a><a href="/modules/knowledge-detail.html?chapter=5"><b>5 涡量视角</b>取旋度后的旋转结构</a><a href="/modules/knowledge-detail.html?chapter=6"><b>6 势流化简</b>无旋不可压与复势</a><a href="/modules/knowledge-detail.html?chapter=8"><b>8 黏性闭合</b>Re、管流、边界层、湍流</a></div></section>
 	      <section class="ns-fast" aria-label="六章真题练习"><div class="ns-fast-in"><div><span class="tag">六章路径</span><h2>按章节进入完整真题池</h2><p>每个入口都进入本章全量 real 练习池，不带单题 q 参数，方便连续刷题和错因回查。</p></div><div class="ns-points"><span><b>练习模式</b>type=real</span><span><b>题量模式</b>mode=normal</span><span><b>入口口径</b>不混入模拟题</span><span><b>复盘顺序</b>公式、边界、单位、错因</span></div></div><div class="ns-fast-route"><a href="/modules/practice-dynamic.html?type=real&chapter=1&mode=normal"><b>第 1 章真题</b>流体物性与基础概念</a><a href="/modules/practice-dynamic.html?type=real&chapter=2&mode=normal"><b>第 2 章真题</b>理想流体与 Bernoulli</a><a href="/modules/practice-dynamic.html?type=real&chapter=3&mode=normal"><b>第 3 章真题</b>连续方程与动量方程</a><a href="/modules/practice-dynamic.html?type=real&chapter=5&mode=normal"><b>第 5 章真题</b>涡量、环量与旋转结构</a><a href="/modules/practice-dynamic.html?type=real&chapter=6&mode=normal"><b>第 6 章真题</b>势流、流函数与复势</a><a href="/modules/practice-dynamic.html?type=real&chapter=8&mode=normal"><b>第 8 章真题</b>黏性流动、管流与湍流</a></div></section>
       <section class="grid"><a class="card" href="/modules/knowledge-upgrade-2026.html"><b>知识升级版</b><span>按老师口吻整理知识点、公式、易错点和真题入口，先后顺序更清楚。</span></a><a class="card" href="/modules/physical-oceanography-home.html"><b>物理海洋</b><span>导论、描述性海洋学与高频问答。</span></a><a class="card" href="/modules/ai-assistant-dynamic.html"><b>问答助教</b><span>公式、概念和题目思路辅助。</span></a><a class="card" href="/modules/progress-module.html"><b>学习进度</b><span>任务、记录、复习节奏。</span></a><a class="card" href="/ultimate-beautiful-formulas.html"><b>公式精排</b><span>常用公式与展示。</span></a></section>
@@ -4965,6 +5156,7 @@ function renderAdmin() {
       if (progressStoreEl) {
         progressStoreEl.textContent = progressStoreMode;
         progressStoreEl.title = progressStore.boundary || progressStore.serverUpgradeInvariant || '学习进度累计必须来自服务端快照。';
+        progressStoreEl.dataset.serverSnapshotStorageReady = progressStore.serverSnapshotStorageReady === true ? '1' : '0';
         progressStoreEl.dataset.serverSnapshotReady = progressStore.serverSnapshotReady === true ? '1' : '0';
         progressStoreEl.dataset.strictPrimaryStoreReady = progressStore.strictPrimaryStoreReady === true ? '1' : '0';
         progressStoreEl.dataset.progressStoreMode = progressStore.storeMode || '';
@@ -5894,6 +6086,86 @@ function privateVideoDeleteOutcome(stage, options = {}) {
     blocker: blockers.join(','),
     productionBlocker: limits.productionBlocker || (!r2Available ? '生产 blocker：Cloudflare Pages 缺少 FM_PRIVATE_MEDIA R2 binding。' : ''),
     productionAcceptance: limits.productionAcceptance || '生产恢复还必须使用真实教师账号完成浏览器验收。'
+  };
+}
+
+function privateVideoDeleteResultSummary(stage, options = {}) {
+  const course = options.course && typeof options.course === 'object' ? options.course : {};
+  const storage = options.storage && typeof options.storage === 'object' ? options.storage : {};
+  const storageCleanupPlan = options.storageCleanupPlan && typeof options.storageCleanupPlan === 'object' ? options.storageCleanupPlan : {};
+  const fallbackDeleteOutcome = () => ({
+    deleteOutcome: privateVideoDeleteOutcome(stage, options)
+  });
+  const outcome = options.deleteOutcome && typeof options.deleteOutcome === 'object'
+    ? options.deleteOutcome
+    : fallbackDeleteOutcome().deleteOutcome;
+  const blockers = Array.from(new Set([
+    ...(Array.isArray(options.blockers) ? options.blockers : []),
+    ...(Array.isArray(outcome.blockers) ? outcome.blockers : [])
+  ].filter(Boolean)));
+  const dryRun = options.dryRun === true;
+  const destructiveRequestSent = options.destructiveRequestSent === true;
+  const metadataRevoked = outcome.metadataRevoked === true;
+  const cleanupPending = options.cleanupPending === true || outcome.cleanupPending === true;
+  const wouldCleanupPending = outcome.wouldCleanupPending === true;
+  let severity = 'info';
+  let teacherMessage = '删除状态已返回；请按页面结果核对课程入口和存储清理边界。';
+  let nextStep = '刷新专属课列表并核对学生端入口。';
+  if (stage === 'dry-run-can-delete') {
+    severity = 'warn';
+    teacherMessage = '删除预检通过；尚未删除任何数据。';
+    nextStep = '核对课程信息，再输入完整课程 ID 继续删除。';
+  } else if (stage === 'dry-run-blocked' || stage === 'blocked-before-delete') {
+    severity = 'error';
+    teacherMessage = '删除预检被阻塞；未删除任何数据。';
+    nextStep = '先修复页面列出的存储 blocker，再重新执行 dry-run。';
+  } else if (stage === 'confirm-course-id-mismatch') {
+    severity = 'error';
+    teacherMessage = '课程 ID 核对失败；未发送真实删除。';
+    nextStep = '重新从页面按钮进入删除流程，并输入完整课程 ID。';
+  } else if (stage === 'metadata-revoke-failed') {
+    severity = 'error';
+    teacherMessage = '元数据撤销失败；页面不会假装删除成功。';
+    nextStep = '刷新列表确认课程仍在，再按错误说明重试或先恢复存储写入。';
+  } else if (stage === 'metadata-revoked-cleanup-pending') {
+    severity = 'warn';
+    teacherMessage = '学生端入口已撤销；存储清理仍待验证。';
+    nextStep = '不要宣称完整存储删除；绑定 FM_PRIVATE_MEDIA 后重新做真实账号 QA。';
+  } else if (stage === 'complete') {
+    severity = 'ok';
+    teacherMessage = '专属课已删除，学生端播放入口已失效。';
+    nextStep = '刷新列表并用真实账号 QA 核对学生端不可见。';
+  }
+  if (!outcome.fmPrivateMediaAvailable && (cleanupPending || metadataRevoked)) {
+    nextStep = 'FM_PRIVATE_MEDIA 未绑定时不能宣称完整存储清理；绑定 R2 后重新跑生产私有视频 gate。';
+  }
+  return {
+    stage,
+    severity,
+    teacherMessage,
+    nextStep,
+    dryRun,
+    destructiveRequestSent,
+    confirmationRequired: true,
+    confirmationField: 'confirmCourseId',
+    expectedCourseId: course.courseId || course.id || options.expectedCourseId || '',
+    exactCourseIdRequired: true,
+    metadataRevoked,
+    studentPlaybackRevoked: outcome.studentPlaybackRevoked === true,
+    cleanupPending,
+    wouldCleanupPending,
+    storageCleanupCompleteClaimAllowed: outcome.storageCleanupCompleteClaimAllowed === true,
+    productionRecoveryAllowed: false,
+    productionRecoveryStatus: outcome.productionRecoveryStatus || '',
+    requiredBinding: 'FM_PRIVATE_MEDIA',
+    blockers,
+    storageCleanupMode: storageCleanupPlan.mode || outcome.storageCleanupMode || 'metadata-first',
+    kvChunksDeleted: Number(storage.kvChunks || 0),
+    r2ChunksDeleted: Number(storage.r2Chunks || 0),
+    metadataRowsDeleted: Number(storage.metas || 0),
+    storageErrorCount: Array.isArray(storage.errors) ? storage.errors.length : 0,
+    storageErrors: Array.isArray(storage.errors) ? storage.errors.slice(0, 10) : [],
+    fullStorageCleanupClaimAllowedWithoutFmPrivateMedia: false
   };
 }
 
@@ -6916,6 +7188,8 @@ function isTeacherHtmlRoute(pathname) {
   const normalized = normalizePathname(pathname).toLowerCase().replace(/\/+$/, '') || '/';
   const canonical = canonicalRoutePath(normalized) || normalized;
   return normalized === '/_edge-admin' ||
+    normalized === '/private-video' ||
+    normalized === '/private-video.html' ||
     normalized === '/teacher-panel' ||
     normalized === '/teacher-panel.html' ||
     /^\/teacher-[^/]+(?:\.html)?$/.test(normalized) ||
@@ -8181,6 +8455,18 @@ async function handleAdminPrivateVideos(context, session) {
         deleteReadiness,
         limits
       });
+      const deleteResult = privateVideoDeleteResultSummary(canDelete ? 'dry-run-can-delete' : 'dry-run-blocked', {
+        r2Available,
+        metadataRevoked: false,
+        storageCleanupPlan,
+        deleteReadiness,
+        limits,
+        deleteOutcome,
+        dryRun: true,
+        destructiveRequestSent: false,
+        course: beforeDelete,
+        blockers: privateVideoStorageBlockers(r2Available)
+      });
       return jsonResponse({
         ok: true,
         dryRun: true,
@@ -8191,6 +8477,7 @@ async function handleAdminPrivateVideos(context, session) {
         typedConfirmation: confirmation,
         storageCleanupPlan,
         deleteOutcome,
+        deleteResult,
         metadataRevoked: deleteOutcome.metadataRevoked,
         studentPlaybackRevoked: deleteOutcome.studentPlaybackRevoked,
         productionRecoveryStatus: deleteOutcome.productionRecoveryStatus,
@@ -8213,6 +8500,17 @@ async function handleAdminPrivateVideos(context, session) {
         deleteReadiness,
         limits
       });
+      const deleteResult = privateVideoDeleteResultSummary('blocked-before-delete', {
+        r2Available,
+        metadataRevoked: false,
+        storageCleanupPlan,
+        deleteReadiness,
+        limits,
+        deleteOutcome,
+        destructiveRequestSent: false,
+        course: beforeDelete,
+        blockers: privateVideoStorageBlockers(r2Available)
+      });
 	      return jsonResponse({
 	        ok: false,
 	        error: 'delete_blocked_by_storage',
@@ -8223,6 +8521,7 @@ async function handleAdminPrivateVideos(context, session) {
         typedConfirmation: confirmation,
         storageCleanupPlan,
         deleteOutcome,
+        deleteResult,
         metadataRevoked: deleteOutcome.metadataRevoked,
         studentPlaybackRevoked: deleteOutcome.studentPlaybackRevoked,
         productionRecoveryStatus: deleteOutcome.productionRecoveryStatus,
@@ -8233,6 +8532,24 @@ async function handleAdminPrivateVideos(context, session) {
 	    const body = await readJsonRequest(request) || {};
 	    const confirmedCourseId = normalizePrivateVideoId(body.confirmCourseId || body.confirmedCourseId || body.courseIdConfirmation || '');
 	    if (confirmedCourseId !== courseId) {
+        const deleteOutcome = privateVideoDeleteOutcome('confirm-course-id-mismatch', {
+          r2Available,
+          metadataRevoked: false,
+          storageCleanupPlan,
+          deleteReadiness,
+          limits
+        });
+        const deleteResult = privateVideoDeleteResultSummary('confirm-course-id-mismatch', {
+          r2Available,
+          metadataRevoked: false,
+          storageCleanupPlan,
+          deleteReadiness,
+          limits,
+          deleteOutcome,
+          destructiveRequestSent: false,
+          course: beforeDelete,
+          blockers: privateVideoStorageBlockers(r2Available)
+        });
 	      return jsonResponse({
 	        ok: false,
 	        error: 'confirm_course_id_mismatch',
@@ -8242,13 +8559,8 @@ async function handleAdminPrivateVideos(context, session) {
 	        confirmation,
 	        typedConfirmation: confirmation,
 	        storageCleanupPlan,
-          deleteOutcome: privateVideoDeleteOutcome('confirm-course-id-mismatch', {
-            r2Available,
-            metadataRevoked: false,
-            storageCleanupPlan,
-            deleteReadiness,
-            limits
-          }),
+          deleteOutcome,
+          deleteResult,
 	        message: '删除被拒绝：必须在请求正文中提交与路径完全一致的 confirmCourseId，防止绕过页面误删专属课。'
 	      }, { status: 409 });
 	    }
@@ -8288,6 +8600,19 @@ async function handleAdminPrivateVideos(context, session) {
         deleteReadiness,
         limits
       });
+      const deleteResult = privateVideoDeleteResultSummary('metadata-revoke-failed', {
+        r2Available,
+        metadataRevoked: false,
+        storage,
+        storageCleanupPlan,
+        deleteReadiness,
+        limits,
+        deleteOutcome,
+        cleanupPending: true,
+        destructiveRequestSent: true,
+        course: beforeDelete,
+        blockers: privateVideoStorageBlockers(r2Available, storage)
+      });
       return jsonResponse({
         ok: false,
         error: 'delete_meta_failed',
@@ -8304,6 +8629,7 @@ async function handleAdminPrivateVideos(context, session) {
           blockers: privateVideoStorageBlockers(r2Available, storage)
         },
         deleteOutcome,
+        deleteResult,
         metadataRevoked: deleteOutcome.metadataRevoked,
         studentPlaybackRevoked: deleteOutcome.studentPlaybackRevoked,
         productionRecoveryStatus: deleteOutcome.productionRecoveryStatus,
@@ -8323,6 +8649,19 @@ async function handleAdminPrivateVideos(context, session) {
       deleteReadiness,
       limits
     });
+    const deleteResult = privateVideoDeleteResultSummary(cleanupPending ? 'metadata-revoked-cleanup-pending' : 'complete', {
+      r2Available,
+      metadataRevoked: true,
+      storage,
+      storageCleanupPlan,
+      deleteReadiness,
+      limits,
+      deleteOutcome,
+      cleanupPending,
+      destructiveRequestSent: true,
+      course: beforeDelete,
+      blockers: privateVideoStorageBlockers(r2Available, storage)
+    });
     return jsonResponse({
       ok: true,
       course: { ...beforeDelete, status: 'deleted' },
@@ -8340,6 +8679,7 @@ async function handleAdminPrivateVideos(context, session) {
         blockers: privateVideoStorageBlockers(r2Available, storage)
       },
       deleteOutcome,
+      deleteResult,
       metadataRevoked: deleteOutcome.metadataRevoked,
       studentPlaybackRevoked: deleteOutcome.studentPlaybackRevoked,
       productionRecoveryStatus: deleteOutcome.productionRecoveryStatus,
@@ -9425,7 +9765,14 @@ async function handleTrack(context, session) {
   const progressWriteDurabilityGate = learningProgressWriteDurabilityGate(progressResultStoreMode, {
     writeSignals: learningProgressWriteSignalsFromResults(progressResult ? [progressResult] : [])
   });
-  if (!progressResult || (progressResult.ok && !progressResult.duplicate)) {
+  const progressPersistenceContract = progressResult
+    ? learningProgressPersistenceContract(progressResultStoreMode, {
+      hasServerProgressSnapshot: Boolean(progressResult.progress && hasLearningProgressActivity(progressResult.progress))
+    }, {
+      writeSignals: learningProgressWriteSignalsFromResults([progressResult])
+    })
+    : null;
+  if ((!progressResult || (progressResult.ok && !progressResult.duplicate)) && shouldQueueLearningProgressAudit(progressResult)) {
     queueAudit(context, type, body.data || {}, session);
   }
   return jsonResponse({
@@ -9440,6 +9787,11 @@ async function handleTrack(context, session) {
     fullProductionCumulativeBlocked: progressResult ? progressWriteDurabilityGate.strictCumulativeServer !== true : false,
     progressStrictCumulativeServer: progressResult ? progressWriteDurabilityGate.strictCumulativeServer : false,
     progressWriteDurabilityGate: progressResult ? progressWriteDurabilityGate : null,
+    progressPersistenceLayer: progressPersistenceContract ? progressPersistenceContract.layer : '',
+    progressPersistenceContract,
+    readOnlyNoDrift: progressPersistenceContract ? progressPersistenceContract.readOnlyNoDrift : false,
+    durablePrimaryWrite: progressPersistenceContract ? progressPersistenceContract.durablePrimaryWrite : false,
+    fallbackSnapshot: progressPersistenceContract ? progressPersistenceContract.fallbackSnapshot : false,
     noMutationRead: false,
     cumulativeSourceOfTruth: 'progress-write-confirmation',
     writeRequiresSnapshotRead: true,
@@ -9461,8 +9813,11 @@ async function handleLearningProgress(context, session) {
   if (request.method === 'GET' || request.method === 'HEAD') {
     const progressEntry = await readLearningProgressWithSource(env, username);
     const progress = progressEntry.progress;
+    const cumulativeInvariant = learningProgressReadInvariant(progressEntry);
+    const snapshotState = learningProgressSnapshotState(progressEntry);
     const storeHealth = learningProgressStoreHealth(env);
     const writeDurabilityGate = learningProgressWriteDurabilityGate(progressEntry.storeMode);
+    const progressPersistenceContract = learningProgressPersistenceContract(progressEntry.storeMode, snapshotState);
     return jsonResponse({
       ok: true,
       user: username,
@@ -9478,13 +9833,24 @@ async function handleLearningProgress(context, session) {
       fullProductionReady: progressEntry.storeMode === 'd1' || progressEntry.storeMode === 'r2-progress',
       degradedKvFallback: progressEntry.storeMode === 'kv-single-write-fallback',
       productionReady: progressEntry.storeMode === 'd1' || progressEntry.storeMode === 'r2-progress',
-      serverSnapshotReady: progressEntry.storeMode !== 'unavailable',
+      serverSnapshotStorageReady: snapshotState.serverSnapshotStorageReady,
+      serverSnapshotReady: snapshotState.serverSnapshotReady,
       strictPrimaryStoreReady: progressEntry.storeMode === 'd1' || progressEntry.storeMode === 'r2-progress',
       primaryStoreRequired: true,
-      productionBlockers: (progressEntry.storeMode === 'd1' || progressEntry.storeMode === 'r2-progress') ? [] : ['missing FM_PROGRESS_DB/FM_PROGRESS_R2'],
+      productionBlockers: learningProgressProductionBlockers(writeDurabilityGate),
+      progressPersistenceLayer: progressPersistenceContract.layer,
+      progressPersistenceContract,
+      readOnlyNoDrift: progressPersistenceContract.readOnlyNoDrift,
+      durablePrimaryWrite: progressPersistenceContract.durablePrimaryWrite,
+      fallbackSnapshot: progressPersistenceContract.fallbackSnapshot,
+      ...snapshotState,
       storageBoundary: storeHealth.boundary,
       serverUpgradeInvariant: storeHealth.serverUpgradeInvariant,
       storeHealth,
+      cumulativeInvariant,
+      cumulativeStableKey: cumulativeInvariant.stableKey,
+      stableCumulativeFields: cumulativeInvariant.stableFields,
+      volatileDiagnosticFieldsExcludedFromCumulative: cumulativeInvariant.volatileDiagnosticFieldsExcludedFromCumulative,
       strictCumulativeServer: writeDurabilityGate.strictCumulativeServer,
       writeDurabilityGate,
       progress,
@@ -9534,7 +9900,7 @@ async function handleLearningProgress(context, session) {
       writeWarnings: result.writeWarnings || []
     });
     if (result.progress) progress = result.progress;
-    if (result.ok && !result.duplicate && !result.ignored && LEARNING_PROGRESS_EVENT_TYPES.has(eventType)) {
+    if (result.ok && !result.duplicate && !result.ignored && LEARNING_PROGRESS_EVENT_TYPES.has(eventType) && shouldQueueLearningProgressAudit(result)) {
       queueAudit(context, eventType, data, session);
     }
   }
@@ -9548,6 +9914,11 @@ async function handleLearningProgress(context, session) {
     : ((results[0] && results[0].storeMode) || learningProgressStoreModeFromSource(responseSource, storeMode));
   const storeHealth = learningProgressStoreHealth(env);
   const writeDurabilityGate = learningProgressWriteDurabilityGate(responseStoreMode, {
+    writeSignals: learningProgressWriteSignalsFromResults(results)
+  });
+  const responseBlockers = learningProgressProductionBlockers(writeDurabilityGate);
+  const snapshotState = learningProgressSnapshotState({ progress, source: responseSource, storeMode: responseStoreMode, snapshotSelection: lastConfirmed ? 'post-write-confirmed' : ((results[0] && results[0].ignored) ? 'no-mutation-previous-snapshot' : '') });
+  const progressPersistenceContract = learningProgressPersistenceContract(responseStoreMode, snapshotState, {
     writeSignals: learningProgressWriteSignalsFromResults(results)
   });
 
@@ -9566,15 +9937,31 @@ async function handleLearningProgress(context, session) {
     fullProductionReady: writeDurabilityGate.fullProductionReady,
     degradedKvFallback: responseStoreMode === 'kv-single-write-fallback',
     productionReady: writeDurabilityGate.productionReady,
-    serverSnapshotReady: responseStoreMode !== 'unavailable',
+    serverSnapshotStorageReady: snapshotState.serverSnapshotStorageReady,
+    serverSnapshotReady: snapshotState.serverSnapshotReady,
     strictPrimaryStoreReady: writeDurabilityGate.strictCumulativeServer === true,
     primaryStoreRequired: true,
-    productionBlockers: writeDurabilityGate.strictCumulativeServer === true ? [] : ['missing FM_PROGRESS_DB/FM_PROGRESS_R2'],
+    productionBlockers: responseBlockers,
+    progressPersistenceLayer: progressPersistenceContract.layer,
+    progressPersistenceContract,
+    readOnlyNoDrift: progressPersistenceContract.readOnlyNoDrift,
+    durablePrimaryWrite: progressPersistenceContract.durablePrimaryWrite,
+    fallbackSnapshot: progressPersistenceContract.fallbackSnapshot,
+    ...snapshotState,
     storageBoundary: storeHealth.boundary,
     serverUpgradeInvariant: storeHealth.serverUpgradeInvariant,
     storeHealth,
     strictCumulativeServer: writeDurabilityGate.strictCumulativeServer,
     writeDurabilityGate,
+    progressWriteError: (results.find((result) => result.error)?.error) || '',
+    progressWriteWarnings: results.reduce((warnings, result) => warnings.concat(result.writeWarnings || []), []),
+    writeQuotaExceeded: writeDurabilityGate.writeQuotaExceeded === true,
+    dedupeContract: {
+      eventIdRequiredForMutation: true,
+      duplicateMarkerStores: ['d1', 'r2-progress', 'kv-single-write-fallback', 'recentEventIds-snapshot'],
+      recentEventIdWindow: LEARNING_PROGRESS_RECENT_EVENT_LIMIT,
+      kvFallbackMarkerMode: 'recentEventIds-snapshot'
+    },
     progressWriteBlocked: writeDurabilityGate.serverCumulativeWritesAccepted !== true,
     fullProductionCumulativeBlocked: writeDurabilityGate.strictCumulativeServer !== true,
     applied: results.filter((result) => result.ok && !result.duplicate && !result.ignored).length,
@@ -9599,8 +9986,11 @@ async function handleLearningStats(context, session) {
   if (learningProgressStoreMode(env) === 'unavailable') return jsonResponse({ ok: false, error: 'storage_unavailable', message: '学习进度存储未绑定。' }, { status: 503 });
   const progressEntry = await readLearningProgressWithSource(env, username);
   const progress = progressEntry.progress;
+  const cumulativeInvariant = learningProgressReadInvariant(progressEntry);
+  const snapshotState = learningProgressSnapshotState(progressEntry);
   const storeHealth = learningProgressStoreHealth(env);
   const writeDurabilityGate = learningProgressWriteDurabilityGate(progressEntry.storeMode);
+  const progressPersistenceContract = learningProgressPersistenceContract(progressEntry.storeMode, snapshotState);
   return jsonResponse({
     ok: true,
     user: username,
@@ -9616,13 +10006,24 @@ async function handleLearningStats(context, session) {
     fullProductionReady: progressEntry.storeMode === 'd1' || progressEntry.storeMode === 'r2-progress',
     degradedKvFallback: progressEntry.storeMode === 'kv-single-write-fallback',
     productionReady: progressEntry.storeMode === 'd1' || progressEntry.storeMode === 'r2-progress',
-    serverSnapshotReady: progressEntry.storeMode !== 'unavailable',
+    serverSnapshotStorageReady: snapshotState.serverSnapshotStorageReady,
+    serverSnapshotReady: snapshotState.serverSnapshotReady,
     strictPrimaryStoreReady: progressEntry.storeMode === 'd1' || progressEntry.storeMode === 'r2-progress',
     primaryStoreRequired: true,
-    productionBlockers: (progressEntry.storeMode === 'd1' || progressEntry.storeMode === 'r2-progress') ? [] : ['missing FM_PROGRESS_DB/FM_PROGRESS_R2'],
+    productionBlockers: learningProgressProductionBlockers(writeDurabilityGate),
+    progressPersistenceLayer: progressPersistenceContract.layer,
+    progressPersistenceContract,
+    readOnlyNoDrift: progressPersistenceContract.readOnlyNoDrift,
+    durablePrimaryWrite: progressPersistenceContract.durablePrimaryWrite,
+    fallbackSnapshot: progressPersistenceContract.fallbackSnapshot,
+    ...snapshotState,
     storageBoundary: storeHealth.boundary,
     serverUpgradeInvariant: storeHealth.serverUpgradeInvariant,
     storeHealth,
+    cumulativeInvariant,
+    cumulativeStableKey: cumulativeInvariant.stableKey,
+    stableCumulativeFields: cumulativeInvariant.stableFields,
+    volatileDiagnosticFieldsExcludedFromCumulative: cumulativeInvariant.volatileDiagnosticFieldsExcludedFromCumulative,
     strictCumulativeServer: writeDurabilityGate.strictCumulativeServer,
     writeDurabilityGate,
     stats: learningProgressTotals(progress),
@@ -10584,7 +10985,7 @@ function buildAdminSummary(events, accountStates = new Map(), learningProgressBy
 
     if (event.type === 'practice_answer_submit') {
       const isCorrect = Boolean(data.isCorrect);
-      const timeSeconds = Number(data.questionTimeSeconds || 0);
+      const timeSeconds = learningQuestionTimeSeconds(data);
       const knowledgeName = data.knowledge || data.category || '未标注知识点';
       const typeName = data.questionType || '未知题型';
       answerCount += 1;
@@ -10669,9 +11070,18 @@ function buildAdminSummary(events, accountStates = new Map(), learningProgressBy
     const persistentTotals = persistentProgress && hasLearningProgressActivity(persistentProgress)
       ? learningProgressTotals(persistentProgress)
       : null;
+    const progressInvariant = persistentTotals ? learningProgressReadInvariant(persistentProgressEntry) : null;
     const progressSource = persistentTotals ? persistentProgressEntry.source : 'audit-event-window';
     const progressBoundary = learningProgressBoundaryFromSource(progressSource, learningProgressSummaryStoreMode);
-    const progressDurabilityGate = learningProgressWriteDurabilityGate(learningProgressStoreModeFromSource(progressSource, learningProgressSummaryStoreMode));
+    const progressSelectedStoreMode = persistentProgressEntry.storeMode || learningProgressStoreModeFromSource(progressSource, learningProgressSummaryStoreMode);
+    const progressDurabilityGate = learningProgressWriteDurabilityGate(progressSelectedStoreMode);
+    const progressSnapshotState = learningProgressSnapshotState({
+      progress: persistentTotals ? persistentProgress : createEmptyLearningProgress(normalizedUser || user.user || 'unknown'),
+      source: persistentTotals ? persistentProgressEntry.source : learningProgressSourceFromStore(progressSelectedStoreMode, {}),
+      storeMode: progressSelectedStoreMode,
+      snapshotSelection: persistentProgressEntry.snapshotSelection || (persistentTotals ? '' : 'no-server-progress-snapshot')
+    });
+    const progressPersistenceContract = learningProgressPersistenceContract(progressSelectedStoreMode, progressSnapshotState);
     const usePersistentAnswers = Boolean(persistentTotals);
     const stableAnswers = usePersistentAnswers ? persistentTotals.answered : 0;
     const stableCorrect = usePersistentAnswers ? persistentTotals.correct : 0;
@@ -10701,12 +11111,24 @@ function buildAdminSummary(events, accountStates = new Map(), learningProgressBy
 	    progressCumulativePersisted: Boolean(persistentTotals),
 	    progressServerSnapshotPersisted: Boolean(persistentTotals),
 	    progressPrimaryStorePersisted: Boolean(persistentTotals && progressDurabilityGate.strictCumulativeServer),
+	    progressFallbackSnapshotPersisted: Boolean(persistentTotals && progressPersistenceContract.fallbackSnapshot),
 	    progressConfiguredStoreMode: persistentProgressEntry.configuredStoreMode || learningProgressSummaryStoreMode,
-	    progressSelectedStoreMode: persistentProgressEntry.storeMode || learningProgressStoreModeFromSource(progressSource, learningProgressSummaryStoreMode),
-	    progressSnapshotSelection: persistentProgressEntry.snapshotSelection || '',
-	    progressSnapshotCandidates: persistentProgressEntry.snapshotCandidates || [],
-	    progressCumulativeSourceOfTruth: persistentTotals ? 'server-progress-snapshot' : 'audit-event-window-diagnostic-only',
-	    progressNoMutationRead: Boolean(persistentTotals),
+	    progressSelectedStoreMode,
+			    progressSnapshotSelection: persistentProgressEntry.snapshotSelection || '',
+			    progressSnapshotCandidates: persistentProgressEntry.snapshotCandidates || [],
+			    progressPersistenceLayer: progressPersistenceContract.layer,
+			    progressPersistenceContract,
+			    progressReadOnlyNoDrift: Boolean(persistentTotals && progressPersistenceContract.readOnlyNoDrift),
+			    progressDurablePrimaryWrite: Boolean(persistentTotals && progressPersistenceContract.durablePrimaryWrite),
+			    progressFallbackSnapshot: Boolean(persistentTotals && progressPersistenceContract.fallbackSnapshot),
+			    progressEmptySnapshotCanOverwriteServerTruth: false,
+			    progressStaleSnapshotCanOverwriteServerTruth: false,
+			    progressLocalCacheCanOverwriteServerTruth: false,
+			    progressCumulativeStableKey: progressInvariant ? progressInvariant.stableKey : '',
+		    progressStableCumulativeFields: progressInvariant ? progressInvariant.stableFields : LEARNING_PROGRESS_STABLE_FIELDS,
+		    progressVolatileDiagnosticFieldsExcludedFromCumulative: LEARNING_PROGRESS_VOLATILE_DIAGNOSTIC_FIELDS,
+		    progressCumulativeSourceOfTruth: persistentTotals ? 'server-progress-snapshot' : 'audit-event-window-diagnostic-only',
+		    progressNoMutationRead: Boolean(persistentTotals),
 	    progressCumulativeFullProductionReady: Boolean(persistentTotals && progressDurabilityGate.strictCumulativeServer),
 	    progressStrictCumulativeServer: Boolean(persistentTotals && progressDurabilityGate.strictCumulativeServer),
 	    progressWriteDurabilityStatus: progressDurabilityGate.status,
@@ -10809,9 +11231,18 @@ function buildAdminSummary(events, accountStates = new Map(), learningProgressBy
     const persistentTotals = persistentProgress && hasLearningProgressActivity(persistentProgress)
       ? learningProgressTotals(persistentProgress)
       : null;
+    const progressInvariant = persistentTotals ? learningProgressReadInvariant(persistentProgressEntry) : null;
     const progressSource = persistentTotals ? persistentProgressEntry.source : 'account-row';
     const progressBoundary = learningProgressBoundaryFromSource(progressSource, learningProgressSummaryStoreMode);
-    const progressDurabilityGate = learningProgressWriteDurabilityGate(learningProgressStoreModeFromSource(progressSource, learningProgressSummaryStoreMode));
+    const progressSelectedStoreMode = persistentProgressEntry.storeMode || learningProgressStoreModeFromSource(progressSource, learningProgressSummaryStoreMode);
+    const progressDurabilityGate = learningProgressWriteDurabilityGate(progressSelectedStoreMode);
+    const progressSnapshotState = learningProgressSnapshotState({
+      progress: persistentTotals ? persistentProgress : createEmptyLearningProgress(username),
+      source: persistentTotals ? persistentProgressEntry.source : learningProgressSourceFromStore(progressSelectedStoreMode, {}),
+      storeMode: progressSelectedStoreMode,
+      snapshotSelection: persistentProgressEntry.snapshotSelection || (persistentTotals ? '' : 'no-server-progress-snapshot')
+    });
+    const progressPersistenceContract = learningProgressPersistenceContract(progressSelectedStoreMode, progressSnapshotState);
     const lastSeen = binding && binding.lastSeenAt
       ? binding.lastSeenAt
       : (persistentTotals && (persistentTotals.lastAnsweredAt || persistentTotals.lastSessionAt)
@@ -10831,11 +11262,23 @@ function buildAdminSummary(events, accountStates = new Map(), learningProgressBy
 	      progressCumulativePersisted: Boolean(persistentTotals),
 	      progressServerSnapshotPersisted: Boolean(persistentTotals),
 	      progressPrimaryStorePersisted: Boolean(persistentTotals && progressDurabilityGate.strictCumulativeServer),
+	      progressFallbackSnapshotPersisted: Boolean(persistentTotals && progressPersistenceContract.fallbackSnapshot),
 	      progressConfiguredStoreMode: persistentProgressEntry.configuredStoreMode || learningProgressSummaryStoreMode,
-	      progressSelectedStoreMode: persistentProgressEntry.storeMode || learningProgressStoreModeFromSource(progressSource, learningProgressSummaryStoreMode),
-	      progressSnapshotSelection: persistentProgressEntry.snapshotSelection || '',
-	      progressSnapshotCandidates: persistentProgressEntry.snapshotCandidates || [],
-	      progressCumulativeSourceOfTruth: persistentTotals ? 'server-progress-snapshot' : 'account-row-diagnostic-only',
+	      progressSelectedStoreMode,
+			      progressSnapshotSelection: persistentProgressEntry.snapshotSelection || '',
+			      progressSnapshotCandidates: persistentProgressEntry.snapshotCandidates || [],
+			      progressPersistenceLayer: progressPersistenceContract.layer,
+			      progressPersistenceContract,
+			      progressReadOnlyNoDrift: Boolean(persistentTotals && progressPersistenceContract.readOnlyNoDrift),
+			      progressDurablePrimaryWrite: Boolean(persistentTotals && progressPersistenceContract.durablePrimaryWrite),
+			      progressFallbackSnapshot: Boolean(persistentTotals && progressPersistenceContract.fallbackSnapshot),
+			      progressEmptySnapshotCanOverwriteServerTruth: false,
+			      progressStaleSnapshotCanOverwriteServerTruth: false,
+			      progressLocalCacheCanOverwriteServerTruth: false,
+			      progressCumulativeStableKey: progressInvariant ? progressInvariant.stableKey : '',
+		      progressStableCumulativeFields: progressInvariant ? progressInvariant.stableFields : LEARNING_PROGRESS_STABLE_FIELDS,
+		      progressVolatileDiagnosticFieldsExcludedFromCumulative: LEARNING_PROGRESS_VOLATILE_DIAGNOSTIC_FIELDS,
+		      progressCumulativeSourceOfTruth: persistentTotals ? 'server-progress-snapshot' : 'account-row-diagnostic-only',
 	      progressNoMutationRead: Boolean(persistentTotals),
 	      progressCumulativeFullProductionReady: Boolean(persistentTotals && progressDurabilityGate.strictCumulativeServer),
 	      progressStrictCumulativeServer: Boolean(persistentTotals && progressDurabilityGate.strictCumulativeServer),
@@ -11022,14 +11465,30 @@ function buildAdminSummary(events, accountStates = new Map(), learningProgressBy
       eventWindowStudyTimeSeconds: user.eventWindowStudyTimeSeconds || 0,
 	      eventWindowAccuracy: user.eventWindowAccuracy || 0,
 	      progressSource: user.progressSource || 'audit-event-window',
-		      progressCumulativePersisted: user.progressCumulativePersisted === true,
-		      progressServerSnapshotPersisted: user.progressServerSnapshotPersisted === true,
-		      progressPrimaryStorePersisted: user.progressPrimaryStorePersisted === true,
-		      progressConfiguredStoreMode: user.progressConfiguredStoreMode || '',
-		      progressSelectedStoreMode: user.progressSelectedStoreMode || '',
-		      progressSnapshotSelection: user.progressSnapshotSelection || '',
-		      progressSnapshotCandidates: user.progressSnapshotCandidates || [],
-		      progressCumulativeSourceOfTruth: user.progressCumulativeSourceOfTruth || (user.progressCumulativePersisted === true ? 'server-progress-snapshot' : 'audit-event-window-diagnostic-only'),
+	      progressCumulativePersisted: user.progressCumulativePersisted === true,
+	      progressServerSnapshotPersisted: user.progressServerSnapshotPersisted === true,
+	      progressPrimaryStorePersisted: user.progressPrimaryStorePersisted === true,
+	      progressFallbackSnapshotPersisted: user.progressFallbackSnapshotPersisted === true,
+	      progressConfiguredStoreMode: user.progressConfiguredStoreMode || '',
+	      progressSelectedStoreMode: user.progressSelectedStoreMode || '',
+      progressSnapshotSelection: user.progressSnapshotSelection || '',
+      progressSnapshotCandidates: user.progressSnapshotCandidates || [],
+      progressPersistenceLayer: user.progressPersistenceLayer || '',
+      progressPersistenceContract: user.progressPersistenceContract || null,
+      progressReadOnlyNoDrift: user.progressReadOnlyNoDrift === true,
+      progressDurablePrimaryWrite: user.progressDurablePrimaryWrite === true,
+      progressFallbackSnapshot: user.progressFallbackSnapshot === true,
+      progressEmptySnapshotCanOverwriteServerTruth: false,
+      progressStaleSnapshotCanOverwriteServerTruth: false,
+      progressLocalCacheCanOverwriteServerTruth: false,
+      progressCumulativeStableKey: user.progressCumulativeStableKey || '',
+	      progressStableCumulativeFields: Array.isArray(user.progressStableCumulativeFields)
+	        ? user.progressStableCumulativeFields
+	        : LEARNING_PROGRESS_STABLE_FIELDS,
+	      progressVolatileDiagnosticFieldsExcludedFromCumulative: Array.isArray(user.progressVolatileDiagnosticFieldsExcludedFromCumulative)
+	        ? user.progressVolatileDiagnosticFieldsExcludedFromCumulative
+	        : LEARNING_PROGRESS_VOLATILE_DIAGNOSTIC_FIELDS,
+	      progressCumulativeSourceOfTruth: user.progressCumulativeSourceOfTruth || (user.progressCumulativePersisted === true ? 'server-progress-snapshot' : 'audit-event-window-diagnostic-only'),
 	      progressNoMutationRead: user.progressNoMutationRead === true,
 	      progressCumulativeFullProductionReady: user.progressCumulativeFullProductionReady === true,
 	      progressStrictCumulativeServer: user.progressStrictCumulativeServer === true,
@@ -11244,19 +11703,26 @@ function buildAdminSummary(events, accountStates = new Map(), learningProgressBy
 		    averageQuestionTimeSeconds: 0,
 		    accuracy: 0
 		  });
-		  const serverSnapshotCumulativeTotals = learningProgress.reduce((totals, row) => {
-		    if (row.progressCumulativePersisted !== true || row.progressNoMutationRead !== true || row.progressCumulativeSourceOfTruth !== 'server-progress-snapshot') return totals;
-		    totals.answered += Number(row.answers || 0);
+			  const serverSnapshotCumulativeTotals = learningProgress.reduce((totals, row) => {
+			    if (row.progressCumulativePersisted !== true || row.progressNoMutationRead !== true || row.progressCumulativeSourceOfTruth !== 'server-progress-snapshot') return totals;
+			    totals.answered += Number(row.answers || 0);
 		    totals.correct += Number(row.correct || 0);
 		    totals.incorrect += Number(row.incorrect || 0);
 		    totals.skipped += Number(row.skipped || 0);
 		    totals.sessions += Number(row.sessions || 0);
-		    totals.studyTimeSeconds += Number(row.studyTimeSeconds || 0);
-		    return totals;
-		  }, emptyCumulativeTotals());
-		  serverSnapshotCumulativeTotals.averageQuestionTimeSeconds = serverSnapshotCumulativeTotals.answered > 0
-		    ? Math.round(serverSnapshotCumulativeTotals.studyTimeSeconds / serverSnapshotCumulativeTotals.answered)
-		    : 0;
+			    totals.studyTimeSeconds += Number(row.studyTimeSeconds || 0);
+			    return totals;
+			  }, emptyCumulativeTotals());
+				  const serverSnapshotRowCount = learningProgress.filter((row) => (
+				    row.progressCumulativePersisted === true
+				      && row.progressNoMutationRead === true
+				      && row.progressCumulativeSourceOfTruth === 'server-progress-snapshot'
+				  )).length;
+			  const durablePrimaryRowCount = learningProgress.filter((row) => row.progressDurablePrimaryWrite === true).length;
+			  const fallbackSnapshotRowCount = learningProgress.filter((row) => row.progressFallbackSnapshot === true).length;
+			  serverSnapshotCumulativeTotals.averageQuestionTimeSeconds = serverSnapshotCumulativeTotals.answered > 0
+			    ? Math.round(serverSnapshotCumulativeTotals.studyTimeSeconds / serverSnapshotCumulativeTotals.answered)
+			    : 0;
 		  serverSnapshotCumulativeTotals.accuracy = serverSnapshotCumulativeTotals.answered > 0
 		    ? Math.round((serverSnapshotCumulativeTotals.correct / serverSnapshotCumulativeTotals.answered) * 100)
 		    : 0;
@@ -11272,14 +11738,34 @@ function buildAdminSummary(events, accountStates = new Map(), learningProgressBy
 		  auditEventWindowAnswerStats.averageQuestionTimeSeconds = auditEventWindowAnswerStats.answered > 0
 		    ? Math.round(auditEventWindowAnswerStats.studyTimeSeconds / auditEventWindowAnswerStats.answered)
 		    : 0;
-		  auditEventWindowAnswerStats.accuracy = auditEventWindowAnswerStats.answered > 0
-		    ? Math.round((auditEventWindowAnswerStats.correct / auditEventWindowAnswerStats.answered) * 100)
-		    : 0;
-		  const progressMonitoringTruth = {
-		    noMutationRead: true,
-		    cumulativeSourceOfTruth: 'server-progress-snapshot',
-		    serverSnapshotCumulativeTotals,
-		    auditEventWindowExcludedFromCumulative: true,
+			  auditEventWindowAnswerStats.accuracy = auditEventWindowAnswerStats.answered > 0
+			    ? Math.round((auditEventWindowAnswerStats.correct / auditEventWindowAnswerStats.answered) * 100)
+			    : 0;
+			  const progressStoreSnapshotState = {
+			    hasServerProgressSnapshot: serverSnapshotRowCount > 0,
+			    emptyServerProgressSnapshot: serverSnapshotRowCount === 0
+			  };
+			  const progressStorePersistenceContract = learningProgressPersistenceContract(progressStoreMode, progressStoreSnapshotState);
+				  const progressMonitoringTruth = {
+				    noMutationRead: true,
+				    cumulativeSourceOfTruth: 'server-progress-snapshot',
+				    serverSnapshotRowCount,
+				    durablePrimaryRowCount,
+				    fallbackSnapshotRowCount,
+				    progressPersistenceLayer: progressStorePersistenceContract.layer,
+				    progressPersistenceContract: progressStorePersistenceContract,
+				    readOnlyNoDrift: progressStorePersistenceContract.readOnlyNoDrift,
+				    durablePrimaryWrite: progressStorePersistenceContract.durablePrimaryWrite,
+				    fallbackSnapshot: progressStorePersistenceContract.fallbackSnapshot,
+				    serverSnapshotReady: serverSnapshotRowCount > 0,
+				    emptyServerProgressSnapshot: serverSnapshotRowCount === 0,
+				    emptySnapshotDoesNotCreateCumulative: serverSnapshotRowCount === 0,
+				    emptySnapshotDoesNotProvePersistence: serverSnapshotRowCount === 0,
+				    emptySnapshotCanOverwriteServerTruth: false,
+				    staleSnapshotCanOverwriteServerTruth: false,
+				    localCacheCanOverwriteServerTruth: false,
+				    serverSnapshotCumulativeTotals,
+			    auditEventWindowExcludedFromCumulative: true,
 		    auditEventWindowAnswerStats,
 		    serverUpgradeInvariant: progressStoreBoundary.serverUpgradeInvariant
 		  };
@@ -11321,12 +11807,26 @@ function buildAdminSummary(events, accountStates = new Map(), learningProgressBy
 		    learningProgressStore: {
 			      source: progressStoreSource,
 			      storeMode: progressStoreMode,
-			      noMutationRead: true,
-			      cumulativeSourceOfTruth: 'server-progress-snapshot',
-			      serverSnapshotReady: progressStoreMode !== 'unavailable',
-			      strictPrimaryStoreReady: progressWriteDurabilityGate.strictCumulativeServer === true,
-			      primaryStoreRequired: true,
-			      productionBlockers: progressWriteDurabilityGate.strictCumulativeServer === true ? [] : ['missing FM_PROGRESS_DB/FM_PROGRESS_R2'],
+				      noMutationRead: true,
+					      cumulativeSourceOfTruth: 'server-progress-snapshot',
+					      progressPersistenceLayer: progressStorePersistenceContract.layer,
+					      progressPersistenceContract: progressStorePersistenceContract,
+					      readOnlyNoDrift: progressStorePersistenceContract.readOnlyNoDrift,
+					      durablePrimaryWrite: progressStorePersistenceContract.durablePrimaryWrite,
+					      fallbackSnapshot: progressStorePersistenceContract.fallbackSnapshot,
+					      serverSnapshotStorageReady: progressStoreMode !== 'unavailable',
+					      serverSnapshotReady: serverSnapshotRowCount > 0,
+					      snapshotPersisted: serverSnapshotRowCount > 0,
+				      emptyServerProgressSnapshot: serverSnapshotRowCount === 0,
+				      progressSnapshotStatus: serverSnapshotRowCount > 0 ? 'server-progress-snapshot-present' : 'empty-server-progress-snapshot',
+					      emptySnapshotDoesNotCreateCumulative: serverSnapshotRowCount === 0,
+					      emptySnapshotDoesNotProvePersistence: serverSnapshotRowCount === 0,
+					      emptySnapshotCanOverwriteServerTruth: false,
+					      staleSnapshotCanOverwriteServerTruth: false,
+					      localCacheCanOverwriteServerTruth: false,
+					      strictPrimaryStoreReady: progressWriteDurabilityGate.strictCumulativeServer === true,
+				      primaryStoreRequired: true,
+				      productionBlockers: learningProgressProductionBlockers(progressWriteDurabilityGate),
 			      durablePrimary: progressWriteDurabilityGate.durablePrimary,
 			      fullProductionReady: progressWriteDurabilityGate.fullProductionReady,
 			      productionReady: progressWriteDurabilityGate.productionReady,
@@ -11340,6 +11840,8 @@ function buildAdminSummary(events, accountStates = new Map(), learningProgressBy
 				      boundary: progressStoreBoundary.message,
 				      acceptance: progressStoreBoundary.acceptance,
 				      serverUpgradeInvariant: progressStoreBoundary.serverUpgradeInvariant,
+				      stableCumulativeFields: LEARNING_PROGRESS_STABLE_FIELDS,
+				      volatileDiagnosticFieldsExcludedFromCumulative: LEARNING_PROGRESS_VOLATILE_DIAGNOSTIC_FIELDS,
 				      serverSnapshotCumulativeTotals,
 				      auditEventWindowExcludedFromCumulative: true,
 				      auditEventWindowAnswerStats,
