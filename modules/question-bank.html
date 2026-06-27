@@ -15,9 +15,9 @@
   })();
 </script>
 <script src="/js/security/auth-guard.js" onerror="window.__fmAuthGuardFail&&window.__fmAuthGuardFail('guard_load_failed')"></script>
-<script src="/lib/fm-core.js?v=round548-181103-proof-depth-upgrade-20260627" defer></script>
-<script src="/js/formula-lite.js?v=round548-181103-proof-depth-upgrade-20260627" defer></script>
-<script src="/js/core/local-mathjax.js?v=round548-181103-proof-depth-upgrade-20260627" defer></script>
+<script src="/lib/fm-core.js?v=round268-auth-redirect-practice-20260526" defer></script>
+<script src="/js/formula-lite.js?v=round549-181103-proof-depth-upgrade-20260627" defer></script>
+<script src="/js/core/local-mathjax.js?v=round549-181103-proof-depth-upgrade-20260627" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
@@ -313,6 +313,10 @@ body:hover .cur-glow,body.cur-on .cur-glow{opacity:1}
 .loading{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--tide-500);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-state p{font-size:.9rem}
+.qb-fallback-alert{margin:0 0 14px;padding:12px 14px;border:1px solid rgba(245,158,11,.35);border-radius:14px;background:rgba(255,251,235,.92);color:#92400e;font-size:.88rem;line-height:1.55}
+.qb-fallback-alert strong{color:#78350f}
+[data-theme="dark"] .qb-fallback-alert,:root:not([data-theme]) .qb-fallback-alert{background:rgba(120,53,15,.22);border-color:rgba(251,191,36,.35);color:#fde68a}
+[data-theme="dark"] .qb-fallback-alert strong,:root:not([data-theme]) .qb-fallback-alert strong{color:#fef3c7}
 
 /* 分页 */
 .pagination-wrap{margin-top:24px;display:flex;justify-content:center;flex-wrap:wrap;gap:6px;min-height:20px}
@@ -704,9 +708,30 @@ function __qbEscapeHtml(value){
     return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
   });
 }
+function __qbHasStaticFallbackCards(list){
+  return Boolean(list&&list.querySelector('[data-qb-initial-fallback],.bank-card,[data-qb-fallback]'));
+}
+function __qbShowLoadWarning(message){
+  var list=document.getElementById('questionBanksList');
+  if(!list)return;
+  var alert=document.getElementById('questionBankFallbackAlert');
+  if(!alert){
+    alert=document.createElement('div');
+    alert.id='questionBankFallbackAlert';
+    alert.className='qb-fallback-alert';
+    alert.setAttribute('role','status');
+    alert.setAttribute('aria-live','polite');
+    list.parentNode&&list.parentNode.insertBefore(alert,list);
+  }
+  alert.innerHTML='<strong>题库入口已保留</strong><span>：</span>'+__qbEscapeHtml(message||'题库脚本加载较慢，先展示可进入的题库卡片。');
+}
 window.__qbRenderLoadFailure=function(message){
   var list=document.getElementById('questionBanksList');
   if(list){
+    if(__qbHasStaticFallbackCards(list)){
+      __qbShowLoadWarning(message||'题库脚本加载失败，已保留静态题库入口。');
+      return;
+    }
     list.innerHTML='<div class="loading-state"><h3>题库加载失败</h3><p>'+__qbEscapeHtml(message||'关键脚本或题库索引加载失败，请重试。')+'</p><div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button class="btn" type="button" onclick="location.reload()">重新加载</button><a class="btn" href="/index-complete">回首页</a></div></div>';
   }
   if(typeof window.showNotification==='function')window.showNotification(message||'题库加载失败，请刷新重试','error',5000);
@@ -727,7 +752,8 @@ window.__qbScriptFail=function(file){window.__qbRenderLoadFailure('题库脚本�
   function renderBanksFallback(list,banks,reason){
       var rows=(banks||[]).filter(function(bank){return bank&&bank.id;}).slice(0,6);
     if(!rows.length){
-      window.__qbRenderLoadFailure(reason||'题库索引读取耗时过长，请重试。');
+      if(__qbHasStaticFallbackCards(list))__qbShowLoadWarning(reason||'题库索引读取耗时过长，已保留静态题库入口。');
+      else window.__qbRenderLoadFailure(reason||'题库索引读取耗时过长，请重试。');
       return;
     }
     var total=rows.reduce(function(sum,bank){return sum+Number(bank.questionCount||bank.count||0);},0);
@@ -736,7 +762,7 @@ window.__qbScriptFail=function(file){window.__qbRenderLoadFailure('题库脚本�
     list.innerHTML=rows.map(function(bank){
       var tags=Array.isArray(bank.tags)?bank.tags.slice(0,3):[];
       var is181103=bank.id==='181103-material-extracted';
-      var href=bank.practiceUrl||(is181103?'/modules/question-bank.html?focus=181103-material-extracted&answer_status=current&edge_refresh=round548-181103-proof-depth-upgrade-20260627#questionBanksList':('/modules/practice-dynamic.html?bank='+encodeURIComponent(bank.id)));
+      var href=bank.practiceUrl||(is181103?'/modules/question-bank.html?focus=181103-material-extracted&answer_status=current&edge_refresh=round549-181103-proof-depth-upgrade-20260627#questionBanksList':('/modules/practice-dynamic.html?bank='+encodeURIComponent(bank.id)));
       return '<article class="bank-card" data-qb-fallback="1">'+
         '<h3>'+__qbEscapeHtml(bank.name||bank.id)+'</h3>'+
         '<p>'+__qbEscapeHtml(bank.description||bank.category||'题库已就绪，可直接进入练习。')+'</p>'+
@@ -766,11 +792,11 @@ window.__qbScriptFail=function(file){window.__qbRenderLoadFailure('题库脚本�
   else armWatchdog();
 })();
 </script>
-<script src="question-bank-data.js?v=round548-181103-proof-depth-upgrade-20260627" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-data.js')"></script>
-<script src="question-bank-ui.js?v=round548-181103-proof-depth-upgrade-20260627" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-ui.js')"></script>
-<script src="question-bank-user.js?v=round548-181103-proof-depth-upgrade-20260627" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-user.js')"></script>
-<script src="question-bank-stats.js?v=round548-181103-proof-depth-upgrade-20260627" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-stats.js')"></script>
-<script src="question-bank-ai.js?v=round548-181103-proof-depth-upgrade-20260627" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-ai.js')"></script>
+<script src="question-bank-data.js?v=round549-181103-proof-depth-upgrade-20260627" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-data.js')"></script>
+<script src="question-bank-ui.js?v=round549-181103-proof-depth-upgrade-20260627" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-ui.js')"></script>
+<script src="question-bank-user.js?v=round549-181103-proof-depth-upgrade-20260627" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-user.js')"></script>
+<script src="question-bank-stats.js?v=round549-181103-proof-depth-upgrade-20260627" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-stats.js')"></script>
+<script src="question-bank-ai.js?v=round549-181103-proof-depth-upgrade-20260627" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-ai.js')"></script>
 
 <script>
 /* ══════════════════════════════════════════════════════════════

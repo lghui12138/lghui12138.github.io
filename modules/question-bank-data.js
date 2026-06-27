@@ -15,7 +15,7 @@ window.QuestionBankData = (function() {
     };
     let currentPage = 1;
     let itemsPerPage = 6;
-    
+
     // 题库数据源配置
     const DATA_SOURCES = {
         local: '../question-banks/',
@@ -30,6 +30,78 @@ window.QuestionBankData = (function() {
         }
     }
 
+    const dialogFocusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+    function closePracticeDialog() {
+        const dialog = document.querySelector('.practice-dialog');
+        if (!dialog) return;
+        const previousFocus = dialog.__previousFocus;
+        dialog.removeEventListener('keydown', handlePracticeDialogKeydown);
+        dialog.remove();
+        if (previousFocus && document.contains(previousFocus) && typeof previousFocus.focus === 'function') {
+            setTimeout(() => {
+                try {
+                    previousFocus.focus({ preventScroll: true });
+                } catch (_) {
+                    previousFocus.focus();
+                }
+            }, 0);
+        }
+    }
+
+    function handlePracticeDialogKeydown(event) {
+        const dialog = event.currentTarget;
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            closePracticeDialog();
+            return;
+        }
+        if (event.key !== 'Tab') return;
+        const focusable = Array.from(dialog.querySelectorAll(dialogFocusableSelector))
+            .filter(node => !node.disabled && node.offsetParent !== null);
+        if (focusable.length === 0) {
+            event.preventDefault();
+            dialog.focus();
+            return;
+        }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
+    }
+
+    function mountPracticeDialog(dialog) {
+        closePracticeDialog();
+        dialog.className = 'practice-dialog';
+        dialog.setAttribute('role', 'dialog');
+        dialog.setAttribute('aria-modal', 'true');
+        dialog.setAttribute('aria-labelledby', 'practiceDialogTitle');
+        dialog.setAttribute('tabindex', '-1');
+        dialog.__previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        dialog.addEventListener('keydown', handlePracticeDialogKeydown);
+        dialog.addEventListener('click', (event) => {
+            if (event.target === dialog) {
+                closePracticeDialog();
+            }
+        });
+        document.body.appendChild(dialog);
+        setTimeout(() => {
+            const focusTarget = dialog.querySelector(dialogFocusableSelector) || dialog;
+            if (focusTarget && typeof focusTarget.focus === 'function') {
+                try {
+                    focusTarget.focus({ preventScroll: true });
+                } catch (_) {
+                    focusTarget.focus();
+                }
+            }
+        }, 0);
+    }
+
     function fetchWithTimeout(url, options = {}, timeoutMs = 3500) {
         if (typeof AbortController === 'undefined') {
             return fetch(url, options);
@@ -40,7 +112,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round417-progress-primary-store-quota-hardening-20260621-round410-progress-no-drift-20260620';
+    const practiceModuleVersion = 'round549-181103-proof-depth-upgrade-20260627';
 
     function requestedFocusBankId() {
         try {
@@ -48,6 +120,35 @@ window.QuestionBankData = (function() {
         } catch (_) {
             return '';
         }
+    }
+
+    function requestedAnswerStatus() {
+        try {
+            return new URLSearchParams(location.search).get('answer_status') || '';
+        } catch (_) {
+            return '';
+        }
+    }
+
+    function is181103MaterialBank(bank) {
+        return Boolean(bank && (
+            bank.id === '181103-material-extracted'
+            || bank.filename === '181103-material-extracted.json'
+            || bank.file === '181103-material-extracted.json'
+        ));
+    }
+
+    function build181103AnswerStatusLedger(bank) {
+        if (!is181103MaterialBank(bank)) return null;
+        return {
+            totalAnswerBlocks: 522,
+            defaultPracticeRows: Number(bank.defaultPracticeQuestionCount || bank.practiceEntryQuestionCount || 381),
+            readyReferenceAnswerCount: 381,
+            manualSourceReviewCount: 0,
+            sourceClueCount: Number(bank.sourceSemanticContentCardCount || bank.sourceContentCardCount || 141),
+            statusHref: '/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList',
+            boundary: '522 是来源卡/答案块核对数；381 道默认练习题可直接参考，0 道保留待人工源页复核，141 条只作源文线索。'
+        };
     }
 
     function bankListHasId(list, bankId) {
@@ -61,7 +162,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round417-progress-primary-store-quota-hardening-20260621/.test(versionText);
+        return /round549-181103-proof-depth-upgrade-20260627/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {
@@ -157,7 +258,7 @@ window.QuestionBankData = (function() {
             return false;
         }
     }
-    
+
     function normalizeTags(tags, category) {
         if (Array.isArray(tags) && tags.length) {
             return [...new Set(tags.map(tag => String(tag || '').trim()).filter(Boolean))];
@@ -190,7 +291,13 @@ window.QuestionBankData = (function() {
             '181103自测',
             '讲义题',
             '资料题',
-            '答案线索'
+            '答案线索',
+            '参考答案状态',
+            '答案状态',
+            '可直接参考答案',
+            '待人工源页复核',
+            '381可参考',
+            '381+0'
         ])];
     }
 
@@ -229,6 +336,20 @@ window.QuestionBankData = (function() {
         return '';
     }
 
+    function isAnswerBoundaryText(value) {
+        const text = stripHtmlText(value);
+        if (!text) return true;
+        return /(?:参考答案|标准答案|最终答案)?待(?:校对|复核|补|整理)|暂无可信参考答案|这题还没有整理出|不能用空白或旧题库答案替代|不能替代标准答案|不代表原卷给出了完整答案|来源 HTML[：:]待补充|页图证据[：:]待补充/i.test(text);
+    }
+
+    function firstReviewableAnswerText(values) {
+        for (const value of values) {
+            const text = stripHtmlText(value);
+            if (text && !isAnswerBoundaryText(text)) return text;
+        }
+        return '';
+    }
+
     function is181103MaterialQuestion(question) {
         return Boolean(question && question.extractedFromMaterial === true
             && /\/resources\/fluid-181103-html\/materials\//.test(String(question.sourceHtmlUrl || question.htmlQuestionSourceUrl || '')));
@@ -243,7 +364,7 @@ window.QuestionBankData = (function() {
     }
 
     function hasReviewableAnswer(question) {
-        return firstText([
+        return firstReviewableAnswerText([
             question && question.answerHtml,
             question && question.referenceAnswerHtml,
             question && question.sampleAnswerHtml,
@@ -254,11 +375,19 @@ window.QuestionBankData = (function() {
         ]).length > 0;
     }
 
+    function needsManualSourceReview(question) {
+        return Boolean(question && (
+            question.dataNeedsManualSourceReview === true
+            || question.answerTrustState === 'needs-manual-source-review'
+            || question.answerReviewBoundary === 'manual-source-review-required'
+        ));
+    }
+
     function normalize181103AnswerUiQuestion(question) {
         if (!is181103MaterialQuestion(question)) return question;
         const sourceHtmlUrl = String(question.sourceHtmlUrl || question.htmlQuestionSourceUrl || question.htmlQuestionCardUrl || '').trim();
         const sourceImageUrl = sourceImageFromQuestion(question);
-        const answerText = firstText([
+        const answerText = firstReviewableAnswerText([
             question.answerHtml,
             question.referenceAnswerHtml,
             question.sampleAnswerHtml,
@@ -267,6 +396,7 @@ window.QuestionBankData = (function() {
             question.answer,
             question.correct
         ]);
+        const manualSourceReview = needsManualSourceReview(question);
         const sourceLine = sourceHtmlUrl ? `来源 HTML：${sourceHtmlUrl}` : '来源 HTML：待补充';
         const imageLine = sourceImageUrl ? `页图证据：${sourceImageUrl}` : '页图证据：待补充';
         const fallbackAnswer = [
@@ -282,20 +412,38 @@ window.QuestionBankData = (function() {
             question.analysis
         ]);
         let explanation = explanationText || '解析思路待复核：请先打开来源 HTML 核对题面、公式和上下文，再补正式解析。';
+        if (manualSourceReview && !/待人工源页复核/.test(explanation)) {
+            explanation = `待人工源页复核：本题保留可学习参考答案，但源页措辞仍需人工复核；使用时请先打开来源 HTML 和页图核对题面。\\n${explanation}`;
+        }
         if (sourceHtmlUrl && !explanation.includes(sourceHtmlUrl)) explanation += `\n${sourceLine}`;
         if (sourceImageUrl && !explanation.includes(sourceImageUrl)) explanation += `\n${imageLine}`;
+        const answerUiStatus = manualSourceReview
+            ? 'reference-answer-needs-manual-source-review'
+            : (answerText ? 'reference-answer-ready' : 'reference-answer-needs-review');
+        const answerTrustState = manualSourceReview
+            ? 'needs-manual-source-review'
+            : (question.answerTrustState || (answerText ? 'reference-answer-ready' : 'needs-review-source-clue'));
+        const answerBoundary = manualSourceReview
+            ? 'manual-source-review-required'
+            : (answerText ? 'answer-readable' : 'needs-review-source-clue');
         const next = {
             ...question,
             answer: answerText || fallbackAnswer,
-            referenceAnswer: question.referenceAnswer || question.sampleAnswer || question.answer || answerText || fallbackAnswer,
+            referenceAnswer: answerText || fallbackAnswer,
             explanation,
             sourceHtmlUrl,
             sourcePageImageUrl: sourceImageUrl || question.sourcePageImageUrl || question.sourcePageImageEvidenceUrl || '',
             answerEvidenceHtmlUrl: sourceHtmlUrl,
             answerEvidencePageImageUrl: sourceImageUrl,
-            answerUiStatus: answerText ? 'reference-answer-ready' : 'reference-answer-needs-review',
-            round399AnswerUiReady: Boolean(answerText && explanation && sourceHtmlUrl && sourceImageUrl),
-            round399AnswerUiFallbackHonest: !answerText
+            answerUiStatus,
+            answerTrustState,
+            answerTrustLabel: manualSourceReview ? '待人工源页复核' : (question.answerTrustLabel || (answerText ? '参考答案' : '待复核')),
+            answerReviewBoundary: answerBoundary,
+            round418AnswerBoundary: answerBoundary,
+            round420AnswerTrustState: answerTrustState,
+            round420ManualSourceReviewVisible: manualSourceReview,
+            round399AnswerUiReady: Boolean(answerText && explanation && sourceHtmlUrl && sourceImageUrl && !manualSourceReview),
+            round399AnswerUiFallbackHonest: !answerText || manualSourceReview
         };
         if (!answerText && !firstText([question.answerHtml, question.referenceAnswerHtml, question.sampleAnswerHtml])) {
             next.referenceAnswerHtml = `<p>${escapeHtml(fallbackAnswer).replace(/\n/g, '<br>')}</p>`;
@@ -461,7 +609,7 @@ window.QuestionBankData = (function() {
         realExamUrl: `/modules/real-exams-dynamic.html?chapter=${item.chapter}&from=question-bank`,
         knowledgeUrl: `/modules/knowledge-detail.html?chapter=${item.chapter}`
     }));
-    
+
     // 公有方法
     return {
         // 初始化模块
@@ -471,7 +619,7 @@ window.QuestionBankData = (function() {
             this.bindEvents();
             return this;
         },
-        
+
         // 加载题库数据
         loadQuestionBanks: async function() {
             try {
@@ -532,13 +680,13 @@ window.QuestionBankData = (function() {
                         console.log('使用默认题库数据');
                     }
                 }
-                
+
                 this.processQuestionBanks();
                 this.updateTagFilter();
                 this.applyFilters();
                 this.updateStats();
                 this.applyUrlFocus();
-                
+
             } catch (error) {
                 console.error('加载题库数据失败:', error);
                 if ([401, 402, 403, 404].includes(Number(error.status || 0))) {
@@ -554,7 +702,7 @@ window.QuestionBankData = (function() {
                 showNotification('题库数据加载失败，使用默认数据', 'warning');
             }
         },
-        
+
         // 从索引文件加载
         loadFromIndex: async function() {
             try {
@@ -566,7 +714,7 @@ window.QuestionBankData = (function() {
                 }
                 const data = await response.json();
                 console.log('索引文件数据:', data);
-                
+
                 // 检查新格式的索引文件
                 if (data.questionBanks && Array.isArray(data.questionBanks)) {
                     return {
@@ -576,7 +724,7 @@ window.QuestionBankData = (function() {
                             .filter(item => item.filename && !item.archived)
                     };
                 }
-                
+
                 // 兼容旧格式
                 if (Array.isArray(data)) {
                     return {
@@ -585,7 +733,7 @@ window.QuestionBankData = (function() {
                             .filter(item => item.filename && !item.archived)
                     };
                 }
-                
+
                 // 兼容其他格式
                 if (data.real || data.chapter) {
                     const banks = [];
@@ -623,14 +771,14 @@ window.QuestionBankData = (function() {
                     }
                     return { questionBanks: banks };
                 }
-                
+
                 return null;
             } catch (error) {
                 console.log('索引文件加载失败:', error.message);
                 return null;
             }
         },
-        
+
         // 从本地文件加载
         loadFromLocal: async function() {
             const bankFiles = [
@@ -641,7 +789,7 @@ window.QuestionBankData = (function() {
                 '分类_能量方程.json',
                 '真题_中国海洋大学_2000-2024_fixed.json'
             ];
-            
+
             const banks = [];
             for (const file of bankFiles) {
                 try {
@@ -659,26 +807,26 @@ window.QuestionBankData = (function() {
             }
             return banks;
         },
-        
+
         // 提取题库信息
         extractBankInfo: function(filename, data) {
             try {
                 const questions = Array.isArray(data) ? data : data.questions || [];
                 if (questions.length === 0) return null;
-                
+
                 const nameMatch = filename.match(/分类_(.+)\.json|真题_(.+)\.json/);
                 const name = nameMatch ? (nameMatch[1] || nameMatch[2]) : filename;
-                
+
                 // 分析题目难度
                 const difficulties = questions.map(q => q.difficulty || 'medium');
                 const difficultyCount = difficulties.reduce((acc, d) => {
                     acc[d] = (acc[d] || 0) + 1;
                     return acc;
                 }, {});
-                
+
                 const majorityDifficulty = Object.keys(difficultyCount)
                     .reduce((a, b) => difficultyCount[a] > difficultyCount[b] ? a : b);
-                
+
                 // 提取标签
                 const tags = [...new Set(questions.flatMap(q => {
                     if (Array.isArray(q.tags) && q.tags.length) {
@@ -689,7 +837,7 @@ window.QuestionBankData = (function() {
                     }
                     return ['流体力学'];
                 }))];
-                
+
                 return {
                     id: filename.replace('.json', ''),
                     name: name,
@@ -707,7 +855,7 @@ window.QuestionBankData = (function() {
                 return null;
             }
         },
-        
+
         // 处理题库数据
         processQuestionBanks: function() {
             questionBanks = questionBanks.map(bank => {
@@ -721,16 +869,16 @@ window.QuestionBankData = (function() {
                 .filter(bank => !existingIds.has(bank.id))
                 .map(bank => normalizeQuestionBankEntry(bank));
             questionBanks = [...chapterBanks, ...questionBanks];
-            
+
             filteredBanks = [...questionBanks];
         },
-        
+
         // 获取随机颜色
         getRandomColor: function() {
             const colors = ['#4facfe', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#dda0dd', '#98d8c8'];
             return colors[Math.floor(Math.random() * colors.length)];
         },
-        
+
         // 绑定事件
         bindEvents: function() {
             // 搜索框事件
@@ -741,7 +889,7 @@ window.QuestionBankData = (function() {
                     this.applyFilters();
                 });
             }
-            
+
             // 筛选器事件
             ['difficultyFilter', 'tagFilter', 'countFilter'].forEach(id => {
                 const element = document.getElementById(id);
@@ -752,7 +900,7 @@ window.QuestionBankData = (function() {
                     });
                 }
             });
-            
+
             // 清除筛选按钮
             const clearButton = document.getElementById('clearFilters');
             if (clearButton) {
@@ -760,7 +908,7 @@ window.QuestionBankData = (function() {
                     this.clearFilters();
                 });
             }
-            
+
             // 功能按钮
             this.bindFunctionButtons();
             this.bind181103DiscoveryFilters();
@@ -789,7 +937,7 @@ window.QuestionBankData = (function() {
                 });
             });
         },
-        
+
         // 绑定功能按钮事件
         bindFunctionButtons: function() {
             const buttons = {
@@ -799,7 +947,7 @@ window.QuestionBankData = (function() {
                 'manageFavorites': () => this.manageFavorites(),
                 'showHelp': () => this.showHelp()
             };
-            
+
             Object.entries(buttons).forEach(([id, handler]) => {
                 const element = document.getElementById(id);
                 if (element) {
@@ -807,7 +955,7 @@ window.QuestionBankData = (function() {
                 }
             });
         },
-        
+
         // 更新筛选器状态
         updateFiltersFromUI: function() {
             const elements = {
@@ -815,7 +963,7 @@ window.QuestionBankData = (function() {
                 'tagFilter': 'tag',
                 'countFilter': 'count'
             };
-            
+
             Object.entries(elements).forEach(([elementId, filterKey]) => {
                 const element = document.getElementById(elementId);
                 if (element) {
@@ -823,18 +971,18 @@ window.QuestionBankData = (function() {
                 }
             });
         },
-        
+
         // 更新标签筛选器
         updateTagFilter: function() {
             const tagFilter = document.getElementById('tagFilter');
             if (!tagFilter) return;
-            
+
             // 收集所有标签
             const allTags = new Set();
             questionBanks.forEach(bank => {
                 bank.tags.forEach(tag => allTags.add(tag));
             });
-            
+
             // 清空并重新填充选项
             tagFilter.innerHTML = '<option value="">全部分类</option>';
             [...allTags].sort().forEach(tag => {
@@ -871,6 +1019,10 @@ window.QuestionBankData = (function() {
             if (currentFilters.difficulty) activeFilters.push(`难度：${difficultyText[currentFilters.difficulty] || currentFilters.difficulty}`);
             if (currentFilters.tag) activeFilters.push(`分类：${currentFilters.tag}`);
             if (currentFilters.count) activeFilters.push(`题量：${countText[currentFilters.count] || currentFilters.count}`);
+            if (requestedFocusBankId() === '181103-material-extracted' && requestedAnswerStatus() === 'current') {
+                activeFilters.push('181103参考答案状态：当前');
+                activeFilters.push('381可参考/0待复核/141线索');
+            }
 
             const totalQuestions = filteredBanks.reduce((sum, bank) => sum + (Number(bank.questionCount) || 0), 0);
             summary.textContent = '';
@@ -909,7 +1061,7 @@ window.QuestionBankData = (function() {
                 summary.appendChild(reset);
             }
         },
-        
+
         // 应用筛选
         applyFilters: function() {
             filteredBanks = questionBanks.filter(bank => {
@@ -921,17 +1073,17 @@ window.QuestionBankData = (function() {
                         return false;
                     }
                 }
-                
+
                 // 难度筛选
                 if (currentFilters.difficulty && bank.difficulty !== currentFilters.difficulty) {
                     return false;
                 }
-                
+
                 // 标签筛选
                 if (currentFilters.tag && !bank.tags.includes(currentFilters.tag)) {
                     return false;
                 }
-                
+
                 // 题目数量筛选
                 if (currentFilters.count) {
                     const count = bank.questionCount;
@@ -953,19 +1105,19 @@ window.QuestionBankData = (function() {
                             break;
                     }
                 }
-                
+
                 return true;
             });
-            
+
             // 重置到第一页
             currentPage = 1;
-            
+
             // 更新显示
             this.renderQuestionBanks();
             this.updatePagination();
             this.renderFilterSummary();
         },
-        
+
         // 清除筛选
         clearFilters: function() {
             currentFilters = {
@@ -975,7 +1127,7 @@ window.QuestionBankData = (function() {
                 count: '',
                 sort: 'default'
             };
-            
+
             // 清空UI
             ['questionBankSearch', 'difficultyFilter', 'tagFilter', 'countFilter'].forEach(id => {
                 const element = document.getElementById(id);
@@ -983,7 +1135,7 @@ window.QuestionBankData = (function() {
                     element.value = '';
                 }
             });
-            
+
             this.applyFilters();
             showNotification('已清除所有筛选条件', 'info');
         },
@@ -993,6 +1145,7 @@ window.QuestionBankData = (function() {
             if (!focusId) return false;
 
             const targetBank = questionBanks.find(bank => favoriteMatchesBank(focusId, bank) || bank.id === focusId);
+            const answerStatus = requestedAnswerStatus();
             if (!targetBank) {
                 if (focusId === '181103-material-extracted') {
                     try { localStorage.removeItem('questionBankIndex'); } catch (_) {}
@@ -1019,16 +1172,19 @@ window.QuestionBankData = (function() {
                 }
             }, 120);
             if (typeof showNotification === 'function') {
-                showNotification(`已定位到「${targetBank.name}」`, 'success', 3600);
+                const suffix = focusId === '181103-material-extracted' && answerStatus === 'current'
+                    ? '：381 可直接参考，0 道待人工源页复核，141 条源文线索'
+                    : '';
+                showNotification(`已定位到「${targetBank.name}」${suffix}`, 'success', 4200);
             }
             return true;
         },
-        
+
         // 渲染题库列表
         renderQuestionBanks: function() {
             const container = document.getElementById('questionBanksList');
             if (!container) return;
-            
+
             if (filteredBanks.length === 0) {
                 container.innerHTML = `
                     <div style="text-align: center; color: white; padding: 40px;">
@@ -1039,22 +1195,22 @@ window.QuestionBankData = (function() {
                 `;
                 return;
             }
-            
+
             // 分页计算
             const startIndex = (currentPage - 1) * itemsPerPage;
             const endIndex = startIndex + itemsPerPage;
             const pageData = filteredBanks.slice(startIndex, endIndex);
-            
+
             // 生成HTML
             const banksHTML = pageData.map(bank => this.generateBankCard(bank)).join('');
-            
+
             container.innerHTML = `
                 <div class="qb-group">
                     ${banksHTML}
                 </div>
             `;
         },
-        
+
         // 生成题库卡片HTML
         generateBankCard: function(bank) {
             const difficultyText = {
@@ -1062,13 +1218,13 @@ window.QuestionBankData = (function() {
                 'medium': '中等',
                 'hard': '困难'
             };
-            
+
             const difficultyColor = {
                 'easy': '#28a745',
                 'medium': '#ffc107',
                 'hard': '#dc3545'
             };
-            
+
             const isFavorite = this.isFavorite(bank.id);
             const favoriteIcon = isFavorite ? 'fas fa-heart' : 'far fa-heart';
             const favoriteColor = isFavorite ? '#ff6b6b' : '#ccc';
@@ -1090,6 +1246,8 @@ window.QuestionBankData = (function() {
             const highConfidenceCount = Number(bank.round371HighConfidenceQuestionCount ?? 0);
             const lowConfidenceCount = Number(bank.round371LowConfidenceQuestionCount ?? 0);
             const placeholderCount = Number(bank.unreadablePracticeQuestionCount ?? 0);
+            const answerStatusLedger = build181103AnswerStatusLedger(bank);
+            const answerStatusView = answerStatusLedger && requestedAnswerStatus() === 'current' ? 'current' : 'summary';
             const qualitySummary = bank.id === '181103-material-extracted'
                 ? `<div class="qb-quality-ledger" data-181103-quality-ledger="1" style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap;font-size:.82em;">
                     <span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:999px;">可刷题 ${defaultPracticeCount}</span>
@@ -1102,15 +1260,33 @@ window.QuestionBankData = (function() {
                     <span style="background:#ede9fe;color:#5b21b6;padding:3px 8px;border-radius:999px;">重复簇 ${bank.duplicateGroupCount || 0}</span>
                   </div>`
                 : '';
-            
+            const answerStatusSummary = answerStatusLedger
+                ? `<div class="qb-answer-status-ledger" data-round428-181103-answer-status-card="1" data-answer-status-view="${answerStatusView}" data-total-answer-blocks="${answerStatusLedger.totalAnswerBlocks}" data-ready-reference="${answerStatusLedger.readyReferenceAnswerCount}" data-manual-source-review="${answerStatusLedger.manualSourceReviewCount}" data-source-clues="${answerStatusLedger.sourceClueCount}" style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap;font-size:.82em;">
+                    <span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:999px;">参考答案可直接看 ${answerStatusLedger.readyReferenceAnswerCount}</span>
+                    <span style="background:#fff7ed;color:#9a3412;padding:3px 8px;border-radius:999px;">待人工源页复核 ${answerStatusLedger.manualSourceReviewCount}</span>
+                    <span style="background:#eff6ff;color:#1d4ed8;padding:3px 8px;border-radius:999px;">源文线索 ${answerStatusLedger.sourceClueCount}</span>
+                    <span style="background:#f8fafc;color:#334155;padding:3px 8px;border-radius:999px;">网页答案块 ${answerStatusLedger.totalAnswerBlocks}</span>
+                    <span style="flex-basis:100%;color:#64748b;line-height:1.45;">${answerStatusLedger.boundary}</span>
+                  </div>`
+                : '';
+            const answerStatusAction = answerStatusLedger
+                ? `<a class="btn btn-warning" data-round428-answer-status-action="current" href="${answerStatusLedger.statusHref}"><i class="fas fa-clipboard-check"></i> 参考答案状态</a>`
+                : '';
+            const favoriteLabel = isFavorite ? '取消收藏' : '添加收藏';
+
             return `
                 <div class="qb-card" data-bank-id="${bank.id}">
                     <div class="qb-card-header" style="background: linear-gradient(135deg, ${bank.color}, ${this.adjustColor(bank.color, -20)});">
                         ${bank.name}
-                        <i class="${favoriteIcon}" 
-                           style="position: absolute; top: 15px; right: 15px; color: ${favoriteColor}; cursor: pointer;"
-                           onclick="QuestionBankData.toggleFavorite('${bank.id}')"
-                           title="${isFavorite ? '取消收藏' : '添加收藏'}"></i>
+                        <button type="button"
+                                class="qb-favorite-btn"
+                                style="position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid rgba(255,255,255,.4);border-radius:999px;background:rgba(255,255,255,.16);color:${favoriteColor};cursor:pointer;"
+                                onclick="QuestionBankData.toggleFavorite('${bank.id}')"
+                                title="${favoriteLabel}"
+                                aria-label="${favoriteLabel}：${bank.name}"
+                                aria-pressed="${isFavorite ? 'true' : 'false'}">
+                            <i class="${favoriteIcon}" aria-hidden="true"></i>
+                        </button>
                     </div>
                     <div class="qb-card-content">
                         <div class="qb-card-meta">
@@ -1120,9 +1296,10 @@ window.QuestionBankData = (function() {
                             <span>${bank.questionCount} 题</span>
                         </div>
                         <p style="margin-bottom: 15px; line-height: 1.4;">${bank.description}</p>
+                        ${answerStatusSummary}
                         ${qualitySummary}
                         <div style="margin-bottom: 15px;">
-                            ${bank.tags.map(tag => 
+                            ${bank.tags.map(tag =>
                                 `<span style="background: #e9ecef; color: #495057; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 5px;">${tag}</span>`
                             ).join('')}
                         </div>
@@ -1130,12 +1307,13 @@ window.QuestionBankData = (function() {
                             ${primaryAction}
                             ${secondaryAction}
                             ${thirdAction}
+                            ${answerStatusAction}
                         </div>
                     </div>
                 </div>
             `;
         },
-        
+
         // 调整颜色亮度
         adjustColor: function(color, amount) {
             const usePound = color[0] === '#';
@@ -1144,28 +1322,28 @@ window.QuestionBankData = (function() {
             let r = (num >> 16) + amount;
             let g = (num >> 8 & 0x00FF) + amount;
             let b = (num & 0x0000FF) + amount;
-            
+
             r = r > 255 ? 255 : r < 0 ? 0 : r;
             g = g > 255 ? 255 : g < 0 ? 0 : g;
             b = b > 255 ? 255 : b < 0 ? 0 : b;
-            
+
             return (usePound ? '#' : '') + (r << 16 | g << 8 | b).toString(16).padStart(6, '0');
         },
-        
+
         // 更新分页
         updatePagination: function() {
             const container = document.getElementById('paginationControls');
             if (!container) return;
-            
+
             const totalPages = Math.ceil(filteredBanks.length / itemsPerPage);
-            
+
             if (totalPages <= 1) {
                 container.innerHTML = '';
                 return;
             }
-            
+
             let paginationHTML = '';
-            
+
             // 上一页
             if (currentPage > 1) {
                 paginationHTML += `
@@ -1174,7 +1352,7 @@ window.QuestionBankData = (function() {
                     </button>
                 `;
             }
-            
+
             // 页码
             for (let i = 1; i <= totalPages; i++) {
                 if (i === currentPage) {
@@ -1187,7 +1365,7 @@ window.QuestionBankData = (function() {
                     `;
                 }
             }
-            
+
             // 下一页
             if (currentPage < totalPages) {
                 paginationHTML += `
@@ -1196,22 +1374,22 @@ window.QuestionBankData = (function() {
                     </button>
                 `;
             }
-            
+
             container.innerHTML = paginationHTML;
         },
-        
+
         // 跳转页面
         goToPage: function(page) {
             currentPage = page;
             this.renderQuestionBanks();
             this.updatePagination();
         },
-        
+
         // 更新统计信息
         updateStats: function() {
             const totalQuestions = questionBanks.reduce((sum, bank) => sum + bank.questionCount, 0);
             const totalBanks = questionBanks.length;
-            
+
             const statsElements = {
                 totalQuestions: ['totalQuestions', 'detailedTotalQuestions'],
                 totalBanks: ['totalBanks'],
@@ -1223,7 +1401,7 @@ window.QuestionBankData = (function() {
                 totalBanks,
                 favoriteCount: this.getFavoriteCount()
             };
-            
+
             Object.entries(statsElements).forEach(([key, ids]) => {
                 ids.forEach((id) => {
                     const element = document.getElementById(id);
@@ -1233,13 +1411,13 @@ window.QuestionBankData = (function() {
                 });
             });
         },
-        
+
         // 功能方法
         showAllBanks: function() {
             this.clearFilters();
             showNotification('显示全部题库', 'info');
         },
-        
+
         showFavorites: function() {
             const favoriteIds = this.getFavoriteIds();
             if (favoriteIds.length === 0) {
@@ -1259,7 +1437,7 @@ window.QuestionBankData = (function() {
             this.updatePagination();
             showNotification(`已切换到收藏题库，共 ${favoriteBanks.length} 个`, 'info');
         },
-        
+
         showWrongQuestions: function() {
             // 这里应该调用用户模块的错题功能
             if (typeof QuestionBankUser !== 'undefined') {
@@ -1268,7 +1446,7 @@ window.QuestionBankData = (function() {
                 showNotification('错题本功能模块未加载', 'warning');
             }
         },
-        
+
         manageFavorites: function() {
             const favoriteIds = this.getFavoriteIds();
             const favoriteBanks = questionBanks.filter(bank => favoriteIds.includes(bank.id));
@@ -1280,6 +1458,11 @@ window.QuestionBankData = (function() {
 
             const modal = document.createElement('div');
             modal.id = 'favoriteManagerModal';
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+            modal.setAttribute('aria-labelledby', 'favoriteManagerTitle');
+            modal.setAttribute('tabindex', '-1');
+            modal.__previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
             modal.style.cssText = `
                 position: fixed;
                 inset: 0;
@@ -1318,7 +1501,7 @@ window.QuestionBankData = (function() {
                 <div style="width:min(760px, 100%);max-height:80vh;overflow:auto;background:#fff;border-radius:18px;padding:24px;box-shadow:0 20px 60px rgba(15,23,42,.35);">
                     <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px;">
                         <div>
-                            <h3 style="margin:0;color:#0f172a;">📋 收藏管理</h3>
+                            <h3 id="favoriteManagerTitle" style="margin:0;color:#0f172a;">📋 收藏管理</h3>
                             <p style="margin:8px 0 0;color:#64748b;">可直接定位到收藏题库，或在这里取消收藏。</p>
                         </div>
                         <button class="btn btn-warning" onclick="QuestionBankData.closeFavoriteManager()">关闭</button>
@@ -1332,36 +1515,70 @@ window.QuestionBankData = (function() {
                     modal.remove();
                 }
             });
+            modal.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    event.preventDefault();
+                    this.closeFavoriteManager();
+                    return;
+                }
+                if (event.key !== 'Tab') return;
+                const focusable = Array.from(modal.querySelectorAll(dialogFocusableSelector))
+                    .filter(node => !node.disabled && node.offsetParent !== null);
+                if (focusable.length === 0) {
+                    event.preventDefault();
+                    modal.focus();
+                    return;
+                }
+                const first = focusable[0];
+                const last = focusable[focusable.length - 1];
+                if (event.shiftKey && document.activeElement === first) {
+                    event.preventDefault();
+                    last.focus();
+                } else if (!event.shiftKey && document.activeElement === last) {
+                    event.preventDefault();
+                    first.focus();
+                }
+            });
 
             document.body.appendChild(modal);
+            setTimeout(() => {
+                const focusTarget = modal.querySelector(dialogFocusableSelector) || modal;
+                if (focusTarget && typeof focusTarget.focus === 'function') {
+                    try {
+                        focusTarget.focus({ preventScroll: true });
+                    } catch (_) {
+                        focusTarget.focus();
+                    }
+                }
+            }, 0);
         },
-        
+
         showHelp: function() {
             const helpContent = `
                 <div style="text-align: left;">
                     <h4>🔍 搜索功能</h4>
                     <p>• 支持题库名称、描述、标签搜索</p>
                     <p>• 支持模糊匹配</p>
-                    
+
                     <h4>⚙️ 筛选功能</h4>
                     <p>• 按难度筛选：简单、中等、困难</p>
                     <p>• 按分类筛选：不同知识点分类</p>
                     <p>• 按题目数量筛选</p>
-                    
+
                     <h4>⭐ 收藏功能</h4>
                     <p>• 点击心形图标收藏题库</p>
                     <p>• 查看我的收藏列表</p>
-                    
+
                     <h4>🎯 练习模式</h4>
                     <p>• 开始练习：完整练习模式</p>
                     <p>• 预览：查看题库详情</p>
                     <p>• 快速测试：随机选题测试</p>
                 </div>
             `;
-            
+
             showNotification(helpContent, 'info', 8000);
         },
-        
+
         // 收藏相关方法
         getFavoriteIds: function() {
             let favorites = [];
@@ -1391,12 +1608,12 @@ window.QuestionBankData = (function() {
 
             return normalizedFavorites;
         },
-        
+
         isFavorite: function(bankId) {
             const resolvedBankId = resolveBankId(bankId);
             return this.getFavoriteIds().includes(resolvedBankId);
         },
-        
+
         toggleFavorite: function(bankId) {
             const resolvedBankId = resolveBankId(bankId);
             if (typeof QuestionBankUser !== 'undefined' && typeof QuestionBankUser.toggleFavorite === 'function') {
@@ -1404,7 +1621,7 @@ window.QuestionBankData = (function() {
             } else {
                 const favorites = this.getFavoriteIds();
                 const index = favorites.indexOf(resolvedBankId);
-                
+
                 if (index > -1) {
                     favorites.splice(index, 1);
                     showNotification('已取消收藏', 'info');
@@ -1412,17 +1629,17 @@ window.QuestionBankData = (function() {
                     favorites.push(resolvedBankId);
                     showNotification('已添加收藏', 'success');
                 }
-                
+
                 localStorage.setItem('favoriteBanks', JSON.stringify(favorites));
             }
-            
+
             this.renderQuestionBanks(); // 重新渲染以更新心形图标
             this.updateStats();
             if (typeof QuestionBankStats !== 'undefined' && typeof QuestionBankStats.updateStats === 'function') {
                 QuestionBankStats.updateStats();
             }
         },
-        
+
         getFavoriteCount: function() {
             if (typeof QuestionBankUser !== 'undefined' && typeof QuestionBankUser.getFavoriteCount === 'function') {
                 return QuestionBankUser.getFavoriteCount();
@@ -1433,8 +1650,22 @@ window.QuestionBankData = (function() {
         closeFavoriteManager: function() {
             const modal = document.getElementById('favoriteManagerModal');
             if (modal) {
+                const previousFocus = modal.__previousFocus;
                 modal.remove();
+                if (previousFocus && document.contains(previousFocus) && typeof previousFocus.focus === 'function') {
+                    setTimeout(() => {
+                        try {
+                            previousFocus.focus({ preventScroll: true });
+                        } catch (_) {
+                            previousFocus.focus();
+                        }
+                    }, 0);
+                }
             }
+        },
+
+        closePracticeDialog: function() {
+            closePracticeDialog();
         },
 
         focusFavoriteBank: function(bankId) {
@@ -1471,7 +1702,7 @@ window.QuestionBankData = (function() {
             }
             this.manageFavorites();
         },
-        
+
         // 题库操作方法
         startPractice: async function(bankId) {
             const resolvedBankId = resolveBankId(bankId);
@@ -1484,23 +1715,23 @@ window.QuestionBankData = (function() {
                 location.href = bank.practiceUrl;
                 return;
             }
-            
+
             // 显示选择模式对话框
             this.showPracticeOptions(bank);
         },
-        
+
         // 显示练习选项
         showPracticeOptions: async function(bank) {
             try {
                 showNotification('正在加载题库数据...', 'info');
-                
+
                 // 加载题库的具体题目数据
                 const questions = await this.loadBankQuestions(bank);
                 if (!questions || questions.length === 0) {
                     showNotification('该题库没有可用的题目', 'warning');
                     return;
                 }
-                
+
                 // 获取年份列表
                 const years = this.getBankYears(questions);
                 const isMaterial181103 = bank.id === '181103-material-extracted';
@@ -1535,7 +1766,7 @@ window.QuestionBankData = (function() {
                     ? 'width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 10px;'
                     : 'width: 100%; padding: 10px; background: #9ca3af; color: white; border: none; border-radius: 5px; cursor: not-allowed; margin-bottom: 10px;';
                 const defaultButtonDisabled = defaultPracticeQuestions.length === 0 ? 'disabled aria-disabled="true"' : '';
-                
+
                 // 创建选择对话框
                 const dialog = document.createElement('div');
                 dialog.style.cssText = `
@@ -1550,7 +1781,7 @@ window.QuestionBankData = (function() {
                     align-items: center;
                     z-index: 10000;
                 `;
-                
+
                 const content = document.createElement('div');
                 content.style.cssText = `
                     background: white;
@@ -1561,9 +1792,9 @@ window.QuestionBankData = (function() {
                     max-height: 80vh;
                     overflow-y: auto;
                 `;
-                
+
                 content.innerHTML = `
-                    <h3 style="margin: 0 0 20px 0; color: #333;">选择练习模式</h3>
+                    <h3 id="practiceDialogTitle" style="margin: 0 0 20px 0; color: #333;">选择练习模式</h3>
                     <p style="margin: 0 0 20px 0; color: #666;">题库: ${bank.name} (共${questions.length}题)</p>
                     ${isMaterial181103 ? `
                     <div data-181103-practice-quality-panel="1" style="margin:0 0 18px 0;padding:12px 14px;border:1px solid #fde68a;background:#fffbeb;color:#78350f;border-radius:10px;line-height:1.55;">
@@ -1596,7 +1827,7 @@ window.QuestionBankData = (function() {
                             </button>
                         </div>
                     </div>
-                    
+
                     ${years.length > 0 ? `
                     <div style="margin-bottom: 20px;">
                         <h4 style="margin: 0 0 10px 0; color: #333;">📅 按年份练习</h4>
@@ -1604,23 +1835,22 @@ window.QuestionBankData = (function() {
                             <option value="">选择年份</option>
                             ${years.map(year => `<option value="${year}">${year}年</option>`).join('')}
                         </select>
-                        <button onclick="QuestionBankData.startYearPractice('${bank.id}')" 
+                        <button onclick="QuestionBankData.startYearPractice('${bank.id}')"
                                 style="width: 100%; padding: 8px; background: #FF9800; color: white; border: none; border-radius: 3px; cursor: pointer;">
                             按年份练习
                         </button>
                     </div>
                     ` : ''}
-                    
-                    <button onclick="this.closest('.practice-dialog').remove()" 
+
+                    <button onclick="QuestionBankData.closePracticeDialog()"
                             style="width: 100%; padding: 10px; background: #f44336; color: white; border: none; border-radius: 5px; cursor: pointer;">
                         取消
                     </button>
                 `;
-                
+
                 dialog.appendChild(content);
-                dialog.className = 'practice-dialog';
-                document.body.appendChild(dialog);
-                
+                mountPracticeDialog(dialog);
+
                 // 存储题库数据供后续使用
                 window.currentBankData = {
                     bank: bank,
@@ -1628,13 +1858,13 @@ window.QuestionBankData = (function() {
                     defaultPracticeQuestions: defaultPracticeQuestions,
                     years: years
                 };
-                
+
             } catch (error) {
                 console.error('加载题库数据失败:', error);
                 showNotification('加载题库数据失败', 'error');
             }
         },
-        
+
         // 开始完整练习
         startFullPractice: async function(bankId) {
             const bankData = window.currentBankData;
@@ -1642,7 +1872,7 @@ window.QuestionBankData = (function() {
                 showNotification('题库数据未加载', 'error');
                 return;
             }
-            
+
             if (bankData.bank && bankData.bank.id === '181103-material-extracted' && (!bankData.defaultPracticeQuestions || bankData.defaultPracticeQuestions.length === 0)) {
                 showNotification('181103 当前没有可刷独立题；已阻止退回全量来源卡或旧真题入口。', 'error');
                 return;
@@ -1653,10 +1883,9 @@ window.QuestionBankData = (function() {
                     ? bankData.defaultPracticeQuestions
                     : bankData.questions
             };
-            
-            // 移除对话框
-            document.querySelector('.practice-dialog')?.remove();
-            
+
+            this.closePracticeDialog();
+
             await startPracticeSession(fullBank);
         },
 
@@ -1678,10 +1907,10 @@ window.QuestionBankData = (function() {
                 questions: practiceQuestions,
                 practiceIncludesSourceSemanticVerified: true
             };
-            document.querySelector('.practice-dialog')?.remove();
+            this.closePracticeDialog();
             await startPracticeSession(fullBank);
         },
-        
+
         // 开始随机练习
         startRandomPractice: async function(bankId) {
             const bankData = window.currentBankData;
@@ -1689,7 +1918,7 @@ window.QuestionBankData = (function() {
                 showNotification('题库数据未加载', 'error');
                 return;
             }
-            
+
             const count = parseInt(document.getElementById('randomCount').value) || 5;
             if (bankData.bank && bankData.bank.id === '181103-material-extracted' && (!bankData.defaultPracticeQuestions || bankData.defaultPracticeQuestions.length === 0)) {
                 showNotification('181103 随机练习只使用语义确认的独立题；当前默认池为空，已阻止退回全量来源卡。', 'error');
@@ -1699,18 +1928,17 @@ window.QuestionBankData = (function() {
                 ? bankData.defaultPracticeQuestions
                 : bankData.questions;
             const randomQuestions = this.getRandomQuestions(pool, count);
-            
+
             const fullBank = {
                 ...bankData.bank,
                 questions: randomQuestions
             };
-            
-            // 移除对话框
-            document.querySelector('.practice-dialog')?.remove();
-            
+
+            this.closePracticeDialog();
+
             await startPracticeSession(fullBank);
         },
-        
+
         // 开始按年份练习
         startYearPractice: async function(bankId) {
             const bankData = window.currentBankData;
@@ -1718,30 +1946,29 @@ window.QuestionBankData = (function() {
                 showNotification('题库数据未加载', 'error');
                 return;
             }
-            
+
             const selectedYear = document.getElementById('yearSelect').value;
             if (!selectedYear) {
                 showNotification('请选择年份', 'warning');
                 return;
             }
-            
+
             const yearQuestions = this.filterQuestionsByYear(bankData.questions, selectedYear);
             if (yearQuestions.length === 0) {
                 showNotification(`${selectedYear}年没有题目`, 'warning');
                 return;
             }
-            
+
             const fullBank = {
                 ...bankData.bank,
                 questions: yearQuestions
             };
-            
-            // 移除对话框
-            document.querySelector('.practice-dialog')?.remove();
-            
+
+            this.closePracticeDialog();
+
             await startPracticeSession(fullBank);
         },
-        
+
         // 加载题库题目数据
         loadBankQuestions: async function(bank) {
             if (!bank.filename) {
@@ -1751,7 +1978,7 @@ window.QuestionBankData = (function() {
             const isMaterial181103Bank = bank.id === '181103-material-extracted' || bank.filename === '181103-material-extracted.json';
             const localQuestionBankTimeoutMs = isMaterial181103Bank ? 30000 : 2500;
             const remoteQuestionBankTimeoutMs = isMaterial181103Bank ? 20000 : 3500;
-            
+
             try {
                 // 获取保存的GitHub配置
                 const savedConfig = localStorage.getItem('github_api_config');
@@ -1770,7 +1997,7 @@ window.QuestionBankData = (function() {
                     `../../question-banks/${bank.filename}`,
                     `question-banks/${bank.filename}`
                 ];
-                
+
                 for (const path of paths) {
                     try {
                         response = await fetchWithTimeout(path, { cache: isMaterial181103Bank ? 'no-store' : 'default' }, localQuestionBankTimeoutMs);
@@ -1782,7 +2009,7 @@ window.QuestionBankData = (function() {
                         console.log(`路径 ${path} 失败:`, e.message);
                     }
                 }
-                
+
                 if (!response || !response.ok) {
                     try {
                         console.log(`🌐 尝试从GitHub直接访问题库: ${bank.filename}`);
@@ -1801,13 +2028,13 @@ window.QuestionBankData = (function() {
                 if (!response || !response.ok) {
                     throw new Error(`无法加载文件: ${bank.filename}`);
                 }
-                
+
                 const data = await response.json();
                 console.log(`加载题库 ${bank.name} 数据:`, data);
                 console.log(`数据类型:`, typeof data);
                 console.log(`是否为数组:`, Array.isArray(data));
                 console.log(`数据长度:`, Array.isArray(data) ? data.length : 'N/A');
-                
+
                 // 处理不同格式的数据
                 if (Array.isArray(data)) {
                     console.log(`返回数组数据，长度: ${data.length}`);
@@ -1820,7 +2047,7 @@ window.QuestionBankData = (function() {
                     console.warn('数据键:', Object.keys(data || {}));
                     return [];
                 }
-                
+
             } catch (error) {
                 console.error(`加载题库 ${bank.name} 失败:`, error);
                 return [];
@@ -1886,30 +2113,30 @@ window.QuestionBankData = (function() {
             });
             return visible.length ? visible : questions;
         },
-        
+
         // 按年份筛选题目
         filterQuestionsByYear: function(questions, year) {
             if (!year) return questions;
             return questions.filter(q => q.year === parseInt(year));
         },
-        
+
         // 随机选择题目
         getRandomQuestions: function(questions, count) {
             if (!questions || questions.length === 0) return [];
             if (count >= questions.length) return questions;
-            
+
             const shuffled = [...questions].sort(() => 0.5 - Math.random());
             return shuffled.slice(0, count);
         },
-        
+
         // 获取题库年份列表
         getBankYears: function(questions) {
             if (!questions || questions.length === 0) return [];
-            
+
             const years = [...new Set(questions.map(q => q.year).filter(y => y))];
             return years.sort((a, b) => a - b);
         },
-        
+
         previewBank: async function(bankId) {
             const bank = questionBanks.find(b => b.id === bankId);
             if (!bank) {
@@ -1920,14 +2147,14 @@ window.QuestionBankData = (function() {
                 location.href = bank.realExamUrl;
                 return;
             }
-            
+
             try {
                 const questions = await this.loadBankQuestions(bank);
                 const previewCount = Math.min(3, questions.length);
                 const previewQuestions = questions.slice(0, previewCount);
-                
+
                 let previewContent = `题库: ${bank.name}\n题目数量: ${questions.length}题\n\n预览题目:\n\n`;
-                
+
                 previewQuestions.forEach((q, index) => {
                     previewContent += `${index + 1}. ${q.title}\n`;
                     if (q.options && q.options.length > 0) {
@@ -1935,15 +2162,15 @@ window.QuestionBankData = (function() {
                     }
                     previewContent += '\n';
                 });
-                
+
                 showNotification(previewContent, 'info', 10000);
-                
+
             } catch (error) {
                 console.error('预览题库失败:', error);
                 showNotification('预览题库失败', 'error');
             }
         },
-        
+
         quickTest: async function(bankId) {
             const bank = questionBanks.find(b => b.id === bankId);
             if (!bank) {
@@ -1954,14 +2181,14 @@ window.QuestionBankData = (function() {
                 location.href = bank.practiceUrl.replace('mode=normal', 'mode=random');
                 return;
             }
-            
+
             try {
                 const questions = await this.loadBankQuestions(bank);
                 if (!questions || questions.length === 0) {
                     showNotification('该题库没有可用的题目', 'warning');
                     return;
                 }
-                
+
                 const practicePool = bank.id === '181103-material-extracted'
                     ? this.getDefaultPracticeQuestions(questions)
                     : questions;
@@ -1973,20 +2200,20 @@ window.QuestionBankData = (function() {
                 // 随机选择5道题进行快速测试
                 const shuffled = [...practicePool].sort(() => 0.5 - Math.random());
                 const quickQuestions = shuffled.slice(0, 5);
-                
+
                 const fullBank = {
                     ...bank,
                     questions: quickQuestions
                 };
-                
+
                 await startPracticeSession(fullBank);
-                
+
             } catch (error) {
                 console.error('快速测试失败:', error);
                 showNotification('快速测试失败', 'error');
             }
         },
-        
+
         // 获取题库数据
         ensurePracticeModule: ensurePracticeModule,
 
@@ -1994,13 +2221,13 @@ window.QuestionBankData = (function() {
             const resolvedBankId = resolveBankId(bankId);
             return questionBanks.find(b => favoriteMatchesBank(resolvedBankId, b));
         },
-        
+
         getAllBanks: function() {
             return [...questionBanks];
         },
-        
+
         getFilteredBanks: function() {
             return [...filteredBanks];
         }
     };
-})(); 
+})();
