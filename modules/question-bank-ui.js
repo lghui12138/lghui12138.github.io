@@ -7,14 +7,14 @@ window.QuestionBankUI = (function() {
     let activeModals = [];
     let notificationQueue = [];
     let isProcessingNotifications = false;
-    
+
     // 配置
     const config = {
         notificationDuration: 3000,
         animationDuration: 300,
         maxNotifications: 5
     };
-    
+
     // 公有方法
     return {
         // 初始化模块
@@ -25,7 +25,7 @@ window.QuestionBankUI = (function() {
             this.initializeTooltips();
             return this;
         },
-        
+
         // 创建通知容器
         createNotificationContainer: function() {
             let container = document.getElementById('notification-container');
@@ -42,7 +42,7 @@ window.QuestionBankUI = (function() {
                 document.body.appendChild(container);
             }
         },
-        
+
         // 显示通知
         showNotification: function(message, type = 'info', duration = config.notificationDuration) {
             const notification = {
@@ -51,42 +51,42 @@ window.QuestionBankUI = (function() {
                 type,
                 duration
             };
-            
+
             notificationQueue.push(notification);
-            
+
             if (!isProcessingNotifications) {
                 this.processNotificationQueue();
             }
         },
-        
+
         // 处理通知队列
         processNotificationQueue: function() {
             if (notificationQueue.length === 0) {
                 isProcessingNotifications = false;
                 return;
             }
-            
+
             isProcessingNotifications = true;
             const notification = notificationQueue.shift();
             this.displayNotification(notification);
-            
+
             // 处理下一个通知
             setTimeout(() => {
                 this.processNotificationQueue();
             }, 100);
         },
-        
+
         // 显示单个通知
         displayNotification: function(notification) {
             const container = document.getElementById('notification-container');
             if (!container) return;
-            
+
             // 限制同时显示的通知数量
             const existingNotifications = container.querySelectorAll('.notification');
             if (existingNotifications.length >= config.maxNotifications) {
                 existingNotifications[0].remove();
             }
-            
+
             const notificationElement = document.createElement('div');
             notificationElement.className = `notification ${notification.type}`;
             notificationElement.style.cssText = `
@@ -105,7 +105,7 @@ window.QuestionBankUI = (function() {
                 position: relative;
                 overflow: hidden;
             `;
-            
+
             // 添加图标
             const icon = this.getNotificationIcon(notification.type);
             notificationElement.innerHTML = `
@@ -115,9 +115,9 @@ window.QuestionBankUI = (function() {
                     <i class="fas fa-times" style="cursor: pointer; opacity: 0.7; font-size: 0.9em;" onclick="this.parentElement.parentElement.remove()"></i>
                 </div>
             `;
-            
+
             container.appendChild(notificationElement);
-            
+
             // 自动移除
             if (notification.duration > 0) {
                 setTimeout(() => {
@@ -131,14 +131,14 @@ window.QuestionBankUI = (function() {
                     }
                 }, notification.duration);
             }
-            
+
             // 点击移除
             notificationElement.addEventListener('click', (e) => {
                 if (e.target.classList.contains('fa-times')) return;
                 notificationElement.remove();
             });
         },
-        
+
         // 获取通知颜色
         getNotificationColor: function(type) {
             const colors = {
@@ -149,7 +149,7 @@ window.QuestionBankUI = (function() {
             };
             return colors[type] || colors.info;
         },
-        
+
         // 获取通知图标
         getNotificationIcon: function(type) {
             const icons = {
@@ -160,7 +160,7 @@ window.QuestionBankUI = (function() {
             };
             return icons[type] || icons.info;
         },
-        
+
         // 创建模态框
         createModal: function(options = {}) {
             const modal = {
@@ -173,45 +173,48 @@ window.QuestionBankUI = (function() {
                 onShow: options.onShow || null,
                 onHide: options.onHide || null,
                 onConfirm: options.onConfirm || null,
-                onCancel: options.onCancel || null
+                onCancel: options.onCancel || null,
+                previouslyFocusedElement: document.activeElement instanceof HTMLElement ? document.activeElement : null
             };
-            
+
             const modalElement = this.createModalElement(modal);
             document.body.appendChild(modalElement);
             activeModals.push(modal);
-            
+
             // 显示动画
             setTimeout(() => {
                 modalElement.classList.add('show');
+                this.focusModal(modalElement);
             }, 10);
-            
+
             // 触发显示回调
             if (modal.onShow) {
                 modal.onShow(modal);
             }
-            
+
             return modal;
         },
-        
+
         // 创建模态框元素
         createModalElement: function(modal) {
             const modalElement = document.createElement('div');
             modalElement.className = 'modal-overlay';
             modalElement.dataset.modalId = modal.id;
-            
+
             const sizeClasses = {
                 small: 'modal-sm',
                 medium: 'modal-md',
                 large: 'modal-lg'
             };
-            
+            const titleId = `modal-title-${String(modal.id).replace(/\W/g, '-')}`;
+
             modalElement.innerHTML = `
                 <div class="modal-backdrop" ${modal.backdrop ? 'onclick="QuestionBankUI.hideModal(' + modal.id + ')"' : ''}></div>
-                <div class="modal-dialog ${sizeClasses[modal.size]}">
+                <div class="modal-dialog ${sizeClasses[modal.size]}" role="dialog" aria-modal="true" aria-labelledby="${titleId}" tabindex="-1">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h4 class="modal-title">${modal.title}</h4>
-                            ${modal.closable ? '<button class="modal-close" onclick="QuestionBankUI.hideModal(' + modal.id + ')">&times;</button>' : ''}
+                            <h4 class="modal-title" id="${titleId}">${modal.title}</h4>
+                            ${modal.closable ? '<button type="button" class="modal-close" aria-label="关闭对话框" onclick="QuestionBankUI.hideModal(' + modal.id + ')">&times;</button>' : ''}
                         </div>
                         <div class="modal-body">
                             ${modal.content}
@@ -223,7 +226,7 @@ window.QuestionBankUI = (function() {
                     </div>
                 </div>
             `;
-            
+
             // 添加样式
             modalElement.style.cssText = `
                 position: fixed;
@@ -238,18 +241,18 @@ window.QuestionBankUI = (function() {
                 opacity: 0;
                 transition: opacity ${config.animationDuration}ms ease;
             `;
-            
+
             return modalElement;
         },
-        
+
         // 隐藏模态框
         hideModal: function(modalId) {
             const modalIndex = activeModals.findIndex(m => m.id === modalId);
             if (modalIndex === -1) return;
-            
+
             const modal = activeModals[modalIndex];
             const modalElement = document.querySelector(`[data-modal-id="${modalId}"]`);
-            
+
             if (modalElement) {
                 modalElement.classList.remove('show');
                 setTimeout(() => {
@@ -258,15 +261,37 @@ window.QuestionBankUI = (function() {
                     }
                 }, config.animationDuration);
             }
-            
+
             activeModals.splice(modalIndex, 1);
-            
+
             // 触发隐藏回调
             if (modal.onHide) {
                 modal.onHide(modal);
             }
+
+            if (modal.previouslyFocusedElement && document.contains(modal.previouslyFocusedElement)) {
+                setTimeout(() => {
+                    try {
+                        modal.previouslyFocusedElement.focus({ preventScroll: true });
+                    } catch (_) {}
+                }, config.animationDuration);
+            }
         },
-        
+
+        // 聚焦模态框内的第一个可操作元素
+        focusModal: function(modalElement) {
+            if (!modalElement) return;
+            const dialog = modalElement.querySelector('.modal-dialog');
+            const focusTarget = modalElement.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])') || dialog;
+            if (focusTarget && typeof focusTarget.focus === 'function') {
+                try {
+                    focusTarget.focus({ preventScroll: true });
+                } catch (_) {
+                    focusTarget.focus();
+                }
+            }
+        },
+
         // 模态框确认
         modalConfirm: function(modalId) {
             const modal = activeModals.find(m => m.id === modalId);
@@ -279,7 +304,7 @@ window.QuestionBankUI = (function() {
                 this.hideModal(modalId);
             }
         },
-        
+
         // 模态框取消
         modalCancel: function(modalId) {
             const modal = activeModals.find(m => m.id === modalId);
@@ -288,7 +313,7 @@ window.QuestionBankUI = (function() {
             }
             this.hideModal(modalId);
         },
-        
+
         // 确认对话框
         confirm: function(message, title = '确认', options = {}) {
             return new Promise((resolve) => {
@@ -302,7 +327,7 @@ window.QuestionBankUI = (function() {
                 });
             });
         },
-        
+
         // 警告对话框
         alert: function(message, title = '提示', options = {}) {
             return new Promise((resolve) => {
@@ -315,7 +340,7 @@ window.QuestionBankUI = (function() {
                 });
             });
         },
-        
+
         // 输入对话框
         prompt: function(message, defaultValue = '', title = '输入', options = {}) {
             const inputId = 'prompt-input-' + Date.now();
@@ -325,7 +350,7 @@ window.QuestionBankUI = (function() {
                     content: `
                         <div>
                             <p>${message}</p>
-                            <input type="text" id="${inputId}" value="${defaultValue}" 
+                            <input type="text" id="${inputId}" value="${defaultValue}"
                                    style="width: 100%; padding: 8px; margin-top: 10px; border: 1px solid #ccc; border-radius: 4px;">
                         </div>
                     `,
@@ -346,7 +371,7 @@ window.QuestionBankUI = (function() {
                 });
             });
         },
-        
+
         // 加载提示
         showLoading: function(message = '加载中...') {
             const loadingId = 'loading-' + Date.now();
@@ -359,7 +384,7 @@ window.QuestionBankUI = (function() {
                     <p>${message}</p>
                 </div>
             `;
-            
+
             loadingElement.style.cssText = `
                 position: fixed;
                 top: 0;
@@ -374,11 +399,11 @@ window.QuestionBankUI = (function() {
                 color: white;
                 text-align: center;
             `;
-            
+
             document.body.appendChild(loadingElement);
             return loadingId;
         },
-        
+
         // 隐藏加载提示
         hideLoading: function(loadingId) {
             const loadingElement = document.getElementById(loadingId);
@@ -386,7 +411,7 @@ window.QuestionBankUI = (function() {
                 loadingElement.remove();
             }
         },
-        
+
         // 绑定全局事件
         bindGlobalEvents: function() {
             // ESC键关闭模态框
@@ -397,8 +422,30 @@ window.QuestionBankUI = (function() {
                         this.hideModal(lastModal.id);
                     }
                 }
+                if (e.key === 'Tab' && activeModals.length > 0) {
+                    const lastModal = activeModals[activeModals.length - 1];
+                    const modalElement = document.querySelector(`[data-modal-id="${lastModal.id}"]`);
+                    const dialog = modalElement && modalElement.querySelector('.modal-dialog');
+                    if (!dialog) return;
+                    const focusable = [...dialog.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])')]
+                        .filter((node) => !node.disabled && node.offsetParent !== null);
+                    if (focusable.length === 0) {
+                        e.preventDefault();
+                        dialog.focus();
+                        return;
+                    }
+                    const first = focusable[0];
+                    const last = focusable[focusable.length - 1];
+                    if (e.shiftKey && document.activeElement === first) {
+                        e.preventDefault();
+                        last.focus();
+                    } else if (!e.shiftKey && document.activeElement === last) {
+                        e.preventDefault();
+                        first.focus();
+                    }
+                }
             });
-            
+
             // 防止背景滚动
             document.addEventListener('wheel', (e) => {
                 if (activeModals.length > 0) {
@@ -406,7 +453,7 @@ window.QuestionBankUI = (function() {
                 }
             }, { passive: false });
         },
-        
+
         // 初始化工具提示
         initializeTooltips: function() {
             // 为所有带有title属性的元素添加工具提示
@@ -418,14 +465,14 @@ window.QuestionBankUI = (function() {
                 }
             });
         },
-        
+
         // 添加工具提示
         addTooltip: function(element) {
             const title = element.title;
             element.title = ''; // 移除原生tooltip
-            
+
             let tooltip = null;
-            
+
             element.addEventListener('mouseenter', () => {
                 tooltip = document.createElement('div');
                 tooltip.className = 'custom-tooltip';
@@ -442,12 +489,12 @@ window.QuestionBankUI = (function() {
                     white-space: nowrap;
                 `;
                 document.body.appendChild(tooltip);
-                
+
                 const rect = element.getBoundingClientRect();
                 tooltip.style.left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2 + 'px';
                 tooltip.style.top = rect.top - tooltip.offsetHeight - 5 + 'px';
             });
-            
+
             element.addEventListener('mouseleave', () => {
                 if (tooltip) {
                     tooltip.remove();
@@ -455,65 +502,65 @@ window.QuestionBankUI = (function() {
                 }
             });
         },
-        
+
         // 动画工具方法
         fadeIn: function(element, duration = config.animationDuration) {
             element.style.opacity = '0';
             element.style.transition = `opacity ${duration}ms ease`;
-            
+
             setTimeout(() => {
                 element.style.opacity = '1';
             }, 10);
         },
-        
+
         fadeOut: function(element, duration = config.animationDuration) {
             element.style.transition = `opacity ${duration}ms ease`;
             element.style.opacity = '0';
-            
+
             setTimeout(() => {
                 if (element.parentNode) {
                     element.remove();
                 }
             }, duration);
         },
-        
+
         slideUp: function(element, duration = config.animationDuration) {
             const height = element.offsetHeight;
             element.style.transition = `height ${duration}ms ease, opacity ${duration}ms ease`;
             element.style.height = height + 'px';
             element.style.overflow = 'hidden';
-            
+
             setTimeout(() => {
                 element.style.height = '0';
                 element.style.opacity = '0';
             }, 10);
-            
+
             setTimeout(() => {
                 if (element.parentNode) {
                     element.remove();
                 }
             }, duration);
         },
-        
+
         slideDown: function(element, duration = config.animationDuration) {
             element.style.height = '0';
             element.style.overflow = 'hidden';
             element.style.transition = `height ${duration}ms ease, opacity ${duration}ms ease`;
             element.style.opacity = '0';
-            
+
             const targetHeight = element.scrollHeight;
-            
+
             setTimeout(() => {
                 element.style.height = targetHeight + 'px';
                 element.style.opacity = '1';
             }, 10);
-            
+
             setTimeout(() => {
                 element.style.height = 'auto';
                 element.style.overflow = 'visible';
             }, duration);
         },
-        
+
         // 工具方法
         debounce: function(func, wait) {
             let timeout;
@@ -526,7 +573,7 @@ window.QuestionBankUI = (function() {
                 timeout = setTimeout(later, wait);
             };
         },
-        
+
         throttle: function(func, limit) {
             let inThrottle;
             return function executedFunction(...args) {
@@ -537,12 +584,12 @@ window.QuestionBankUI = (function() {
                 }
             };
         },
-        
+
         // 获取当前活动的模态框
         getActiveModals: function() {
             return [...activeModals];
         },
-        
+
         // 关闭所有模态框
         closeAllModals: function() {
             [...activeModals].forEach(modal => {
@@ -567,7 +614,7 @@ uiStyles.textContent = `
     .modal-overlay.show {
         opacity: 1 !important;
     }
-    
+
     .modal-backdrop {
         position: absolute;
         top: 0;
@@ -576,7 +623,7 @@ uiStyles.textContent = `
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
     }
-    
+
     .modal-dialog {
         position: relative;
         background: white;
@@ -587,11 +634,11 @@ uiStyles.textContent = `
         display: flex;
         flex-direction: column;
     }
-    
+
     .modal-sm { width: 300px; }
     .modal-md { width: 500px; }
     .modal-lg { width: 700px; }
-    
+
     .modal-header {
         padding: 20px;
         border-bottom: 1px solid #eee;
@@ -600,13 +647,13 @@ uiStyles.textContent = `
         align-items: center;
         background: #f8f9fa;
     }
-    
+
     .modal-title {
         margin: 0;
         color: #333;
         font-size: 1.2em;
     }
-    
+
     .modal-close {
         background: none;
         border: none;
@@ -620,18 +667,18 @@ uiStyles.textContent = `
         align-items: center;
         justify-content: center;
     }
-    
+
     .modal-close:hover {
         color: #333;
     }
-    
+
     .modal-body {
         padding: 20px;
         flex: 1;
         overflow-y: auto;
         color: #333;
     }
-    
+
     .modal-footer {
         padding: 15px 20px;
         border-top: 1px solid #eee;
@@ -640,7 +687,7 @@ uiStyles.textContent = `
         gap: 10px;
         background: #f8f9fa;
     }
-    
+
     .loading-spinner {
         width: 40px;
         height: 40px;
@@ -650,26 +697,26 @@ uiStyles.textContent = `
         animation: spin 1s ease-in-out infinite;
         margin-bottom: 15px;
     }
-    
+
     .custom-tooltip {
         animation: fadeIn 0.2s ease;
     }
-    
+
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(5px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    
+
     @media (max-width: 768px) {
         .modal-sm, .modal-md, .modal-lg {
             width: 90vw;
             max-width: 400px;
         }
-        
+
         .modal-header, .modal-body, .modal-footer {
             padding: 15px;
         }
     }
 `;
 
-document.head.appendChild(uiStyles); 
+document.head.appendChild(uiStyles);

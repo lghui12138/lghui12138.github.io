@@ -1,3 +1,4056 @@
-/* Edge Fluid Learning Upgrade */
-(function(m,v){"use strict";var N="round342-learning-discovery-routes-20260615-eflu-discovery",B="round247-real-exam-pdf-fidelity-audit-20260518",Ne=["fluid-real-exam-pdf-fidelity-audit","json"],we="round263-fluid-exam-route-map-20260522",Ue="/data/fluid-round263-exam-route-map.json",le="round264-formula-condition-checklist-20260522",ze=le,qe="/data/fluid-round264-formula-condition-checklist.json",Pr="round418-progress-visible-truth-181103-answer-ux-20260621",Nr="/data/fluid-upgrade-roadmap-100.json",Ur="round279-real-exam-source-granularity-20260612",zr="/data/fluid-round278-pdf-web-year-compare.json",Qe=["[data-round247-real-exam-pdf-fidelity-audit]","[data-r247-audit-summary]","[data-r247-evidence-card]","[data-r247-risk-note]","[data-r247-source]","[data-r247-fidelity]","[data-r247-year-audit]","[data-real-exam-source]","[data-real-exam-year]","[data-source-status]","[data-pdf-fidelity]","[data-fidelity-status]","[data-answer-source]"].join(","),Ce="edge-fluid-upgrade-root",Be="edge-fluid-learning-upgrade-style",V="edge_fluid_learning_upgrade_state_v1",U="edge_fluid_learning_upgrade_events_v1",De="edge_fluid_learning_last_link_v1",He=400,Ve=240,Ye={dashboard:"#dashboard",path:"#path","exam-route":"#exam-route",formulas:"#formulas","formula-checklist":"#formula-checklist",search:"#search",review:"#review"},Y=["dashboard","path","exam-route","formulas","formula-checklist","search","review"],oe=null,D=null,O={knowledge:"/data/fluid-knowledge-points.json",search:"/data/fluid-home-search-index.json",formulas:"/data/fluid-formula-index.json",reviewPlan:"/data/fluid-review-plan.json",remediation:"/data/fluid-knowledge-remediation.json",examRouteMap:Ue,formulaConditionChecklist:qe},We=["/data/fluid-knowledge-upgrade-2026.json","/data/fluid-knowledge-upgrade.json","/data/fluid-learning-upgrade.json","/data/fluid-knowledge-points-upgrade.json"],qr=[{id:"round342-181103",type:"\u5165\u53E3",title:"181103 \u8D44\u6599\u9898\u5E93\u4E0E HTML \u603B\u8868",desc:"522 \u5F20\u6765\u6E90\u5361\u6838\u5BF9\uFF1B381 \u9053\u9ED8\u8BA4\u7EC3\u4E60\u3001380 \u9053\u53EF\u76F4\u63A5\u53C2\u8003\u30011 \u9053\u5F85\u4EBA\u5DE5\u6E90\u9875\u590D\u6838\u3001141 \u6761\u7EBF\u7D22\u53EA\u5C55\u793A\uFF1B\u53E6\u6709 68 \u4E2A\u771F\u9898\u590D\u6838\u4EFB\u52A1\u548C 38/38 \u4EFD\u7AD9\u5185 HTML \u8D44\u6599\u6B63\u6587\u3002",keywords:"181103 181103\u8D44\u6599 \u8D44\u6599\u9898\u5E93 522\u6765\u6E90\u5361 381\u7EC3\u4E60 380\u53EF\u53C2\u8003 1\u5F85\u590D\u6838 141\u7EBF\u7D22 68\u771F\u9898\u590D\u6838 38/38 HTML \u7AD9\u5185\u9605\u8BFB",url:"/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList"},{id:"round342-real-exam",type:"\u5165\u53E3",title:"\u5386\u5E74\u771F\u9898\u65B0\u7248",desc:"2000-2024 \u5386\u5E74\u771F\u9898\uFF0C325 \u539F\u6587\u5C0F\u9898\u548C 68 \u4E2A\u5DF2\u62C6\u7EC4\u9898 section\u3002",keywords:"\u5386\u5E74\u771F\u9898 \u771F\u9898\u65B0\u7248 325\u539F\u6587\u5C0F\u9898 68\u7EC4\u9898 803\u6D41\u4F53\u529B\u5B66",url:"/modules/real-exams-dynamic.html?edge_refresh=round547-181103-proof-depth-upgrade-20260627&from=round342-edge-search"},{id:"round342-formula",type:"\u5165\u53E3",title:"\u516C\u5F0F\u56DE\u67E5\u4E0E\u9002\u7528\u6761\u4EF6",desc:"\u5148\u6838\u9002\u7528\u6761\u4EF6\u3001\u8FB9\u754C\u6761\u4EF6\u3001\u5355\u4F4D\u65B9\u5411\u548C\u5E38\u89C1\u9519\u56E0\uFF0C\u518D\u91CD\u505A\u540C\u7C7B\u771F\u9898\u3002",keywords:"\u516C\u5F0F \u516C\u5F0F\u56DE\u67E5 \u9002\u7528\u6761\u4EF6 \u8FB9\u754C\u6761\u4EF6 \u5355\u4F4D\u65B9\u5411 \u5E38\u89C1\u9519\u56E0",url:"/index-complete.html#formula-checklist"},{id:"round342-wrongbook",type:"\u5165\u53E3",title:"\u9519\u9898\u8BA2\u6B63\u4E0E\u9519\u56E0\u590D\u76D8",desc:"\u8FDB\u5165\u9519\u9898\u672C\u3001\u6536\u85CF\u548C\u7B14\u8BB0\uFF1B\u6309\u9519\u56E0\u8BA2\u6B63\u540E\u91CD\u505A\u540C\u7C7B\u9898\u3002",keywords:"\u9519\u9898 \u9519\u9898\u672C \u9519\u9898\u8BA2\u6B63 \u9519\u56E0\u590D\u76D8 \u590D\u4E60\u9519\u9898 \u6536\u85CF \u7B14\u8BB0",url:"/index-complete.html#tabsW"},{id:"round342-private-course",type:"\u5165\u53E3",title:"\u79C1\u6709\u8BFE\u7A0B / \u4E13\u5C5E\u8BFE\u72B6\u6001",desc:"\u67E5\u770B\u8D26\u53F7\u8BFE\u7A0B\u72B6\u6001\uFF1B\u751F\u4EA7\u79C1\u6709\u89C6\u9891\u6062\u590D\u4ECD\u4EE5 FM_PRIVATE_MEDIA R2 binding \u4E3A\u8FB9\u754C\u3002",keywords:"\u79C1\u6709\u8BFE\u7A0B \u4E13\u5C5E\u8BFE \u79C1\u6709\u89C6\u9891 \u8D26\u53F7\u72B6\u6001 FM_PRIVATE_MEDIA R2 blocker",url:"/resources.html?from=round342-edge-search-private-course#sourceStatus"}],Z=[{id:"fallback-navier-stokes",title:"Navier-Stokes \u65B9\u7A0B",formula:"\\rho\\left(\\frac{\\partial \\mathbf{u}}{\\partial t}+\\mathbf{u}\\cdot\\nabla\\mathbf{u}\\right)=-\\nabla p+\\mu\\nabla^2\\mathbf{u}+\\rho\\mathbf{f}",category:"\u63A7\u5236\u65B9\u7A0B\u4E0E\u7406\u60F3\u6D41\u4F53",pointTitle:"\u52A8\u91CF\u5B88\u6052\u4E3B\u7EBF",keywords:["N-S","\u52A8\u91CF\u65B9\u7A0B","\u9ECF\u6027\u9879"]},{id:"fallback-continuity",title:"\u8FDE\u7EED\u65B9\u7A0B",formula:"\\frac{\\partial \\rho}{\\partial t}+\\nabla\\cdot(\\rho\\mathbf{u})=0",category:"\u57FA\u7840\u8FD0\u52A8\u5B66",pointTitle:"\u8D28\u91CF\u5B88\u6052",keywords:["\u8FDE\u7EED\u65B9\u7A0B","\u4E0D\u53EF\u538B","\u6563\u5EA6"]},{id:"fallback-bernoulli",title:"Bernoulli \u65B9\u7A0B",formula:"p+\\frac{1}{2}\\rho v^2+\\rho gh=\\mathrm{const}",category:"\u63A7\u5236\u65B9\u7A0B\u4E0E\u7406\u60F3\u6D41\u4F53",pointTitle:"\u7406\u60F3\u6D41\u4F53\u80FD\u91CF\u79EF\u5206",keywords:["Bernoulli","\u80FD\u91CF","\u52BF\u6D41"]},{id:"fallback-vorticity",title:"\u6DA1\u91CF\u5B9A\u4E49",formula:"\\boldsymbol{\\omega}=\\nabla\\times\\mathbf{u}",category:"\u57FA\u7840\u8FD0\u52A8\u5B66",pointTitle:"\u5C40\u90E8\u65CB\u8F6C\u5F3A\u5EA6",keywords:["\u6DA1\u91CF","\u65CB\u5EA6","\u73AF\u91CF"]},{id:"fallback-reynolds",title:"Reynolds \u6570",formula:"Re=\\frac{\\rho U L}{\\mu}=\\frac{UL}{\\nu}",category:"\u91CF\u7EB2\u76F8\u4F3C\u4E0E\u5B9E\u9A8C",pointTitle:"\u60EF\u6027\u529B\u4E0E\u9ECF\u6027\u529B\u6BD4\u503C",keywords:["Re","\u76F8\u4F3C","\u8FB9\u754C\u5C42"]}],Qr=[{id:"checklist-continuity",formulaId:"fallback-continuity",title:"\u8FDE\u7EED\u65B9\u7A0B",formula:"\\frac{\\partial \\rho}{\\partial t}+\\nabla\\cdot(\\rho\\mathbf{u})=0",category:"\u8D28\u91CF\u5B88\u6052",applyConditions:["\u9898\u76EE\u5728\u95EE\u6D41\u91CF\u3001\u901F\u5EA6\u3001\u622A\u9762\u6216\u5BC6\u5EA6\u968F\u65F6\u95F4\u53D8\u5316\u65F6\uFF0C\u5148\u4ECE\u8D28\u91CF\u5B88\u6052\u843D\u7B14\u3002","\u4E0D\u53EF\u538B\u6D41\u4F53\u53EF\u4EE5\u628A\u5BC6\u5EA6\u7EA6\u6389\uFF0C\u4F46\u8FD9\u4E00\u6B65\u8981\u5199\u51FA\u9898\u5E72\u4F9D\u636E\u3002"],boundaryConditions:["\u5165\u53E3\u3001\u51FA\u53E3\u548C\u63A7\u5236\u9762\u7684\u5916\u6CD5\u5411\u8981\u5148\u5B9A\u597D\u3002","\u7A33\u6001\u7BA1\u6D41\u5E38\u628A\u540C\u4E00\u622A\u9762\u901F\u5EA6\u770B\u6210\u5E73\u5747\u901F\u5EA6\uFF0C\u70B9\u901F\u5EA6\u9898\u4E0D\u80FD\u76F4\u63A5\u8FD9\u6837\u505A\u3002"],unitDirections:["\u8D28\u91CF\u6D41\u91CF\u5355\u4F4D\u662F kg/s\uFF0C\u4F53\u79EF\u6D41\u91CF\u5355\u4F4D\u662F m^3/s\u3002","\u901A\u91CF\u7B26\u53F7\u8DDF\u5916\u6CD5\u5411\u6709\u5173\uFF0C\u6D41\u5165\u9879\u548C\u6D41\u51FA\u9879\u4E0D\u8981\u6DF7\u5728\u4E00\u4E2A\u65B9\u5411\u91CC\u3002"],commonMistakes:["\u628A\u8D28\u91CF\u6D41\u91CF\u548C\u4F53\u79EF\u6D41\u91CF\u6DF7\u7528\u3002","\u770B\u5230\u201C\u4E0D\u53EF\u538B\u201D\u5C31\u5FD8\u4E86\u68C0\u67E5\u622A\u9762\u5E73\u5747\u901F\u5EA6\u7684\u5B9A\u4E49\u3002"],remedialTraining:["\u753B\u4E00\u4E2A\u4E24\u8FDB\u4E00\u51FA\u7684\u63A7\u5236\u4F53\uFF0C\u9010\u9879\u6807\u51FA rho\u3001A\u3001v \u548C\u5916\u6CD5\u5411\u3002","\u505A 2 \u9053\u622A\u9762\u53D8\u5316\u9898\uFF0C\u53EA\u7EC3\u5355\u4F4D\u6362\u7B97\u548C\u65B9\u5411\u7B26\u53F7\u3002"],teacherNote:"\u8FDE\u7EED\u65B9\u7A0B\u4E0D\u662F\u80CC\u5F0F\u5B50\uFF0C\u662F\u5148\u628A\u201C\u8FDB\u6765\u591A\u5C11\u3001\u51FA\u53BB\u591A\u5C11\u3001\u91CC\u9762\u53D8\u591A\u5C11\u201D\u8BF4\u6E05\u695A\u3002"},{id:"checklist-bernoulli",formulaId:"fallback-bernoulli",title:"Bernoulli \u65B9\u7A0B",formula:"p+\\frac{1}{2}\\rho v^2+\\rho gh=\\mathrm{const}",category:"\u80FD\u91CF\u65B9\u7A0B",applyConditions:["\u540C\u4E00\u6761\u6D41\u7EBF\u6216\u6EE1\u8DB3\u53EF\u4F5C\u6574\u4F53\u80FD\u91CF\u65B9\u7A0B\u5904\u7406\u7684\u7BA1\u8DEF\u3002","\u65E0\u660E\u663E\u9ECF\u6027\u635F\u5931\u65F6\u7528\u57FA\u672C\u5F0F\uFF1B\u6709\u7BA1\u8DEF\u635F\u5931\u3001\u6CF5\u6216\u6C34\u8F6E\u673A\u65F6\u5FC5\u987B\u8865\u9879\u3002"],boundaryConditions:["\u4E24\u4E2A\u65AD\u9762\u3001\u57FA\u51C6\u9762\u548C\u538B\u5F3A\u96F6\u70B9\u8981\u5148\u5199\u3002","\u81EA\u7531\u9762\u80FD\u4E0D\u80FD\u53D6\u5927\u6C14\u538B\u3001\u901F\u5EA6\u80FD\u4E0D\u80FD\u5FFD\u7565\uFF0C\u90FD\u8981\u770B\u9898\u5E72\u5C3A\u5EA6\u3002"],unitDirections:["\u538B\u5F3A\u5F0F\u5355\u4F4D\u662F Pa\uFF0C\u6C34\u5934\u5F0F\u5355\u4F4D\u662F m\uFF0C\u4E24\u8005\u76F8\u5DEE rho g\u3002","\u9AD8\u5EA6\u9879\u6B63\u8D1F\u7531\u57FA\u51C6\u9762\u51B3\u5B9A\uFF0C\u4E0D\u8981\u51ED\u56FE\u5F62\u9AD8\u4F4E\u968F\u624B\u6539\u53F7\u3002"],commonMistakes:["\u6F0F\u6389\u6CBF\u7A0B\u635F\u5931\u6216\u5C40\u90E8\u635F\u5931\u3002","\u628A\u8868\u538B\u3001\u7EDD\u538B\u548C\u5927\u6C14\u538B\u6DF7\u5728\u540C\u4E00\u884C\u3002"],remedialTraining:["\u6BCF\u9898\u5148\u753B\u80FD\u91CF\u7EBF\u548C\u57FA\u51C6\u7EBF\uFF0C\u518D\u4EE3\u6570\u3002","\u628A\u540C\u4E00\u9053\u9898\u5206\u522B\u5199\u6210\u538B\u5F3A\u5F0F\u548C\u6C34\u5934\u5F0F\uFF0C\u4E13\u95E8\u6838\u5BF9\u5355\u4F4D\u3002"],teacherNote:"\u4F2F\u52AA\u5229\u9898\u5148\u95EE\u201C\u54EA\u4E24\u4E2A\u65AD\u9762\u3001\u6709\u6CA1\u6709\u635F\u5931\u201D\uFF0C\u518D\u8C08\u4EE3\u516C\u5F0F\u3002"},{id:"checklist-reynolds",formulaId:"fallback-reynolds",title:"Reynolds \u6570",formula:"Re=\\frac{\\rho U L}{\\mu}=\\frac{UL}{\\nu}",category:"\u91CF\u7EB2\u76F8\u4F3C",applyConditions:["\u5224\u65AD\u60EF\u6027\u529B\u548C\u9ECF\u6027\u529B\u8C01\u5360\u4E3B\u5BFC\uFF0C\u6216\u505A\u6A21\u578B\u76F8\u4F3C\u65F6\u4F7F\u7528\u3002","\u7279\u5F81\u901F\u5EA6 U \u548C\u7279\u5F81\u957F\u5EA6 L \u5FC5\u987B\u548C\u9898\u76EE\u5BF9\u8C61\u5BF9\u5E94\u3002"],boundaryConditions:["\u7BA1\u6D41\u5E38\u53D6\u7BA1\u5F84\uFF0C\u7ED5\u6D41\u5E38\u53D6\u7269\u4F53\u7279\u5F81\u5C3A\u5EA6\uFF1B\u4E0D\u8981\u628A\u4E0D\u540C\u9898\u578B\u7684 L \u5957\u7528\u3002","\u6E29\u5EA6\u6539\u53D8\u65F6\uFF0C\u9ECF\u5EA6\u548C\u8FD0\u52A8\u9ECF\u5EA6\u53EF\u80FD\u8DDF\u7740\u53D8\u3002"],unitDirections:["mu \u7528 Pa\xB7s\uFF0Cnu \u7528 m^2/s\uFF0C\u4E8C\u8005\u4E0D\u80FD\u540C\u653E\u4E00\u4E2A\u5F0F\u5B50\u91CC\u3002","Re \u6CA1\u6709\u5355\u4F4D\uFF1B\u7B97\u51FA\u6709\u5355\u4F4D\uFF0C\u8BF4\u660E\u91CF\u7EB2\u6CA1\u6709\u7EA6\u5E72\u51C0\u3002"],commonMistakes:["\u628A\u52A8\u529B\u9ECF\u5EA6\u548C\u8FD0\u52A8\u9ECF\u5EA6\u6DF7\u7528\u3002","\u7F29\u5C3A\u5B9E\u9A8C\u53EA\u4FDD Re\uFF0C\u5374\u5FD8\u4E86\u901F\u5EA6\u6BD4\u4F8B\u4F1A\u88AB\u8FEB\u6539\u53D8\u3002"],remedialTraining:["\u5217 3 \u4E2A\u573A\u666F\uFF0C\u5206\u522B\u5199 U \u548C L \u53D6\u4EC0\u4E48\u3002","\u505A\u4E00\u7EC4\u6A21\u578B/\u539F\u578B\u6362\u7B97\uFF0C\u53EA\u68C0\u67E5\u65E0\u91CF\u7EB2\u6570\u662F\u5426\u4E00\u81F4\u3002"],teacherNote:"Re \u6570\u5148\u5B9A\u5C3A\u5EA6\uFF0C\u518D\u4EE3\u6570\uFF1B\u5C3A\u5EA6\u9009\u9519\uFF0C\u540E\u9762\u7B97\u5F97\u518D\u5DE5\u6574\u4E5F\u4F1A\u504F\u3002"}],$e={dashboard:'<path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z"/>',route:'<path d="M6 3v6a4 4 0 0 0 4 4h4a4 4 0 0 1 4 4v4"/><circle cx="6" cy="3" r="2"/><circle cx="18" cy="21" r="2"/>',sigma:'<path d="M18 7V4H6l6 8-6 8h12v-3"/>',search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/>',review:'<path d="M4 4h16v12H7l-3 3V4Z"/><path d="M8 8h8M8 12h5"/>',check:'<path d="M20 6 9 17l-5-5"/>',play:'<path d="m8 5 11 7-11 7V5Z"/>',plus:'<path d="M12 5v14M5 12h14"/>',x:'<path d="m18 6-12 12M6 6l12 12"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',external:'<path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/>',bookmark:'<path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/>',alert:'<path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>',target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',refresh:'<path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 21v-5h5"/><path d="M3 12A9 9 0 0 1 18.3 5.6L21 8"/><path d="M21 3v5h-5"/>',chart:'<path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-5"/><path d="M12 16V8"/><path d="M16 16v-3"/>',note:'<path d="M5 3h10l4 4v14H5V3Z"/><path d="M15 3v5h5"/><path d="M8 13h8M8 17h6"/>'},n={loaded:!1,loadErrors:[],visibilityIssues:[],routeMapStatus:"pending",upgradeStatus:"pending",upgrade:null,roadmap100:null,roadmapStatus:"pending",round278PdfWebYearCompare:null,round278Status:"pending",knowledge:[],categories:[],searchEntries:[],searchStatus:"pending",formulas:[],formulaStatus:"pending",formulaConditionChecklist:null,formulaChecklist:[],formulaChecklistStatus:"pending",reviewPlan:null,remediation:null,reviewSupportStatus:"pending",examRouteMap:null,examRoutes:[],paths:[],generatedAt:""},u={tab:"dashboard",pathCategory:"all",pathId:"",formulaCategory:"all",siteQuery:"",formulaQuery:"",formulaChecklistQuery:"",formulaChecklistCategory:"all",selectedFormulaChecklist:"",examClue:"\u63A7\u5236\u4F53 \u5F2F\u7BA1 \u53D7\u529B",selectedExamRoute:"",listLimit:18},y=null,Re=!1,K=null,R={},W={},X=ue();function g(e,r){var a=$e[e]||$e.dashboard,t=r?' aria-label="'+f(r)+'"':' aria-hidden="true"';return'<svg class="eflu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'+t+">"+a+"</svg>"}function f(e){return String(e??"").replace(/[&<>"']/g,function(r){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[r]})}function p(e){return f(e).replace(/`/g,"&#96;")}var Br=/(?:\$\$|\\\(|\\\[|\\(?:frac|dfrac|tfrac|partial|nabla|rho|mu|sigma|tau|sqrt|vec|mathbf|boldsymbol|operatorname|mathrm|mathit|mathcal|overline|underline|bar|hat|dot|ddot|left|right|theta|Theta|pi|nu|varepsilon|epsilon|cdot|times|omega|phi|psi|varphi|alpha|beta|gamma|delta|Delta|Omega|lambda|eta|kappa|int|iint|iiint|oint|sum|prod|lim|max|min|sin|cos|tan|cot|ln|log|exp|infty|therefore|because|pm|mp|le|ge|leq|geq|lt|gt|approx|neq|equiv|sim|simeq|propto|to|rightarrow|leftarrow|Rightarrow|Leftarrow|begin|end)\b)/,Ge=/^\s*(?:\$\$[\s\S]*\$\$|\\\[[\s\S]*\\\]|\\\([\s\S]*\\\)|\$[^$]+\$)\s*$/;function Je(e){var r=String(e??"").trim();return r?Br.test(r)||Ge.test(r)?!0:/[∂∇ρμνφψθωΓΩ_^{}\\]/.test(r)&&/[=+\-*/∂∇_^\\]/.test(r):!1}function Dr(e){var r=String(e??"").trim();return!r||!Je(r)||Ge.test(r)?r:"\\["+r+"\\]"}function Ae(e){var r=String(e??"").trim();if(!r)return"";var a=Je(r)?"eflu-formula math-display tex2jax_process":"eflu-formula";return'<div class="'+a+'">'+f(Dr(r))+"</div>"}function ee(e,r,a){return e=Number(e)||0,Math.max(r,Math.min(a,e))}function s(e){return Array.isArray(e)?e:[]}function Ze(e){return Array.isArray(e)?e:e==null?[]:typeof e=="string"||typeof e=="number"?[e]:[]}function S(e){var r=Object.create(null);return s(e).filter(function(a){var t=String(a||"").trim();return!t||r[t]?!1:(r[t]=!0,!0)})}function x(e){return String(e??"").toLowerCase().replace(/\s+/g," ").trim()}function Hr(e){var r=String(e??"").match(/\d+/);return r?r[0]:""}function Vr(e){return"/modules/practice-dynamic.html?type=real&chapter="+encodeURIComponent(e)+"&mode=normal&from=edge-learning-workbench"}function Yr(e){return"/modules/real-exams-dynamic.html?chapter="+encodeURIComponent(e)+"&from=edge-learning-workbench"}function Wr(e){return"/modules/knowledge-detail.html?chapter="+encodeURIComponent(e)}function H(e){return e=String(e||"").replace(/^#/,"").toLowerCase(),e==="route"||e==="knowledge-path"?"path":e==="formula"||e==="formula-search"?"formulas":e==="round264formulachecklist"||e==="round264-formula-checklist"||e==="formula-conditions"||e==="formula-condition"||e==="formula-condition-checklist"||e==="condition-checklist"||e==="checklist"?"formula-checklist":e==="exam"||e==="exam-route-map"||e==="fluid-exam-route-map"||e==="round263routemap"||e==="round263-route-map"||e==="round263-route"||e==="topic-route"?"exam-route":Ye[e]?e:"dashboard"}function $r(e){var r=H(String(e||"").replace(/^#/,""));return r==="dashboard"&&e&&!/^#?dashboard$/i.test(String(e))?"":r}function Gr(e){var r=Ye[H(e)];if(!(!r||!m.location||m.location.hash===r))try{m.history&&typeof m.history.replaceState=="function"?m.history.replaceState(null,"",m.location.pathname+m.location.search+r):m.location.hash=r}catch{}}function _(e){return"eflu-panel-"+H(e)}function z(e,r){u.tab=H(e),r!==!1&&Gr(u.tab),fe(u.tab)}function Jr(e){if(y){var r=y.querySelector('.eflu-tab[role="tab"][data-tab="'+H(e)+'"]');if(!(!r||typeof r.focus!="function")){try{r.focus({preventScroll:!0})}catch{r.focus()}try{typeof r.scrollIntoView=="function"&&r.scrollIntoView({block:"nearest",inline:"center"})}catch{}}}}function Ke(){var e=$r(m.location&&m.location.hash);return e?(u.tab=e,!0):!1}function w(){return Date.now()}function Zr(e){return e?Math.ceil((e-w())/864e5):0}function Kr(){try{v.documentElement.setAttribute("data-round241-human-teacher-upgrade","1"),v.documentElement.setAttribute("data-edge-human-teacher-version",N),v.documentElement.setAttribute("data-current-entry-version",N),v.documentElement.setAttribute("data-learning-content-version",ze)}catch{}}function Xr(e){try{var r=new Date(e);return Number.isFinite(r.getTime())?String(r.getMonth()+1).padStart(2,"0")+"-"+String(r.getDate()).padStart(2,"0"):"\u672A\u5B89\u6392"}catch{return"\u672A\u5B89\u6392"}}function q(e,r){try{var a=m.localStorage&&m.localStorage.getItem(e);if(!a)return r;var t=JSON.parse(a);return Array.isArray(r)&&!Array.isArray(t)||r&&typeof r=="object"&&!Array.isArray(r)&&(t==null||typeof t!="object"||Array.isArray(t))?r:t}catch{return r}}function re(e,r){try{return m.localStorage.setItem(e,JSON.stringify(r)),!0}catch{try{var a=q(U,[]);return Array.isArray(a)&&a.length>60&&m.localStorage.setItem(U,JSON.stringify(a.slice(-60))),m.localStorage.setItem(e,JSON.stringify(r)),!0}catch{return X=r&&r.users?r:X,!1}}}function ue(){return{version:1,updatedAt:0,users:{}}}function te(){try{if(m.FMSecurity&&typeof m.FMSecurity.getUser=="function"){var e=m.FMSecurity.getUser();if(e&&(e.username||e.name))return String(e.username||e.name)}}catch{}try{var r=q("fluidMechanicsUser",null);if(r&&(r.username||r.name))return String(r.username||r.name)}catch{}return"_anon"}function za(){try{if(m.FMSecurity&&typeof m.FMSecurity.getUser=="function"){var e=m.FMSecurity.getUser();if(e&&(e.name||e.username))return String(e.name||e.username)}}catch{}return"\u540C\u5B66"}function se(){var e=q(V,null);return(!e||!e.users)&&(e=X||ue()),e.users||(e.users={}),e}function Te(e){e.updatedAt=w(),X=e,re(V,e);try{m.FMState&&typeof m.FMState.set=="function"&&m.FMState.set(V,e)}catch{}}function $(){var e=se(),r=te();return e.users[r]||(e.users[r]={createdAt:w(),progress:{},review:[],notes:{},prefs:{}},Te(e)),e.users[r].progress||(e.users[r].progress={}),Array.isArray(e.users[r].review)||(e.users[r].review=[]),e.users[r].notes||(e.users[r].notes={}),e.users[r].prefs||(e.users[r].prefs={}),e.users[r]}function ce(e){var r=se(),a=te();return r.users[a]||(r.users[a]={createdAt:w(),progress:{},review:[],notes:{},prefs:{}}),e(r.users[a]),Array.isArray(r.users[a].review)&&r.users[a].review.length>Ve&&(r.users[a].review=r.users[a].review.slice(-Ve)),Te(r),r.users[a]}function k(e,r){var a={v:N,action:String(e||"event"),user:te(),ts:w(),payload:r||{}},t=q(U,[]);Array.isArray(t)||(t=[]),t.push(a),t.length>He&&(t=t.slice(-He)),re(U,t);try{m.FMLog&&typeof m.FMLog.add=="function"&&m.FMLog.add("edge_learning_"+a.action,a.payload)}catch{}try{m.dispatchEvent(new CustomEvent("edge-fluid-learning:event",{detail:a}))}catch{}return a}function et(e){return new Promise(function(r){setTimeout(r,e)})}function rt(e){return!e||!e.status?!0:e.status===408||e.status===429||e.status>=500}function tt(e,r){r=r||{};var a=r.timeoutMs||6500,t=null,i=null,l={cache:r.cache||"default",credentials:"same-origin",headers:{Accept:"application/json"}};return m.AbortController&&(t=new m.AbortController,l.signal=t.signal,i=setTimeout(function(){t.abort()},a)),fetch(e,l).then(function(o){if(i&&clearTimeout(i),!o.ok){var d=new Error("HTTP "+o.status);throw d.status=o.status,d}return o.json()},function(o){throw i&&clearTimeout(i),o})}function Xe(e,r,a){return tt(e,r).catch(function(t){var i=r.retries==null?1:r.retries;if(a<i&&rt(t))return et(160*(a+1)).then(function(){return Xe(e,r,a+1)});throw t})}function j(e,r,a){a=a||{};var t=[e,a.cache||"default",r?"optional":"required"].join("|");return W[t]||(W[t]=Xe(e,a,0).catch(function(i){return r||n.loadErrors.push({url:e,message:i&&i.message?i.message:"fetch_failed"}),null}).then(function(i){return delete W[t],i}).catch(function(i){return delete W[t],r||n.loadErrors.push({url:e,message:i&&i.message?i.message:"fetch_failed"}),null})),W[t]}function at(){try{v.documentElement.setAttribute("data-round247-real-exam-pdf-fidelity-audit",B),v.documentElement.setAttribute("data-r247-version",B)}catch{}}function Ee(e){try{return!!(e&&e.nodeType===1&&e.matches&&e.matches(Qe))}catch{return!1}}function je(e){var r=[];e=e||v,Ee(e)&&r.push(e);try{e.querySelectorAll&&Array.prototype.forEach.call(e.querySelectorAll(Qe),function(a){r.push(a)})}catch{}return r}function it(){return oe||(oe=j("/data/"+Ne[0]+"."+Ne[1],!0).then(function(e){return e&&typeof e=="object"?e:null}),oe)}function nt(e){return!e||!e.getAttribute?"":String(e.getAttribute("data-r247-status")||e.getAttribute("data-r247-source")||e.getAttribute("data-r247-fidelity")||e.getAttribute("data-source-status")||e.getAttribute("data-pdf-fidelity")||e.getAttribute("data-fidelity-status")||e.getAttribute("data-answer-source")||e.getAttribute("data-real-exam-source")||"").trim()}function de(e){var r=String(e||"");if(/源索引缺失|缺题|题库为空/.test(r))return"source-missing";if(/不在.*原题册|派生|索引外/.test(r))return"outside-source-index";if(/精确|包含|贴合/.test(r))return"exact-stem";if(/模糊|复核/.test(r))return"fuzzy-aligned";if(/答案|待核|推导|笔记/.test(r))return"answer-risk";if(/可用|存在|已定位/.test(r))return"available";var a=x(e).replace(/[_\s]+/g,"-");return a?/source-missing|missing|empty-year|empty/.test(a)?"source-missing":/outside|out-of-index|2025|derived-year/.test(a)?"outside-source-index":/exactstem|exact-stem|exact|contained|ocr-exact|stem-contained/.test(a)?"exact-stem":/fuzzyaligned|fuzzy-aligned|fuzzy|manual-check|needs-review/.test(a)?"fuzzy-aligned":/derivedorunproven|derived|unproven|answersnotpdfexact|nooriginalanswerproof|answer-note/.test(a)?"answer-risk":/available|ready|source-ok|pdf-index/.test(a)?"available":a.slice(0,48):""}function er(e){var r=de(e),a={available:"\u6E90\u7D22\u5F15\u53EF\u7528","source-missing":"\u6E90\u7D22\u5F15\u7F3A\u5931","outside-source-index":"\u4E0D\u5728\u539F\u9898\u518C\u7D22\u5F15","exact-stem":"\u9898\u9762\u8D34\u5408 OCR","fuzzy-aligned":"\u9898\u9762\u9700\u590D\u6838","answer-risk":"\u7B54\u6848\u5F85\u6838"};return a[r]||String(e||"\u6765\u6E90\u5F85\u6838")}function lt(e){for(var r=e;r&&r!==v&&r.getAttribute;){var a=r.getAttribute("data-r247-year")||r.getAttribute("data-r247-year-audit")||r.getAttribute("data-real-exam-year")||r.getAttribute("data-year");if(a&&/^\d{4}$/.test(String(a)))return Number(a);r=r.parentNode}try{var t=new URL(location.href).searchParams.get("year");if(t&&/^\d{4}$/.test(t))return Number(t)}catch{}return 0}function ot(e,r){return!e||!r?null:s(e.years).find(function(a){return Number(a&&a.year)===Number(r)})||null}function ut(e){var r=e&&e.sourceEvidence?e.sourceEvidence:{},a=r.mainQuestionPdf&&r.mainQuestionPdf.exists?"\u4E3B\u6E90\u9898\u518C PDF \u5B58\u5728":"\u4E3B\u6E90\u9898\u518C PDF \u5F85\u786E\u8BA4",t=r.ocrRebuiltArchive||"OCR \u91CD\u5EFA\u6587\u672C";return a+"\uFF1B\u5BF9\u7167 "+t}function st(e){var r=s(e&&e.yearIssues);return r.length?r.map(function(a){return a==="answersNotPdfExact"?"\u7B54\u6848\u975E\u539F PDF \u9010\u5B57\u8BC1\u636E":a==="sourceIndexMissing"?"\u6E90\u7D22\u5F15\u7F3A\u5931":a==="emptyYearQuestions"?"\u9898\u5E93\u4E3A\u7A7A":a==="outsideOriginal2000To2024PdfIndex"?"\u4E0D\u5728 2000-2024 \u539F\u9898\u518C\u7D22\u5F15":a}).join("\uFF1B"):"\u5E74\u4EFD\u672A\u6807\u51FA\u989D\u5916\u95EE\u9898"}function ct(e,r){if(!(!e||!e.insertBefore||e.querySelector('.r247-source-chip[data-r247-auto="1"]'))&&!/^(INPUT|SELECT|TEXTAREA|BUTTON|AUDIO|VIDEO|IMG|CANVAS)$/.test(e.tagName||"")){var a=de(r),t=v.createElement("span");t.className="r247-source-chip",t.setAttribute("data-status",a||"pending"),t.setAttribute("data-r247-auto","1"),t.textContent=er(r),e.classList.add("r247-source-row"),e.insertBefore(t,e.firstChild)}}function dt(e,r){var a=lt(e);if(!a||!e||e.querySelector('.r247-year-status[data-r247-auto="1"]'))return!1;var t=ot(r,a);if(!t)return!1;var i=t.sourceStatus||"available",l=v.createElement("div");if(l.className="r247-year-status",l.setAttribute("data-status",de(i)||"available"),l.setAttribute("data-r247-auto","1"),l.innerHTML=["<b>"+f(a)+" \u5E74</b>","<span>"+f(er(i))+"</span>","<span>\u9898\u9762 "+f(t.exactOrContainedQuestionStems||0)+" \u7CBE\u786E / "+f(t.fuzzyAlignedQuestionStems||0)+" \u6A21\u7CCA</span>","<span>\u7B54\u6848\u5F85\u6838 "+f(t.derivedOrUnprovenAnswers||0)+"</span>"].join(""),e.classList.add("r247-year-host"),e.appendChild(l),t.issueCount||s(t.yearIssues).length){var o=v.createElement("div");o.className="r247-risk-note",o.setAttribute("data-risk",i==="available"?"medium":"high"),o.textContent=st(t),e.appendChild(o)}return!0}function ft(e,r){if(!e||!r||e.getAttribute("data-r247-summary-rendered")===B)return!1;if(e.classList.add("r247-audit-board"),e.setAttribute("data-r247-summary-rendered",B),String(e.textContent||"").trim())return!0;var a=r.summary||{};return e.innerHTML=['<div class="r247-audit-head">','<div><span class="r247-kicker">\u771F\u9898\u6765\u6E90\u6279\u6CE8</span><h3>PDF \u4FDD\u771F\u5EA6\u5BA1\u8BA1</h3><p>'+f(ut(r))+"</p></div>",'<span class="r247-source-chip" data-status="answer-risk">'+f(B)+"</span>","</div>",'<div class="r247-evidence-grid">','<div class="r247-evidence-item"><b>'+f(a.auditedYearSpan||"2000-2025")+"</b><span>\u5BA1\u8BA1\u5E74\u4EFD</span></div>",'<div class="r247-evidence-item"><b>'+f(a.activeQuestionCount||0)+"</b><span>\u6D3B\u8DC3\u9898\u76EE</span></div>",'<div class="r247-evidence-item"><b>'+f(a.exactOrContainedQuestionStems||0)+"</b><span>\u9898\u9762\u7CBE\u786E/\u5305\u542B</span></div>",'<div class="r247-evidence-item"><b>'+f(a.derivedOrUnprovenAnswers||0)+"</b><span>\u7B54\u6848\u5F85\u6838</span></div>","</div>",'<div class="r247-risk-note" data-risk="medium">\u7B54\u6848\u6CA1\u6709\u539F\u7B54\u6848 PDF \u6216\u4EBA\u5DE5\u9010\u9875\u6838\u9A8C\u65F6\uFF0C\u53EA\u6807\u4E3A\u63A8\u5BFC/\u7B14\u8BB0\u6765\u6E90\u3002</div>'].join(""),!0}function rr(e,r){if(!e||!e.classList)return!1;e.classList.add("r247-enhanced"),e.setAttribute("data-r247-version",B);var a=nt(e);return a&&ct(e,a),e.hasAttribute("data-r247-risk-note")&&(e.classList.add("r247-risk-note"),e.getAttribute("data-risk")||e.setAttribute("data-risk",de(a)==="source-missing"?"high":"medium")),e.hasAttribute("data-r247-evidence-card")&&e.classList.add("r247-evidence-card"),e.hasAttribute("data-r247-audit-summary")&&ft(e,r),r&&(e.hasAttribute("data-real-exam-year")||e.hasAttribute("data-r247-year-audit"))&&dt(e,r),!0}function ae(e){var r=je(e||v);if(!r.length)return!1;at();var a=r.some(function(t){return t.hasAttribute&&(t.hasAttribute("data-r247-audit-summary")||t.hasAttribute("data-r247-year-audit")||t.hasAttribute("data-real-exam-year"))});return r.forEach(function(t){rr(t,null)}),a&&it().then(function(t){t&&je(e||v).forEach(function(i){rr(i,t)})}),!0}function pt(){if(!(D||!("MutationObserver"in m))){var e=v.documentElement||v.body;if(e){var r;D=new MutationObserver(function(a){var t=!1;a.forEach(function(i){t||(Ee(i.target)&&(t=!0),Array.prototype.forEach.call(i.addedNodes||[],function(l){t||(Ee(l)||je(l).length)&&(t=!0)}))}),t&&ae(v)});try{D.observe(e,{childList:!0,subtree:!0,attributes:!0,attributeFilter:["data-round247-real-exam-pdf-fidelity-audit","data-r247-audit-summary","data-r247-evidence-card","data-r247-risk-note","data-r247-source","data-r247-fidelity","data-r247-year-audit","data-real-exam-source","data-real-exam-year","data-source-status","data-pdf-fidelity","data-fidelity-status","data-answer-source"]}),r=setTimeout(function(){D&&D.disconnect(),D=null},9e3),r&&r.unref&&r.unref()}catch{D=null}}}}function gt(e){var r=0;function a(){if(r>=e.length)return Promise.resolve(null);var t=e[r++];return j(t,!0).then(function(i){return i?(n.upgradeStatus="loaded:"+t,i):a()})}return a()}function tr(){return K||(R={},n.loaded=!1,n.loadErrors=[],n.visibilityIssues=[],n.upgradeStatus="pending",n.routeMapStatus="pending",n.searchStatus="pending",n.formulaStatus="pending",n.roadmapStatus="pending",n.round278Status="pending",n.reviewSupportStatus="pending",n.searchEntries=[],n.formulas=Z.slice(),K=Promise.all([j(O.knowledge,!1),gt(We),j(O.examRouteMap,!0),j(O.formulaConditionChecklist,!0),j(Nr,!0),j(zr,!0)]).then(function(e){return n.knowledge=vt(e[0]),n.categories=bt(e[0],n.knowledge),n.searchEntries=[],n.searchStatus="lazy",n.formulas=Z.slice(),n.formulaStatus="fallback",n.reviewPlan=null,n.remediation=null,n.reviewSupportStatus="lazy",n.upgrade=e[1]||null,n.examRouteMap=e[2]||null,n.formulaConditionChecklist=e[3]||null,n.roadmap100=yt(e[4]),n.round278PdfWebYearCompare=xt(e[5]),n.routeMapStatus=n.examRouteMap?"loaded":"fallback",n.formulaChecklistStatus=n.formulaConditionChecklist?"loaded":"fallback",n.roadmapStatus=n.roadmap100?"loaded":"fallback",n.round278Status=n.round278PdfWebYearCompare?"loaded":"fallback",n.upgrade||(n.upgradeStatus="fallback"),ir(n.upgrade),n.paths=nr(n.upgrade),n.examRoutes=or(n.upgrade,n.examRouteMap),n.formulaChecklist=Me(n.formulaConditionChecklist,n.upgrade),n.loaded=!0,n.generatedAt=e[0]&&e[0].generatedAt?e[0].generatedAt:"",n}).catch(function(e){return n.loadErrors.push({url:"bootstrap",message:e&&e.message?e.message:"unknown"}),n.knowledge=[],n.categories=[],n.searchEntries=[],n.searchStatus="fallback",n.formulas=Z.slice(),n.formulaStatus="fallback",n.paths=nr(null),n.examRouteMap=null,n.routeMapStatus="fallback",n.examRoutes=or(null,null),n.formulaConditionChecklist=null,n.formulaChecklistStatus="fallback",n.formulaChecklist=Me(null,null),n.roadmap100=null,n.roadmapStatus="fallback",n.upgradeStatus="fallback",n.reviewPlan=null,n.remediation=null,n.reviewSupportStatus="fallback",n.loaded=!0,n}),K)}function F(e){e=s(e),!(!y||!e.length)&&(e.indexOf(u.tab)>=0||e.indexOf("dashboard")>=0&&u.tab==="dashboard")&&b()}function ar(){return R.formulas||(n.formulaStatus="loading",F(["dashboard","formulas","formula-checklist","search"]),R.formulas=j(O.formulas,!0,{cache:"force-cache"}).then(function(e){var r=St(e,n.knowledge);return n.formulas=r.length?r:Z.slice(),n.formulaStatus=r.length?"loaded":"fallback",ir(n.upgrade),n.formulaChecklist=Me(n.formulaConditionChecklist,n.upgrade),F(["dashboard","formulas","formula-checklist","search"]),n.formulas}).catch(function(e){return n.formulaStatus="fallback",n.loadErrors.push({url:O.formulas,message:e&&e.message?e.message:"formula_load_failed"}),F(["formulas","search"]),n.formulas})),R.formulas}function mt(){return R.search||(n.searchStatus="loading",F(["dashboard","search"]),R.search=j(O.search,!0,{cache:"force-cache"}).then(function(e){return n.searchEntries=kt(e),n.searchStatus=n.searchEntries.length?"loaded":"fallback",F(["dashboard","search"]),n.searchEntries}).catch(function(e){return n.searchStatus="fallback",n.loadErrors.push({url:O.search,message:e&&e.message?e.message:"search_load_failed"}),F(["search"]),n.searchEntries})),R.search}function ht(){return R.reviewSupport||(n.reviewSupportStatus="loading",F(["review"]),R.reviewSupport=Promise.all([j(O.reviewPlan,!0,{cache:"force-cache"}),j(O.remediation,!0,{cache:"force-cache"})]).then(function(e){return n.reviewPlan=e[0]||null,n.remediation=e[1]||null,n.reviewSupportStatus=n.reviewPlan||n.remediation?"loaded":"fallback",F(["review"]),{reviewPlan:n.reviewPlan,remediation:n.remediation}}).catch(function(e){return n.reviewSupportStatus="fallback",n.loadErrors.push({url:"review-support",message:e&&e.message?e.message:"review_support_load_failed"}),F(["review"]),{reviewPlan:n.reviewPlan,remediation:n.remediation}})),R.reviewSupport}function fe(e){return e=H(e||u.tab),n.loaded?e==="formulas"?ar():e==="search"?Promise.all([mt(),ar()]):e==="review"?ht():Promise.resolve(n):Promise.resolve(n)}function vt(e){var r=s(e&&e.points).map(function(a,t){var i=a.id||"point-"+String(t+1).padStart(3,"0"),l=a.title||a.n||"\u77E5\u8BC6\u70B9 "+(t+1),o=a.markdown||a.content||a.k||"";return{id:String(i),page:Number(a.page)||t+1,title:String(l),category:String(a.category||a.chapterTitle||"\u7EFC\u5408\u5B66\u4E60"),headings:s(a.headings).map(String),keywords:S(s(a.keywords).map(String)),markdown:String(o),url:a.url||a.u||"/modules/knowledge-detail.html?query="+encodeURIComponent(l)}});return r}function bt(e,r){var a=s(e&&e.categories).map(function(i){return{name:String(i.name||i.category||"\u7EFC\u5408\u5B66\u4E60"),count:Number(i.count)||0}});if(!a.length){var t=Object.create(null);r.forEach(function(i){t[i.category]=(t[i.category]||0)+1}),a=Object.keys(t).map(function(i){return{name:i,count:t[i]}})}return a.filter(function(i){return i.name})}function yt(e){if(!e||typeof e!="object")return null;var r=s(e.rounds).filter(function(t){return t&&Number(t.round)>=275&&t.id&&t.lane&&t.title}).map(function(t){return{round:Number(t.round),id:String(t.id),lane:String(t.lane),title:String(t.title),focus:String(t.focus||""),status:String(t.status||"queued"),acceptance:s(t.acceptance).map(String)}});if(e.version!==Pr||r.length!==100)return null;var a=s(e.lanes).map(function(t){return{id:String(t.id||""),title:String(t.title||t.id||""),summary:String(t.summary||"")}}).filter(function(t){return t.id&&t.title});return{version:String(e.version),goal:String(e.goal||"\u81F3\u5C11 100 \u5927\u8F6E\u6301\u7EED\u5347\u7EA7"),currentRound:Number(e.currentRound)||275,lanes:a,rounds:r,releaseGate:e.releaseGate||{}}}function xt(e){if(!e||typeof e!="object"||e.version!==Ur)return null;var r=e.summary||{},a=s(e.years).filter(function(t){return t&&Number(t.year)>=2e3&&Number(t.year)<=2025}).map(function(t){return{year:Number(t.year),status:String(t.status||"needs-source-review"),sourceStatus:String(t.sourceStatus||""),questionCount:Number(t.questionCount)||0,exactOrContainedQuestionStems:Number(t.exactOrContainedQuestionStems)||0,fuzzyAlignedQuestionStems:Number(t.fuzzyAlignedQuestionStems)||0,sourceComparableQuestionStems:Number(t.sourceComparableQuestionStems)||0,comparableRate:Number(t.comparableRate)||0,derivedOrUnprovenAnswers:Number(t.derivedOrUnprovenAnswers)||0,issues:s(t.issues).map(String)}});return a.length?{version:String(e.version),generatedAt:String(e.generatedAt||""),summary:{auditedYearSpan:String(r.auditedYearSpan||"2000-2025"),originalQuestionPdfYearSpan:String(r.originalQuestionPdfYearSpan||"2000-2024"),activeQuestionCount:Number(r.activeQuestionCount)||0,sourceComparableQuestionStems:Number(r.sourceComparableQuestionStems)||0,exactOrContainedQuestionStems:Number(r.exactOrContainedQuestionStems)||0,fuzzyAlignedQuestionStems:Number(r.fuzzyAlignedQuestionStems)||0,noComparableSourceQuestionStems:Number(r.noComparableSourceQuestionStems)||0,derivedOrUnprovenAnswers:Number(r.derivedOrUnprovenAnswers)||0,missingAnswers:Number(r.missingAnswers)||0,answerPdfVerbatimProofStatus:String(r.answerPdfVerbatimProofStatus||"not-established"),evidenceAlignedQuestionCount:Number(r.evidenceAlignedQuestionCount)||0,strictOriginalAnswerEvidenceCount:Number(r.strictOriginalAnswerEvidenceCount)||0,expectedAtomicQuestionCount:Number(r.expectedAtomicQuestionCount)||0,webAtomicQuestionCount:Number(r.webAtomicQuestionCount)||0,groupedSectionCount:Number(r.groupedSectionCount)||0,splitGroupedSectionCount:Number(r.splitGroupedSectionCount)||0,incompleteGroupedSections:Number(r.incompleteGroupedSections)||0,highlightYears:r.highlightYears||{}},boundaryNotes:s(e.boundaryNotes).map(String),quickLinks:s(e.quickLinks).filter(function(t){return t&&t.href&&t.label}).map(function(t){return{label:String(t.label),href:String(t.href)}}),years:a}:null}function kt(e){return s(e&&e.entries).map(function(r,a){return{id:"search-"+a,type:String(r.t||r.type||"\u7AD9\u5185"),title:String(r.n||r.title||"\u672A\u547D\u540D\u6761\u76EE"),url:r.u||r.url||"#",desc:String(r.d||r.desc||""),keywords:String(r.k||r.keywords||"")}})}function St(e,r){var a=s(e&&e.formulas).map(function(t,i){return{id:String(t.id||"formula-"+i),title:String(t.title||t.context||t.pointTitle||"\u516C\u5F0F"),formula:String(t.formula||t.mathText||t.tex||""),category:String(t.category||t.chapterTitle||"\u516C\u5F0F\u901F\u67E5"),pointId:t.pointId||"",pointTitle:String(t.pointTitle||t.title||""),page:Number(t.page)||0,keywords:S(s(t.keywords).map(String)),relatedQuestions:s(t.relatedQuestions),url:t.pointId?"/modules/knowledge-detail.html?query="+encodeURIComponent(t.pointTitle||t.title||t.pointId):t.url||""}}).filter(function(t){return t.formula&&t.formula.length<=360});return a.length||r.slice(0,80).forEach(function(t){wt(t.markdown).slice(0,3).forEach(function(i,l){a.push({id:t.id+"-formula-"+l,title:t.title,formula:i,category:t.category,pointId:t.id,pointTitle:t.title,page:t.page,keywords:t.keywords,relatedQuestions:[],url:t.url})})}),a.length||(a=Z.slice()),a}function wt(e){for(var r=[],a=String(e||""),t=/\$\$([\s\S]*?)\$\$/g,i;i=t.exec(a);){var l=String(i[1]||"").replace(/\s+/g," ").trim();l&&r.push(l)}return r}function ir(e){if(!(!e||typeof e!="object")){var r=Object.create(null);s(e.points||e.knowledge||e.items).forEach(function(t){t&&t.id&&(r[String(t.id)]=t)}),Object.keys(r).length&&(n.knowledge=n.knowledge.map(function(t){var i=r[t.id];return i?Object.assign({},t,{upgrade:i,priority:i.priority||t.priority,level:i.level||t.level,examHint:i.examHint||i.exam||t.examHint,pathGroup:i.pathGroup||t.pathGroup}):t})),s(e.chapterUpgradeMap).forEach(function(t){var i=t&&t.existingSource?t.existingSource:{},l=s(i.knowledgePages).map(String),o=s(t&&t.coreConcepts).map(function(d){return d&&d.name}).filter(Boolean);l.forEach(function(d){r[d]=Object.assign({},r[d]||{},{id:d,priority:t.examPriority||"",level:t.examPriority==="A"?"core":"support",examHint:o.slice(0,3).join(" / "),pathGroup:t.title||i.sourceTitle||"",chapterUpgrade:t})})}),Object.keys(r).length&&(n.knowledge=n.knowledge.map(function(t){var i=r[t.id];return i?Object.assign({},t,{upgrade:Object.assign({},t.upgrade||{},i),priority:i.priority||t.priority,level:i.level||t.level,examHint:i.examHint||i.exam||t.examHint,pathGroup:i.pathGroup||t.pathGroup,keywords:S((t.keywords||[]).concat(i.pathGroup||"",i.examHint||""))}):t}));var a=Object.create(null);s(e.formulas||e.formulaHighlights).forEach(function(t){t&&t.id&&(a[String(t.id)]=t)}),s(e.chapterUpgradeMap).forEach(function(t){s(t&&t.formulaSpine).forEach(function(i){!i||!i.formulaId||(a[String(i.formulaId)]=Object.assign({},i,{id:i.formulaId,chapterTitle:t.title,category:t.title,examPriority:t.examPriority}))})}),Object.keys(a).length&&(n.formulas=n.formulas.map(function(t){return a[t.id]?Object.assign({},t,{upgrade:a[t.id]}):t}),Object.keys(a).forEach(function(t){var i=n.formulas.some(function(o){return o.id===t}),l=a[t];!i&&l&&l.expression&&n.formulas.push({id:t,title:l.title||"\u5347\u7EA7\u516C\u5F0F",formula:l.expression,category:l.category||l.chapterTitle||"\u77E5\u8BC6\u5347\u7EA7",pointId:"",pointTitle:l.useWhen||l.chapterTitle||"",page:0,keywords:S([l.useWhen,l.derivationRoute].concat(l.checks||[])),relatedQuestions:[],url:"",upgrade:l})}))}}function nr(e){var r=s(e&&(e.paths||e.learningPaths)).map(function(o,d){return{id:String(o.id||"path-"+d),title:String(o.title||o.name||"\u8DEF\u5F84 "+(d+1)),desc:String(o.desc||o.description||""),points:s(o.points||o.pointIds||o.items).map(String),tone:o.tone||"teal"}}).filter(function(o){return o.points.length});if(r.length)return r;var a=s(e&&e.chapterUpgradeMap);if(e&&Array.isArray(e.crossChapterLearningPath)&&e.crossChapterLearningPath.length&&a.length){var t=Object.create(null);a.forEach(function(o){t[String(o.chapter)]=o});var i=e.crossChapterLearningPath.map(function(o,d){var c=[];return s(o.chapters).forEach(function(h){var P=t[String(h)],Se=P&&P.existingSource?P.existingSource:{};c=c.concat(s(Se.knowledgePages).map(String))}),{id:"upgrade-stage-"+(o.stage||d+1),title:o.title||"\u9636\u6BB5 "+(d+1),desc:(o.durationDays?o.durationDays+" \u5929 \xB7 ":"")+s(o.goals).slice(0,2).join(" / "),points:S(c),tone:d%3===0?"teal":d%3===1?"coral":"indigo",upgradeStage:o}}).filter(function(o){return o.points.length});if(i.length)return i}if(a.length){var l=a.map(function(o,d){var c=o.existingSource||{},h=String(o.chapter||"");return{id:"upgrade-chapter-"+(o.chapter||d+1),title:o.title||c.sourceTitle||"\u5347\u7EA7\u7AE0\u8282 "+(d+1),desc:(o.examPriority?"\u4F18\u5148\u7EA7 "+o.examPriority+" \xB7 ":"")+s(o.commonPitfalls).slice(0,1).join(""),points:s(c.knowledgePages).map(String),tone:d%3===0?"teal":d%3===1?"coral":"indigo",practiceUrl:h?"/modules/practice-dynamic.html?type=real&chapter="+encodeURIComponent(h)+"&mode=normal&from=edge-learning-path":"/modules/real-exams-dynamic.html?from=edge-learning-path",realExamUrl:h?Yr(h):"/modules/real-exams-dynamic.html?from=edge-learning-path",knowledgeUrl:h?Wr(h):"/modules/knowledge-detail.html",chapterUpgrade:o}}).filter(function(o){return o.points.length});if(l.length)return l}return n.categories.map(function(o,d){var c=n.knowledge.filter(function(h){return h.category===o.name});return{id:"category-"+d,title:o.name,desc:o.count+" \u4E2A\u77E5\u8BC6\u70B9",points:c.map(function(h){return h.id}),tone:d%3===0?"teal":d%3===1?"coral":"indigo"}})}function Ct(){try{v.documentElement.setAttribute("data-round263-fluid-exam-route-map",we),v.documentElement.setAttribute("data-r263-version",we)}catch{}}function Rt(){try{v.documentElement.setAttribute("data-round264-formula-condition-checklist",le),v.documentElement.setAttribute("data-r264-version",le)}catch{}}function ie(e){if(Array.isArray(e))return e;if(e&&typeof e=="object"){for(var r=["routes","items","questionRoutes","examRoutes","examRouteMap","routeMap","topicRoutes","clueRoutes","questionRouteMap","answerRoutes","clues"],a=0;a<r.length;a++){if(Array.isArray(e[r[a]]))return e[r[a]];if(e[r[a]]&&typeof e[r[a]]=="object"){var t=lr(e[r[a]]);if(t.length)return t}}return lr(e)}return[]}function lr(e){return!e||typeof e!="object"||Array.isArray(e)?[]:Object.keys(e).map(function(r){return e[r]}).filter(function(r){return r&&typeof r=="object"&&(r.id||r.title||r.name||r.routeText||r.answerEntry||r.triggers||r.trigger||r.formulas||r.firstFormulas)})}function Q(e){if(Array.isArray(e))return e.map(function(t){return t&&typeof t=="object"?t.title||t.name||t.text||t.desc||t.description||t.note||t.step||t.label||t.value||t.check||t.reason||t.action||"":t}).map(String).map(function(t){return t.trim()}).filter(Boolean);if(e&&typeof e=="object"){for(var r=["items","list","checks","steps","rules","questions","points","mistakes","drills"],a=0;a<r.length;a++)if(Array.isArray(e[r[a]]))return Q(e[r[a]]);return[e.title||e.name||e.text||e.desc||e.description||e.note||e.step||e.label||e.value||e.check||e.reason||e.action||""].map(String).map(function(t){return t.trim()}).filter(Boolean)}return Ze(e).map(String).map(function(t){return t.trim()}).filter(Boolean)}function At(e,r){var a=ie(e.formulas||e.firstFormulas||e.formulaRoute||e.formulaSpine||e.formulaIds||e.coreFormulas);return a.length?a:Ze(e.formula||e.formulaId||e.expression||e.mathText).map(function(t,i){return{id:e.formulaId||"route-formula-"+r+"-"+i,title:e.formulaTitle||e.formulaName||e.formulaId||"\u516C\u5F0F",formula:t,note:e.formulaNote||e.useWhen||e.condition||""}})}function G(e){return e=String(e||""),e&&n.formulas.find(function(r){return r.id===e})||null}function Tt(e){var r=s(n.upgrade&&n.upgrade.chapterUpgradeMap),a=r.find(function(t){return String(t&&t.chapter)===String(e)});return String(a&&(a.title||a.existingSource&&a.existingSource.sourceTitle)||"\u7B2C "+e+" \u7AE0")}function qa(e,r){var a=ie(e);return a.length?a:ie(r)}function Et(e){var r=e&&e.teacherBoard?e.teacherBoard:{},a=s(e&&e.examCorrectionStudio&&e.examCorrectionStudio.formulaConditionChecklist),t=s(e&&e.examCorrectionStudio&&e.examCorrectionStudio.boundaryConditionAudit),i=s(e&&e.examCorrectionStudio&&e.examCorrectionStudio.misconceptionClinic);return s(e&&e.questionRoutingRules).map(function(l,o){var d=s(l.firstFormulas).map(function(c){var h=G(c);return h?{id:h.id,title:h.title||h.pointTitle||c,formula:h.formula,note:h.pointTitle||h.category||""}:{id:c,title:c,formula:"",note:""}});return{id:"upgrade-route-"+o,title:s(l.trigger).slice(0,3).join(" / ")||"\u9898\u578B\u8DEF\u7EBF "+(o+1),triggers:s(l.trigger).map(String),chapters:s(l.routeToChapters).map(function(c){return Tt(c)}),routeText:l.answerEntry||"",formulas:d,boundaryReminders:S(s(r.boundaryConditionGuide).slice(0,4).concat(t.map(function(c){return(c.scene?c.scene+"\uFF1A":"")+s(c.mustWrite).join("\uFF0C")}).slice(0,2))),mistakeChecks:S(a.map(function(c){return(c.formulaFamily?c.formulaFamily+"\uFF1A":"")+s(c.mustAskBeforeUse).slice(0,2).join("\uFF1B")}).slice(0,3).concat(i.map(function(c){return c.teacherCheck||c.wrongPattern||""}).slice(0,2))),reviewOrder:S(s(r.studyOrder).slice(0,5)),source:"upgrade"}})}function jt(){return[{id:"core-route-flow-rate",title:"\u6D41\u91CF\u3001\u901F\u5EA6\u548C\u622A\u9762\u53D8\u5316",triggers:["\u6D41\u91CF","\u901F\u5EA6","\u8FDE\u7EED\u65B9\u7A0B","\u622A\u9762"],chapters:["\u8FDE\u7EED\u65B9\u7A0B","\u63A7\u5236\u4F53"],routeText:"\u5148\u753B\u8FDB\u51FA\u53E3\u622A\u9762\uFF0C\u5199\u6E05\u9762\u79EF\u3001\u5E73\u5747\u901F\u5EA6\u3001\u5BC6\u5EA6\u548C\u65B9\u5411\uFF1B\u4E0D\u53EF\u538B\u65F6\u518D\u628A rho \u7EA6\u6389\u3002",formulas:[{id:"fallback-continuity",title:"\u8FDE\u7EED\u65B9\u7A0B",formula:"",note:"\u6C42\u6D41\u91CF\u3001\u901F\u5EA6\u6216\u622A\u9762\u53D8\u5316\u65F6\u5148\u770B\u8D28\u91CF\u5B88\u6052\u3002"}],boundaryReminders:["\u5165\u53E3\u51FA\u53E3\u5916\u6CD5\u5411\u8981\u7EDF\u4E00","\u4E0D\u53EF\u538B\u4E0D\u662F\u9ED8\u8BA4\u6761\u4EF6\uFF0C\u8981\u4ECE\u9898\u5E72\u5224\u65AD","\u9762\u79EF\u5355\u4F4D\u5148\u6362\u6210\u5E73\u65B9\u7C73"],mistakeChecks:["\u4E0D\u8981\u628A\u4F53\u79EF\u6D41\u91CF\u548C\u8D28\u91CF\u6D41\u91CF\u6DF7\u7528","\u5E73\u5747\u901F\u5EA6\u548C\u70B9\u901F\u5EA6\u8981\u5206\u6E05"],reviewOrder:["\u8FDE\u7EED\u65B9\u7A0B","\u63A7\u5236\u4F53\u8FDB\u51FA\u53E3","\u5355\u4F4D\u68C0\u67E5"],source:"core"},{id:"core-route-energy-head",title:"\u538B\u5F3A\u3001\u6C34\u5934\u548C\u7BA1\u8DEF\u635F\u5931",triggers:["Bernoulli","\u4F2F\u52AA\u5229","\u538B\u5F3A","\u6C34\u5934","\u635F\u5931"],chapters:["\u80FD\u91CF\u65B9\u7A0B","\u7BA1\u6D41\u635F\u5931"],routeText:"\u5148\u9009\u4E24\u4E2A\u65AD\u9762\uFF0C\u753B\u57FA\u51C6\u7EBF\u548C\u80FD\u91CF\u7EBF\uFF1B\u518D\u5224\u65AD\u6709\u6CA1\u6709\u6CF5\u529F\u3001\u6CBF\u7A0B\u635F\u5931\u6216\u5C40\u90E8\u635F\u5931\u3002",formulas:[{id:"fallback-bernoulli",title:"Bernoulli \u65B9\u7A0B",formula:"",note:"\u5148\u5199\u9002\u7528\u6761\u4EF6\uFF0C\u518D\u8865\u635F\u5931\u9879\u3002"}],boundaryReminders:["\u81EA\u7531\u9762\u5E38\u53D6\u5927\u6C14\u538B\uFF0C\u4F46\u8981\u770B\u9898\u5E72\u662F\u5426\u5141\u8BB8\u5FFD\u7565\u901F\u5EA6","\u957F\u7BA1\u6469\u64E6\u6BB5\u4E0D\u80FD\u76F4\u63A5\u7528\u65E0\u635F\u4F2F\u52AA\u5229","\u538B\u5F3A\u5E15\u548C\u6C34\u5934\u7C73\u4E4B\u95F4\u8981\u4E58 rho g"],mistakeChecks:["\u4E0D\u8981\u6F0F\u5C40\u90E8\u635F\u5931","\u57FA\u51C6\u9762\u9AD8\u5EA6\u7B26\u53F7\u8981\u7EDF\u4E00"],reviewOrder:["\u4F2F\u52AA\u5229\u6761\u4EF6","\u6C34\u5934\u635F\u5931","\u5355\u4F4D\u6362\u7B97"],source:"core"},{id:"core-route-momentum-force",title:"\u5F2F\u7BA1\u3001\u55B7\u6D41\u548C\u7ED3\u6784\u53D7\u529B",triggers:["\u63A7\u5236\u4F53","\u5F2F\u7BA1","\u55B7\u6D41","\u53D7\u529B","\u53CD\u529B"],chapters:["\u52A8\u91CF\u65B9\u7A0B","\u63A7\u5236\u4F53\u53D7\u529B"],routeText:"\u5148\u753B\u63A7\u5236\u4F53\u548C\u5750\u6807\u6B63\u65B9\u5411\uFF0C\u5217\u538B\u529B\u3001\u91CD\u529B\u3001\u58C1\u9762\u6216\u652F\u5EA7\u53CD\u529B\uFF0C\u518D\u5199\u8FDB\u51FA\u53E3\u52A8\u91CF\u901A\u91CF\u3002",formulas:[{id:"fallback-navier-stokes",title:"\u52A8\u91CF\u5B88\u6052\u4E3B\u7EBF",formula:"",note:"\u6574\u4F53\u53D7\u529B\u9898\u4F18\u5148\u7528\u79EF\u5206\u5F0F\u52A8\u91CF\u65B9\u7A0B\u3002"}],boundaryReminders:["\u538B\u529B\u4F5C\u7528\u9762\u548C\u5916\u6CD5\u5411\u8981\u914D\u5957","\u5165\u53E3\u52A8\u91CF\u901A\u91CF\u6309 v \u70B9\u4E58 n \u7684\u7B26\u53F7\u8FDB\u5165","\u9898\u76EE\u95EE\u6C34\u5BF9\u7ED3\u6784\u7684\u529B\u65F6\u6700\u540E\u8981\u53D6\u53CD\u5411"],mistakeChecks:["\u4E0D\u8981\u628A\u58C1\u9762\u5BF9\u6C34\u548C\u6C34\u5BF9\u58C1\u7684\u529B\u6DF7\u6210\u4E00\u4E2A\u65B9\u5411","\u5F2F\u7BA1\u9898\u5148\u5206 x/y \u5206\u91CF"],reviewOrder:["\u63A7\u5236\u4F53","\u5916\u6CD5\u5411","\u52A8\u91CF\u901A\u91CF","\u53CD\u529B\u65B9\u5411"],source:"core"},{id:"core-route-similarity",title:"\u91CF\u7EB2\u5206\u6790\u548C\u6A21\u578B\u76F8\u4F3C",triggers:["\u91CF\u7EB2","Buckingham","\u03C0","Re","Fr","\u76F8\u4F3C","\u6A21\u578B"],chapters:["\u91CF\u7EB2\u5206\u6790","\u76F8\u4F3C\u51C6\u5219"],routeText:"\u5148\u5217\u53D8\u91CF\u548C\u57FA\u672C\u91CF\u7EB2\uFF0C\u9009\u91CD\u590D\u53D8\u91CF\u7EC4\u6210 \u03C0 \u7FA4\uFF0C\u518D\u5224\u65AD\u8FD9\u9898\u4E3B\u8981\u4FDD Re\u3001Fr\u3001Eu\u3001Ma \u8FD8\u662F St\u3002",formulas:[{id:"fallback-reynolds",title:"Reynolds \u6570",formula:"",note:"\u9ECF\u6027\u5360\u4E3B\u5BFC\u65F6\u4F18\u5148\u68C0\u67E5 Re \u76F8\u4F3C\u3002"}],boundaryReminders:["\u6A21\u578B\u548C\u539F\u578B\u7684\u51E0\u4F55\u6BD4\u4F8B\u5148\u5199\u6E05","\u4E0D\u662F\u6240\u6709\u65E0\u91CF\u7EB2\u6570\u90FD\u80FD\u540C\u65F6\u4FDD\u6301","\u6700\u540E\u68C0\u67E5\u901F\u5EA6\u3001\u529B\u548C\u65F6\u95F4\u6BD4\u4F8B\u7684\u5355\u4F4D"],mistakeChecks:["\u4E0D\u8981\u4E00\u4E0A\u6765\u5168\u4FDD\u76F8\u4F3C\u51C6\u5219","\u91CD\u590D\u53D8\u91CF\u5FC5\u987B\u8986\u76D6\u57FA\u672C\u91CF\u7EB2\u4E14\u5F7C\u6B64\u72EC\u7ACB"],reviewOrder:["\u53D8\u91CF\u8868","\u03C0 \u7FA4","\u4E3B\u63A7\u76F8\u4F3C\u51C6\u5219","\u7F29\u5C3A\u6362\u7B97"],source:"core"}]}function Mt(e,r){e=e||{};var a=At(e,r).map(function(t,i){if(typeof t=="string"||typeof t=="number"){var l=String(t),o=G(l);return o?{id:o.id,title:o.title||o.pointTitle||l,formula:o.formula,note:o.pointTitle||o.category||""}:{id:l,title:l,formula:"",note:""}}t=t||{};var d=t.id||t.formulaId||t.pointId||"route-formula-"+r+"-"+i;return{id:String(d),title:String(t.title||t.name||t.formulaTitle||t.formulaName||t.formulaId||"\u516C\u5F0F"),formula:String(t.formula||t.expression||t.mathText||""),note:String(t.note||t.useWhen||t.condition||t.desc||t.route||"")}});return{id:String(e.id||e.routeId||e.clueId||"exam-route-"+r),title:String(e.title||e.name||e.questionType||e.routeTitle||e.clue||"\u9898\u578B\u8DEF\u7EBF "+(r+1)),triggers:S(Q(e.triggers||e.trigger||e.keywords||e.clues||e.questionClues||e.signals||e.examSignals)),chapters:S(Q(e.chapters||e.routeToChapters||e.chapterRoute||e.knowledgeRoute||e.knowledgePath||e.relatedChapters)),routeText:String(e.routeText||e.answerEntry||e.firstStep||e.teacherNote||e.desc||e.summary||e.route||e.path||""),formulas:a,boundaryReminders:S(Q(e.boundaryReminders||e.boundaryConditions||e.boundaryChecks||e.boundaryRoute||e.conditions)),mistakeChecks:S(Q(e.mistakeChecks||e.wrongCauseChecks||e.commonPitfalls||e.checklist||e.pitfalls)),reviewOrder:S(Q(e.reviewOrder||e.reviewSequence||e.studyOrder||e.nextReview||e.steps)),source:e.source||"round263"}}function or(e,r){var a=ie(r);a.length||(a=ie(e&&(e.examRouteMap||e.routeMap||e.topicRoutes||e.questionRouteMap)));var t=a.map(Mt).filter(function(o){return o.title||o.triggers.length||o.routeText}),i=Et(e).concat(jt()),l=Object.create(null);return t.concat(i).forEach(function(o,d){if(o){var c=o.id||"exam-route-"+d;l[c]||(l[c]=o)}}),Object.keys(l).map(function(o){return l[o]}).slice(0,24)}function Lt(e){if(Array.isArray(e))return e;if(e&&typeof e=="object"){for(var r=["items","formulas","checklist","formulaChecklist","formulaConditionChecklist","conditionChecklist","formulaConditionCards","conditionCards","formulaCards","cards","entries","records","data","rules"],a=0;a<r.length;a++)if(Array.isArray(e[r[a]]))return e[r[a]];return Object.keys(e).map(function(t){var i=e[t];return i&&typeof i=="object"&&!Array.isArray(i)?Object.assign({id:i.id||t},i):null}).filter(function(t){return t&&(t.title||t.name||t.formula||t.expression||t.applyConditions||t.conditions||t.commonMistakes||t.wrongCauses)})}return[]}function T(e,r){var a=Q(e);return!a.length&&r&&(a=Q(r)),S(a)}function ur(e){return s(e).map(function(r){if(!r)return null;if(typeof r=="string")return{label:r,href:"",use:""};if(typeof r!="object")return null;var a=C(r.label,r.title,r.name,r.entry,r.text,r.href),t=C(r.href,r.url,r.link,r.path),i=C(r.use,r.note,r.desc,r.description,r.cue,r.trainingUse);return!a&&!t&&!i?null:{label:a||t||"\u76F8\u5173\u5165\u53E3",href:t,use:i}}).filter(Boolean).slice(0,6)}function C(){for(var e=0;e<arguments.length;e++){var r=arguments[e];if(r!=null)if(Array.isArray(r)){var a=C.apply(null,r);if(a)return a}else if(typeof r=="object"){var t=r.title||r.name||r.text||r.desc||r.note||r.summary;if(t)return String(t)}else{var i=String(r).trim();if(i)return i}}return""}function pe(e,r,a){e=e||{};var t=String(e.formulaId||e.formula_id||e.idRef||e.relatedFormulaId||e.relatedId||e.pointId||e.knowledgeId||""),i=t?G(t):null,l=C(e.title,e.name,e.label,e.formulaTitle,e.formulaName,e.formulaFamily,i&&(i.title||i.pointTitle),"\u516C\u5F0F\u6761\u4EF6\u5361 "+(r+1)),o=C(e.formula,e.expression,e.mathText,e.tex,e.latex,e.math,i&&i.formula),d=C(e.category,e.chapterTitle,e.chapter,e.family,e.formulaFamily,e.group,e.topic,i&&i.category,"\u516C\u5F0F\u6761\u4EF6"),c=S(s(e.keywords||e.tags||e.triggers).concat(l,d,t,i&&i.pointTitle,i&&i.keywords,e.aliases,e.formulaForms,e.errorTypes,e.invalidWhen,e.notEnoughConditions,e.routeLinks,e.examEntry).map(function(h){return Array.isArray(h)?h.join(" "):h}));return{id:String(e.id||e.checklistId||e.key||t||"formula-checklist-"+r),formulaId:t||i&&i.id||"",title:l,formula:o,category:d,applyConditions:T(e.applyConditions||e.applicableConditions||e.conditions||e.conditionChecks||e.useWhen||e.whenToUse||e.assumptions||e.scope||e.mustAskBeforeUse,e.whenToUse),notEnoughConditions:T(e.notEnoughConditions||e.missingConditions||e.notEnough||e.notEnoughChecks||e.needMoreConditions||e.conditionGaps),invalidWhen:T(e.invalidWhen||e.notUseWhen||e.failureCases||e.invalidCases||e.outOfScope||e.cannotUseWhen),boundaryConditions:T(e.boundaryConditions||e.boundaryReminders||e.boundaryChecks||e.boundaries||e.limits||e.limitations||e.edgeConditions||e.validRange),unitDirections:T(e.unitDirections||e.units||e.unitChecks||e.directionChecks||e.direction||e.signChecks||e.signConvention||e.orientationChecks||e.dimensionChecks),commonMistakes:T(e.commonMistakes||e.commonPitfalls||e.wrongCauses||e.errorCauses||e.mistakeReasons||e.mistakes||e.errorChecks||e.pitfalls),remedialTraining:T(e.remedialTraining||e.training||e.fixTraining||e.correctionTraining||e.remedies||e.repairPractice||e.practice||e.drills||e.reviewOrder),aliases:T(e.aliases||e.alias||e.entryAliases||e.aliasAndEntryMap),formulaForms:T(e.formulaForms||e.forms||e.formulaVariants||e.formulaTexts||e.formulaList),routeLinks:ur(e.routeLinks||e.links||e.problemEntryLinks||e.examLinks),examEntry:C(e.examEntry,e.entry,e.problemEntry,e.questionEntry),answerSkeleton:T(e.answerSkeleton||e.solutionSkeleton||e.steps||e.solveSteps),mistakeTags:T(e.mistakeTags||e.errorTags||e.mistakeTypes),reviewOrder:T(e.reviewOrder||e.order||e.checkOrder),teacherNote:C(e.teacherNote,e.note,e.hint,e.summary),source:a||e.source||"\u516C\u5F0F\u6761\u4EF6\u5386\u53F2\u5305",keywords:c,url:e.url||i&&i.url||""}}function Ot(e){e=Object.assign({},e||{});var r=e.title||e.entry||"\u516C\u5F0F\u6761\u4EF6\u5361",a=function(t,i){s(e[t]).length||(e[t]=s(i),n.visibilityIssues.push({type:"formula-checklist-fill",id:e.id||r,field:t}))};return a("applyConditions",["\u5148\u786E\u8BA4\u9898\u5E72\u4FE1\u53F7\u3001\u6A21\u578B\u5047\u8BBE\u548C\u516C\u5F0F\u9002\u7528\u8303\u56F4\uFF0C\u518D\u5199\u516C\u5F0F\u3002"]),a("boundaryConditions",["\u5148\u5199\u5165\u53E3\u3001\u51FA\u53E3\u3001\u56FA\u58C1\u3001\u81EA\u7531\u9762\u3001\u8FDC\u573A\u6216\u63A7\u5236\u4F53\u5916\u6CD5\u5411\uFF0C\u518D\u4EE3\u5165\u516C\u5F0F\u3002"]),a("unitDirections",["\u7B97\u5B8C\u6838\u5BF9\u5355\u4F4D\u3001\u6B63\u65B9\u5411\u548C\u6570\u91CF\u7EA7\uFF1B\u538B\u5F3A\u3001\u6C34\u5934\u3001\u901A\u91CF\u548C\u529B\u4E0D\u8981\u6DF7\u5355\u4F4D\u3002"]),a("commonMistakes",["\u53EA\u80CC\u516C\u5F0F\u4F46\u6CA1\u6709\u5199\u9002\u7528\u6761\u4EF6\u3001\u8FB9\u754C\u6761\u4EF6\u6216\u5355\u4F4D\u65B9\u5411\u3002"]),a("remedialTraining",["\u91CD\u505A\u4E00\u9053\u540C\u7C7B\u771F\u9898\uFF0C\u53EA\u5199\u6761\u4EF6\u8868\u548C\u8FB9\u754C\u5355\u4F4D\uFF0C\u4E0D\u6025\u7740\u7B97\u6570\u503C\u3002"]),s(e.routeLinks).length||(e.routeLinks=[{label:"\u77E5\u8BC6\u5347\u7EA7\u5165\u53E3\uFF1A\u516C\u5F0F\u6761\u4EF6\u8868",href:"/modules/knowledge-upgrade-2026.html#formula-condition-checklist",use:"\u56DE\u5230\u5386\u53F2\u6761\u4EF6\u8868\u6838\u5BF9\u9002\u7528\u6761\u4EF6\u3001\u8FB9\u754C\u548C\u5355\u4F4D\u65B9\u5411\u3002"}],n.visibilityIssues.push({type:"formula-checklist-fill",id:e.id||r,field:"routeLinks"})),e.teacherNote||(e.teacherNote="\u516C\u5F0F\u80FD\u4E0D\u80FD\u7528\uFF0C\u5148\u770B\u6761\u4EF6\u3001\u8FB9\u754C\u548C\u5355\u4F4D\u65B9\u5411\u3002"),e}function _t(e){var r=e&&e.examCorrectionStudio?e.examCorrectionStudio:{},a=s(r.formulaConditionChecklist).map(function(c,h){return c=c||{},pe({id:c.id||"upgrade-formula-condition-"+h,title:c.formulaFamily||c.title,category:c.formulaFamily||"\u516C\u5F0F\u6761\u4EF6",applyConditions:c.mustAskBeforeUse,boundaryConditions:c.boundaryConditions||c.boundaryChecks,unitDirections:c.unitDirections||c.unitChecks,commonMistakes:c.commonMistakes||c.wrongPattern||c.pitfalls,remedialTraining:c.remedialTraining||c.training||c.teacherCheck,teacherNote:c.teacherCheck||c.note,keywords:[c.formulaFamily].concat(c.mustAskBeforeUse||[])},h,"\u8BB2\u4E49\u89C4\u5219")}),t=e&&e.formulaConditionChecklist?e.formulaConditionChecklist:null;if(t&&typeof t=="object"){var i=s(t.mistakeTaxonomy).map(function(c){return C(c.type,c.check,c.examples)}).filter(Boolean),l=s(t.examTrainingPlan).map(function(c){return C(c.focus,c.trainingUse)}).filter(Boolean),o=s(t.problemEntryLinks).map(function(c){return C(c.entry,c.cue,c.href)}).filter(Boolean),d=s(t.aliasAndEntryMap);d.forEach(function(c,h){c=c||{},a.push(pe({id:c.id||"upgrade-r264-entry-"+h,title:c.entry||c.title,category:t.entryLabel||"\u516C\u5F0F\u9002\u7528\u6761\u4EF6",applyConditions:c.triggerWords||t.teacherUse||t.searchKeywords,boundaryConditions:["\u5148\u5199\u56FA\u58C1\u3001\u81EA\u7531\u9762\u3001\u5165\u53E3\u51FA\u53E3\u3001\u63A7\u5236\u4F53\u5916\u6CD5\u5411\u548C\u635F\u5931\u9879\uFF0C\u518D\u4EE3\u516C\u5F0F\u3002",C(t.densityUpgrade&&t.densityUpgrade.teacherReadingRule)],unitDirections:["\u7B97\u5B8C\u56DE\u67E5\u5355\u4F4D\u3001\u65B9\u5411\u548C\u6570\u91CF\u7EA7\uFF1B\u6C34\u5934\u7C73\u548C\u538B\u5F3A\u5E15\u4E4B\u95F4\u8981\u4E58 rho g\u3002",C(t.densityUpgrade&&t.densityUpgrade.studentOutput)],commonMistakes:i,remedialTraining:l.concat(o),teacherNote:t.teacherUse||t.siteUpdateNote,keywords:[c.entry,c.aliases,c.triggerWords,c.routeLabels,t.searchKeywords]},h,"\u516C\u5F0F\u6761\u4EF6\u5386\u53F2\u5305"))})}return a}function Me(e,r){var a=Lt(e).map(function(l,o){return pe(l,o,"\u516C\u5F0F\u6761\u4EF6\u5386\u53F2\u5305")}).filter(function(l){return l.title||l.formula||l.applyConditions.length||l.commonMistakes.length}),t=_t(r).concat(Qr.map(function(l,o){return pe(l,o,"\u8BB2\u4E49\u515C\u5E95")})),i=Object.create(null);return a.concat(t).map(Ot).forEach(function(l,o){if(l){var d=l.id||"formula-checklist-"+o;i[d]||(i[d]=Object.assign({},l,{id:d}))}}),Object.keys(i).map(function(l){return i[l]}).slice(0,80)}function ge(e,r){var a=x(r);if(!a)return 0;var t=a.split(" ").filter(Boolean),i=x([e.title,e.formula,e.category,e.formulaId,s(e.keywords).join(" "),s(e.applyConditions).join(" "),s(e.notEnoughConditions).join(" "),s(e.invalidWhen).join(" "),s(e.boundaryConditions).join(" "),s(e.unitDirections).join(" "),s(e.commonMistakes).join(" "),s(e.remedialTraining).join(" "),s(e.aliases).join(" "),s(e.formulaForms).join(" "),s(e.answerSkeleton).join(" "),s(e.mistakeTags).join(" "),s(e.reviewOrder).join(" "),s(e.routeLinks).map(function(o){return[o.label,o.href,o.use].join(" ")}).join(" "),e.examEntry].join(" ")),l=i.indexOf(a)>=0?70:0;return x(e.title).indexOf(a)>=0&&(l+=40),t.forEach(function(o){i.indexOf(o)>=0&&(l+=9)}),l}function sr(){var e=u.formulaChecklistQuery,r=u.formulaChecklistCategory,a=s(n.formulaChecklist).filter(function(t){return r!=="all"&&t.category!==r?!1:x(e)?ge(t,e)>0:!0}).sort(function(t,i){var l=ge(i,e)-ge(t,e);return l||String(t.title).localeCompare(String(i.title),"zh-Hans-CN")});return a.slice(0,u.listLimit)}function Ft(e){if(!e)return null;var r=String(e.id||""),a=x([e.title,e.pointTitle].join(" ")),t=x(e.formula);return s(n.formulaChecklist).find(function(i){if(r&&i.formulaId===r)return!0;var l=x(i.title);if(a&&l&&(a.indexOf(l)>=0||l.indexOf(a)>=0))return!0;var o=x(i.formula);return t&&o&&(t.indexOf(o)>=0||o.indexOf(t)>=0)})||null}function It(){var e=sr(),r=s(n.formulaChecklist).find(function(a){return a.id===u.selectedFormulaChecklist});return r&&(u.formulaChecklistCategory==="all"||r.category===u.formulaChecklistCategory)&&(!x(u.formulaChecklistQuery)||ge(r,u.formulaChecklistQuery)>0)?r:e[0]||s(n.formulaChecklist)[0]||null}function cr(e,r){var a=x(r);if(!a)return 0;var t=a.split(" ").filter(Boolean),i=x([e.title,e.routeText,s(e.triggers).join(" "),s(e.chapters).join(" "),s(e.formulas).map(function(o){return[o.title,o.note,o.formula].join(" ")}).join(" "),s(e.boundaryReminders).join(" "),s(e.mistakeChecks).join(" "),s(e.reviewOrder).join(" ")].join(" ")),l=i.indexOf(a)>=0?60:0;return s(e.triggers).forEach(function(o){var d=x(o);d&&a.indexOf(d)>=0?l+=35:d&&i.indexOf(d)>=0&&t.some(function(c){return d.indexOf(c)>=0||c.indexOf(d)>=0})&&(l+=12)}),t.forEach(function(o){i.indexOf(o)>=0&&(l+=8)}),l}function Le(e){return e?e.source==="round263"?70:e.source==="upgrade"?15:e.source==="core"?4:8:0}function me(e){return(e.score||0)+(e.score>0?Le(e.route):0)}function Pt(){var e=n.examRoutes||[];if(!e.length)return null;var r=e.find(function(i){return i.id===u.selectedExamRoute});if(r)return r;var a=u.examClue||"";if(!x(a))return null;var t=e.map(function(i){return{route:i,score:cr(i,a)}}).sort(function(i,l){var o=me(l)-me(i);return o||l.score-i.score});return(t[0]&&t[0].score>0?t[0].route:e[0])||null}function Nt(){var e=u.examClue||"";return(n.examRoutes||[]).map(function(r,a){return{route:r,score:cr(r,e),index:a}}).sort(function(r,a){var t=me(a)-me(r);if(t)return t;if(a.score!==r.score)return a.score-r.score;var i=Le(a.route)-Le(r.route);return i||r.index-a.index}).slice(0,6)}function Ut(){var e=$(),r=n.knowledge.length||0,a=0,t=0,i=0;Object.keys(e.progress||{}).forEach(function(d){var c=e.progress[d];c&&c.status==="done"?a++:c&&c.status==="learning"?t++:c&&c.status==="weak"&&i++});var l=Oe(),o=l.filter(function(d){return!d.due||d.due<=w()}).length;return{total:r,done:a,learning:t,weak:i,pct:r?Math.round(a/r*100):0,reviewTotal:l.length,due:o}}function dr(){var e=$();return n.categories.map(function(r){var a=n.knowledge.filter(function(l){return l.category===r.name}),t=a.filter(function(l){return e.progress[l.id]&&e.progress[l.id].status==="done"}).length,i=a.filter(function(l){return e.progress[l.id]&&e.progress[l.id].status==="weak"}).length;return{name:r.name,count:a.length||r.count,done:t,weak:i,pct:a.length?Math.round(t/a.length*100):0}})}function zt(e){var r=$(),a=S(s(e&&e.points)),t=a.filter(function(l){return r.progress[l]&&r.progress[l].status==="done"}).length,i=a.filter(function(l){return r.progress[l]&&r.progress[l].status==="weak"}).length;return{count:a.length,done:t,weak:i,pct:a.length?Math.round(t/a.length*100):0}}function qt(e){var r=$(),a=n.knowledge.slice().sort(function(t,i){var l=r.progress[t.id]||{},o=r.progress[i.id]||{},d=l.status==="weak"?-4:l.status==="learning"?-2:l.status==="done"?4:0,c=o.status==="weak"?-4:o.status==="learning"?-2:o.status==="done"?4:0;return d!==c?d-c:(t.page||0)-(i.page||0)});return a.slice(0,e||8)}function Oe(){var e=$(),r=s(e.review).map(function(i){return Object.assign({source:"edge"},i)}),a=Qt(),t=Object.create(null);return r.concat(a).forEach(function(i){!i||!i.id||(t[i.id]=i)}),Object.keys(t).map(function(i){return t[i]}).sort(function(i,l){return(i.due||0)-(l.due||0)})}function Qt(){var e=q("fm_wrong",{}),r=te(),a=Array.isArray(e&&e[r])?e[r]:[];return a.map(function(t,i){var l=t.id||"fm-wrong-"+i;return{id:"fmwrong:"+l,rawId:l,source:"fm_wrong",sourceType:t.type||"\u9519\u9898",title:t.title||t.question||t.name||"\u5386\u53F2\u9519\u9898",detail:t.detail||t.explanation||t.note||"",url:t.url||"",category:t.category||t.module||"\u9519\u9898\u672C",due:t.due||0,ef:t.ef,rep:t.rep,ivl:t.ivl,reviews:t.reviews||0,createdAt:t.createdAt||t.t||w()}})}function Bt(e){return e==="done"?"\u5DF2\u638C\u63E1":e==="learning"?"\u5B66\u4E60\u4E2D":e==="weak"?"\u8584\u5F31\u70B9":"\u672A\u5F00\u59CB"}function Dt(e){var r=$();return r.progress[e]&&r.progress[e].status||"todo"}function fr(e,r){var a=n.knowledge.find(function(t){return t.id===e});return a?(ce(function(t){t.progress[e]=Object.assign({},t.progress[e]||{},{status:r,updatedAt:w(),title:a.title,category:a.category,page:a.page,visits:(t.progress[e]&&t.progress[e].visits||0)+1})}),k("point_status",{id:e,status:r,title:a.title}),b({focusRole:null}),!0):!1}function J(e){var r=String(e&&e.title||"").trim();if(!r)return!1;var a=String(e.sourceId||e.id||Vt(r)),t=String(e.sourceType||"\u590D\u4E60"),i="edge:"+t+":"+a;return ce(function(l){var o=s(l.review),d=o.find(function(h){return h.id===i}),c={id:i,source:"edge",sourceId:a,sourceType:t,title:r,detail:String(e.detail||""),formula:String(e.formula||""),url:e.url||"",category:String(e.category||"\u590D\u4E60\u672C"),tags:S(e.tags||[]),createdAt:w(),due:w(),ef:2.5,rep:0,ivl:0,reviews:0};d?Object.assign(d,c,{createdAt:d.createdAt||c.createdAt,due:d.due||c.due,ef:d.ef||c.ef,rep:d.rep||0,ivl:d.ivl||0,reviews:d.reviews||0}):o.unshift(c),l.review=o}),k("review_add",{id:i,title:r,type:t}),hr("\u5DF2\u52A0\u5165\u590D\u4E60\u672C"),b({focusRole:null}),!0}function pr(e){ce(function(r){r.review=s(r.review).filter(function(a){return a.id!==e})}),k("review_remove",{id:e}),b({focusRole:null})}function gr(e,r){if(r=ee(r,0,5),String(e).indexOf("fmwrong:")===0){try{m.FMSpacedRep&&typeof m.FMSpacedRep.rate=="function"&&m.FMSpacedRep.rate(String(e).slice(8),r)}catch{}return k("review_rate_fm_wrong",{id:e,quality:r}),b({focusRole:null}),!0}return ce(function(a){a.review=s(a.review).map(function(t){if(t.id!==e)return t;var i=Object.assign({},t);return m.FMSpacedRep&&typeof m.FMSpacedRep.apply=="function"?i=Object.assign(i,m.FMSpacedRep.apply(i,r)):i=Ht(i,r),i.lastQuality=r,i})}),k("review_rate",{id:e,quality:r}),b({focusRole:null}),!0}function Ht(e,r){var a=Object.assign({ef:2.5,rep:0,ivl:0},e);return r<3?(a.rep=0,a.ivl=1):(a.rep=(a.rep||0)+1,a.rep===1?a.ivl=1:a.rep===2?a.ivl=6:a.ivl=Math.round((a.ivl||1)*(a.ef||2.5))),a.ef=Math.max(1.3,(a.ef||2.5)+(.1-(5-r)*(.08+(5-r)*.02))),a.lastReview=w(),a.due=w()+a.ivl*864e5,a.reviews=(a.reviews||0)+1,a}function Vt(e){return x(e).replace(/[^\w\u4e00-\u9fa5]+/g,"-").replace(/^-|-$/g,"").slice(0,64)||String(w())}function mr(e,r){r=r||{};var a=r.limit||24,t=x(e),i=_e();if(!t)return i.slice(0,a).map(function(d){return{item:d,score:0}});var l=t.split(" ").filter(Boolean),o=i.map(function(d){var c=x([d.title,d.desc,d.keywords,d.type,d.category].join(" ")),h=0;return x(d.title)===t&&(h+=100),x(d.title).indexOf(t)>=0&&(h+=70),c.indexOf(t)>=0&&(h+=42),l.forEach(function(P){x(d.title).indexOf(P)>=0?h+=18:c.indexOf(P)>=0&&(h+=8)}),d.type==="\u77E5\u8BC6"&&(h+=4),d.type==="\u516C\u5F0F"&&(h+=3),{item:d,score:h}}).filter(function(d){return d.score>0}).sort(function(d,c){return c.score-d.score});return o.slice(0,a)}function _e(){var e=[],r=Object.create(null);function a(t){if(!(!t||!t.title)){var i=[t.type,t.title,t.url].join("|");r[i]||(r[i]=!0,e.push(t))}}return n.searchEntries.forEach(function(t){a({id:t.id,type:t.type,title:t.title,desc:t.desc,keywords:t.keywords,url:t.url,category:t.type})}),qr.forEach(function(t){a({id:t.id,type:t.type,title:t.title,desc:t.desc,keywords:t.keywords,url:t.url,category:"Round342 \u53D1\u73B0\u5165\u53E3"})}),n.knowledge.forEach(function(t){a({id:t.id,type:"\u77E5\u8BC6",title:"P"+t.page+" "+t.title,desc:t.category+" \xB7 "+Fe(t.markdown,90),keywords:t.keywords.concat(t.headings).join(" "),url:t.url,category:t.category,sourcePoint:t})}),n.formulas.slice(0,900).forEach(function(t){a({id:t.id,type:"\u516C\u5F0F",title:t.title,desc:t.pointTitle||t.category,keywords:[t.formula,t.category].concat(t.keywords||[]).join(" "),url:t.url||(t.pointTitle?"/modules/knowledge-detail.html?query="+encodeURIComponent(t.pointTitle):""),category:t.category,sourceFormula:t})}),e}function Fe(e,r){return String(e||"").replace(/\$\$[\s\S]*?\$\$/g," ").replace(/^#+\s*/gm,"").replace(/[-*_`>#]/g," ").replace(/\s+/g," ").trim().slice(0,r||120)}function Yt(){var e=x(u.formulaQuery),r=u.formulaCategory,a=n.formulas.filter(function(t){if(r!=="all"&&t.category!==r)return!1;if(!e)return!0;var i=x([t.title,t.formula,t.pointTitle,t.category,s(t.keywords).join(" ")].join(" "));return i.indexOf(e)>=0||e.split(" ").every(function(l){return i.indexOf(l)>=0})});return a.sort(function(t,i){var l=(t.relatedQuestions||[]).length+(t.upgrade?10:0),o=(i.relatedQuestions||[]).length+(i.upgrade?10:0);return o-l}),a.slice(0,u.listLimit)}function he(e){var r=String(e||"").trim();return!r||/^(javascript|data):/i.test(r)?"":r}function ve(e,r){var a=he(e);if(!a||a.charAt(0)==="#")return a;try{var t=new URL(a,m.location.origin);return t.origin!==m.location.origin?a:(/\/modules\/knowledge(?:-detail|-upgrade-2026)?\.html$/.test(t.pathname)&&(t.searchParams.set("from","teacher-workbench"),r&&t.searchParams.set("focus",String(r).slice(0,80))),t.pathname+t.search+t.hash)}catch{return a}}function Wt(e){try{if(!e||!e.getAttribute)return;var r=he(e.getAttribute("href"));if(!r||r.charAt(0)==="#"||!/(knowledge|real-exams|practice|resources|fluid-intensive-training)/.test(r))return;var a=x(e.textContent||e.getAttribute("aria-label")||r).slice(0,42);re(De,{href:r,label:a||r,at:w()})}catch{}}function $t(){var e=q(De,null);return!e||!e.href?null:e}function Gt(e){return e=String(e||"todo").replace(/[^a-z]/g,"")||"todo","is-"+e}function hr(e){try{if(m.FMUI&&typeof m.FMUI.ok=="function"){m.FMUI.ok(e,1800);return}}catch{}if(y){var r=v.createElement("div");r.className="eflu-toast",r.setAttribute("role","status"),r.setAttribute("aria-live","polite"),r.textContent=e,y.appendChild(r),setTimeout(function(){r.classList.add("is-out"),setTimeout(function(){r.parentNode&&r.parentNode.removeChild(r)},240)},1600)}}function Jt(){var e=v.querySelector("[data-edge-fluid-upgrade-root]");if(!e&&(e=v.getElementById(Ce),e&&e.classList&&e.classList.contains("round263-fluid-exam-route-map"))){var r=e.querySelector("[data-edge-fluid-learning-root]");r||(r=v.createElement("section"),r.setAttribute("data-edge-fluid-learning-root",""),r.setAttribute("aria-label","\u5B66\u4E60\u4EA4\u4E92\u5347\u7EA7"),e.appendChild(r)),e=r}if(e)return e;e=v.createElement("section"),e.id=Ce,e.setAttribute("aria-label","\u5B66\u4E60\u4EA4\u4E92\u5347\u7EA7");var a=v.getElementById("vAuthed");if(a){var t=a.querySelector(".hub");return t&&t.parentNode?t.parentNode.insertBefore(e,t.nextSibling):a.insertBefore(e,a.firstChild),e}var i=v.querySelector("main")||v.querySelector(".container")||v.querySelector(".wrap")||v.body;return i.appendChild(e),e}function Zt(){if(!v.getElementById(Be)){var e=v.createElement("style");e.id=Be,e.textContent=['.eflu{--eflu-ink:#0a1628;--eflu-soft:#526173;--eflu-muted:#7b8da6;--eflu-line:rgba(15,34,56,.12);--eflu-bg:#f7fafc;--eflu-surface:#ffffff;--eflu-surface-2:#f1f6f8;--eflu-teal:#0f9f8d;--eflu-teal-2:#14b8a6;--eflu-coral:#f97316;--eflu-indigo:#4658b8;--eflu-ok:#10b981;--eflu-warn:#f59e0b;--eflu-err:#ef4444;--eflu-shadow:0 16px 40px rgba(15,34,56,.10);color:var(--eflu-ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Noto Sans SC","Segoe UI",sans-serif;letter-spacing:0;margin:28px 0 34px;}','[data-theme="dark"] .eflu,.eflu[data-dark="1"]{--eflu-ink:#e7eef8;--eflu-soft:#b5c4d6;--eflu-muted:#8295aa;--eflu-line:rgba(190,205,225,.16);--eflu-bg:#071521;--eflu-surface:#102438;--eflu-surface-2:#0b1c2d;--eflu-shadow:0 20px 50px rgba(0,0,0,.36);}',".eflu *{box-sizing:border-box;letter-spacing:0;}",".eflu a{color:inherit;text-decoration:none;}",".eflu button,.eflu input,.eflu textarea{font:inherit;}",".eflu button{cursor:pointer;}",".eflu-hero{position:relative;overflow:hidden;border:1px solid var(--eflu-line);background:linear-gradient(135deg,color-mix(in srgb,var(--eflu-surface) 94%,#14b8a6 6%),var(--eflu-surface));box-shadow:var(--eflu-shadow);padding:22px;border-radius:8px;}",'.eflu-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,rgba(20,184,166,.13),transparent 42%,rgba(249,115,22,.11));pointer-events:none;}',".eflu-hero-in{position:relative;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:20px;align-items:center;}",".eflu-kicker{display:inline-flex;align-items:center;gap:8px;color:var(--eflu-teal);font-weight:750;font-size:.82rem;text-transform:uppercase;}",".eflu-dot{width:7px;height:7px;border-radius:999px;background:var(--eflu-teal-2);box-shadow:0 0 0 5px rgba(20,184,166,.15);}",".eflu h2{margin:6px 0 8px;font-size:1.75rem;line-height:1.18;color:var(--eflu-ink);font-weight:800;}",".eflu p{margin:0;color:var(--eflu-soft);line-height:1.65;}",".eflu-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}",".eflu-chip,.eflu-tab,.eflu-seg{border:1px solid var(--eflu-line);background:color-mix(in srgb,var(--eflu-surface) 82%,transparent);color:var(--eflu-soft);min-height:34px;border-radius:999px;padding:0 12px;display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:.86rem;}",".eflu-chip strong{color:var(--eflu-ink);font-weight:800;}",".eflu-review-rail{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:14px 0 2px;}",".eflu-review-step{min-width:0;min-height:74px;border:1px solid var(--eflu-line);background:color-mix(in srgb,var(--eflu-surface) 86%,transparent);border-radius:8px;padding:10px;display:grid;align-content:start;gap:4px;overflow-wrap:anywhere;}",".eflu-review-step small{font-size:.68rem;font-weight:900;letter-spacing:.07em;color:var(--eflu-coral);}",".eflu-review-step b{font-size:.88rem;line-height:1.25;color:var(--eflu-ink);}",".eflu-review-step span{font-size:.76rem;line-height:1.42;color:var(--eflu-muted);}",".eflu-hero-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}",".eflu-stat{min-height:82px;border:1px solid var(--eflu-line);background:rgba(255,255,255,.58);border-radius:8px;padding:14px;display:grid;align-content:center;gap:4px;}",'[data-theme="dark"] .eflu-stat,.eflu[data-dark="1"] .eflu-stat{background:rgba(255,255,255,.04);}',".eflu-stat b{font-size:1.55rem;line-height:1;color:var(--eflu-ink);}",".eflu-stat span{color:var(--eflu-muted);font-size:.82rem;font-weight:700;}",".eflu-tabs{margin:16px 0 18px;display:flex;gap:8px;overflow:auto;padding:2px 2px 8px;}",".eflu-tabs,.eflu-segs,.eflu-anchor-strip{scrollbar-width:thin;scroll-snap-type:x proximity;}",".eflu-tab,.eflu-seg,.eflu-anchor{scroll-snap-align:start;}",".eflu-tab{background:var(--eflu-surface);white-space:nowrap;min-height:40px;}",".eflu-tab.is-active{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--eflu-teal),var(--eflu-indigo));box-shadow:0 10px 24px rgba(20,184,166,.22);}",".eflu-tab:focus-visible,.eflu-btn:focus-visible,.eflu-icon-btn:focus-visible,.eflu-anchor:focus-visible,.eflu-seg:focus-visible,.eflu-clue-chip:focus-visible,.eflu-input:focus-visible,.eflu-textarea:focus-visible,.eflu-tabpanel:focus-visible{outline:3px solid color-mix(in srgb,var(--eflu-teal) 72%,#fff);outline-offset:3px;box-shadow:0 0 0 6px color-mix(in srgb,var(--eflu-teal) 18%,transparent);}",".eflu-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}",".eflu-panel{background:transparent;border:0;padding:0;margin:0;}",".eflu-panel-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 10px;}",".eflu-panel-head h3{margin:0;color:var(--eflu-ink);font-size:1.08rem;}",".eflu-panel-head p{font-size:.9rem;}",".eflu-tiles{display:grid;gap:10px;}",".eflu-tile{border:1px solid var(--eflu-line);background:var(--eflu-surface);border-radius:8px;padding:14px;min-width:0;box-shadow:0 8px 24px rgba(15,34,56,.06);}",'[data-theme="dark"] .eflu-tile,.eflu[data-dark="1"] .eflu-tile{box-shadow:none;}',".eflu-tile-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}",".eflu-title{font-weight:800;color:var(--eflu-ink);line-height:1.4;word-break:break-word;}",".eflu-desc{font-size:.9rem;color:var(--eflu-soft);margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}",".eflu-tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}",".eflu-tag{display:inline-flex;align-items:center;min-height:24px;border-radius:999px;padding:0 8px;background:var(--eflu-surface-2);color:var(--eflu-muted);font-size:.76rem;font-weight:750;line-height:1.35;max-width:100%;overflow-wrap:anywhere;word-break:break-word;white-space:normal;}",".eflu-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}",".eflu-path-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;}",".eflu-btn,.eflu-icon-btn{border:1px solid var(--eflu-line);background:var(--eflu-surface);color:var(--eflu-ink);min-height:36px;border-radius:999px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:800;font-size:.86rem;line-height:1.35;max-width:100%;white-space:normal;text-align:center;transition:transform .16s ease,border-color .16s ease,background .16s ease;}",".eflu-icon-btn{width:36px;padding:0;}",".eflu-btn:hover,.eflu-icon-btn:hover{transform:translateY(-1px);border-color:color-mix(in srgb,var(--eflu-teal) 60%,var(--eflu-line));}",'.eflu-btn[data-tone="primary"]{border-color:transparent;color:#fff;background:linear-gradient(135deg,var(--eflu-teal),var(--eflu-teal-2));}','.eflu-btn[data-tone="coral"]{border-color:transparent;color:#fff;background:linear-gradient(135deg,var(--eflu-coral),#ea580c);}','.eflu-btn[data-tone="danger"]{border-color:rgba(239,68,68,.25);color:var(--eflu-err);}',".eflu-ico{width:16px;height:16px;flex:0 0 16px;}",".eflu-progress{height:9px;border-radius:999px;background:var(--eflu-surface-2);overflow:hidden;border:1px solid var(--eflu-line);}",".eflu-progress i{display:block;height:100%;width:var(--p,0%);border-radius:999px;background:linear-gradient(90deg,var(--eflu-teal),var(--eflu-coral));}",".eflu-path-list{display:grid;gap:8px;}",".eflu-path-row{display:grid;grid-template-columns:minmax(120px,.5fr) minmax(140px,1fr) auto;gap:10px;align-items:center;border:1px solid var(--eflu-line);background:var(--eflu-surface);border-radius:8px;padding:12px;}",".eflu-path-row b{font-size:.92rem;color:var(--eflu-ink);}",".eflu-path-row span{font-size:.8rem;color:var(--eflu-muted);font-weight:700;}",".eflu-segs{display:flex;gap:8px;overflow:auto;padding-bottom:8px;margin-bottom:12px;}",".eflu-seg.is-active{border-color:transparent;background:var(--eflu-ink);color:var(--eflu-surface);}",".eflu-inputbar{display:flex;gap:10px;margin:0 0 14px;}",".eflu-inputbar label{position:relative;flex:1;min-width:0;}",".eflu-inputbar label>.eflu-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--eflu-muted);}",".eflu-input,.eflu-textarea{width:100%;border:1px solid var(--eflu-line);background:var(--eflu-surface);color:var(--eflu-ink);border-radius:8px;padding:11px 12px;outline:0;min-height:42px;}",".eflu-input{padding-left:38px;}",".eflu-input:focus,.eflu-textarea:focus{border-color:var(--eflu-teal);box-shadow:0 0 0 4px rgba(20,184,166,.12);}",".eflu-textarea{resize:vertical;min-height:84px;line-height:1.55;}",'.eflu-formula{font-family:"SF Mono","JetBrains Mono","Consolas",monospace;font-size:.88rem;line-height:1.62;padding:12px;border-radius:8px;background:var(--eflu-surface-2);border:1px solid var(--eflu-line);overflow:auto;white-space:pre-wrap;word-break:break-word;color:var(--eflu-ink);}',".eflu-empty{border:1px dashed var(--eflu-line);border-radius:8px;padding:20px;text-align:center;color:var(--eflu-muted);background:color-mix(in srgb,var(--eflu-surface) 68%,transparent);line-height:1.58;}",".eflu-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px;}",".eflu-kpi{border:1px solid var(--eflu-line);background:var(--eflu-surface);border-radius:8px;padding:14px;min-height:86px;}",".eflu-kpi b{display:block;font-size:1.45rem;line-height:1.15;color:var(--eflu-ink);}",".eflu-kpi span{display:block;margin-top:4px;color:var(--eflu-muted);font-size:.8rem;font-weight:750;}",".eflu-review-due{display:inline-flex;align-items:center;gap:6px;color:var(--eflu-warn);font-weight:800;}",".eflu-review-ok{display:inline-flex;align-items:center;gap:6px;color:var(--eflu-ok);font-weight:800;}",".eflu-split-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}",".eflu-route-board{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:16px;align-items:start;}",".eflu-clue-chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px;}",".eflu-clue-chip{border:1px solid var(--eflu-line);background:var(--eflu-surface);color:var(--eflu-soft);border-radius:999px;min-height:32px;padding:6px 10px;font-size:.8rem;font-weight:800;line-height:1.35;max-width:100%;overflow-wrap:anywhere;word-break:break-word;white-space:normal;text-align:left;}",".eflu-clue-chip.is-active{border-color:var(--eflu-teal);background:color-mix(in srgb,var(--eflu-surface) 82%,var(--eflu-teal) 18%);color:var(--eflu-ink);}",".eflu-route-note{border-left:4px solid var(--eflu-coral);background:var(--eflu-surface);border-radius:8px;padding:12px 13px;color:var(--eflu-soft);line-height:1.62;}",".eflu-route-note b{display:block;color:var(--eflu-ink);margin-bottom:3px;}",".eflu-step-list{counter-reset:eflu-step;display:grid;gap:8px;margin:10px 0 0;padding:0;list-style:none;}",".eflu-step{position:relative;border:1px solid var(--eflu-line);background:var(--eflu-surface);border-radius:8px;padding:11px 12px 11px 42px;color:var(--eflu-soft);line-height:1.55;min-width:0;overflow-wrap:anywhere;word-break:break-word;}",".eflu-step:before{counter-increment:eflu-step;content:counter(eflu-step);position:absolute;left:12px;top:12px;width:20px;height:20px;border-radius:999px;display:grid;place-items:center;background:var(--eflu-teal);color:#fff;font-size:.75rem;font-weight:900;}",".eflu-route-empty{border:1px dashed var(--eflu-line);border-radius:8px;padding:14px;color:var(--eflu-muted);line-height:1.62;}",".eflu-teacher-hint{display:flex;align-items:flex-start;gap:10px;margin:14px 0;padding:13px 14px;border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-teal);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 90%,var(--eflu-surface-2));color:var(--eflu-soft);line-height:1.6;}",".eflu-teacher-hint strong{display:block;color:var(--eflu-ink);font-size:.9rem;margin-bottom:2px;}",".eflu-teacher-hint span{display:block;font-size:.88rem;}",".eflu-anchor-strip{display:flex;gap:8px;overflow:auto;padding:2px 2px 10px;margin:0 0 8px;scrollbar-width:thin;}",".eflu-anchor{border:1px solid var(--eflu-line);background:var(--eflu-surface);color:var(--eflu-soft);min-height:38px;border-radius:8px;padding:7px 10px;display:inline-grid;gap:1px;align-content:center;white-space:nowrap;text-align:left;font-weight:760;}",".eflu-anchor small{font-size:.72rem;color:var(--eflu-muted);font-weight:700;}",".eflu-anchor.is-active{border-color:var(--eflu-teal);background:color-mix(in srgb,var(--eflu-surface) 84%,var(--eflu-teal) 16%);color:var(--eflu-ink);}",".eflu-tile.is-done{border-left:4px solid var(--eflu-ok);}",".eflu-tile.is-learning{border-left:4px solid var(--eflu-teal);}",".eflu-tile.is-weak{border-left:4px solid var(--eflu-warn);}",".eflu-tile.is-todo{border-left:4px solid var(--eflu-line);}",'.eflu-btn[aria-pressed="true"]{border-color:var(--eflu-teal);background:color-mix(in srgb,var(--eflu-surface) 82%,var(--eflu-teal) 18%);}',".eflu-quick-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}",".eflu-quick-actions .eflu-btn{min-height:38px;}",".eflu-tabpanel{min-width:0;}",".eflu-r264-guide{border:1px solid var(--eflu-line);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 92%,var(--eflu-surface-2));padding:13px;margin:0 0 14px;}",".eflu-r264-head{align-items:flex-start;margin-bottom:10px;}",".eflu-r264-flow{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none;}",".eflu-r264-step{flex:1 1 154px;min-width:0;border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-teal);border-radius:8px;background:var(--eflu-surface);padding:10px 11px;color:var(--eflu-soft);}",".eflu-r264-step b{display:block;color:var(--eflu-ink);font-size:.88rem;line-height:1.28;}",".eflu-r264-step span{display:block;margin-top:3px;font-size:.8rem;line-height:1.42;overflow-wrap:anywhere;}",".eflu-r277-sprint{border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-teal);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 92%,var(--eflu-teal) 8%);padding:14px;margin:0 0 14px;}",".eflu-r277-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}",".eflu-r277-card{min-width:0;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:12px;display:grid;gap:9px;}",".eflu-r277-card h4{margin:0;color:var(--eflu-ink);font-size:.92rem;line-height:1.35;}",".eflu-r277-card dl{display:grid;gap:7px;margin:0;}",".eflu-r277-card div{min-width:0;}",".eflu-r277-card dt{font-size:.74rem;font-weight:900;color:var(--eflu-muted);margin:0 0 2px;}",".eflu-r277-card dd{margin:0;color:var(--eflu-soft);font-size:.82rem;line-height:1.45;overflow-wrap:anywhere;}",".eflu-r277-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}",".eflu-r278-compare{border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-indigo);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 92%,var(--eflu-indigo) 8%);padding:14px;margin:0 0 14px;}",".eflu-r278-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px;}",".eflu-r278-metrics .eflu-kpi{min-height:74px;padding:10px;}",".eflu-r278-metrics .eflu-kpi b{font-size:1.2rem;}",".eflu-r278-highlights{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;}",".eflu-r278-highlights span{display:inline-grid;gap:2px;min-width:104px;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:8px 10px;}",".eflu-r278-highlights b{font-size:.74rem;color:var(--eflu-muted);}",".eflu-r278-highlights em{font-style:normal;color:var(--eflu-ink);font-weight:900;line-height:1.3;}",".eflu-r278-years{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:6px;margin:0 0 10px;}",".eflu-r278-year{min-width:0;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:7px 6px;display:grid;gap:2px;text-align:center;}",".eflu-r278-year b{font-size:.82rem;color:var(--eflu-ink);line-height:1.1;}",".eflu-r278-year small{color:var(--eflu-soft);font-size:.68rem;font-weight:850;line-height:1.2;overflow-wrap:anywhere;}",".eflu-r278-year em{font-style:normal;color:var(--eflu-muted);font-size:.66rem;line-height:1.2;}",'.eflu-r278-year[data-r278-year-status="pdf-web-comparable"]{border-color:color-mix(in srgb,var(--eflu-teal) 45%,var(--eflu-line));}','.eflu-r278-year[data-r278-year-status="partial-compare"]{border-color:color-mix(in srgb,var(--eflu-warn) 48%,var(--eflu-line));}','.eflu-r278-year[data-r278-year-status="empty-or-source-missing"]{border-color:color-mix(in srgb,var(--eflu-err) 45%,var(--eflu-line));background:color-mix(in srgb,var(--eflu-surface) 86%,var(--eflu-err) 14%);}','.eflu-r278-year[data-r278-year-status="outside-original-pdf-index"]{border-color:color-mix(in srgb,var(--eflu-indigo) 52%,var(--eflu-line));background:color-mix(in srgb,var(--eflu-surface) 86%,var(--eflu-indigo) 14%);}',".eflu-r278-notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px;}",".eflu-r278-notes span{display:flex;align-items:flex-start;gap:7px;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:9px 10px;color:var(--eflu-soft);font-size:.8rem;line-height:1.42;}",".eflu-roadmap{border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-coral);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 94%,var(--eflu-coral) 6%);padding:14px;margin:0 0 14px;}",".eflu-roadmap-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}",".eflu-roadmap-head h3{margin:0;color:var(--eflu-ink);font-size:1rem;line-height:1.3;}",".eflu-roadmap-head p{margin:4px 0 0;color:var(--eflu-soft);font-size:.86rem;line-height:1.45;}",".eflu-roadmap-badge{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid color-mix(in srgb,var(--eflu-coral) 48%,var(--eflu-line));border-radius:999px;padding:6px 10px;background:var(--eflu-surface);font-weight:800;color:var(--eflu-ink);}",".eflu-roadmap-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;}",".eflu-roadmap-lane{min-width:0;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:9px 10px;}",".eflu-roadmap-lane b{display:block;color:var(--eflu-ink);font-size:.84rem;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}",".eflu-roadmap-lane span{display:block;margin-top:3px;color:var(--eflu-soft);font-size:.78rem;line-height:1.35;}",".eflu-roadmap-next{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}",".eflu-toast{position:fixed;right:18px;bottom:18px;z-index:99999;background:var(--eflu-ink);color:var(--eflu-surface);border-radius:8px;padding:10px 14px;box-shadow:var(--eflu-shadow);transition:opacity .22s ease,transform .22s ease;}",".eflu-toast.is-out{opacity:0;transform:translateY(8px);}","@media (max-width:900px){.eflu-hero-in,.eflu-grid,.eflu-split-form,.eflu-route-board,.eflu-r277-grid,.eflu-r278-notes{grid-template-columns:1fr;}.eflu-review-rail{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-kpis,.eflu-r278-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-path-row{grid-template-columns:1fr;}.eflu-hero-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-roadmap-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-r278-years{grid-template-columns:repeat(4,minmax(0,1fr));}}","@media (pointer:coarse){.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}}","@media (max-width:560px){.eflu{margin:18px 0 26px;}.eflu-hero{padding:16px;}.eflu h2{font-size:1.35rem;}.eflu-kpis,.eflu-hero-grid,.eflu-roadmap-grid,.eflu-r278-metrics{grid-template-columns:1fr;}.eflu-r278-years{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-roadmap-head{display:grid;}.eflu-roadmap-badge{justify-content:center;white-space:normal;}.eflu-review-rail{grid-auto-flow:column;grid-auto-columns:minmax(210px,84%);grid-template-columns:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding-bottom:4px;}.eflu-review-step{scroll-snap-align:start;min-height:84px;}.eflu-inputbar{display:grid;}.eflu-inputbar .eflu-btn{width:100%;}.eflu-actions .eflu-btn{flex:1 1 150px;}.eflu-anchor{min-width:138px;}.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}.eflu-tile-top{display:grid;}.eflu-clue-chip{flex:1 1 132px;justify-content:center;text-align:center;}.eflu-route-note,.eflu-route-empty{text-align:left;}.eflu-step{padding-left:38px;}.eflu-quick-actions .eflu-btn,.eflu-r264-step{flex:1 1 100%;}}","@media print{.eflu-tabs,.eflu-anchor-strip,.eflu-actions,.eflu-inputbar{display:none!important}.eflu,.eflu-hero,.eflu-tile,.eflu-kpi{box-shadow:none!important;background:#fff!important;color:#111!important}.eflu-grid{grid-template-columns:1fr!important}.eflu-desc{display:block!important;overflow:visible!important}}","@media (prefers-reduced-motion:reduce){.eflu *{transition:none!important;animation:none!important;}}"].join(`
-`),v.head.appendChild(e)}}function b(e){if(e=e||{},!!y&&(y.innerHTML=Kt(),Oa(),e.focusTab&&setTimeout(function(){Jr(u.tab)},0),e.focusRole)){var r=y.querySelector('[data-eflu-role="'+e.focusRole+'"]');r&&typeof r.focus=="function"&&setTimeout(function(){if(r.focus(),r.setSelectionRange){var a=r.value.length;r.setSelectionRange(a,a)}},0)}}function Kt(){var e=Ut();return['<div class="eflu" data-version="'+p(N)+'">',ea(e),aa(e),ia(e),na(),n.loaded?la(e):Xt(),"</div>"].join("")}function Xt(){return['<div class="eflu-tabpanel" role="tabpanel" id="'+p(_(u.tab))+'" aria-labelledby="eflu-tab-'+p(u.tab)+'" tabindex="0">','<div class="eflu-empty" role="status" aria-live="polite">\u6B63\u5728\u52A0\u8F7D\u5B66\u4E60\u6570\u636E\uFF1B\u52A0\u8F7D\u5B8C\u6210\u540E\u4F1A\u81EA\u52A8\u51FA\u73B0\u5B66\u4E60\u5EFA\u8BAE\u3002</div>',"</div>"].join("")}function ea(e){var r=n.upgradeStatus==="fallback"?"\u4F7F\u7528\u73B0\u6709\u8D44\u6599":n.upgradeStatus.indexOf("loaded:")===0?"\u8BB2\u4E49\u8D44\u6599\u5DF2\u63A5\u5165":"\u8D44\u6599\u52A0\u8F7D\u4E2D",a=n.formulaChecklistStatus==="loaded"?"\u516C\u5F0F\u6761\u4EF6\u5305\u5DF2\u63A5\u5165":"\u6761\u4EF6\u8868\u515C\u5E95\u4E2D",t=$t();return['<header class="eflu-hero">','<div class="eflu-hero-in">',"<div>",'<span class="eflu-kicker"><span class="eflu-dot"></span>\u8001\u5E08\u8BB2\u4E49\u5DE5\u4F5C\u53F0</span>',"<h2>round292 \u771F\u9898\u9898\u6570\u9501\u5B9A\uFF0C\u516C\u5F0F\u6761\u4EF6\u968F\u540E\u56DE\u67E5</h2>","<p>\u8FD9\u91CC\u5408\u5E76\u77E5\u8BC6\u70B9\u3001\u9898\u76EE\u8DEF\u7EBF\u3001\u516C\u5F0F\u6761\u4EF6\u3001\u7AD9\u5185\u68C0\u7D22\u548C\u672C\u5730\u590D\u4E60\u672C\u3002\u5386\u5E74\u771F\u9898\u5165\u53E3\u4EE5 round292 \u9898\u6570\u9632\u5408\u5E76\u4E0E\u6765\u6E90\u8986\u76D6\u8D26\u672C\u4E3A\u51C6\uFF0C\u516C\u5F0F\u6761\u4EF6\u5305\u53EA\u7528\u4E8E\u590D\u6838\u9002\u7528\u6761\u4EF6\u3001\u8FB9\u754C\u548C\u5355\u4F4D\u65B9\u5411\u3002</p>",'<div class="eflu-meta">','<span class="eflu-chip">'+g("target")+"<strong>"+e.total+"</strong> \u77E5\u8BC6\u70B9</span>",'<span class="eflu-chip">'+g("sigma")+"<strong>"+n.formulas.length+"</strong> \u516C\u5F0F</span>",'<span class="eflu-chip">'+g("check")+"<strong>"+n.formulaChecklist.length+"</strong> \u6761\u4EF6\u5361</span>",'<span class="eflu-chip">'+g("search")+"<strong>"+_e().length+"</strong> \u7D22\u5F15</span>",'<span class="eflu-chip">'+g("refresh")+f(r)+"</span>",'<span class="eflu-chip">'+g("note")+f(a)+"</span>",t?'<a class="eflu-chip" href="'+p(ve(t.href))+'">'+g("clock")+"\u4E0A\u6B21\uFF1A"+f(t.label)+"</a>":"","</div>",'<div class="eflu-quick-actions" role="group" aria-label="\u9996\u9875\u5B66\u4E60\u5165\u53E3\u5FEB\u6377\u64CD\u4F5C">','<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="tab" data-tab="formula-checklist" aria-controls="'+p(_("formula-checklist"))+'" aria-label="\u6253\u5F00\u516C\u5F0F\u6761\u4EF6\u56DE\u67E5\u6807\u7B7E">'+g("check")+"\u6761\u4EF6\u56DE\u67E5</button>",'<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="exam-route" aria-controls="'+p(_("exam-route"))+'" aria-label="\u6253\u5F00\u9898\u76EE\u8DEF\u7EBF\u6807\u7B7E">'+g("target")+"\u9898\u76EE\u8DEF\u7EBF</button>",'<a class="eflu-btn" data-tone="coral" href="/modules/real-exams-dynamic.html?from=student-workbench-practice" aria-label="\u8FDB\u5165\u5386\u5E74\u771F\u9898\u548C\u9898\u5E93\u7EC3\u4E60">'+g("play")+"\u771F\u9898\u7EC3\u4E60</a>",'<a class="eflu-btn" href="/modules/question-bank.html?from=student-workbench-chapters" aria-label="\u8FDB\u5165\u9898\u5E93\u9875\uFF0C\u67E5\u770B\u516D\u7AE0\u7AE0\u8282\u7EC3\u4E60\u5165\u53E3">'+g("chart")+"\u516D\u7AE0\u9898\u5E93</a>",'<a class="eflu-btn" data-round342-discovery-entry="181103" href="/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList" aria-label="\u8FDB\u5165 181103 \u8D44\u6599\u9898\u5E93\uFF0C\u67E5\u770B 522 \u5F20\u6765\u6E90\u5361\u3001381 \u9053\u9ED8\u8BA4\u7EC3\u4E60\u3001380 \u9053\u53EF\u76F4\u63A5\u53C2\u8003\u7B54\u6848\u30011 \u9053\u5F85\u4EBA\u5DE5\u6E90\u9875\u590D\u6838\u3001141 \u6761\u6E90\u6587\u7EBF\u7D22\u548C 38 \u4EFD HTML \u8D44\u6599">'+g("external")+"181103 \u8D44\u6599</a>",'<a class="eflu-btn" data-round342-discovery-entry="wrongbook" href="/index-complete.html#tabsW" aria-label="\u8FDB\u5165\u9519\u9898\u672C\u548C\u9519\u56E0\u8BA2\u6B63\u5165\u53E3">'+g("alert")+"\u9519\u9898\u8BA2\u6B63</a>",'<a class="eflu-btn" data-round342-discovery-entry="private-course" href="/resources.html?from=round342-edge-quick#sourceStatus" aria-label="\u67E5\u770B\u79C1\u6709\u8BFE\u7A0B\u548C\u4E13\u5C5E\u8BFE\u8D26\u53F7\u72B6\u6001\uFF0C\u751F\u4EA7\u6062\u590D\u4ECD\u53D7 FM_PRIVATE_MEDIA R2 \u8FB9\u754C\u7EA6\u675F">'+g("note")+"\u79C1\u6709\u8BFE\u7A0B</a>",'<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="formulas" aria-controls="'+p(_("formulas"))+'" aria-label="\u6253\u5F00\u516C\u5F0F\u901F\u67E5\u6807\u7B7E">'+g("sigma")+"\u516C\u5F0F\u901F\u67E5</button>",'<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="review" aria-controls="'+p(_("review"))+'" aria-label="\u6253\u5F00\u590D\u4E60\u672C\u6807\u7B7E">'+g("bookmark")+"\u590D\u4E60\u672C</button>","</div>",ta(e),"</div>",'<div class="eflu-hero-grid">',be(e.pct+"%","\u77E5\u8BC6\u638C\u63E1\u7387"),be(e.due,"\u4ECA\u65E5\u5230\u671F\u590D\u4E60"),be(e.learning,"\u5B66\u4E60\u4E2D"),be(e.weak,"\u8584\u5F31\u6807\u8BB0"),"</div>","</div>","</header>"].join("")}function ra(e){return n.loaded?e.due>0?"\u5148\u5904\u7406\u5230\u671F\u590D\u4E60\uFF0C\u518D\u5F00\u59CB\u65B0\u5185\u5BB9\u3002\u5230\u671F\u9879\u505A\u5B8C\u540E\uFF0C\u518D\u6311\u4E00\u4E2A\u8584\u5F31\u70B9\u56DE\u5230\u77E5\u8BC6\u9875\u6838\u5BF9\u5B9A\u4E49\u548C\u6761\u4EF6\u3002":e.weak>0?"\u4ECA\u5929\u5148\u770B\u8584\u5F31\u6807\u8BB0\u3002\u6BCF\u4E2A\u8584\u5F31\u70B9\u53EA\u505A\u4E09\u4EF6\u4E8B\uFF1A\u5199\u5B9A\u4E49\u3001\u5199\u9002\u7528\u6761\u4EF6\u3001\u627E\u4E00\u9053\u5BF9\u5E94\u9898\u3002":e.learning>0?"\u7EE7\u7EED\u6536\u53E3\u5B66\u4E60\u4E2D\u7684\u77E5\u8BC6\u70B9\u3002\u5148\u628A\u6B63\u5728\u5B66\u7684\u6761\u76EE\u6539\u6210\u201C\u638C\u63E1\u201D\u6216\u201C\u8584\u5F31\u201D\uFF0C\u518D\u5F00\u65B0\u7AE0\u8282\u3002":e.done===0?"\u4ECE N-S \u4E3B\u7EBF\u6216\u7B2C 1 \u7AE0\u5F00\u59CB\u3002\u4E0D\u8981\u6025\u7740\u5237\u9898\uFF0C\u5148\u628A\u53D8\u91CF\u3001\u5047\u8BBE\u548C\u8FB9\u754C\u6761\u4EF6\u8BF4\u6E05\u695A\u3002":"\u4ECA\u5929\u53EF\u4EE5\u4ECE\u516C\u5F0F\u62BD\u6837\u91CC\u9009\u4E24\u6761\uFF0C\u5206\u522B\u5199\u51FA\u6765\u6E90\u3001\u9002\u7528\u6761\u4EF6\u548C\u5931\u6548\u60C5\u5F62\u3002":"\u5148\u7B49\u8D44\u6599\u52A0\u8F7D\u5B8C\u6210\uFF0C\u518D\u770B\u4ECA\u5929\u7684\u5EFA\u8BAE\uFF1B\u5F31\u7F51\u65F6\u53EF\u4EE5\u76F4\u63A5\u6253\u5F00\u77E5\u8BC6\u5168\u5E93\u3002"}function ta(e){var r=[["01","\u9898\u5E72\u6761\u4EF6",e.total?e.done+"/"+e.total+" \u77E5\u8BC6\u70B9\u5DF2\u6536\u53E3":"\u5148\u8BFB\u4E00\u4E2A\u77E5\u8BC6\u70B9"],["02","\u8FB9\u754C\u6761\u4EF6",e.weak>0?e.weak+" \u4E2A\u8584\u5F31\u70B9\u5F85\u6838":"\u5148\u6838\u5B9A\u5E38\u548C\u58C1\u9762\u6761\u4EF6"],["03","\u5355\u4F4D\u65B9\u5411",n.formulaChecklist.length?n.formulaChecklist.length+" \u5F20\u6761\u4EF6\u5361\u53EF\u67E5":"\u5148\u67E5\u516C\u5F0F\u6761\u4EF6\u8868"],["04","\u771F\u9898\u91CD\u505A",n.examRoutes.length?n.examRoutes.length+" \u7C7B\u9898\u76EE\u8DEF\u7EBF":"\u5148\u505A\u672C\u7AE0\u771F\u9898"],["05","\u9519\u56E0\u8BA2\u6B63",e.due>0?e.due+" \u9879\u4ECA\u5929\u5230\u671F":"\u5199\u6E05\u9519\u5728\u6761\u4EF6\u8FD8\u662F\u5355\u4F4D"]];return'<div class="eflu-review-rail" data-round274-workbench-loop="round418-progress-visible-truth-181103-answer-ux-20260621" aria-label="round274 \u8001\u5E08\u590D\u4E60\u987A\u5E8F">'+r.map(function(a){return'<div class="eflu-review-step"><small>'+f(a[0])+"</small><b>"+f(a[1])+"</b><span>"+f(a[2])+"</span></div>"}).join("")+"</div>"}function aa(e){return'<aside class="eflu-teacher-hint" aria-label="\u5B66\u4E60\u63D0\u793A">'+g("note")+"<div><strong>\u4ECA\u5929\u5148\u505A\u4EC0\u4E48</strong><span>"+f(ra(e))+"</span></div></aside>"}function ia(e){var r=[["dashboard","\u5EFA\u8BAE",e.done+"/"+e.total+" \u5DF2\u638C\u63E1"],["path","\u8DEF\u5F84",e.learning+" \u5B66\u4E60\u4E2D"],["exam-route","\u9898\u76EE\u8DEF\u7EBF",n.examRoutes.length+" \u7C7B\u7EBF\u7D22"],["formulas","\u516C\u5F0F",n.formulas.length+" \u6761"],["formula-checklist","\u6761\u4EF6\u8868",n.formulaChecklist.length+" \u5F20\u5361"],["review","\u590D\u4E60",e.due+" \u5230\u671F"]];return'<nav class="eflu-anchor-strip" aria-label="\u5B66\u4E60\u8FDB\u5EA6\u951A\u70B9">'+r.map(function(a){var t=u.tab===a[0]?" is-active":"";return'<button class="eflu-anchor'+t+'" type="button" data-eflu-action="tab" data-tab="'+p(a[0])+'" aria-controls="'+p(_(a[0]))+'" aria-current="'+(t?"page":"false")+'" aria-pressed="'+(t?"true":"false")+'" aria-label="'+p(a[1]+"\uFF0C"+a[2])+'"><span>'+f(a[1])+"</span><small>"+f(a[2])+"</small></button>"}).join("")+"</nav>"}function be(e,r){return'<div class="eflu-stat"><b>'+f(e)+"</b><span>"+f(r)+"</span></div>"}function na(){var e=[["dashboard","dashboard","\u4EEA\u8868\u76D8"],["path","route","\u77E5\u8BC6\u8DEF\u5F84"],["exam-route","target","\u9898\u76EE\u8DEF\u7EBF"],["formulas","sigma","\u516C\u5F0F\u901F\u67E5"],["formula-checklist","check","\u6761\u4EF6\u56DE\u67E5"],["search","search","\u7AD9\u5185\u641C\u7D22"],["review","review","\u590D\u4E60\u72B6\u6001"]];return'<nav class="eflu-tabs" role="tablist" aria-label="\u5B66\u4E60\u5DE5\u4F5C\u53F0\u5BFC\u822A" aria-orientation="horizontal">'+e.map(function(r){var a=u.tab===r[0]?" is-active":"";return'<button class="eflu-tab'+a+'" type="button" role="tab" id="eflu-tab-'+p(r[0])+'" aria-selected="'+(a?"true":"false")+'" aria-controls="'+p(_(r[0]))+'" tabindex="'+(a?"0":"-1")+'" data-eflu-action="tab" data-tab="'+p(r[0])+'" aria-label="'+p(r[2]+(a?"\uFF0C\u5F53\u524D\u6807\u7B7E":""))+'">'+g(r[1])+f(r[2])+"</button>"}).join("")+"</nav>"}function la(e){var r;return u.tab==="path"?r=ha():u.tab==="exam-route"?r=va():u.tab==="formulas"?r=wa():u.tab==="formula-checklist"?r=Ca():u.tab==="search"?r=Ea():u.tab==="review"?r=Ma():r=oa(e),'<div class="eflu-tabpanel" role="tabpanel" id="'+p(_(u.tab))+'" aria-labelledby="eflu-tab-'+p(u.tab)+'" tabindex="0">'+r+"</div>"}function oa(e){var r=n.paths.slice(0,8),a=qt(5),t=Oe().filter(function(i){return!i.due||i.due<=w()}).slice(0,4);return['<div class="eflu-kpis">',E(e.done+"/"+e.total,"\u5DF2\u638C\u63E1\u77E5\u8BC6\u70B9"),E(e.reviewTotal,"\u590D\u4E60\u672C\u9879\u76EE"),E(n.categories.length,"\u77E5\u8BC6\u677F\u5757"),E(n.searchEntries.length,"\u7AD9\u5185\u53EF\u641C\u6761\u76EE"),"</div>",ua(),ca(),ma(),'<div class="eflu-grid">','<section class="eflu-panel">',A("\u77E5\u8BC6\u8DEF\u5F84\u6982\u89C8","\u6309\u4E3B\u7EBF\u677F\u5757\u805A\u5408\uFF0C\u4F18\u5148\u663E\u793A\u8584\u5F31\u4E0E\u5B66\u4E60\u4E2D\u5185\u5BB9"),'<div class="eflu-path-list">',r.map(yr).join("")||dr().slice(0,8).map(br).join("")||M("\u6682\u65E0\u77E5\u8BC6\u8DEF\u5F84\u6570\u636E"),"</div>","</section>",'<section class="eflu-panel">',A("\u4E0B\u4E00\u6B65\u5EFA\u8BAE","\u6839\u636E\u672C\u5730\u6807\u8BB0\u548C\u7AE0\u8282\u987A\u5E8F\u751F\u6210"),'<div class="eflu-tiles">',a.map(xr).join("")||M("\u6682\u65E0\u5EFA\u8BAE"),"</div>","</section>",'<section class="eflu-panel">',A("\u4ECA\u65E5\u590D\u4E60","\u5230\u671F\u9879\u76EE\u6765\u81EA\u672C\u811A\u672C\u590D\u4E60\u672C\uFF0C\u5E76\u517C\u5BB9\u73B0\u6709 fm_wrong"),'<div class="eflu-tiles">',t.map(Sr).join("")||M("\u4ECA\u5929\u6CA1\u6709\u5230\u671F\u9879\u76EE"),"</div>","</section>",'<section class="eflu-panel">',A("\u516C\u5F0F\u62BD\u6837","\u9AD8\u9891\u516C\u5F0F\u4E0E\u5173\u8054\u9898\u4F18\u5148"),'<div class="eflu-tiles">',n.formulas.slice(0,4).map(kr).join("")||M("\u6682\u65E0\u516C\u5F0F\u7D22\u5F15"),"</div>","</section>","</div>"].join("")}function ua(){var e=n.roadmap100;if(!e)return'<section class="eflu-roadmap" data-upgrade-roadmap100-status="'+p(n.roadmapStatus)+'" aria-label="\u767E\u8F6E\u5347\u7EA7\u8DEF\u7EBF"><div class="eflu-roadmap-head"><div><h3>\u767E\u8F6E\u5347\u7EA7\u8DEF\u7EBF\u6B63\u5728\u8BFB\u53D6</h3><p>\u8BFB\u53D6\u5931\u8D25\u65F6\u4E0D\u5F71\u54CD\u77E5\u8BC6\u70B9\u3001\u9898\u5E93\u548C\u516C\u5F0F\u4F7F\u7528\uFF1B\u53D1\u5E03\u95E8\u7981\u4F1A\u7EE7\u7EED\u68C0\u67E5\u8DEF\u7EBF\u8D26\u672C\u3002</p></div><span class="eflu-roadmap-badge">'+g("clock")+"\u7B49\u5F85\u6570\u636E</span></div></section>";var r=Object.create(null);e.rounds.forEach(function(l){r[l.lane]=(r[l.lane]||0)+1});var a=e.rounds.find(function(l){return l.status==="active"})||e.rounds[0],t=e.rounds.filter(function(l){return l.round>e.currentRound}).slice(0,3),i=e.lanes.slice(0,10);return['<section class="eflu-roadmap" data-upgrade-roadmap100="'+p(e.version)+'" aria-label="\u767E\u8F6E\u5347\u7EA7\u8DEF\u7EBF">','<div class="eflu-roadmap-head">',"<div><h3>\u767E\u8F6E\u5347\u7EA7\u8DEF\u7EBF\u4E0E\u8D28\u91CF\u96F7\u8FBE</h3><p>"+f(e.goal)+"\uFF1B\u4ECE round275 \u8D77\u6301\u7EED\u63A8\u8FDB\uFF0C\u5F53\u524D\u91CD\u70B9\u7531\u8DEF\u7EBF\u8D26\u672C\u6807\u8BB0\uFF0C\u628A\u8BA4\u8BC1\u3001\u516C\u5F0F\u3001\u771F\u9898\u3001\u8D44\u6E90\u3001\u6027\u80FD\u3001\u53EF\u8BBF\u95EE\u6027\u548C\u53D1\u5E03\u9A8C\u8BC1\u5206\u5F00\u6536\u53E3\u3002</p></div>",'<span class="eflu-roadmap-badge">'+g("chart")+"\u5F53\u524D\uFF1Around"+f(e.currentRound)+"</span>","</div>",'<div class="eflu-roadmap-grid">',i.map(function(l){return'<div class="eflu-roadmap-lane"><b>'+f(l.title)+"</b><span>"+f((r[l.id]||0)+" \u8F6E \xB7 "+l.summary)+"</span></div>"}).join(""),"</div>",'<div class="eflu-roadmap-next" role="list" aria-label="\u8FD1\u671F\u5347\u7EA7\u8F6E\u6B21">',vr(a,"\u672C\u8F6E"),t.map(function(l){return vr(l,"\u4E0B\u4E00\u8F6E")}).join(""),'<a class="eflu-btn" href="/data/fluid-upgrade-roadmap-100.json" aria-label="\u6253\u5F00\u5B8C\u6574\u767E\u8F6E\u5347\u7EA7\u8DEF\u7EBF\u6570\u636E">'+g("external")+"\u5B8C\u6574\u8DEF\u7EBF</a>","</div>","</section>"].join("")}function vr(e,r){return e?'<span class="eflu-chip" role="listitem">'+g(e.status==="active"?"target":"check")+f(r+" round"+e.round+" \xB7 "+e.focus)+"</span>":""}function Ie(e,r){var a=C(s(e).slice(0,2));return a||r||"\u5148\u56DE\u5230\u9898\u5E72\u8865\u9F50\u6761\u4EF6\u3002"}function sa(){var e=["\u8FDE\u7EED","\u4F2F\u52AA\u5229","\u52A8\u91CF"],r=[];return e.forEach(function(a){var t=n.formulaChecklist.find(function(i){return x(i.title+" "+s(i.aliases).join(" ")).indexOf(x(a))>=0});t&&r.indexOf(t)<0&&r.push(t)}),n.formulaChecklist.forEach(function(a){r.length<3&&r.indexOf(a)<0&&r.push(a)}),r.slice(0,3)}function ca(){var e=sa();return e.length?['<section class="eflu-r277-sprint" data-round277-formula-sprint="'+p(N)+'" aria-labelledby="eflu-r277-title" aria-describedby="eflu-r277-desc">','<div class="eflu-roadmap-head">','<div><h3 id="eflu-r277-title">round277 \u516C\u5F0F\u6761\u4EF6\u901F\u6838</h3><p id="eflu-r277-desc">\u5148\u6838\u9002\u7528\u6761\u4EF6\u3001\u7F3A\u6761\u4EF6\u3001\u5355\u4F4D\u65B9\u5411\u548C\u771F\u9898\u5165\u53E3\uFF1B\u80FD\u4E0D\u80FD\u7528\uFF0C\u6BD4\u5148\u628A\u5F0F\u5B50\u5199\u51FA\u6765\u66F4\u91CD\u8981\u3002</p></div>','<span class="eflu-roadmap-badge">'+g("check")+f(e.length+" \u5F20\u901F\u6838\u5361")+"</span>","</div>",'<div class="eflu-r277-grid" role="list" aria-label="\u9996\u9875\u516C\u5F0F\u6761\u4EF6\u901F\u6838\u5361">',e.map(da).join(""),"</div>",'<div class="eflu-r277-actions" role="group" aria-label="round277 \u516C\u5F0F\u6761\u4EF6\u64CD\u4F5C">','<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="tab" data-tab="formula-checklist" aria-controls="'+p(_("formula-checklist"))+'">'+g("check")+"\u5B8C\u6574\u6761\u4EF6\u56DE\u67E5</button>",'<a class="eflu-btn" href="/modules/knowledge-upgrade-2026.html#formula-condition-checklist">'+g("external")+"\u77E5\u8BC6\u6574\u7406\u9875</a>",'<a class="eflu-btn" href="/modules/real-exams-dynamic.html?from=round277-formula-condition-sprint">'+g("play")+"\u771F\u9898\u91CD\u505A</a>","</div>","</section>"].join(""):'<section class="eflu-r277-sprint" data-round277-formula-sprint="fallback" aria-label="round277 \u516C\u5F0F\u6761\u4EF6\u901F\u6838"><div class="eflu-roadmap-head"><div><h3>\u516C\u5F0F\u6761\u4EF6\u901F\u6838\u6B63\u5728\u8BFB\u53D6</h3><p>\u6761\u4EF6\u8868\u6682\u672A\u53D6\u5230\u65F6\uFF0C\u4ECD\u53EF\u8FDB\u5165\u5B8C\u6574\u6761\u4EF6\u56DE\u67E5\u6807\u7B7E\u548C\u77E5\u8BC6\u6574\u7406\u9875\u3002</p></div><button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="formula-checklist">'+g("check")+"\u6761\u4EF6\u56DE\u67E5</button></div></section>"}function da(e){var r=s(e.routeLinks).find(function(t){return t&&t.href})||null,a=r&&r.href?r.href:"/modules/knowledge-upgrade-2026.html#formula-condition-checklist";return['<article class="eflu-r277-card" role="listitem" aria-label="\u516C\u5F0F\u6761\u4EF6\u901F\u6838\uFF1A'+p(e.title)+'">',"<h4>"+f(e.title)+"</h4>","<dl>","<div><dt>\u9002\u7528\u6761\u4EF6</dt><dd>"+f(Ie(e.applyConditions,"\u5148\u786E\u8BA4\u9898\u5E72\u4FE1\u53F7\u548C\u6A21\u578B\u5047\u8BBE\u3002"))+"</dd></div>","<div><dt>\u4E0D\u80FD\u76F4\u63A5\u7528</dt><dd>"+f(Ie(s(e.notEnoughConditions).concat(e.invalidWhen||[]),"\u6761\u4EF6\u4E0D\u5168\u65F6\u5148\u8865\u63A7\u5236\u4F53\u3001\u635F\u5931\u9879\u6216\u5BC6\u5EA6\u5173\u7CFB\u3002"))+"</dd></div>","<div><dt>\u5355\u4F4D\u65B9\u5411</dt><dd>"+f(Ie(e.unitDirections,"\u6700\u540E\u6838\u5355\u4F4D\u3001\u6B63\u65B9\u5411\u548C\u6570\u91CF\u7EA7\u3002"))+"</dd></div>","<div><dt>\u771F\u9898\u5165\u53E3</dt><dd>"+f(r&&r.label?r.label:e.examEntry||"\u56DE\u5230\u540C\u7C7B\u771F\u9898\u91CD\u505A")+"</dd></div>","</dl>",'<div class="eflu-r277-actions">','<button class="eflu-btn" type="button" data-eflu-action="formula-checklist-select" data-checklist-id="'+p(e.id)+'">'+g("check")+"\u67E5\u8FD9\u6761</button>",'<a class="eflu-btn" href="'+p(a)+'">'+g("external")+"\u5165\u53E3</a>","</div>","</article>"].join("")}function fa(e){var r={"pdf-web-comparable":"\u9898\u9762\u53EF\u5BF9\u7167","partial-compare":"\u90E8\u5206\u53EF\u5BF9\u7167","empty-or-source-missing":"\u7F3A\u6E90/\u7A7A\u5E74","outside-original-pdf-index":"\u7D22\u5F15\u5916\u8BAD\u7EC3","needs-source-review":"\u6765\u6E90\u5F85\u590D\u6838"};return r[e]||"\u6765\u6E90\u5F85\u590D\u6838"}function pa(e){var r=e&&e.summary&&e.summary.highlightYears?e.summary.highlightYears:{};return[{label:"\u7A7A\u5E74",value:s(r.emptyYears).join("\u3001")||"\u65E0"},{label:"\u6E90\u7F3A\u5931",value:s(r.sourceMissingYears).join("\u3001")||"\u65E0"},{label:"\u7D22\u5F15\u5916",value:s(r.outsideOriginalPdfIndexYears).join("\u3001")||"\u65E0"}]}function ga(e){var r=e.exactOrContainedQuestionStems,a=e.fuzzyAlignedQuestionStems,t=fa(e.status);return['<span class="eflu-r278-year" data-r278-year-status="'+p(e.status)+'" role="listitem" aria-label="'+p(e.year+" \u5E74\uFF1A"+t+"\uFF0C"+e.questionCount+" \u9898")+'">',"<b>"+f(e.year)+"</b>","<small>"+f(t)+"</small>","<em>"+f(e.questionCount+"\u9898 \xB7 E"+r+"/F"+a)+"</em>","</span>"].join("")}function ma(){var e=n.round278PdfWebYearCompare;if(!e)return['<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="fallback" aria-label="round293 181103 \u5168\u8D44\u6599\u6838\u9A8C\u8D26\u672C">','<div class="eflu-roadmap-head">',"<div><h3>round293 181103 \u5168\u8D44\u6599\u6838\u9A8C\u8D26\u672C\u6B63\u5728\u8BFB\u53D6</h3><p>\u5C0F\u578B\u6C47\u603B\u6570\u636E\u6682\u672A\u53D6\u5230\u65F6\uFF0C\u8D44\u6E90\u9875\u4ECD\u4FDD\u7559 181103 \u5168\u8D44\u6599\u6838\u9A8C\uFF0C\u771F\u9898\u9875\u4ECD\u4FDD\u7559 PDF \u4FDD\u771F\u5BA1\u8BA1\u3001\u539F\u6587\u9897\u7C92\u5EA6\u5BA1\u8BA1\u548C release gate \u5BF9\u7167\u811A\u672C\uFF1B\u7B54\u6848\u4ECD\u6309\u5F85\u6838\u9A8C\u53C2\u8003\u5904\u7406\u3002</p></div>",'<a class="eflu-btn" href="/modules/real-exams-dynamic.html?from=round278-pdf-web-year-compare">'+g("external")+"\u771F\u9898\u8BAD\u7EC3</a>","</div>","</section>"].join("");var r=e.summary,a=r.activeQuestionCount?Math.round(r.sourceComparableQuestionStems/r.activeQuestionCount*100):0,t=pa(e),i=e.boundaryNotes.slice(0,4);return['<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="'+p(e.version)+'" aria-labelledby="eflu-r278-title" aria-describedby="eflu-r278-desc">','<div class="eflu-roadmap-head">','<div><h3 id="eflu-r278-title">round293 181103 \u5168\u8D44\u6599\u6838\u9A8C\u8D26\u672C</h3><p id="eflu-r278-desc">\u5148\u770B 181103 \u8D44\u6599\u662F\u5426\u5168\u91CF\u8FDB\u7D22\u5F15\uFF0C\u518D\u770B\u539F\u6587\u7EC4\u9898\u662F\u5426\u6309\u6BCF\u5C0F\u9898\u62C6\u5F00\u3001\u5E74\u4EFD\u662F\u5426\u5728\u539F\u9898\u518C\u7D22\u5F15\u5185\u3001\u9898\u9762\u662F\u5426\u53EF\u4E0E OCR/\u6E90\u7D22\u5F15\u5BF9\u7167\uFF1B\u7B54\u6848\u4ECD\u6309\u5F85\u6838\u9A8C\u53C2\u8003\u5904\u7406\u3002</p></div>','<span class="eflu-roadmap-badge">'+g("target")+f(r.auditedYearSpan+" \xB7 "+a+"% \u53EF\u6BD4\u5BF9 \xB7 "+r.splitGroupedSectionCount+"/"+r.groupedSectionCount+" \u7EC4\u9898\u5DF2\u62C6")+"</span>","</div>",'<div class="eflu-r278-metrics" aria-label="PDF Web \u5BF9\u7167\u6C47\u603B">',E(r.activeQuestionCount,"\u771F\u9898/\u8BAD\u7EC3\u9898"),E(r.webAtomicQuestionCount||r.sourceComparableQuestionStems,"\u539F\u6587\u539F\u5B50\u9898"),E(r.splitGroupedSectionCount+"/"+r.groupedSectionCount,"\u7EC4\u9898\u5DF2\u62C6"),E(r.strictOriginalAnswerEvidenceCount,"\u539F\u7B54\u6848 PDF \u4E25\u683C\u8BC1\u636E"),"</div>",'<div class="eflu-r278-highlights" role="list" aria-label="\u5173\u952E\u5E74\u4EFD\u8FB9\u754C">',t.map(function(l){return'<span role="listitem"><b>'+f(l.label)+"</b><em>"+f(l.value)+"</em></span>"}).join(""),'<span role="listitem"><b>\u539F\u9898\u518C</b><em>'+f(r.originalQuestionPdfYearSpan)+"</em></span>","</div>",'<div class="eflu-r278-years" role="list" aria-label="2000 \u5230 2025 \u5E74 PDF Web \u5E74\u4EFD\u72B6\u6001">',e.years.map(ga).join(""),"</div>",'<div class="eflu-r278-notes" role="list" aria-label="PDF Web \u8BC1\u636E\u8FB9\u754C">',i.map(function(l){return'<span role="listitem">'+g("alert")+f(l)+"</span>"}).join(""),"</div>",'<div class="eflu-r277-actions" role="group" aria-label="round278 PDF Web \u5BF9\u7167\u5165\u53E3">',e.quickLinks.map(function(l){return'<a class="eflu-btn" href="'+p(l.href)+'">'+g(l.href.indexOf("/data/")>=0?"note":"external")+f(l.label)+"</a>"}).join(""),"</div>","</section>"].join("")}function E(e,r){return'<div class="eflu-kpi"><b>'+f(e)+"</b><span>"+f(r)+"</span></div>"}function A(e,r){return'<div class="eflu-panel-head"><div><h3>'+f(e)+"</h3><p>"+f(r)+"</p></div></div>"}function br(e){return['<div class="eflu-path-row">',"<div><b>"+f(e.name)+"</b><br><span>"+e.done+"/"+e.count+" \u5DF2\u638C\u63E1</span></div>",'<div class="eflu-progress" role="progressbar" aria-label="'+p(e.name)+'\u8FDB\u5EA6" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+ee(e.pct,0,100)+'"><i style="--p:'+ee(e.pct,0,100)+'%"></i></div>','<button class="eflu-btn" type="button" data-eflu-action="category" data-category="'+p(e.name)+'" aria-label="\u8FDB\u5165\u77E5\u8BC6\u677F\u5757\uFF1A'+p(e.name)+'">'+g("route")+"\u8FDB\u5165</button>","</div>"].join("")}function yr(e){var r=zt(e),a=e.practiceUrl||"",t=e.realExamUrl||"",i=e.knowledgeUrl||"";return['<div class="eflu-path-row">',"<div><b>"+f(e.title)+"</b><br><span>"+f(e.desc||r.count+" \u4E2A\u77E5\u8BC6\u70B9")+"</span></div>",'<div class="eflu-progress" role="progressbar" aria-label="'+p(e.title)+'\u8FDB\u5EA6" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+ee(r.pct,0,100)+'"><i style="--p:'+ee(r.pct,0,100)+'%"></i></div>','<div class="eflu-path-actions"><button class="eflu-btn" type="button" data-eflu-action="path-select" data-path-id="'+p(e.id)+'" aria-label="\u67E5\u770B\u5B66\u4E60\u8DEF\u5F84\uFF1A'+p(e.title)+"\uFF0C\u5DF2\u638C\u63E1 "+r.done+"/"+r.count+'">'+g("route")+r.done+"/"+r.count+"</button>"+(a?'<a class="eflu-btn" href="'+p(a)+'" aria-label="\u8FDB\u5165\u5168\u90E8\u771F\u9898\u7EC3\u4E60\uFF1A'+p(e.title)+'">'+g("play")+"\u5168\u90E8\u771F\u9898\u7EC3\u4E60</a>":"")+(t?'<a class="eflu-btn" href="'+p(t)+'" aria-label="\u67E5\u770B\u771F\u9898\u5305\uFF1A'+p(e.title)+'">'+g("external")+"\u771F\u9898\u5305</a>":"")+(i?'<a class="eflu-btn" href="'+p(i)+'" aria-label="\u6253\u5F00\u77E5\u8BC6\u70B9\uFF1A'+p(e.title)+'">'+g("note")+"\u77E5\u8BC6\u70B9</a>":"")+"</div>","</div>"].join("")}function xr(e){var r=Dt(e.id),a=ve(e.url,e.id),t=S((e.keywords||[]).concat(e.headings||[]).slice(0,4));return['<article class="eflu-tile '+Gt(r)+'" data-point-id="'+p(e.id)+'" data-status="'+p(r)+'">','<div class="eflu-tile-top">','<div><div class="eflu-title">P'+f(e.page)+" "+f(e.title)+"</div>",'<div class="eflu-desc">'+f(e.category+" \xB7 "+Fe(e.markdown,96))+"</div></div>",'<span class="eflu-tag">'+f(Bt(r))+"</span>","</div>",'<div class="eflu-tagrow">'+t.map(function(i){return'<span class="eflu-tag">'+f(i)+"</span>"}).join("")+"</div>",'<div class="eflu-actions">','<button class="eflu-btn" type="button" aria-pressed="'+(r==="learning")+'" aria-label="\u6807\u8BB0\u4E3A\u5B66\u4E60\u4E2D\uFF1A'+p(e.title)+'" data-eflu-action="mark-point" data-id="'+p(e.id)+'" data-status="learning">'+g("play")+"\u5B66\u4E60\u4E2D</button>",'<button class="eflu-btn" type="button" aria-pressed="'+(r==="done")+'" aria-label="\u6807\u8BB0\u4E3A\u638C\u63E1\uFF1A'+p(e.title)+'" data-tone="primary" data-eflu-action="mark-point" data-id="'+p(e.id)+'" data-status="done">'+g("check")+"\u638C\u63E1</button>",'<button class="eflu-btn" type="button" aria-pressed="'+(r==="weak")+'" aria-label="\u6807\u8BB0\u4E3A\u8584\u5F31\uFF1A'+p(e.title)+'" data-eflu-action="mark-point" data-id="'+p(e.id)+'" data-status="weak">'+g("alert")+"\u8584\u5F31</button>",'<button class="eflu-icon-btn" type="button" title="\u52A0\u5165\u590D\u4E60\u672C" aria-label="\u52A0\u5165\u590D\u4E60\u672C\uFF1A'+p(e.title)+'" data-eflu-action="review-point" data-id="'+p(e.id)+'">'+g("bookmark","\u52A0\u5165\u590D\u4E60\u672C")+"</button>",a?'<a class="eflu-icon-btn" title="\u6253\u5F00\u77E5\u8BC6\u9875" aria-label="\u6253\u5F00\u77E5\u8BC6\u9875\uFF1A'+p(e.title)+'" href="'+p(a)+'">'+g("external","\u6253\u5F00\u77E5\u8BC6\u9875")+"</a>":"","</div>","</article>"].join("")}function ha(){var e=["all"].concat(n.categories.map(function(i){return i.name})),r=n.paths.find(function(i){return i.id===u.pathId}),a=n.knowledge.filter(function(i){return r?r.points.indexOf(i.id)>=0:u.pathCategory==="all"||i.category===u.pathCategory}).slice(0,u.listLimit),t=r?r.title:u.pathCategory==="all"?"\u63A8\u8350\u77E5\u8BC6\u70B9":u.pathCategory;return['<div class="eflu-segs" role="group" aria-label="\u77E5\u8BC6\u677F\u5757\u7B5B\u9009">',e.map(function(i){var l=i==="all"?"\u5168\u90E8":i,o=u.pathCategory===i?" is-active":"";return'<button class="eflu-seg'+o+'" type="button" aria-pressed="'+(o?"true":"false")+'" data-eflu-action="category" data-category="'+p(i)+'">'+f(l)+"</button>"}).join(""),"</div>",'<div class="eflu-grid">','<section class="eflu-panel">',A("\u8DEF\u5F84\u7ED3\u6784","\u5347\u7EA7 JSON \u5B58\u5728\u65F6\u6309\u5907\u8003\u9636\u6BB5\u663E\u793A\uFF0C\u5426\u5219\u6309\u77E5\u8BC6\u5206\u7C7B\u663E\u793A"),'<div class="eflu-path-list">',n.paths.map(yr).join("")||dr().map(br).join("")||M("\u6682\u65E0\u8DEF\u5F84\u7ED3\u6784"),"</div>","</section>",'<section class="eflu-panel">',A(t,"\u53EF\u76F4\u63A5\u6807\u8BB0\u5B66\u4E60\u72B6\u6001\u6216\u52A0\u5165\u590D\u4E60\u672C"),'<div class="eflu-tiles">',a.map(xr).join("")||M("\u8BE5\u677F\u5757\u6682\u65E0\u77E5\u8BC6\u70B9"),"</div>",u.listLimit<n.knowledge.length?'<div class="eflu-actions"><button class="eflu-btn" type="button" data-eflu-action="more">'+g("plus")+"\u52A0\u8F7D\u66F4\u591A</button></div>":"","</section>","</div>"].join("")}function va(){var e=Pt(),r=Nt(),a=n.examRouteMap?"\u5DF2\u63A5\u5165 round263 \u9898\u76EE\u8DEF\u7EBF\u6570\u636E":"\u9898\u76EE\u8DEF\u7EBF\u6570\u636E\u672A\u53D6\u5230\uFF0C\u6B63\u5728\u7528\u8BB2\u4E49\u89C4\u5219";return['<div class="eflu-route-board">','<section class="eflu-panel">',A("\u9898\u76EE\u7EBF\u7D22\u9009\u62E9","\u5148\u5199\u9898\u5E72\u5173\u952E\u8BCD\uFF0C\u518D\u770B\u8BE5\u4ECE\u54EA\u6761\u516C\u5F0F\u8DEF\u7EBF\u4E0B\u624B"),'<div class="eflu-tile">','<div class="eflu-inputbar" role="search" aria-label="\u9898\u76EE\u7EBF\u7D22\u641C\u7D22">',"<label>"+g("search")+'<input class="eflu-input" data-eflu-role="exam-clue" value="'+p(u.examClue)+'" aria-label="\u8F93\u5165\u9898\u76EE\u7EBF\u7D22" placeholder="\u8F93\u5165\u9898\u76EE\u7EBF\u7D22\uFF0C\u4F8B\u5982 \u5F2F\u7BA1 \u53D7\u529B\u3001Bernoulli \u6C34\u5934\u3001Re \u76F8\u4F3C"></label>','<button class="eflu-btn" type="button" data-eflu-action="clear-exam-clue" aria-label="\u6E05\u7A7A\u9898\u76EE\u7EBF\u7D22">'+g("x")+"\u6E05\u7A7A</button>","</div>",'<div class="eflu-clue-chips" role="group" aria-label="\u9898\u578B\u7EBF\u7D22\u5FEB\u6377\u9009\u62E9">',r.map(function(t){var i=t.route,l=e&&i.id===e.id?" is-active":"",o=i.triggers.length?i.triggers.slice(0,2).join(" / "):i.title;return'<button class="eflu-clue-chip'+l+'" type="button" data-eflu-action="exam-route-select" data-route-id="'+p(i.id)+'" aria-pressed="'+(l?"true":"false")+'" aria-label="\u9009\u62E9\u9898\u76EE\u8DEF\u7EBF\uFF1A'+p(i.title||o)+'">'+f(o)+"</button>"}).join("")||'<span class="eflu-tag" role="status">\u6682\u65E0\u9898\u578B\u89C4\u5219</span>',"</div>",'<div class="eflu-route-note"><b>\u8001\u5E08\u63D0\u9192</b><span>'+f(a)+"\u3002\u9898\u76EE\u5148\u627E\u6761\u4EF6\uFF0C\u4E0D\u5148\u80CC\u7B54\u6848\uFF1B\u8DEF\u7EBF\u53EA\u662F\u8349\u7A3F\u7EB8\u987A\u5E8F\uFF0C\u6700\u540E\u8FD8\u8981\u56DE\u5230\u539F\u9898\u9898\u9762\u548C\u8FB9\u754C\u6761\u4EF6\u3002</span></div>","</div>","</section>",'<section class="eflu-panel">',A(e?e.title:"\u8DEF\u7EBF\u5F85\u9009\u62E9","\u516C\u5F0F\u8DEF\u7EBF\u3001\u8FB9\u754C\u6761\u4EF6\u3001\u9519\u56E0\u68C0\u67E5\u653E\u5728\u540C\u4E00\u5F20\u8349\u7A3F\u7EB8\u4E0A"),e?ba(e):M("\u5148\u8F93\u5165\u9898\u76EE\u7EBF\u7D22\uFF0C\u6216\u70B9\u4E00\u4E2A\u9898\u578B\u6807\u7B7E"),"</section>","</div>"].join("")}function ba(e){var r=s(e.chapters).slice(0,5),a=s(e.formulas).slice(0,5),t=s(e.boundaryReminders).slice(0,5),i=s(e.mistakeChecks).slice(0,5),l=s(e.reviewOrder).slice(0,6);return['<div class="eflu-tiles">','<article class="eflu-tile">','<div class="eflu-tile-top"><div><div class="eflu-title">\u7B2C\u4E00\u6B65\u600E\u4E48\u843D\u7B14</div>','<div class="eflu-desc">'+f(e.routeText||"\u5148\u5708\u5B9A\u9898\u5E72\u6761\u4EF6\uFF0C\u518D\u9009\u62E9\u63A7\u5236\u4F53\u3001\u516C\u5F0F\u548C\u8FB9\u754C\u6761\u4EF6\u3002")+"</div></div>",'<span class="eflu-tag">'+f(e.source==="round263"?"round263":"\u8BB2\u4E49\u89C4\u5219")+"</span></div>",r.length?'<div class="eflu-tagrow">'+r.map(function(o){var d=Hr(o);return d?'<a class="eflu-tag" href="'+p(Vr(d))+'" aria-label="\u8FDB\u5165\u7B2C '+p(d)+' \u7AE0\u7AE0\u8282\u7EC3\u4E60">\u7B2C '+f(d)+" \u7AE0\u7EC3\u4E60</a>":'<span class="eflu-tag">'+f(o)+"</span>"}).join("")+"</div>":"","</article>",'<article class="eflu-tile">','<div class="eflu-title">\u516C\u5F0F\u8DEF\u7EBF</div>',a.length?a.map(ya).join(""):'<div class="eflu-route-empty">\u8FD9\u7C7B\u9898\u5148\u5199\u6761\u4EF6\u548C\u63A7\u5236\u4F53\uFF1B\u516C\u5F0F\u7D22\u5F15\u6CA1\u6709\u7ED9\u51FA\u660E\u786E ID \u65F6\uFF0C\u56DE\u5230\u201C\u516C\u5F0F\u901F\u67E5\u201D\u6309\u5173\u952E\u8BCD\u627E\u3002</div>',"</article>",'<article class="eflu-tile">','<div class="eflu-title">\u8FB9\u754C\u6761\u4EF6\u63D0\u9192</div>',ne(t.length?t:xa()),"</article>",'<article class="eflu-tile">','<div class="eflu-title">\u9519\u56E0\u68C0\u67E5</div>',ne(i.length?i:ka()),"</article>",'<article class="eflu-tile">','<div class="eflu-title">\u590D\u4E60\u987A\u5E8F\u63A8\u8350</div>',ne(l.length?l:Sa()),'<div class="eflu-actions">','<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="review-exam-route" data-route-id="'+p(e.id)+'" aria-label="\u628A\u5F53\u524D\u9898\u76EE\u8DEF\u7EBF\u52A0\u5165\u590D\u4E60\u672C">'+g("bookmark")+"\u52A0\u5165\u590D\u4E60\u672C</button>",'<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="formulas" aria-label="\u5207\u6362\u5230\u516C\u5F0F\u901F\u67E5">'+g("sigma")+"\u67E5\u516C\u5F0F</button>",'<a class="eflu-btn" href="/modules/real-exams-dynamic.html?from=exam-route" aria-label="\u6253\u5F00\u5386\u5E74\u771F\u9898\u8BAD\u7EC3">'+g("external")+"\u53BB\u771F\u9898\u8BAD\u7EC3</a>","</div>","</article>","</div>"].join("")}function ya(e){var r=e.formula||G(e.id)&&G(e.id).formula||"",a=e.title||e.id||"\u516C\u5F0F";return['<div class="eflu-step">',"<b>"+f(a)+"</b>",e.note?'<div class="eflu-desc">'+f(e.note)+"</div>":"",r?Ae(r):'<div class="eflu-desc">\u5148\u6309\u9898\u5E72\u6761\u4EF6\u786E\u8BA4\u80FD\u4E0D\u80FD\u7528\uFF0C\u518D\u5230\u516C\u5F0F\u901F\u67E5\u8865\u5B8C\u6574\u5199\u6CD5\u3002</div>',"</div>"].join("")}function ne(e){return e=S(s(e)).filter(Boolean).slice(0,6),e.length?'<ol class="eflu-step-list" aria-label="\u6B65\u9AA4\u6E05\u5355">'+e.map(function(r){return'<li class="eflu-step">'+f(r)+"</li>"}).join("")+"</ol>":'<div class="eflu-route-empty">\u6682\u65E0\u660E\u786E\u63D0\u9192\uFF0C\u5148\u5199\u9898\u5E72\u6761\u4EF6\u3001\u8FB9\u754C\u548C\u91CF\u7EB2\u68C0\u67E5\u3002</div>'}function xa(){return s(n.upgrade&&n.upgrade.teacherBoard&&n.upgrade.teacherBoard.boundaryConditionGuide).slice(0,5)}function ka(){return s(n.upgrade&&n.upgrade.qualityGates).map(function(e){return typeof e=="string"?e:!e||typeof e!="object"?"":[e.name||e.title,e.check||e.desc||e.note].filter(Boolean).join("\uFF1A")}).filter(Boolean).slice(0,5)}function Sa(){return s(n.upgrade&&n.upgrade.teacherBoard&&n.upgrade.teacherBoard.studyOrder).slice(0,6)}function wa(){var e=["all"].concat(S(n.formulas.map(function(t){return t.category})).slice(0,18)),r=Yt(),a=n.formulaStatus==="loaded"?"":'<div class="eflu-route-note" role="status"><b>\u6309\u9700\u52A0\u8F7D</b><span>\u516C\u5F0F\u5168\u96C6\u6B63\u5728\u6309\u9700\u52A0\u8F7D\uFF1B\u5F31\u7F51\u65F6\u5148\u663E\u793A\u9AD8\u9891\u515C\u5E95\u516C\u5F0F\uFF0C\u4E0D\u963B\u585E\u9875\u9762\u3002</span></div>';return[a,'<div class="eflu-inputbar" role="search" aria-label="\u516C\u5F0F\u901F\u67E5\u641C\u7D22">',"<label>"+g("search")+'<input class="eflu-input" data-eflu-role="formula-query" value="'+p(u.formulaQuery)+'" aria-label="\u641C\u7D22\u516C\u5F0F\u3001\u5173\u952E\u8BCD\u6216\u7AE0\u8282" placeholder="\u641C\u7D22\u516C\u5F0F\u3001\u5173\u952E\u8BCD\u3001\u7AE0\u8282\uFF0C\u4F8B\u5982 Re \u6216 \u8FB9\u754C\u5C42"></label>','<button class="eflu-btn" type="button" data-eflu-action="clear-formula" aria-label="\u6E05\u7A7A\u516C\u5F0F\u641C\u7D22">'+g("x")+"\u6E05\u7A7A</button>","</div>",'<div class="eflu-segs" role="group" aria-label="\u516C\u5F0F\u5206\u7C7B\u7B5B\u9009">',e.map(function(t){var i=u.formulaCategory===t?" is-active":"";return'<button class="eflu-seg'+i+'" type="button" aria-pressed="'+(i?"true":"false")+'" data-eflu-action="formula-category" data-category="'+p(t)+'">'+f(t==="all"?"\u5168\u90E8":t)+"</button>"}).join(""),"</div>",'<section class="eflu-panel">',A("\u516C\u5F0F\u901F\u67E5","\u516C\u5F0F\u7D22\u5F15\u4F18\u5148\uFF1B\u7D22\u5F15\u7F3A\u5931\u65F6\u4ECE\u77E5\u8BC6\u70B9\u6B63\u6587\u62BD\u53D6"),'<div class="eflu-tiles">',r.map(kr).join("")||M("\u6CA1\u6709\u5339\u914D\u7684\u516C\u5F0F"),"</div>",u.listLimit<n.formulas.length?'<div class="eflu-actions"><button class="eflu-btn" type="button" data-eflu-action="more">'+g("plus")+"\u52A0\u8F7D\u66F4\u591A</button></div>":"","</section>"].join("")}function kr(e){var r=S([e.category].concat(e.keywords||[]).slice(0,4)),a=s(e.relatedQuestions).length,t=ve(e.url,e.id),i=Ft(e);return['<article class="eflu-tile" data-formula-id="'+p(e.id)+'">','<div class="eflu-tile-top"><div><div class="eflu-title">'+f(e.title||e.pointTitle||"\u516C\u5F0F")+"</div>",'<div class="eflu-desc">'+f((e.pointTitle||e.category||"")+(a?" \xB7 \u5173\u8054\u771F\u9898 "+a+" \u9053":""))+"</div></div>",'<span class="eflu-tag">'+f(e.page?"P"+e.page:"\u516C\u5F0F")+"</span></div>",Ae(e.formula),'<div class="eflu-tagrow">'+r.map(function(l){return'<span class="eflu-tag">'+f(l)+"</span>"}).join("")+"</div>",'<div class="eflu-actions">','<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="review-formula" data-id="'+p(e.id)+'" aria-label="\u628A\u516C\u5F0F\u52A0\u5165\u590D\u4E60\u672C\uFF1A'+p(e.title||e.pointTitle||"\u516C\u5F0F")+'">'+g("bookmark")+"\u52A0\u5165\u590D\u4E60</button>",i?'<button class="eflu-btn" type="button" data-eflu-action="formula-checklist-from-formula" data-checklist-id="'+p(i.id)+'" aria-label="\u67E5\u770B\u9002\u7528\u6761\u4EF6\uFF1A'+p(e.title||e.pointTitle||"\u516C\u5F0F")+'">'+g("check")+"\u67E5\u6761\u4EF6</button>":"",t?'<a class="eflu-btn" href="'+p(t)+'" aria-label="\u6253\u5F00\u77E5\u8BC6\u9875\uFF1A'+p(e.title||e.pointTitle||"\u516C\u5F0F")+'">'+g("external")+"\u77E5\u8BC6\u9875</a>":"","</div>","</article>"].join("")}function Ca(){var e=["all"].concat(S(s(n.formulaChecklist).map(function(l){return l.category})).slice(0,18)),r=sr(),a=It(),t=n.formulaChecklistStatus==="loaded"?"\u5DF2\u63A5\u5165\u516C\u5F0F\u6761\u4EF6\u5386\u53F2\u5305":"\u6761\u4EF6\u8868\u6587\u4EF6\u6682\u672A\u53D6\u5230\uFF0C\u5148\u7528\u8BB2\u4E49\u91CC\u5DF2\u6709\u7684\u516C\u5F0F\u89C4\u5219\u515C\u5E95",i=n.visibilityIssues.length?'<div class="eflu-route-note" role="status"><b>\u5B57\u6BB5\u53EF\u89C1\u6027</b><span>\u5DF2\u81EA\u52A8\u8865\u9F50 '+f(n.visibilityIssues.length)+" \u4E2A\u6761\u4EF6\u5361\u53EF\u89C1\u5B57\u6BB5\uFF0C\u786E\u4FDD\u9002\u7528\u6761\u4EF6\u3001\u8FB9\u754C\u6761\u4EF6\u3001\u5355\u4F4D\u65B9\u5411\u3001\u9519\u56E0\u548C\u8865\u6551\u8BAD\u7EC3\u90FD\u6709\u5165\u53E3\u3002</span></div>":"";return[Ra(),'<div class="eflu-route-board">','<section class="eflu-panel">',A("\u516C\u5F0F\u5148\u95EE\u6761\u4EF6","\u641C\u7D22\u6216\u70B9\u9009\u4E00\u6761\u516C\u5F0F\uFF0C\u5148\u770B\u80FD\u4E0D\u80FD\u7528\uFF0C\u518D\u770B\u600E\u4E48\u7B97"),'<div class="eflu-tile">','<div class="eflu-inputbar" role="search" aria-label="\u516C\u5F0F\u6761\u4EF6\u641C\u7D22">',"<label>"+g("search")+'<input class="eflu-input" data-eflu-role="formula-checklist-query" value="'+p(u.formulaChecklistQuery)+'" aria-label="\u641C\u7D22\u516C\u5F0F\u6761\u4EF6\u3001\u8FB9\u754C\u6216\u5E38\u89C1\u9519\u56E0" placeholder="\u8F93\u5165\u516C\u5F0F\u6216\u9519\u56E0\uFF0C\u4F8B\u5982 \u4F2F\u52AA\u5229 \u635F\u5931\u3001Re \u9ECF\u5EA6\u3001\u8FDE\u7EED\u65B9\u7A0B \u65B9\u5411"></label>','<button class="eflu-btn" type="button" data-eflu-action="clear-formula-checklist" aria-label="\u6E05\u7A7A\u516C\u5F0F\u6761\u4EF6\u641C\u7D22">'+g("x")+"\u6E05\u7A7A</button>","</div>",'<div class="eflu-segs" role="group" aria-label="\u516C\u5F0F\u6761\u4EF6\u5206\u7C7B\u7B5B\u9009">',e.map(function(l){var o=u.formulaChecklistCategory===l?" is-active":"";return'<button class="eflu-seg'+o+'" type="button" aria-pressed="'+(o?"true":"false")+'" data-eflu-action="formula-checklist-category" data-category="'+p(l)+'">'+f(l==="all"?"\u5168\u90E8":l)+"</button>"}).join(""),"</div>",'<div class="eflu-clue-chips" role="group" aria-label="\u516C\u5F0F\u6761\u4EF6\u5361\u5FEB\u6377\u9009\u62E9">',r.slice(0,10).map(function(l){var o=a&&l.id===a.id?" is-active":"";return'<button class="eflu-clue-chip'+o+'" type="button" data-eflu-action="formula-checklist-select" data-checklist-id="'+p(l.id)+'" aria-pressed="'+(o?"true":"false")+'" aria-label="\u9009\u62E9\u516C\u5F0F\u6761\u4EF6\u5361\uFF1A'+p(l.title)+'">'+f(l.title)+"</button>"}).join("")||'<span class="eflu-tag" role="status">\u6682\u65E0\u5339\u914D\u516C\u5F0F</span>',"</div>",'<div class="eflu-route-note"><b>\u8001\u5E08\u63D0\u9192</b><span>'+f(t)+"\u3002\u8003\u8BD5\u91CC\u516C\u5F0F\u5199\u9519\uFF0C\u591A\u534A\u4E0D\u662F\u516C\u5F0F\u4E0D\u4F1A\u80CC\uFF0C\u800C\u662F\u9002\u7528\u6761\u4EF6\u3001\u8FB9\u754C\u6216\u5355\u4F4D\u65B9\u5411\u6CA1\u6838\u5BF9\u3002</span></div>",i,"</div>","</section>",'<section class="eflu-panel">',A(a?a.title:"\u5148\u9009\u4E00\u6761\u516C\u5F0F","\u9002\u7528\u6761\u4EF6\u3001\u8FB9\u754C\u6761\u4EF6\u3001\u5355\u4F4D\u65B9\u5411\u3001\u5E38\u89C1\u9519\u56E0\u548C\u8865\u6551\u8BAD\u7EC3\u653E\u5728\u4E00\u8D77\u56DE\u67E5"),a?Aa(a):M("\u5148\u8F93\u5165\u5173\u952E\u8BCD\uFF0C\u6216\u70B9\u4E00\u4E2A\u516C\u5F0F\u6807\u7B7E"),"</section>","</div>"].join("")}function Ra(){var e=[["\u8BFB\u9898\u9009\u5F0F","\u5148\u5708\u9898\u5E72\u6761\u4EF6\u3001\u8981\u6C42\u91CF\u548C\u516C\u5F0F\u5165\u53E3\u3002"],["\u516C\u5F0F\u6761\u4EF6","\u786E\u8BA4\u5B9A\u5E38\u3001\u53EF\u538B\u3001\u9ECF\u6027\u548C\u63A7\u5236\u4F53\u3002"],["\u8FB9\u754C\u63A7\u5236\u4F53","\u5199\u6E05\u5165\u53E3\u3001\u51FA\u53E3\u3001\u81EA\u7531\u9762\u3001\u56FA\u58C1\u548C\u5916\u6CD5\u5411\u3002"],["\u5355\u4F4D\u65B9\u5411","\u4EE3\u5165\u524D\u7EDF\u4E00\u5355\u4F4D\u3001\u538B\u5F3A\u57FA\u51C6\u548C\u6B63\u65B9\u5411\u3002"],["\u9519\u56E0\u8865\u6551","\u505A\u5B8C\u628A\u9519\u56E0\u548C\u8865\u6551\u8BAD\u7EC3\u5199\u8FDB\u590D\u4E60\u672C\u3002"]];return['<section class="eflu-r264-guide" aria-labelledby="eflu-r264-guide-title" aria-describedby="eflu-r264-guide-desc">','<div class="eflu-panel-head eflu-r264-head"><div><h3 id="eflu-r264-guide-title">\u4E94\u6B65\u516C\u5F0F\u56DE\u67E5</h3><p id="eflu-r264-guide-desc">\u9009\u516C\u5F0F\u524D\u5148\u8FC7\u8FD9 5 \u6B65\uFF0C\u51CF\u5C11\u9002\u7528\u6761\u4EF6\u3001\u8FB9\u754C\u548C\u5355\u4F4D\u65B9\u5411\u7C7B\u5931\u5206\u3002</p></div><span class="eflu-tag">5 \u6B65</span></div>','<ol class="eflu-r264-flow" aria-label="\u4E94\u6B65\u516C\u5F0F\u56DE\u67E5\u987A\u5E8F">',e.map(function(r,a){return'<li class="eflu-r264-step"><b>'+f(String(a+1).padStart(2,"0")+" "+r[0])+"</b><span>"+f(r[1])+"</span></li>"}).join(""),"</ol>","</section>"].join("")}function Aa(e){var r=e.formulaId?G(e.formulaId):null,a=ve(e.url||r&&r.url,e.formulaId||e.id),t=e.formula||r&&r.formula||"";return['<div class="eflu-tiles">','<article class="eflu-tile" aria-label="'+p(e.title||"\u516C\u5F0F\u6761\u4EF6\u5361")+'">','<div class="eflu-tile-top"><div><div class="eflu-title">'+f(e.title)+"</div>",'<div class="eflu-desc">'+f(e.teacherNote||"\u5148\u628A\u6761\u4EF6\u95EE\u5B8C\uFF0C\u518D\u51B3\u5B9A\u516C\u5F0F\u80FD\u4E0D\u80FD\u4E0A\u8349\u7A3F\u7EB8\u3002")+"</div></div>",'<span class="eflu-tag">'+f(e.source==="round264"?"\u516C\u5F0F\u6761\u4EF6\u5386\u53F2\u5305":e.source||"\u516C\u5F0F\u6761\u4EF6\u5386\u53F2\u5305")+"</span></div>",t?Ae(t):"",'<div class="eflu-tagrow"><span class="eflu-tag">'+f(e.category||"\u516C\u5F0F\u6761\u4EF6")+"</span>"+s(e.keywords).slice(0,3).map(function(i){return'<span class="eflu-tag">'+f(i)+"</span>"}).join("")+"</div>","</article>",I("\u9002\u7528\u6761\u4EF6",e.applyConditions,"\u5148\u95EE\u9898\u5E72\u7ED9\u6CA1\u7ED9\u8FD9\u4E9B\u6761\u4EF6\u3002\u6CA1\u7ED9\uFF0C\u5C31\u4E0D\u80FD\u76F4\u63A5\u5957\u7B80\u5316\u5F0F\u3002"),I("\u4E0D\u80FD\u76F4\u63A5\u7528 / \u7F3A\u6761\u4EF6",s(e.notEnoughConditions).concat(e.invalidWhen||[]),"\u7F3A\u5C11\u5BC6\u5EA6\u5173\u7CFB\u3001\u63A7\u5236\u4F53\u8FB9\u754C\u6216\u80FD\u91CF\u635F\u5931\u4FE1\u606F\u65F6\uFF0C\u5148\u8865\u6761\u4EF6\u518D\u9009\u5F0F\u3002"),I("\u522B\u540D\u5F52\u4E00",e.aliases,"\u628A\u9898\u5E72\u91CC\u7684\u4FD7\u79F0\u3001\u7F29\u5199\u548C\u516C\u5F0F\u65CF\u5148\u5F52\u5230\u540C\u4E00\u4E2A\u5165\u53E3\u3002"),I("\u516C\u5F0F\u5F62\u6001",e.formulaForms,"\u5148\u9009\u4E00\u822C\u5F0F\uFF0C\u518D\u5728\u6761\u4EF6\u6EE1\u8DB3\u65F6\u5316\u6210\u4E00\u7EF4\u3001\u4E0D\u53EF\u538B\u6216\u5B9A\u5E38\u7B80\u5F0F\u3002"),I("\u8FB9\u754C\u6761\u4EF6",e.boundaryConditions,"\u8FB9\u754C\u5199\u9519\uFF0C\u540E\u9762\u4EE3\u6570\u518D\u5BF9\u4E5F\u4F1A\u504F\u3002"),I("\u5355\u4F4D\u65B9\u5411",e.unitDirections,"\u5355\u4F4D\u548C\u6B63\u65B9\u5411\u662F\u6700\u540E\u4E00\u9053\u4FDD\u9669\uFF0C\u5C24\u5176\u662F\u538B\u5F3A\u3001\u6C34\u5934\u3001\u901A\u91CF\u548C\u529B\u3002"),I("\u5E38\u89C1\u9519\u56E0",e.commonMistakes,"\u770B\u5230\u8FD9\u4E9B\u82D7\u5934\uFF0C\u5148\u505C\u7B14\u56DE\u5230\u9898\u9762\u3002"),I("\u7B54\u9898\u9AA8\u67B6",e.answerSkeleton,"\u6309\u9AA8\u67B6\u5199\u6B65\u9AA4\uFF0C\u907F\u514D\u53EA\u4EE3\u6570\u4E0D\u4EA4\u4EE3\u6761\u4EF6\u3002"),I("\u771F\u9898\u5165\u53E3",[e.examEntry].concat(e.mistakeTags||[]),"\u5148\u4ECE\u540C\u7C7B\u771F\u9898\u91CD\u505A\uFF0C\u9519\u56E0\u6807\u7B7E\u7528\u4E8E\u8BA2\u6B63\u3002"),Ta(e.routeLinks),'<article class="eflu-tile" aria-label="\u8865\u6551\u8BAD\u7EC3\u68C0\u67E5\u9879">','<div class="eflu-title">\u8865\u6551\u8BAD\u7EC3</div>',ne(e.remedialTraining.length?e.remedialTraining:["\u91CD\u505A\u4E00\u9053\u540C\u7C7B\u9898\uFF0C\u53EA\u5199\u6761\u4EF6\u8868\uFF0C\u4E0D\u6025\u7740\u7B97\u6570\u503C\u3002","\u628A\u7528\u5230\u7684\u6BCF\u4E2A\u91CF\u6807\u51FA\u5355\u4F4D\u548C\u6B63\u65B9\u5411\u3002"]),'<div class="eflu-actions">','<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="review-formula-checklist" data-checklist-id="'+p(e.id)+'" aria-label="\u628A\u6761\u4EF6\u56DE\u67E5\u5361\u52A0\u5165\u590D\u4E60\u672C\uFF1A'+p(e.title)+'">'+g("bookmark")+"\u52A0\u5165\u590D\u4E60\u672C</button>",t?'<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="formulas" aria-label="\u8FD4\u56DE\u516C\u5F0F\u901F\u67E5">'+g("sigma")+"\u56DE\u516C\u5F0F\u901F\u67E5</button>":"",a?'<a class="eflu-btn" href="'+p(a)+'" aria-label="\u6253\u5F00\u77E5\u8BC6\u9875\uFF1A'+p(e.title)+'">'+g("external")+"\u77E5\u8BC6\u9875</a>":"","</div>","</article>","</div>"].join("")}function Ta(e){if(e=ur(e),!e.length)return"";function r(a){var t=String(a||"").trim();if(!t)return"";if(t.charAt(0)==="#"){var i="";try{i=decodeURIComponent(t.slice(1))}catch{i=t.slice(1)}return i&&typeof v<"u"&&v.getElementById(i)?t:"/modules/knowledge-upgrade-2026.html"+t}return t}return['<article class="eflu-tile" aria-label="\u9898\u76EE\u4E0E\u52A8\u753B\u5165\u53E3">','<div class="eflu-title">\u9898\u76EE\u4E0E\u52A8\u753B\u5165\u53E3</div>','<div class="eflu-actions">',e.map(function(a){var t=a.label||a.href||"\u76F8\u5173\u5165\u53E3",i=a.use?'<span class="eflu-desc">'+f(a.use)+"</span>":"",l=r(a.href);return l?'<a class="eflu-btn" href="'+p(l)+'" aria-label="'+p(t)+'">'+g("external")+f(t)+"</a>"+i:'<span class="eflu-tag">'+f(t)+"</span>"+i}).join(""),"</div>","</article>"].join("")}function I(e,r,a){return['<article class="eflu-tile" aria-label="'+p(e)+'\u68C0\u67E5\u9879">','<div class="eflu-title">'+f(e)+"</div>",ne(s(r).length?r:[a]),"</article>"].join("")}function Ea(){var e=mr(u.siteQuery,{limit:u.listLimit}),r=n.searchStatus==="loaded"?"":'<div class="eflu-route-note" role="status"><b>\u6309\u9700\u52A0\u8F7D</b><span>\u7AD9\u5185\u641C\u7D22\u7D22\u5F15\u6B63\u5728\u6309\u9700\u52A0\u8F7D\uFF1B\u5F53\u524D\u5148\u7528\u77E5\u8BC6\u70B9\u548C\u9AD8\u9891\u516C\u5F0F\u515C\u5E95\u641C\u7D22\u3002</span></div>';return[r,'<div class="eflu-inputbar" role="search" aria-label="\u7AD9\u5185\u641C\u7D22">',"<label>"+g("search")+'<input class="eflu-input" data-eflu-role="site-query" value="'+p(u.siteQuery)+'" aria-label="\u641C\u7D22\u77E5\u8BC6\u70B9\u3001\u771F\u9898\u3001\u516C\u5F0F\u6216\u8D44\u6E90" placeholder="\u641C\u7D22\u77E5\u8BC6\u70B9\u3001\u771F\u9898\u3001\u516C\u5F0F\u3001\u8D44\u6E90"></label>','<button class="eflu-btn" type="button" data-eflu-action="clear-search" aria-label="\u6E05\u7A7A\u7AD9\u5185\u641C\u7D22">'+g("x")+"\u6E05\u7A7A</button>","</div>",'<section class="eflu-panel">',A("\u7AD9\u5185\u641C\u7D22","\u5408\u5E76\u9996\u9875\u7D22\u5F15\u3001\u77E5\u8BC6\u70B9\u4E0E\u516C\u5F0F\u7D22\u5F15"),'<div class="eflu-tiles">',e.map(ja).join("")||M("\u6CA1\u6709\u5339\u914D\u7ED3\u679C"),"</div>",u.listLimit<_e().length?'<div class="eflu-actions"><button class="eflu-btn" type="button" data-eflu-action="more">'+g("plus")+"\u52A0\u8F7D\u66F4\u591A</button></div>":"","</section>"].join("")}function ja(e){var r=e.item||e;return['<article class="eflu-tile">','<div class="eflu-tile-top">','<div><div class="eflu-title">'+f(r.title)+"</div>",'<div class="eflu-desc">'+f(r.desc||r.keywords||"")+"</div></div>",'<span class="eflu-tag">'+f(r.type||"\u7ED3\u679C")+"</span>","</div>",'<div class="eflu-actions">',r.url?'<a class="eflu-btn" data-eflu-track-link="1" href="'+p(he(r.url))+'" aria-label="\u6253\u5F00\u641C\u7D22\u7ED3\u679C\uFF1A'+p(r.title)+'">'+g("external")+"\u6253\u5F00</a>":"",r.sourcePoint?'<button class="eflu-btn" type="button" data-eflu-action="review-point" data-id="'+p(r.sourcePoint.id)+'" aria-label="\u628A\u641C\u7D22\u7ED3\u679C\u52A0\u5165\u590D\u4E60\u672C\uFF1A'+p(r.title)+'">'+g("bookmark")+"\u590D\u4E60</button>":"",r.sourceFormula?'<button class="eflu-btn" type="button" data-eflu-action="review-formula" data-id="'+p(r.sourceFormula.id)+'" aria-label="\u628A\u516C\u5F0F\u641C\u7D22\u7ED3\u679C\u52A0\u5165\u590D\u4E60\u672C\uFF1A'+p(r.title)+'">'+g("bookmark")+"\u590D\u4E60</button>":"","</div>","</article>"].join("")}function Ma(){var e=Oe(),r=e.filter(function(a){return!a.due||a.due<=w()});return['<div class="eflu-kpis">',E(e.length,"\u590D\u4E60\u672C\u603B\u6570"),E(r.length,"\u4ECA\u65E5\u5230\u671F"),E(e.filter(function(a){return a.source==="fm_wrong"}).length,"\u517C\u5BB9\u9519\u9898"),E(q(U,[]).length||0,"\u672C\u5730\u57CB\u70B9"),"</div>",'<div class="eflu-grid">','<section class="eflu-panel">',A("\u5FEB\u901F\u8BB0\u5F55","\u628A\u4E34\u65F6\u9519\u9898\u3001\u516C\u5F0F\u6216\u63D0\u9192\u52A0\u5165\u672C\u5730\u590D\u4E60\u72B6\u6001"),La(),"</section>",'<section class="eflu-panel">',A("\u5230\u671F\u590D\u4E60","\u6309 SM-2 \u95F4\u9694\u91CD\u590D\u66F4\u65B0\u4E0B\u6B21\u590D\u4E60\u65F6\u95F4"),'<div class="eflu-tiles">',(r.length?r:e.slice(0,8)).map(Sr).join("")||M("\u590D\u4E60\u672C\u4E3A\u7A7A"),"</div>","</section>","</div>"].join("")}function La(){return['<div class="eflu-tile">','<div class="eflu-split-form">','<input class="eflu-input" style="padding-left:12px" data-eflu-role="custom-title" aria-label="\u9519\u9898\u6216\u590D\u4E60\u6807\u9898" placeholder="\u9519\u9898\u6216\u590D\u4E60\u6807\u9898">','<input class="eflu-input" style="padding-left:12px" data-eflu-role="custom-category" aria-label="\u590D\u4E60\u6765\u6E90\u6216\u7AE0\u8282" placeholder="\u6765\u6E90/\u7AE0\u8282">',"</div>",'<textarea class="eflu-textarea" data-eflu-role="custom-detail" aria-label="\u8BB0\u5F55\u6613\u9519\u70B9\u3001\u516C\u5F0F\u6761\u4EF6\u6216\u590D\u4E60\u63D0\u793A" placeholder="\u8BB0\u5F55\u6613\u9519\u70B9\u3001\u516C\u5F0F\u6761\u4EF6\u6216\u590D\u4E60\u63D0\u793A"></textarea>','<div class="eflu-actions">','<button class="eflu-btn" data-tone="primary" type="button" data-eflu-action="add-custom-review" aria-label="\u628A\u8FD9\u6761\u81EA\u5B9A\u4E49\u8BB0\u5F55\u52A0\u5165\u590D\u4E60\u672C">'+g("plus")+"\u52A0\u5165\u590D\u4E60\u672C</button>","</div>","</div>"].join("")}function Sr(e){var r=!e.due||e.due<=w(),a=r?'<span class="eflu-review-due">'+g("clock")+"\u4ECA\u5929</span>":'<span class="eflu-review-ok">'+g("clock")+Xr(e.due)+"</span>",t=e.formula||e.detail||e.category||"";return['<article class="eflu-tile" data-review-id="'+p(e.id)+'">','<div class="eflu-tile-top">','<div><div class="eflu-title">'+f(e.title)+"</div>",'<div class="eflu-desc">'+f(t)+"</div></div>",a,"</div>",'<div class="eflu-tagrow">','<span class="eflu-tag">'+f(e.sourceType||e.category||"\u590D\u4E60")+"</span>",'<span class="eflu-tag">\u590D\u4E60 '+f(e.reviews||0)+" \u6B21</span>",'<span class="eflu-tag">\u95F4\u9694 '+f(e.ivl||0)+" \u5929</span>",e.due&&e.due>w()?'<span class="eflu-tag">'+f(Zr(e.due))+" \u5929\u540E</span>":"","</div>",'<div class="eflu-actions">',[2,3,4,5].map(function(i){return'<button class="eflu-btn" type="button" data-eflu-action="rate-review" data-id="'+p(e.id)+'" data-quality="'+i+'" aria-label="\u7ED9\u590D\u4E60\u9879\u76EE\u8BC4\u5206 '+i+"\uFF1A"+p(e.title)+'">'+i+"</button>"}).join(""),e.url?'<a class="eflu-icon-btn" title="\u6253\u5F00\u6765\u6E90" aria-label="\u6253\u5F00\u590D\u4E60\u6765\u6E90\uFF1A'+p(e.title)+'" href="'+p(he(e.url))+'">'+g("external","\u6253\u5F00\u6765\u6E90")+"</a>":"",e.source==="edge"?'<button class="eflu-icon-btn" type="button" title="\u79FB\u9664" aria-label="\u79FB\u9664\u590D\u4E60\u9879\u76EE\uFF1A'+p(e.title)+'" data-eflu-action="remove-review" data-id="'+p(e.id)+'">'+g("x","\u79FB\u9664")+"</button>":"","</div>","</article>"].join("")}function M(e){return'<div class="eflu-empty" role="status" aria-live="polite">'+f(e)+"</div>"}function Oa(){setTimeout(function(){try{m.FMFormulaLite&&typeof m.FMFormulaLite.refresh=="function"&&m.FMFormulaLite.refresh(y),m.FMQueueMath?m.FMQueueMath(y,300):m.MathJax&&m.MathJax.typesetPromise&&m.MathJax.typesetPromise([y]).catch(function(){})}catch{}},0)}function wr(e){var r=e.target&&e.target.closest&&e.target.closest("a[href]");r&&Wt(r);var a=e.target&&e.target.closest&&e.target.closest("[data-eflu-action]");if(!a||!y||!y.contains(a)){var t=e.target&&e.target.closest&&e.target.closest("[data-eflu-track-link]");t&&k("search_open",{href:t.getAttribute("href")||""});return}var i=a.getAttribute("data-eflu-action");if(i!=="rate-review"&&e.preventDefault(),i==="tab"){z(a.getAttribute("data-tab")||"dashboard"),u.listLimit=18,k("tab",{tab:u.tab}),b({focusTab:!0});return}if(i==="category"){z("path"),u.pathCategory=a.getAttribute("data-category")||"all",u.pathId="",u.listLimit=18,k("path_category",{category:u.pathCategory}),b();return}if(i==="path-select"){z("path"),u.pathId=a.getAttribute("data-path-id")||"",u.pathCategory="all",u.listLimit=18,k("path_select",{pathId:u.pathId}),b();return}if(i==="exam-route-select"){z("exam-route"),u.selectedExamRoute=a.getAttribute("data-route-id")||"";var l=n.examRoutes.find(function(L){return L.id===u.selectedExamRoute});l&&l.triggers&&l.triggers.length&&(u.examClue=l.triggers.slice(0,3).join(" ")),k("exam_route_select",{routeId:u.selectedExamRoute}),b({focusRole:"exam-clue"});return}if(i==="formula-category"){u.formulaCategory=a.getAttribute("data-category")||"all",u.listLimit=18,k("formula_category",{category:u.formulaCategory}),b({focusRole:"formula-query"});return}if(i==="formula-checklist-category"){z("formula-checklist"),u.formulaChecklistCategory=a.getAttribute("data-category")||"all",u.selectedFormulaChecklist="",u.listLimit=18,k("formula_checklist_category",{category:u.formulaChecklistCategory}),b({focusRole:"formula-checklist-query"});return}if(i==="formula-checklist-select"){z("formula-checklist"),u.selectedFormulaChecklist=a.getAttribute("data-checklist-id")||"",k("formula_checklist_select",{checklistId:u.selectedFormulaChecklist}),b({focusRole:"formula-checklist-query"});return}if(i==="formula-checklist-from-formula"){z("formula-checklist"),u.formulaChecklistQuery="",u.formulaChecklistCategory="all",u.selectedFormulaChecklist=a.getAttribute("data-checklist-id")||"",k("formula_checklist_from_formula",{checklistId:u.selectedFormulaChecklist}),b();return}if(i==="mark-point"){fr(a.getAttribute("data-id"),a.getAttribute("data-status")||"learning");return}if(i==="review-point"){var o=n.knowledge.find(function(L){return L.id===a.getAttribute("data-id")});o&&J({sourceId:o.id,sourceType:"\u77E5\u8BC6\u70B9",title:"P"+o.page+" "+o.title,detail:Fe(o.markdown,140),url:o.url,category:o.category,tags:o.keywords});return}if(i==="review-formula"){var d=n.formulas.find(function(L){return L.id===a.getAttribute("data-id")});d&&J({sourceId:d.id,sourceType:"\u516C\u5F0F",title:d.title||d.pointTitle||"\u516C\u5F0F\u590D\u4E60",detail:d.pointTitle||d.category,formula:d.formula,url:d.url,category:d.category,tags:d.keywords});return}if(i==="review-exam-route"){var c=n.examRoutes.find(function(L){return L.id===a.getAttribute("data-route-id")});c&&J({sourceId:c.id,sourceType:"\u9898\u76EE\u8DEF\u7EBF",title:c.title||"\u9898\u76EE\u8DEF\u7EBF\u590D\u4E60",detail:c.routeText||s(c.triggers).join(" / "),category:"\u9898\u76EE\u8DEF\u7EBF",tags:c.triggers});return}if(i==="review-formula-checklist"){var h=n.formulaChecklist.find(function(L){return L.id===a.getAttribute("data-checklist-id")});h&&J({sourceId:h.id,sourceType:"\u516C\u5F0F\u6761\u4EF6",title:h.title||"\u516C\u5F0F\u6761\u4EF6\u56DE\u67E5",detail:["\u9002\u7528\u6761\u4EF6\uFF1A"+s(h.applyConditions).slice(0,2).join("\uFF1B"),"\u5E38\u89C1\u9519\u56E0\uFF1A"+s(h.commonMistakes).slice(0,2).join("\uFF1B")].filter(function(L){return L.replace(/^[^：]+：$/,"")}).join("\u3002"),formula:h.formula,url:h.url,category:h.category||"\u516C\u5F0F\u6761\u4EF6",tags:h.keywords});return}if(i==="rate-review"){gr(a.getAttribute("data-id"),a.getAttribute("data-quality"));return}if(i==="remove-review"){pr(a.getAttribute("data-id"));return}if(i==="add-custom-review"){var P=y.querySelector('[data-eflu-role="custom-title"]'),Se=y.querySelector('[data-eflu-role="custom-category"]'),Fr=y.querySelector('[data-eflu-role="custom-detail"]'),Ir=P&&P.value;if(!String(Ir||"").trim()){hr("\u5148\u5199\u4E00\u4E2A\u6807\u9898");return}J({sourceId:"custom-"+w(),sourceType:"\u9519\u9898",title:Ir,detail:Fr&&Fr.value,category:Se&&Se.value||"\u624B\u52A8\u8BB0\u5F55"});return}if(i==="clear-search"){u.siteQuery="",u.listLimit=18,b({focusRole:"site-query"});return}if(i==="clear-formula"){u.formulaQuery="",u.listLimit=18,b({focusRole:"formula-query"});return}if(i==="clear-formula-checklist"){u.formulaChecklistQuery="",u.selectedFormulaChecklist="",u.listLimit=18,b({focusRole:"formula-checklist-query"});return}if(i==="clear-exam-clue"){u.examClue="",u.selectedExamRoute="",b({focusRole:"exam-clue"});return}i==="more"&&(u.listLimit+=18,b())}function Cr(e){var r=e.target;if(!(!r||!y||!y.contains(r))){var a=r.closest&&r.closest('.eflu-tab[role="tab"]');if(!(!a||!y.contains(a))){var t=e.key;if(!(t!=="ArrowRight"&&t!=="ArrowLeft"&&t!=="Home"&&t!=="End")){e.preventDefault();var i=H(a.getAttribute("data-tab")||u.tab),l=Y.indexOf(i);l<0&&(l=Y.indexOf(u.tab)),t==="Home"?l=0:t==="End"?l=Y.length-1:l=(l+(t==="ArrowRight"?1:-1)+Y.length)%Y.length,z(Y[l]),u.listLimit=18,k("tab_keyboard",{tab:u.tab,key:t}),b({focusTab:!0})}}}}var ye=null,xe=null,ke=null;function Rr(){ye&&clearTimeout(ye),ye=setTimeout(function(){ye=null,b({focusRole:"exam-clue"})},160)}function Ar(){xe&&clearTimeout(xe),xe=setTimeout(function(){xe=null,b({focusRole:"formula-query"})},160)}function Tr(){ke&&clearTimeout(ke),ke=setTimeout(function(){ke=null,b({focusRole:"formula-checklist-query"})},180)}function Er(e){var r=e.target;if(!(!r||!y||!y.contains(r))){var a=r.getAttribute("data-eflu-role");if(a==="site-query")u.siteQuery=r.value,u.listLimit=18,k("search_type",{len:u.siteQuery.length}),b({focusRole:"site-query"});else if(a==="formula-query"){if(u.formulaQuery=r.value,u.listLimit=18,k("formula_search_type",{len:u.formulaQuery.length}),e&&e.isComposing)return;Ar()}else if(a==="formula-checklist-query"){if(u.formulaChecklistQuery=r.value,u.selectedFormulaChecklist="",u.listLimit=18,k("formula_checklist_type",{len:u.formulaChecklistQuery.length}),e&&e.isComposing)return;Tr()}else if(a==="exam-clue"){if(u.examClue=r.value,u.selectedExamRoute="",k("exam_clue_type",{len:u.examClue.length}),e&&e.isComposing)return;Rr()}}}function jr(e){var r=e.target;if(!(!r||!y||!y.contains(r))){var a=r.getAttribute("data-eflu-role");a==="formula-query"?(u.formulaQuery=r.value,u.listLimit=18,Ar()):a==="formula-checklist-query"?(u.formulaChecklistQuery=r.value,u.selectedFormulaChecklist="",u.listLimit=18,Tr()):a==="exam-clue"&&(u.examClue=r.value,u.selectedExamRoute="",Rr())}}function _a(){v.addEventListener("click",wr,!0),v.addEventListener("keydown",Cr,!0),v.addEventListener("input",Er,!0),v.addEventListener("compositionend",jr,!0),m.addEventListener("hashchange",Mr),m.addEventListener("storage",Lr)}function Fa(){v.removeEventListener("click",wr,!0),v.removeEventListener("keydown",Cr,!0),v.removeEventListener("input",Er,!0),v.removeEventListener("compositionend",jr,!0),m.removeEventListener("hashchange",Mr),m.removeEventListener("storage",Lr)}function Mr(){Ke()&&(u.listLimit=18,b(),fe(u.tab))}function Lr(e){!e||e.key!==V&&e.key!=="fm_wrong"||y&&b()}function Or(e){return e=e||{},Kr(),Ct(),Rt(),Ke(),e.root&&(y=typeof e.root=="string"?v.querySelector(e.root):e.root),y||(y=Jt()),Zt(),Re||(Re=!0,_a()),b(),ae(v),tr().then(function(){k("init",{upgradeStatus:n.upgradeStatus,points:n.knowledge.length,formulas:n.formulas.length}),b(),fe(u.tab),ae(v)}),Pe}function Ia(){return K=null,R={},n.loaded=!1,b(),tr().then(function(){return k("refresh",{upgradeStatus:n.upgradeStatus}),b(),fe(u.tab),n})}function Pa(e){Fa(),Re=!1,!e&&y&&(y.innerHTML="")}function Na(){return{version:N,state:se(),events:q(U,[]),data:{loaded:n.loaded,upgradeStatus:n.upgradeStatus,knowledge:n.knowledge.length,formulas:n.formulas.length,searchEntries:n.searchEntries.length,examRoutes:n.examRoutes.length,routeMapStatus:n.routeMapStatus,formulaChecklist:n.formulaChecklist.length,formulaChecklistStatus:n.formulaChecklistStatus}}}function Ua(e){if(e){var r=se();delete r.users[te()],Te(r)}else re(V,ue()),re(U,[]),X=ue();k("reset",{userOnly:!!e}),b()}if(m.EdgeFluidLearningUpgrade&&typeof m.EdgeFluidLearningUpgrade.destroy=="function")try{m.EdgeFluidLearningUpgrade.destroy(!1)}catch{}var Pe={version:N,currentEntryVersion:N,learningContentVersion:ze,init:Or,refresh:Ia,destroy:Pa,search:mr,markPoint:fr,addReview:J,rateReview:gr,removeReview:pr,getState:Na,resetLocalState:Ua,track:k,round247:{version:B,enhance:ae},round263:{version:we,routeUrl:Ue,routes:function(){return n.examRoutes}},round264:{version:le,checklistUrl:qe,checklist:function(){return n.formulaChecklist}},data:function(){return n},config:{rootId:Ce,stateKey:V,eventKey:U,dataUrls:O,upgradeUrls:We}};m.EdgeFluidLearningUpgrade=Pe,m.EFLU=Pe;function _r(){try{Or()}catch(e){n.loadErrors.push({url:"boot",message:e&&e.message?e.message:"boot_failed"});try{console.warn("[EdgeFluidLearningUpgrade] boot failed",e)}catch{}}try{ae(v),pt()}catch{}}v.readyState==="loading"?v.addEventListener("DOMContentLoaded",_r,{once:!0}):_r()})(window,document);
+/**
+ * Edge Fluid Learning Upgrade
+ * round342-learning-discovery-routes-20260615: student discovery routes for 181103, real exams, formulas, wrongbook, and private courses
+ * learning interaction and knowledge navigation enhancement.
+ *
+ * No framework, no HTML edits required. The script mounts into
+ * #edge-fluid-upgrade-root when it is a script-owned mount, otherwise it creates a root in the
+ * authenticated home container or the nearest main/container element.
+ */
+(function(global, document) {
+  'use strict';
+
+  var VERSION = 'round342-learning-discovery-routes-20260615-eflu-discovery';
+  var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
+  var R247_AUDIT_URL_PARTS = ['fluid-real-exam-pdf-fidelity-audit', 'json'];
+  var R263_VERSION = 'round263-fluid-exam-route-map-20260522';
+  var R263_ROUTE_URL = '/data/fluid-round263-exam-route-map.json';
+  var R264_VERSION = 'round264-formula-condition-checklist-20260522';
+  var LEARNING_CONTENT_VERSION = R264_VERSION;
+  var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
+  var ROADMAP100_VERSION = 'round544-181103-proof-depth-upgrade-20260627';
+  var ROADMAP100_URL = '/data/fluid-upgrade-roadmap-100.json';
+  var R278_VERSION = 'round279-real-exam-source-granularity-20260612';
+  var R278_YEAR_COMPARE_URL = '/data/fluid-round278-pdf-web-year-compare.json';
+  var R247_SELECTOR = [
+    '[data-round247-real-exam-pdf-fidelity-audit]',
+    '[data-r247-audit-summary]',
+    '[data-r247-evidence-card]',
+    '[data-r247-risk-note]',
+    '[data-r247-source]',
+    '[data-r247-fidelity]',
+    '[data-r247-year-audit]',
+    '[data-real-exam-source]',
+    '[data-real-exam-year]',
+    '[data-source-status]',
+    '[data-pdf-fidelity]',
+    '[data-fidelity-status]',
+    '[data-answer-source]'
+  ].join(',');
+  var ROOT_ID = 'edge-fluid-upgrade-root';
+  var STYLE_ID = 'edge-fluid-learning-upgrade-style';
+  var STATE_KEY = 'edge_fluid_learning_upgrade_state_v1';
+  var EVENT_KEY = 'edge_fluid_learning_upgrade_events_v1';
+  var LAST_LINK_KEY = 'edge_fluid_learning_last_link_v1';
+  var MAX_EVENTS = 400;
+  var MAX_REVIEWS = 240;
+  var TAB_HASHES = {
+    dashboard: '#dashboard',
+    path: '#path',
+    'exam-route': '#exam-route',
+    formulas: '#formulas',
+    'formula-checklist': '#formula-checklist',
+    search: '#search',
+    review: '#review'
+  };
+  var TAB_ORDER = ['dashboard', 'path', 'exam-route', 'formulas', 'formula-checklist', 'search', 'review'];
+  var round247AuditPromise = null;
+  var round247Observer = null;
+
+  var DATA_URLS = {
+    knowledge: '/data/fluid-knowledge-points.json',
+    search: '/data/fluid-home-search-index.json',
+    formulas: '/data/fluid-formula-index.json',
+    reviewPlan: '/data/fluid-review-plan.json',
+    remediation: '/data/fluid-knowledge-remediation.json',
+    examRouteMap: R263_ROUTE_URL,
+    formulaConditionChecklist: R264_FORMULA_CHECKLIST_URL
+  };
+
+  var UPGRADE_URLS = [
+    '/data/fluid-knowledge-upgrade-2026.json',
+    '/data/fluid-knowledge-upgrade.json',
+    '/data/fluid-learning-upgrade.json',
+    '/data/fluid-knowledge-points-upgrade.json'
+  ];
+
+  var DISCOVERY_LINKS = [
+    {
+      id: 'round342-181103',
+      type: '入口',
+      title: '181103 资料题库与 HTML 总表',
+      desc: '522 张来源卡核对；381 道默认练习、381 道可直接参考、0 道待人工源页复核、141 条线索只展示；另有 68 个真题复核任务和 38/38 份站内 HTML 资料正文。',
+      keywords: '181103 181103资料 资料题库 522来源卡 381练习 381可参考 0待复核 141线索 68真题复核 38/38 HTML 站内阅读',
+      url: '/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList'
+    },
+    {
+      id: 'round342-real-exam',
+      type: '入口',
+      title: '历年真题新版',
+      desc: '2000-2024 历年真题，325 原文小题和 68 个已拆组题 section。',
+      keywords: '历年真题 真题新版 325原文小题 68组题 803流体力学',
+      url: '/modules/real-exams-dynamic.html?edge_refresh=round418-progress-visible-truth-181103-answer-ux-20260621&from=round342-edge-search'
+    },
+    {
+      id: 'round342-formula',
+      type: '入口',
+      title: '公式回查与适用条件',
+      desc: '先核适用条件、边界条件、单位方向和常见错因，再重做同类真题。',
+      keywords: '公式 公式回查 适用条件 边界条件 单位方向 常见错因',
+      url: '/index-complete.html#formula-checklist'
+    },
+    {
+      id: 'round342-wrongbook',
+      type: '入口',
+      title: '错题订正与错因复盘',
+      desc: '进入错题本、收藏和笔记；按错因订正后重做同类题。',
+      keywords: '错题 错题本 错题订正 错因复盘 复习错题 收藏 笔记',
+      url: '/index-complete.html#tabsW'
+    },
+    {
+      id: 'round342-private-course',
+      type: '入口',
+      title: '私有课程 / 专属课状态',
+      desc: '查看账号课程状态；生产私有视频恢复仍以 FM_PRIVATE_MEDIA R2 binding 为边界。',
+      keywords: '私有课程 专属课 私有视频 账号状态 FM_PRIVATE_MEDIA R2 blocker',
+      url: '/resources.html?from=round342-edge-search-private-course#sourceStatus'
+    }
+  ];
+
+  var FALLBACK_FORMULAS = [
+    {
+      id: 'fallback-navier-stokes',
+      title: 'Navier-Stokes 方程',
+      formula: '\\rho\\left(\\frac{\\partial \\mathbf{u}}{\\partial t}+\\mathbf{u}\\cdot\\nabla\\mathbf{u}\\right)=-\\nabla p+\\mu\\nabla^2\\mathbf{u}+\\rho\\mathbf{f}',
+      category: '控制方程与理想流体',
+      pointTitle: '动量守恒主线',
+      keywords: ['N-S', '动量方程', '黏性项']
+    },
+    {
+      id: 'fallback-continuity',
+      title: '连续方程',
+      formula: '\\frac{\\partial \\rho}{\\partial t}+\\nabla\\cdot(\\rho\\mathbf{u})=0',
+      category: '基础运动学',
+      pointTitle: '质量守恒',
+      keywords: ['连续方程', '不可压', '散度']
+    },
+    {
+      id: 'fallback-bernoulli',
+      title: 'Bernoulli 方程',
+      formula: 'p+\\frac{1}{2}\\rho v^2+\\rho gh=\\mathrm{const}',
+      category: '控制方程与理想流体',
+      pointTitle: '理想流体能量积分',
+      keywords: ['Bernoulli', '能量', '势流']
+    },
+    {
+      id: 'fallback-vorticity',
+      title: '涡量定义',
+      formula: '\\boldsymbol{\\omega}=\\nabla\\times\\mathbf{u}',
+      category: '基础运动学',
+      pointTitle: '局部旋转强度',
+      keywords: ['涡量', '旋度', '环量']
+    },
+    {
+      id: 'fallback-reynolds',
+      title: 'Reynolds 数',
+      formula: 'Re=\\frac{\\rho U L}{\\mu}=\\frac{UL}{\\nu}',
+      category: '量纲相似与实验',
+      pointTitle: '惯性力与黏性力比值',
+      keywords: ['Re', '相似', '边界层']
+    }
+  ];
+
+  var FALLBACK_FORMULA_CHECKLIST = [
+    {
+      id: 'checklist-continuity',
+      formulaId: 'fallback-continuity',
+      title: '连续方程',
+      formula: '\\frac{\\partial \\rho}{\\partial t}+\\nabla\\cdot(\\rho\\mathbf{u})=0',
+      category: '质量守恒',
+      applyConditions: ['题目在问流量、速度、截面或密度随时间变化时，先从质量守恒落笔。', '不可压流体可以把密度约掉，但这一步要写出题干依据。'],
+      boundaryConditions: ['入口、出口和控制面的外法向要先定好。', '稳态管流常把同一截面速度看成平均速度，点速度题不能直接这样做。'],
+      unitDirections: ['质量流量单位是 kg/s，体积流量单位是 m^3/s。', '通量符号跟外法向有关，流入项和流出项不要混在一个方向里。'],
+      commonMistakes: ['把质量流量和体积流量混用。', '看到“不可压”就忘了检查截面平均速度的定义。'],
+      remedialTraining: ['画一个两进一出的控制体，逐项标出 rho、A、v 和外法向。', '做 2 道截面变化题，只练单位换算和方向符号。'],
+      teacherNote: '连续方程不是背式子，是先把“进来多少、出去多少、里面变多少”说清楚。'
+    },
+    {
+      id: 'checklist-bernoulli',
+      formulaId: 'fallback-bernoulli',
+      title: 'Bernoulli 方程',
+      formula: 'p+\\frac{1}{2}\\rho v^2+\\rho gh=\\mathrm{const}',
+      category: '能量方程',
+      applyConditions: ['同一条流线或满足可作整体能量方程处理的管路。', '无明显黏性损失时用基本式；有管路损失、泵或水轮机时必须补项。'],
+      boundaryConditions: ['两个断面、基准面和压强零点要先写。', '自由面能不能取大气压、速度能不能忽略，都要看题干尺度。'],
+      unitDirections: ['压强式单位是 Pa，水头式单位是 m，两者相差 rho g。', '高度项正负由基准面决定，不要凭图形高低随手改号。'],
+      commonMistakes: ['漏掉沿程损失或局部损失。', '把表压、绝压和大气压混在同一行。'],
+      remedialTraining: ['每题先画能量线和基准线，再代数。', '把同一道题分别写成压强式和水头式，专门核对单位。'],
+      teacherNote: '伯努利题先问“哪两个断面、有没有损失”，再谈代公式。'
+    },
+    {
+      id: 'checklist-reynolds',
+      formulaId: 'fallback-reynolds',
+      title: 'Reynolds 数',
+      formula: 'Re=\\frac{\\rho U L}{\\mu}=\\frac{UL}{\\nu}',
+      category: '量纲相似',
+      applyConditions: ['判断惯性力和黏性力谁占主导，或做模型相似时使用。', '特征速度 U 和特征长度 L 必须和题目对象对应。'],
+      boundaryConditions: ['管流常取管径，绕流常取物体特征尺度；不要把不同题型的 L 套用。', '温度改变时，黏度和运动黏度可能跟着变。'],
+      unitDirections: ['mu 用 Pa·s，nu 用 m^2/s，二者不能同放一个式子里。', 'Re 没有单位；算出有单位，说明量纲没有约干净。'],
+      commonMistakes: ['把动力黏度和运动黏度混用。', '缩尺实验只保 Re，却忘了速度比例会被迫改变。'],
+      remedialTraining: ['列 3 个场景，分别写 U 和 L 取什么。', '做一组模型/原型换算，只检查无量纲数是否一致。'],
+      teacherNote: 'Re 数先定尺度，再代数；尺度选错，后面算得再工整也会偏。'
+    }
+  ];
+
+  var ICONS = {
+    dashboard: '<path d="M3 13h8V3H3v10Zm0 8h8v-6H3v6Zm10 0h8V11h-8v10Zm0-18v6h8V3h-8Z"/>',
+    route: '<path d="M6 3v6a4 4 0 0 0 4 4h4a4 4 0 0 1 4 4v4"/><circle cx="6" cy="3" r="2"/><circle cx="18" cy="21" r="2"/>',
+    sigma: '<path d="M18 7V4H6l6 8-6 8h12v-3"/>',
+    search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/>',
+    review: '<path d="M4 4h16v12H7l-3 3V4Z"/><path d="M8 8h8M8 12h5"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>',
+    play: '<path d="m8 5 11 7-11 7V5Z"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>',
+    x: '<path d="m18 6-12 12M6 6l12 12"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    external: '<path d="M14 3h7v7"/><path d="M10 14 21 3"/><path d="M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/>',
+    bookmark: '<path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z"/>',
+    alert: '<path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>',
+    target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    refresh: '<path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/><path d="M3 21v-5h5"/><path d="M3 12A9 9 0 0 1 18.3 5.6L21 8"/><path d="M21 3v5h-5"/>',
+    chart: '<path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 16v-5"/><path d="M12 16V8"/><path d="M16 16v-3"/>',
+    note: '<path d="M5 3h10l4 4v14H5V3Z"/><path d="M15 3v5h5"/><path d="M8 13h8M8 17h6"/>'
+  };
+
+  var DATA = {
+    loaded: false,
+    loadErrors: [],
+    visibilityIssues: [],
+    routeMapStatus: 'pending',
+    upgradeStatus: 'pending',
+    upgrade: null,
+    roadmap100: null,
+    roadmapStatus: 'pending',
+    round278PdfWebYearCompare: null,
+    round278Status: 'pending',
+    knowledge: [],
+    categories: [],
+    searchEntries: [],
+    searchStatus: 'pending',
+    formulas: [],
+    formulaStatus: 'pending',
+    formulaConditionChecklist: null,
+    formulaChecklist: [],
+    formulaChecklistStatus: 'pending',
+    reviewPlan: null,
+    remediation: null,
+    reviewSupportStatus: 'pending',
+    examRouteMap: null,
+    examRoutes: [],
+    paths: [],
+    generatedAt: ''
+  };
+
+  var VIEW = {
+    tab: 'dashboard',
+    pathCategory: 'all',
+    pathId: '',
+    formulaCategory: 'all',
+    siteQuery: '',
+    formulaQuery: '',
+    formulaChecklistQuery: '',
+    formulaChecklistCategory: 'all',
+    selectedFormulaChecklist: '',
+    examClue: '控制体 弯管 受力',
+    selectedExamRoute: '',
+    listLimit: 18
+  };
+
+  var mountNode = null;
+  var initialized = false;
+  var loadPromise = null;
+  var supplementalPromises = {};
+  var fetchJSONInflight = {};
+  var memoryState = defaultState();
+
+  function icon(name, label) {
+    var path = ICONS[name] || ICONS.dashboard;
+    var aria = label ? ' aria-label="' + esc(label) + '"' : ' aria-hidden="true"';
+    return '<svg class="eflu-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"' + aria + '>' + path + '</svg>';
+  }
+
+  function esc(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+    });
+  }
+
+  function attr(value) {
+    return esc(value).replace(/`/g, '&#96;');
+  }
+
+  var TEX_FORMULA_PATTERN = /(?:\$\$|\\\(|\\\[|\\(?:frac|dfrac|tfrac|partial|nabla|rho|mu|sigma|tau|sqrt|vec|mathbf|boldsymbol|operatorname|mathrm|mathit|mathcal|overline|underline|bar|hat|dot|ddot|left|right|theta|Theta|pi|nu|varepsilon|epsilon|cdot|times|omega|phi|psi|varphi|alpha|beta|gamma|delta|Delta|Omega|lambda|eta|kappa|int|iint|iiint|oint|sum|prod|lim|max|min|sin|cos|tan|cot|ln|log|exp|infty|therefore|because|pm|mp|le|ge|leq|geq|lt|gt|approx|neq|equiv|sim|simeq|propto|to|rightarrow|leftarrow|Rightarrow|Leftarrow|begin|end)\b)/;
+  var WRAPPED_MATH_PATTERN = /^\s*(?:\$\$[\s\S]*\$\$|\\\[[\s\S]*\\\]|\\\([\s\S]*\\\)|\$[^$]+\$)\s*$/;
+
+  function shouldRenderFormulaMath(value) {
+    var text = String(value == null ? '' : value).trim();
+    if (!text) return false;
+    if (TEX_FORMULA_PATTERN.test(text) || WRAPPED_MATH_PATTERN.test(text)) return true;
+    return /[∂∇ρμνφψθωΓΩ_^{}\\]/.test(text) && /[=+\-*/∂∇_^\\]/.test(text);
+  }
+
+  function normalizeFormulaTex(value) {
+    var text = String(value == null ? '' : value).trim();
+    if (!text || !shouldRenderFormulaMath(text) || WRAPPED_MATH_PATTERN.test(text)) return text;
+    return '\\[' + text + '\\]';
+  }
+
+  function renderFormulaBlock(value) {
+    var raw = String(value == null ? '' : value).trim();
+    if (!raw) return '';
+    var classes = shouldRenderFormulaMath(raw) ? 'eflu-formula math-display tex2jax_process' : 'eflu-formula';
+    return '<div class="' + classes + '">' + esc(normalizeFormulaTex(raw)) + '</div>';
+  }
+
+  function clamp(num, min, max) {
+    num = Number(num) || 0;
+    return Math.max(min, Math.min(max, num));
+  }
+
+  function toArray(value) {
+    return Array.isArray(value) ? value : [];
+  }
+
+  function listFrom(value) {
+    if (Array.isArray(value)) return value;
+    if (value == null) return [];
+    if (typeof value === 'string' || typeof value === 'number') return [value];
+    return [];
+  }
+
+  function unique(list) {
+    var seen = Object.create(null);
+    return toArray(list).filter(function(item) {
+      var key = String(item || '').trim();
+      if (!key || seen[key]) return false;
+      seen[key] = true;
+      return true;
+    });
+  }
+
+  function normalizeText(value) {
+    return String(value == null ? '' : value)
+      .toLowerCase()
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function chapterNumber(value) {
+    var match = String(value == null ? '' : value).match(/\d+/);
+    return match ? match[0] : '';
+  }
+
+  function chapterPracticeUrl(chapter) {
+    return '/modules/practice-dynamic.html?type=real&chapter=' + encodeURIComponent(chapter) + '&mode=normal&from=edge-learning-workbench';
+  }
+
+  function chapterRealExamUrl(chapter) {
+    return '/modules/real-exams-dynamic.html?chapter=' + encodeURIComponent(chapter) + '&from=edge-learning-workbench';
+  }
+
+  function chapterKnowledgeUrl(chapter) {
+    return '/modules/knowledge-detail.html?chapter=' + encodeURIComponent(chapter);
+  }
+
+  function normalizeTab(tab) {
+    tab = String(tab || '').replace(/^#/, '').toLowerCase();
+    if (tab === 'route' || tab === 'knowledge-path') return 'path';
+    if (tab === 'formula' || tab === 'formula-search') return 'formulas';
+    if (tab === 'round264formulachecklist' || tab === 'round264-formula-checklist' || tab === 'formula-conditions' || tab === 'formula-condition' || tab === 'formula-condition-checklist' || tab === 'condition-checklist' || tab === 'checklist') return 'formula-checklist';
+    if (tab === 'exam' || tab === 'exam-route-map' || tab === 'fluid-exam-route-map' || tab === 'round263routemap' || tab === 'round263-route-map' || tab === 'round263-route' || tab === 'topic-route') return 'exam-route';
+    return TAB_HASHES[tab] ? tab : 'dashboard';
+  }
+
+  function tabFromHash(hash) {
+    var tab = normalizeTab(String(hash || '').replace(/^#/, ''));
+    return tab === 'dashboard' && hash && !/^#?dashboard$/i.test(String(hash)) ? '' : tab;
+  }
+
+  function updateTabHash(tab) {
+    var hash = TAB_HASHES[normalizeTab(tab)];
+    if (!hash || !global.location || global.location.hash === hash) return;
+    try {
+      if (global.history && typeof global.history.replaceState === 'function') {
+        global.history.replaceState(null, '', global.location.pathname + global.location.search + hash);
+      } else {
+        global.location.hash = hash;
+      }
+    } catch (_) {}
+  }
+
+  function tabPanelId(tab) {
+    return 'eflu-panel-' + normalizeTab(tab);
+  }
+
+  function setActiveTab(tab, syncHash) {
+    VIEW.tab = normalizeTab(tab);
+    if (syncHash !== false) updateTabHash(VIEW.tab);
+    ensureTabData(VIEW.tab);
+  }
+
+  function focusTabButton(tab) {
+    if (!mountNode) return;
+    var target = mountNode.querySelector('.eflu-tab[role="tab"][data-tab="' + normalizeTab(tab) + '"]');
+    if (!target || typeof target.focus !== 'function') return;
+    try {
+      target.focus({ preventScroll: true });
+    } catch (_) {
+      target.focus();
+    }
+    try {
+      if (typeof target.scrollIntoView === 'function') target.scrollIntoView({ block: 'nearest', inline: 'center' });
+    } catch (_) {}
+  }
+
+  function syncTabFromLocation() {
+    var tab = tabFromHash(global.location && global.location.hash);
+    if (!tab) return false;
+    VIEW.tab = tab;
+    return true;
+  }
+
+  function now() {
+    return Date.now();
+  }
+
+  function daysFromNow(timestamp) {
+    if (!timestamp) return 0;
+    return Math.ceil((timestamp - now()) / 86400000);
+  }
+
+  function markRound241() {
+    try {
+      document.documentElement.setAttribute('data-round241-human-teacher-upgrade', '1');
+      document.documentElement.setAttribute('data-edge-human-teacher-version', VERSION);
+      document.documentElement.setAttribute('data-current-entry-version', VERSION);
+      document.documentElement.setAttribute('data-learning-content-version', LEARNING_CONTENT_VERSION);
+    } catch (_) {}
+  }
+
+  function formatDate(timestamp) {
+    try {
+      var d = new Date(timestamp);
+      if (!Number.isFinite(d.getTime())) return '未安排';
+      return String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    } catch (_) {
+      return '未安排';
+    }
+  }
+
+  function readJSON(key, fallback) {
+    try {
+      var raw = global.localStorage && global.localStorage.getItem(key);
+      if (!raw) return fallback;
+      var parsed = JSON.parse(raw);
+      if (Array.isArray(fallback) && !Array.isArray(parsed)) return fallback;
+      if (fallback && typeof fallback === 'object' && !Array.isArray(fallback) &&
+          (parsed == null || typeof parsed !== 'object' || Array.isArray(parsed))) return fallback;
+      return parsed;
+    } catch (_) {
+      return fallback;
+    }
+  }
+
+  function writeJSON(key, value) {
+    try {
+      global.localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (_) {
+      try {
+        var events = readJSON(EVENT_KEY, []);
+        if (Array.isArray(events) && events.length > 60) {
+          global.localStorage.setItem(EVENT_KEY, JSON.stringify(events.slice(-60)));
+        }
+        global.localStorage.setItem(key, JSON.stringify(value));
+        return true;
+      } catch (_) {
+        memoryState = value && value.users ? value : memoryState;
+        return false;
+      }
+    }
+  }
+
+  function defaultState() {
+    return {
+      version: 1,
+      updatedAt: 0,
+      users: {}
+    };
+  }
+
+  function currentUserKey() {
+    try {
+      if (global.FMSecurity && typeof global.FMSecurity.getUser === 'function') {
+        var user = global.FMSecurity.getUser();
+        if (user && (user.username || user.name)) return String(user.username || user.name);
+      }
+    } catch (_) {}
+    try {
+      var local = readJSON('fluidMechanicsUser', null);
+      if (local && (local.username || local.name)) return String(local.username || local.name);
+    } catch (_) {}
+    return '_anon';
+  }
+
+  function userLabel() {
+    try {
+      if (global.FMSecurity && typeof global.FMSecurity.getUser === 'function') {
+        var user = global.FMSecurity.getUser();
+        if (user && (user.name || user.username)) return String(user.name || user.username);
+      }
+    } catch (_) {}
+    return '同学';
+  }
+
+  function loadLocalState() {
+    var state = readJSON(STATE_KEY, null);
+    if (!state || !state.users) state = memoryState || defaultState();
+    if (!state.users) state.users = {};
+    return state;
+  }
+
+  function saveLocalState(state) {
+    state.updatedAt = now();
+    memoryState = state;
+    writeJSON(STATE_KEY, state);
+    try {
+      if (global.FMState && typeof global.FMState.set === 'function') {
+        global.FMState.set(STATE_KEY, state);
+      }
+    } catch (_) {}
+  }
+
+  function getUserState() {
+    var state = loadLocalState();
+    var key = currentUserKey();
+    if (!state.users[key]) {
+      state.users[key] = {
+        createdAt: now(),
+        progress: {},
+        review: [],
+        notes: {},
+        prefs: {}
+      };
+      saveLocalState(state);
+    }
+    if (!state.users[key].progress) state.users[key].progress = {};
+    if (!Array.isArray(state.users[key].review)) state.users[key].review = [];
+    if (!state.users[key].notes) state.users[key].notes = {};
+    if (!state.users[key].prefs) state.users[key].prefs = {};
+    return state.users[key];
+  }
+
+  function updateUserState(mutator) {
+    var state = loadLocalState();
+    var key = currentUserKey();
+    if (!state.users[key]) state.users[key] = { createdAt: now(), progress: {}, review: [], notes: {}, prefs: {} };
+    mutator(state.users[key]);
+    if (Array.isArray(state.users[key].review) && state.users[key].review.length > MAX_REVIEWS) {
+      state.users[key].review = state.users[key].review.slice(-MAX_REVIEWS);
+    }
+    saveLocalState(state);
+    return state.users[key];
+  }
+
+  function track(action, payload) {
+    var event = {
+      v: VERSION,
+      action: String(action || 'event'),
+      user: currentUserKey(),
+      ts: now(),
+      payload: payload || {}
+    };
+    var events = readJSON(EVENT_KEY, []);
+    if (!Array.isArray(events)) events = [];
+    events.push(event);
+    if (events.length > MAX_EVENTS) events = events.slice(-MAX_EVENTS);
+    writeJSON(EVENT_KEY, events);
+    try {
+      if (global.FMLog && typeof global.FMLog.add === 'function') {
+        global.FMLog.add('edge_learning_' + event.action, event.payload);
+      }
+    } catch (_) {}
+    try {
+      global.dispatchEvent(new CustomEvent('edge-fluid-learning:event', { detail: event }));
+    } catch (_) {}
+    return event;
+  }
+
+  function wait(ms) {
+    return new Promise(function(resolve) { setTimeout(resolve, ms); });
+  }
+
+  function shouldRetryJSON(error) {
+    if (!error || !error.status) return true;
+    return error.status === 408 || error.status === 429 || error.status >= 500;
+  }
+
+  function fetchJSONOnce(url, options) {
+    options = options || {};
+    var timeoutMs = options.timeoutMs || 6500;
+    var controller = null;
+    var timer = null;
+    var request = {
+      cache: options.cache || 'default',
+      credentials: 'same-origin',
+      headers: { Accept: 'application/json' }
+    };
+    if (global.AbortController) {
+      controller = new global.AbortController();
+      request.signal = controller.signal;
+      timer = setTimeout(function() { controller.abort(); }, timeoutMs);
+    }
+    return fetch(url, request).then(function(response) {
+      if (timer) clearTimeout(timer);
+      if (!response.ok) {
+        var error = new Error('HTTP ' + response.status);
+        error.status = response.status;
+        throw error;
+      }
+      return response.json();
+    }, function(error) {
+      if (timer) clearTimeout(timer);
+      throw error;
+    });
+  }
+
+  function fetchJSONAttempt(url, options, attempt) {
+    return fetchJSONOnce(url, options).catch(function(error) {
+      var retries = options.retries == null ? 1 : options.retries;
+      if (attempt < retries && shouldRetryJSON(error)) {
+        return wait(160 * (attempt + 1)).then(function() {
+          return fetchJSONAttempt(url, options, attempt + 1);
+        });
+      }
+      throw error;
+    });
+  }
+
+  function fetchJSON(url, optional, options) {
+    options = options || {};
+    var key = [url, options.cache || 'default', optional ? 'optional' : 'required'].join('|');
+    if (fetchJSONInflight[key]) return fetchJSONInflight[key];
+    fetchJSONInflight[key] = fetchJSONAttempt(url, options, 0).catch(function(error) {
+      if (!optional) DATA.loadErrors.push({ url: url, message: error && error.message ? error.message : 'fetch_failed' });
+      return null;
+    }).then(function(payload) {
+      delete fetchJSONInflight[key];
+      return payload;
+    }).catch(function(error) {
+      delete fetchJSONInflight[key];
+      if (!optional) DATA.loadErrors.push({ url: url, message: error && error.message ? error.message : 'fetch_failed' });
+      return null;
+    });
+    return fetchJSONInflight[key];
+  }
+
+  function markRound247() {
+    try {
+      document.documentElement.setAttribute('data-round247-real-exam-pdf-fidelity-audit', R247_VERSION);
+      document.documentElement.setAttribute('data-r247-version', R247_VERSION);
+    } catch (_) {}
+  }
+
+  function round247Matches(node) {
+    try {
+      return !!(node && node.nodeType === 1 && node.matches && node.matches(R247_SELECTOR));
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function round247Targets(root) {
+    var found = [];
+    root = root || document;
+    if (round247Matches(root)) found.push(root);
+    try {
+      if (root.querySelectorAll) {
+        Array.prototype.forEach.call(root.querySelectorAll(R247_SELECTOR), function(node) {
+          found.push(node);
+        });
+      }
+    } catch (_) {}
+    return found;
+  }
+
+  function loadRound247Audit() {
+    if (round247AuditPromise) return round247AuditPromise;
+    round247AuditPromise = fetchJSON('/data/' + R247_AUDIT_URL_PARTS[0] + '.' + R247_AUDIT_URL_PARTS[1], true).then(function(payload) {
+      return payload && typeof payload === 'object' ? payload : null;
+    });
+    return round247AuditPromise;
+  }
+
+  function round247StatusValue(node) {
+    if (!node || !node.getAttribute) return '';
+    return String(
+      node.getAttribute('data-r247-status') ||
+      node.getAttribute('data-r247-source') ||
+      node.getAttribute('data-r247-fidelity') ||
+      node.getAttribute('data-source-status') ||
+      node.getAttribute('data-pdf-fidelity') ||
+      node.getAttribute('data-fidelity-status') ||
+      node.getAttribute('data-answer-source') ||
+      node.getAttribute('data-real-exam-source') ||
+      ''
+    ).trim();
+  }
+
+  function round247CanonicalStatus(status) {
+    var raw = String(status || '');
+    if (/源索引缺失|缺题|题库为空/.test(raw)) return 'source-missing';
+    if (/不在.*原题册|派生|索引外/.test(raw)) return 'outside-source-index';
+    if (/精确|包含|贴合/.test(raw)) return 'exact-stem';
+    if (/模糊|复核/.test(raw)) return 'fuzzy-aligned';
+    if (/答案|待核|推导|笔记/.test(raw)) return 'answer-risk';
+    if (/可用|存在|已定位/.test(raw)) return 'available';
+    var key = normalizeText(status).replace(/[_\s]+/g, '-');
+    if (!key) return '';
+    if (/source-missing|missing|empty-year|empty/.test(key)) return 'source-missing';
+    if (/outside|out-of-index|2025|derived-year/.test(key)) return 'outside-source-index';
+    if (/exactstem|exact-stem|exact|contained|ocr-exact|stem-contained/.test(key)) return 'exact-stem';
+    if (/fuzzyaligned|fuzzy-aligned|fuzzy|manual-check|needs-review/.test(key)) return 'fuzzy-aligned';
+    if (/derivedorunproven|derived|unproven|answersnotpdfexact|nooriginalanswerproof|answer-note/.test(key)) return 'answer-risk';
+    if (/available|ready|source-ok|pdf-index/.test(key)) return 'available';
+    return key.slice(0, 48);
+  }
+
+  function round247StatusLabel(status) {
+    var canonical = round247CanonicalStatus(status);
+    var labels = {
+      'available': '源索引可用',
+      'source-missing': '源索引缺失',
+      'outside-source-index': '不在原题册索引',
+      'exact-stem': '题面贴合 OCR',
+      'fuzzy-aligned': '题面需复核',
+      'answer-risk': '答案待核'
+    };
+    return labels[canonical] || String(status || '来源待核');
+  }
+
+  function round247ReadYear(node) {
+    var cursor = node;
+    while (cursor && cursor !== document && cursor.getAttribute) {
+      var value = cursor.getAttribute('data-r247-year') ||
+        cursor.getAttribute('data-r247-year-audit') ||
+        cursor.getAttribute('data-real-exam-year') ||
+        cursor.getAttribute('data-year');
+      if (value && /^\d{4}$/.test(String(value))) return Number(value);
+      cursor = cursor.parentNode;
+    }
+    try {
+      var param = new URL(location.href).searchParams.get('year');
+      if (param && /^\d{4}$/.test(param)) return Number(param);
+    } catch (_) {}
+    return 0;
+  }
+
+  function round247FindYear(audit, year) {
+    if (!audit || !year) return null;
+    return toArray(audit.years).find(function(item) {
+      return Number(item && item.year) === Number(year);
+    }) || null;
+  }
+
+  function round247SourceText(audit) {
+    var evidence = audit && audit.sourceEvidence ? audit.sourceEvidence : {};
+    var main = evidence.mainQuestionPdf && evidence.mainQuestionPdf.exists ? '主源题册 PDF 存在' : '主源题册 PDF 待确认';
+    var archive = evidence.ocrRebuiltArchive || 'OCR 重建文本';
+    return main + '；对照 ' + archive;
+  }
+
+  function round247IssueText(yearAudit) {
+    var issues = toArray(yearAudit && yearAudit.yearIssues);
+    if (!issues.length) return '年份未标出额外问题';
+    return issues.map(function(issue) {
+      if (issue === 'answersNotPdfExact') return '答案非原 PDF 逐字证据';
+      if (issue === 'sourceIndexMissing') return '源索引缺失';
+      if (issue === 'emptyYearQuestions') return '题库为空';
+      if (issue === 'outsideOriginal2000To2024PdfIndex') return '不在 2000-2024 原题册索引';
+      return issue;
+    }).join('；');
+  }
+
+  function round247EnsureChip(target, status) {
+    if (!target || !target.insertBefore || target.querySelector('.r247-source-chip[data-r247-auto="1"]')) return;
+    if (/^(INPUT|SELECT|TEXTAREA|BUTTON|AUDIO|VIDEO|IMG|CANVAS)$/.test(target.tagName || '')) return;
+    var canonical = round247CanonicalStatus(status);
+    var chip = document.createElement('span');
+    chip.className = 'r247-source-chip';
+    chip.setAttribute('data-status', canonical || 'pending');
+    chip.setAttribute('data-r247-auto', '1');
+    chip.textContent = round247StatusLabel(status);
+    target.classList.add('r247-source-row');
+    target.insertBefore(chip, target.firstChild);
+  }
+
+  function round247RenderYearStatus(target, audit) {
+    var year = round247ReadYear(target);
+    if (!year || !target || target.querySelector('.r247-year-status[data-r247-auto="1"]')) return false;
+    var yearAudit = round247FindYear(audit, year);
+    if (!yearAudit) return false;
+    var sourceStatus = yearAudit.sourceStatus || 'available';
+    var node = document.createElement('div');
+    node.className = 'r247-year-status';
+    node.setAttribute('data-status', round247CanonicalStatus(sourceStatus) || 'available');
+    node.setAttribute('data-r247-auto', '1');
+    node.innerHTML = [
+      '<b>' + esc(year) + ' 年</b>',
+      '<span>' + esc(round247StatusLabel(sourceStatus)) + '</span>',
+      '<span>题面 ' + esc(yearAudit.exactOrContainedQuestionStems || 0) + ' 精确 / ' + esc(yearAudit.fuzzyAlignedQuestionStems || 0) + ' 模糊</span>',
+      '<span>答案待核 ' + esc(yearAudit.derivedOrUnprovenAnswers || 0) + '</span>'
+    ].join('');
+    target.classList.add('r247-year-host');
+    target.appendChild(node);
+    if (yearAudit.issueCount || toArray(yearAudit.yearIssues).length) {
+      var risk = document.createElement('div');
+      risk.className = 'r247-risk-note';
+      risk.setAttribute('data-risk', sourceStatus === 'available' ? 'medium' : 'high');
+      risk.textContent = round247IssueText(yearAudit);
+      target.appendChild(risk);
+    }
+    return true;
+  }
+
+  function round247RenderSummary(target, audit) {
+    if (!target || !audit || target.getAttribute('data-r247-summary-rendered') === R247_VERSION) return false;
+    target.classList.add('r247-audit-board');
+    target.setAttribute('data-r247-summary-rendered', R247_VERSION);
+    if (String(target.textContent || '').trim()) return true;
+    var summary = audit.summary || {};
+    target.innerHTML = [
+      '<div class="r247-audit-head">',
+      '<div><span class="r247-kicker">真题来源批注</span><h3>PDF 保真度审计</h3><p>' + esc(round247SourceText(audit)) + '</p></div>',
+      '<span class="r247-source-chip" data-status="answer-risk">' + esc(R247_VERSION) + '</span>',
+      '</div>',
+      '<div class="r247-evidence-grid">',
+      '<div class="r247-evidence-item"><b>' + esc(summary.auditedYearSpan || '2000-2025') + '</b><span>审计年份</span></div>',
+      '<div class="r247-evidence-item"><b>' + esc(summary.activeQuestionCount || 0) + '</b><span>活跃题目</span></div>',
+      '<div class="r247-evidence-item"><b>' + esc(summary.exactOrContainedQuestionStems || 0) + '</b><span>题面精确/包含</span></div>',
+      '<div class="r247-evidence-item"><b>' + esc(summary.derivedOrUnprovenAnswers || 0) + '</b><span>答案待核</span></div>',
+      '</div>',
+      '<div class="r247-risk-note" data-risk="medium">答案没有原答案 PDF 或人工逐页核验时，只标为推导/笔记来源。</div>'
+    ].join('');
+    return true;
+  }
+
+  function round247EnhanceTarget(target, audit) {
+    if (!target || !target.classList) return false;
+    target.classList.add('r247-enhanced');
+    target.setAttribute('data-r247-version', R247_VERSION);
+    var status = round247StatusValue(target);
+    if (status) round247EnsureChip(target, status);
+    if (target.hasAttribute('data-r247-risk-note')) {
+      target.classList.add('r247-risk-note');
+      if (!target.getAttribute('data-risk')) target.setAttribute('data-risk', round247CanonicalStatus(status) === 'source-missing' ? 'high' : 'medium');
+    }
+    if (target.hasAttribute('data-r247-evidence-card')) target.classList.add('r247-evidence-card');
+    if (target.hasAttribute('data-r247-audit-summary')) round247RenderSummary(target, audit);
+    if (audit && (target.hasAttribute('data-real-exam-year') || target.hasAttribute('data-r247-year-audit'))) {
+      round247RenderYearStatus(target, audit);
+    }
+    return true;
+  }
+
+  function enhanceRound247SourceFidelity(root) {
+    var targets = round247Targets(root || document);
+    if (!targets.length) return false;
+    markRound247();
+    var needsAudit = targets.some(function(target) {
+      return target.hasAttribute && (
+        target.hasAttribute('data-r247-audit-summary') ||
+        target.hasAttribute('data-r247-year-audit') ||
+        target.hasAttribute('data-real-exam-year')
+      );
+    });
+    targets.forEach(function(target) { round247EnhanceTarget(target, null); });
+    if (needsAudit) {
+      loadRound247Audit().then(function(audit) {
+        if (!audit) return;
+        round247Targets(root || document).forEach(function(target) {
+          round247EnhanceTarget(target, audit);
+        });
+      });
+    }
+    return true;
+  }
+
+  function watchRound247Targets() {
+    if (round247Observer || !('MutationObserver' in global)) return;
+    var host = document.documentElement || document.body;
+    if (!host) return;
+    var doneTimer;
+    round247Observer = new MutationObserver(function(records) {
+      var found = false;
+      records.forEach(function(record) {
+        if (found) return;
+        if (round247Matches(record.target)) found = true;
+        Array.prototype.forEach.call(record.addedNodes || [], function(node) {
+          if (found) return;
+          if (round247Matches(node) || round247Targets(node).length) found = true;
+        });
+      });
+      if (found) enhanceRound247SourceFidelity(document);
+    });
+    try {
+      round247Observer.observe(host, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: [
+          'data-round247-real-exam-pdf-fidelity-audit',
+          'data-r247-audit-summary',
+          'data-r247-evidence-card',
+          'data-r247-risk-note',
+          'data-r247-source',
+          'data-r247-fidelity',
+          'data-r247-year-audit',
+          'data-real-exam-source',
+          'data-real-exam-year',
+          'data-source-status',
+          'data-pdf-fidelity',
+          'data-fidelity-status',
+          'data-answer-source'
+        ]
+      });
+      doneTimer = setTimeout(function() {
+        if (round247Observer) round247Observer.disconnect();
+        round247Observer = null;
+      }, 9000);
+      if (doneTimer && doneTimer.unref) doneTimer.unref();
+    } catch (_) {
+      round247Observer = null;
+    }
+  }
+
+  function loadFirstJSON(urls) {
+    var index = 0;
+    function next() {
+      if (index >= urls.length) return Promise.resolve(null);
+      var url = urls[index++];
+      return fetchJSON(url, true).then(function(payload) {
+        if (payload) {
+          DATA.upgradeStatus = 'loaded:' + url;
+          return payload;
+        }
+        return next();
+      });
+    }
+    return next();
+  }
+
+  function loadData() {
+    if (loadPromise) return loadPromise;
+    supplementalPromises = {};
+    DATA.loaded = false;
+    DATA.loadErrors = [];
+    DATA.visibilityIssues = [];
+    DATA.upgradeStatus = 'pending';
+    DATA.routeMapStatus = 'pending';
+    DATA.searchStatus = 'pending';
+    DATA.formulaStatus = 'pending';
+    DATA.roadmapStatus = 'pending';
+    DATA.round278Status = 'pending';
+    DATA.reviewSupportStatus = 'pending';
+    DATA.searchEntries = [];
+    DATA.formulas = FALLBACK_FORMULAS.slice();
+    loadPromise = Promise.all([
+      fetchJSON(DATA_URLS.knowledge, false),
+      loadFirstJSON(UPGRADE_URLS),
+      fetchJSON(DATA_URLS.examRouteMap, true),
+      fetchJSON(DATA_URLS.formulaConditionChecklist, true),
+      fetchJSON(ROADMAP100_URL, true),
+      fetchJSON(R278_YEAR_COMPARE_URL, true)
+    ]).then(function(results) {
+      DATA.knowledge = normalizeKnowledge(results[0]);
+      DATA.categories = normalizeCategories(results[0], DATA.knowledge);
+      DATA.searchEntries = [];
+      DATA.searchStatus = 'lazy';
+      DATA.formulas = FALLBACK_FORMULAS.slice();
+      DATA.formulaStatus = 'fallback';
+      DATA.reviewPlan = null;
+      DATA.remediation = null;
+      DATA.reviewSupportStatus = 'lazy';
+      DATA.upgrade = results[1] || null;
+      DATA.examRouteMap = results[2] || null;
+      DATA.formulaConditionChecklist = results[3] || null;
+      DATA.roadmap100 = normalizeRoadmap100(results[4]);
+      DATA.round278PdfWebYearCompare = normalizeRound278PdfWebYearCompare(results[5]);
+      DATA.routeMapStatus = DATA.examRouteMap ? 'loaded' : 'fallback';
+      DATA.formulaChecklistStatus = DATA.formulaConditionChecklist ? 'loaded' : 'fallback';
+      DATA.roadmapStatus = DATA.roadmap100 ? 'loaded' : 'fallback';
+      DATA.round278Status = DATA.round278PdfWebYearCompare ? 'loaded' : 'fallback';
+      if (!DATA.upgrade) DATA.upgradeStatus = 'fallback';
+      applyUpgrade(DATA.upgrade);
+      DATA.paths = derivePaths(DATA.upgrade);
+      DATA.examRoutes = deriveExamRoutes(DATA.upgrade, DATA.examRouteMap);
+      DATA.formulaChecklist = deriveFormulaChecklist(DATA.formulaConditionChecklist, DATA.upgrade);
+      DATA.loaded = true;
+      DATA.generatedAt = results[0] && results[0].generatedAt ? results[0].generatedAt : '';
+      return DATA;
+    }).catch(function(error) {
+      DATA.loadErrors.push({ url: 'bootstrap', message: error && error.message ? error.message : 'unknown' });
+      DATA.knowledge = [];
+      DATA.categories = [];
+      DATA.searchEntries = [];
+      DATA.searchStatus = 'fallback';
+      DATA.formulas = FALLBACK_FORMULAS.slice();
+      DATA.formulaStatus = 'fallback';
+      DATA.paths = derivePaths(null);
+      DATA.examRouteMap = null;
+      DATA.routeMapStatus = 'fallback';
+      DATA.examRoutes = deriveExamRoutes(null, null);
+      DATA.formulaConditionChecklist = null;
+      DATA.formulaChecklistStatus = 'fallback';
+      DATA.formulaChecklist = deriveFormulaChecklist(null, null);
+      DATA.roadmap100 = null;
+      DATA.roadmapStatus = 'fallback';
+      DATA.upgradeStatus = 'fallback';
+      DATA.reviewPlan = null;
+      DATA.remediation = null;
+      DATA.reviewSupportStatus = 'fallback';
+      DATA.loaded = true;
+      return DATA;
+    });
+    return loadPromise;
+  }
+
+  function rerenderIfTab(tabNames) {
+    tabNames = toArray(tabNames);
+    if (!mountNode || !tabNames.length) return;
+    if (tabNames.indexOf(VIEW.tab) >= 0 || tabNames.indexOf('dashboard') >= 0 && VIEW.tab === 'dashboard') {
+      render();
+    }
+  }
+
+  function loadFormulaIndex() {
+    if (supplementalPromises.formulas) return supplementalPromises.formulas;
+    DATA.formulaStatus = 'loading';
+    rerenderIfTab(['dashboard', 'formulas', 'formula-checklist', 'search']);
+    supplementalPromises.formulas = fetchJSON(DATA_URLS.formulas, true, { cache: 'force-cache' }).then(function(payload) {
+      var formulas = normalizeFormulas(payload, DATA.knowledge);
+      DATA.formulas = formulas.length ? formulas : FALLBACK_FORMULAS.slice();
+      DATA.formulaStatus = formulas.length ? 'loaded' : 'fallback';
+      applyUpgrade(DATA.upgrade);
+      DATA.formulaChecklist = deriveFormulaChecklist(DATA.formulaConditionChecklist, DATA.upgrade);
+      rerenderIfTab(['dashboard', 'formulas', 'formula-checklist', 'search']);
+      return DATA.formulas;
+    }).catch(function(error) {
+      DATA.formulaStatus = 'fallback';
+      DATA.loadErrors.push({ url: DATA_URLS.formulas, message: error && error.message ? error.message : 'formula_load_failed' });
+      rerenderIfTab(['formulas', 'search']);
+      return DATA.formulas;
+    });
+    return supplementalPromises.formulas;
+  }
+
+  function loadSearchEntries() {
+    if (supplementalPromises.search) return supplementalPromises.search;
+    DATA.searchStatus = 'loading';
+    rerenderIfTab(['dashboard', 'search']);
+    supplementalPromises.search = fetchJSON(DATA_URLS.search, true, { cache: 'force-cache' }).then(function(payload) {
+      DATA.searchEntries = normalizeSearch(payload);
+      DATA.searchStatus = DATA.searchEntries.length ? 'loaded' : 'fallback';
+      rerenderIfTab(['dashboard', 'search']);
+      return DATA.searchEntries;
+    }).catch(function(error) {
+      DATA.searchStatus = 'fallback';
+      DATA.loadErrors.push({ url: DATA_URLS.search, message: error && error.message ? error.message : 'search_load_failed' });
+      rerenderIfTab(['search']);
+      return DATA.searchEntries;
+    });
+    return supplementalPromises.search;
+  }
+
+  function loadReviewSupport() {
+    if (supplementalPromises.reviewSupport) return supplementalPromises.reviewSupport;
+    DATA.reviewSupportStatus = 'loading';
+    rerenderIfTab(['review']);
+    supplementalPromises.reviewSupport = Promise.all([
+      fetchJSON(DATA_URLS.reviewPlan, true, { cache: 'force-cache' }),
+      fetchJSON(DATA_URLS.remediation, true, { cache: 'force-cache' })
+    ]).then(function(results) {
+      DATA.reviewPlan = results[0] || null;
+      DATA.remediation = results[1] || null;
+      DATA.reviewSupportStatus = DATA.reviewPlan || DATA.remediation ? 'loaded' : 'fallback';
+      rerenderIfTab(['review']);
+      return { reviewPlan: DATA.reviewPlan, remediation: DATA.remediation };
+    }).catch(function(error) {
+      DATA.reviewSupportStatus = 'fallback';
+      DATA.loadErrors.push({ url: 'review-support', message: error && error.message ? error.message : 'review_support_load_failed' });
+      rerenderIfTab(['review']);
+      return { reviewPlan: DATA.reviewPlan, remediation: DATA.remediation };
+    });
+    return supplementalPromises.reviewSupport;
+  }
+
+  function ensureTabData(tab) {
+    tab = normalizeTab(tab || VIEW.tab);
+    if (!DATA.loaded) return Promise.resolve(DATA);
+    if (tab === 'formulas') return loadFormulaIndex();
+    if (tab === 'search') return Promise.all([loadSearchEntries(), loadFormulaIndex()]);
+    if (tab === 'review') return loadReviewSupport();
+    return Promise.resolve(DATA);
+  }
+
+  function normalizeKnowledge(payload) {
+    var points = toArray(payload && payload.points).map(function(point, index) {
+      var id = point.id || 'point-' + String(index + 1).padStart(3, '0');
+      var title = point.title || point.n || ('知识点 ' + (index + 1));
+      var markdown = point.markdown || point.content || point.k || '';
+      return {
+        id: String(id),
+        page: Number(point.page) || index + 1,
+        title: String(title),
+        category: String(point.category || point.chapterTitle || '综合学习'),
+        headings: toArray(point.headings).map(String),
+        keywords: unique(toArray(point.keywords).map(String)),
+        markdown: String(markdown),
+        url: point.url || point.u || ('/modules/knowledge-detail.html?query=' + encodeURIComponent(title))
+      };
+    });
+    return points;
+  }
+
+  function normalizeCategories(payload, points) {
+    var categories = toArray(payload && payload.categories).map(function(cat) {
+      return {
+        name: String(cat.name || cat.category || '综合学习'),
+        count: Number(cat.count) || 0
+      };
+    });
+    if (!categories.length) {
+      var map = Object.create(null);
+      points.forEach(function(point) {
+        map[point.category] = (map[point.category] || 0) + 1;
+      });
+      categories = Object.keys(map).map(function(name) {
+        return { name: name, count: map[name] };
+      });
+    }
+    return categories.filter(function(cat) { return cat.name; });
+  }
+
+  function normalizeRoadmap100(payload) {
+    if (!payload || typeof payload !== 'object') return null;
+    var rounds = toArray(payload.rounds).filter(function(item) {
+      return item && Number(item.round) >= 275 && item.id && item.lane && item.title;
+    }).map(function(item) {
+      return {
+        round: Number(item.round),
+        id: String(item.id),
+        lane: String(item.lane),
+        title: String(item.title),
+        focus: String(item.focus || ''),
+        status: String(item.status || 'queued'),
+        acceptance: toArray(item.acceptance).map(String)
+      };
+    });
+    if (payload.version !== ROADMAP100_VERSION || rounds.length < 100) return null;
+    rounds.sort(function(a, b) { return a.round - b.round; });
+    var latestRounds = rounds.slice(-100);
+    var lanes = toArray(payload.lanes).map(function(lane) {
+      return {
+        id: String(lane.id || ''),
+        title: String(lane.title || lane.id || ''),
+        summary: String(lane.summary || '')
+      };
+    }).filter(function(lane) { return lane.id && lane.title; });
+    return {
+      version: String(payload.version),
+      goal: String(payload.goal || '至少 100 大轮持续升级'),
+      currentRound: Number(payload.currentRound) || 275,
+      lanes: lanes,
+      rounds: latestRounds,
+      releaseGate: payload.releaseGate || {}
+    };
+  }
+
+  function normalizeRound278PdfWebYearCompare(payload) {
+    if (!payload || typeof payload !== 'object') return null;
+    if (payload.version !== R278_VERSION) return null;
+    var summary = payload.summary || {};
+    var years = toArray(payload.years).filter(function(item) {
+      return item && Number(item.year) >= 2000 && Number(item.year) <= 2025;
+    }).map(function(item) {
+      return {
+        year: Number(item.year),
+        status: String(item.status || 'needs-source-review'),
+        sourceStatus: String(item.sourceStatus || ''),
+        questionCount: Number(item.questionCount) || 0,
+        exactOrContainedQuestionStems: Number(item.exactOrContainedQuestionStems) || 0,
+        fuzzyAlignedQuestionStems: Number(item.fuzzyAlignedQuestionStems) || 0,
+        sourceComparableQuestionStems: Number(item.sourceComparableQuestionStems) || 0,
+        comparableRate: Number(item.comparableRate) || 0,
+        derivedOrUnprovenAnswers: Number(item.derivedOrUnprovenAnswers) || 0,
+        issues: toArray(item.issues).map(String)
+      };
+    });
+    if (!years.length) return null;
+    return {
+      version: String(payload.version),
+      generatedAt: String(payload.generatedAt || ''),
+      summary: {
+        auditedYearSpan: String(summary.auditedYearSpan || '2000-2025'),
+        originalQuestionPdfYearSpan: String(summary.originalQuestionPdfYearSpan || '2000-2024'),
+        activeQuestionCount: Number(summary.activeQuestionCount) || 0,
+        sourceComparableQuestionStems: Number(summary.sourceComparableQuestionStems) || 0,
+        exactOrContainedQuestionStems: Number(summary.exactOrContainedQuestionStems) || 0,
+        fuzzyAlignedQuestionStems: Number(summary.fuzzyAlignedQuestionStems) || 0,
+        noComparableSourceQuestionStems: Number(summary.noComparableSourceQuestionStems) || 0,
+        derivedOrUnprovenAnswers: Number(summary.derivedOrUnprovenAnswers) || 0,
+        missingAnswers: Number(summary.missingAnswers) || 0,
+        answerPdfVerbatimProofStatus: String(summary.answerPdfVerbatimProofStatus || 'not-established'),
+        evidenceAlignedQuestionCount: Number(summary.evidenceAlignedQuestionCount) || 0,
+        strictOriginalAnswerEvidenceCount: Number(summary.strictOriginalAnswerEvidenceCount) || 0,
+        expectedAtomicQuestionCount: Number(summary.expectedAtomicQuestionCount) || 0,
+        webAtomicQuestionCount: Number(summary.webAtomicQuestionCount) || 0,
+        groupedSectionCount: Number(summary.groupedSectionCount) || 0,
+        splitGroupedSectionCount: Number(summary.splitGroupedSectionCount) || 0,
+        incompleteGroupedSections: Number(summary.incompleteGroupedSections) || 0,
+        highlightYears: summary.highlightYears || {}
+      },
+      boundaryNotes: toArray(payload.boundaryNotes).map(String),
+      quickLinks: toArray(payload.quickLinks).filter(function(link) {
+        return link && link.href && link.label;
+      }).map(function(link) {
+        return { label: String(link.label), href: String(link.href) };
+      }),
+      years: years
+    };
+  }
+
+  function normalizeSearch(payload) {
+    return toArray(payload && payload.entries).map(function(item, index) {
+      return {
+        id: 'search-' + index,
+        type: String(item.t || item.type || '站内'),
+        title: String(item.n || item.title || '未命名条目'),
+        url: item.u || item.url || '#',
+        desc: String(item.d || item.desc || ''),
+        keywords: String(item.k || item.keywords || '')
+      };
+    });
+  }
+
+  function normalizeFormulas(payload, knowledge) {
+    var formulas = toArray(payload && payload.formulas).map(function(item, index) {
+      return {
+        id: String(item.id || 'formula-' + index),
+        title: String(item.title || item.context || item.pointTitle || '公式'),
+        formula: String(item.formula || item.mathText || item.tex || ''),
+        category: String(item.category || item.chapterTitle || '公式速查'),
+        pointId: item.pointId || '',
+        pointTitle: String(item.pointTitle || item.title || ''),
+        page: Number(item.page) || 0,
+        keywords: unique(toArray(item.keywords).map(String)),
+        relatedQuestions: toArray(item.relatedQuestions),
+        url: item.pointId ? '/modules/knowledge-detail.html?query=' + encodeURIComponent(item.pointTitle || item.title || item.pointId) : (item.url || '')
+      };
+    }).filter(function(item) {
+      return item.formula && item.formula.length <= 360;
+    });
+
+    if (!formulas.length) {
+      knowledge.slice(0, 80).forEach(function(point) {
+        extractFormulaBlocks(point.markdown).slice(0, 3).forEach(function(formula, formulaIndex) {
+          formulas.push({
+            id: point.id + '-formula-' + formulaIndex,
+            title: point.title,
+            formula: formula,
+            category: point.category,
+            pointId: point.id,
+            pointTitle: point.title,
+            page: point.page,
+            keywords: point.keywords,
+            relatedQuestions: [],
+            url: point.url
+          });
+        });
+      });
+    }
+    if (!formulas.length) formulas = FALLBACK_FORMULAS.slice();
+    return formulas;
+  }
+
+  function extractFormulaBlocks(markdown) {
+    var out = [];
+    var text = String(markdown || '');
+    var blockRe = /\$\$([\s\S]*?)\$\$/g;
+    var match;
+    while ((match = blockRe.exec(text))) {
+      var formula = String(match[1] || '').replace(/\s+/g, ' ').trim();
+      if (formula) out.push(formula);
+    }
+    return out;
+  }
+
+  function applyUpgrade(payload) {
+    if (!payload || typeof payload !== 'object') return;
+    var byId = Object.create(null);
+    toArray(payload.points || payload.knowledge || payload.items).forEach(function(item) {
+      if (item && item.id) byId[String(item.id)] = item;
+    });
+    if (Object.keys(byId).length) {
+      DATA.knowledge = DATA.knowledge.map(function(point) {
+        var upgrade = byId[point.id];
+        if (!upgrade) return point;
+        return Object.assign({}, point, {
+          upgrade: upgrade,
+          priority: upgrade.priority || point.priority,
+          level: upgrade.level || point.level,
+          examHint: upgrade.examHint || upgrade.exam || point.examHint,
+          pathGroup: upgrade.pathGroup || point.pathGroup
+        });
+      });
+    }
+    toArray(payload.chapterUpgradeMap).forEach(function(chapter) {
+      var source = chapter && chapter.existingSource ? chapter.existingSource : {};
+      var pages = toArray(source.knowledgePages).map(String);
+      var conceptNames = toArray(chapter && chapter.coreConcepts).map(function(item) { return item && item.name; }).filter(Boolean);
+      pages.forEach(function(pageId) {
+        byId[pageId] = Object.assign({}, byId[pageId] || {}, {
+          id: pageId,
+          priority: chapter.examPriority || '',
+          level: chapter.examPriority === 'A' ? 'core' : 'support',
+          examHint: conceptNames.slice(0, 3).join(' / '),
+          pathGroup: chapter.title || source.sourceTitle || '',
+          chapterUpgrade: chapter
+        });
+      });
+    });
+    if (Object.keys(byId).length) {
+      DATA.knowledge = DATA.knowledge.map(function(point) {
+        var upgrade = byId[point.id];
+        if (!upgrade) return point;
+        return Object.assign({}, point, {
+          upgrade: Object.assign({}, point.upgrade || {}, upgrade),
+          priority: upgrade.priority || point.priority,
+          level: upgrade.level || point.level,
+          examHint: upgrade.examHint || upgrade.exam || point.examHint,
+          pathGroup: upgrade.pathGroup || point.pathGroup,
+          keywords: unique((point.keywords || []).concat(upgrade.pathGroup || '', upgrade.examHint || ''))
+        });
+      });
+    }
+    var formulaBoost = Object.create(null);
+    toArray(payload.formulas || payload.formulaHighlights).forEach(function(item) {
+      if (item && item.id) formulaBoost[String(item.id)] = item;
+    });
+    toArray(payload.chapterUpgradeMap).forEach(function(chapter) {
+      toArray(chapter && chapter.formulaSpine).forEach(function(item) {
+        if (!item || !item.formulaId) return;
+        formulaBoost[String(item.formulaId)] = Object.assign({}, item, {
+          id: item.formulaId,
+          chapterTitle: chapter.title,
+          category: chapter.title,
+          examPriority: chapter.examPriority
+        });
+      });
+    });
+    if (Object.keys(formulaBoost).length) {
+      DATA.formulas = DATA.formulas.map(function(formula) {
+        return formulaBoost[formula.id] ? Object.assign({}, formula, { upgrade: formulaBoost[formula.id] }) : formula;
+      });
+      Object.keys(formulaBoost).forEach(function(id) {
+        var exists = DATA.formulas.some(function(formula) { return formula.id === id; });
+        var boosted = formulaBoost[id];
+        if (!exists && boosted && boosted.expression) {
+          DATA.formulas.push({
+            id: id,
+            title: boosted.title || '升级公式',
+            formula: boosted.expression,
+            category: boosted.category || boosted.chapterTitle || '知识升级',
+            pointId: '',
+            pointTitle: boosted.useWhen || boosted.chapterTitle || '',
+            page: 0,
+            keywords: unique([boosted.useWhen, boosted.derivationRoute].concat(boosted.checks || [])),
+            relatedQuestions: [],
+            url: '',
+            upgrade: boosted
+          });
+        }
+      });
+    }
+  }
+
+  function derivePaths(payload) {
+    var explicit = toArray(payload && (payload.paths || payload.learningPaths)).map(function(path, index) {
+      return {
+        id: String(path.id || 'path-' + index),
+        title: String(path.title || path.name || ('路径 ' + (index + 1))),
+        desc: String(path.desc || path.description || ''),
+        points: toArray(path.points || path.pointIds || path.items).map(String),
+        tone: path.tone || 'teal'
+      };
+    }).filter(function(path) { return path.points.length; });
+    if (explicit.length) return explicit;
+
+    var chapters = toArray(payload && payload.chapterUpgradeMap);
+    if (payload && Array.isArray(payload.crossChapterLearningPath) && payload.crossChapterLearningPath.length && chapters.length) {
+      var chapterByNumber = Object.create(null);
+      chapters.forEach(function(chapter) {
+        chapterByNumber[String(chapter.chapter)] = chapter;
+      });
+      var staged = payload.crossChapterLearningPath.map(function(stage, index) {
+        var points = [];
+        toArray(stage.chapters).forEach(function(chapterNumber) {
+          var chapter = chapterByNumber[String(chapterNumber)];
+          var source = chapter && chapter.existingSource ? chapter.existingSource : {};
+          points = points.concat(toArray(source.knowledgePages).map(String));
+        });
+        return {
+          id: 'upgrade-stage-' + (stage.stage || index + 1),
+          title: stage.title || ('阶段 ' + (index + 1)),
+          desc: (stage.durationDays ? stage.durationDays + ' 天 · ' : '') + toArray(stage.goals).slice(0, 2).join(' / '),
+          points: unique(points),
+          tone: index % 3 === 0 ? 'teal' : (index % 3 === 1 ? 'coral' : 'indigo'),
+          upgradeStage: stage
+        };
+      }).filter(function(path) { return path.points.length; });
+      if (staged.length) return staged;
+    }
+
+    if (chapters.length) {
+      var chapterPaths = chapters.map(function(chapter, index) {
+        var source = chapter.existingSource || {};
+        var chapterNo = String(chapter.chapter || '');
+        return {
+          id: 'upgrade-chapter-' + (chapter.chapter || index + 1),
+          title: chapter.title || source.sourceTitle || ('升级章节 ' + (index + 1)),
+          desc: (chapter.examPriority ? '优先级 ' + chapter.examPriority + ' · ' : '') + toArray(chapter.commonPitfalls).slice(0, 1).join(''),
+          points: toArray(source.knowledgePages).map(String),
+          tone: index % 3 === 0 ? 'teal' : (index % 3 === 1 ? 'coral' : 'indigo'),
+          practiceUrl: chapterNo ? '/modules/practice-dynamic.html?type=real&chapter=' + encodeURIComponent(chapterNo) + '&mode=normal&from=edge-learning-path' : '/modules/real-exams-dynamic.html?from=edge-learning-path',
+          realExamUrl: chapterNo ? chapterRealExamUrl(chapterNo) : '/modules/real-exams-dynamic.html?from=edge-learning-path',
+          knowledgeUrl: chapterNo ? chapterKnowledgeUrl(chapterNo) : '/modules/knowledge-detail.html',
+          chapterUpgrade: chapter
+        };
+      }).filter(function(path) { return path.points.length; });
+      if (chapterPaths.length) return chapterPaths;
+    }
+
+    return DATA.categories.map(function(category, index) {
+      var points = DATA.knowledge.filter(function(point) { return point.category === category.name; });
+      return {
+        id: 'category-' + index,
+        title: category.name,
+        desc: category.count + ' 个知识点',
+        points: points.map(function(point) { return point.id; }),
+        tone: index % 3 === 0 ? 'teal' : (index % 3 === 1 ? 'coral' : 'indigo')
+      };
+    });
+  }
+
+  function markRound263() {
+    try {
+      document.documentElement.setAttribute('data-round263-fluid-exam-route-map', R263_VERSION);
+      document.documentElement.setAttribute('data-r263-version', R263_VERSION);
+    } catch (_) {}
+  }
+
+  function markRound264() {
+    try {
+      document.documentElement.setAttribute('data-round264-formula-condition-checklist', R264_VERSION);
+      document.documentElement.setAttribute('data-r264-version', R264_VERSION);
+    } catch (_) {}
+  }
+
+  function normalizeRouteItems(value) {
+    if (Array.isArray(value)) return value;
+    if (value && typeof value === 'object') {
+      var routeKeys = [
+        'routes',
+        'items',
+        'questionRoutes',
+        'examRoutes',
+        'examRouteMap',
+        'routeMap',
+        'topicRoutes',
+        'clueRoutes',
+        'questionRouteMap',
+        'answerRoutes',
+        'clues'
+      ];
+      for (var i = 0; i < routeKeys.length; i++) {
+        if (Array.isArray(value[routeKeys[i]])) return value[routeKeys[i]];
+        if (value[routeKeys[i]] && typeof value[routeKeys[i]] === 'object') {
+          var nested = objectRouteValues(value[routeKeys[i]]);
+          if (nested.length) return nested;
+        }
+      }
+      return objectRouteValues(value);
+    }
+    return [];
+  }
+
+  function objectRouteValues(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return [];
+    return Object.keys(value).map(function(key) {
+      return value[key];
+    }).filter(function(item) {
+      return item && typeof item === 'object' && (
+        item.id || item.title || item.name || item.routeText || item.answerEntry ||
+        item.triggers || item.trigger || item.formulas || item.firstFormulas
+      );
+    });
+  }
+
+  function normalizeRouteTextList(value) {
+    if (Array.isArray(value)) {
+      return value.map(function(item) {
+        if (item && typeof item === 'object') {
+          return item.title || item.name || item.text || item.desc || item.description || item.note || item.step || item.label || item.value || item.check || item.reason || item.action || '';
+        }
+        return item;
+      }).map(String).map(function(item) { return item.trim(); }).filter(Boolean);
+    }
+    if (value && typeof value === 'object') {
+      var objectKeys = ['items', 'list', 'checks', 'steps', 'rules', 'questions', 'points', 'mistakes', 'drills'];
+      for (var i = 0; i < objectKeys.length; i++) {
+        if (Array.isArray(value[objectKeys[i]])) return normalizeRouteTextList(value[objectKeys[i]]);
+      }
+      return [value.title || value.name || value.text || value.desc || value.description || value.note || value.step || value.label || value.value || value.check || value.reason || value.action || ''].map(String).map(function(item) { return item.trim(); }).filter(Boolean);
+    }
+    return listFrom(value).map(String).map(function(item) { return item.trim(); }).filter(Boolean);
+  }
+
+  function routeFormulaItems(raw, index) {
+    var items = normalizeRouteItems(raw.formulas || raw.firstFormulas || raw.formulaRoute || raw.formulaSpine || raw.formulaIds || raw.coreFormulas);
+    if (items.length) return items;
+    return listFrom(raw.formula || raw.formulaId || raw.expression || raw.mathText).map(function(value, offset) {
+      return {
+        id: raw.formulaId || ('route-formula-' + index + '-' + offset),
+        title: raw.formulaTitle || raw.formulaName || raw.formulaId || '公式',
+        formula: value,
+        note: raw.formulaNote || raw.useWhen || raw.condition || ''
+      };
+    });
+  }
+
+  function findFormulaById(id) {
+    id = String(id || '');
+    if (!id) return null;
+    return DATA.formulas.find(function(item) { return item.id === id; }) || null;
+  }
+
+  function chapterTitleByNumber(number) {
+    var chapters = toArray(DATA.upgrade && DATA.upgrade.chapterUpgradeMap);
+    var chapter = chapters.find(function(item) { return String(item && item.chapter) === String(number); });
+    return String((chapter && (chapter.title || (chapter.existingSource && chapter.existingSource.sourceTitle))) || ('第 ' + number + ' 章'));
+  }
+
+  function pickRouteList(primary, fallback) {
+    var list = normalizeRouteItems(primary);
+    if (list.length) return list;
+    return normalizeRouteItems(fallback);
+  }
+
+  function buildFallbackExamRoutes(upgrade) {
+    var teacher = upgrade && upgrade.teacherBoard ? upgrade.teacherBoard : {};
+    var conditionChecklist = toArray(upgrade && upgrade.examCorrectionStudio && upgrade.examCorrectionStudio.formulaConditionChecklist);
+    var boundaryAudit = toArray(upgrade && upgrade.examCorrectionStudio && upgrade.examCorrectionStudio.boundaryConditionAudit);
+    var misconceptionClinic = toArray(upgrade && upgrade.examCorrectionStudio && upgrade.examCorrectionStudio.misconceptionClinic);
+    return toArray(upgrade && upgrade.questionRoutingRules).map(function(rule, index) {
+      var formulas = toArray(rule.firstFormulas).map(function(id) {
+        var formula = findFormulaById(id);
+        return formula ? {
+          id: formula.id,
+          title: formula.title || formula.pointTitle || id,
+          formula: formula.formula,
+          note: formula.pointTitle || formula.category || ''
+        } : { id: id, title: id, formula: '', note: '' };
+      });
+      return {
+        id: 'upgrade-route-' + index,
+        title: toArray(rule.trigger).slice(0, 3).join(' / ') || ('题型路线 ' + (index + 1)),
+        triggers: toArray(rule.trigger).map(String),
+        chapters: toArray(rule.routeToChapters).map(function(chapter) {
+          return chapterTitleByNumber(chapter);
+        }),
+        routeText: rule.answerEntry || '',
+        formulas: formulas,
+        boundaryReminders: unique(
+          toArray(teacher.boundaryConditionGuide).slice(0, 4)
+            .concat(boundaryAudit.map(function(item) {
+              return (item.scene ? item.scene + '：' : '') + toArray(item.mustWrite).join('，');
+            }).slice(0, 2))
+        ),
+        mistakeChecks: unique(
+          conditionChecklist.map(function(item) {
+            return (item.formulaFamily ? item.formulaFamily + '：' : '') + toArray(item.mustAskBeforeUse).slice(0, 2).join('；');
+          }).slice(0, 3).concat(misconceptionClinic.map(function(item) {
+            return item.teacherCheck || item.wrongPattern || '';
+          }).slice(0, 2))
+        ),
+        reviewOrder: unique(toArray(teacher.studyOrder).slice(0, 5)),
+        source: 'upgrade'
+      };
+    });
+  }
+
+  function coreFallbackExamRoutes() {
+    return [
+      {
+        id: 'core-route-flow-rate',
+        title: '流量、速度和截面变化',
+        triggers: ['流量', '速度', '连续方程', '截面'],
+        chapters: ['连续方程', '控制体'],
+        routeText: '先画进出口截面，写清面积、平均速度、密度和方向；不可压时再把 rho 约掉。',
+        formulas: [
+          { id: 'fallback-continuity', title: '连续方程', formula: '', note: '求流量、速度或截面变化时先看质量守恒。' }
+        ],
+        boundaryReminders: ['入口出口外法向要统一', '不可压不是默认条件，要从题干判断', '面积单位先换成平方米'],
+        mistakeChecks: ['不要把体积流量和质量流量混用', '平均速度和点速度要分清'],
+        reviewOrder: ['连续方程', '控制体进出口', '单位检查'],
+        source: 'core'
+      },
+      {
+        id: 'core-route-energy-head',
+        title: '压强、水头和管路损失',
+        triggers: ['Bernoulli', '伯努利', '压强', '水头', '损失'],
+        chapters: ['能量方程', '管流损失'],
+        routeText: '先选两个断面，画基准线和能量线；再判断有没有泵功、沿程损失或局部损失。',
+        formulas: [
+          { id: 'fallback-bernoulli', title: 'Bernoulli 方程', formula: '', note: '先写适用条件，再补损失项。' }
+        ],
+        boundaryReminders: ['自由面常取大气压，但要看题干是否允许忽略速度', '长管摩擦段不能直接用无损伯努利', '压强帕和水头米之间要乘 rho g'],
+        mistakeChecks: ['不要漏局部损失', '基准面高度符号要统一'],
+        reviewOrder: ['伯努利条件', '水头损失', '单位换算'],
+        source: 'core'
+      },
+      {
+        id: 'core-route-momentum-force',
+        title: '弯管、喷流和结构受力',
+        triggers: ['控制体', '弯管', '喷流', '受力', '反力'],
+        chapters: ['动量方程', '控制体受力'],
+        routeText: '先画控制体和坐标正方向，列压力、重力、壁面或支座反力，再写进出口动量通量。',
+        formulas: [
+          { id: 'fallback-navier-stokes', title: '动量守恒主线', formula: '', note: '整体受力题优先用积分式动量方程。' }
+        ],
+        boundaryReminders: ['压力作用面和外法向要配套', '入口动量通量按 v 点乘 n 的符号进入', '题目问水对结构的力时最后要取反向'],
+        mistakeChecks: ['不要把壁面对水和水对壁的力混成一个方向', '弯管题先分 x/y 分量'],
+        reviewOrder: ['控制体', '外法向', '动量通量', '反力方向'],
+        source: 'core'
+      },
+      {
+        id: 'core-route-similarity',
+        title: '量纲分析和模型相似',
+        triggers: ['量纲', 'Buckingham', 'π', 'Re', 'Fr', '相似', '模型'],
+        chapters: ['量纲分析', '相似准则'],
+        routeText: '先列变量和基本量纲，选重复变量组成 π 群，再判断这题主要保 Re、Fr、Eu、Ma 还是 St。',
+        formulas: [
+          { id: 'fallback-reynolds', title: 'Reynolds 数', formula: '', note: '黏性占主导时优先检查 Re 相似。' }
+        ],
+        boundaryReminders: ['模型和原型的几何比例先写清', '不是所有无量纲数都能同时保持', '最后检查速度、力和时间比例的单位'],
+        mistakeChecks: ['不要一上来全保相似准则', '重复变量必须覆盖基本量纲且彼此独立'],
+        reviewOrder: ['变量表', 'π 群', '主控相似准则', '缩尺换算'],
+        source: 'core'
+      }
+    ];
+  }
+
+  function normalizeExamRoute(raw, index) {
+    raw = raw || {};
+    var formulas = routeFormulaItems(raw, index).map(function(item, formulaIndex) {
+      if (typeof item === 'string' || typeof item === 'number') {
+        var formulaKey = String(item);
+        var found = findFormulaById(formulaKey);
+        return found ? {
+          id: found.id,
+          title: found.title || found.pointTitle || formulaKey,
+          formula: found.formula,
+          note: found.pointTitle || found.category || ''
+        } : { id: formulaKey, title: formulaKey, formula: '', note: '' };
+      }
+      item = item || {};
+      var formulaId = item.id || item.formulaId || item.pointId || ('route-formula-' + index + '-' + formulaIndex);
+      return {
+        id: String(formulaId),
+        title: String(item.title || item.name || item.formulaTitle || item.formulaName || item.formulaId || '公式'),
+        formula: String(item.formula || item.expression || item.mathText || ''),
+        note: String(item.note || item.useWhen || item.condition || item.desc || item.route || '')
+      };
+    });
+    return {
+      id: String(raw.id || raw.routeId || raw.clueId || 'exam-route-' + index),
+      title: String(raw.title || raw.name || raw.questionType || raw.routeTitle || raw.clue || ('题型路线 ' + (index + 1))),
+      triggers: unique(normalizeRouteTextList(raw.triggers || raw.trigger || raw.keywords || raw.clues || raw.questionClues || raw.signals || raw.examSignals)),
+      chapters: unique(normalizeRouteTextList(raw.chapters || raw.routeToChapters || raw.chapterRoute || raw.knowledgeRoute || raw.knowledgePath || raw.relatedChapters)),
+      routeText: String(raw.routeText || raw.answerEntry || raw.firstStep || raw.teacherNote || raw.desc || raw.summary || raw.route || raw.path || ''),
+      formulas: formulas,
+      boundaryReminders: unique(normalizeRouteTextList(raw.boundaryReminders || raw.boundaryConditions || raw.boundaryChecks || raw.boundaryRoute || raw.conditions)),
+      mistakeChecks: unique(normalizeRouteTextList(raw.mistakeChecks || raw.wrongCauseChecks || raw.commonPitfalls || raw.checklist || raw.pitfalls)),
+      reviewOrder: unique(normalizeRouteTextList(raw.reviewOrder || raw.reviewSequence || raw.studyOrder || raw.nextReview || raw.steps)),
+      source: raw.source || 'round263'
+    };
+  }
+
+  function deriveExamRoutes(upgrade, routeMap) {
+    var routeItems = normalizeRouteItems(routeMap);
+    if (!routeItems.length) {
+      routeItems = normalizeRouteItems(upgrade && (upgrade.examRouteMap || upgrade.routeMap || upgrade.topicRoutes || upgrade.questionRouteMap));
+    }
+    var explicit = routeItems.map(normalizeExamRoute).filter(function(route) {
+      return route.title || route.triggers.length || route.routeText;
+    });
+    var fallback = buildFallbackExamRoutes(upgrade).concat(coreFallbackExamRoutes());
+    var byId = Object.create(null);
+    explicit.concat(fallback).forEach(function(route, index) {
+      if (!route) return;
+      var id = route.id || ('exam-route-' + index);
+      if (!byId[id]) byId[id] = route;
+    });
+    return Object.keys(byId).map(function(id) { return byId[id]; }).slice(0, 24);
+  }
+
+  function normalizeChecklistItems(value) {
+    if (Array.isArray(value)) return value;
+    if (value && typeof value === 'object') {
+      var keys = [
+        'items',
+        'formulas',
+        'checklist',
+        'formulaChecklist',
+        'formulaConditionChecklist',
+        'conditionChecklist',
+        'formulaConditionCards',
+        'conditionCards',
+        'formulaCards',
+        'cards',
+        'entries',
+        'records',
+        'data',
+        'rules'
+      ];
+      for (var i = 0; i < keys.length; i++) {
+        if (Array.isArray(value[keys[i]])) return value[keys[i]];
+      }
+      return Object.keys(value).map(function(key) {
+        var item = value[key];
+        if (item && typeof item === 'object' && !Array.isArray(item)) {
+          return Object.assign({ id: item.id || key }, item);
+        }
+        return null;
+      }).filter(function(item) {
+        return item && (
+          item.title || item.name || item.formula || item.expression ||
+          item.applyConditions || item.conditions || item.commonMistakes || item.wrongCauses
+        );
+      });
+    }
+    return [];
+  }
+
+  function normalizeChecklistList(value, fallback) {
+    var list = normalizeRouteTextList(value);
+    if (!list.length && fallback) list = normalizeRouteTextList(fallback);
+    return unique(list);
+  }
+
+  function normalizeChecklistRouteLinks(value) {
+    return toArray(value).map(function(item) {
+      if (!item) return null;
+      if (typeof item === 'string') {
+        return { label: item, href: '', use: '' };
+      }
+      if (typeof item !== 'object') return null;
+      var label = firstText(item.label, item.title, item.name, item.entry, item.text, item.href);
+      var href = firstText(item.href, item.url, item.link, item.path);
+      var use = firstText(item.use, item.note, item.desc, item.description, item.cue, item.trainingUse);
+      if (!label && !href && !use) return null;
+      return { label: label || href || '相关入口', href: href, use: use };
+    }).filter(Boolean).slice(0, 6);
+  }
+
+  function firstText() {
+    for (var i = 0; i < arguments.length; i++) {
+      var value = arguments[i];
+      if (value == null) continue;
+      if (Array.isArray(value)) {
+        var nested = firstText.apply(null, value);
+        if (nested) return nested;
+      } else if (typeof value === 'object') {
+        var objectText = value.title || value.name || value.text || value.desc || value.note || value.summary;
+        if (objectText) return String(objectText);
+      } else {
+        var text = String(value).trim();
+        if (text) return text;
+      }
+    }
+    return '';
+  }
+
+  function normalizeFormulaChecklistItem(raw, index, source) {
+    raw = raw || {};
+    var formulaId = String(raw.formulaId || raw.formula_id || raw.idRef || raw.relatedFormulaId || raw.relatedId || raw.pointId || raw.knowledgeId || '');
+    var formula = formulaId ? findFormulaById(formulaId) : null;
+    var title = firstText(raw.title, raw.name, raw.label, raw.formulaTitle, raw.formulaName, raw.formulaFamily, formula && (formula.title || formula.pointTitle), '公式条件卡 ' + (index + 1));
+    var expression = firstText(raw.formula, raw.expression, raw.mathText, raw.tex, raw.latex, raw.math, formula && formula.formula);
+    var category = firstText(raw.category, raw.chapterTitle, raw.chapter, raw.family, raw.formulaFamily, raw.group, raw.topic, formula && formula.category, '公式条件');
+    var keywords = unique(
+      toArray(raw.keywords || raw.tags || raw.triggers)
+        .concat(title, category, formulaId, formula && formula.pointTitle, formula && formula.keywords, raw.aliases, raw.formulaForms, raw.errorTypes, raw.invalidWhen, raw.notEnoughConditions, raw.routeLinks, raw.examEntry)
+        .map(function(item) { return Array.isArray(item) ? item.join(' ') : item; })
+    );
+    return {
+      id: String(raw.id || raw.checklistId || raw.key || formulaId || ('formula-checklist-' + index)),
+      formulaId: formulaId || (formula && formula.id) || '',
+      title: title,
+      formula: expression,
+      category: category,
+      applyConditions: normalizeChecklistList(raw.applyConditions || raw.applicableConditions || raw.conditions || raw.conditionChecks || raw.useWhen || raw.whenToUse || raw.assumptions || raw.scope || raw.mustAskBeforeUse, raw.whenToUse),
+      notEnoughConditions: normalizeChecklistList(raw.notEnoughConditions || raw.missingConditions || raw.notEnough || raw.notEnoughChecks || raw.needMoreConditions || raw.conditionGaps),
+      invalidWhen: normalizeChecklistList(raw.invalidWhen || raw.notUseWhen || raw.failureCases || raw.invalidCases || raw.outOfScope || raw.cannotUseWhen),
+      boundaryConditions: normalizeChecklistList(raw.boundaryConditions || raw.boundaryReminders || raw.boundaryChecks || raw.boundaries || raw.limits || raw.limitations || raw.edgeConditions || raw.validRange),
+      unitDirections: normalizeChecklistList(raw.unitDirections || raw.units || raw.unitChecks || raw.directionChecks || raw.direction || raw.signChecks || raw.signConvention || raw.orientationChecks || raw.dimensionChecks),
+      commonMistakes: normalizeChecklistList(raw.commonMistakes || raw.commonPitfalls || raw.wrongCauses || raw.errorCauses || raw.mistakeReasons || raw.mistakes || raw.errorChecks || raw.pitfalls),
+      remedialTraining: normalizeChecklistList(raw.remedialTraining || raw.training || raw.fixTraining || raw.correctionTraining || raw.remedies || raw.repairPractice || raw.practice || raw.drills || raw.reviewOrder),
+      aliases: normalizeChecklistList(raw.aliases || raw.alias || raw.entryAliases || raw.aliasAndEntryMap),
+      formulaForms: normalizeChecklistList(raw.formulaForms || raw.forms || raw.formulaVariants || raw.formulaTexts || raw.formulaList),
+      routeLinks: normalizeChecklistRouteLinks(raw.routeLinks || raw.links || raw.problemEntryLinks || raw.examLinks),
+      examEntry: firstText(raw.examEntry, raw.entry, raw.problemEntry, raw.questionEntry),
+      answerSkeleton: normalizeChecklistList(raw.answerSkeleton || raw.solutionSkeleton || raw.steps || raw.solveSteps),
+      mistakeTags: normalizeChecklistList(raw.mistakeTags || raw.errorTags || raw.mistakeTypes),
+      reviewOrder: normalizeChecklistList(raw.reviewOrder || raw.order || raw.checkOrder),
+      teacherNote: firstText(raw.teacherNote, raw.note, raw.hint, raw.summary),
+      source: source || raw.source || '公式条件历史包',
+      keywords: keywords,
+      url: raw.url || (formula && formula.url) || ''
+    };
+  }
+
+  function ensureFormulaChecklistVisibility(item) {
+    item = Object.assign({}, item || {});
+    var title = item.title || item.entry || '公式条件卡';
+    var fill = function(key, values) {
+      if (!toArray(item[key]).length) {
+        item[key] = toArray(values);
+        DATA.visibilityIssues.push({ type: 'formula-checklist-fill', id: item.id || title, field: key });
+      }
+    };
+    fill('applyConditions', ['先确认题干信号、模型假设和公式适用范围，再写公式。']);
+    fill('boundaryConditions', ['先写入口、出口、固壁、自由面、远场或控制体外法向，再代入公式。']);
+    fill('unitDirections', ['算完核对单位、正方向和数量级；压强、水头、通量和力不要混单位。']);
+    fill('commonMistakes', ['只背公式但没有写适用条件、边界条件或单位方向。']);
+    fill('remedialTraining', ['重做一道同类真题，只写条件表和边界单位，不急着算数值。']);
+    if (!toArray(item.routeLinks).length) {
+      item.routeLinks = [{ label: '知识升级入口：公式条件表', href: '/modules/knowledge-upgrade-2026.html#formula-condition-checklist', use: '回到历史条件表核对适用条件、边界和单位方向。' }];
+      DATA.visibilityIssues.push({ type: 'formula-checklist-fill', id: item.id || title, field: 'routeLinks' });
+    }
+    if (!item.teacherNote) item.teacherNote = '公式能不能用，先看条件、边界和单位方向。';
+    return item;
+  }
+
+  function checklistFromUpgrade(upgrade) {
+    var studio = upgrade && upgrade.examCorrectionStudio ? upgrade.examCorrectionStudio : {};
+    var items = toArray(studio.formulaConditionChecklist).map(function(item, index) {
+      item = item || {};
+      return normalizeFormulaChecklistItem({
+        id: item.id || ('upgrade-formula-condition-' + index),
+        title: item.formulaFamily || item.title,
+        category: item.formulaFamily || '公式条件',
+        applyConditions: item.mustAskBeforeUse,
+        boundaryConditions: item.boundaryConditions || item.boundaryChecks,
+        unitDirections: item.unitDirections || item.unitChecks,
+        commonMistakes: item.commonMistakes || item.wrongPattern || item.pitfalls,
+        remedialTraining: item.remedialTraining || item.training || item.teacherCheck,
+        teacherNote: item.teacherCheck || item.note,
+        keywords: [item.formulaFamily].concat(item.mustAskBeforeUse || [])
+      }, index, '讲义规则');
+    });
+    var r264 = upgrade && upgrade.formulaConditionChecklist ? upgrade.formulaConditionChecklist : null;
+    if (r264 && typeof r264 === 'object') {
+      var mistakeNotes = toArray(r264.mistakeTaxonomy).map(function(item) {
+        return firstText(item.type, item.check, item.examples);
+      }).filter(Boolean);
+      var trainingNotes = toArray(r264.examTrainingPlan).map(function(item) {
+        return firstText(item.focus, item.trainingUse);
+      }).filter(Boolean);
+      var linkNotes = toArray(r264.problemEntryLinks).map(function(item) {
+        return firstText(item.entry, item.cue, item.href);
+      }).filter(Boolean);
+      var entries = toArray(r264.aliasAndEntryMap);
+      entries.forEach(function(entry, index) {
+        entry = entry || {};
+        items.push(normalizeFormulaChecklistItem({
+          id: entry.id || ('upgrade-r264-entry-' + index),
+          title: entry.entry || entry.title,
+          category: r264.entryLabel || '公式适用条件',
+          applyConditions: entry.triggerWords || r264.teacherUse || r264.searchKeywords,
+          boundaryConditions: [
+            '先写固壁、自由面、入口出口、控制体外法向和损失项，再代公式。',
+            firstText(r264.densityUpgrade && r264.densityUpgrade.teacherReadingRule)
+          ],
+          unitDirections: [
+            '算完回查单位、方向和数量级；水头米和压强帕之间要乘 rho g。',
+            firstText(r264.densityUpgrade && r264.densityUpgrade.studentOutput)
+          ],
+          commonMistakes: mistakeNotes,
+          remedialTraining: trainingNotes.concat(linkNotes),
+          teacherNote: r264.teacherUse || r264.siteUpdateNote,
+          keywords: [entry.entry, entry.aliases, entry.triggerWords, entry.routeLabels, r264.searchKeywords]
+        }, index, '公式条件历史包'));
+      });
+    }
+    return items;
+  }
+
+  function deriveFormulaChecklist(payload, upgrade) {
+    var explicit = normalizeChecklistItems(payload).map(function(item, index) {
+      return normalizeFormulaChecklistItem(item, index, '公式条件历史包');
+    }).filter(function(item) {
+      return item.title || item.formula || item.applyConditions.length || item.commonMistakes.length;
+    });
+    var fallback = checklistFromUpgrade(upgrade).concat(FALLBACK_FORMULA_CHECKLIST.map(function(item, index) {
+      return normalizeFormulaChecklistItem(item, index, '讲义兜底');
+    }));
+    var byId = Object.create(null);
+    explicit.concat(fallback).map(ensureFormulaChecklistVisibility).forEach(function(item, index) {
+      if (!item) return;
+      var id = item.id || ('formula-checklist-' + index);
+      if (!byId[id]) byId[id] = Object.assign({}, item, { id: id });
+    });
+    return Object.keys(byId).map(function(id) { return byId[id]; }).slice(0, 80);
+  }
+
+  function scoreFormulaChecklist(item, query) {
+    var q = normalizeText(query);
+    if (!q) return 0;
+    var tokens = q.split(' ').filter(Boolean);
+    var hay = normalizeText([
+      item.title,
+      item.formula,
+      item.category,
+      item.formulaId,
+      toArray(item.keywords).join(' '),
+      toArray(item.applyConditions).join(' '),
+      toArray(item.notEnoughConditions).join(' '),
+      toArray(item.invalidWhen).join(' '),
+      toArray(item.boundaryConditions).join(' '),
+      toArray(item.unitDirections).join(' '),
+      toArray(item.commonMistakes).join(' '),
+      toArray(item.remedialTraining).join(' '),
+      toArray(item.aliases).join(' '),
+      toArray(item.formulaForms).join(' '),
+      toArray(item.answerSkeleton).join(' '),
+      toArray(item.mistakeTags).join(' '),
+      toArray(item.reviewOrder).join(' '),
+      toArray(item.routeLinks).map(function(link) { return [link.label, link.href, link.use].join(' '); }).join(' '),
+      item.examEntry
+    ].join(' '));
+    var score = hay.indexOf(q) >= 0 ? 70 : 0;
+    if (normalizeText(item.title).indexOf(q) >= 0) score += 40;
+    tokens.forEach(function(token) {
+      if (hay.indexOf(token) >= 0) score += 9;
+    });
+    return score;
+  }
+
+  function formulaChecklistResults() {
+    var q = VIEW.formulaChecklistQuery;
+    var cat = VIEW.formulaChecklistCategory;
+    var list = toArray(DATA.formulaChecklist).filter(function(item) {
+      if (cat !== 'all' && item.category !== cat) return false;
+      if (!normalizeText(q)) return true;
+      return scoreFormulaChecklist(item, q) > 0;
+    }).sort(function(a, b) {
+      var scoreDelta = scoreFormulaChecklist(b, q) - scoreFormulaChecklist(a, q);
+      if (scoreDelta) return scoreDelta;
+      return String(a.title).localeCompare(String(b.title), 'zh-Hans-CN');
+    });
+    return list.slice(0, VIEW.listLimit);
+  }
+
+  function findChecklistForFormula(formula) {
+    if (!formula) return null;
+    var formulaId = String(formula.id || '');
+    var title = normalizeText([formula.title, formula.pointTitle].join(' '));
+    var expression = normalizeText(formula.formula);
+    return toArray(DATA.formulaChecklist).find(function(item) {
+      if (formulaId && item.formulaId === formulaId) return true;
+      var itemTitle = normalizeText(item.title);
+      if (title && itemTitle && (title.indexOf(itemTitle) >= 0 || itemTitle.indexOf(title) >= 0)) return true;
+      var itemFormula = normalizeText(item.formula);
+      return expression && itemFormula && (expression.indexOf(itemFormula) >= 0 || itemFormula.indexOf(expression) >= 0);
+    }) || null;
+  }
+
+  function selectedFormulaChecklist() {
+    var list = formulaChecklistResults();
+    var selected = toArray(DATA.formulaChecklist).find(function(item) { return item.id === VIEW.selectedFormulaChecklist; });
+    if (selected && (VIEW.formulaChecklistCategory === 'all' || selected.category === VIEW.formulaChecklistCategory)) {
+      if (!normalizeText(VIEW.formulaChecklistQuery) || scoreFormulaChecklist(selected, VIEW.formulaChecklistQuery) > 0) return selected;
+    }
+    return list[0] || toArray(DATA.formulaChecklist)[0] || null;
+  }
+
+  function scoreExamRoute(route, clue) {
+    var q = normalizeText(clue);
+    if (!q) return 0;
+    var tokens = q.split(' ').filter(Boolean);
+    var hay = normalizeText([
+      route.title,
+      route.routeText,
+      toArray(route.triggers).join(' '),
+      toArray(route.chapters).join(' '),
+      toArray(route.formulas).map(function(item) {
+        return [item.title, item.note, item.formula].join(' ');
+      }).join(' '),
+      toArray(route.boundaryReminders).join(' '),
+      toArray(route.mistakeChecks).join(' '),
+      toArray(route.reviewOrder).join(' ')
+    ].join(' '));
+    var score = hay.indexOf(q) >= 0 ? 60 : 0;
+    toArray(route.triggers).forEach(function(trigger) {
+      var t = normalizeText(trigger);
+      if (t && q.indexOf(t) >= 0) score += 35;
+      else if (t && hay.indexOf(t) >= 0 && tokens.some(function(token) { return t.indexOf(token) >= 0 || token.indexOf(t) >= 0; })) score += 12;
+    });
+    tokens.forEach(function(token) {
+      if (hay.indexOf(token) >= 0) score += 8;
+    });
+    return score;
+  }
+
+  function routeSourceRank(route) {
+    if (!route) return 0;
+    if (route.source === 'round263') return 70;
+    if (route.source === 'upgrade') return 15;
+    if (route.source === 'core') return 4;
+    return 8;
+  }
+
+  function routeEffectiveScore(item) {
+    return (item.score || 0) + (item.score > 0 ? routeSourceRank(item.route) : 0);
+  }
+
+  function selectedExamRoute() {
+    var routes = DATA.examRoutes || [];
+    if (!routes.length) return null;
+    var selected = routes.find(function(route) { return route.id === VIEW.selectedExamRoute; });
+    if (selected) return selected;
+    var clue = VIEW.examClue || '';
+    if (!normalizeText(clue)) return null;
+    var ranked = routes.map(function(route) {
+      return { route: route, score: scoreExamRoute(route, clue) };
+    }).sort(function(a, b) {
+      var effectiveDelta = routeEffectiveScore(b) - routeEffectiveScore(a);
+      if (effectiveDelta) return effectiveDelta;
+      return b.score - a.score;
+    });
+    return (ranked[0] && ranked[0].score > 0 ? ranked[0].route : routes[0]) || null;
+  }
+
+  function examRouteSuggestions() {
+    var clue = VIEW.examClue || '';
+    return (DATA.examRoutes || []).map(function(route, index) {
+      return { route: route, score: scoreExamRoute(route, clue), index: index };
+    }).sort(function(a, b) {
+      var effectiveDelta = routeEffectiveScore(b) - routeEffectiveScore(a);
+      if (effectiveDelta) return effectiveDelta;
+      if (b.score !== a.score) return b.score - a.score;
+      var sourceDelta = routeSourceRank(b.route) - routeSourceRank(a.route);
+      if (sourceDelta) return sourceDelta;
+      return a.index - b.index;
+    }).slice(0, 6);
+  }
+
+  function progressSummary() {
+    var user = getUserState();
+    var total = DATA.knowledge.length || 0;
+    var done = 0;
+    var learning = 0;
+    var weak = 0;
+    Object.keys(user.progress || {}).forEach(function(id) {
+      var item = user.progress[id];
+      if (item && item.status === 'done') done++;
+      else if (item && item.status === 'learning') learning++;
+      else if (item && item.status === 'weak') weak++;
+    });
+    var review = collectReviews();
+    var due = review.filter(function(item) { return !item.due || item.due <= now(); }).length;
+    return {
+      total: total,
+      done: done,
+      learning: learning,
+      weak: weak,
+      pct: total ? Math.round(done / total * 100) : 0,
+      reviewTotal: review.length,
+      due: due
+    };
+  }
+
+  function masteryByCategory() {
+    var user = getUserState();
+    return DATA.categories.map(function(category) {
+      var points = DATA.knowledge.filter(function(point) { return point.category === category.name; });
+      var done = points.filter(function(point) {
+        return user.progress[point.id] && user.progress[point.id].status === 'done';
+      }).length;
+      var weak = points.filter(function(point) {
+        return user.progress[point.id] && user.progress[point.id].status === 'weak';
+      }).length;
+      return {
+        name: category.name,
+        count: points.length || category.count,
+        done: done,
+        weak: weak,
+        pct: points.length ? Math.round(done / points.length * 100) : 0
+      };
+    });
+  }
+
+  function pathProgress(path) {
+    var user = getUserState();
+    var ids = unique(toArray(path && path.points));
+    var done = ids.filter(function(id) {
+      return user.progress[id] && user.progress[id].status === 'done';
+    }).length;
+    var weak = ids.filter(function(id) {
+      return user.progress[id] && user.progress[id].status === 'weak';
+    }).length;
+    return {
+      count: ids.length,
+      done: done,
+      weak: weak,
+      pct: ids.length ? Math.round(done / ids.length * 100) : 0
+    };
+  }
+
+  function suggestedPoints(limit) {
+    var user = getUserState();
+    var ranked = DATA.knowledge.slice().sort(function(a, b) {
+      var ap = user.progress[a.id] || {};
+      var bp = user.progress[b.id] || {};
+      var as = ap.status === 'weak' ? -4 : (ap.status === 'learning' ? -2 : (ap.status === 'done' ? 4 : 0));
+      var bs = bp.status === 'weak' ? -4 : (bp.status === 'learning' ? -2 : (bp.status === 'done' ? 4 : 0));
+      if (as !== bs) return as - bs;
+      return (a.page || 0) - (b.page || 0);
+    });
+    return ranked.slice(0, limit || 8);
+  }
+
+  function collectReviews() {
+    var user = getUserState();
+    var local = toArray(user.review).map(function(item) {
+      return Object.assign({ source: 'edge' }, item);
+    });
+    var existing = readExistingWrong();
+    var byId = Object.create(null);
+    local.concat(existing).forEach(function(item) {
+      if (!item || !item.id) return;
+      byId[item.id] = item;
+    });
+    return Object.keys(byId).map(function(id) { return byId[id]; }).sort(function(a, b) {
+      return (a.due || 0) - (b.due || 0);
+    });
+  }
+
+  function readExistingWrong() {
+    var all = readJSON('fm_wrong', {});
+    var user = currentUserKey();
+    var list = Array.isArray(all && all[user]) ? all[user] : [];
+    return list.map(function(item, index) {
+      var rawId = item.id || ('fm-wrong-' + index);
+      return {
+        id: 'fmwrong:' + rawId,
+        rawId: rawId,
+        source: 'fm_wrong',
+        sourceType: item.type || '错题',
+        title: item.title || item.question || item.name || '历史错题',
+        detail: item.detail || item.explanation || item.note || '',
+        url: item.url || '',
+        category: item.category || item.module || '错题本',
+        due: item.due || 0,
+        ef: item.ef,
+        rep: item.rep,
+        ivl: item.ivl,
+        reviews: item.reviews || 0,
+        createdAt: item.createdAt || item.t || now()
+      };
+    });
+  }
+
+  function statusLabel(status) {
+    if (status === 'done') return '已掌握';
+    if (status === 'learning') return '学习中';
+    if (status === 'weak') return '薄弱点';
+    return '未开始';
+  }
+
+  function pointStatus(pointId) {
+    var user = getUserState();
+    return (user.progress[pointId] && user.progress[pointId].status) || 'todo';
+  }
+
+  function setPointStatus(pointId, status) {
+    var point = DATA.knowledge.find(function(item) { return item.id === pointId; });
+    if (!point) return false;
+    updateUserState(function(user) {
+      user.progress[pointId] = Object.assign({}, user.progress[pointId] || {}, {
+        status: status,
+        updatedAt: now(),
+        title: point.title,
+        category: point.category,
+        page: point.page,
+        visits: ((user.progress[pointId] && user.progress[pointId].visits) || 0) + 1
+      });
+    });
+    track('point_status', { id: pointId, status: status, title: point.title });
+    render({ focusRole: null });
+    return true;
+  }
+
+  function addReviewItem(input) {
+    var title = String(input && input.title || '').trim();
+    if (!title) return false;
+    var sourceId = String(input.sourceId || input.id || slug(title));
+    var sourceType = String(input.sourceType || '复习');
+    var reviewId = 'edge:' + sourceType + ':' + sourceId;
+    updateUserState(function(user) {
+      var list = toArray(user.review);
+      var existing = list.find(function(item) { return item.id === reviewId; });
+      var base = {
+        id: reviewId,
+        source: 'edge',
+        sourceId: sourceId,
+        sourceType: sourceType,
+        title: title,
+        detail: String(input.detail || ''),
+        formula: String(input.formula || ''),
+        url: input.url || '',
+        category: String(input.category || '复习本'),
+        tags: unique(input.tags || []),
+        createdAt: now(),
+        due: now(),
+        ef: 2.5,
+        rep: 0,
+        ivl: 0,
+        reviews: 0
+      };
+      if (existing) {
+        Object.assign(existing, base, {
+          createdAt: existing.createdAt || base.createdAt,
+          due: existing.due || base.due,
+          ef: existing.ef || base.ef,
+          rep: existing.rep || 0,
+          ivl: existing.ivl || 0,
+          reviews: existing.reviews || 0
+        });
+      } else {
+        list.unshift(base);
+      }
+      user.review = list;
+    });
+    track('review_add', { id: reviewId, title: title, type: sourceType });
+    toast('已加入复习本');
+    render({ focusRole: null });
+    return true;
+  }
+
+  function removeReviewItem(id) {
+    updateUserState(function(user) {
+      user.review = toArray(user.review).filter(function(item) { return item.id !== id; });
+    });
+    track('review_remove', { id: id });
+    render({ focusRole: null });
+  }
+
+  function rateReviewItem(id, quality) {
+    quality = clamp(quality, 0, 5);
+    if (String(id).indexOf('fmwrong:') === 0) {
+      try {
+        if (global.FMSpacedRep && typeof global.FMSpacedRep.rate === 'function') {
+          global.FMSpacedRep.rate(String(id).slice(8), quality);
+        }
+      } catch (_) {}
+      track('review_rate_fm_wrong', { id: id, quality: quality });
+      render({ focusRole: null });
+      return true;
+    }
+    updateUserState(function(user) {
+      user.review = toArray(user.review).map(function(item) {
+        if (item.id !== id) return item;
+        var next = Object.assign({}, item);
+        if (global.FMSpacedRep && typeof global.FMSpacedRep.apply === 'function') {
+          next = Object.assign(next, global.FMSpacedRep.apply(next, quality));
+        } else {
+          next = applySM2(next, quality);
+        }
+        next.lastQuality = quality;
+        return next;
+      });
+    });
+    track('review_rate', { id: id, quality: quality });
+    render({ focusRole: null });
+    return true;
+  }
+
+  function applySM2(item, quality) {
+    var next = Object.assign({ ef: 2.5, rep: 0, ivl: 0 }, item);
+    if (quality < 3) {
+      next.rep = 0;
+      next.ivl = 1;
+    } else {
+      next.rep = (next.rep || 0) + 1;
+      if (next.rep === 1) next.ivl = 1;
+      else if (next.rep === 2) next.ivl = 6;
+      else next.ivl = Math.round((next.ivl || 1) * (next.ef || 2.5));
+    }
+    next.ef = Math.max(1.3, (next.ef || 2.5) + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
+    next.lastReview = now();
+    next.due = now() + next.ivl * 86400000;
+    next.reviews = (next.reviews || 0) + 1;
+    return next;
+  }
+
+  function slug(value) {
+    return normalizeText(value).replace(/[^\w\u4e00-\u9fa5]+/g, '-').replace(/^-|-$/g, '').slice(0, 64) || String(now());
+  }
+
+  function search(query, opts) {
+    opts = opts || {};
+    var limit = opts.limit || 24;
+    var q = normalizeText(query);
+    var index = buildSearchIndex();
+    if (!q) return index.slice(0, limit).map(function(item) { return { item: item, score: 0 }; });
+    var tokens = q.split(' ').filter(Boolean);
+    var results = index.map(function(item) {
+      var hay = normalizeText([item.title, item.desc, item.keywords, item.type, item.category].join(' '));
+      var score = 0;
+      if (normalizeText(item.title) === q) score += 100;
+      if (normalizeText(item.title).indexOf(q) >= 0) score += 70;
+      if (hay.indexOf(q) >= 0) score += 42;
+      tokens.forEach(function(token) {
+        if (normalizeText(item.title).indexOf(token) >= 0) score += 18;
+        else if (hay.indexOf(token) >= 0) score += 8;
+      });
+      if (item.type === '知识') score += 4;
+      if (item.type === '公式') score += 3;
+      return { item: item, score: score };
+    }).filter(function(result) {
+      return result.score > 0;
+    }).sort(function(a, b) {
+      return b.score - a.score;
+    });
+    return results.slice(0, limit);
+  }
+
+  function buildSearchIndex() {
+    var out = [];
+    var seen = Object.create(null);
+    function add(item) {
+      if (!item || !item.title) return;
+      var key = [item.type, item.title, item.url].join('|');
+      if (seen[key]) return;
+      seen[key] = true;
+      out.push(item);
+    }
+    DATA.searchEntries.forEach(function(item) {
+      add({
+        id: item.id,
+        type: item.type,
+        title: item.title,
+        desc: item.desc,
+        keywords: item.keywords,
+        url: item.url,
+        category: item.type
+      });
+    });
+    DISCOVERY_LINKS.forEach(function(item) {
+      add({
+        id: item.id,
+        type: item.type,
+        title: item.title,
+        desc: item.desc,
+        keywords: item.keywords,
+        url: item.url,
+        category: 'Round342 发现入口'
+      });
+    });
+    DATA.knowledge.forEach(function(point) {
+      add({
+        id: point.id,
+        type: '知识',
+        title: 'P' + point.page + ' ' + point.title,
+        desc: point.category + ' · ' + markdownPreview(point.markdown, 90),
+        keywords: point.keywords.concat(point.headings).join(' '),
+        url: point.url,
+        category: point.category,
+        sourcePoint: point
+      });
+    });
+    DATA.formulas.slice(0, 900).forEach(function(formula) {
+      add({
+        id: formula.id,
+        type: '公式',
+        title: formula.title,
+        desc: formula.pointTitle || formula.category,
+        keywords: [formula.formula, formula.category].concat(formula.keywords || []).join(' '),
+        url: formula.url || (formula.pointTitle ? '/modules/knowledge-detail.html?query=' + encodeURIComponent(formula.pointTitle) : ''),
+        category: formula.category,
+        sourceFormula: formula
+      });
+    });
+    return out;
+  }
+
+  function markdownPreview(markdown, limit) {
+    return String(markdown || '')
+      .replace(/\$\$[\s\S]*?\$\$/g, ' ')
+      .replace(/^#+\s*/gm, '')
+      .replace(/[-*_`>#]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, limit || 120);
+  }
+
+  function formulaResults() {
+    var q = normalizeText(VIEW.formulaQuery);
+    var cat = VIEW.formulaCategory;
+    var list = DATA.formulas.filter(function(formula) {
+      if (cat !== 'all' && formula.category !== cat) return false;
+      if (!q) return true;
+      var hay = normalizeText([formula.title, formula.formula, formula.pointTitle, formula.category, toArray(formula.keywords).join(' ')].join(' '));
+      return hay.indexOf(q) >= 0 || q.split(' ').every(function(part) { return hay.indexOf(part) >= 0; });
+    });
+    list.sort(function(a, b) {
+      var aq = (a.relatedQuestions || []).length + (a.upgrade ? 10 : 0);
+      var bq = (b.relatedQuestions || []).length + (b.upgrade ? 10 : 0);
+      return bq - aq;
+    });
+    return list.slice(0, VIEW.listLimit);
+  }
+
+  function safeUrl(url) {
+    var value = String(url || '').trim();
+    if (!value) return '';
+    if (/^(javascript|data):/i.test(value)) return '';
+    return value;
+  }
+
+  function teacherUrl(url, sourceId) {
+    var value = safeUrl(url);
+    if (!value || value.charAt(0) === '#') return value;
+    try {
+      var parsed = new URL(value, global.location.origin);
+      if (parsed.origin !== global.location.origin) return value;
+      if (/\/modules\/knowledge(?:-detail|-upgrade-2026)?\.html$/.test(parsed.pathname)) {
+        parsed.searchParams.set('from', 'teacher-workbench');
+        if (sourceId) parsed.searchParams.set('focus', String(sourceId).slice(0, 80));
+      }
+      return parsed.pathname + parsed.search + parsed.hash;
+    } catch (_) {
+      return value;
+    }
+  }
+
+  function rememberLearningLink(anchor) {
+    try {
+      if (!anchor || !anchor.getAttribute) return;
+      var href = safeUrl(anchor.getAttribute('href'));
+      if (!href || href.charAt(0) === '#') return;
+      if (!/(knowledge|real-exams|practice|resources|fluid-intensive-training)/.test(href)) return;
+      var label = normalizeText(anchor.textContent || anchor.getAttribute('aria-label') || href).slice(0, 42);
+      writeJSON(LAST_LINK_KEY, {
+        href: href,
+        label: label || href,
+        at: now()
+      });
+    } catch (_) {}
+  }
+
+  function readLastLearningLink() {
+    var item = readJSON(LAST_LINK_KEY, null);
+    if (!item || !item.href) return null;
+    return item;
+  }
+
+  function statusClass(status) {
+    status = String(status || 'todo').replace(/[^a-z]/g, '') || 'todo';
+    return 'is-' + status;
+  }
+
+  function toast(message) {
+    try {
+      if (global.FMUI && typeof global.FMUI.ok === 'function') {
+        global.FMUI.ok(message, 1800);
+        return;
+      }
+    } catch (_) {}
+    if (!mountNode) return;
+    var note = document.createElement('div');
+    note.className = 'eflu-toast';
+    note.setAttribute('role', 'status');
+    note.setAttribute('aria-live', 'polite');
+    note.textContent = message;
+    mountNode.appendChild(note);
+    setTimeout(function() {
+      note.classList.add('is-out');
+      setTimeout(function() { if (note.parentNode) note.parentNode.removeChild(note); }, 240);
+    }, 1600);
+  }
+
+  function ensureMount() {
+    var node = document.querySelector('[data-edge-fluid-upgrade-root]');
+    if (!node) {
+      node = document.getElementById(ROOT_ID);
+      if (node && node.classList && node.classList.contains('round263-fluid-exam-route-map')) {
+        var child = node.querySelector('[data-edge-fluid-learning-root]');
+        if (!child) {
+          child = document.createElement('section');
+          child.setAttribute('data-edge-fluid-learning-root', '');
+          child.setAttribute('aria-label', '学习交互升级');
+          node.appendChild(child);
+        }
+        node = child;
+      }
+    }
+    if (node) return node;
+
+    node = document.createElement('section');
+    node.id = ROOT_ID;
+    node.setAttribute('aria-label', '学习交互升级');
+
+    var authed = document.getElementById('vAuthed');
+    if (authed) {
+      var hub = authed.querySelector('.hub');
+      if (hub && hub.parentNode) hub.parentNode.insertBefore(node, hub.nextSibling);
+      else authed.insertBefore(node, authed.firstChild);
+      return node;
+    }
+
+    var host = document.querySelector('main') || document.querySelector('.container') || document.querySelector('.wrap') || document.body;
+    host.appendChild(node);
+    return node;
+  }
+
+  function injectStyles() {
+    if (document.getElementById(STYLE_ID)) return;
+    var style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = [
+      '.eflu{--eflu-ink:#0a1628;--eflu-soft:#526173;--eflu-muted:#7b8da6;--eflu-line:rgba(15,34,56,.12);--eflu-bg:#f7fafc;--eflu-surface:#ffffff;--eflu-surface-2:#f1f6f8;--eflu-teal:#0f9f8d;--eflu-teal-2:#14b8a6;--eflu-coral:#f97316;--eflu-indigo:#4658b8;--eflu-ok:#10b981;--eflu-warn:#f59e0b;--eflu-err:#ef4444;--eflu-shadow:0 16px 40px rgba(15,34,56,.10);color:var(--eflu-ink);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Noto Sans SC","Segoe UI",sans-serif;letter-spacing:0;margin:28px 0 34px;}',
+      '[data-theme="dark"] .eflu,.eflu[data-dark="1"]{--eflu-ink:#e7eef8;--eflu-soft:#b5c4d6;--eflu-muted:#8295aa;--eflu-line:rgba(190,205,225,.16);--eflu-bg:#071521;--eflu-surface:#102438;--eflu-surface-2:#0b1c2d;--eflu-shadow:0 20px 50px rgba(0,0,0,.36);}',
+      '.eflu *{box-sizing:border-box;letter-spacing:0;}',
+      '.eflu a{color:inherit;text-decoration:none;}',
+      '.eflu button,.eflu input,.eflu textarea{font:inherit;}',
+      '.eflu button{cursor:pointer;}',
+      '.eflu-hero{position:relative;overflow:hidden;border:1px solid var(--eflu-line);background:linear-gradient(135deg,color-mix(in srgb,var(--eflu-surface) 94%,#14b8a6 6%),var(--eflu-surface));box-shadow:var(--eflu-shadow);padding:22px;border-radius:8px;}',
+      '.eflu-hero:before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,rgba(20,184,166,.13),transparent 42%,rgba(249,115,22,.11));pointer-events:none;}',
+      '.eflu-hero-in{position:relative;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:20px;align-items:center;}',
+      '.eflu-kicker{display:inline-flex;align-items:center;gap:8px;color:var(--eflu-teal);font-weight:750;font-size:.82rem;text-transform:uppercase;}',
+      '.eflu-dot{width:7px;height:7px;border-radius:999px;background:var(--eflu-teal-2);box-shadow:0 0 0 5px rgba(20,184,166,.15);}',
+      '.eflu h2{margin:6px 0 8px;font-size:1.75rem;line-height:1.18;color:var(--eflu-ink);font-weight:800;}',
+      '.eflu p{margin:0;color:var(--eflu-soft);line-height:1.65;}',
+      '.eflu-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}',
+      '.eflu-chip,.eflu-tab,.eflu-seg{border:1px solid var(--eflu-line);background:color-mix(in srgb,var(--eflu-surface) 82%,transparent);color:var(--eflu-soft);min-height:34px;border-radius:999px;padding:0 12px;display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:.86rem;}',
+      '.eflu-chip strong{color:var(--eflu-ink);font-weight:800;}',
+      '.eflu-review-rail{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:14px 0 2px;}',
+      '.eflu-review-step{min-width:0;min-height:74px;border:1px solid var(--eflu-line);background:color-mix(in srgb,var(--eflu-surface) 86%,transparent);border-radius:8px;padding:10px;display:grid;align-content:start;gap:4px;overflow-wrap:anywhere;}',
+      '.eflu-review-step small{font-size:.68rem;font-weight:900;letter-spacing:.07em;color:var(--eflu-coral);}',
+      '.eflu-review-step b{font-size:.88rem;line-height:1.25;color:var(--eflu-ink);}',
+      '.eflu-review-step span{font-size:.76rem;line-height:1.42;color:var(--eflu-muted);}',
+      '.eflu-hero-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}',
+      '.eflu-stat{min-height:82px;border:1px solid var(--eflu-line);background:rgba(255,255,255,.58);border-radius:8px;padding:14px;display:grid;align-content:center;gap:4px;}',
+      '[data-theme="dark"] .eflu-stat,.eflu[data-dark="1"] .eflu-stat{background:rgba(255,255,255,.04);}',
+      '.eflu-stat b{font-size:1.55rem;line-height:1;color:var(--eflu-ink);}',
+      '.eflu-stat span{color:var(--eflu-muted);font-size:.82rem;font-weight:700;}',
+      '.eflu-tabs{margin:16px 0 18px;display:flex;gap:8px;overflow:auto;padding:2px 2px 8px;}',
+      '.eflu-tabs,.eflu-segs,.eflu-anchor-strip{scrollbar-width:thin;scroll-snap-type:x proximity;}',
+      '.eflu-tab,.eflu-seg,.eflu-anchor{scroll-snap-align:start;}',
+      '.eflu-tab{background:var(--eflu-surface);white-space:nowrap;min-height:40px;}',
+      '.eflu-tab.is-active{color:#fff;border-color:transparent;background:linear-gradient(135deg,var(--eflu-teal),var(--eflu-indigo));box-shadow:0 10px 24px rgba(20,184,166,.22);}',
+      '.eflu-tab:focus-visible,.eflu-btn:focus-visible,.eflu-icon-btn:focus-visible,.eflu-anchor:focus-visible,.eflu-seg:focus-visible,.eflu-clue-chip:focus-visible,.eflu-input:focus-visible,.eflu-textarea:focus-visible,.eflu-tabpanel:focus-visible{outline:3px solid color-mix(in srgb,var(--eflu-teal) 72%,#fff);outline-offset:3px;box-shadow:0 0 0 6px color-mix(in srgb,var(--eflu-teal) 18%,transparent);}',
+      '.eflu-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;}',
+      '.eflu-panel{background:transparent;border:0;padding:0;margin:0;}',
+      '.eflu-panel-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:0 0 10px;}',
+      '.eflu-panel-head h3{margin:0;color:var(--eflu-ink);font-size:1.08rem;}',
+      '.eflu-panel-head p{font-size:.9rem;}',
+      '.eflu-tiles{display:grid;gap:10px;}',
+      '.eflu-tile{border:1px solid var(--eflu-line);background:var(--eflu-surface);border-radius:8px;padding:14px;min-width:0;box-shadow:0 8px 24px rgba(15,34,56,.06);}',
+      '[data-theme="dark"] .eflu-tile,.eflu[data-dark="1"] .eflu-tile{box-shadow:none;}',
+      '.eflu-tile-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}',
+      '.eflu-title{font-weight:800;color:var(--eflu-ink);line-height:1.4;word-break:break-word;}',
+      '.eflu-desc{font-size:.9rem;color:var(--eflu-soft);margin-top:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}',
+      '.eflu-tagrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;}',
+      '.eflu-tag{display:inline-flex;align-items:center;min-height:24px;border-radius:999px;padding:0 8px;background:var(--eflu-surface-2);color:var(--eflu-muted);font-size:.76rem;font-weight:750;line-height:1.35;max-width:100%;overflow-wrap:anywhere;word-break:break-word;white-space:normal;}',
+      '.eflu-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}',
+      '.eflu-path-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;}',
+      '.eflu-btn,.eflu-icon-btn{border:1px solid var(--eflu-line);background:var(--eflu-surface);color:var(--eflu-ink);min-height:36px;border-radius:999px;padding:0 12px;display:inline-flex;align-items:center;justify-content:center;gap:7px;font-weight:800;font-size:.86rem;line-height:1.35;max-width:100%;white-space:normal;text-align:center;transition:transform .16s ease,border-color .16s ease,background .16s ease;}',
+      '.eflu-icon-btn{width:36px;padding:0;}',
+      '.eflu-btn:hover,.eflu-icon-btn:hover{transform:translateY(-1px);border-color:color-mix(in srgb,var(--eflu-teal) 60%,var(--eflu-line));}',
+      '.eflu-btn[data-tone="primary"]{border-color:transparent;color:#fff;background:linear-gradient(135deg,var(--eflu-teal),var(--eflu-teal-2));}',
+      '.eflu-btn[data-tone="coral"]{border-color:transparent;color:#fff;background:linear-gradient(135deg,var(--eflu-coral),#ea580c);}',
+      '.eflu-btn[data-tone="danger"]{border-color:rgba(239,68,68,.25);color:var(--eflu-err);}',
+      '.eflu-ico{width:16px;height:16px;flex:0 0 16px;}',
+      '.eflu-progress{height:9px;border-radius:999px;background:var(--eflu-surface-2);overflow:hidden;border:1px solid var(--eflu-line);}',
+      '.eflu-progress i{display:block;height:100%;width:var(--p,0%);border-radius:999px;background:linear-gradient(90deg,var(--eflu-teal),var(--eflu-coral));}',
+      '.eflu-path-list{display:grid;gap:8px;}',
+      '.eflu-path-row{display:grid;grid-template-columns:minmax(120px,.5fr) minmax(140px,1fr) auto;gap:10px;align-items:center;border:1px solid var(--eflu-line);background:var(--eflu-surface);border-radius:8px;padding:12px;}',
+      '.eflu-path-row b{font-size:.92rem;color:var(--eflu-ink);}',
+      '.eflu-path-row span{font-size:.8rem;color:var(--eflu-muted);font-weight:700;}',
+      '.eflu-segs{display:flex;gap:8px;overflow:auto;padding-bottom:8px;margin-bottom:12px;}',
+      '.eflu-seg.is-active{border-color:transparent;background:var(--eflu-ink);color:var(--eflu-surface);}',
+      '.eflu-inputbar{display:flex;gap:10px;margin:0 0 14px;}',
+      '.eflu-inputbar label{position:relative;flex:1;min-width:0;}',
+      '.eflu-inputbar label>.eflu-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--eflu-muted);}',
+      '.eflu-input,.eflu-textarea{width:100%;border:1px solid var(--eflu-line);background:var(--eflu-surface);color:var(--eflu-ink);border-radius:8px;padding:11px 12px;outline:0;min-height:42px;}',
+      '.eflu-input{padding-left:38px;}',
+      '.eflu-input:focus,.eflu-textarea:focus{border-color:var(--eflu-teal);box-shadow:0 0 0 4px rgba(20,184,166,.12);}',
+      '.eflu-textarea{resize:vertical;min-height:84px;line-height:1.55;}',
+      '.eflu-formula{font-family:"SF Mono","JetBrains Mono","Consolas",monospace;font-size:.88rem;line-height:1.62;padding:12px;border-radius:8px;background:var(--eflu-surface-2);border:1px solid var(--eflu-line);overflow:auto;white-space:pre-wrap;word-break:break-word;color:var(--eflu-ink);}',
+      '.eflu-empty{border:1px dashed var(--eflu-line);border-radius:8px;padding:20px;text-align:center;color:var(--eflu-muted);background:color-mix(in srgb,var(--eflu-surface) 68%,transparent);line-height:1.58;}',
+      '.eflu-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px;}',
+      '.eflu-kpi{border:1px solid var(--eflu-line);background:var(--eflu-surface);border-radius:8px;padding:14px;min-height:86px;}',
+      '.eflu-kpi b{display:block;font-size:1.45rem;line-height:1.15;color:var(--eflu-ink);}',
+      '.eflu-kpi span{display:block;margin-top:4px;color:var(--eflu-muted);font-size:.8rem;font-weight:750;}',
+      '.eflu-review-due{display:inline-flex;align-items:center;gap:6px;color:var(--eflu-warn);font-weight:800;}',
+      '.eflu-review-ok{display:inline-flex;align-items:center;gap:6px;color:var(--eflu-ok);font-weight:800;}',
+      '.eflu-split-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}',
+      '.eflu-route-board{display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr);gap:16px;align-items:start;}',
+      '.eflu-clue-chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px;}',
+      '.eflu-clue-chip{border:1px solid var(--eflu-line);background:var(--eflu-surface);color:var(--eflu-soft);border-radius:999px;min-height:32px;padding:6px 10px;font-size:.8rem;font-weight:800;line-height:1.35;max-width:100%;overflow-wrap:anywhere;word-break:break-word;white-space:normal;text-align:left;}',
+      '.eflu-clue-chip.is-active{border-color:var(--eflu-teal);background:color-mix(in srgb,var(--eflu-surface) 82%,var(--eflu-teal) 18%);color:var(--eflu-ink);}',
+      '.eflu-route-note{border-left:4px solid var(--eflu-coral);background:var(--eflu-surface);border-radius:8px;padding:12px 13px;color:var(--eflu-soft);line-height:1.62;}',
+      '.eflu-route-note b{display:block;color:var(--eflu-ink);margin-bottom:3px;}',
+      '.eflu-step-list{counter-reset:eflu-step;display:grid;gap:8px;margin:10px 0 0;padding:0;list-style:none;}',
+      '.eflu-step{position:relative;border:1px solid var(--eflu-line);background:var(--eflu-surface);border-radius:8px;padding:11px 12px 11px 42px;color:var(--eflu-soft);line-height:1.55;min-width:0;overflow-wrap:anywhere;word-break:break-word;}',
+      '.eflu-step:before{counter-increment:eflu-step;content:counter(eflu-step);position:absolute;left:12px;top:12px;width:20px;height:20px;border-radius:999px;display:grid;place-items:center;background:var(--eflu-teal);color:#fff;font-size:.75rem;font-weight:900;}',
+      '.eflu-route-empty{border:1px dashed var(--eflu-line);border-radius:8px;padding:14px;color:var(--eflu-muted);line-height:1.62;}',
+      '.eflu-teacher-hint{display:flex;align-items:flex-start;gap:10px;margin:14px 0;padding:13px 14px;border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-teal);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 90%,var(--eflu-surface-2));color:var(--eflu-soft);line-height:1.6;}',
+      '.eflu-teacher-hint strong{display:block;color:var(--eflu-ink);font-size:.9rem;margin-bottom:2px;}',
+      '.eflu-teacher-hint span{display:block;font-size:.88rem;}',
+      '.eflu-anchor-strip{display:flex;gap:8px;overflow:auto;padding:2px 2px 10px;margin:0 0 8px;scrollbar-width:thin;}',
+      '.eflu-anchor{border:1px solid var(--eflu-line);background:var(--eflu-surface);color:var(--eflu-soft);min-height:38px;border-radius:8px;padding:7px 10px;display:inline-grid;gap:1px;align-content:center;white-space:nowrap;text-align:left;font-weight:760;}',
+      '.eflu-anchor small{font-size:.72rem;color:var(--eflu-muted);font-weight:700;}',
+      '.eflu-anchor.is-active{border-color:var(--eflu-teal);background:color-mix(in srgb,var(--eflu-surface) 84%,var(--eflu-teal) 16%);color:var(--eflu-ink);}',
+      '.eflu-tile.is-done{border-left:4px solid var(--eflu-ok);}',
+      '.eflu-tile.is-learning{border-left:4px solid var(--eflu-teal);}',
+      '.eflu-tile.is-weak{border-left:4px solid var(--eflu-warn);}',
+      '.eflu-tile.is-todo{border-left:4px solid var(--eflu-line);}',
+      '.eflu-btn[aria-pressed="true"]{border-color:var(--eflu-teal);background:color-mix(in srgb,var(--eflu-surface) 82%,var(--eflu-teal) 18%);}',
+      '.eflu-quick-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}',
+      '.eflu-quick-actions .eflu-btn{min-height:38px;}',
+      '.eflu-tabpanel{min-width:0;}',
+      '.eflu-r264-guide{border:1px solid var(--eflu-line);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 92%,var(--eflu-surface-2));padding:13px;margin:0 0 14px;}',
+      '.eflu-r264-head{align-items:flex-start;margin-bottom:10px;}',
+      '.eflu-r264-flow{display:flex;flex-wrap:wrap;gap:8px;margin:0;padding:0;list-style:none;}',
+      '.eflu-r264-step{flex:1 1 154px;min-width:0;border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-teal);border-radius:8px;background:var(--eflu-surface);padding:10px 11px;color:var(--eflu-soft);}',
+      '.eflu-r264-step b{display:block;color:var(--eflu-ink);font-size:.88rem;line-height:1.28;}',
+      '.eflu-r264-step span{display:block;margin-top:3px;font-size:.8rem;line-height:1.42;overflow-wrap:anywhere;}',
+      '.eflu-r277-sprint{border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-teal);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 92%,var(--eflu-teal) 8%);padding:14px;margin:0 0 14px;}',
+      '.eflu-r277-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}',
+      '.eflu-r277-card{min-width:0;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:12px;display:grid;gap:9px;}',
+      '.eflu-r277-card h4{margin:0;color:var(--eflu-ink);font-size:.92rem;line-height:1.35;}',
+      '.eflu-r277-card dl{display:grid;gap:7px;margin:0;}',
+      '.eflu-r277-card div{min-width:0;}',
+      '.eflu-r277-card dt{font-size:.74rem;font-weight:900;color:var(--eflu-muted);margin:0 0 2px;}',
+      '.eflu-r277-card dd{margin:0;color:var(--eflu-soft);font-size:.82rem;line-height:1.45;overflow-wrap:anywhere;}',
+      '.eflu-r277-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px;}',
+      '.eflu-r278-compare{border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-indigo);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 92%,var(--eflu-indigo) 8%);padding:14px;margin:0 0 14px;}',
+      '.eflu-r278-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-bottom:10px;}',
+      '.eflu-r278-metrics .eflu-kpi{min-height:74px;padding:10px;}',
+      '.eflu-r278-metrics .eflu-kpi b{font-size:1.2rem;}',
+      '.eflu-r278-highlights{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 10px;}',
+      '.eflu-r278-highlights span{display:inline-grid;gap:2px;min-width:104px;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:8px 10px;}',
+      '.eflu-r278-highlights b{font-size:.74rem;color:var(--eflu-muted);}',
+      '.eflu-r278-highlights em{font-style:normal;color:var(--eflu-ink);font-weight:900;line-height:1.3;}',
+      '.eflu-r278-years{display:grid;grid-template-columns:repeat(13,minmax(0,1fr));gap:6px;margin:0 0 10px;}',
+      '.eflu-r278-year{min-width:0;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:7px 6px;display:grid;gap:2px;text-align:center;}',
+      '.eflu-r278-year b{font-size:.82rem;color:var(--eflu-ink);line-height:1.1;}',
+      '.eflu-r278-year small{color:var(--eflu-soft);font-size:.68rem;font-weight:850;line-height:1.2;overflow-wrap:anywhere;}',
+      '.eflu-r278-year em{font-style:normal;color:var(--eflu-muted);font-size:.66rem;line-height:1.2;}',
+      '.eflu-r278-year[data-r278-year-status="pdf-web-comparable"]{border-color:color-mix(in srgb,var(--eflu-teal) 45%,var(--eflu-line));}',
+      '.eflu-r278-year[data-r278-year-status="partial-compare"]{border-color:color-mix(in srgb,var(--eflu-warn) 48%,var(--eflu-line));}',
+      '.eflu-r278-year[data-r278-year-status="empty-or-source-missing"]{border-color:color-mix(in srgb,var(--eflu-err) 45%,var(--eflu-line));background:color-mix(in srgb,var(--eflu-surface) 86%,var(--eflu-err) 14%);}',
+      '.eflu-r278-year[data-r278-year-status="outside-original-pdf-index"]{border-color:color-mix(in srgb,var(--eflu-indigo) 52%,var(--eflu-line));background:color-mix(in srgb,var(--eflu-surface) 86%,var(--eflu-indigo) 14%);}',
+      '.eflu-r278-notes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 12px;}',
+      '.eflu-r278-notes span{display:flex;align-items:flex-start;gap:7px;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:9px 10px;color:var(--eflu-soft);font-size:.8rem;line-height:1.42;}',
+      '.eflu-roadmap{border:1px solid var(--eflu-line);border-left:4px solid var(--eflu-coral);border-radius:8px;background:color-mix(in srgb,var(--eflu-surface) 94%,var(--eflu-coral) 6%);padding:14px;margin:0 0 14px;}',
+      '.eflu-roadmap-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}',
+      '.eflu-roadmap-head h3{margin:0;color:var(--eflu-ink);font-size:1rem;line-height:1.3;}',
+      '.eflu-roadmap-head p{margin:4px 0 0;color:var(--eflu-soft);font-size:.86rem;line-height:1.45;}',
+      '.eflu-roadmap-badge{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;border:1px solid color-mix(in srgb,var(--eflu-coral) 48%,var(--eflu-line));border-radius:999px;padding:6px 10px;background:var(--eflu-surface);font-weight:800;color:var(--eflu-ink);}',
+      '.eflu-roadmap-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;}',
+      '.eflu-roadmap-lane{min-width:0;border:1px solid var(--eflu-line);border-radius:8px;background:var(--eflu-surface);padding:9px 10px;}',
+      '.eflu-roadmap-lane b{display:block;color:var(--eflu-ink);font-size:.84rem;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}',
+      '.eflu-roadmap-lane span{display:block;margin-top:3px;color:var(--eflu-soft);font-size:.78rem;line-height:1.35;}',
+      '.eflu-roadmap-next{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}',
+      '.eflu-toast{position:fixed;right:18px;bottom:18px;z-index:99999;background:var(--eflu-ink);color:var(--eflu-surface);border-radius:8px;padding:10px 14px;box-shadow:var(--eflu-shadow);transition:opacity .22s ease,transform .22s ease;}',
+      '.eflu-toast.is-out{opacity:0;transform:translateY(8px);}',
+      '@media (max-width:900px){.eflu-hero-in,.eflu-grid,.eflu-split-form,.eflu-route-board,.eflu-r277-grid,.eflu-r278-notes{grid-template-columns:1fr;}.eflu-review-rail{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-kpis,.eflu-r278-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-path-row{grid-template-columns:1fr;}.eflu-hero-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-roadmap-grid{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-r278-years{grid-template-columns:repeat(4,minmax(0,1fr));}}',
+      '@media (pointer:coarse){.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}}',
+      '@media (max-width:560px){.eflu{margin:18px 0 26px;}.eflu-hero{padding:16px;}.eflu h2{font-size:1.35rem;}.eflu-kpis,.eflu-hero-grid,.eflu-roadmap-grid,.eflu-r278-metrics{grid-template-columns:1fr;}.eflu-r278-years{grid-template-columns:repeat(2,minmax(0,1fr));}.eflu-roadmap-head{display:grid;}.eflu-roadmap-badge{justify-content:center;white-space:normal;}.eflu-review-rail{grid-auto-flow:column;grid-auto-columns:minmax(210px,84%);grid-template-columns:none;overflow-x:auto;-webkit-overflow-scrolling:touch;scroll-snap-type:x proximity;padding-bottom:4px;}.eflu-review-step{scroll-snap-align:start;min-height:84px;}.eflu-inputbar{display:grid;}.eflu-inputbar .eflu-btn{width:100%;}.eflu-actions .eflu-btn{flex:1 1 150px;}.eflu-anchor{min-width:138px;}.eflu-tab,.eflu-seg,.eflu-anchor,.eflu-btn,.eflu-icon-btn,.eflu-clue-chip,.eflu-input{min-height:44px;}.eflu-icon-btn{min-width:44px;}.eflu-tile-top{display:grid;}.eflu-clue-chip{flex:1 1 132px;justify-content:center;text-align:center;}.eflu-route-note,.eflu-route-empty{text-align:left;}.eflu-step{padding-left:38px;}.eflu-quick-actions .eflu-btn,.eflu-r264-step{flex:1 1 100%;}}',
+      '@media print{.eflu-tabs,.eflu-anchor-strip,.eflu-actions,.eflu-inputbar{display:none!important}.eflu,.eflu-hero,.eflu-tile,.eflu-kpi{box-shadow:none!important;background:#fff!important;color:#111!important}.eflu-grid{grid-template-columns:1fr!important}.eflu-desc{display:block!important;overflow:visible!important}}',
+      '@media (prefers-reduced-motion:reduce){.eflu *{transition:none!important;animation:none!important;}}'
+    ].join('\n');
+    document.head.appendChild(style);
+  }
+
+  function render(options) {
+    options = options || {};
+    if (!mountNode) return;
+    mountNode.innerHTML = renderShell();
+    refreshMath();
+    if (options.focusTab) {
+      setTimeout(function() { focusTabButton(VIEW.tab); }, 0);
+    }
+    if (options.focusRole) {
+      var node = mountNode.querySelector('[data-eflu-role="' + options.focusRole + '"]');
+      if (node && typeof node.focus === 'function') {
+        setTimeout(function() {
+          node.focus();
+          if (node.setSelectionRange) {
+            var len = node.value.length;
+            node.setSelectionRange(len, len);
+          }
+        }, 0);
+      }
+    }
+  }
+
+  function renderShell() {
+    var summary = progressSummary();
+    return [
+      '<div class="eflu" data-version="' + attr(VERSION) + '">',
+      renderHero(summary),
+      renderTeacherHint(summary),
+      renderAnchorStrip(summary),
+      renderTabs(),
+      DATA.loaded ? renderActiveTab(summary) : renderLoadingTabPanel(),
+      '</div>'
+    ].join('');
+  }
+
+  function renderLoadingTabPanel() {
+    return [
+      '<div class="eflu-tabpanel" role="tabpanel" id="' + attr(tabPanelId(VIEW.tab)) + '" aria-labelledby="eflu-tab-' + attr(VIEW.tab) + '" tabindex="0">',
+      '<div class="eflu-empty" role="status" aria-live="polite">正在加载学习数据；加载完成后会自动出现学习建议。</div>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderHero(summary) {
+    var statusText = DATA.upgradeStatus === 'fallback' ? '使用现有资料' : (DATA.upgradeStatus.indexOf('loaded:') === 0 ? '讲义资料已接入' : '资料加载中');
+    var checklistStatus = DATA.formulaChecklistStatus === 'loaded' ? '公式条件包已接入' : '条件表兜底中';
+    var last = readLastLearningLink();
+    return [
+      '<header class="eflu-hero">',
+      '<div class="eflu-hero-in">',
+      '<div>',
+      '<span class="eflu-kicker"><span class="eflu-dot"></span>老师讲义工作台</span>',
+      '<h2>round292 真题题数锁定，公式条件随后回查</h2>',
+      '<p>这里合并知识点、题目路线、公式条件、站内检索和本地复习本。历年真题入口以 round292 题数防合并与来源覆盖账本为准，公式条件包只用于复核适用条件、边界和单位方向。</p>',
+      '<div class="eflu-meta">',
+      '<span class="eflu-chip">' + icon('target') + '<strong>' + summary.total + '</strong> 知识点</span>',
+      '<span class="eflu-chip">' + icon('sigma') + '<strong>' + DATA.formulas.length + '</strong> 公式</span>',
+      '<span class="eflu-chip">' + icon('check') + '<strong>' + DATA.formulaChecklist.length + '</strong> 条件卡</span>',
+      '<span class="eflu-chip">' + icon('search') + '<strong>' + buildSearchIndex().length + '</strong> 索引</span>',
+      '<span class="eflu-chip">' + icon('refresh') + esc(statusText) + '</span>',
+      '<span class="eflu-chip">' + icon('note') + esc(checklistStatus) + '</span>',
+      last ? '<a class="eflu-chip" href="' + attr(teacherUrl(last.href)) + '">' + icon('clock') + '上次：' + esc(last.label) + '</a>' : '',
+      '</div>',
+      '<div class="eflu-quick-actions" role="group" aria-label="首页学习入口快捷操作">',
+      '<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="tab" data-tab="formula-checklist" aria-controls="' + attr(tabPanelId('formula-checklist')) + '" aria-label="打开公式条件回查标签">' + icon('check') + '条件回查</button>',
+      '<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="exam-route" aria-controls="' + attr(tabPanelId('exam-route')) + '" aria-label="打开题目路线标签">' + icon('target') + '题目路线</button>',
+      '<a class="eflu-btn" data-tone="coral" href="/modules/real-exams-dynamic.html?from=student-workbench-practice" aria-label="进入历年真题和题库练习">' + icon('play') + '真题练习</a>',
+      '<a class="eflu-btn" href="/modules/question-bank.html?from=student-workbench-chapters" aria-label="进入题库页，查看六章章节练习入口">' + icon('chart') + '六章题库</a>',
+      '<a class="eflu-btn" data-round342-discovery-entry="181103" href="/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList" aria-label="进入 181103 资料题库，查看 522 张来源卡、381 道默认练习、381 道可直接参考答案、0 道待人工源页复核、141 条源文线索和 38 份 HTML 资料">' + icon('external') + '181103 资料</a>',
+      '<a class="eflu-btn" data-round342-discovery-entry="wrongbook" href="/index-complete.html#tabsW" aria-label="进入错题本和错因订正入口">' + icon('alert') + '错题订正</a>',
+      '<a class="eflu-btn" data-round342-discovery-entry="private-course" href="/resources.html?from=round342-edge-quick#sourceStatus" aria-label="查看私有课程和专属课账号状态，生产恢复仍受 FM_PRIVATE_MEDIA R2 边界约束">' + icon('note') + '私有课程</a>',
+      '<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="formulas" aria-controls="' + attr(tabPanelId('formulas')) + '" aria-label="打开公式速查标签">' + icon('sigma') + '公式速查</button>',
+      '<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="review" aria-controls="' + attr(tabPanelId('review')) + '" aria-label="打开复习本标签">' + icon('bookmark') + '复习本</button>',
+      '</div>',
+      renderRound274WorkbenchLoop(summary),
+      '</div>',
+      '<div class="eflu-hero-grid">',
+      statBox(summary.pct + '%', '知识掌握率'),
+      statBox(summary.due, '今日到期复习'),
+      statBox(summary.learning, '学习中'),
+      statBox(summary.weak, '薄弱标记'),
+      '</div>',
+      '</div>',
+      '</header>'
+    ].join('');
+  }
+
+  function teacherTip(summary) {
+    if (!DATA.loaded) return '先等资料加载完成，再看今天的建议；弱网时可以直接打开知识全库。';
+    if (summary.due > 0) return '先处理到期复习，再开始新内容。到期项做完后，再挑一个薄弱点回到知识页核对定义和条件。';
+    if (summary.weak > 0) return '今天先看薄弱标记。每个薄弱点只做三件事：写定义、写适用条件、找一道对应题。';
+    if (summary.learning > 0) return '继续收口学习中的知识点。先把正在学的条目改成“掌握”或“薄弱”，再开新章节。';
+    if (summary.done === 0) return '从 N-S 主线或第 1 章开始。不要急着刷题，先把变量、假设和边界条件说清楚。';
+    return '今天可以从公式抽样里选两条，分别写出来源、适用条件和失效情形。';
+  }
+
+  function renderRound274WorkbenchLoop(summary) {
+    var steps = [
+      ['01', '题干条件', summary.total ? summary.done + '/' + summary.total + ' 知识点已收口' : '先读一个知识点'],
+      ['02', '边界条件', summary.weak > 0 ? summary.weak + ' 个薄弱点待核' : '先核定常和壁面条件'],
+      ['03', '单位方向', DATA.formulaChecklist.length ? DATA.formulaChecklist.length + ' 张条件卡可查' : '先查公式条件表'],
+      ['04', '真题重做', DATA.examRoutes.length ? DATA.examRoutes.length + ' 类题目路线' : '先做本章真题'],
+      ['05', '错因订正', summary.due > 0 ? summary.due + ' 项今天到期' : '写清错在条件还是单位']
+    ];
+    return '<div class="eflu-review-rail" data-round274-workbench-loop="round418-progress-visible-truth-181103-answer-ux-20260621" aria-label="round274 老师复习顺序">' + steps.map(function(step) {
+      return '<div class="eflu-review-step"><small>' + esc(step[0]) + '</small><b>' + esc(step[1]) + '</b><span>' + esc(step[2]) + '</span></div>';
+    }).join('') + '</div>';
+  }
+
+  function renderTeacherHint(summary) {
+    return '<aside class="eflu-teacher-hint" aria-label="学习提示">' + icon('note') + '<div><strong>今天先做什么</strong><span>' + esc(teacherTip(summary)) + '</span></div></aside>';
+  }
+
+  function renderAnchorStrip(summary) {
+    var anchors = [
+      ['dashboard', '建议', summary.done + '/' + summary.total + ' 已掌握'],
+      ['path', '路径', summary.learning + ' 学习中'],
+      ['exam-route', '题目路线', DATA.examRoutes.length + ' 类线索'],
+      ['formulas', '公式', DATA.formulas.length + ' 条'],
+      ['formula-checklist', '条件表', DATA.formulaChecklist.length + ' 张卡'],
+      ['review', '复习', summary.due + ' 到期']
+    ];
+    return '<nav class="eflu-anchor-strip" aria-label="学习进度锚点">' + anchors.map(function(anchor) {
+      var active = VIEW.tab === anchor[0] ? ' is-active' : '';
+      return '<button class="eflu-anchor' + active + '" type="button" data-eflu-action="tab" data-tab="' + attr(anchor[0]) + '" aria-controls="' + attr(tabPanelId(anchor[0])) + '" aria-current="' + (active ? 'page' : 'false') + '" aria-pressed="' + (active ? 'true' : 'false') + '" aria-label="' + attr(anchor[1] + '，' + anchor[2]) + '"><span>' + esc(anchor[1]) + '</span><small>' + esc(anchor[2]) + '</small></button>';
+    }).join('') + '</nav>';
+  }
+
+  function statBox(value, label) {
+    return '<div class="eflu-stat"><b>' + esc(value) + '</b><span>' + esc(label) + '</span></div>';
+  }
+
+  function renderTabs() {
+    var tabs = [
+      ['dashboard', 'dashboard', '仪表盘'],
+      ['path', 'route', '知识路径'],
+      ['exam-route', 'target', '题目路线'],
+      ['formulas', 'sigma', '公式速查'],
+      ['formula-checklist', 'check', '条件回查'],
+      ['search', 'search', '站内搜索'],
+      ['review', 'review', '复习状态']
+    ];
+    return '<nav class="eflu-tabs" role="tablist" aria-label="学习工作台导航" aria-orientation="horizontal">' + tabs.map(function(tab) {
+      var active = VIEW.tab === tab[0] ? ' is-active' : '';
+      return '<button class="eflu-tab' + active + '" type="button" role="tab" id="eflu-tab-' + attr(tab[0]) + '" aria-selected="' + (active ? 'true' : 'false') + '" aria-controls="' + attr(tabPanelId(tab[0])) + '" tabindex="' + (active ? '0' : '-1') + '" data-eflu-action="tab" data-tab="' + attr(tab[0]) + '" aria-label="' + attr(tab[2] + (active ? '，当前标签' : '')) + '">' + icon(tab[1]) + esc(tab[2]) + '</button>';
+    }).join('') + '</nav>';
+  }
+
+  function renderActiveTab(summary) {
+    var body;
+    if (VIEW.tab === 'path') body = renderPathTab();
+    else if (VIEW.tab === 'exam-route') body = renderExamRouteTab();
+    else if (VIEW.tab === 'formulas') body = renderFormulaTab();
+    else if (VIEW.tab === 'formula-checklist') body = renderFormulaChecklistTab();
+    else if (VIEW.tab === 'search') body = renderSearchTab();
+    else if (VIEW.tab === 'review') body = renderReviewTab();
+    else body = renderDashboardTab(summary);
+    return '<div class="eflu-tabpanel" role="tabpanel" id="' + attr(tabPanelId(VIEW.tab)) + '" aria-labelledby="eflu-tab-' + attr(VIEW.tab) + '" tabindex="0">' + body + '</div>';
+  }
+
+  function renderDashboardTab(summary) {
+    var paths = DATA.paths.slice(0, 8);
+    var points = suggestedPoints(5);
+    var reviews = collectReviews().filter(function(item) { return !item.due || item.due <= now(); }).slice(0, 4);
+    return [
+      '<div class="eflu-kpis">',
+      kpi(summary.done + '/' + summary.total, '已掌握知识点'),
+      kpi(summary.reviewTotal, '复习本项目'),
+      kpi(DATA.categories.length, '知识板块'),
+      kpi(DATA.searchEntries.length, '站内可搜条目'),
+      '</div>',
+      renderUpgradeRoadmapRadar(),
+      renderRound277FormulaConditionSprint(),
+      renderRound278PdfWebYearCompare(),
+      '<div class="eflu-grid">',
+      '<section class="eflu-panel">',
+      panelHead('知识路径概览', '按主线板块聚合，优先显示薄弱与学习中内容'),
+      '<div class="eflu-path-list">',
+      paths.map(renderLearningPathRow).join('') || masteryByCategory().slice(0, 8).map(renderCategoryRow).join('') || empty('暂无知识路径数据'),
+      '</div>',
+      '</section>',
+      '<section class="eflu-panel">',
+      panelHead('下一步建议', '根据本地标记和章节顺序生成'),
+      '<div class="eflu-tiles">',
+      points.map(renderPointTile).join('') || empty('暂无建议'),
+      '</div>',
+      '</section>',
+      '<section class="eflu-panel">',
+      panelHead('今日复习', '到期项目来自本脚本复习本，并兼容现有 fm_wrong'),
+      '<div class="eflu-tiles">',
+      reviews.map(renderReviewTile).join('') || empty('今天没有到期项目'),
+      '</div>',
+      '</section>',
+      '<section class="eflu-panel">',
+      panelHead('公式抽样', '高频公式与关联题优先'),
+      '<div class="eflu-tiles">',
+      DATA.formulas.slice(0, 4).map(renderFormulaTile).join('') || empty('暂无公式索引'),
+      '</div>',
+      '</section>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderUpgradeRoadmapRadar() {
+    var roadmap = DATA.roadmap100;
+    if (!roadmap) {
+      return '<section class="eflu-roadmap" data-upgrade-roadmap100-status="' + attr(DATA.roadmapStatus) + '" aria-label="百轮升级路线"><div class="eflu-roadmap-head"><div><h3>百轮升级路线正在读取</h3><p>读取失败时不影响知识点、题库和公式使用；发布门禁会继续检查路线账本。</p></div><span class="eflu-roadmap-badge">' + icon('clock') + '等待数据</span></div></section>';
+    }
+    var laneCounts = Object.create(null);
+    roadmap.rounds.forEach(function(item) {
+      laneCounts[item.lane] = (laneCounts[item.lane] || 0) + 1;
+    });
+    var active = roadmap.rounds.find(function(item) { return item.status === 'active'; }) || roadmap.rounds[0];
+    var next = roadmap.rounds.filter(function(item) { return item.round > roadmap.currentRound; }).slice(0, 3);
+    var lanes = roadmap.lanes.slice(0, 10);
+    return [
+      '<section class="eflu-roadmap" data-upgrade-roadmap100="' + attr(roadmap.version) + '" aria-label="百轮升级路线">',
+      '<div class="eflu-roadmap-head">',
+      '<div><h3>百轮升级路线与质量雷达</h3><p>' + esc(roadmap.goal) + '；从 round275 起持续推进，当前重点由路线账本标记，把认证、公式、真题、资源、性能、可访问性和发布验证分开收口。</p></div>',
+      '<span class="eflu-roadmap-badge">' + icon('chart') + '当前：round' + esc(roadmap.currentRound) + '</span>',
+      '</div>',
+      '<div class="eflu-roadmap-grid">',
+      lanes.map(function(lane) {
+        return '<div class="eflu-roadmap-lane"><b>' + esc(lane.title) + '</b><span>' + esc((laneCounts[lane.id] || 0) + ' 轮 · ' + lane.summary) + '</span></div>';
+      }).join(''),
+      '</div>',
+      '<div class="eflu-roadmap-next" role="list" aria-label="近期升级轮次">',
+      renderRoadmapChip(active, '本轮'),
+      next.map(function(item) { return renderRoadmapChip(item, '下一轮'); }).join(''),
+      '<a class="eflu-btn" href="/data/fluid-upgrade-roadmap-100.json" aria-label="打开完整百轮升级路线数据">' + icon('external') + '完整路线</a>',
+      '</div>',
+      '</section>'
+    ].join('');
+  }
+
+  function renderRoadmapChip(item, prefix) {
+    if (!item) return '';
+    return '<span class="eflu-chip" role="listitem">' + icon(item.status === 'active' ? 'target' : 'check') + esc(prefix + ' round' + item.round + ' · ' + item.focus) + '</span>';
+  }
+
+  function firstChecklistText(items, fallback) {
+    var text = firstText(toArray(items).slice(0, 2));
+    return text || fallback || '先回到题干补齐条件。';
+  }
+
+  function round277SprintCards() {
+    var preferred = ['连续', '伯努利', '动量'];
+    var picked = [];
+    preferred.forEach(function(keyword) {
+      var found = DATA.formulaChecklist.find(function(item) {
+        return normalizeText(item.title + ' ' + toArray(item.aliases).join(' ')).indexOf(normalizeText(keyword)) >= 0;
+      });
+      if (found && picked.indexOf(found) < 0) picked.push(found);
+    });
+    DATA.formulaChecklist.forEach(function(item) {
+      if (picked.length < 3 && picked.indexOf(item) < 0) picked.push(item);
+    });
+    return picked.slice(0, 3);
+  }
+
+  function renderRound277FormulaConditionSprint() {
+    var cards = round277SprintCards();
+    if (!cards.length) {
+      return '<section class="eflu-r277-sprint" data-round277-formula-sprint="fallback" aria-label="round277 公式条件速核"><div class="eflu-roadmap-head"><div><h3>公式条件速核正在读取</h3><p>条件表暂未取到时，仍可进入完整条件回查标签和知识整理页。</p></div><button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="formula-checklist">' + icon('check') + '条件回查</button></div></section>';
+    }
+    return [
+      '<section class="eflu-r277-sprint" data-round277-formula-sprint="' + attr(VERSION) + '" aria-labelledby="eflu-r277-title" aria-describedby="eflu-r277-desc">',
+      '<div class="eflu-roadmap-head">',
+      '<div><h3 id="eflu-r277-title">round277 公式条件速核</h3><p id="eflu-r277-desc">先核适用条件、缺条件、单位方向和真题入口；能不能用，比先把式子写出来更重要。</p></div>',
+      '<span class="eflu-roadmap-badge">' + icon('check') + esc(cards.length + ' 张速核卡') + '</span>',
+      '</div>',
+      '<div class="eflu-r277-grid" role="list" aria-label="首页公式条件速核卡">',
+      cards.map(renderRound277SprintCard).join(''),
+      '</div>',
+      '<div class="eflu-r277-actions" role="group" aria-label="round277 公式条件操作">',
+      '<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="tab" data-tab="formula-checklist" aria-controls="' + attr(tabPanelId('formula-checklist')) + '">' + icon('check') + '完整条件回查</button>',
+      '<a class="eflu-btn" href="/modules/knowledge-upgrade-2026.html#formula-condition-checklist">' + icon('external') + '知识整理页</a>',
+      '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?from=round277-formula-condition-sprint">' + icon('play') + '真题重做</a>',
+      '</div>',
+      '</section>'
+    ].join('');
+  }
+
+  function renderRound277SprintCard(item) {
+    var route = toArray(item.routeLinks).find(function(link) { return link && link.href; }) || null;
+    var routeHref = route && route.href ? route.href : '/modules/knowledge-upgrade-2026.html#formula-condition-checklist';
+    return [
+      '<article class="eflu-r277-card" role="listitem" aria-label="公式条件速核：' + attr(item.title) + '">',
+      '<h4>' + esc(item.title) + '</h4>',
+      '<dl>',
+      '<div><dt>适用条件</dt><dd>' + esc(firstChecklistText(item.applyConditions, '先确认题干信号和模型假设。')) + '</dd></div>',
+      '<div><dt>不能直接用</dt><dd>' + esc(firstChecklistText(toArray(item.notEnoughConditions).concat(item.invalidWhen || []), '条件不全时先补控制体、损失项或密度关系。')) + '</dd></div>',
+      '<div><dt>单位方向</dt><dd>' + esc(firstChecklistText(item.unitDirections, '最后核单位、正方向和数量级。')) + '</dd></div>',
+      '<div><dt>真题入口</dt><dd>' + esc(route && route.label ? route.label : (item.examEntry || '回到同类真题重做')) + '</dd></div>',
+      '</dl>',
+      '<div class="eflu-r277-actions">',
+      '<button class="eflu-btn" type="button" data-eflu-action="formula-checklist-select" data-checklist-id="' + attr(item.id) + '">' + icon('check') + '查这条</button>',
+      '<a class="eflu-btn" href="' + attr(routeHref) + '">' + icon('external') + '入口</a>',
+      '</div>',
+      '</article>'
+    ].join('');
+  }
+
+  function round278StatusLabel(status) {
+    var labels = {
+      'pdf-web-comparable': '题面可对照',
+      'partial-compare': '部分可对照',
+      'empty-or-source-missing': '缺源/空年',
+      'outside-original-pdf-index': '索引外训练',
+      'needs-source-review': '来源待复核'
+    };
+    return labels[status] || '来源待复核';
+  }
+
+  function round278HighlightYears(compare) {
+    var highlights = compare && compare.summary && compare.summary.highlightYears ? compare.summary.highlightYears : {};
+    return [
+      { label: '空年', value: toArray(highlights.emptyYears).join('、') || '无' },
+      { label: '源缺失', value: toArray(highlights.sourceMissingYears).join('、') || '无' },
+      { label: '索引外', value: toArray(highlights.outsideOriginalPdfIndexYears).join('、') || '无' }
+    ];
+  }
+
+  function renderRound278YearCell(row) {
+    var exact = row.exactOrContainedQuestionStems;
+    var fuzzy = row.fuzzyAlignedQuestionStems;
+    var label = round278StatusLabel(row.status);
+    return [
+      '<span class="eflu-r278-year" data-r278-year-status="' + attr(row.status) + '" role="listitem" aria-label="' + attr(row.year + ' 年：' + label + '，' + row.questionCount + ' 题') + '">',
+      '<b>' + esc(row.year) + '</b>',
+      '<small>' + esc(label) + '</small>',
+      '<em>' + esc(row.questionCount + '题 · E' + exact + '/F' + fuzzy) + '</em>',
+      '</span>'
+    ].join('');
+  }
+
+  function renderRound278PdfWebYearCompare() {
+    var compare = DATA.round278PdfWebYearCompare;
+    if (!compare) {
+      return [
+        '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="fallback" aria-label="round293 181103 全资料核验账本">',
+        '<div class="eflu-roadmap-head">',
+        '<div><h3>round293 181103 全资料核验账本正在读取</h3><p>小型汇总数据暂未取到时，资源页仍保留 181103 全资料核验，真题页仍保留 PDF 保真审计、原文颗粒度审计和 release gate 对照脚本；答案仍按待核验参考处理。</p></div>',
+        '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?from=round278-pdf-web-year-compare">' + icon('external') + '真题训练</a>',
+        '</div>',
+        '</section>'
+      ].join('');
+    }
+    var summary = compare.summary;
+    var comparableRate = summary.activeQuestionCount ? Math.round(summary.sourceComparableQuestionStems / summary.activeQuestionCount * 100) : 0;
+    var highlights = round278HighlightYears(compare);
+    var notes = compare.boundaryNotes.slice(0, 4);
+    return [
+      '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="' + attr(compare.version) + '" aria-labelledby="eflu-r278-title" aria-describedby="eflu-r278-desc">',
+      '<div class="eflu-roadmap-head">',
+      '<div><h3 id="eflu-r278-title">round293 181103 全资料核验账本</h3><p id="eflu-r278-desc">先看 181103 资料是否全量进索引，再看原文组题是否按每小题拆开、年份是否在原题册索引内、题面是否可与 OCR/源索引对照；答案仍按待核验参考处理。</p></div>',
+      '<span class="eflu-roadmap-badge">' + icon('target') + esc(summary.auditedYearSpan + ' · ' + comparableRate + '% 可比对 · ' + summary.splitGroupedSectionCount + '/' + summary.groupedSectionCount + ' 组题已拆') + '</span>',
+      '</div>',
+      '<div class="eflu-r278-metrics" aria-label="PDF Web 对照汇总">',
+      kpi(summary.activeQuestionCount, '真题/训练题'),
+      kpi(summary.webAtomicQuestionCount || summary.sourceComparableQuestionStems, '原文原子题'),
+      kpi(summary.splitGroupedSectionCount + '/' + summary.groupedSectionCount, '组题已拆'),
+      kpi(summary.strictOriginalAnswerEvidenceCount, '原答案 PDF 严格证据'),
+      '</div>',
+      '<div class="eflu-r278-highlights" role="list" aria-label="关键年份边界">',
+      highlights.map(function(item) {
+        return '<span role="listitem"><b>' + esc(item.label) + '</b><em>' + esc(item.value) + '</em></span>';
+      }).join(''),
+      '<span role="listitem"><b>原题册</b><em>' + esc(summary.originalQuestionPdfYearSpan) + '</em></span>',
+      '</div>',
+      '<div class="eflu-r278-years" role="list" aria-label="2000 到 2025 年 PDF Web 年份状态">',
+      compare.years.map(renderRound278YearCell).join(''),
+      '</div>',
+      '<div class="eflu-r278-notes" role="list" aria-label="PDF Web 证据边界">',
+      notes.map(function(note) { return '<span role="listitem">' + icon('alert') + esc(note) + '</span>'; }).join(''),
+      '</div>',
+      '<div class="eflu-r277-actions" role="group" aria-label="round278 PDF Web 对照入口">',
+      compare.quickLinks.map(function(link) {
+        return '<a class="eflu-btn" href="' + attr(link.href) + '">' + icon(link.href.indexOf('/data/') >= 0 ? 'note' : 'external') + esc(link.label) + '</a>';
+      }).join(''),
+      '</div>',
+      '</section>'
+    ].join('');
+  }
+
+  function kpi(value, label) {
+    return '<div class="eflu-kpi"><b>' + esc(value) + '</b><span>' + esc(label) + '</span></div>';
+  }
+
+  function panelHead(title, desc) {
+    return '<div class="eflu-panel-head"><div><h3>' + esc(title) + '</h3><p>' + esc(desc) + '</p></div></div>';
+  }
+
+  function renderCategoryRow(category) {
+    return [
+      '<div class="eflu-path-row">',
+      '<div><b>' + esc(category.name) + '</b><br><span>' + category.done + '/' + category.count + ' 已掌握</span></div>',
+      '<div class="eflu-progress" role="progressbar" aria-label="' + attr(category.name) + '进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + clamp(category.pct, 0, 100) + '"><i style="--p:' + clamp(category.pct, 0, 100) + '%"></i></div>',
+      '<button class="eflu-btn" type="button" data-eflu-action="category" data-category="' + attr(category.name) + '" aria-label="进入知识板块：' + attr(category.name) + '">' + icon('route') + '进入</button>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderLearningPathRow(path) {
+    var progress = pathProgress(path);
+    var practiceUrl = path.practiceUrl || '';
+    var realExamUrl = path.realExamUrl || '';
+    var knowledgeUrl = path.knowledgeUrl || '';
+    return [
+      '<div class="eflu-path-row">',
+      '<div><b>' + esc(path.title) + '</b><br><span>' + esc(path.desc || (progress.count + ' 个知识点')) + '</span></div>',
+      '<div class="eflu-progress" role="progressbar" aria-label="' + attr(path.title) + '进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="' + clamp(progress.pct, 0, 100) + '"><i style="--p:' + clamp(progress.pct, 0, 100) + '%"></i></div>',
+      '<div class="eflu-path-actions"><button class="eflu-btn" type="button" data-eflu-action="path-select" data-path-id="' + attr(path.id) + '" aria-label="查看学习路径：' + attr(path.title) + '，已掌握 ' + progress.done + '/' + progress.count + '">' + icon('route') + progress.done + '/' + progress.count + '</button>' + (practiceUrl ? '<a class="eflu-btn" href="' + attr(practiceUrl) + '" aria-label="进入全部真题练习：' + attr(path.title) + '">' + icon('play') + '全部真题练习</a>' : '') + (realExamUrl ? '<a class="eflu-btn" href="' + attr(realExamUrl) + '" aria-label="查看真题包：' + attr(path.title) + '">' + icon('external') + '真题包</a>' : '') + (knowledgeUrl ? '<a class="eflu-btn" href="' + attr(knowledgeUrl) + '" aria-label="打开知识点：' + attr(path.title) + '">' + icon('note') + '知识点</a>' : '') + '</div>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderPointTile(point) {
+    var status = pointStatus(point.id);
+    var route = teacherUrl(point.url, point.id);
+    var keywords = unique((point.keywords || []).concat(point.headings || []).slice(0, 4));
+    return [
+      '<article class="eflu-tile ' + statusClass(status) + '" data-point-id="' + attr(point.id) + '" data-status="' + attr(status) + '">',
+      '<div class="eflu-tile-top">',
+      '<div><div class="eflu-title">P' + esc(point.page) + ' ' + esc(point.title) + '</div>',
+      '<div class="eflu-desc">' + esc(point.category + ' · ' + markdownPreview(point.markdown, 96)) + '</div></div>',
+      '<span class="eflu-tag">' + esc(statusLabel(status)) + '</span>',
+      '</div>',
+      '<div class="eflu-tagrow">' + keywords.map(function(tag) { return '<span class="eflu-tag">' + esc(tag) + '</span>'; }).join('') + '</div>',
+      '<div class="eflu-actions">',
+      '<button class="eflu-btn" type="button" aria-pressed="' + (status === 'learning') + '" aria-label="标记为学习中：' + attr(point.title) + '" data-eflu-action="mark-point" data-id="' + attr(point.id) + '" data-status="learning">' + icon('play') + '学习中</button>',
+      '<button class="eflu-btn" type="button" aria-pressed="' + (status === 'done') + '" aria-label="标记为掌握：' + attr(point.title) + '" data-tone="primary" data-eflu-action="mark-point" data-id="' + attr(point.id) + '" data-status="done">' + icon('check') + '掌握</button>',
+      '<button class="eflu-btn" type="button" aria-pressed="' + (status === 'weak') + '" aria-label="标记为薄弱：' + attr(point.title) + '" data-eflu-action="mark-point" data-id="' + attr(point.id) + '" data-status="weak">' + icon('alert') + '薄弱</button>',
+      '<button class="eflu-icon-btn" type="button" title="加入复习本" aria-label="加入复习本：' + attr(point.title) + '" data-eflu-action="review-point" data-id="' + attr(point.id) + '">' + icon('bookmark', '加入复习本') + '</button>',
+      route ? '<a class="eflu-icon-btn" title="打开知识页" aria-label="打开知识页：' + attr(point.title) + '" href="' + attr(route) + '">' + icon('external', '打开知识页') + '</a>' : '',
+      '</div>',
+      '</article>'
+    ].join('');
+  }
+
+  function renderPathTab() {
+    var cats = ['all'].concat(DATA.categories.map(function(cat) { return cat.name; }));
+    var selectedPath = DATA.paths.find(function(path) { return path.id === VIEW.pathId; });
+    var points = DATA.knowledge.filter(function(point) {
+      if (selectedPath) return selectedPath.points.indexOf(point.id) >= 0;
+      return VIEW.pathCategory === 'all' || point.category === VIEW.pathCategory;
+    }).slice(0, VIEW.listLimit);
+    var activeTitle = selectedPath ? selectedPath.title : (VIEW.pathCategory === 'all' ? '推荐知识点' : VIEW.pathCategory);
+    return [
+      '<div class="eflu-segs" role="group" aria-label="知识板块筛选">',
+      cats.map(function(cat) {
+        var label = cat === 'all' ? '全部' : cat;
+        var active = VIEW.pathCategory === cat ? ' is-active' : '';
+        return '<button class="eflu-seg' + active + '" type="button" aria-pressed="' + (active ? 'true' : 'false') + '" data-eflu-action="category" data-category="' + attr(cat) + '">' + esc(label) + '</button>';
+      }).join(''),
+      '</div>',
+      '<div class="eflu-grid">',
+      '<section class="eflu-panel">',
+      panelHead('路径结构', '升级 JSON 存在时按备考阶段显示，否则按知识分类显示'),
+      '<div class="eflu-path-list">',
+      DATA.paths.map(renderLearningPathRow).join('') || masteryByCategory().map(renderCategoryRow).join('') || empty('暂无路径结构'),
+      '</div>',
+      '</section>',
+      '<section class="eflu-panel">',
+      panelHead(activeTitle, '可直接标记学习状态或加入复习本'),
+      '<div class="eflu-tiles">',
+      points.map(renderPointTile).join('') || empty('该板块暂无知识点'),
+      '</div>',
+      VIEW.listLimit < DATA.knowledge.length ? '<div class="eflu-actions"><button class="eflu-btn" type="button" data-eflu-action="more">' + icon('plus') + '加载更多</button></div>' : '',
+      '</section>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderExamRouteTab() {
+    var route = selectedExamRoute();
+    var suggestions = examRouteSuggestions();
+    var sourceText = DATA.examRouteMap ? '已接入 round263 题目路线数据' : '题目路线数据未取到，正在用讲义规则';
+    return [
+      '<div class="eflu-route-board">',
+      '<section class="eflu-panel">',
+      panelHead('题目线索选择', '先写题干关键词，再看该从哪条公式路线下手'),
+      '<div class="eflu-tile">',
+      '<div class="eflu-inputbar" role="search" aria-label="题目线索搜索">',
+      '<label>' + icon('search') + '<input class="eflu-input" data-eflu-role="exam-clue" value="' + attr(VIEW.examClue) + '" aria-label="输入题目线索" placeholder="输入题目线索，例如 弯管 受力、Bernoulli 水头、Re 相似"></label>',
+      '<button class="eflu-btn" type="button" data-eflu-action="clear-exam-clue" aria-label="清空题目线索">' + icon('x') + '清空</button>',
+      '</div>',
+      '<div class="eflu-clue-chips" role="group" aria-label="题型线索快捷选择">',
+      suggestions.map(function(item) {
+        var itemRoute = item.route;
+        var active = route && itemRoute.id === route.id ? ' is-active' : '';
+        var label = itemRoute.triggers.length ? itemRoute.triggers.slice(0, 2).join(' / ') : itemRoute.title;
+        return '<button class="eflu-clue-chip' + active + '" type="button" data-eflu-action="exam-route-select" data-route-id="' + attr(itemRoute.id) + '" aria-pressed="' + (active ? 'true' : 'false') + '" aria-label="选择题目路线：' + attr(itemRoute.title || label) + '">' + esc(label) + '</button>';
+      }).join('') || '<span class="eflu-tag" role="status">暂无题型规则</span>',
+      '</div>',
+      '<div class="eflu-route-note"><b>老师提醒</b><span>' + esc(sourceText) + '。题目先找条件，不先背答案；路线只是草稿纸顺序，最后还要回到原题题面和边界条件。</span></div>',
+      '</div>',
+      '</section>',
+      '<section class="eflu-panel">',
+      panelHead(route ? route.title : '路线待选择', '公式路线、边界条件、错因检查放在同一张草稿纸上'),
+      route ? renderExamRouteDetail(route) : empty('先输入题目线索，或点一个题型标签'),
+      '</section>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderExamRouteDetail(route) {
+    var chapters = toArray(route.chapters).slice(0, 5);
+    var formulas = toArray(route.formulas).slice(0, 5);
+    var boundary = toArray(route.boundaryReminders).slice(0, 5);
+    var mistakes = toArray(route.mistakeChecks).slice(0, 5);
+    var reviewOrder = toArray(route.reviewOrder).slice(0, 6);
+    return [
+      '<div class="eflu-tiles">',
+      '<article class="eflu-tile">',
+      '<div class="eflu-tile-top"><div><div class="eflu-title">第一步怎么落笔</div>',
+      '<div class="eflu-desc">' + esc(route.routeText || '先圈定题干条件，再选择控制体、公式和边界条件。') + '</div></div>',
+      '<span class="eflu-tag">' + esc(route.source === 'round263' ? 'round263' : '讲义规则') + '</span></div>',
+      chapters.length ? '<div class="eflu-tagrow">' + chapters.map(function(item) {
+        var no = chapterNumber(item);
+        return no ? '<a class="eflu-tag" href="' + attr(chapterPracticeUrl(no)) + '" aria-label="进入第 ' + attr(no) + ' 章章节练习">第 ' + esc(no) + ' 章练习</a>' : '<span class="eflu-tag">' + esc(item) + '</span>';
+      }).join('') + '</div>' : '',
+      '</article>',
+      '<article class="eflu-tile">',
+      '<div class="eflu-title">公式路线</div>',
+      formulas.length ? formulas.map(renderExamFormulaStep).join('') : '<div class="eflu-route-empty">这类题先写条件和控制体；公式索引没有给出明确 ID 时，回到“公式速查”按关键词找。</div>',
+      '</article>',
+      '<article class="eflu-tile">',
+      '<div class="eflu-title">边界条件提醒</div>',
+      renderStepList(boundary.length ? boundary : teacherBoundaryFallback()),
+      '</article>',
+      '<article class="eflu-tile">',
+      '<div class="eflu-title">错因检查</div>',
+      renderStepList(mistakes.length ? mistakes : teacherMistakeFallback()),
+      '</article>',
+      '<article class="eflu-tile">',
+      '<div class="eflu-title">复习顺序推荐</div>',
+      renderStepList(reviewOrder.length ? reviewOrder : teacherReviewFallback()),
+      '<div class="eflu-actions">',
+      '<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="review-exam-route" data-route-id="' + attr(route.id) + '" aria-label="把当前题目路线加入复习本">' + icon('bookmark') + '加入复习本</button>',
+      '<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="formulas" aria-label="切换到公式速查">' + icon('sigma') + '查公式</button>',
+      '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?from=exam-route" aria-label="打开历年真题训练">' + icon('external') + '去真题训练</a>',
+      '</div>',
+      '</article>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderExamFormulaStep(item) {
+    var formula = item.formula || (findFormulaById(item.id) && findFormulaById(item.id).formula) || '';
+    var title = item.title || item.id || '公式';
+    return [
+      '<div class="eflu-step">',
+      '<b>' + esc(title) + '</b>',
+      item.note ? '<div class="eflu-desc">' + esc(item.note) + '</div>' : '',
+      formula ? renderFormulaBlock(formula) : '<div class="eflu-desc">先按题干条件确认能不能用，再到公式速查补完整写法。</div>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderStepList(items) {
+    items = unique(toArray(items)).filter(Boolean).slice(0, 6);
+    if (!items.length) return '<div class="eflu-route-empty">暂无明确提醒，先写题干条件、边界和量纲检查。</div>';
+    return '<ol class="eflu-step-list" aria-label="步骤清单">' + items.map(function(item) {
+      return '<li class="eflu-step">' + esc(item) + '</li>';
+    }).join('') + '</ol>';
+  }
+
+  function teacherBoundaryFallback() {
+    return toArray(DATA.upgrade && DATA.upgrade.teacherBoard && DATA.upgrade.teacherBoard.boundaryConditionGuide).slice(0, 5);
+  }
+
+  function teacherMistakeFallback() {
+    return toArray(DATA.upgrade && DATA.upgrade.qualityGates).map(function(gate) {
+      if (typeof gate === 'string') return gate;
+      if (!gate || typeof gate !== 'object') return '';
+      return [gate.name || gate.title, gate.check || gate.desc || gate.note].filter(Boolean).join('：');
+    }).filter(Boolean).slice(0, 5);
+  }
+
+  function teacherReviewFallback() {
+    return toArray(DATA.upgrade && DATA.upgrade.teacherBoard && DATA.upgrade.teacherBoard.studyOrder).slice(0, 6);
+  }
+
+  function renderFormulaTab() {
+    var cats = ['all'].concat(unique(DATA.formulas.map(function(item) { return item.category; })).slice(0, 18));
+    var formulas = formulaResults();
+    var status = DATA.formulaStatus === 'loaded'
+      ? ''
+      : '<div class="eflu-route-note" role="status"><b>按需加载</b><span>公式全集正在按需加载；弱网时先显示高频兜底公式，不阻塞页面。</span></div>';
+    return [
+      status,
+      '<div class="eflu-inputbar" role="search" aria-label="公式速查搜索">',
+      '<label>' + icon('search') + '<input class="eflu-input" data-eflu-role="formula-query" value="' + attr(VIEW.formulaQuery) + '" aria-label="搜索公式、关键词或章节" placeholder="搜索公式、关键词、章节，例如 Re 或 边界层"></label>',
+      '<button class="eflu-btn" type="button" data-eflu-action="clear-formula" aria-label="清空公式搜索">' + icon('x') + '清空</button>',
+      '</div>',
+      '<div class="eflu-segs" role="group" aria-label="公式分类筛选">',
+      cats.map(function(cat) {
+        var active = VIEW.formulaCategory === cat ? ' is-active' : '';
+        return '<button class="eflu-seg' + active + '" type="button" aria-pressed="' + (active ? 'true' : 'false') + '" data-eflu-action="formula-category" data-category="' + attr(cat) + '">' + esc(cat === 'all' ? '全部' : cat) + '</button>';
+      }).join(''),
+      '</div>',
+      '<section class="eflu-panel">',
+      panelHead('公式速查', '公式索引优先；索引缺失时从知识点正文抽取'),
+      '<div class="eflu-tiles">',
+      formulas.map(renderFormulaTile).join('') || empty('没有匹配的公式'),
+      '</div>',
+      VIEW.listLimit < DATA.formulas.length ? '<div class="eflu-actions"><button class="eflu-btn" type="button" data-eflu-action="more">' + icon('plus') + '加载更多</button></div>' : '',
+      '</section>'
+    ].join('');
+  }
+
+  function renderFormulaTile(formula) {
+    var tags = unique([formula.category].concat(formula.keywords || []).slice(0, 4));
+    var related = toArray(formula.relatedQuestions).length;
+    var route = teacherUrl(formula.url, formula.id);
+    var checklist = findChecklistForFormula(formula);
+    return [
+      '<article class="eflu-tile" data-formula-id="' + attr(formula.id) + '">',
+      '<div class="eflu-tile-top"><div><div class="eflu-title">' + esc(formula.title || formula.pointTitle || '公式') + '</div>',
+      '<div class="eflu-desc">' + esc((formula.pointTitle || formula.category || '') + (related ? ' · 关联真题 ' + related + ' 道' : '')) + '</div></div>',
+      '<span class="eflu-tag">' + esc(formula.page ? 'P' + formula.page : '公式') + '</span></div>',
+      renderFormulaBlock(formula.formula),
+      '<div class="eflu-tagrow">' + tags.map(function(tag) { return '<span class="eflu-tag">' + esc(tag) + '</span>'; }).join('') + '</div>',
+      '<div class="eflu-actions">',
+      '<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="review-formula" data-id="' + attr(formula.id) + '" aria-label="把公式加入复习本：' + attr(formula.title || formula.pointTitle || '公式') + '">' + icon('bookmark') + '加入复习</button>',
+      checklist ? '<button class="eflu-btn" type="button" data-eflu-action="formula-checklist-from-formula" data-checklist-id="' + attr(checklist.id) + '" aria-label="查看适用条件：' + attr(formula.title || formula.pointTitle || '公式') + '">' + icon('check') + '查条件</button>' : '',
+      route ? '<a class="eflu-btn" href="' + attr(route) + '" aria-label="打开知识页：' + attr(formula.title || formula.pointTitle || '公式') + '">' + icon('external') + '知识页</a>' : '',
+      '</div>',
+      '</article>'
+    ].join('');
+  }
+
+  function renderFormulaChecklistTab() {
+    var cats = ['all'].concat(unique(toArray(DATA.formulaChecklist).map(function(item) { return item.category; })).slice(0, 18));
+    var results = formulaChecklistResults();
+    var selected = selectedFormulaChecklist();
+    var sourceText = DATA.formulaChecklistStatus === 'loaded' ? '已接入公式条件历史包' : '条件表文件暂未取到，先用讲义里已有的公式规则兜底';
+    var fillText = DATA.visibilityIssues.length ? '<div class="eflu-route-note" role="status"><b>字段可见性</b><span>已自动补齐 ' + esc(DATA.visibilityIssues.length) + ' 个条件卡可见字段，确保适用条件、边界条件、单位方向、错因和补救训练都有入口。</span></div>' : '';
+    return [
+      renderRound264Flow(),
+      '<div class="eflu-route-board">',
+      '<section class="eflu-panel">',
+      panelHead('公式先问条件', '搜索或点选一条公式，先看能不能用，再看怎么算'),
+      '<div class="eflu-tile">',
+      '<div class="eflu-inputbar" role="search" aria-label="公式条件搜索">',
+      '<label>' + icon('search') + '<input class="eflu-input" data-eflu-role="formula-checklist-query" value="' + attr(VIEW.formulaChecklistQuery) + '" aria-label="搜索公式条件、边界或常见错因" placeholder="输入公式或错因，例如 伯努利 损失、Re 黏度、连续方程 方向"></label>',
+      '<button class="eflu-btn" type="button" data-eflu-action="clear-formula-checklist" aria-label="清空公式条件搜索">' + icon('x') + '清空</button>',
+      '</div>',
+      '<div class="eflu-segs" role="group" aria-label="公式条件分类筛选">',
+      cats.map(function(cat) {
+        var active = VIEW.formulaChecklistCategory === cat ? ' is-active' : '';
+        return '<button class="eflu-seg' + active + '" type="button" aria-pressed="' + (active ? 'true' : 'false') + '" data-eflu-action="formula-checklist-category" data-category="' + attr(cat) + '">' + esc(cat === 'all' ? '全部' : cat) + '</button>';
+      }).join(''),
+      '</div>',
+      '<div class="eflu-clue-chips" role="group" aria-label="公式条件卡快捷选择">',
+      results.slice(0, 10).map(function(item) {
+        var active = selected && item.id === selected.id ? ' is-active' : '';
+        return '<button class="eflu-clue-chip' + active + '" type="button" data-eflu-action="formula-checklist-select" data-checklist-id="' + attr(item.id) + '" aria-pressed="' + (active ? 'true' : 'false') + '" aria-label="选择公式条件卡：' + attr(item.title) + '">' + esc(item.title) + '</button>';
+      }).join('') || '<span class="eflu-tag" role="status">暂无匹配公式</span>',
+      '</div>',
+      '<div class="eflu-route-note"><b>老师提醒</b><span>' + esc(sourceText) + '。考试里公式写错，多半不是公式不会背，而是适用条件、边界或单位方向没核对。</span></div>',
+      fillText,
+      '</div>',
+      '</section>',
+      '<section class="eflu-panel">',
+      panelHead(selected ? selected.title : '先选一条公式', '适用条件、边界条件、单位方向、常见错因和补救训练放在一起回查'),
+      selected ? renderFormulaChecklistDetail(selected) : empty('先输入关键词，或点一个公式标签'),
+      '</section>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderRound264Flow() {
+    var steps = [
+      ['读题选式', '先圈题干条件、要求量和公式入口。'],
+      ['公式条件', '确认定常、可压、黏性和控制体。'],
+      ['边界控制体', '写清入口、出口、自由面、固壁和外法向。'],
+      ['单位方向', '代入前统一单位、压强基准和正方向。'],
+      ['错因补救', '做完把错因和补救训练写进复习本。']
+    ];
+    return [
+      '<section class="eflu-r264-guide" aria-labelledby="eflu-r264-guide-title" aria-describedby="eflu-r264-guide-desc">',
+      '<div class="eflu-panel-head eflu-r264-head"><div><h3 id="eflu-r264-guide-title">五步公式回查</h3><p id="eflu-r264-guide-desc">选公式前先过这 5 步，减少适用条件、边界和单位方向类失分。</p></div><span class="eflu-tag">5 步</span></div>',
+      '<ol class="eflu-r264-flow" aria-label="五步公式回查顺序">',
+      steps.map(function(step, index) {
+        return '<li class="eflu-r264-step"><b>' + esc(String(index + 1).padStart(2, '0') + ' ' + step[0]) + '</b><span>' + esc(step[1]) + '</span></li>';
+      }).join(''),
+      '</ol>',
+      '</section>'
+    ].join('');
+  }
+
+  function renderFormulaChecklistDetail(item) {
+    var related = item.formulaId ? findFormulaById(item.formulaId) : null;
+    var route = teacherUrl(item.url || (related && related.url), item.formulaId || item.id);
+    var formulaText = item.formula || (related && related.formula) || '';
+    return [
+      '<div class="eflu-tiles">',
+      '<article class="eflu-tile" aria-label="' + attr(item.title || '公式条件卡') + '">',
+      '<div class="eflu-tile-top"><div><div class="eflu-title">' + esc(item.title) + '</div>',
+      '<div class="eflu-desc">' + esc(item.teacherNote || '先把条件问完，再决定公式能不能上草稿纸。') + '</div></div>',
+      '<span class="eflu-tag">' + esc(item.source === 'round264' ? '公式条件历史包' : (item.source || '公式条件历史包')) + '</span></div>',
+      formulaText ? renderFormulaBlock(formulaText) : '',
+      '<div class="eflu-tagrow"><span class="eflu-tag">' + esc(item.category || '公式条件') + '</span>' + toArray(item.keywords).slice(0, 3).map(function(tag) { return '<span class="eflu-tag">' + esc(tag) + '</span>'; }).join('') + '</div>',
+      '</article>',
+      renderChecklistBlock('适用条件', item.applyConditions, '先问题干给没给这些条件。没给，就不能直接套简化式。'),
+      renderChecklistBlock('不能直接用 / 缺条件', toArray(item.notEnoughConditions).concat(item.invalidWhen || []), '缺少密度关系、控制体边界或能量损失信息时，先补条件再选式。'),
+      renderChecklistBlock('别名归一', item.aliases, '把题干里的俗称、缩写和公式族先归到同一个入口。'),
+      renderChecklistBlock('公式形态', item.formulaForms, '先选一般式，再在条件满足时化成一维、不可压或定常简式。'),
+      renderChecklistBlock('边界条件', item.boundaryConditions, '边界写错，后面代数再对也会偏。'),
+      renderChecklistBlock('单位方向', item.unitDirections, '单位和正方向是最后一道保险，尤其是压强、水头、通量和力。'),
+      renderChecklistBlock('常见错因', item.commonMistakes, '看到这些苗头，先停笔回到题面。'),
+      renderChecklistBlock('答题骨架', item.answerSkeleton, '按骨架写步骤，避免只代数不交代条件。'),
+      renderChecklistBlock('真题入口', [item.examEntry].concat(item.mistakeTags || []), '先从同类真题重做，错因标签用于订正。'),
+      renderRouteLinksBlock(item.routeLinks),
+      '<article class="eflu-tile" aria-label="补救训练检查项">',
+      '<div class="eflu-title">补救训练</div>',
+      renderStepList(item.remedialTraining.length ? item.remedialTraining : ['重做一道同类题，只写条件表，不急着算数值。', '把用到的每个量标出单位和正方向。']),
+      '<div class="eflu-actions">',
+      '<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="review-formula-checklist" data-checklist-id="' + attr(item.id) + '" aria-label="把条件回查卡加入复习本：' + attr(item.title) + '">' + icon('bookmark') + '加入复习本</button>',
+      formulaText ? '<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="formulas" aria-label="返回公式速查">' + icon('sigma') + '回公式速查</button>' : '',
+      route ? '<a class="eflu-btn" href="' + attr(route) + '" aria-label="打开知识页：' + attr(item.title) + '">' + icon('external') + '知识页</a>' : '',
+      '</div>',
+      '</article>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderRouteLinksBlock(links) {
+    links = normalizeChecklistRouteLinks(links);
+    if (!links.length) return '';
+    function resolveHref(href) {
+      var value = String(href || '').trim();
+      if (!value) return '';
+      if (value.charAt(0) === '#') {
+        var id = '';
+        try {
+          id = decodeURIComponent(value.slice(1));
+        } catch (_) {
+          id = value.slice(1);
+        }
+        if (id && typeof document !== 'undefined' && document.getElementById(id)) return value;
+        return '/modules/knowledge-upgrade-2026.html' + value;
+      }
+      return value;
+    }
+    return [
+      '<article class="eflu-tile" aria-label="题目与动画入口">',
+      '<div class="eflu-title">题目与动画入口</div>',
+      '<div class="eflu-actions">',
+      links.map(function(link) {
+        var label = link.label || link.href || '相关入口';
+        var use = link.use ? '<span class="eflu-desc">' + esc(link.use) + '</span>' : '';
+        var href = resolveHref(link.href);
+        if (href) {
+          return '<a class="eflu-btn" href="' + attr(href) + '" aria-label="' + attr(label) + '">' + icon('external') + esc(label) + '</a>' + use;
+        }
+        return '<span class="eflu-tag">' + esc(label) + '</span>' + use;
+      }).join(''),
+      '</div>',
+      '</article>'
+    ].join('');
+  }
+
+  function renderChecklistBlock(title, items, fallback) {
+    return [
+      '<article class="eflu-tile" aria-label="' + attr(title) + '检查项">',
+      '<div class="eflu-title">' + esc(title) + '</div>',
+      renderStepList(toArray(items).length ? items : [fallback]),
+      '</article>'
+    ].join('');
+  }
+
+  function renderSearchTab() {
+    var results = search(VIEW.siteQuery, { limit: VIEW.listLimit });
+    var status = DATA.searchStatus === 'loaded'
+      ? ''
+      : '<div class="eflu-route-note" role="status"><b>按需加载</b><span>站内搜索索引正在按需加载；当前先用知识点和高频公式兜底搜索。</span></div>';
+    return [
+      status,
+      '<div class="eflu-inputbar" role="search" aria-label="站内搜索">',
+      '<label>' + icon('search') + '<input class="eflu-input" data-eflu-role="site-query" value="' + attr(VIEW.siteQuery) + '" aria-label="搜索知识点、真题、公式或资源" placeholder="搜索知识点、真题、公式、资源"></label>',
+      '<button class="eflu-btn" type="button" data-eflu-action="clear-search" aria-label="清空站内搜索">' + icon('x') + '清空</button>',
+      '</div>',
+      '<section class="eflu-panel">',
+      panelHead('站内搜索', '合并首页索引、知识点与公式索引'),
+      '<div class="eflu-tiles">',
+      results.map(renderSearchResult).join('') || empty('没有匹配结果'),
+      '</div>',
+      VIEW.listLimit < buildSearchIndex().length ? '<div class="eflu-actions"><button class="eflu-btn" type="button" data-eflu-action="more">' + icon('plus') + '加载更多</button></div>' : '',
+      '</section>'
+    ].join('');
+  }
+
+  function renderSearchResult(result) {
+    var item = result.item || result;
+    return [
+      '<article class="eflu-tile">',
+      '<div class="eflu-tile-top">',
+      '<div><div class="eflu-title">' + esc(item.title) + '</div>',
+      '<div class="eflu-desc">' + esc(item.desc || item.keywords || '') + '</div></div>',
+      '<span class="eflu-tag">' + esc(item.type || '结果') + '</span>',
+      '</div>',
+      '<div class="eflu-actions">',
+      item.url ? '<a class="eflu-btn" data-eflu-track-link="1" href="' + attr(safeUrl(item.url)) + '" aria-label="打开搜索结果：' + attr(item.title) + '">' + icon('external') + '打开</a>' : '',
+      item.sourcePoint ? '<button class="eflu-btn" type="button" data-eflu-action="review-point" data-id="' + attr(item.sourcePoint.id) + '" aria-label="把搜索结果加入复习本：' + attr(item.title) + '">' + icon('bookmark') + '复习</button>' : '',
+      item.sourceFormula ? '<button class="eflu-btn" type="button" data-eflu-action="review-formula" data-id="' + attr(item.sourceFormula.id) + '" aria-label="把公式搜索结果加入复习本：' + attr(item.title) + '">' + icon('bookmark') + '复习</button>' : '',
+      '</div>',
+      '</article>'
+    ].join('');
+  }
+
+  function renderReviewTab() {
+    var reviews = collectReviews();
+    var due = reviews.filter(function(item) { return !item.due || item.due <= now(); });
+    return [
+      '<div class="eflu-kpis">',
+      kpi(reviews.length, '复习本总数'),
+      kpi(due.length, '今日到期'),
+      kpi(reviews.filter(function(item) { return item.source === 'fm_wrong'; }).length, '兼容错题'),
+      kpi(readJSON(EVENT_KEY, []).length || 0, '本地埋点'),
+      '</div>',
+      '<div class="eflu-grid">',
+      '<section class="eflu-panel">',
+      panelHead('快速记录', '把临时错题、公式或提醒加入本地复习状态'),
+      renderCustomReviewForm(),
+      '</section>',
+      '<section class="eflu-panel">',
+      panelHead('到期复习', '按 SM-2 间隔重复更新下次复习时间'),
+      '<div class="eflu-tiles">',
+      (due.length ? due : reviews.slice(0, 8)).map(renderReviewTile).join('') || empty('复习本为空'),
+      '</div>',
+      '</section>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderCustomReviewForm() {
+    return [
+      '<div class="eflu-tile">',
+      '<div class="eflu-split-form">',
+      '<input class="eflu-input" style="padding-left:12px" data-eflu-role="custom-title" aria-label="错题或复习标题" placeholder="错题或复习标题">',
+      '<input class="eflu-input" style="padding-left:12px" data-eflu-role="custom-category" aria-label="复习来源或章节" placeholder="来源/章节">',
+      '</div>',
+      '<textarea class="eflu-textarea" data-eflu-role="custom-detail" aria-label="记录易错点、公式条件或复习提示" placeholder="记录易错点、公式条件或复习提示"></textarea>',
+      '<div class="eflu-actions">',
+      '<button class="eflu-btn" data-tone="primary" type="button" data-eflu-action="add-custom-review" aria-label="把这条自定义记录加入复习本">' + icon('plus') + '加入复习本</button>',
+      '</div>',
+      '</div>'
+    ].join('');
+  }
+
+  function renderReviewTile(item) {
+    var due = !item.due || item.due <= now();
+    var dueText = due ? '<span class="eflu-review-due">' + icon('clock') + '今天</span>' : '<span class="eflu-review-ok">' + icon('clock') + formatDate(item.due) + '</span>';
+    var detail = item.formula || item.detail || item.category || '';
+    return [
+      '<article class="eflu-tile" data-review-id="' + attr(item.id) + '">',
+      '<div class="eflu-tile-top">',
+      '<div><div class="eflu-title">' + esc(item.title) + '</div>',
+      '<div class="eflu-desc">' + esc(detail) + '</div></div>',
+      dueText,
+      '</div>',
+      '<div class="eflu-tagrow">',
+      '<span class="eflu-tag">' + esc(item.sourceType || item.category || '复习') + '</span>',
+      '<span class="eflu-tag">复习 ' + esc(item.reviews || 0) + ' 次</span>',
+      '<span class="eflu-tag">间隔 ' + esc(item.ivl || 0) + ' 天</span>',
+      item.due && item.due > now() ? '<span class="eflu-tag">' + esc(daysFromNow(item.due)) + ' 天后</span>' : '',
+      '</div>',
+      '<div class="eflu-actions">',
+      [2, 3, 4, 5].map(function(q) {
+        return '<button class="eflu-btn" type="button" data-eflu-action="rate-review" data-id="' + attr(item.id) + '" data-quality="' + q + '" aria-label="给复习项目评分 ' + q + '：' + attr(item.title) + '">' + q + '</button>';
+      }).join(''),
+      item.url ? '<a class="eflu-icon-btn" title="打开来源" aria-label="打开复习来源：' + attr(item.title) + '" href="' + attr(safeUrl(item.url)) + '">' + icon('external', '打开来源') + '</a>' : '',
+      item.source === 'edge' ? '<button class="eflu-icon-btn" type="button" title="移除" aria-label="移除复习项目：' + attr(item.title) + '" data-eflu-action="remove-review" data-id="' + attr(item.id) + '">' + icon('x', '移除') + '</button>' : '',
+      '</div>',
+      '</article>'
+    ].join('');
+  }
+
+  function empty(message) {
+    return '<div class="eflu-empty" role="status" aria-live="polite">' + esc(message) + '</div>';
+  }
+
+  function refreshMath() {
+    setTimeout(function() {
+      try {
+        if (global.FMFormulaLite && typeof global.FMFormulaLite.refresh === 'function') global.FMFormulaLite.refresh(mountNode);
+        if (global.FMQueueMath) global.FMQueueMath(mountNode, 300);
+        else if (global.MathJax && global.MathJax.typesetPromise) global.MathJax.typesetPromise([mountNode]).catch(function() {});
+      } catch (_) {}
+    }, 0);
+  }
+
+  function handleClick(event) {
+    var anyLink = event.target && event.target.closest && event.target.closest('a[href]');
+    if (anyLink) rememberLearningLink(anyLink);
+    var actionNode = event.target && event.target.closest && event.target.closest('[data-eflu-action]');
+    if (!actionNode || !mountNode || !mountNode.contains(actionNode)) {
+      var link = event.target && event.target.closest && event.target.closest('[data-eflu-track-link]');
+      if (link) track('search_open', { href: link.getAttribute('href') || '' });
+      return;
+    }
+    var action = actionNode.getAttribute('data-eflu-action');
+    if (action !== 'rate-review') event.preventDefault();
+    if (action === 'tab') {
+      setActiveTab(actionNode.getAttribute('data-tab') || 'dashboard');
+      VIEW.listLimit = 18;
+      track('tab', { tab: VIEW.tab });
+      render({ focusTab: true });
+      return;
+    }
+    if (action === 'category') {
+      setActiveTab('path');
+      VIEW.pathCategory = actionNode.getAttribute('data-category') || 'all';
+      VIEW.pathId = '';
+      VIEW.listLimit = 18;
+      track('path_category', { category: VIEW.pathCategory });
+      render();
+      return;
+    }
+    if (action === 'path-select') {
+      setActiveTab('path');
+      VIEW.pathId = actionNode.getAttribute('data-path-id') || '';
+      VIEW.pathCategory = 'all';
+      VIEW.listLimit = 18;
+      track('path_select', { pathId: VIEW.pathId });
+      render();
+      return;
+    }
+    if (action === 'exam-route-select') {
+      setActiveTab('exam-route');
+      VIEW.selectedExamRoute = actionNode.getAttribute('data-route-id') || '';
+      var route = DATA.examRoutes.find(function(item) { return item.id === VIEW.selectedExamRoute; });
+      if (route && route.triggers && route.triggers.length) VIEW.examClue = route.triggers.slice(0, 3).join(' ');
+      track('exam_route_select', { routeId: VIEW.selectedExamRoute });
+      render({ focusRole: 'exam-clue' });
+      return;
+    }
+    if (action === 'formula-category') {
+      VIEW.formulaCategory = actionNode.getAttribute('data-category') || 'all';
+      VIEW.listLimit = 18;
+      track('formula_category', { category: VIEW.formulaCategory });
+      render({ focusRole: 'formula-query' });
+      return;
+    }
+    if (action === 'formula-checklist-category') {
+      setActiveTab('formula-checklist');
+      VIEW.formulaChecklistCategory = actionNode.getAttribute('data-category') || 'all';
+      VIEW.selectedFormulaChecklist = '';
+      VIEW.listLimit = 18;
+      track('formula_checklist_category', { category: VIEW.formulaChecklistCategory });
+      render({ focusRole: 'formula-checklist-query' });
+      return;
+    }
+    if (action === 'formula-checklist-select') {
+      setActiveTab('formula-checklist');
+      VIEW.selectedFormulaChecklist = actionNode.getAttribute('data-checklist-id') || '';
+      track('formula_checklist_select', { checklistId: VIEW.selectedFormulaChecklist });
+      render({ focusRole: 'formula-checklist-query' });
+      return;
+    }
+    if (action === 'formula-checklist-from-formula') {
+      setActiveTab('formula-checklist');
+      VIEW.formulaChecklistQuery = '';
+      VIEW.formulaChecklistCategory = 'all';
+      VIEW.selectedFormulaChecklist = actionNode.getAttribute('data-checklist-id') || '';
+      track('formula_checklist_from_formula', { checklistId: VIEW.selectedFormulaChecklist });
+      render();
+      return;
+    }
+    if (action === 'mark-point') {
+      setPointStatus(actionNode.getAttribute('data-id'), actionNode.getAttribute('data-status') || 'learning');
+      return;
+    }
+    if (action === 'review-point') {
+      var point = DATA.knowledge.find(function(item) { return item.id === actionNode.getAttribute('data-id'); });
+      if (point) addReviewItem({
+        sourceId: point.id,
+        sourceType: '知识点',
+        title: 'P' + point.page + ' ' + point.title,
+        detail: markdownPreview(point.markdown, 140),
+        url: point.url,
+        category: point.category,
+        tags: point.keywords
+      });
+      return;
+    }
+    if (action === 'review-formula') {
+      var formula = DATA.formulas.find(function(item) { return item.id === actionNode.getAttribute('data-id'); });
+      if (formula) addReviewItem({
+        sourceId: formula.id,
+        sourceType: '公式',
+        title: formula.title || formula.pointTitle || '公式复习',
+        detail: formula.pointTitle || formula.category,
+        formula: formula.formula,
+        url: formula.url,
+        category: formula.category,
+        tags: formula.keywords
+      });
+      return;
+    }
+    if (action === 'review-exam-route') {
+      var routeItem = DATA.examRoutes.find(function(item) { return item.id === actionNode.getAttribute('data-route-id'); });
+      if (routeItem) addReviewItem({
+        sourceId: routeItem.id,
+        sourceType: '题目路线',
+        title: routeItem.title || '题目路线复习',
+        detail: routeItem.routeText || toArray(routeItem.triggers).join(' / '),
+        category: '题目路线',
+        tags: routeItem.triggers
+      });
+      return;
+    }
+    if (action === 'review-formula-checklist') {
+      var checklistItem = DATA.formulaChecklist.find(function(item) { return item.id === actionNode.getAttribute('data-checklist-id'); });
+      if (checklistItem) addReviewItem({
+        sourceId: checklistItem.id,
+        sourceType: '公式条件',
+        title: checklistItem.title || '公式条件回查',
+        detail: [
+          '适用条件：' + toArray(checklistItem.applyConditions).slice(0, 2).join('；'),
+          '常见错因：' + toArray(checklistItem.commonMistakes).slice(0, 2).join('；')
+        ].filter(function(text) { return text.replace(/^[^：]+：$/, ''); }).join('。'),
+        formula: checklistItem.formula,
+        url: checklistItem.url,
+        category: checklistItem.category || '公式条件',
+        tags: checklistItem.keywords
+      });
+      return;
+    }
+    if (action === 'rate-review') {
+      rateReviewItem(actionNode.getAttribute('data-id'), actionNode.getAttribute('data-quality'));
+      return;
+    }
+    if (action === 'remove-review') {
+      removeReviewItem(actionNode.getAttribute('data-id'));
+      return;
+    }
+    if (action === 'add-custom-review') {
+      var titleNode = mountNode.querySelector('[data-eflu-role="custom-title"]');
+      var categoryNode = mountNode.querySelector('[data-eflu-role="custom-category"]');
+      var detailNode = mountNode.querySelector('[data-eflu-role="custom-detail"]');
+      var title = titleNode && titleNode.value;
+      if (!String(title || '').trim()) {
+        toast('先写一个标题');
+        return;
+      }
+      addReviewItem({
+        sourceId: 'custom-' + now(),
+        sourceType: '错题',
+        title: title,
+        detail: detailNode && detailNode.value,
+        category: categoryNode && categoryNode.value || '手动记录'
+      });
+      return;
+    }
+    if (action === 'clear-search') {
+      VIEW.siteQuery = '';
+      VIEW.listLimit = 18;
+      render({ focusRole: 'site-query' });
+      return;
+    }
+    if (action === 'clear-formula') {
+      VIEW.formulaQuery = '';
+      VIEW.listLimit = 18;
+      render({ focusRole: 'formula-query' });
+      return;
+    }
+    if (action === 'clear-formula-checklist') {
+      VIEW.formulaChecklistQuery = '';
+      VIEW.selectedFormulaChecklist = '';
+      VIEW.listLimit = 18;
+      render({ focusRole: 'formula-checklist-query' });
+      return;
+    }
+    if (action === 'clear-exam-clue') {
+      VIEW.examClue = '';
+      VIEW.selectedExamRoute = '';
+      render({ focusRole: 'exam-clue' });
+      return;
+    }
+    if (action === 'more') {
+      VIEW.listLimit += 18;
+      render();
+    }
+  }
+
+  function handleKeydown(event) {
+    var node = event.target;
+    if (!node || !mountNode || !mountNode.contains(node)) return;
+    var tabNode = node.closest && node.closest('.eflu-tab[role="tab"]');
+    if (!tabNode || !mountNode.contains(tabNode)) return;
+    var key = event.key;
+    if (key !== 'ArrowRight' && key !== 'ArrowLeft' && key !== 'Home' && key !== 'End') return;
+    event.preventDefault();
+    var current = normalizeTab(tabNode.getAttribute('data-tab') || VIEW.tab);
+    var index = TAB_ORDER.indexOf(current);
+    if (index < 0) index = TAB_ORDER.indexOf(VIEW.tab);
+    if (key === 'Home') index = 0;
+    else if (key === 'End') index = TAB_ORDER.length - 1;
+    else index = (index + (key === 'ArrowRight' ? 1 : -1) + TAB_ORDER.length) % TAB_ORDER.length;
+    setActiveTab(TAB_ORDER[index]);
+    VIEW.listLimit = 18;
+    track('tab_keyboard', { tab: VIEW.tab, key: key });
+    render({ focusTab: true });
+  }
+
+  var examClueRenderTimer = null;
+  var formulaRenderTimer = null;
+  var formulaChecklistRenderTimer = null;
+
+  function queueExamClueRender() {
+    if (examClueRenderTimer) clearTimeout(examClueRenderTimer);
+    examClueRenderTimer = setTimeout(function() {
+      examClueRenderTimer = null;
+      render({ focusRole: 'exam-clue' });
+    }, 160);
+  }
+
+  function queueFormulaRender() {
+    if (formulaRenderTimer) clearTimeout(formulaRenderTimer);
+    formulaRenderTimer = setTimeout(function() {
+      formulaRenderTimer = null;
+      render({ focusRole: 'formula-query' });
+    }, 160);
+  }
+
+  function queueFormulaChecklistRender() {
+    if (formulaChecklistRenderTimer) clearTimeout(formulaChecklistRenderTimer);
+    formulaChecklistRenderTimer = setTimeout(function() {
+      formulaChecklistRenderTimer = null;
+      render({ focusRole: 'formula-checklist-query' });
+    }, 180);
+  }
+
+  function handleInput(event) {
+    var node = event.target;
+    if (!node || !mountNode || !mountNode.contains(node)) return;
+    var role = node.getAttribute('data-eflu-role');
+    if (role === 'site-query') {
+      VIEW.siteQuery = node.value;
+      VIEW.listLimit = 18;
+      track('search_type', { len: VIEW.siteQuery.length });
+      render({ focusRole: 'site-query' });
+    } else if (role === 'formula-query') {
+      VIEW.formulaQuery = node.value;
+      VIEW.listLimit = 18;
+      track('formula_search_type', { len: VIEW.formulaQuery.length });
+      if (event && event.isComposing) return;
+      queueFormulaRender();
+    } else if (role === 'formula-checklist-query') {
+      VIEW.formulaChecklistQuery = node.value;
+      VIEW.selectedFormulaChecklist = '';
+      VIEW.listLimit = 18;
+      track('formula_checklist_type', { len: VIEW.formulaChecklistQuery.length });
+      if (event && event.isComposing) return;
+      queueFormulaChecklistRender();
+    } else if (role === 'exam-clue') {
+      VIEW.examClue = node.value;
+      VIEW.selectedExamRoute = '';
+      track('exam_clue_type', { len: VIEW.examClue.length });
+      if (event && event.isComposing) return;
+      queueExamClueRender();
+    }
+  }
+
+  function handleCompositionEnd(event) {
+    var node = event.target;
+    if (!node || !mountNode || !mountNode.contains(node)) return;
+    var role = node.getAttribute('data-eflu-role');
+    if (role === 'formula-query') {
+      VIEW.formulaQuery = node.value;
+      VIEW.listLimit = 18;
+      queueFormulaRender();
+    } else if (role === 'formula-checklist-query') {
+      VIEW.formulaChecklistQuery = node.value;
+      VIEW.selectedFormulaChecklist = '';
+      VIEW.listLimit = 18;
+      queueFormulaChecklistRender();
+    } else if (role === 'exam-clue') {
+      VIEW.examClue = node.value;
+      VIEW.selectedExamRoute = '';
+      queueExamClueRender();
+    }
+  }
+
+  function bindEvents() {
+    document.addEventListener('click', handleClick, true);
+    document.addEventListener('keydown', handleKeydown, true);
+    document.addEventListener('input', handleInput, true);
+    document.addEventListener('compositionend', handleCompositionEnd, true);
+    global.addEventListener('hashchange', handleHashChange);
+    global.addEventListener('storage', handleStorage);
+  }
+
+  function unbindEvents() {
+    document.removeEventListener('click', handleClick, true);
+    document.removeEventListener('keydown', handleKeydown, true);
+    document.removeEventListener('input', handleInput, true);
+    document.removeEventListener('compositionend', handleCompositionEnd, true);
+    global.removeEventListener('hashchange', handleHashChange);
+    global.removeEventListener('storage', handleStorage);
+  }
+
+  function handleHashChange() {
+    if (syncTabFromLocation()) {
+      VIEW.listLimit = 18;
+      render();
+      ensureTabData(VIEW.tab);
+    }
+  }
+
+  function handleStorage(event) {
+    if (!event || (event.key !== STATE_KEY && event.key !== 'fm_wrong')) return;
+    if (mountNode) render();
+  }
+
+  function init(options) {
+    options = options || {};
+    markRound241();
+    markRound263();
+    markRound264();
+    syncTabFromLocation();
+    if (options.root) mountNode = typeof options.root === 'string' ? document.querySelector(options.root) : options.root;
+    if (!mountNode) mountNode = ensureMount();
+    injectStyles();
+    if (!initialized) {
+      initialized = true;
+      bindEvents();
+    }
+    render();
+    enhanceRound247SourceFidelity(document);
+    loadData().then(function() {
+      track('init', { upgradeStatus: DATA.upgradeStatus, points: DATA.knowledge.length, formulas: DATA.formulas.length });
+      render();
+      ensureTabData(VIEW.tab);
+      enhanceRound247SourceFidelity(document);
+    });
+    return api;
+  }
+
+  function refresh() {
+    loadPromise = null;
+    supplementalPromises = {};
+    DATA.loaded = false;
+    render();
+    return loadData().then(function() {
+      track('refresh', { upgradeStatus: DATA.upgradeStatus });
+      render();
+      ensureTabData(VIEW.tab);
+      return DATA;
+    });
+  }
+
+  function destroy(keepRoot) {
+    unbindEvents();
+    initialized = false;
+    if (!keepRoot && mountNode) mountNode.innerHTML = '';
+  }
+
+  function exportState() {
+    return {
+      version: VERSION,
+      state: loadLocalState(),
+      events: readJSON(EVENT_KEY, []),
+      data: {
+        loaded: DATA.loaded,
+        upgradeStatus: DATA.upgradeStatus,
+        knowledge: DATA.knowledge.length,
+        formulas: DATA.formulas.length,
+        searchEntries: DATA.searchEntries.length,
+        examRoutes: DATA.examRoutes.length,
+        routeMapStatus: DATA.routeMapStatus,
+        formulaChecklist: DATA.formulaChecklist.length,
+        formulaChecklistStatus: DATA.formulaChecklistStatus
+      }
+    };
+  }
+
+  function resetLocalState(userOnly) {
+    if (userOnly) {
+      var state = loadLocalState();
+      delete state.users[currentUserKey()];
+      saveLocalState(state);
+    } else {
+      writeJSON(STATE_KEY, defaultState());
+      writeJSON(EVENT_KEY, []);
+      memoryState = defaultState();
+    }
+    track('reset', { userOnly: !!userOnly });
+    render();
+  }
+
+  if (global.EdgeFluidLearningUpgrade && typeof global.EdgeFluidLearningUpgrade.destroy === 'function') {
+    try { global.EdgeFluidLearningUpgrade.destroy(false); } catch (_) {}
+  }
+
+  var api = {
+    version: VERSION,
+    currentEntryVersion: VERSION,
+    learningContentVersion: LEARNING_CONTENT_VERSION,
+    init: init,
+    refresh: refresh,
+    destroy: destroy,
+    search: search,
+    markPoint: setPointStatus,
+    addReview: addReviewItem,
+    rateReview: rateReviewItem,
+    removeReview: removeReviewItem,
+    getState: exportState,
+    resetLocalState: resetLocalState,
+    track: track,
+    round247: {
+      version: R247_VERSION,
+      enhance: enhanceRound247SourceFidelity
+    },
+    round263: {
+      version: R263_VERSION,
+      routeUrl: R263_ROUTE_URL,
+      routes: function() { return DATA.examRoutes; }
+    },
+    round264: {
+      version: R264_VERSION,
+      checklistUrl: R264_FORMULA_CHECKLIST_URL,
+      checklist: function() { return DATA.formulaChecklist; }
+    },
+    data: function() { return DATA; },
+    config: {
+      rootId: ROOT_ID,
+      stateKey: STATE_KEY,
+      eventKey: EVENT_KEY,
+      dataUrls: DATA_URLS,
+      upgradeUrls: UPGRADE_URLS
+    }
+  };
+
+  global.EdgeFluidLearningUpgrade = api;
+  global.EFLU = api;
+
+  function boot() {
+    try { init(); } catch (error) {
+      DATA.loadErrors.push({ url: 'boot', message: error && error.message ? error.message : 'boot_failed' });
+      try { console.warn('[EdgeFluidLearningUpgrade] boot failed', error); } catch (_) {}
+    }
+    try {
+      enhanceRound247SourceFidelity(document);
+      watchRound247Targets();
+    } catch (_) {}
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot, { once: true });
+  else boot();
+})(window, document);

@@ -39,6 +39,16 @@ document.addEventListener('DOMContentLoaded',()=>{
 			  getScores:()=>localCumulativeKeyBlocked('fm_scores')?[]:((window.FMAnalytics&&FMAnalytics.getScores&&FMAnalytics.getScores())||[]),
 			  getProgress:()=>localCumulativeKeyBlocked('fm_learning_data_v2')?{}:((window.FMAnalytics&&FMAnalytics.getProgress&&FMAnalytics.getProgress())||{})
 			};
+			window.FMProgressTruth={
+			  invariant:'visible cumulative progress is server-progress-snapshot only; localStorage is explicit diagnostic/reference only and is blocked by default',
+			  serverSnapshot:()=>HOME_SERVER_PROGRESS_STATE.snapshot,
+			  serverReady:()=>!!(window.FMServerProgress&&FMServerProgress.isReady&&FMServerProgress.isReady()),
+			  localReadEnabled:localDiagnosticReadsEnabled,
+			  localReferenceSource:()=>localDiagnosticReadsEnabled()?'local-diagnostic-explicit':'server-progress-snapshot-required',
+			  localSessions:()=>window.FMLocalDiagnostic&&FMLocalDiagnostic.getSessions?FMLocalDiagnostic.getSessions():[],
+			  localScores:()=>window.FMLocalDiagnostic&&FMLocalDiagnostic.getScores?FMLocalDiagnostic.getScores():[],
+			  localProgress:()=>window.FMLocalDiagnostic&&FMLocalDiagnostic.getProgress?FMLocalDiagnostic.getProgress():{}
+			};
 
 	function safeUserKey(u){
 	  return String(u&&(u.username||u.name)||'_anon').normalize('NFKC').trim().toLowerCase().replace(/[^a-z0-9_.:@-]/gi,'_').slice(0,120)||'_anon';
@@ -687,9 +697,10 @@ const SEARCH_IDX=[
 {t:'入口',n:'题目选路图',u:'/index-complete.html#round263RouteMap',d:'round263-fluid-exam-route-map-20260522：先读题干条件和要求量，再分清边界条件，按题型选择公式路线。',k:'round263 round263-fluid-exam-route-map-20260522 题目选路图 题干条件 边界条件 公式选择'},
 {t:'入口',n:'题目路线交互工作台',u:'/index-complete.html#exam-route',d:'首页学习工作台的题目路线标签：输入题目线索，先分条件和边界，再选公式路线。',k:'round263 题目路线 交互工作台 题干条件 边界条件 公式路线 选路'},
 {t:'入口',n:'题库练习',u:'/modules/question-bank.html?from=home-search',d:'六章真题练习 · 分类题库 · 错题本与薄弱点提醒',k:'题库 练习 错题 题目 六章 真题'},
-{t:'入口',n:'181103 资料题库与练习入口',u:'/modules/question-bank.html?focus=181103-material-extracted#questionBanksList',d:'首页搜索 181103 可直接进入 522 张来源 HTML 卡，其中 381 道独立题可刷、141 条源文线索只展示；同时保留 38/38 HTML 资料总表和 68 个真题复核任务；用户搜“181103去哪了、181103那些资源去哪了、181103里面还有别的题目、资料题库”也直达这里。',k:'181103 181103资料 181103资料题库 181103去哪了 181103那些资源去哪了 181103资源看不见 181103资料去哪了 181103里面的题目 181103里面还有别的题目 181103资料内题 181103题库 资料题库 381可刷题 141源文线索 522来源卡 522资料内题 522个题 38/38 HTML 68真题复核 题库 练习 搜索入口'},
+{t:'入口',n:'181103 资料题库与练习入口',u:'/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList',d:'首页搜索 181103 可直接进入 522 张来源 HTML 卡和网页答案块；381 道默认练习题可直接看参考答案，0 道待人工源页复核，141 条源文线索只展示；同时保留 38/38 HTML 资料总表和 68 个真题复核任务；用户搜“181103去哪了、参考答案状态、181103里面还有别的题目、资料题库”也直达这里。',k:'181103 181103资料 181103资料题库 181103去哪了 181103那些资源去哪了 181103资源看不见 181103资料去哪了 181103里面的题目 181103里面还有别的题目 181103资料内题 181103题库 资料题库 参考答案状态 答案状态 可直接参考答案 待人工源页复核 381可参考 381+0 141源文线索 522来源卡 522资料内题 522个题 38/38 HTML 68真题复核 题库 练习 搜索入口'},
 {t:'入口',n:'181103 全资料 HTML 总表',u:'/resources/fluid-181103-html/index.html',d:'38/38 份 181103 资料已写成站内 HTML 正文；不走下载、中转页或原件壳；用户搜“181103资料在哪、181103不能下载、全部写成HTML”也直达这里。',k:'181103 181103资料在哪 181103去哪了 181103全资料 181103全部HTML 181103不能下载 不能下载 不许下载 全部写成HTML 全做成html格式 全资料 HTML 正文 38/38 站内阅读 资料总表 资料页'},
-{t:'入口',n:'历年真题新版入口',u:'/modules/real-exams-dynamic.html?edge_refresh=round547-181103-proof-depth-upgrade-20260627&from=current-home-search',d:'2000-2024 历年真题；325 原文小题和 68 个已拆组题 section，适合从题库、练习和搜索直接进入；用户搜“历年真题新版、简答题五题、本来五题别合并”也直达这里。',k:'历年真题 真题新版 历年真题新版 325原文小题 68组题 简答题五题 本来五题 别合并 防合并 小题拆分 题数应该更多 2000-2024 803流体力学 搜索入口'},
+{t:'入口',n:'历年真题新版入口',u:'/modules/real-exams-dynamic.html?edge_refresh=round418-progress-visible-truth-181103-answer-ux-20260621&from=current-home-search',d:'2000-2024 历年真题；325 原文小题和 68 个已拆组题 section，适合从题库、练习和搜索直接进入；用户搜“历年真题新版、简答题五题、本来五题别合并”也直达这里。',k:'历年真题 真题新版 历年真题新版 325原文小题 68组题 简答题五题 本来五题 别合并 防合并 小题拆分 题数应该更多 2000-2024 803流体力学 搜索入口'},
+{t:'入口',n:'学习进度入口',u:'/index-complete.html#stats',d:'首页服务端学习进度：总进度、累计练习、累计时长和正确率只认 /api/stats noMutationRead 快照；登录、刷新、升级和本机记录不改累计。',k:'学习进度 总进度 进度入口 服务端累计 累计练习 累计时长 正确率 noMutationRead api stats 学习监控 进度在哪 进度看哪里 搜索入口'},
 {t:'入口',n:'错题订正入口',u:'/index-complete.html#tabsW',d:'首页错题本、收藏和笔记；先按错因订正，再回同类真题或公式条件继续练。',k:'错题 错题本 错题订正 错因回查 订正 收藏 笔记 搜索入口'},
 {t:'入口',n:'私有课程状态入口',u:'/resources.html?from=current-home-search-private-course#sourceStatus',d:'查看账号可见的专属课/私有课程状态；生产私有视频恢复仍以 FM_PRIVATE_MEDIA R2 binding 为边界；用户搜“无法删除视频、不能管理视频、私有视频管理不对”也直达状态页。',k:'私有课程 私有课程状态 专属课 专属课程状态 私有视频 私有视频管理 私有视频管理不对 无法删除视频 不能删除视频 不能管理视频 删除视频 视频管理 课程状态 账号状态 FM_PRIVATE_MEDIA R2 blocker 搜索入口'},
 {t:'入口',n:'模拟章节题',u:'/modules/simulated-exams-dynamic.html?from=home-search',d:'72 道教材启发的模拟章节题；sourceKind=simulated，isRealExam=false，和正式真题隔离。',k:'模拟章节题 仿真题 mock 教材 吴望一 王洪伟 sourceKind simulated isRealExam false notRealExam 真题不混用'},
@@ -826,7 +837,6 @@ document.addEventListener('keydown',e=>{
 	  if(e.key==='Escape'){closeSearch();closeKbd();return}
   if(isIn){if(e.target.id==='searchI'){if(e.key==='ArrowDown'){e.preventDefault();moveSearch(1)}else if(e.key==='ArrowUp'){e.preventDefault();moveSearch(-1)}else if(e.key==='Enter'){e.preventDefault();goSearch()}}return}
   if(e.key==='/'&&!e.ctrlKey&&!e.metaKey){e.preventDefault();openSearch();return}
-  if(e.key==='?'||(e.shiftKey&&e.key==='?')){e.preventDefault();openKbd();return}
   if(e.shiftKey&&(e.key==='T'||e.key==='t')){e.preventDefault();$('#themeT')&&$('#themeT').click();return}
   if(e.shiftKey&&(e.key==='F'||e.key==='f')){e.preventDefault();document.body.classList.toggle('focus');return}
   if(!e.shiftKey&&!e.ctrlKey&&!e.metaKey&&!e.altKey&&/^[a-zA-Z]$/.test(e.key)){
@@ -836,9 +846,8 @@ document.addEventListener('keydown',e=>{
     else if(keyBuf.endsWith('gt')){if(window.FMSecurity&&FMSecurity.isTeacher())location.href='/teacher-panel.html';keyBuf=''}
   }
 });
-function openKbd(){const p=$('#kbdP');if(p){p.classList.add('on');p.setAttribute('aria-hidden','false');p.focus({preventScroll:true})}setExpanded('#kbdT',true)}
-function closeKbd(){const p=$('#kbdP');if(p){p.classList.remove('on');p.setAttribute('aria-hidden','true')}setExpanded('#kbdT',false)}
-document.addEventListener('click',e=>{if(e.target.closest('#kbdT'))openKbd();if(e.target===$('#kbdP'))closeKbd()});
+function openKbd(){const p=$('#kbdPnl');if(p){p.classList.add('on');p.setAttribute('aria-hidden','false');p.focus({preventScroll:true})}setExpanded('#kbdT',true)}
+function closeKbd(){const p=$('#kbdPnl');if(p){p.classList.remove('on');p.setAttribute('aria-hidden','true')}setExpanded('#kbdT',false)}
 
 /* --- FAB 已移除 --- */
 
@@ -846,7 +855,9 @@ document.addEventListener('click',e=>{if(e.target.closest('#kbdT'))openKbd();if(
 function renderHeat(){
   const g=$('#heatG');if(!g)return;
   const days=91;const today=new Date();today.setHours(0,0,0,0);
-  const ses=(window.FMAnalytics&&FMAnalytics.getSessions())||[];const u=uk();
+  const ses=(window.FMProgressTruth&&FMProgressTruth.localSessions&&FMProgressTruth.localSessions())||[];const u=uk();
+  g.dataset.cumulativeSourceOfTruth='local-diagnostic-reference';
+  g.dataset.localReferenceSource=window.FMProgressTruth&&FMProgressTruth.localReferenceSource?FMProgressTruth.localReferenceSource():'server-progress-snapshot-required';
   const mine=ses.filter(s=>s.user===u);
   const cnt={};
   mine.forEach(s=>{const d=new Date(s.startedAt);d.setHours(0,0,0,0);const k=d.getTime();cnt[k]=(cnt[k]||0)+1});
@@ -905,7 +916,7 @@ function renderRadar(){
 	    box.innerHTML='<div style="padding:40px 0;text-align:center;color:var(--text-muted);font-size:.88rem">等待服务端累计快照<br><small style="opacity:.7">本地分数不作为累计答题数</small></div>';
 	    return;
 	  }
-	  const scs=(window.FMAnalytics&&FMAnalytics.getScores())||[];const u=uk();
+	  const scs=(window.FMProgressTruth&&FMProgressTruth.localScores&&FMProgressTruth.localScores())||[];const u=uk();
   const mine=scs.filter(s=>s.user===u);
   $('#stkT').textContent=mine.length;
   if(!mine.length){$('#stkAv').textContent='—';$('#stkM').textContent='—';return}
@@ -930,7 +941,9 @@ function renderRadar(){
 function renderTasks(){
   const g=$('#tasksG');if(!g)return;
   const today=new Date();const dk=today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
-  const ses=(window.FMAnalytics&&FMAnalytics.getSessions())||[];const scs=(window.FMAnalytics&&FMAnalytics.getScores())||[];
+  const ses=(window.FMProgressTruth&&FMProgressTruth.localSessions&&FMProgressTruth.localSessions())||[];const scs=(window.FMProgressTruth&&FMProgressTruth.localScores&&FMProgressTruth.localScores())||[];
+  g.dataset.cumulativeSourceOfTruth='local-diagnostic-reference';
+  g.dataset.localReferenceSource=window.FMProgressTruth&&FMProgressTruth.localReferenceSource?FMProgressTruth.localReferenceSource():'server-progress-snapshot-required';
   const u=uk();
   const dayStart=new Date();dayStart.setHours(0,0,0,0);
   const todayS=ses.filter(s=>s.user===u&&s.startedAt>=dayStart.getTime());
@@ -948,7 +961,7 @@ function renderTasks(){
 /* --- 最近学习 --- */
 function renderRecent(){
   const l=$('#recL');if(!l)return;
-  const ses=(window.FMAnalytics&&FMAnalytics.getSessions())||[];const u=uk();
+  const ses=(window.FMProgressTruth&&FMProgressTruth.localSessions&&FMProgressTruth.localSessions())||[];const u=uk();
   const mine=ses.filter(s=>s.user===u);
   const pages=[];const seen=new Set();
   for(let i=mine.length-1;i>=0;i--){const s=mine[i];for(let j=(s.pages||[]).length-1;j>=0;j--){const p=s.pages[j];if(seen.has(p.path))continue;if(p.path==='/index-complete.html'||p.path==='/'||p.path==='/index.html')continue;seen.add(p.path);pages.push({...p,ses:s.startedAt});if(pages.length>=6)break}if(pages.length>=6)break}
@@ -960,7 +973,7 @@ function fdt(t){if(!t)return '';const n=Date.now(),g=n-t;if(g<60000)return'刚�
 /* --- 推荐路径 --- */
 function renderReco(){
   const l=$('#recoL');if(!l)return;
-  const prog=(window.FMAnalytics&&FMAnalytics.getProgress())||{};const u=uk();
+  const prog=(window.FMProgressTruth&&FMProgressTruth.localProgress&&FMProgressTruth.localProgress())||{};const u=uk();
   const mine=prog[u]&&prog[u].modules||{};
   const MODS=[
     {k:'fluid-statics',n:'流体静力学',u:'/modules/fluid-statics-dynamic.html',order:1},
@@ -1223,7 +1236,9 @@ if(window.Notification&&Notification.permission==='default'){document.addEventLi
 /* --- 成长曲线 --- */
 function renderGrowth(){
   const svg=$('#grSvg');if(!svg)return;
-  const scs=(window.FMAnalytics&&FMAnalytics.getScores())||[];const u=uk();
+  const scs=(window.FMProgressTruth&&FMProgressTruth.localScores&&FMProgressTruth.localScores())||[];const u=uk();
+  svg.dataset.cumulativeSourceOfTruth='local-diagnostic-reference';
+  svg.dataset.localReferenceSource=window.FMProgressTruth&&FMProgressTruth.localReferenceSource?FMProgressTruth.localReferenceSource():'server-progress-snapshot-required';
   const mine=scs.filter(s=>s.user===u).sort((a,b)=>a.at-b.at);
   const ins=$('#grIns');const statBox=$('#grStats');
   if(mine.length<2){svg.innerHTML='<defs><linearGradient id="growthGrad"><stop offset="0%" stop-color="#14b8a6"/><stop offset="100%" stop-color="#f97316"/></linearGradient></defs><text x="380" y="120" text-anchor="middle" font-size="14" fill="var(--text-muted)" font-family="var(--fb)">至少完成 2 次测验，曲线才会出现</text>';if(ins){ins.style.setProperty('--ins-bg','rgba(59,130,246,.12)');ins.style.setProperty('--ins-fg','var(--info)');ins.style.setProperty('--ins-br','rgba(59,130,246,.28)');ins.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> 等待数据'}if(statBox)statBox.innerHTML='';return}
@@ -1277,9 +1292,9 @@ const ACHIEVEMENTS=[
 function achStats(){
   const u=uk();
   const serverProgress=window.FMServerProgress&&window.FMServerProgress.isReady&&window.FMServerProgress.isReady()?window.FMServerProgress.get():null;
-  const ses=(window.FMAnalytics&&FMAnalytics.getSessions()||[]).filter(s=>s.user===u);
-  const scs=(window.FMAnalytics&&FMAnalytics.getScores()||[]).filter(s=>s.user===u);
-  const prog=(window.FMAnalytics&&FMAnalytics.getProgress()||{})[u]||{};
+  const ses=(window.FMProgressTruth&&FMProgressTruth.localSessions&&FMProgressTruth.localSessions()||[]).filter(s=>s.user===u);
+  const scs=(window.FMProgressTruth&&FMProgressTruth.localScores&&FMProgressTruth.localScores()||[]).filter(s=>s.user===u);
+  const prog=(window.FMProgressTruth&&FMProgressTruth.localProgress&&FMProgressTruth.localProgress()||{})[u]||{};
   const notes=(LS.g('fm_notes',{})||{})[u]||[];
   const pomos=((LS.g(POMO_KEY,{records:[]})||{}).records||[]).filter(r=>r&&r.mode!==5).length;
   const visits=ses.length;
@@ -1336,8 +1351,8 @@ function weekRange(){
 }
 function renderWeekReport(){
   const u=uk();
-  const ses=(window.FMAnalytics&&FMAnalytics.getSessions()||[]).filter(s=>s.user===u);
-  const scs=(window.FMAnalytics&&FMAnalytics.getScores()||[]).filter(s=>s.user===u);
+  const ses=(window.FMProgressTruth&&FMProgressTruth.localSessions&&FMProgressTruth.localSessions()||[]).filter(s=>s.user===u);
+  const scs=(window.FMProgressTruth&&FMProgressTruth.localScores&&FMProgressTruth.localScores()||[]).filter(s=>s.user===u);
   const r=weekRange();
   const thisSes=ses.filter(s=>s.startedAt>=r.thisStart&&s.startedAt<r.thisEnd);
   const lastSes=ses.filter(s=>s.startedAt>=r.lastStart&&s.startedAt<r.lastEnd);
@@ -1386,8 +1401,8 @@ function renderGoals(){
   const L=$('#goalsL');if(!L)return;
   const g=getGoals();const u=uk();
   const r=weekRange();
-  const ses=(window.FMAnalytics&&FMAnalytics.getSessions()||[]).filter(s=>s.user===u&&s.startedAt>=r.thisStart&&s.startedAt<r.thisEnd);
-  const scs=(window.FMAnalytics&&FMAnalytics.getScores()||[]).filter(s=>s.user===u&&s.at>=r.thisStart&&s.at<r.thisEnd);
+  const ses=(window.FMProgressTruth&&FMProgressTruth.localSessions&&FMProgressTruth.localSessions()||[]).filter(s=>s.user===u&&s.startedAt>=r.thisStart&&s.startedAt<r.thisEnd);
+  const scs=(window.FMProgressTruth&&FMProgressTruth.localScores&&FMProgressTruth.localScores()||[]).filter(s=>s.user===u&&s.at>=r.thisStart&&s.at<r.thisEnd);
   const thisMin=Math.round(ses.reduce((a,s)=>a+(s.duration||0),0)/60000);
   const visitedMods=new Set();ses.forEach(s=>(s.pages||[]).forEach(p=>{const m=(p.path||'').match(/modules\/([^.\/?#]+)/);if(m)visitedMods.add(m[1])}));
   const items=[
@@ -1478,8 +1493,8 @@ function getMsgs(){
     });
   });
   // 2. 系统消息：成就解锁
-  const ses=(window.FMAnalytics&&FMAnalytics.getSessions()||[]).filter(s=>s.user===u);
-  const scs=(window.FMAnalytics&&FMAnalytics.getScores()||[]).filter(s=>s.user===u);
+  const ses=(window.FMProgressTruth&&FMProgressTruth.localSessions&&FMProgressTruth.localSessions()||[]).filter(s=>s.user===u);
+  const scs=(window.FMProgressTruth&&FMProgressTruth.localScores&&FMProgressTruth.localScores()||[]).filter(s=>s.user===u);
   if(scs.length>=1){
     items.push({id:'s_first_quiz',kind:'sys',lvl:'default',title:'🎉 完成首次测验',body:'你完成了第一次测验 · 继续加油！',t:scs[0].at,from:'系统',read:readSet.has('s_first_quiz')});
   }
@@ -1543,12 +1558,12 @@ const PATH_NODES=[
 ];
 function pathMatchKeys(node){return (node.keys&&node.keys.length?node.keys:[node.k,node.n]).map(x=>String(x||'').toLowerCase())}
 function renderChapterPracticeLinks(nodes){
-  return '<div class="path-links" aria-label="六章全部真题练习入口与独立模拟章节题入口">'+nodes.map(n=>'<a href="'+esc(n.p||'/modules/real-exams-dynamic.html?edge_refresh=round547-181103-proof-depth-upgrade-20260627&from=current-student-path')+'">'+esc(n.n)+'做全部真题练习</a><a href="'+esc(n.m||'/modules/simulated-exams-dynamic.html?from=student-path')+'">'+esc(n.n)+'模拟题（非真题）</a>').join('')+'<span class="path-note">模拟章节题来自教材主题启发，独立题包，不混入正式真题。</span></div>';
+  return '<div class="path-links" aria-label="六章全部真题练习入口与独立模拟章节题入口">'+nodes.map(n=>'<a href="'+esc(n.p||'/modules/real-exams-dynamic.html?edge_refresh=round418-progress-visible-truth-181103-answer-ux-20260621&from=current-student-path')+'">'+esc(n.n)+'做全部真题练习</a><a href="'+esc(n.m||'/modules/simulated-exams-dynamic.html?from=student-path')+'">'+esc(n.n)+'模拟题（非真题）</a>').join('')+'<span class="path-note">模拟章节题来自教材主题启发，独立题包，不混入正式真题。</span></div>';
 }
 function renderPathNext(nodeStatus,doneCount,total){
   const box=$('#pathNext');if(!box)return;
   if(doneCount>=total){
-    box.innerHTML='<strong>六章主线已完成。</strong> 下一步进入 <a href="/modules/real-exams-dynamic.html?edge_refresh=round547-181103-proof-depth-upgrade-20260627&from=current-student-path-complete">历年真题</a> 做一套限时回顾。'+renderChapterPracticeLinks(nodeStatus);
+    box.innerHTML='<strong>六章主线已完成。</strong> 下一步进入 <a href="/modules/real-exams-dynamic.html?edge_refresh=round418-progress-visible-truth-181103-answer-ux-20260621&from=current-student-path-complete">历年真题</a> 做一套限时回顾。'+renderChapterPracticeLinks(nodeStatus);
     return;
   }
   const current=nodeStatus.find(n=>n.cur)||nodeStatus.find(n=>!n.done)||nodeStatus[0];
@@ -1558,8 +1573,8 @@ function renderPathNext(nodeStatus,doneCount,total){
 function renderPath(){
   const svg=$('#pathSvg');if(!svg)return;
   const u=uk();
-  const prog=(window.FMAnalytics&&FMAnalytics.getProgress()||{})[u]||{modules:{}};
-  const scs=(window.FMAnalytics&&FMAnalytics.getScores()||[]).filter(s=>s.user===u);
+  const prog=(window.FMProgressTruth&&FMProgressTruth.localProgress&&FMProgressTruth.localProgress()||{})[u]||{modules:{}};
+  const scs=(window.FMProgressTruth&&FMProgressTruth.localScores&&FMProgressTruth.localScores()||[]).filter(s=>s.user===u);
   // 模块完成度估算
   const nodeStatus=PATH_NODES.map(n=>{
     const keys=pathMatchKeys(n);
@@ -1606,8 +1621,8 @@ function round273ReadJSON(key,fallback){
 }
 function round273PathStatus(){
   const u=uk();
-  const prog=(window.FMAnalytics&&FMAnalytics.getProgress&&FMAnalytics.getProgress()||{})[u]||{modules:{}};
-  const scores=(window.FMAnalytics&&FMAnalytics.getScores&&FMAnalytics.getScores()||round273ReadJSON('fm_scores',[])).filter(s=>s&&s.user===u);
+  const prog=(window.FMProgressTruth&&FMProgressTruth.localProgress&&FMProgressTruth.localProgress()||{})[u]||{modules:{}};
+  const scores=(window.FMProgressTruth&&FMProgressTruth.localScores&&FMProgressTruth.localScores()||[]).filter(s=>s&&s.user===u);
   const status=PATH_NODES.map(n=>{
     const keys=pathMatchKeys(n);
     const hasScore=scores.some(s=>keys.some(k=>(s.module||'').toLowerCase().includes(k))||(s.module||'').includes(n.n));
@@ -1623,8 +1638,8 @@ function renderRound273Radar(){
   try{
     const path=round273PathStatus();
     const u=uk();
-    const sessions=(window.FMAnalytics&&FMAnalytics.getSessions&&FMAnalytics.getSessions()||round273ReadJSON('fm_sessions',[])).filter(s=>s&&s.user===u);
-    const scores=(window.FMAnalytics&&FMAnalytics.getScores&&FMAnalytics.getScores()||round273ReadJSON('fm_scores',[])).filter(s=>s&&s.user===u);
+    const sessions=(window.FMProgressTruth&&FMProgressTruth.localSessions&&FMProgressTruth.localSessions()||[]).filter(s=>s&&s.user===u);
+    const scores=(window.FMProgressTruth&&FMProgressTruth.localScores&&FMProgressTruth.localScores()||[]).filter(s=>s&&s.user===u);
     const wrong=round273ReadJSON('fm_wrong',{});
     const wrongList=Array.isArray(wrong[u])?wrong[u]:[];
     const lastScore=scores.length?scores[scores.length-1]:null;
@@ -2119,8 +2134,8 @@ PANELS.forEach(p=>{
   setTimeout(()=>{
     try{
       const u=(()=>{try{const x=window.FMSecurity&&FMSecurity.getUser&&FMSecurity.getUser();return x?(x.username||x.name):'_'}catch(_){return '_'}})();
-      const ses=FMState.get('fm_sessions',[]);if(!Array.isArray(ses))return;
-      const scs=FMState.get('fm_scores',[]);if(!Array.isArray(scs))return;
+      const ses=(window.FMProgressTruth&&FMProgressTruth.localSessions&&FMProgressTruth.localSessions())||[];if(!Array.isArray(ses))return;
+      const scs=(window.FMProgressTruth&&FMProgressTruth.localScores&&FMProgressTruth.localScores())||[];if(!Array.isArray(scs))return;
       const myS=ses.filter(s=>s&&s.user===u);
       const myQ=scs.filter(s=>s&&s.user===u);
       // 题库练习：测验数量
@@ -2408,7 +2423,11 @@ const $$=s=>{try{return Array.prototype.slice.call(document.querySelectorAll(s))
 function getMood(){try{return localStorage.getItem('fm_mood')||'ocean'}catch(_){return 'ocean'}}
 function applyMood(m){
   document.documentElement.setAttribute('data-mood',m);
-  $$('#moodRow .mood-dot').forEach(d=>d.classList.toggle('on',d.dataset.m===m));
+  $$('#moodRow .mood-dot').forEach(d=>{
+    const selected=d.dataset.m===m;
+    d.classList.toggle('on',selected);
+    d.setAttribute('aria-pressed',selected?'true':'false');
+  });
   try{localStorage.setItem('fm_mood',m)}catch(_){}
 }
 applyMood(getMood());
@@ -2997,10 +3016,41 @@ window.addEventListener('fm:activity',()=>{try{renderStreak()}catch(_){}});
 (function(){
   const k=document.getElementById('kbdPnl');
   if(!k)return;
-  function open(){k.classList.add('on');k.setAttribute('aria-hidden','false');document.body.classList.add('has-open-panel')}
-  function close(){k.classList.remove('on');k.setAttribute('aria-hidden','true');document.body.classList.remove('has-open-panel')}
+  let previousFocus=null;
+  const focusableSelector='button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])';
+  function focusPanel(){
+    const target=k.querySelector(focusableSelector)||k;
+    if(target&&typeof target.focus==='function'){
+      try{target.focus({preventScroll:true})}catch(_){target.focus()}
+    }
+  }
+  function trapFocus(e){
+    if(e.key!=='Tab')return;
+    const focusable=[...k.querySelectorAll(focusableSelector)].filter(el=>!el.disabled&&el.offsetParent!==null);
+    if(!focusable.length){e.preventDefault();focusPanel();return}
+    const first=focusable[0],last=focusable[focusable.length-1];
+    if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+  }
+  function open(){
+    previousFocus=document.activeElement instanceof HTMLElement?document.activeElement:null;
+    k.classList.add('on');k.setAttribute('aria-hidden','false');document.body.classList.add('has-open-panel');
+    setExpanded('#kbdT',true);
+    k.addEventListener('keydown',trapFocus);
+    setTimeout(focusPanel,30)
+  }
+  function close(){
+    k.classList.remove('on');k.setAttribute('aria-hidden','true');document.body.classList.remove('has-open-panel');
+    setExpanded('#kbdT',false);
+    k.removeEventListener('keydown',trapFocus);
+    if(previousFocus&&document.contains(previousFocus)&&typeof previousFocus.focus==='function'){setTimeout(()=>{try{previousFocus.focus({preventScroll:true})}catch(_){previousFocus.focus()}},0)}
+  }
   document.getElementById('kbdClose').addEventListener('click',close);
   k.addEventListener('click',e=>{if(e.target===k)close()});
+  const trigger=document.getElementById('kbdT');
+  if(trigger)trigger.addEventListener('click',()=>{
+    if(k.classList.contains('on'))close();else open();
+  });
 
   // 注册快捷键到 FMA11y（如已加载）
   function registerShortcuts(){
@@ -3108,8 +3158,8 @@ function uk(){try{const u=window.FMSecurity&&FMSecurity.getUser&&FMSecurity.getU
 function compute6WeekTrend(){
   try{
     const u=uk();
-    const ses=(window.FMAnalytics&&FMAnalytics.getSessions()||[]).filter(s=>s&&s.user===u);
-    const scs=(window.FMAnalytics&&FMAnalytics.getScores()||[]).filter(s=>s&&s.user===u);
+    const ses=(window.FMProgressTruth&&FMProgressTruth.localSessions&&FMProgressTruth.localSessions()||[]).filter(s=>s&&s.user===u);
+    const scs=(window.FMProgressTruth&&FMProgressTruth.localScores&&FMProgressTruth.localScores()||[]).filter(s=>s&&s.user===u);
     const now=new Date();
     const day=now.getDay();
     const monday=new Date(now);monday.setDate(now.getDate()-(day===0?6:day-1));monday.setHours(0,0,0,0);

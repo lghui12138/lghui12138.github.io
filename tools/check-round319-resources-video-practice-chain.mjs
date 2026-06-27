@@ -245,7 +245,7 @@ const checks = [
     pass: summary.productionRecoveryAllowed === false
       && r2HardStop.hardStop?.productionPrivateVideoRecovery === false
       && privateBlockers.productionRecoveryEligible === false
-      && /FM_PRIVATE_MEDIA/.test(resourcesHtml)
+      && /视频存储|专属课视频存储|待验收/.test(resourcesHtml)
       && /真实教师\/学生账号验收/.test(resourcesHtml),
     detail: {
       productionRecoveryAllowed: summary.productionRecoveryAllowed,

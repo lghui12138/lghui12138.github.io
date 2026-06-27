@@ -112,7 +112,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round549-181103-proof-depth-upgrade-20260627';
+    const practiceModuleVersion = 'round550-181103-proof-depth-upgrade-20260628';
 
     function requestedFocusBankId() {
         try {
@@ -162,7 +162,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round549-181103-proof-depth-upgrade-20260627/.test(versionText);
+        return /round550-181103-proof-depth-upgrade-20260628/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {
