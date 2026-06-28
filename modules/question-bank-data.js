@@ -112,7 +112,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round565-answer-depth-third-pass-20260629';
+    const practiceModuleVersion = 'round566-answer-depth-fourth-pass-ui-density-20260629';
 
     function requestedFocusBankId() {
         try {
@@ -162,7 +162,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round565-answer-depth-third-pass-20260629/.test(versionText);
+        return /round566-answer-depth-fourth-pass-ui-density-20260629/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {
