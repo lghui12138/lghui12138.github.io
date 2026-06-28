@@ -112,7 +112,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round555-181103-proof-depth-upgrade-20260628';
+    const practiceModuleVersion = 'round556-real-exam-answer-depth-upgrade-20260628';
 
     function requestedFocusBankId() {
         try {
@@ -162,7 +162,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round555-181103-proof-depth-upgrade-20260628/.test(versionText);
+        return /round556-real-exam-answer-depth-upgrade-20260628/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {
