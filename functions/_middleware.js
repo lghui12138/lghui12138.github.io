@@ -52,9 +52,9 @@ const RESERVED_STUDENT_REGISTRATION_USERS = ['qi'];
 // round373-181103-source-semantic-practice-20260616: 181103 522 来源卡逐题语义复核，381 可刷题，141 源文线索不进默认练习。
 // round374-181103-reference-answer-display-20260617: 181103 参考答案从来源说明中拆出，按 HTML/MathJax 独立渲染。
 // round375-181103-all-question-web-parity-20260617: 浏览器逐页打开 38 个资料 HTML，并验证 522 张来源卡与 522 个网页答案块。
-// Round544: publish the latest 181103 proof-depth answer upgrade while keeping progress durability and private-video claims separately gated.
-const EDGE_HOME_VERSION = 'round555-181103-proof-depth-upgrade-20260628';
-const EDGE_RUNTIME_JS_VERSION = 'round555-181103-proof-depth-upgrade-20260628';
+// Round556: publish the real-exam answer-depth upgrade while keeping proof-depth, progress, and strict PDF claims separately gated.
+const EDGE_HOME_VERSION = 'round556-real-exam-answer-depth-upgrade-20260628';
+const EDGE_RUNTIME_JS_VERSION = 'round556-real-exam-answer-depth-upgrade-20260628';
 const WU_WANGYI_READING_PATH = '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html';
 const WANG_HONGWEI_READING_PATH = '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html';
 const SAFE_NEXT_HOSTS = new Set([
