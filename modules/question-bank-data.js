@@ -112,7 +112,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round557-answer-depth-ui-polish-20260628';
+    const practiceModuleVersion = 'round558-answer-depth-continuation-20260628';
 
     function requestedFocusBankId() {
         try {
@@ -162,7 +162,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round557-answer-depth-ui-polish-20260628/.test(versionText);
+        return /round558-answer-depth-continuation-20260628/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {
