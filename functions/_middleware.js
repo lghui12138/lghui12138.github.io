@@ -52,9 +52,9 @@ const RESERVED_STUDENT_REGISTRATION_USERS = ['qi'];
 // round373-181103-source-semantic-practice-20260616: established the 181103 source-card/practice/source-clue split; current counts live in site-updates.json.
 // round374-181103-reference-answer-display-20260617: 181103 参考答案从来源说明中拆出，按 HTML/MathJax 独立渲染。
 // round375-181103-all-question-web-parity-20260617: 浏览器逐页打开 38 个资料 HTML，并验证 522 张来源卡与 522 个网页答案块。
-// Round575: compact pre-question-bank workbench entrance and current 400/122 count cleanup; Round572 answer/proof counts remain the answer frontier and strict PDF proof stays separate.
-const EDGE_HOME_VERSION = 'round575-workbench-entrance-polish-20260629';
-const EDGE_RUNTIME_JS_VERSION = 'round575-workbench-entrance-polish-20260629';
+// Round576: direct public shell and alias-route cache-bust consistency; Round572 answer/proof counts remain the answer frontier and strict PDF proof stays separate.
+const EDGE_HOME_VERSION = 'round576-direct-shell-consistency-20260629';
+const EDGE_RUNTIME_JS_VERSION = 'round576-direct-shell-consistency-20260629';
 const WU_WANGYI_READING_PATH = '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html';
 const WANG_HONGWEI_READING_PATH = '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html';
 const SAFE_NEXT_HOSTS = new Set([
@@ -4192,7 +4192,7 @@ function renderFastHome(session, env) {
       <div class="fine"><span>Cloudflare 边缘门禁 · Cloudflare Pages 托管 · ${EDGE_HOME_VERSION}</span><span>完整主页保留全部学习看板。</span></div>
     </main>
   </div>
-  <script src="/js/core/local-mathjax.js?v=${EDGE_RUNTIME_JS_VERSION}"></script><script>const fmIdle=window.requestIdleCallback||((fn,opts)=>setTimeout(fn,opts&&opts.timeout||320));fmIdle(()=>window.FMQueueMath?.(document.querySelector(".ns-fast"),520),{timeout:650});</script>
+  <script src="/js/core/local-mathjax.js?v=round576-direct-shell-consistency-20260629"></script><script>const fmIdle=window.requestIdleCallback||((fn,opts)=>setTimeout(fn,opts&&opts.timeout||320));fmIdle(()=>window.FMQueueMath?.(document.querySelector(".ns-fast"),520),{timeout:650});</script>
   <script type="speculationrules">{"prefetch":[{"urls":["/modules/knowledge-upgrade-2026.html","/modules/knowledge-detail.html","/modules/real-exams-dynamic.html","/modules/simulated-exams-dynamic.html","/modules/fluid-intensive-training.html","/resources.html","/resources/fluid-original-animations.html","/practice.html"],"eagerness":"moderate"}]}</script>
   <script>
     const s=document.getElementById('s'),items=[...document.querySelectorAll('.q')],seen=new Set,status=document.getElementById('fastSearchStatus');
