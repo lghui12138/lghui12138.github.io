@@ -52,9 +52,9 @@ const RESERVED_STUDENT_REGISTRATION_USERS = ['qi'];
 // round373-181103-source-semantic-practice-20260616: established the 181103 source-card/practice/source-clue split; current counts live in site-updates.json.
 // round374-181103-reference-answer-display-20260617: 181103 参考答案从来源说明中拆出，按 HTML/MathJax 独立渲染。
 // round375-181103-all-question-web-parity-20260617: 浏览器逐页打开 38 个资料 HTML，并验证 522 张来源卡与 522 个网页答案块。
-// Round572: continue real-exam answer-depth, rewrite thin 181103 proof-depth answers, and keep real-account gates separate from strict PDF proof.
-const EDGE_HOME_VERSION = 'round572-answer-depth-tenth-pass-proof-ui-refresh-20260629';
-const EDGE_RUNTIME_JS_VERSION = 'round572-answer-depth-tenth-pass-proof-ui-refresh-20260629';
+// Round573: non-deleting question-bank entrance fluidity polish; Round572 answer/proof counts remain the content frontier and strict PDF proof stays separate.
+const EDGE_HOME_VERSION = 'round573-fluidity-polish-navigation-20260629';
+const EDGE_RUNTIME_JS_VERSION = 'round573-fluidity-polish-navigation-20260629';
 const WU_WANGYI_READING_PATH = '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html';
 const WANG_HONGWEI_READING_PATH = '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html';
 const SAFE_NEXT_HOSTS = new Set([
