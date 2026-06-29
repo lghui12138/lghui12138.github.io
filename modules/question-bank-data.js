@@ -112,7 +112,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round580-question-bank-focus-polish-20260629';
+    const practiceModuleVersion = 'round581-question-bank-card-polish-20260630';
 
     function requestedFocusBankId() {
         try {
@@ -146,7 +146,7 @@ window.QuestionBankData = (function() {
             readyReferenceAnswerCount: 400,
             manualSourceReviewCount: 0,
             sourceClueCount: Number(bank.webParitySourceContentCardCount || bank.currentWebsiteSourceContentCardCount || bank.sourceClueOnlyRows181103 || 122),
-            statusHref: '/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList',
+            statusHref: `/modules/question-bank.html?focus=181103-material-extracted&answer_status=current&edge_refresh=${practiceModuleVersion}#questionBanksList`,
             boundary: '522 是来源卡/答案块核对数；400 道默认练习题可直接参考，0 道保留待人工源页复核，122 条只作源文线索。'
         };
     }
@@ -162,7 +162,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round580-question-bank-focus-polish-20260629/.test(versionText);
+        return /round581-question-bank-card-polish-20260630/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {
@@ -1175,6 +1175,12 @@ window.QuestionBankData = (function() {
                     const block = focusId === '181103-material-extracted' ? 'start' : 'center';
                     try { scrollTarget.scrollIntoView({ behavior: 'smooth', block }); } catch (_) {}
                 }
+                const focusTarget = bankCard && bankCard.querySelector('a,button,[tabindex]:not([tabindex="-1"])');
+                if (focusTarget && typeof focusTarget.focus === 'function') {
+                    setTimeout(() => {
+                        try { focusTarget.focus({ preventScroll: true }); } catch (_) { focusTarget.focus(); }
+                    }, 220);
+                }
             }, 120);
             if (typeof showNotification === 'function') {
                 const suffix = focusId === '181103-material-extracted' && answerStatus === 'current'
@@ -1224,25 +1230,23 @@ window.QuestionBankData = (function() {
                 'hard': '困难'
             };
 
-            const difficultyColor = {
-                'easy': '#28a745',
-                'medium': '#ffc107',
-                'hard': '#dc3545'
-            };
-
             const isFavorite = this.isFavorite(bank.id);
             const favoriteIcon = isFavorite ? 'fas fa-heart' : 'far fa-heart';
-            const favoriteColor = isFavorite ? '#ff6b6b' : '#ccc';
+            const is181103Bank = is181103MaterialBank(bank);
+            const safeId = escapeHtml(bank.id);
+            const safeName = escapeHtml(bank.name || bank.id || '未命名题库');
+            const safeDescription = escapeHtml(bank.description || '题库已就绪，可直接进入练习。');
+            const questionCount = Number(bank.questionCount || 0);
             const primaryAction = bank.practiceUrl
-                ? `<a class="btn btn-primary" href="${bank.practiceUrl}"><i class="fas fa-play"></i> 章节练习</a>`
+                ? `<a class="btn btn-primary" href="${escapeHtml(bank.practiceUrl)}"><i class="fas fa-play"></i> 章节练习</a>`
                 : `<button class="btn btn-primary" onclick="QuestionBankData.startPractice('${bank.id}')"><i class="fas fa-play"></i> 开始练习</button>`;
             const secondaryAction = bank.sourceHtmlIndexUrl
-                ? `<a class="btn btn-info" href="${bank.sourceHtmlIndexUrl}"><i class="fas fa-file-alt"></i> HTML资料</a>`
+                ? `<a class="btn btn-info" href="${escapeHtml(bank.sourceHtmlIndexUrl)}"><i class="fas fa-file-alt"></i> HTML资料</a>`
                 : bank.realExamUrl
-                ? `<a class="btn btn-info" href="${bank.realExamUrl}"><i class="fas fa-file-alt"></i> 真题包</a>`
+                ? `<a class="btn btn-info" href="${escapeHtml(bank.realExamUrl)}"><i class="fas fa-file-alt"></i> 真题包</a>`
                 : `<button class="btn btn-info" onclick="QuestionBankData.previewBank('${bank.id}')"><i class="fas fa-eye"></i> 预览</button>`;
             const thirdAction = bank.knowledgeUrl
-                ? `<a class="btn btn-success" href="${bank.knowledgeUrl}"><i class="fas fa-book-open"></i> 知识点</a>`
+                ? `<a class="btn btn-success" href="${escapeHtml(bank.knowledgeUrl)}"><i class="fas fa-book-open"></i> 知识点</a>`
                 : `<button class="btn btn-success" onclick="QuestionBankData.quickTest('${bank.id}')"><i class="fas fa-rocket"></i> 快速测试</button>`;
             const defaultPracticeCount = Number(bank.defaultPracticeQuestionCount ?? bank.questionCount ?? bank.qualityShowCount ?? 0);
             const sourceFirstCount = Number(bank.sourceFirstReviewQuestionCount ?? bank.questionCount ?? 0);
@@ -1253,61 +1257,72 @@ window.QuestionBankData = (function() {
             const placeholderCount = Number(bank.unreadablePracticeQuestionCount ?? 0);
             const answerStatusLedger = build181103AnswerStatusLedger(bank);
             const answerStatusView = answerStatusLedger && requestedAnswerStatus() === 'current' ? 'current' : 'summary';
-            const qualitySummary = bank.id === '181103-material-extracted'
-                ? `<div class="qb-quality-ledger" data-181103-quality-ledger="1" style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap;font-size:.82em;">
-                    <span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:999px;">可刷题 ${defaultPracticeCount}</span>
-                    <span style="background:#e0f2fe;color:#075985;padding:3px 8px;border-radius:999px;">HTML题面 ${htmlQuestionCount}</span>
-                    <span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:999px;">高置信 ${highConfidenceCount}</span>
-                    <span style="background:#fee2e2;color:#991b1b;padding:3px 8px;border-radius:999px;">低置信 ${lowConfidenceCount}</span>
-                    <span style="background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:999px;">来源证据 ${sourceFirstCount}</span>
-                    <span style="background:#fef3c7;color:#92400e;padding:3px 8px;border-radius:999px;">源文线索 ${sourceContentCardCount}</span>
-                    <span style="background:#e0f2fe;color:#075985;padding:3px 8px;border-radius:999px;">纯占位 ${placeholderCount}</span>
-                    <span style="background:#ede9fe;color:#5b21b6;padding:3px 8px;border-radius:999px;">重复簇 ${bank.duplicateGroupCount || 0}</span>
+            const qualitySummary = is181103Bank
+                ? `<div class="qb-quality-ledger qb-chip-grid" data-181103-quality-ledger="1" data-round581-quality-chip-grid="1">
+                    <span class="qb-chip qb-chip--ok">可刷题 ${defaultPracticeCount}</span>
+                    <span class="qb-chip qb-chip--info">HTML题面 ${htmlQuestionCount}</span>
+                    <span class="qb-chip qb-chip--ok">高置信 ${highConfidenceCount}</span>
+                    <span class="qb-chip qb-chip--warn">低置信 ${lowConfidenceCount}</span>
+                    <span class="qb-chip qb-chip--warn">来源证据 ${sourceFirstCount}</span>
+                    <span class="qb-chip qb-chip--warn">源文线索 ${sourceContentCardCount}</span>
+                    <span class="qb-chip qb-chip--info">纯占位 ${placeholderCount}</span>
+                    <span class="qb-chip qb-chip--proof">重复簇 ${bank.duplicateGroupCount || 0}</span>
                   </div>`
                 : '';
             const answerStatusSummary = answerStatusLedger
-                ? `<div class="qb-answer-status-ledger" data-round428-181103-answer-status-card="1" data-answer-status-view="${answerStatusView}" data-total-answer-blocks="${answerStatusLedger.totalAnswerBlocks}" data-ready-reference="${answerStatusLedger.readyReferenceAnswerCount}" data-manual-source-review="${answerStatusLedger.manualSourceReviewCount}" data-source-clues="${answerStatusLedger.sourceClueCount}" style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap;font-size:.82em;">
-                    <span style="background:#dcfce7;color:#166534;padding:3px 8px;border-radius:999px;">参考答案可直接看 ${answerStatusLedger.readyReferenceAnswerCount}</span>
-                    <span style="background:#fff7ed;color:#9a3412;padding:3px 8px;border-radius:999px;">待人工源页复核 ${answerStatusLedger.manualSourceReviewCount}</span>
-                    <span style="background:#eff6ff;color:#1d4ed8;padding:3px 8px;border-radius:999px;">源文线索 ${answerStatusLedger.sourceClueCount}</span>
-                    <span style="background:#f8fafc;color:#334155;padding:3px 8px;border-radius:999px;">网页答案块 ${answerStatusLedger.totalAnswerBlocks}</span>
-                    ${bank.id === '181103-material-extracted' ? '<span data-round577-focus-boundary="1" style="flex-basis:100%;color:#475569;line-height:1.45;">Round577：8 道 181103 证明题已二次重证；版本 round580-question-bank-focus-polish-20260629，严格答案 PDF 证据仍单独为 0（strictAnswerPdfProof=0）。</span>' : ''}
-                    <span style="flex-basis:100%;color:#64748b;line-height:1.45;">${answerStatusLedger.boundary}</span>
+                ? `<div class="qb-answer-status-ledger qb-chip-grid" data-round428-181103-answer-status-card="1" data-round581-answer-status-card="single-readable" data-answer-status-view="${answerStatusView}" data-total-answer-blocks="${answerStatusLedger.totalAnswerBlocks}" data-ready-reference="${answerStatusLedger.readyReferenceAnswerCount}" data-manual-source-review="${answerStatusLedger.manualSourceReviewCount}" data-source-clues="${answerStatusLedger.sourceClueCount}">
+                    <span class="qb-chip qb-chip--ok">${answerStatusLedger.readyReferenceAnswerCount} 可直接参考</span>
+                    <span class="qb-chip qb-chip--warn">${answerStatusLedger.manualSourceReviewCount} 道待人工源页复核</span>
+                    <span class="qb-chip qb-chip--info">源文线索 ${answerStatusLedger.sourceClueCount}</span>
+                    <span class="qb-chip qb-chip--quiet">网页答案块 ${answerStatusLedger.totalAnswerBlocks}</span>
+                    ${is181103Bank ? '<span class="qb-ledger-line" data-round577-focus-boundary="1">Round577：8 道 181103 证明题已二次重证；版本 round581-question-bank-card-polish-20260630，严格答案 PDF 证据仍单独为 0（strictAnswerPdfProof=0）。</span>' : ''}
+                    <span class="qb-ledger-line">${escapeHtml(answerStatusLedger.boundary)}</span>
                   </div>`
                 : '';
             const answerStatusAction = answerStatusLedger
                 ? `<a class="btn btn-warning" data-round428-answer-status-action="current" href="${answerStatusLedger.statusHref}"><i class="fas fa-clipboard-check"></i> 参考答案状态</a>`
                 : '';
             const favoriteLabel = isFavorite ? '取消收藏' : '添加收藏';
+            const cardClass = is181103Bank ? 'qb-card qb-card--round581 qb-card--181103' : 'qb-card';
+            const cardAttrs = is181103Bank ? ' data-round581-card-polish="181103-readable-card"' : '';
+            const headerStyle = is181103Bank ? '' : ` style="background: linear-gradient(135deg, ${bank.color}, ${this.adjustColor(bank.color, -20)});"`;
+            const headerSubtitle = is181103Bank
+                ? '522 核对 · 400 可参考 · 122 线索'
+                : `${questionCount} 题 · ${escapeHtml(bank.category || '流体力学')}`;
+            const difficultyClass = `qb-difficulty qb-difficulty-${escapeHtml(bank.difficulty || 'medium')}`;
+            const displayTags = is181103Bank
+                ? ['181103', '400 可直接参考', '122 源文线索', 'HTML题面']
+                : (Array.isArray(bank.tags) ? bank.tags : []);
+            const tagHtml = displayTags.map(tag =>
+                `<span class="qb-tag">${escapeHtml(tag)}</span>`
+            ).join('');
 
             return `
-                <div class="qb-card" data-bank-id="${bank.id}">
-                    <div class="qb-card-header" style="background: linear-gradient(135deg, ${bank.color}, ${this.adjustColor(bank.color, -20)});">
-                        ${bank.name}
+                <div class="${cardClass}" data-bank-id="${safeId}"${cardAttrs}>
+                    <div class="qb-card-header"${headerStyle}>
+                        <span class="qb-card-title">${safeName}</span>
+                        <span class="qb-card-subtitle">${headerSubtitle}</span>
                         <button type="button"
-                                class="qb-favorite-btn"
-                                style="position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:48px;width:48px;height:48px;border:1px solid rgba(255,255,255,.4);border-radius:999px;background:rgba(255,255,255,.16);color:${favoriteColor};cursor:pointer;"
+                                class="qb-favorite-btn${isFavorite ? ' is-active' : ''}"
                                 onclick="QuestionBankData.toggleFavorite('${bank.id}')"
                                 title="${favoriteLabel}"
-                                aria-label="${favoriteLabel}：${bank.name}"
+                                aria-label="${favoriteLabel}：${safeName}"
                                 aria-pressed="${isFavorite ? 'true' : 'false'}">
                             <i class="${favoriteIcon}" aria-hidden="true"></i>
                         </button>
                     </div>
                     <div class="qb-card-content">
                         <div class="qb-card-meta">
-                            <span style="color: ${difficultyColor[bank.difficulty]}; font-weight: bold;">
+                            <span class="${difficultyClass}">
                                 ${difficultyText[bank.difficulty] || bank.difficulty}
                             </span>
-                            <span>${bank.questionCount} 题</span>
+                            <span>${questionCount} 题</span>
                         </div>
-                        <p style="margin-bottom: 15px; line-height: 1.4;">${bank.description}</p>
+                        <p class="qb-card-desc">${safeDescription}</p>
                         ${answerStatusSummary}
                         ${qualitySummary}
-                        <div style="margin-bottom: 15px;">
-                            ${bank.tags.map(tag =>
-                                `<span style="background: #e9ecef; color: #495057; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 5px;">${tag}</span>`
-                            ).join('')}
+                        <div class="qb-tag-row">
+                            ${tagHtml}
                         </div>
                         <div class="qb-card-actions">
                             ${primaryAction}
@@ -1363,7 +1378,7 @@ window.QuestionBankData = (function() {
             for (let i = 1; i <= totalPages; i++) {
                 if (i === currentPage) {
                     paginationHTML += `
-                        <button class="btn btn-primary" style="margin: 0 2px;">${i}</button>
+                        <button class="btn btn-primary" aria-current="page" disabled style="margin: 0 2px;">${i}</button>
                     `;
                 } else {
                     paginationHTML += `
@@ -1696,6 +1711,12 @@ window.QuestionBankData = (function() {
             const bankCard = document.querySelector(`[data-bank-id="${targetBank.id}"]`);
             if (bankCard) {
                 bankCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const focusTarget = bankCard.querySelector('a,button,[tabindex]:not([tabindex="-1"])');
+                if (focusTarget && typeof focusTarget.focus === 'function') {
+                    setTimeout(() => {
+                        try { focusTarget.focus({ preventScroll: true }); } catch (_) { focusTarget.focus(); }
+                    }, 220);
+                }
             }
 
             showNotification(`已定位到收藏题库「${targetBank.name}」`, 'success');

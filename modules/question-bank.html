@@ -26,8 +26,8 @@
 </script>
 <script src="/js/security/auth-guard.js" onerror="window.__fmAuthGuardFail&&window.__fmAuthGuardFail('guard_load_failed')"></script>
 <script src="/lib/fm-core.js?v=round268-auth-redirect-practice-20260526" defer></script>
-<script src="/js/formula-lite.js?v=round580-question-bank-focus-polish-20260629" defer></script>
-<script src="/js/core/local-mathjax.js?v=round580-question-bank-focus-polish-20260629" defer></script>
+<script src="/js/formula-lite.js?v=round581-question-bank-card-polish-20260630" defer></script>
+<script src="/js/core/local-mathjax.js?v=round581-question-bank-card-polish-20260630" defer></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="color-scheme" content="light dark">
@@ -184,8 +184,8 @@ html[data-round577-focus-entry="181103-material-extracted"] .page-section[data-r
 html[data-round577-focus-entry="181103-material-extracted"] .page-section[data-round577-focus-priority="1"] .section-heading p{margin-top:3px;font-size:.82rem;line-height:1.42}
 html[data-round577-focus-entry="181103-material-extracted"] #questionBanksList,
 html[data-round577-focus-entry="181103-material-extracted"] [data-bank-id="181103-material-extracted"]{scroll-margin-top:96px}
-.round580-focus-landing{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px;padding:10px;border:1px solid rgba(13,148,136,.22);border-radius:16px;background:color-mix(in srgb,var(--surface-2) 78%,transparent)}
-.round580-focus-landing span{min-height:48px;display:grid;align-content:center;gap:2px;padding:8px 10px;border:1px solid rgba(15,23,42,.08);border-radius:12px;background:var(--surface);color:var(--text-soft);font-size:.82rem;line-height:1.32;overflow-wrap:anywhere}
+.round580-focus-landing{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin:0 0 14px;padding:8px;border:1px solid rgba(13,148,136,.18);border-radius:14px;background:color-mix(in srgb,var(--surface-2) 70%,transparent)}
+.round580-focus-landing span{min-height:42px;display:grid;align-content:center;gap:2px;padding:7px 9px;border:0;border-radius:10px;background:rgba(255,255,255,.7);color:var(--text-soft);font-size:.8rem;line-height:1.3;overflow-wrap:anywhere}
 .round580-focus-landing b{color:var(--text);font-size:.9rem;line-height:1.25}
 @media (max-width:720px){
  html[data-round577-focus-entry="181103-material-extracted"]{scroll-padding-top:76px}
@@ -194,8 +194,8 @@ html[data-round577-focus-entry="181103-material-extracted"] [data-bank-id="18110
  html[data-round577-focus-entry="181103-material-extracted"] .page-section[data-round577-focus-priority="1"],
  html[data-round577-focus-entry="181103-material-extracted"] #questionBanksList,
  html[data-round577-focus-entry="181103-material-extracted"] [data-bank-id="181103-material-extracted"]{scroll-margin-top:78px}
- .round580-focus-landing{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;padding:8px}
- .round580-focus-landing span{min-height:40px;padding:6px 7px;font-size:.76rem;line-height:1.24}
+ .round580-focus-landing{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:0;border:0;background:transparent}
+ .round580-focus-landing span{min-height:36px;padding:6px 7px;font-size:.75rem;line-height:1.24;background:rgba(255,255,255,.68)}
  .round580-focus-landing b{font-size:.82rem}
 }
 
@@ -324,11 +324,60 @@ html[data-round577-focus-entry="181103-material-extracted"] [data-bank-id="18110
    题库列表容器（为 JS 渲染做兜底样式）
    ══════════════════════════════════════════════════════════════ */
 #questionBanksList{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:18px;min-height:220px}
+#questionBanksList>.qb-group{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:18px;margin:0;align-items:stretch}
 @media (max-width:520px){#questionBanksList{grid-template-columns:1fr}}
 
-/* 兜底：匹配 JS 渲染可能的卡片 class */
-#questionBanksList>div,#questionBanksList>article,#questionBanksList>a,#questionBanksList .bank-card,#questionBanksList .question-bank-card,#questionBanksList [class*="-card"]{padding:22px 22px;background:var(--surface);border:1px solid var(--border);border-radius:18px;transition:transform 480ms var(--e-ease-out-quart),box-shadow 480ms var(--e-ease-out-quart),border-color 380ms var(--e-smooth);box-shadow:var(--sm);cursor:pointer;position:relative;overflow:hidden;will-change:transform;display:flex;flex-direction:column;gap:10px}
-#questionBanksList>div:hover,#questionBanksList>article:hover,#questionBanksList>a:hover,#questionBanksList .bank-card:hover,#questionBanksList .question-bank-card:hover,#questionBanksList [class*="-card"]:hover{transform:translateY(-5px) translateZ(0);box-shadow:var(--md);border-color:var(--tide-500)}
+/* 兜底：只匹配真实题库卡片，避免把 .qb-card-header/.qb-card-content 等内部结构误套成卡片。 */
+#questionBanksList>.bank-card,#questionBanksList>article.bank-card,#questionBanksList>a.question-bank-card,#questionBanksList .bank-card,#questionBanksList .question-bank-card,#questionBanksList .qb-card{padding:22px 22px;background:var(--surface);border:1px solid var(--border);border-radius:18px;transition:transform 480ms var(--e-ease-out-quart),box-shadow 480ms var(--e-ease-out-quart),border-color 380ms var(--e-smooth);box-shadow:var(--sm);cursor:pointer;position:relative;overflow:hidden;will-change:transform;display:flex;flex-direction:column;gap:10px;min-width:0}
+#questionBanksList>.bank-card:hover,#questionBanksList>article.bank-card:hover,#questionBanksList>a.question-bank-card:hover,#questionBanksList .bank-card:hover,#questionBanksList .question-bank-card:hover,#questionBanksList .qb-card:hover{transform:translateY(-5px) translateZ(0);box-shadow:var(--md);border-color:var(--tide-500)}
+
+html[data-round577-focus-entry="181103-material-extracted"] #questionBanksList>.qb-group{grid-template-columns:minmax(0,1fr)}
+#questionBanksList .qb-card--round581{gap:0;padding:0;border-radius:16px;border-color:rgba(13,148,136,.22);background:linear-gradient(180deg,var(--surface),color-mix(in srgb,var(--surface-2) 62%,var(--surface)));box-shadow:0 14px 34px -28px rgba(4,17,31,.38),0 1px 0 rgba(255,255,255,.7) inset;cursor:default}
+#questionBanksList .qb-card--round581:hover{transform:translateY(-2px) translateZ(0);box-shadow:0 18px 42px -28px rgba(4,17,31,.42),0 1px 0 rgba(255,255,255,.78) inset}
+#questionBanksList .qb-card--round581 .qb-card-header{padding:15px 60px 13px 18px;border:0;border-bottom:1px solid rgba(13,148,136,.16);border-radius:0;background:linear-gradient(135deg,rgba(240,253,250,.96),rgba(255,247,237,.72));color:var(--text);box-shadow:none;display:grid;gap:4px;min-height:auto}
+#questionBanksList .qb-card--round581 .qb-card-title{font-family:var(--fd);font-size:1.02rem;font-weight:650;line-height:1.24;letter-spacing:0;color:var(--text);overflow-wrap:anywhere}
+#questionBanksList .qb-card--round581 .qb-card-subtitle{font-size:.78rem;line-height:1.35;color:var(--text-muted);overflow-wrap:anywhere}
+#questionBanksList .qb-card--round581 .qb-card-content{padding:16px 18px 18px;color:var(--text-soft);display:flex;flex-direction:column;gap:12px}
+#questionBanksList .qb-card--round581 .qb-card-meta{margin:0;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-start;padding:0;background:transparent;border-radius:0;font-size:.82rem}
+#questionBanksList .qb-card--round581 .qb-card-desc{margin:0;color:var(--text-soft);font-size:.88rem;line-height:1.58;overflow-wrap:anywhere}
+#questionBanksList .qb-card--round581 .qb-chip-grid{display:flex;flex-wrap:wrap;gap:6px;margin:0;font-size:.78rem;line-height:1.32}
+#questionBanksList .qb-card--round581 .qb-chip{display:inline-flex;align-items:center;min-height:28px;padding:4px 8px;border:1px solid rgba(15,23,42,.08);border-radius:999px;background:var(--surface);color:var(--text-soft);font-weight:650;overflow-wrap:anywhere}
+#questionBanksList .qb-card--round581 .qb-chip--ok{background:#ecfdf5;color:#166534;border-color:#bbf7d0}
+#questionBanksList .qb-card--round581 .qb-chip--info{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe}
+#questionBanksList .qb-card--round581 .qb-chip--warn{background:#fff7ed;color:#9a3412;border-color:#fed7aa}
+#questionBanksList .qb-card--round581 .qb-chip--quiet{background:#f8fafc;color:#334155;border-color:#e2e8f0}
+#questionBanksList .qb-card--round581 .qb-chip--proof{background:#f5f3ff;color:#5b21b6;border-color:#ddd6fe}
+#questionBanksList .qb-card--round581 .qb-ledger-line{flex-basis:100%;padding:6px 8px;border-radius:10px;background:rgba(248,250,252,.8);color:var(--text-muted);font-size:.8rem;line-height:1.48}
+#questionBanksList .qb-card--round581 .qb-tag-row{display:flex;flex-wrap:wrap;gap:6px;margin:0}
+#questionBanksList .qb-card--round581 .qb-tag{display:inline-flex;align-items:center;min-height:28px;padding:3px 8px;border-radius:999px;border:1px solid rgba(13,148,136,.18);background:rgba(240,253,250,.82);color:#0f766e;font-size:.76rem;font-weight:650;line-height:1.25}
+#questionBanksList .qb-card--round581 .qb-card-actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(138px,1fr));gap:8px;margin-top:2px;padding-top:10px;border-top:1px solid rgba(13,148,136,.12)}
+#questionBanksList .qb-card--round581 .qb-card-actions .btn{width:100%;min-height:44px;border-radius:10px;padding:8px 10px;font-size:.8rem;line-height:1.25}
+#questionBanksList [data-round581-card-polish="static-readable-card"],
+#questionBanksList [data-round581-card-polish="watchdog-readable-card"]{padding:16px 18px;border-color:rgba(13,148,136,.22);border-radius:16px;background:linear-gradient(180deg,var(--surface),var(--surface-2));box-shadow:0 14px 34px -28px rgba(4,17,31,.38);gap:9px}
+#questionBanksList [data-round581-card-polish="static-readable-card"] p,
+#questionBanksList [data-round581-card-polish="watchdog-readable-card"] p{margin:0;font-size:.86rem;line-height:1.54}
+#questionBanksList [data-round581-card-polish="static-readable-card"] .tag,
+#questionBanksList [data-round581-card-polish="watchdog-readable-card"] .tag{margin-top:3px}
+#questionBanksList [data-round581-card-polish="static-readable-card"] .btn,
+#questionBanksList [data-round581-card-polish="watchdog-readable-card"] .btn{width:100%;min-height:44px;border-radius:10px}
+#questionBanksList .qb-card-title,#questionBanksList .qb-card-subtitle{display:block;min-width:0;overflow-wrap:anywhere}
+#questionBanksList .qb-card:not(.qb-card--round581) .qb-card-title{padding-right:58px;color:#fff}
+#questionBanksList .qb-card:not(.qb-card--round581) .qb-card-subtitle{padding-right:58px;color:rgba(255,255,255,.82);font-size:.78rem;line-height:1.35;margin-top:4px}
+#questionBanksList .qb-favorite-btn{position:absolute;top:10px;right:10px;width:48px;height:48px;min-width:48px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;border:1px solid rgba(255,255,255,.38);border-radius:999px;background:rgba(255,255,255,.16);color:rgba(255,255,255,.85);cursor:pointer;touch-action:manipulation}
+#questionBanksList .qb-favorite-btn.is-active{color:#ff6b6b}
+#questionBanksList .qb-card--round581 .qb-favorite-btn{position:absolute;top:9px;right:9px;width:44px;height:44px;min-width:44px;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(13,148,136,.22);border-radius:999px;background:rgba(255,255,255,.76);color:#94a3b8;box-shadow:0 8px 20px -16px rgba(4,17,31,.38);cursor:pointer}
+#questionBanksList .qb-card--round581 .qb-favorite-btn.is-active{color:#ef4444;background:#fff1f2;border-color:#fecdd3}
+@media(max-width:640px){
+ #questionBanksList>.qb-group{gap:14px}
+ #questionBanksList .qb-card--round581 .qb-card-header{padding:13px 54px 11px 14px}
+ #questionBanksList .qb-card--round581 .qb-card-title{font-size:1rem;line-height:1.22}
+ #questionBanksList .qb-card--round581 .qb-card-content{padding:14px}
+ #questionBanksList .qb-card--round581 .qb-card-actions{grid-template-columns:1fr}
+ #questionBanksList .qb-card--round581 .qb-chip{min-height:30px;max-width:100%;white-space:normal}
+ #questionBanksList .qb-card--round581 .qb-ledger-line{font-size:.77rem}
+ #questionBanksList [data-round581-card-polish="static-readable-card"],
+ #questionBanksList [data-round581-card-polish="watchdog-readable-card"]{padding:14px;gap:8px}
+}
 
 /* 题库卡片里的常见元素 */
 #questionBanksList h3,#questionBanksList h4,#questionBanksList .title,#questionBanksList .bank-title{font-family:var(--fd);font-size:1.1rem;font-weight:600;letter-spacing:-.015em;color:var(--text);line-height:1.3}
@@ -717,13 +766,13 @@ html[data-round577-focus-entry="181103-material-extracted"] [data-bank-id="18110
     </div>
 
     <div id="questionBanksList">
-      <article class="bank-card" data-qb-initial-fallback="181103-material-extracted" data-bank-id="181103-material-extracted">
+      <article class="bank-card" data-qb-initial-fallback="181103-material-extracted" data-bank-id="181103-material-extracted" data-round581-card-polish="static-readable-card">
         <h3>181103 资料内题目全集</h3>
-        <p>522 张从 38 份站内 HTML 资料和 03 练习册文本层抽取的来源卡已逐条生成 HTML 题面卡，并逐题验收网页答案块；400 道默认练习题已进入刷题，400 道默认练习题已可直接看参考答案、解析思路、来源 HTML 和页图证据，0 道保留待人工源页复核标记，122 条参考答案页/源文/答案续页/讲义正文只作线索。</p>
+        <p>522 全题网页核对；400 道默认练习题可直接看参考答案、解析思路、来源 HTML 和页图证据，0 道待人工源页复核，122 条只作源文线索。</p>
         <div><span class="tag">181103</span><span class="tag">400 可直接参考</span><span class="tag">0 待人工源页复核</span><span class="tag">122 源文线索</span><span class="tag">站内 HTML</span></div>
         <p data-181103-quality-ledger="1"><strong>522</strong> 全题网页核对 · 默认净题 <strong>400</strong> / 可刷题 <strong>400</strong> · <strong>400</strong> 可直接参考 · <strong>0</strong> 待复核 · 源文线索 122</p>
-        <p data-round577-focus-boundary="1"><strong>Round577</strong>：8 道 181103 证明题已二次重证；版本 round580-question-bank-focus-polish-20260629，严格答案 PDF 证据仍单独为 0（strictAnswerPdfProof=0）。</p>
-        <a class="btn btn-primary" href="/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList">打开 522 全题核对与 400 练习 / 400+0 状态</a>
+        <p data-round577-focus-boundary="1"><strong>Round577</strong>：8 道 181103 证明题已二次重证；版本 round581-question-bank-card-polish-20260630，严格答案 PDF 证据仍单独为 0（strictAnswerPdfProof=0）。</p>
+        <a class="btn btn-primary" href="/modules/question-bank.html?focus=181103-material-extracted&answer_status=current&edge_refresh=round581-question-bank-card-polish-20260630#questionBanksList">打开 181103 题库</a>
       </article>
       <article class="bank-card" data-qb-initial-fallback="real-exam-current" data-bank-id="real-exam-current">
         <h3>六章真题练习</h3>
@@ -840,15 +889,15 @@ window.__qbScriptFail=function(file){window.__qbRenderLoadFailure('题库脚本�
     setText('totalQuestions',total);
     setText('detailedTotalQuestions',total);
     list.innerHTML=rows.map(function(bank){
-      var tags=Array.isArray(bank.tags)?bank.tags.slice(0,3):[];
       var is181103=bank.id==='181103-material-extracted';
-      var href=bank.practiceUrl||(is181103?'/modules/question-bank.html?focus=181103-material-extracted&answer_status=current&edge_refresh=round580-question-bank-focus-polish-20260629#questionBanksList':('/modules/practice-dynamic.html?bank='+encodeURIComponent(bank.id)));
-      return '<article class="bank-card" data-qb-fallback="1">'+
+      var tags=is181103?['181103','400 可直接参考','122 源文线索','HTML题面']:(Array.isArray(bank.tags)?bank.tags.slice(0,4):[]);
+      var href=bank.practiceUrl||(is181103?'/modules/question-bank.html?focus=181103-material-extracted&answer_status=current&edge_refresh=round581-question-bank-card-polish-20260630#questionBanksList':('/modules/practice-dynamic.html?bank='+encodeURIComponent(bank.id)));
+      return '<article class="bank-card" data-qb-fallback="1" '+(is181103?'data-round581-card-polish="watchdog-readable-card" data-bank-id="181103-material-extracted" ':'')+'>'+
         '<h3>'+__qbEscapeHtml(bank.name||bank.id)+'</h3>'+
-        '<p>'+__qbEscapeHtml(bank.description||bank.category||'题库已就绪，可直接进入练习。')+'</p>'+
+        '<p>'+__qbEscapeHtml(is181103?'522 全题网页核对；400 可参考，0 待复核，122 源文线索。':(bank.description||bank.category||'题库已就绪，可直接进入练习。'))+'</p>'+
         '<div>'+tags.map(function(tag){return '<span class="tag">'+__qbEscapeHtml(tag)+'</span>';}).join('')+'</div>'+
         '<p><strong>'+__qbEscapeHtml(bank.questionCount||bank.count||0)+'</strong> 题 · '+__qbEscapeHtml(bank.category||'流体力学')+'</p>'+
-        '<a class="btn btn-primary" '+(is181103?'data-round410-181103-fallback="main-question-bank" ':'')+'href="'+href+'">'+(is181103?'打开 181103 题库':'开始练习')+'</a>'+
+        '<a class="btn btn-primary" '+(is181103?'data-round410-181103-fallback="main-question-bank" data-round428-answer-status-action="current" ':'')+'href="'+href+'">'+(is181103?'打开 181103 题库':'开始练习')+'</a>'+
       '</article>';
     }).join('');
     if(typeof window.showNotification==='function')window.showNotification('题库加载较慢，已先展示可用题库入口','warning',4200);
@@ -872,11 +921,11 @@ window.__qbScriptFail=function(file){window.__qbRenderLoadFailure('题库脚本�
   else armWatchdog();
 })();
 </script>
-<script src="question-bank-data.js?v=round580-question-bank-focus-polish-20260629" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-data.js')"></script>
-<script src="question-bank-ui.js?v=round580-question-bank-focus-polish-20260629" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-ui.js')"></script>
-<script src="question-bank-user.js?v=round580-question-bank-focus-polish-20260629" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-user.js')"></script>
-<script src="question-bank-stats.js?v=round580-question-bank-focus-polish-20260629" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-stats.js')"></script>
-<script src="question-bank-ai.js?v=round580-question-bank-focus-polish-20260629" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-ai.js')"></script>
+<script src="question-bank-data.js?v=round581-question-bank-card-polish-20260630" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-data.js')"></script>
+<script src="question-bank-ui.js?v=round581-question-bank-card-polish-20260630" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-ui.js')"></script>
+<script src="question-bank-user.js?v=round581-question-bank-card-polish-20260630" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-user.js')"></script>
+<script src="question-bank-stats.js?v=round581-question-bank-card-polish-20260630" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-stats.js')"></script>
+<script src="question-bank-ai.js?v=round581-question-bank-card-polish-20260630" onerror="window.__qbScriptFail&&window.__qbScriptFail('question-bank-ai.js')"></script>
 
 <script>
 /* ══════════════════════════════════════════════════════════════
@@ -886,8 +935,12 @@ window.showNotification=function(message,type,duration){
   type=type||'info';duration=duration==null?3000:duration;
   var container=document.getElementById('notification-container');
   if(!container)return;
+  container.setAttribute('aria-live',type==='error'||type==='err'?'assertive':'polite');
+  container.setAttribute('aria-atomic','false');
   var n=document.createElement('div');
   n.className='notification '+(type||'info');
+  n.setAttribute('role',type==='error'||type==='err'?'alert':'status');
+  n.setAttribute('aria-atomic','true');
   n.textContent=String(message==null?'':message);
   container.appendChild(n);
   setTimeout(function(){
@@ -898,11 +951,14 @@ window.showNotification=function(message,type,duration){
 
 function _qbToggleSection(id){
   var el=document.getElementById(id);if(!el)return;
+  var trigger=window.event&&window.event.currentTarget;
   if(el.style.display==='none'||!el.style.display){
     el.style.display='block';
+    if(trigger&&trigger.setAttribute){trigger.setAttribute('aria-expanded','true');trigger.setAttribute('aria-controls',id);}
     requestAnimationFrame(function(){try{el.scrollIntoView({behavior:'smooth',block:'nearest'})}catch(_){}});
   }else{
     el.style.display='none';
+    if(trigger&&trigger.setAttribute){trigger.setAttribute('aria-expanded','false');trigger.setAttribute('aria-controls',id);}
   }
 }
 window.showSmartSearch=function(){_qbToggleSection('smartSearchArea');setTimeout(function(){var i=document.getElementById('smartSearchInput');var a=document.getElementById('smartSearchArea');if(i&&a&&a.style.display==='block')try{i.focus()}catch(_){}},400)};
