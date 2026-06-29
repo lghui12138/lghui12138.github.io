@@ -10,7 +10,7 @@
 (function(global, document) {
   'use strict';
 
-  var VERSION = 'round585-real-exam-workbench-density-20260630-eflu-workbench';
+  var VERSION = 'round586-practice-answer-workbench-20260630-eflu-workbench';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL_PARTS = ['fluid-real-exam-pdf-fidelity-audit', 'json'];
   var R263_VERSION = 'round263-fluid-exam-route-map-20260522';
@@ -18,7 +18,7 @@
   var R264_VERSION = 'round264-formula-condition-checklist-20260522';
   var LEARNING_CONTENT_VERSION = R264_VERSION;
   var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
-  var ROADMAP100_VERSION = 'round585-real-exam-workbench-density-20260630';
+  var ROADMAP100_VERSION = 'round586-practice-answer-workbench-20260630';
   var ROADMAP100_URL = '/data/fluid-upgrade-roadmap-100.json';
   var R278_VERSION = 'round279-real-exam-source-granularity-20260612';
   var R278_YEAR_COMPARE_URL = '/data/fluid-round278-pdf-web-year-compare.json';
@@ -81,7 +81,7 @@
       title: '181103 资料题库与 HTML 总表',
       desc: '522 张来源卡核对；400 道默认练习、400 道可直接参考、0 道待人工源页复核、122 条线索只展示；另有 68 个真题复核任务和 38/38 份站内 HTML 资料正文。',
       keywords: '181103 181103资料 资料题库 522来源卡 400练习 400可参考 0待复核 122线索 68真题复核 38/38 HTML 站内阅读',
-      url: '/modules/question-bank.html?focus=181103-material-extracted&answer_status=current&edge_refresh=round585-real-exam-workbench-density-20260630#questionBanksList'
+      url: '/modules/question-bank.html?focus=181103-material-extracted&answer_status=current&edge_refresh=round586-practice-answer-workbench-20260630#questionBanksList'
     },
     {
       id: 'round342-real-exam',
@@ -89,7 +89,7 @@
       title: '历年真题新版',
       desc: '2000-2024 历年真题，325 原文小题和 68 个已拆组题 section。',
       keywords: '历年真题 真题新版 325原文小题 68组题 803流体力学',
-      url: '/modules/real-exams-dynamic.html?edge_refresh=round585-real-exam-workbench-density-20260630&from=round342-edge-search'
+      url: '/modules/real-exams-dynamic.html?edge_refresh=round586-practice-answer-workbench-20260630&from=round342-edge-search'
     },
     {
       id: 'round342-formula',
@@ -355,7 +355,7 @@
   }
 
   function chapterRealExamUrl(chapter) {
-    return '/modules/real-exams-dynamic.html?edge_refresh=round585-real-exam-workbench-density-20260630&chapter=' + encodeURIComponent(chapter) + '&from=edge-learning-workbench';
+    return '/modules/real-exams-dynamic.html?edge_refresh=round586-practice-answer-workbench-20260630&chapter=' + encodeURIComponent(chapter) + '&from=edge-learning-workbench';
   }
 
   function chapterKnowledgeUrl(chapter) {
@@ -1431,8 +1431,8 @@
           desc: (chapter.examPriority ? '优先级 ' + chapter.examPriority + ' · ' : '') + toArray(chapter.commonPitfalls).slice(0, 1).join(''),
           points: toArray(source.knowledgePages).map(String),
           tone: index % 3 === 0 ? 'teal' : (index % 3 === 1 ? 'coral' : 'indigo'),
-          practiceUrl: chapterNo ? '/modules/practice-dynamic.html?type=real&chapter=' + encodeURIComponent(chapterNo) + '&mode=normal&from=edge-learning-path' : '/modules/real-exams-dynamic.html?edge_refresh=round585-real-exam-workbench-density-20260630&from=edge-learning-path',
-          realExamUrl: chapterNo ? chapterRealExamUrl(chapterNo) : '/modules/real-exams-dynamic.html?edge_refresh=round585-real-exam-workbench-density-20260630&from=edge-learning-path',
+          practiceUrl: chapterNo ? '/modules/practice-dynamic.html?type=real&chapter=' + encodeURIComponent(chapterNo) + '&mode=normal&from=edge-learning-path' : '/modules/real-exams-dynamic.html?edge_refresh=round586-practice-answer-workbench-20260630&from=edge-learning-path',
+          realExamUrl: chapterNo ? chapterRealExamUrl(chapterNo) : '/modules/real-exams-dynamic.html?edge_refresh=round586-practice-answer-workbench-20260630&from=edge-learning-path',
           knowledgeUrl: chapterNo ? chapterKnowledgeUrl(chapterNo) : '/modules/knowledge-detail.html',
           chapterUpgrade: chapter
         };
@@ -2765,9 +2765,9 @@
       '<div class="eflu-quick-actions" role="group" aria-label="首页学习入口快捷操作">',
       '<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="tab" data-tab="formula-checklist" aria-controls="' + attr(tabPanelId('formula-checklist')) + '" aria-label="打开公式条件回查标签">' + icon('check') + '条件回查</button>',
       '<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="exam-route" aria-controls="' + attr(tabPanelId('exam-route')) + '" aria-label="打开题目路线标签">' + icon('target') + '题目路线</button>',
-      '<a class="eflu-btn" data-tone="coral" href="/modules/real-exams-dynamic.html?edge_refresh=round585-real-exam-workbench-density-20260630&from=student-workbench-practice" aria-label="进入历年真题和题库练习">' + icon('play') + '真题练习</a>',
+      '<a class="eflu-btn" data-tone="coral" href="/modules/real-exams-dynamic.html?edge_refresh=round586-practice-answer-workbench-20260630&from=student-workbench-practice" aria-label="进入历年真题和题库练习">' + icon('play') + '真题练习</a>',
       '<a class="eflu-btn" href="/modules/question-bank.html?from=student-workbench-chapters" aria-label="进入题库页，查看六章章节练习入口">' + icon('chart') + '六章题库</a>',
-      '<a class="eflu-btn" data-round342-discovery-entry="181103" href="/modules/question-bank.html?focus=181103-material-extracted&answer_status=current&edge_refresh=round585-real-exam-workbench-density-20260630#questionBanksList" aria-label="进入 181103 资料题库，查看 522 张来源卡、400 道默认练习、400 道可直接参考答案、0 道待人工源页复核、122 条源文线索和 38 份 HTML 资料">' + icon('external') + '181103 资料</a>',
+      '<a class="eflu-btn" data-round342-discovery-entry="181103" href="/modules/question-bank.html?focus=181103-material-extracted&answer_status=current&edge_refresh=round586-practice-answer-workbench-20260630#questionBanksList" aria-label="进入 181103 资料题库，查看 522 张来源卡、400 道默认练习、400 道可直接参考答案、0 道待人工源页复核、122 条源文线索和 38 份 HTML 资料">' + icon('external') + '181103 资料</a>',
       '<a class="eflu-btn" data-round342-discovery-entry="wrongbook" href="/index-complete.html#tabsW" aria-label="进入错题本和错因订正入口">' + icon('alert') + '错题订正</a>',
       '<a class="eflu-btn" data-round342-discovery-entry="private-course" href="/resources.html?from=round342-edge-quick#sourceStatus" aria-label="查看私有课程和专属课账号状态，生产恢复仍受 FM_PRIVATE_MEDIA R2 边界约束">' + icon('note') + '私有课程</a>',
       '<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="formulas" aria-controls="' + attr(tabPanelId('formulas')) + '" aria-label="打开公式速查标签">' + icon('sigma') + '公式速查</button>',
@@ -2976,7 +2976,7 @@
       '<div class="eflu-r277-actions" role="group" aria-label="round277 公式条件操作">',
       '<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="tab" data-tab="formula-checklist" aria-controls="' + attr(tabPanelId('formula-checklist')) + '">' + icon('check') + '完整条件回查</button>',
       '<a class="eflu-btn" href="/modules/knowledge-upgrade-2026.html#formula-condition-checklist">' + icon('external') + '知识整理页</a>',
-      '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?edge_refresh=round585-real-exam-workbench-density-20260630&from=round277-formula-condition-sprint">' + icon('play') + '真题重做</a>',
+      '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?edge_refresh=round586-practice-answer-workbench-20260630&from=round277-formula-condition-sprint">' + icon('play') + '真题重做</a>',
       '</div>',
       '</section>'
     ].join('');
@@ -3042,7 +3042,7 @@
         '<section class="eflu-r278-compare" data-round278-pdf-web-year-compare="fallback" aria-label="round293 181103 全资料核验账本">',
         '<div class="eflu-roadmap-head">',
         '<div><h3>round293 181103 全资料核验账本正在读取</h3><p>小型汇总数据暂未取到时，资源页仍保留 181103 全资料核验，真题页仍保留 PDF 保真审计、原文颗粒度审计和 release gate 对照脚本；答案仍按待核验参考处理。</p></div>',
-        '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?edge_refresh=round585-real-exam-workbench-density-20260630&from=round278-pdf-web-year-compare">' + icon('external') + '真题训练</a>',
+        '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?edge_refresh=round586-practice-answer-workbench-20260630&from=round278-pdf-web-year-compare">' + icon('external') + '真题训练</a>',
         '</div>',
         '</section>'
       ].join('');
@@ -3240,7 +3240,7 @@
       '<div class="eflu-actions">',
       '<button class="eflu-btn" type="button" data-tone="primary" data-eflu-action="review-exam-route" data-route-id="' + attr(route.id) + '" aria-label="把当前题目路线加入复习本">' + icon('bookmark') + '加入复习本</button>',
       '<button class="eflu-btn" type="button" data-eflu-action="tab" data-tab="formulas" aria-label="切换到公式速查">' + icon('sigma') + '查公式</button>',
-      '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?edge_refresh=round585-real-exam-workbench-density-20260630&from=exam-route" aria-label="打开历年真题训练">' + icon('external') + '去真题训练</a>',
+      '<a class="eflu-btn" href="/modules/real-exams-dynamic.html?edge_refresh=round586-practice-answer-workbench-20260630&from=exam-route" aria-label="打开历年真题训练">' + icon('external') + '去真题训练</a>',
       '</div>',
       '</article>',
       '</div>'
