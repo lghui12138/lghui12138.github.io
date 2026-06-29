@@ -10,7 +10,7 @@
 (function(global, document) {
   'use strict';
 
-  var VERSION = 'round569-answer-depth-seventh-pass-workbench-proof-sync-20260629-eflu-workbench';
+  var VERSION = 'round570-answer-depth-eighth-pass-proof-ui-sync-20260629-eflu-workbench';
   var R247_VERSION = 'round247-real-exam-pdf-fidelity-audit-20260518';
   var R247_AUDIT_URL_PARTS = ['fluid-real-exam-pdf-fidelity-audit', 'json'];
   var R263_VERSION = 'round263-fluid-exam-route-map-20260522';
@@ -18,7 +18,7 @@
   var R264_VERSION = 'round264-formula-condition-checklist-20260522';
   var LEARNING_CONTENT_VERSION = R264_VERSION;
   var R264_FORMULA_CHECKLIST_URL = '/data/fluid-round264-formula-condition-checklist.json';
-  var ROADMAP100_VERSION = 'round569-answer-depth-seventh-pass-workbench-proof-sync-20260629';
+  var ROADMAP100_VERSION = 'round570-answer-depth-eighth-pass-proof-ui-sync-20260629';
   var ROADMAP100_URL = '/data/fluid-upgrade-roadmap-100.json';
   var R278_VERSION = 'round279-real-exam-source-granularity-20260612';
   var R278_YEAR_COMPARE_URL = '/data/fluid-round278-pdf-web-year-compare.json';
@@ -80,7 +80,7 @@
       type: '入口',
       title: '181103 资料题库与 HTML 总表',
       desc: '522 张来源卡核对；400 道默认练习、400 道可直接参考、0 道待人工源页复核、141 条线索只展示；另有 68 个真题复核任务和 38/38 份站内 HTML 资料正文。',
-      keywords: '181103 181103资料 资料题库 522来源卡 381练习 381可参考 0待复核 141线索 68真题复核 38/38 HTML 站内阅读',
+      keywords: '181103 181103资料 资料题库 522来源卡 400练习 400可参考 0待复核 122线索 68真题复核 38/38 HTML 站内阅读',
       url: '/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList'
     },
     {
@@ -89,7 +89,7 @@
       title: '历年真题新版',
       desc: '2000-2024 历年真题，325 原文小题和 68 个已拆组题 section。',
       keywords: '历年真题 真题新版 325原文小题 68组题 803流体力学',
-      url: '/modules/real-exams-dynamic.html?round569-answer-depth-seventh-pass-workbench-proof-sync-20260629&from=round342-edge-search'
+      url: '/modules/real-exams-dynamic.html?round570-answer-depth-eighth-pass-proof-ui-sync-20260629&from=round342-edge-search'
     },
     {
       id: 'round342-formula',
