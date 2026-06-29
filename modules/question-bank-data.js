@@ -154,7 +154,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round584-question-bank-home-density-20260630';
+    const practiceModuleVersion = 'round585-real-exam-workbench-density-20260630';
 
     function requestedFocusBankId() {
         try {
@@ -204,7 +204,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round584-question-bank-home-density-20260630/.test(versionText);
+        return /round585-real-exam-workbench-density-20260630/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {
@@ -682,7 +682,7 @@ window.QuestionBankData = (function() {
         category: '六章真题练习',
         lastUpdated: '2026-05-25',
         practiceUrl: `/modules/practice-dynamic.html?type=real&chapter=${item.chapter}&mode=normal&from=question-bank`,
-        realExamUrl: `/modules/real-exams-dynamic.html?edge_refresh=round584-question-bank-home-density-20260630&chapter=${item.chapter}&from=question-bank`,
+        realExamUrl: `/modules/real-exams-dynamic.html?edge_refresh=round585-real-exam-workbench-density-20260630&chapter=${item.chapter}&from=question-bank`,
         knowledgeUrl: `/modules/knowledge-detail.html?chapter=${item.chapter}`
     }));
 
@@ -1398,7 +1398,7 @@ window.QuestionBankData = (function() {
                     <span class="qb-chip qb-chip--warn">${answerStatusLedger.manualSourceReviewCount} 道待人工源页复核</span>
                     <span class="qb-chip qb-chip--info">源文线索 ${answerStatusLedger.sourceClueCount}</span>
                     <span class="qb-chip qb-chip--quiet">网页答案块 ${answerStatusLedger.totalAnswerBlocks}</span>
-                    ${is181103Bank ? '<span class="qb-ledger-line" data-round577-focus-boundary="1">Round577：8 道 181103 证明题已二次重证；版本 round584-question-bank-home-density-20260630，严格答案 PDF 证据仍单独为 0（strictAnswerPdfProof=0）。</span>' : ''}
+                    ${is181103Bank ? '<span class="qb-ledger-line" data-round577-focus-boundary="1">Round577：8 道 181103 证明题已二次重证；版本 round585-real-exam-workbench-density-20260630，严格答案 PDF 证据仍单独为 0（strictAnswerPdfProof=0）。</span>' : ''}
                     <span class="qb-ledger-line">${escapeHtml(answerStatusLedger.boundary)}</span>
                   </div>`
                 : '';
