@@ -51,6 +51,10 @@ const knowledgeUpgrade = readText('modules/knowledge-upgrade-2026.html');
 const knowledgeDetail = readText('modules/knowledge-detail.html');
 const questionBank = readText('modules/question-bank.html');
 const realExam = readText('modules/real-exams-dynamic.html');
+const teacherPanel = readText('teacher-panel.html');
+const teacherPanelIndex = readText('teacher-panel/index.html');
+const modulesTeacherPanel = readText('modules/teacher-panel.html');
+const modulesTeacherPanelIndex = readText('modules/teacher-panel/index.html');
 const localMathjax = readText('js/core/local-mathjax.js');
 const edgeRuntime = readText('js/edge-fluid-learning-upgrade.js');
 
@@ -165,6 +169,10 @@ const currentSurfaceFiles = [
   ['modules/knowledge-detail.html', knowledgeDetail],
   ['modules/question-bank.html', questionBank],
   ['modules/real-exams-dynamic.html', realExam],
+  ['teacher-panel.html', teacherPanel],
+  ['teacher-panel/index.html', teacherPanelIndex],
+  ['modules/teacher-panel.html', modulesTeacherPanel],
+  ['modules/teacher-panel/index.html', modulesTeacherPanelIndex],
   ['functions/_middleware.js', middleware],
   ['js/core/local-mathjax.js', localMathjax],
   ['js/edge-fluid-learning-upgrade.js', edgeRuntime]

@@ -49,6 +49,10 @@ function updateCurrentVersionStrings() {
     'modules/knowledge-detail.html',
     'modules/question-bank.html',
     'modules/real-exams-dynamic.html',
+    'teacher-panel.html',
+    'teacher-panel/index.html',
+    'modules/teacher-panel.html',
+    'modules/teacher-panel/index.html',
     'functions/_middleware.js',
     'js/core/local-mathjax.js',
     'js/edge-fluid-learning-upgrade.js'
