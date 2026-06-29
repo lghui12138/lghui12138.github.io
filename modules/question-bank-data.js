@@ -112,7 +112,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round566-answer-depth-fourth-pass-ui-density-20260629';
+    const practiceModuleVersion = 'round567-answer-depth-fifth-pass-proof-growth-20260629';
 
     function requestedFocusBankId() {
         try {
@@ -147,7 +147,7 @@ window.QuestionBankData = (function() {
             manualSourceReviewCount: 0,
             sourceClueCount: Number(bank.sourceSemanticContentCardCount || bank.sourceContentCardCount || 141),
             statusHref: '/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList',
-            boundary: '522 是来源卡/答案块核对数；381 道默认练习题可直接参考，0 道保留待人工源页复核，141 条只作源文线索。'
+            boundary: '522 是来源卡/答案块核对数；390 道默认练习题可直接参考，0 道保留待人工源页复核，141 条只作源文线索。'
         };
     }
 
@@ -162,7 +162,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round566-answer-depth-fourth-pass-ui-density-20260629/.test(versionText);
+        return /round567-answer-depth-fifth-pass-proof-growth-20260629/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {
@@ -1173,7 +1173,7 @@ window.QuestionBankData = (function() {
             }, 120);
             if (typeof showNotification === 'function') {
                 const suffix = focusId === '181103-material-extracted' && answerStatus === 'current'
-                    ? '：381 可直接参考，0 道待人工源页复核，141 条源文线索'
+                    ? '：381 可直接参考，0 道待人工源页复核，132 条源文线索'
                     : '';
                 showNotification(`已定位到「${targetBank.name}」${suffix}`, 'success', 4200);
             }
