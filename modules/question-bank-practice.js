@@ -423,10 +423,10 @@ window.QuestionBankPractice = (function() {
         const compact = Boolean(options.compact);
         const pageLabel = question && question.sourcePage ? `第 ${escapeHtml(question.sourcePage)} 页` : '页图证据';
         return `
-            <section class="reference-source-evidence${compact ? ' is-compact' : ''}" aria-label="来源证据层" data-181103-answer-source-evidence="1" data-round394-source-evidence-layer="1" data-round408-source-evidence-layer="1" data-round408-source-evidence-missing="${sourceHref || sourceImage ? '0' : '1'}">
-                <details class="reference-source-evidence__details" open data-round394-source-evidence-visible="1" data-round408-keyboard-expandable="1">
+            <section class="reference-source-evidence${compact ? ' is-compact' : ''}" aria-label="来源证据层" data-round577-evidence-drawer="collapsed" data-181103-answer-source-evidence="1" data-round394-source-evidence-layer="1" data-round408-source-evidence-layer="1" data-round408-source-evidence-missing="${sourceHref || sourceImage ? '0' : '1'}">
+                <details class="reference-source-evidence__details" data-round394-source-evidence-visible="1" data-round408-keyboard-expandable="1" data-round577-answer-first-evidence-drawer="1">
                     <summary>
-                        <span>来源证据（默认展开，可收起）</span>
+                        <span>来源证据（可展开核对）</span>
                         <small>${sourceHref || sourceImage ? pageLabel : '证据待补'}</small>
                     </summary>
                     <div class="reference-source-evidence__links">
@@ -553,9 +553,9 @@ window.QuestionBankPractice = (function() {
         if (!steps && !scoring && !checks && !sourceTrace) return '';
         return `
             <section class="real-exam-answer-rubric${compact ? ' is-compact' : ''}" aria-label="真题答案评分细则与来源 trace" data-round433-real-exam-answer-rubric="1" data-round433-strict-answer-pdf-proof="0" data-round433-source-trace-count="${escapeHtml(traces.length)}">
-                <details class="real-exam-answer-rubric__details" open data-round433-real-exam-answer-source-visible="1">
+                <details class="real-exam-answer-rubric__details" data-round433-real-exam-answer-source-visible="1" data-round577-answer-first-evidence-drawer="1">
                     <summary>
-                        <span>评分细则与来源 trace（默认展开，可收起）</span>
+                        <span>评分细则与来源 trace（可展开核对）</span>
                         <small>答案用于学习参考；严格答案 PDF 逐题证明尚未建立</small>
                     </summary>
                     <div class="real-exam-answer-rubric__boundary" role="note">Round433 边界：本题已有站内参考答案与解析；若未出现逐题 answerSource/answerVerificationStatus，不写成原答案 PDF 已证。</div>
@@ -643,9 +643,9 @@ window.QuestionBankPractice = (function() {
         const compact = Boolean(options.compact);
         return `
             <section class="answer-explanation-block${compact ? ' is-compact' : ''}" aria-label="解析思路层" data-round374-answer-explanation="1" data-round394-solution-layer="1" data-round408-solution-layer="1">
-                <details class="answer-explanation-details" open data-round394-solution-visible="1" data-round408-keyboard-expandable="1">
+                <details class="answer-explanation-details" data-round394-solution-visible="1" data-round408-keyboard-expandable="1" data-round577-answer-first-evidence-drawer="1">
                     <summary>
-                        <span>解题思路（默认展开，可收起）</span>
+                        <span>解题思路（可展开核对）</span>
                     </summary>
                     <div data-round394-solution-body="1" data-round394-formula-render-root="1">${html}</div>
                 </details>
@@ -740,7 +740,8 @@ window.QuestionBankPractice = (function() {
         answerDisplay.dataset.answerState = 'open';
         answerDisplay.setAttribute('aria-hidden', 'false');
         answerDisplay.setAttribute('role', 'region');
-        answerDisplay.setAttribute('aria-label', '批改结果、参考答案、解析与来源证据');
+        answerDisplay.setAttribute('aria-label', '参考答案优先阅读面板，解析与来源证据可展开核对');
+        answerDisplay.setAttribute('data-round577-answer-first-panel', '1');
         answerDisplay.setAttribute('aria-describedby', 'answerStatus');
         answerDisplay.setAttribute('tabindex', '-1');
         answerDisplay.setAttribute('data-round394-answer-ui', '1');
@@ -757,23 +758,23 @@ window.QuestionBankPractice = (function() {
         answerDisplay.style.width = '100%';
         answerDisplay.style.maxWidth = '100%';
         answerDisplay.style.boxSizing = 'border-box';
-        answerDisplay.style.minHeight = 'clamp(320px, 54vh, 620px)';
-        answerDisplay.style.maxHeight = 'min(76vh, 820px)';
+        answerDisplay.style.minHeight = 'clamp(220px, 36vh, 460px)';
+        answerDisplay.style.maxHeight = 'min(82vh, 860px)';
         answerDisplay.style.overflowX = 'hidden';
         answerDisplay.style.overflowY = 'auto';
-        answerDisplay.style.fontSize = '20px';
-        answerDisplay.style.padding = '32px';
+        answerDisplay.style.fontSize = '18px';
+        answerDisplay.style.padding = '24px';
         if (narrowAnswerViewport) {
-            answerDisplay.style.minHeight = 'clamp(300px, 50vh, 560px)';
-            answerDisplay.style.maxHeight = '72vh';
+            answerDisplay.style.minHeight = 'clamp(220px, 42vh, 520px)';
+            answerDisplay.style.maxHeight = '78vh';
             answerDisplay.style.fontSize = '16px';
-            answerDisplay.style.padding = '16px';
+            answerDisplay.style.padding = '14px';
         }
-        answerDisplay.style.background = 'rgba(240,248,255,0.98)';
+        answerDisplay.style.background = 'rgba(248,252,255,0.99)';
         answerDisplay.style.backdropFilter = 'blur(15px)';
-        answerDisplay.style.boxShadow = '0 20px 60px rgba(0,0,0,0.2)';
-        answerDisplay.style.border = '3px solid #007bff';
-        answerDisplay.style.borderRadius = '20px';
+        answerDisplay.style.boxShadow = '0 14px 38px rgba(4,17,31,0.16)';
+        answerDisplay.style.border = '1px solid rgba(14, 116, 144, 0.35)';
+        answerDisplay.style.borderRadius = '12px';
         renderFormulaInRoot(answerDisplay, document.getElementById('answerStatus'));
         window.setTimeout(() => replaceResidualTexNoise(answerDisplay), 1400);
         window.setTimeout(() => {
@@ -4566,7 +4567,7 @@ window.QuestionBankPractice = (function() {
 	            if (questionDisplay) {
 	                questionDisplay.style.fontSize = '16px';
 	                if (answerDisplay) {
-	                    answerDisplay.style.fontSize = '20px';
+	                    answerDisplay.style.fontSize = '18px';
 	                    const answerContent = document.getElementById('answerContent');
 	                    const explanationContent = document.getElementById('explanationContent');
 	                    if (answerContent) answerContent.style.fontSize = '20px';

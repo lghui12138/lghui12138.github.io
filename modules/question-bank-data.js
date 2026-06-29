@@ -112,7 +112,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round576-direct-shell-consistency-20260629';
+    const practiceModuleVersion = 'round577-181103-proof-depth-second-pass-20260629';
 
     function requestedFocusBankId() {
         try {
@@ -142,10 +142,10 @@ window.QuestionBankData = (function() {
         if (!is181103MaterialBank(bank)) return null;
         return {
             totalAnswerBlocks: 522,
-            defaultPracticeRows: Number(bank.defaultPracticeQuestionCount || bank.practiceEntryQuestionCount || 400),
+            defaultPracticeRows: Number(bank.defaultPracticeQuestionCount || bank.webParityPracticeQuestionCount || bank.practiceEntryQuestionCount || 400),
             readyReferenceAnswerCount: 400,
             manualSourceReviewCount: 0,
-            sourceClueCount: Number(bank.sourceSemanticContentCardCount || bank.sourceContentCardCount || 122),
+            sourceClueCount: Number(bank.webParitySourceContentCardCount || bank.currentWebsiteSourceContentCardCount || bank.sourceClueOnlyRows181103 || 122),
             statusHref: '/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList',
             boundary: '522 是来源卡/答案块核对数；400 道默认练习题可直接参考，0 道保留待人工源页复核，122 条只作源文线索。'
         };
@@ -162,7 +162,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round576-direct-shell-consistency-20260629/.test(versionText);
+        return /round577-181103-proof-depth-second-pass-20260629/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {
@@ -1266,6 +1266,7 @@ window.QuestionBankData = (function() {
                     <span style="background:#fff7ed;color:#9a3412;padding:3px 8px;border-radius:999px;">待人工源页复核 ${answerStatusLedger.manualSourceReviewCount}</span>
                     <span style="background:#eff6ff;color:#1d4ed8;padding:3px 8px;border-radius:999px;">源文线索 ${answerStatusLedger.sourceClueCount}</span>
                     <span style="background:#f8fafc;color:#334155;padding:3px 8px;border-radius:999px;">网页答案块 ${answerStatusLedger.totalAnswerBlocks}</span>
+                    ${bank.id === '181103-material-extracted' ? '<span data-round577-focus-boundary="1" style="flex-basis:100%;color:#475569;line-height:1.45;">Round577：8 道 181103 证明题已二次重证；版本 round577-181103-proof-depth-second-pass-20260629，严格答案 PDF 证据仍单独为 0（strictAnswerPdfProof=0）。</span>' : ''}
                     <span style="flex-basis:100%;color:#64748b;line-height:1.45;">${answerStatusLedger.boundary}</span>
                   </div>`
                 : '';
@@ -1280,7 +1281,7 @@ window.QuestionBankData = (function() {
                         ${bank.name}
                         <button type="button"
                                 class="qb-favorite-btn"
-                                style="position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid rgba(255,255,255,.4);border-radius:999px;background:rgba(255,255,255,.16);color:${favoriteColor};cursor:pointer;"
+                                style="position:absolute;top:10px;right:10px;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-width:48px;width:48px;height:48px;border:1px solid rgba(255,255,255,.4);border-radius:999px;background:rgba(255,255,255,.16);color:${favoriteColor};cursor:pointer;"
                                 onclick="QuestionBankData.toggleFavorite('${bank.id}')"
                                 title="${favoriteLabel}"
                                 aria-label="${favoriteLabel}：${bank.name}"
