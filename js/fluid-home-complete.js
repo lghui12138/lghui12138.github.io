@@ -699,7 +699,7 @@ const SEARCH_IDX=[
 {t:'入口',n:'题库练习',u:'/modules/question-bank.html?from=home-search',d:'六章真题练习 · 分类题库 · 错题本与薄弱点提醒',k:'题库 练习 错题 题目 六章 真题'},
 {t:'入口',n:'181103 资料题库与练习入口',u:'/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList',d:'首页搜索 181103 可直接进入 522 张来源 HTML 卡和网页答案块；381 道默认练习题可直接看参考答案，0 道待人工源页复核，141 条源文线索只展示；同时保留 38/38 HTML 资料总表和 68 个真题复核任务；用户搜“181103去哪了、参考答案状态、181103里面还有别的题目、资料题库”也直达这里。',k:'181103 181103资料 181103资料题库 181103去哪了 181103那些资源去哪了 181103资源看不见 181103资料去哪了 181103里面的题目 181103里面还有别的题目 181103资料内题 181103题库 资料题库 参考答案状态 答案状态 可直接参考答案 待人工源页复核 381可参考 381+0 141源文线索 522来源卡 522资料内题 522个题 38/38 HTML 68真题复核 题库 练习 搜索入口'},
 {t:'入口',n:'181103 全资料 HTML 总表',u:'/resources/fluid-181103-html/index.html',d:'38/38 份 181103 资料已写成站内 HTML 正文；不走下载、中转页或原件壳；用户搜“181103资料在哪、181103不能下载、全部写成HTML”也直达这里。',k:'181103 181103资料在哪 181103去哪了 181103全资料 181103全部HTML 181103不能下载 不能下载 不许下载 全部写成HTML 全做成html格式 全资料 HTML 正文 38/38 站内阅读 资料总表 资料页'},
-{t:'入口',n:'历年真题新版入口',u:'/modules/real-exams-dynamic.html?round569-answer-depth-seventh-pass-workbench-proof-sync-20260629&from=current-home-search',d:'2000-2024 历年真题；325 原文小题和 68 个已拆组题 section，适合从题库、练习和搜索直接进入；用户搜“历年真题新版、简答题五题、本来五题别合并”也直达这里。',k:'历年真题 真题新版 历年真题新版 325原文小题 68组题 简答题五题 本来五题 别合并 防合并 小题拆分 题数应该更多 2000-2024 803流体力学 搜索入口'},
+{t:'入口',n:'历年真题新版入口',u:'/modules/real-exams-dynamic.html?round570-answer-depth-eighth-pass-proof-ui-sync-20260629&from=current-home-search',d:'2000-2024 历年真题；325 原文小题和 68 个已拆组题 section，适合从题库、练习和搜索直接进入；用户搜“历年真题新版、简答题五题、本来五题别合并”也直达这里。',k:'历年真题 真题新版 历年真题新版 325原文小题 68组题 简答题五题 本来五题 别合并 防合并 小题拆分 题数应该更多 2000-2024 803流体力学 搜索入口'},
 {t:'入口',n:'学习进度入口',u:'/index-complete.html#stats',d:'首页服务端学习进度：总进度、累计练习、累计时长和正确率只认 /api/stats noMutationRead 快照；登录、刷新、升级和本机记录不改累计。',k:'学习进度 总进度 进度入口 服务端累计 累计练习 累计时长 正确率 noMutationRead api stats 学习监控 进度在哪 进度看哪里 搜索入口'},
 {t:'入口',n:'错题订正入口',u:'/index-complete.html#tabsW',d:'首页错题本、收藏和笔记；先按错因订正，再回同类真题或公式条件继续练。',k:'错题 错题本 错题订正 错因回查 订正 收藏 笔记 搜索入口'},
 {t:'入口',n:'私有课程状态入口',u:'/resources.html?from=current-home-search-private-course#sourceStatus',d:'查看账号可见的专属课/私有课程状态；生产私有视频恢复仍以 FM_PRIVATE_MEDIA R2 binding 为边界；用户搜“无法删除视频、不能管理视频、私有视频管理不对”也直达状态页。',k:'私有课程 私有课程状态 专属课 专属课程状态 私有视频 私有视频管理 私有视频管理不对 无法删除视频 不能删除视频 不能管理视频 删除视频 视频管理 课程状态 账号状态 FM_PRIVATE_MEDIA R2 blocker 搜索入口'},
@@ -1558,12 +1558,12 @@ const PATH_NODES=[
 ];
 function pathMatchKeys(node){return (node.keys&&node.keys.length?node.keys:[node.k,node.n]).map(x=>String(x||'').toLowerCase())}
 function renderChapterPracticeLinks(nodes){
-  return '<div class="path-links" aria-label="六章全部真题练习入口与独立模拟章节题入口">'+nodes.map(n=>'<a href="'+esc(n.p||'/modules/real-exams-dynamic.html?round569-answer-depth-seventh-pass-workbench-proof-sync-20260629&from=current-student-path')+'">'+esc(n.n)+'做全部真题练习</a><a href="'+esc(n.m||'/modules/simulated-exams-dynamic.html?from=student-path')+'">'+esc(n.n)+'模拟题（非真题）</a>').join('')+'<span class="path-note">模拟章节题来自教材主题启发，独立题包，不混入正式真题。</span></div>';
+  return '<div class="path-links" aria-label="六章全部真题练习入口与独立模拟章节题入口">'+nodes.map(n=>'<a href="'+esc(n.p||'/modules/real-exams-dynamic.html?round570-answer-depth-eighth-pass-proof-ui-sync-20260629&from=current-student-path')+'">'+esc(n.n)+'做全部真题练习</a><a href="'+esc(n.m||'/modules/simulated-exams-dynamic.html?from=student-path')+'">'+esc(n.n)+'模拟题（非真题）</a>').join('')+'<span class="path-note">模拟章节题来自教材主题启发，独立题包，不混入正式真题。</span></div>';
 }
 function renderPathNext(nodeStatus,doneCount,total){
   const box=$('#pathNext');if(!box)return;
   if(doneCount>=total){
-    box.innerHTML='<strong>六章主线已完成。</strong> 下一步进入 <a href="/modules/real-exams-dynamic.html?round569-answer-depth-seventh-pass-workbench-proof-sync-20260629&from=current-student-path-complete">历年真题</a> 做一套限时回顾。'+renderChapterPracticeLinks(nodeStatus);
+    box.innerHTML='<strong>六章主线已完成。</strong> 下一步进入 <a href="/modules/real-exams-dynamic.html?round570-answer-depth-eighth-pass-proof-ui-sync-20260629&from=current-student-path-complete">历年真题</a> 做一套限时回顾。'+renderChapterPracticeLinks(nodeStatus);
     return;
   }
   const current=nodeStatus.find(n=>n.cur)||nodeStatus.find(n=>!n.done)||nodeStatus[0];

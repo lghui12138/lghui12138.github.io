@@ -195,6 +195,26 @@ const staleCurrentPatterns = [
 const staleHits = staleCurrentPatterns.filter((pattern) => [home, questionBank, realExamPage, resources, middleware, edgeJs].some((text) => text.includes(pattern)));
 check('current-page stale Round569/old count phrases removed', staleHits.length === 0, { staleHits });
 
+const runtimeVersionFiles = [
+  'js/core/local-mathjax.js',
+  'modules/knowledge-detail.html',
+  'modules/knowledge-upgrade-2026.html',
+  'modules/question-bank-data.js',
+  'js/fluid-home-complete.js',
+  'modules/simulated-exams-dynamic.html',
+  'modules/fluid-intensive-training.html',
+  'modules/teacher-panel.html'
+];
+const runtimeVersionScan = runtimeVersionFiles.map((rel) => {
+  const text = readText(rel);
+  return {
+    rel,
+    hasRound570: text.includes(round570.version),
+    staleRound569Hits: text.split(round570.previousVersion).length - 1
+  };
+});
+check('runtime cache-bust files use Round570 version only', runtimeVersionScan.every((row) => row.hasRound570 && row.staleRound569Hits === 0), { rows: runtimeVersionScan });
+
 check('site updates top entry is Round570', Array.isArray(siteUpdates)
   && siteUpdates[0]?.version === round570.version
   && siteUpdates[0]?.metrics?.realExamAnswerDepthRows === 122
