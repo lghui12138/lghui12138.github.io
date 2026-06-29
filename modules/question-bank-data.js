@@ -112,7 +112,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round567-answer-depth-fifth-pass-proof-growth-20260629';
+    const practiceModuleVersion = 'round568-answer-depth-sixth-pass-proof-ui-sync-20260629';
 
     function requestedFocusBankId() {
         try {
@@ -142,12 +142,12 @@ window.QuestionBankData = (function() {
         if (!is181103MaterialBank(bank)) return null;
         return {
             totalAnswerBlocks: 522,
-            defaultPracticeRows: Number(bank.defaultPracticeQuestionCount || bank.practiceEntryQuestionCount || 381),
-            readyReferenceAnswerCount: 381,
+            defaultPracticeRows: Number(bank.defaultPracticeQuestionCount || bank.practiceEntryQuestionCount || 400),
+            readyReferenceAnswerCount: 400,
             manualSourceReviewCount: 0,
-            sourceClueCount: Number(bank.sourceSemanticContentCardCount || bank.sourceContentCardCount || 141),
+            sourceClueCount: Number(bank.sourceSemanticContentCardCount || bank.sourceContentCardCount || 122),
             statusHref: '/modules/question-bank.html?focus=181103-material-extracted&answer_status=current#questionBanksList',
-            boundary: '522 是来源卡/答案块核对数；390 道默认练习题可直接参考，0 道保留待人工源页复核，141 条只作源文线索。'
+            boundary: '522 是来源卡/答案块核对数；400 道默认练习题可直接参考，0 道保留待人工源页复核，122 条只作源文线索。'
         };
     }
 
@@ -162,7 +162,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round567-answer-depth-fifth-pass-proof-growth-20260629/.test(versionText);
+        return /round568-answer-depth-sixth-pass-proof-ui-sync-20260629/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {
@@ -296,8 +296,8 @@ window.QuestionBankData = (function() {
             '答案状态',
             '可直接参考答案',
             '待人工源页复核',
-            '381可参考',
-            '381+0'
+            '400可参考',
+            '400+0'
         ])];
     }
 
@@ -1021,7 +1021,7 @@ window.QuestionBankData = (function() {
             if (currentFilters.count) activeFilters.push(`题量：${countText[currentFilters.count] || currentFilters.count}`);
             if (requestedFocusBankId() === '181103-material-extracted' && requestedAnswerStatus() === 'current') {
                 activeFilters.push('181103参考答案状态：当前');
-                activeFilters.push('381可参考/0待复核/141线索');
+                activeFilters.push('400可参考/0待复核/122线索');
             }
 
             const totalQuestions = filteredBanks.reduce((sum, bank) => sum + (Number(bank.questionCount) || 0), 0);
@@ -1173,7 +1173,7 @@ window.QuestionBankData = (function() {
             }, 120);
             if (typeof showNotification === 'function') {
                 const suffix = focusId === '181103-material-extracted' && answerStatus === 'current'
-                    ? '：381 可直接参考，0 道待人工源页复核，132 条源文线索'
+                    ? '：400 可直接参考，0 道待人工源页复核，122 条源文线索'
                     : '';
                 showNotification(`已定位到「${targetBank.name}」${suffix}`, 'success', 4200);
             }
