@@ -4,7 +4,7 @@ import http from 'node:http';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
-import { round579 } from './round579-real-exam-answer-depth-data.mjs';
+import { round580 } from './round580-question-bank-focus-polish-data.mjs';
 
 const require = createRequire(import.meta.url);
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -13,17 +13,17 @@ const { chromium } = require(require.resolve('playwright', { paths: [process.env
 
 const chromeExecutable = process.env.CHROME_EXECUTABLE || '';
 const qaDir = path.join(repoRoot, 'output/qa');
-const outJson = path.join(qaDir, 'round579-question-bank-home-focus-visual-gate.json');
+const outJson = path.join(qaDir, 'round580-question-bank-home-focus-visual-gate.json');
 
 if (repoRoot.startsWith('/Volumes/mac_2T') || process.cwd().startsWith('/Volumes/mac_2T')) {
-  throw new Error('Refusing to run Round579 visual QA from /Volumes/mac_2T during lifs isolation.');
+  throw new Error('Refusing to run Round580 visual QA from /Volumes/mac_2T during lifs isolation.');
 }
 
 fs.mkdirSync(qaDir, { recursive: true });
 
 const qaUser = {
-  username: 'round579-home-focus-student',
-  name: 'Round579 Home Focus QA',
+  username: 'round580-home-focus-student',
+  name: 'Round580 Home Focus QA',
   role: 'student',
   access: 'active',
   status: 'active'
@@ -129,13 +129,13 @@ async function evaluateHomePage(browser, port, viewport) {
   const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
   await installAuth(page);
   const diagnostics = wirePageDiagnostics(page);
-  const href = `/question-bank-home.html?edge_refresh=${encodeURIComponent(round579.version)}`;
+  const href = `/question-bank-home.html?edge_refresh=${encodeURIComponent(round580.version)}`;
   await page.goto(localUrl(port, href), { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForSelector('[data-round385-181103-main-entry="question-bank-home"]', { state: 'visible', timeout: 30000 });
   await page.waitForTimeout(500);
 
-  const screenshot = path.join(qaDir, `round579-question-bank-home-${viewport.name}.png`);
-  const firstView = path.join(qaDir, `round579-question-bank-home-${viewport.name}-firstview.png`);
+  const screenshot = path.join(qaDir, `round580-question-bank-home-${viewport.name}.png`);
+  const firstView = path.join(qaDir, `round580-question-bank-home-${viewport.name}-firstview.png`);
   await page.screenshot({ path: firstView, fullPage: false });
   await page.screenshot({ path: screenshot, fullPage: true });
 
@@ -192,7 +192,7 @@ async function evaluateHomePage(browser, port, viewport) {
       screenshot,
       firstView,
       versionPresent: bodyText.includes(version),
-      round579LedgerLinkPresent: bodyHtml.includes('data/fluid-round579-real-exam-answer-depth-upgrade.json'),
+      round580LedgerLinkPresent: bodyHtml.includes('data/fluid-round580-question-bank-focus-polish-ledger.json'),
       summaryVisible: visible(summary),
       summaryHeight: summaryRect ? Math.round(summaryRect.height) : null,
       entryVisible: visible(entry),
@@ -218,7 +218,7 @@ async function evaluateHomePage(browser, port, viewport) {
       touchFailures,
       noStaleVisibleCounts: !/(145 深补|153 深补|381 练习|141 源文|132 条参考答案页|edge_refresh=round578-real-exam-answer-depth-eleventh-pass-20260629|edge_refresh=round577-181103-proof-depth-second-pass-20260629)/.test(bodyHtml)
     };
-  }, { version: round579.version, viewport, screenshot, firstView });
+  }, { version: round580.version, viewport, screenshot, firstView });
   await page.close();
   return { ...result, ...diagnostics };
 }
@@ -227,7 +227,7 @@ async function evaluateFocusPage(browser, port, viewport) {
   const page = await browser.newPage({ viewport: { width: viewport.width, height: viewport.height } });
   await installAuth(page);
   const diagnostics = wirePageDiagnostics(page);
-  const href = `/modules/question-bank.html?focus=181103-material-extracted&answer_status=current&edge_refresh=${encodeURIComponent(round579.version)}#questionBanksList`;
+  const href = `/modules/question-bank.html?focus=181103-material-extracted&answer_status=current&edge_refresh=${encodeURIComponent(round580.version)}#questionBanksList`;
   await page.goto(localUrl(port, href), { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForSelector('[data-bank-id="181103-material-extracted"]', { state: 'visible', timeout: 30000 });
   await page.evaluate(() => {
@@ -235,8 +235,8 @@ async function evaluateFocusPage(browser, port, viewport) {
   });
   await page.waitForTimeout(1200);
 
-  const screenshot = path.join(qaDir, `round579-question-bank-focus-${viewport.name}.png`);
-  const firstView = path.join(qaDir, `round579-question-bank-focus-${viewport.name}-firstview.png`);
+  const screenshot = path.join(qaDir, `round580-question-bank-focus-${viewport.name}.png`);
+  const firstView = path.join(qaDir, `round580-question-bank-focus-${viewport.name}-firstview.png`);
   await page.screenshot({ path: firstView, fullPage: false });
   await page.screenshot({ path: screenshot, fullPage: true });
 
@@ -316,7 +316,7 @@ async function evaluateFocusPage(browser, port, viewport) {
       touchFailures,
       noStaleVisibleCounts: !/(381 练习|141 源文|132 条参考答案页|145 深补|153 深补|edge_refresh=round578-real-exam-answer-depth-eleventh-pass-20260629|edge_refresh=round577-181103-proof-depth-second-pass-20260629)/.test(bodyHtml)
     };
-  }, { version: round579.version, viewport, screenshot, firstView });
+  }, { version: round580.version, viewport, screenshot, firstView });
   await page.close();
   return { ...result, ...diagnostics };
 }
@@ -346,7 +346,7 @@ try {
 }
 
 const homeOk = homeResults.every((result) => result.versionPresent
-  && result.round579LedgerLinkPresent
+  && result.round580LedgerLinkPresent
   && result.summaryVisible
   && result.entryVisible
   && result.entryNearTop
@@ -385,7 +385,7 @@ const focusOk = focusResults.every((result) => result.versionPresent
 
 const report = {
   ok: homeOk && focusOk,
-  version: round579.version,
+  version: round580.version,
   generatedAt: new Date().toISOString(),
   homeResults,
   focusResults
