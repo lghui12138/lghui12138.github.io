@@ -15,6 +15,10 @@ window.QuestionBankData = (function() {
     };
     let currentPage = 1;
     let itemsPerPage = 6;
+    let searchFilterTimer = null;
+    let searchFilterGeneration = 0;
+    let searchInputComposing = false;
+    let lastFilterSignature = null;
 
     // 题库数据源配置
     const DATA_SOURCES = {
@@ -31,6 +35,44 @@ window.QuestionBankData = (function() {
     }
 
     const dialogFocusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+    function prefersReducedMotion() {
+        return Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    }
+
+    function getScrollBehavior() {
+        return prefersReducedMotion() ? 'auto' : 'smooth';
+    }
+
+    function safeScrollIntoView(node, options = {}) {
+        if (!node || typeof node.scrollIntoView !== 'function') return;
+        try {
+            node.scrollIntoView({
+                ...options,
+                behavior: options.behavior || getScrollBehavior()
+            });
+        } catch (_) {}
+    }
+
+    function cssEscape(value) {
+        const text = String(value == null ? '' : value);
+        if (window.CSS && typeof window.CSS.escape === 'function') {
+            return window.CSS.escape(text);
+        }
+        return text.replace(/["\\]/g, '\\$&');
+    }
+
+    function cancelPendingSearchFilter() {
+        searchFilterGeneration += 1;
+        if (searchFilterTimer) {
+            clearTimeout(searchFilterTimer);
+            searchFilterTimer = null;
+        }
+    }
+
+    function currentFilterSignature() {
+        return JSON.stringify(currentFilters) + `|banks:${questionBanks.length}`;
+    }
 
     function closePracticeDialog() {
         const dialog = document.querySelector('.practice-dialog');
@@ -112,7 +154,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round582-question-bank-home-polish-20260630';
+    const practiceModuleVersion = 'round583-question-bank-interaction-a11y-20260630';
 
     function requestedFocusBankId() {
         try {
@@ -162,7 +204,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round582-question-bank-home-polish-20260630/.test(versionText);
+        return /round583-question-bank-interaction-a11y-20260630/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {
@@ -311,6 +353,10 @@ window.QuestionBankData = (function() {
         })[ch]);
     }
 
+    function escapeInlineJsonArg(value) {
+        return escapeHtml(JSON.stringify(String(value == null ? '' : value)));
+    }
+
     function stripHtmlText(value) {
         return String(value == null ? '' : value)
             .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -353,6 +399,36 @@ window.QuestionBankData = (function() {
     function is181103MaterialQuestion(question) {
         return Boolean(question && question.extractedFromMaterial === true
             && /\/resources\/fluid-181103-html\/materials\//.test(String(question.sourceHtmlUrl || question.htmlQuestionSourceUrl || '')));
+    }
+
+    function get181103CardKind(question) {
+        return String(question && (
+            question.sourceSemanticQuestionCardKind
+            || question.round373QuestionCardKind
+            || question.round372QuestionCardKind
+            || ''
+        ) || '');
+    }
+
+    function is181103CurrentPracticeQuestion(question) {
+        if (!question || typeof question !== 'object') return false;
+        if (!(question.questionHtml || question.promptHtml)) return false;
+        if (question.defaultPracticeEligible === false) return false;
+        if (question.practiceEntryEnabled === false) return false;
+        if (question.defaultHidden === true) return false;
+        const kind = get181103CardKind(question);
+        if (kind === 'source-content-card') {
+            return question.defaultPracticeEligible === true
+                && question.practiceEntryEnabled === true
+                && question.defaultHidden === false;
+        }
+        return question.sourceSemanticPracticeEligible !== false;
+    }
+
+    function is181103SourceClueOnly(question) {
+        if (!question || typeof question !== 'object') return false;
+        return get181103CardKind(question) === 'source-content-card'
+            && !is181103CurrentPracticeQuestion(question);
     }
 
     function sourceImageFromQuestion(question) {
@@ -606,7 +682,7 @@ window.QuestionBankData = (function() {
         category: '六章真题练习',
         lastUpdated: '2026-05-25',
         practiceUrl: `/modules/practice-dynamic.html?type=real&chapter=${item.chapter}&mode=normal&from=question-bank`,
-        realExamUrl: `/modules/real-exams-dynamic.html?edge_refresh=round582-question-bank-home-polish-20260630&chapter=${item.chapter}&from=question-bank`,
+        realExamUrl: `/modules/real-exams-dynamic.html?edge_refresh=round583-question-bank-interaction-a11y-20260630&chapter=${item.chapter}&from=question-bank`,
         knowledgeUrl: `/modules/knowledge-detail.html?chapter=${item.chapter}`
     }));
 
@@ -883,12 +959,44 @@ window.QuestionBankData = (function() {
         bindEvents: function() {
             // 搜索框事件
             const searchInput = document.getElementById('questionBankSearch');
-            if (searchInput) {
-                searchInput.addEventListener('input', (e) => {
-                    currentFilters.search = e.target.value;
-                    this.applyFilters();
+            const smartSearchInput = document.getElementById('smartSearchInput');
+            const syncSearchInputs = (value, source) => {
+                [searchInput, smartSearchInput].forEach(input => {
+                    if (input && input !== source) input.value = value;
                 });
-            }
+            };
+            const scheduleSearchFilter = (value, source) => {
+                const generation = ++searchFilterGeneration;
+                currentFilters.search = value;
+                syncSearchInputs(value, source);
+                if (searchFilterTimer) {
+                    clearTimeout(searchFilterTimer);
+                }
+                searchFilterTimer = setTimeout(() => {
+                    if (generation !== searchFilterGeneration) return;
+                    searchFilterTimer = null;
+                    this.applyFilters();
+                }, 120);
+            };
+            const bindSearchControl = (input) => {
+                if (!input) return;
+                let composing = false;
+                input.addEventListener('compositionstart', () => {
+                    composing = true;
+                    searchInputComposing = true;
+                });
+                input.addEventListener('compositionend', (e) => {
+                    composing = false;
+                    searchInputComposing = false;
+                    scheduleSearchFilter(e.target.value, input);
+                });
+                input.addEventListener('input', (e) => {
+                    if (composing || e.isComposing) return;
+                    scheduleSearchFilter(e.target.value, input);
+                });
+            };
+            bindSearchControl(searchInput);
+            bindSearchControl(smartSearchInput);
 
             // 筛选器事件
             ['difficultyFilter', 'tagFilter', 'countFilter'].forEach(id => {
@@ -922,8 +1030,11 @@ window.QuestionBankData = (function() {
                     currentFilters.difficulty = '';
                     currentFilters.tag = '';
                     currentFilters.count = '';
+                    cancelPendingSearchFilter();
                     const searchInput = document.getElementById('questionBankSearch');
                     if (searchInput) searchInput.value = search;
+                    const smartSearchInput = document.getElementById('smartSearchInput');
+                    if (smartSearchInput) smartSearchInput.value = search;
                     ['difficultyFilter', 'tagFilter', 'countFilter'].forEach(id => {
                         const element = document.getElementById(id);
                         if (element) element.value = '';
@@ -931,7 +1042,7 @@ window.QuestionBankData = (function() {
                     this.applyFilters();
                     const list = document.getElementById('questionBanksList');
                     if (list) {
-                        try { list.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (_) {}
+                        safeScrollIntoView(list, { block: 'start' });
                     }
                     notify(`已筛选「${search}」对应的 181103 资料题库`, 'success', 3000);
                 });
@@ -1063,7 +1174,13 @@ window.QuestionBankData = (function() {
         },
 
         // 应用筛选
-        applyFilters: function() {
+        applyFilters: function(options = {}) {
+            const force = options === true || options.force === true;
+            const nextSignature = currentFilterSignature();
+            const shouldRender = nextSignature !== lastFilterSignature || currentPage !== 1;
+            if (!force && !shouldRender) return;
+            lastFilterSignature = nextSignature;
+
             filteredBanks = questionBanks.filter(bank => {
                 // 搜索筛选
                 if (currentFilters.search) {
@@ -1120,6 +1237,7 @@ window.QuestionBankData = (function() {
 
         // 清除筛选
         clearFilters: function() {
+            cancelPendingSearchFilter();
             currentFilters = {
                 search: '',
                 difficulty: '',
@@ -1129,14 +1247,14 @@ window.QuestionBankData = (function() {
             };
 
             // 清空UI
-            ['questionBankSearch', 'difficultyFilter', 'tagFilter', 'countFilter'].forEach(id => {
+            ['questionBankSearch', 'smartSearchInput', 'difficultyFilter', 'tagFilter', 'countFilter'].forEach(id => {
                 const element = document.getElementById(id);
                 if (element) {
                     element.value = '';
                 }
             });
 
-            this.applyFilters();
+            this.applyFilters({ force: true });
             showNotification('已清除所有筛选条件', 'info');
         },
 
@@ -1156,24 +1274,28 @@ window.QuestionBankData = (function() {
                 return false;
             }
 
+            lastFilterSignature = null;
             filteredBanks = [targetBank];
             currentPage = 1;
             currentFilters.search = '181103';
+            cancelPendingSearchFilter();
             const searchInput = document.getElementById('questionBankSearch');
             if (searchInput) searchInput.value = '181103';
+            const smartSearchInput = document.getElementById('smartSearchInput');
+            if (smartSearchInput) smartSearchInput.value = '181103';
             this.renderQuestionBanks();
             this.updatePagination();
             this.renderFilterSummary();
 
             setTimeout(() => {
-                const bankCard = document.querySelector(`[data-bank-id="${targetBank.id}"]`) || document.getElementById('questionBanksList');
+                const bankCard = document.querySelector(`[data-bank-id="${cssEscape(targetBank.id)}"]`) || document.getElementById('questionBanksList');
                 const focusSection = focusId === '181103-material-extracted' && bankCard
                     ? bankCard.closest('section')
                     : null;
                 const scrollTarget = focusSection || bankCard;
                 if (scrollTarget) {
                     const block = focusId === '181103-material-extracted' ? 'start' : 'center';
-                    try { scrollTarget.scrollIntoView({ behavior: 'smooth', block }); } catch (_) {}
+                    safeScrollIntoView(scrollTarget, { block });
                 }
                 const focusTarget = bankCard && bankCard.querySelector('a,button,[tabindex]:not([tabindex="-1"])');
                 if (focusTarget && typeof focusTarget.focus === 'function') {
@@ -1236,18 +1358,19 @@ window.QuestionBankData = (function() {
             const safeId = escapeHtml(bank.id);
             const safeName = escapeHtml(bank.name || bank.id || '未命名题库');
             const safeDescription = escapeHtml(bank.description || '题库已就绪，可直接进入练习。');
+            const bankIdArg = escapeInlineJsonArg(bank.id);
             const questionCount = Number(bank.questionCount || 0);
             const primaryAction = bank.practiceUrl
                 ? `<a class="btn btn-primary" href="${escapeHtml(bank.practiceUrl)}"><i class="fas fa-play"></i> 章节练习</a>`
-                : `<button class="btn btn-primary" onclick="QuestionBankData.startPractice('${bank.id}')"><i class="fas fa-play"></i> 开始练习</button>`;
+                : `<button class="btn btn-primary" onclick="QuestionBankData.startPractice(${bankIdArg})"><i class="fas fa-play"></i> 开始练习</button>`;
             const secondaryAction = bank.sourceHtmlIndexUrl
                 ? `<a class="btn btn-info" href="${escapeHtml(bank.sourceHtmlIndexUrl)}"><i class="fas fa-file-alt"></i> HTML资料</a>`
                 : bank.realExamUrl
                 ? `<a class="btn btn-info" href="${escapeHtml(bank.realExamUrl)}"><i class="fas fa-file-alt"></i> 真题包</a>`
-                : `<button class="btn btn-info" onclick="QuestionBankData.previewBank('${bank.id}')"><i class="fas fa-eye"></i> 预览</button>`;
+                : `<button class="btn btn-info" onclick="QuestionBankData.previewBank(${bankIdArg})"><i class="fas fa-eye"></i> 预览</button>`;
             const thirdAction = bank.knowledgeUrl
                 ? `<a class="btn btn-success" href="${escapeHtml(bank.knowledgeUrl)}"><i class="fas fa-book-open"></i> 知识点</a>`
-                : `<button class="btn btn-success" onclick="QuestionBankData.quickTest('${bank.id}')"><i class="fas fa-rocket"></i> 快速测试</button>`;
+                : `<button class="btn btn-success" onclick="QuestionBankData.quickTest(${bankIdArg})"><i class="fas fa-rocket"></i> 快速测试</button>`;
             const defaultPracticeCount = Number(bank.defaultPracticeQuestionCount ?? bank.questionCount ?? bank.qualityShowCount ?? 0);
             const sourceFirstCount = Number(bank.sourceFirstReviewQuestionCount ?? bank.questionCount ?? 0);
             const sourceContentCardCount = Number(bank.sourceSemanticContentCardCount ?? bank.sourceContentCardCount ?? 0);
@@ -1275,7 +1398,7 @@ window.QuestionBankData = (function() {
                     <span class="qb-chip qb-chip--warn">${answerStatusLedger.manualSourceReviewCount} 道待人工源页复核</span>
                     <span class="qb-chip qb-chip--info">源文线索 ${answerStatusLedger.sourceClueCount}</span>
                     <span class="qb-chip qb-chip--quiet">网页答案块 ${answerStatusLedger.totalAnswerBlocks}</span>
-                    ${is181103Bank ? '<span class="qb-ledger-line" data-round577-focus-boundary="1">Round577：8 道 181103 证明题已二次重证；版本 round582-question-bank-home-polish-20260630，严格答案 PDF 证据仍单独为 0（strictAnswerPdfProof=0）。</span>' : ''}
+                    ${is181103Bank ? '<span class="qb-ledger-line" data-round577-focus-boundary="1">Round577：8 道 181103 证明题已二次重证；版本 round583-question-bank-interaction-a11y-20260630，严格答案 PDF 证据仍单独为 0（strictAnswerPdfProof=0）。</span>' : ''}
                     <span class="qb-ledger-line">${escapeHtml(answerStatusLedger.boundary)}</span>
                   </div>`
                 : '';
@@ -1304,7 +1427,7 @@ window.QuestionBankData = (function() {
                         <span class="qb-card-subtitle">${headerSubtitle}</span>
                         <button type="button"
                                 class="qb-favorite-btn${isFavorite ? ' is-active' : ''}"
-                                onclick="QuestionBankData.toggleFavorite('${bank.id}')"
+                                onclick="QuestionBankData.toggleFavorite(${bankIdArg})"
                                 title="${favoriteLabel}"
                                 aria-label="${favoriteLabel}：${safeName}"
                                 aria-pressed="${isFavorite ? 'true' : 'false'}">
@@ -1452,6 +1575,7 @@ window.QuestionBankData = (function() {
                 return;
             }
 
+            lastFilterSignature = null;
             filteredBanks = favoriteBanks;
             currentPage = 1;
             this.renderQuestionBanks();
@@ -1479,53 +1603,52 @@ window.QuestionBankData = (function() {
 
             const modal = document.createElement('div');
             modal.id = 'favoriteManagerModal';
+            modal.className = 'favorite-manager-modal';
             modal.setAttribute('role', 'dialog');
             modal.setAttribute('aria-modal', 'true');
             modal.setAttribute('aria-labelledby', 'favoriteManagerTitle');
             modal.setAttribute('tabindex', '-1');
             modal.__previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-            modal.style.cssText = `
-                position: fixed;
-                inset: 0;
-                background: rgba(0, 0, 0, 0.72);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 10001;
-                padding: 20px;
-            `;
 
             const emptyState = `
-                <div style="text-align:center;color:#666;padding:24px 0;">
-                    <div style="font-size:2rem;margin-bottom:12px;">⭐</div>
+                <div class="favorite-manager-empty">
+                    <div class="favorite-manager-empty__icon" aria-hidden="true">⭐</div>
                     <div>当前还没有收藏题库</div>
                 </div>
             `;
 
-            const listHtml = favoriteBanks.map(bank => `
-                <div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin-bottom:12px;background:#f8fbff;">
-                    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;">
-                        <div>
-                            <div style="font-weight:700;color:#0f172a;margin-bottom:6px;">${bank.name}</div>
-                            <div style="font-size:0.92rem;color:#475569;line-height:1.5;">${bank.description || `${bank.questionCount} 道题`}</div>
-                            <div style="font-size:0.85rem;color:#64748b;margin-top:8px;">${bank.questionCount} 题 · ${bank.tags.join(' / ')}</div>
+            const listHtml = favoriteBanks.map(bank => {
+                const safeBankId = escapeHtml(bank.id);
+                const safeBankName = escapeHtml(bank.name || bank.id || '未命名题库');
+                const safeBankDesc = escapeHtml(bank.description || `${Number(bank.questionCount || 0)} 道题`);
+                const safeTags = (Array.isArray(bank.tags) ? bank.tags : [])
+                    .map(tag => escapeHtml(tag))
+                    .join(' / ');
+                return `
+                <div class="favorite-manager-item">
+                    <div class="favorite-manager-item__row">
+                        <div class="favorite-manager-item__main">
+                            <div class="favorite-manager-item__title">${safeBankName}</div>
+                            <div class="favorite-manager-item__desc">${safeBankDesc}</div>
+                            <div class="favorite-manager-item__meta">${Number(bank.questionCount || 0)} 题${safeTags ? ` · ${safeTags}` : ''}</div>
                         </div>
-                        <div style="display:flex;gap:8px;flex-shrink:0;">
-                            <button class="btn btn-info" onclick="QuestionBankData.focusFavoriteBank('${bank.id}')">定位题库</button>
-                            <button class="btn btn-danger" onclick="QuestionBankData.removeFavoriteAndRefresh('${bank.id}')">取消收藏</button>
+                        <div class="favorite-manager-actions">
+                            <button class="btn btn-info" type="button" data-favorite-action="focus" data-bank-id="${safeBankId}">定位题库</button>
+                            <button class="btn btn-danger" type="button" data-favorite-action="remove" data-bank-id="${safeBankId}">取消收藏</button>
                         </div>
                     </div>
                 </div>
-            `).join('');
+            `;
+            }).join('');
 
             modal.innerHTML = `
-                <div style="width:min(760px, 100%);max-height:80vh;overflow:auto;background:#fff;border-radius:18px;padding:24px;box-shadow:0 20px 60px rgba(15,23,42,.35);">
-                    <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px;">
+                <div class="favorite-manager-panel">
+                    <div class="favorite-manager-head">
                         <div>
-                            <h3 id="favoriteManagerTitle" style="margin:0;color:#0f172a;">📋 收藏管理</h3>
-                            <p style="margin:8px 0 0;color:#64748b;">可直接定位到收藏题库，或在这里取消收藏。</p>
+                            <h3 id="favoriteManagerTitle">收藏管理</h3>
+                            <p>可直接定位到收藏题库，或在这里取消收藏。</p>
                         </div>
-                        <button class="btn btn-warning" onclick="QuestionBankData.closeFavoriteManager()">关闭</button>
+                        <button class="btn btn-warning" type="button" data-favorite-close="1">关闭</button>
                     </div>
                     ${favoriteBanks.length ? listHtml : emptyState}
                 </div>
@@ -1533,7 +1656,21 @@ window.QuestionBankData = (function() {
 
             modal.addEventListener('click', (event) => {
                 if (event.target === modal) {
-                    modal.remove();
+                    this.closeFavoriteManager();
+                    return;
+                }
+                const closeButton = event.target.closest && event.target.closest('[data-favorite-close]');
+                if (closeButton) {
+                    this.closeFavoriteManager();
+                    return;
+                }
+                const actionButton = event.target.closest && event.target.closest('[data-favorite-action]');
+                if (!actionButton) return;
+                const bankId = actionButton.getAttribute('data-bank-id') || '';
+                if (actionButton.dataset.favoriteAction === 'focus') {
+                    this.focusFavoriteBank(bankId);
+                } else if (actionButton.dataset.favoriteAction === 'remove') {
+                    this.removeFavoriteAndRefresh(bankId);
                 }
             });
             modal.addEventListener('keydown', (event) => {
@@ -1575,27 +1712,12 @@ window.QuestionBankData = (function() {
         },
 
         showHelp: function() {
-            const helpContent = `
-                <div style="text-align: left;">
-                    <h4>🔍 搜索功能</h4>
-                    <p>• 支持题库名称、描述、标签搜索</p>
-                    <p>• 支持模糊匹配</p>
-
-                    <h4>⚙️ 筛选功能</h4>
-                    <p>• 按难度筛选：简单、中等、困难</p>
-                    <p>• 按分类筛选：不同知识点分类</p>
-                    <p>• 按题目数量筛选</p>
-
-                    <h4>⭐ 收藏功能</h4>
-                    <p>• 点击心形图标收藏题库</p>
-                    <p>• 查看我的收藏列表</p>
-
-                    <h4>🎯 练习模式</h4>
-                    <p>• 开始练习：完整练习模式</p>
-                    <p>• 预览：查看题库详情</p>
-                    <p>• 快速测试：随机选题测试</p>
-                </div>
-            `;
+            const helpContent = [
+                '搜索：题库名称、简介、标签都可匹配。',
+                '筛选：可按难度、分类和题量收窄。',
+                '收藏：心形按钮可收藏，收藏管理可定位或取消。',
+                '练习：开始练习、预览、快速测试分别对应完整练习、题库详情和随机选题。'
+            ].join('\n');
 
             showNotification(helpContent, 'info', 8000);
         },
@@ -1699,7 +1821,9 @@ window.QuestionBankData = (function() {
             }
 
             filteredBanks = [targetBank];
+            lastFilterSignature = null;
             currentPage = 1;
+            currentFilters.search = '';
             this.renderQuestionBanks();
             this.updatePagination();
 
@@ -1707,10 +1831,15 @@ window.QuestionBankData = (function() {
             if (searchInput) {
                 searchInput.value = '';
             }
+            const smartSearchInput = document.getElementById('smartSearchInput');
+            if (smartSearchInput) {
+                smartSearchInput.value = '';
+            }
+            cancelPendingSearchFilter();
 
-            const bankCard = document.querySelector(`[data-bank-id="${targetBank.id}"]`);
+            const bankCard = document.querySelector(`[data-bank-id="${cssEscape(targetBank.id)}"]`);
             if (bankCard) {
-                bankCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                safeScrollIntoView(bankCard, { block: 'center' });
                 const focusTarget = bankCard.querySelector('a,button,[tabindex]:not([tabindex="-1"])');
                 if (focusTarget && typeof focusTarget.focus === 'function') {
                     setTimeout(() => {
@@ -1782,7 +1911,7 @@ window.QuestionBankData = (function() {
                     ? questions.filter(q => q && !(q.questionHtml || q.promptHtml)).length
                     : 0;
                 const sourceContentCardCount = isMaterial181103
-                    ? questions.filter(q => q && (q.sourceSemanticQuestionCardKind === 'source-content-card' || q.round373QuestionCardKind === 'source-content-card' || q.round372QuestionCardKind === 'source-content-card')).length
+                    ? questions.filter(is181103SourceClueOnly).length
                     : 0;
                 const randomPracticeQuestionCount = isMaterial181103 ? defaultPracticeQuestions.length : questions.length;
                 const randomButtonStyle = randomPracticeQuestionCount
@@ -1793,6 +1922,12 @@ window.QuestionBankData = (function() {
                     ? 'width: 100%; padding: 10px; background: #4CAF50; color: white; border: none; border-radius: 5px; cursor: pointer; margin-bottom: 10px;'
                     : 'width: 100%; padding: 10px; background: #9ca3af; color: white; border: none; border-radius: 5px; cursor: not-allowed; margin-bottom: 10px;';
                 const defaultButtonDisabled = defaultPracticeQuestions.length === 0 ? 'disabled aria-disabled="true"' : '';
+                const safePracticeBankName = escapeHtml(bank.name || bank.id || '未命名题库');
+                const bankIdArg = escapeInlineJsonArg(bank.id);
+                const yearOptions = years.map(year => {
+                    const safeYear = escapeHtml(year);
+                    return `<option value="${safeYear}">${safeYear}年</option>`;
+                }).join('');
 
                 // 创建选择对话框
                 const dialog = document.createElement('div');
@@ -1822,7 +1957,7 @@ window.QuestionBankData = (function() {
 
                 content.innerHTML = `
                     <h3 id="practiceDialogTitle" style="margin: 0 0 20px 0; color: #333;">选择练习模式</h3>
-                    <p style="margin: 0 0 20px 0; color: #666;">题库: ${bank.name} (共${questions.length}题)</p>
+                    <p style="margin: 0 0 20px 0; color: #666;">题库: ${safePracticeBankName} (共${questions.length}题)</p>
                     ${isMaterial181103 ? `
                     <div data-181103-practice-quality-panel="1" style="margin:0 0 18px 0;padding:12px 14px;border:1px solid #fde68a;background:#fffbeb;color:#78350f;border-radius:10px;line-height:1.55;">
                         当前 181103 资料内 ${questions.length} 张来源卡已生成 ${htmlQuestionCount} 条 HTML 题面；${defaultPracticeQuestions.length} 道独立题进入刷题，${sourceContentCardCount} 张源文/答案续页/讲义正文只作线索展示；无 HTML 题面占位 ${placeholderCount} 题。
@@ -1833,11 +1968,11 @@ window.QuestionBankData = (function() {
 
                     <div style="margin-bottom: 20px;">
                         <h4 style="margin: 0 0 10px 0; color: #333;">📚 完整练习</h4>
-                        <button onclick="QuestionBankData.startFullPractice('${bank.id}')" ${defaultButtonDisabled}
+                        <button onclick="QuestionBankData.startFullPractice(${bankIdArg})" ${defaultButtonDisabled}
                                 style="${defaultButtonStyle}">
                             ${isMaterial181103 ? `练习 181103 独立题 ${defaultPracticeQuestions.length} 题` : `练习全部 ${questions.length} 题`}
                         </button>
-                        ${isMaterial181103 ? `<button data-181103-practice-all="1" onclick="QuestionBankData.startAllMaterialPractice('${bank.id}')"
+                        ${isMaterial181103 ? `<button data-181103-practice-all="1" onclick="QuestionBankData.startAllMaterialPractice(${bankIdArg})"
                                 style="width: 100%; padding: 10px; background: #7c3aed; color: white; border: none; border-radius: 5px; cursor: pointer;">
                             HTML 题面刷 ${defaultPracticeQuestions.length} 道独立题
                         </button>` : ''}
@@ -1845,10 +1980,10 @@ window.QuestionBankData = (function() {
 
                     <div style="margin-bottom: 20px;">
                         <h4 style="margin: 0 0 10px 0; color: #333;">🎲 随机练习</h4>
-                        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <div data-round583-practice-row="random" style="display: flex; gap: 10px; margin-bottom: 10px;">
                             <input type="number" id="randomCount" value="${Math.min(5, Math.max(randomPracticeQuestionCount, 1))}" min="1" max="${Math.max(randomPracticeQuestionCount, 1)}"
                                    style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 3px;">
-                            <button onclick="QuestionBankData.startRandomPractice('${bank.id}')" ${randomButtonDisabled}
+                            <button onclick="QuestionBankData.startRandomPractice(${bankIdArg})" ${randomButtonDisabled}
                                     style="${randomButtonStyle}">
                                 随机练习
                             </button>
@@ -1860,9 +1995,9 @@ window.QuestionBankData = (function() {
                         <h4 style="margin: 0 0 10px 0; color: #333;">📅 按年份练习</h4>
                         <select id="yearSelect" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 3px; margin-bottom: 10px;">
                             <option value="">选择年份</option>
-                            ${years.map(year => `<option value="${year}">${year}年</option>`).join('')}
+                            ${yearOptions}
                         </select>
-                        <button onclick="QuestionBankData.startYearPractice('${bank.id}')"
+                        <button onclick="QuestionBankData.startYearPractice(${bankIdArg})"
                                 style="width: 100%; padding: 8px; background: #FF9800; color: white; border: none; border-radius: 3px; cursor: pointer;">
                             按年份练习
                         </button>
@@ -2118,16 +2253,7 @@ window.QuestionBankData = (function() {
             const has181103Material = questions.some(question => question && question.extractedFromMaterial === true
                 && /\/resources\/fluid-181103-html\/materials\//.test(String(question.sourceHtmlUrl || '')));
             if (has181103Material) {
-                return questions.filter(question => question
-                    && typeof question === 'object'
-                    && (question.questionHtml || question.promptHtml)
-                    && question.defaultPracticeEligible !== false
-                    && question.practiceEntryEnabled !== false
-                    && question.defaultHidden !== true
-                    && question.sourceSemanticPracticeEligible !== false
-                    && question.sourceSemanticQuestionCardKind !== 'source-content-card'
-                    && question.round373QuestionCardKind !== 'source-content-card'
-                    && question.round372QuestionCardKind !== 'source-content-card');
+                return questions.filter(is181103CurrentPracticeQuestion);
             }
             const visible = questions.filter(question => {
                 if (!question || typeof question !== 'object') return false;

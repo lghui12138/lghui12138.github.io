@@ -1880,6 +1880,22 @@ window.QuestionBankPractice = (function() {
                     .practice-fullscreen .control-panel button {
                         font-size: 14px !important;
                         padding: 6px 12px !important;
+                        min-width: 44px !important;
+                        min-height: 44px !important;
+                        white-space: normal !important;
+                        overflow-wrap: anywhere !important;
+                        display: inline-flex !important;
+                        align-items: center !important;
+                        justify-content: center !important;
+                        box-sizing: border-box !important;
+                    }
+
+                    .practice-fullscreen .control-panel button[onclick*="changeFontSize"] {
+                        width: 44px !important;
+                        height: 44px !important;
+                        min-width: 44px !important;
+                        min-height: 44px !important;
+                        padding: 0 !important;
                     }
 
                     /* 进度条优化 */
