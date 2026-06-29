@@ -112,7 +112,7 @@ window.QuestionBankData = (function() {
             .finally(() => clearTimeout(timer));
     }
 
-    const practiceModuleVersion = 'round577-181103-proof-depth-second-pass-20260629';
+    const practiceModuleVersion = 'round578-real-exam-answer-depth-eleventh-pass-20260629';
 
     function requestedFocusBankId() {
         try {
@@ -162,7 +162,7 @@ window.QuestionBankData = (function() {
         if (!bankListHasId(banks, focusId)) return false;
         if (focusId !== '181103-material-extracted') return true;
         const versionText = String(cachedData.currentEntryVersion || cachedData.version || cachedData.updatedAt || '');
-        return /round577-181103-proof-depth-second-pass-20260629/.test(versionText);
+        return /round578-real-exam-answer-depth-eleventh-pass-20260629/.test(versionText);
     }
 
     function removeFailedPracticeScripts() {
@@ -1266,7 +1266,7 @@ window.QuestionBankData = (function() {
                     <span style="background:#fff7ed;color:#9a3412;padding:3px 8px;border-radius:999px;">待人工源页复核 ${answerStatusLedger.manualSourceReviewCount}</span>
                     <span style="background:#eff6ff;color:#1d4ed8;padding:3px 8px;border-radius:999px;">源文线索 ${answerStatusLedger.sourceClueCount}</span>
                     <span style="background:#f8fafc;color:#334155;padding:3px 8px;border-radius:999px;">网页答案块 ${answerStatusLedger.totalAnswerBlocks}</span>
-                    ${bank.id === '181103-material-extracted' ? '<span data-round577-focus-boundary="1" style="flex-basis:100%;color:#475569;line-height:1.45;">Round577：8 道 181103 证明题已二次重证；版本 round577-181103-proof-depth-second-pass-20260629，严格答案 PDF 证据仍单独为 0（strictAnswerPdfProof=0）。</span>' : ''}
+                    ${bank.id === '181103-material-extracted' ? '<span data-round577-focus-boundary="1" style="flex-basis:100%;color:#475569;line-height:1.45;">Round577：8 道 181103 证明题已二次重证；版本 round578-real-exam-answer-depth-eleventh-pass-20260629，严格答案 PDF 证据仍单独为 0（strictAnswerPdfProof=0）。</span>' : ''}
                     <span style="flex-basis:100%;color:#64748b;line-height:1.45;">${answerStatusLedger.boundary}</span>
                   </div>`
                 : '';
