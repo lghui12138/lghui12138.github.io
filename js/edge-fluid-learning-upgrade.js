@@ -89,7 +89,7 @@
       title: '历年真题新版',
       desc: '2000-2024 历年真题，325 原文小题和 68 个已拆组题 section。',
       keywords: '历年真题 真题新版 325原文小题 68组题 803流体力学',
-      url: '/modules/real-exams-dynamic.html?edge_refresh=round418-progress-visible-truth-181103-answer-ux-20260621&from=round342-edge-search'
+      url: '/modules/real-exams-dynamic.html?round568-answer-depth-sixth-pass-proof-ui-sync-20260629&from=round342-edge-search'
     },
     {
       id: 'round342-formula',
