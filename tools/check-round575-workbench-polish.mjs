@@ -48,6 +48,7 @@ const indexComplete = readText('index-complete.html');
 const indexCompleteDir = readText('index-complete/index.html');
 const knowledge = readText('knowledge.html');
 const knowledgeUpgrade = readText('modules/knowledge-upgrade-2026.html');
+const knowledgeDetail = readText('modules/knowledge-detail.html');
 const questionBank = readText('modules/question-bank.html');
 const realExam = readText('modules/real-exams-dynamic.html');
 const localMathjax = readText('js/core/local-mathjax.js');
@@ -161,6 +162,7 @@ const currentSurfaceFiles = [
   ['index-complete/index.html', indexCompleteDir],
   ['knowledge.html', knowledge],
   ['modules/knowledge-upgrade-2026.html', knowledgeUpgrade],
+  ['modules/knowledge-detail.html', knowledgeDetail],
   ['modules/question-bank.html', questionBank],
   ['modules/real-exams-dynamic.html', realExam],
   ['functions/_middleware.js', middleware],

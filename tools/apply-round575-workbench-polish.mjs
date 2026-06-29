@@ -46,6 +46,7 @@ function updateCurrentVersionStrings() {
     'index-complete/index.html',
     'knowledge.html',
     'modules/knowledge-upgrade-2026.html',
+    'modules/knowledge-detail.html',
     'modules/question-bank.html',
     'modules/real-exams-dynamic.html',
     'functions/_middleware.js',
