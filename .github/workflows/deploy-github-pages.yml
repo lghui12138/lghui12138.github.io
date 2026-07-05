@@ -1,0 +1,103 @@
+name: Deploy GitHub Pages public shell
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages-public-shell-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Stage public shell assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf _pages_public
+          mkdir -p _pages_public
+
+          rsync -a --delete public-shell/ _pages_public/
+          cp _pages_public/index-complete.html _pages_public/index.html
+          cp _pages_public/gateway.html _pages_public/404.html
+
+          routes=(
+            "knowledge.html"
+            "knowledge/index.html"
+            "question-bank.html"
+            "question-bank/index.html"
+            "real-exams.html"
+            "real-exams/index.html"
+            "simulated-exams.html"
+            "simulated-exams/index.html"
+            "practice-dynamic.html"
+            "practice-dynamic/index.html"
+            "resources.html"
+            "resources/index.html"
+            "modules/knowledge-detail.html"
+            "modules/knowledge-detail/index.html"
+            "modules/wu-wangyi-fluid-reading.html"
+            "modules/wu-wangyi-fluid-reading/index.html"
+            "modules/wang-hongwei-fluid-reading.html"
+            "modules/wang-hongwei-fluid-reading/index.html"
+            "modules/question-bank.html"
+            "modules/question-bank/index.html"
+            "modules/practice-dynamic.html"
+            "modules/practice-dynamic/index.html"
+            "modules/real-exams-dynamic.html"
+            "modules/real-exams-dynamic/index.html"
+            "modules/simulated-exams-dynamic.html"
+            "modules/simulated-exams-dynamic/index.html"
+            "modules/exam-dynamic.html"
+            "modules/exam-dynamic/index.html"
+            "resources/fluid-181103-html/index.html"
+            "resources/fluid-181103-html/index/index.html"
+            "_edge-login/index.html"
+            "_edge-fast-login/index.html"
+            "_edge-register/index.html"
+            "_edge-forgot-password/index.html"
+            "_edge-reset/index.html"
+            "_edge-logout/index.html"
+            "_edge-status/index.html"
+          )
+
+          for route in "${routes[@]}"; do
+            mkdir -p "_pages_public/$(dirname "$route")"
+            cp _pages_public/gateway.html "_pages_public/$route"
+          done
+
+          if find _pages_public -type f -size +95M | grep -q .; then
+            find _pages_public -type f -size +95M -print
+            exit 1
+          fi
+
+          du -sh _pages_public
+          find _pages_public -type f | wc -l
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _pages_public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
