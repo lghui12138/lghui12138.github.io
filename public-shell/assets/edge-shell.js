@@ -1,7 +1,7 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
   const SOURCE_REFRESH = 'round755-progressive-home-current-20260705';
-  const CACHE_CLEAN_KEY = 'lghui-public-shell-cache-clean-round764-route-gateway-current-20260705';
+  const CACHE_CLEAN_KEY = 'lghui-public-shell-cache-clean-round765-cylinder-flow-current-20260706';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
