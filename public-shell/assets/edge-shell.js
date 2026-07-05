@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round755-progressive-shell-current-20260705';
+  const SOURCE_REFRESH = 'round755-progressive-home-current-20260705';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
@@ -48,7 +48,7 @@
     for (const [key, value] of current.searchParams.entries()) {
       if (key !== 'edge_refresh') target.searchParams.append(key, value);
     }
-    target.searchParams.set('edge_refresh', EDGE_REFRESH);
+    target.searchParams.set('edge_refresh', SOURCE_REFRESH);
     if ((sourcePath === '/_edge-fast-login' || sourcePath === '/_edge-login') && !target.searchParams.has('next')) {
       target.searchParams.set('next', '/index-complete?full=1');
     }
@@ -81,7 +81,7 @@
     document.querySelectorAll('[data-source-path]').forEach((link) => {
       const path = link.getAttribute('data-source-path') || '/_edge-fast-login';
       const target = new URL(path, SOURCE_ORIGIN);
-      target.searchParams.set('edge_refresh', EDGE_REFRESH);
+      target.searchParams.set('edge_refresh', SOURCE_REFRESH);
       link.href = target.href;
     });
   }
