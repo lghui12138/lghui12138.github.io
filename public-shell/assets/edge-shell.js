@@ -1,7 +1,7 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
   const SOURCE_REFRESH = 'round755-progressive-home-current-20260705';
-  const CACHE_CLEAN_KEY = 'lghui-public-shell-cache-clean-round760-landscape-workbench-current-20260705';
+  const CACHE_CLEAN_KEY = 'lghui-public-shell-cache-clean-round761-edge-rum-clean-current-20260705';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
