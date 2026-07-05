@@ -1,21 +1,33 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
   const SOURCE_REFRESH = 'round755-progressive-home-current-20260705';
-  const CACHE_CLEAN_KEY = 'lghui-public-shell-cache-clean-round763-fast-csp-current-20260705';
+  const CACHE_CLEAN_KEY = 'lghui-public-shell-cache-clean-round764-route-gateway-current-20260705';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
-    ['/knowledge', '/modules/knowledge-detail'],
+    ['/knowledge', '/modules/knowledge-detail.html'],
+    ['/modules/knowledge-detail', '/modules/knowledge-detail.html'],
+    ['/modules/knowledge-detail.html', '/modules/knowledge-detail.html'],
     ['/question-bank.html', '/modules/question-bank.html'],
-    ['/question-bank', '/modules/question-bank'],
+    ['/question-bank', '/modules/question-bank.html'],
+    ['/modules/question-bank', '/modules/question-bank.html'],
+    ['/modules/question-bank.html', '/modules/question-bank.html'],
     ['/real-exams.html', '/modules/real-exams-dynamic.html'],
-    ['/real-exams', '/modules/real-exams-dynamic'],
+    ['/real-exams', '/modules/real-exams-dynamic.html'],
+    ['/modules/real-exams-dynamic', '/modules/real-exams-dynamic.html'],
+    ['/modules/real-exams-dynamic.html', '/modules/real-exams-dynamic.html'],
     ['/simulated-exams.html', '/modules/simulated-exams-dynamic.html'],
-    ['/simulated-exams', '/modules/simulated-exams-dynamic'],
+    ['/simulated-exams', '/modules/simulated-exams-dynamic.html'],
+    ['/modules/simulated-exams-dynamic', '/modules/simulated-exams-dynamic.html'],
+    ['/modules/simulated-exams-dynamic.html', '/modules/simulated-exams-dynamic.html'],
+    ['/modules/exam-dynamic', '/modules/exam-dynamic.html'],
+    ['/modules/exam-dynamic.html', '/modules/exam-dynamic.html'],
     ['/practice-dynamic.html', '/modules/practice-dynamic.html'],
     ['/practice-dynamic', '/modules/practice-dynamic.html'],
+    ['/modules/practice-dynamic', '/modules/practice-dynamic.html'],
+    ['/modules/practice-dynamic.html', '/modules/practice-dynamic.html'],
     ['/resources.html', '/resources.html'],
-    ['/resources', '/resources'],
+    ['/resources', '/resources.html'],
     ['/_edge-login', '/_edge-login'],
     ['/_edge-fast-login', '/_edge-fast-login'],
     ['/_edge-register', '/_edge-register'],

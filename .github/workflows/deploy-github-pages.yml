@@ -78,6 +78,118 @@ jobs:
             cp _pages_public/gateway.html "_pages_public/$route"
           done
 
+          node <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+          const sourceOrigin = 'https://lghui-fluid-learning.pages.dev';
+          const sourceRefresh = 'round755-progressive-home-current-20260705';
+          const routes = [
+            'knowledge.html',
+            'knowledge/index.html',
+            'question-bank.html',
+            'question-bank/index.html',
+            'real-exams.html',
+            'real-exams/index.html',
+            'simulated-exams.html',
+            'simulated-exams/index.html',
+            'practice-dynamic.html',
+            'practice-dynamic/index.html',
+            'resources.html',
+            'resources/index.html',
+            'modules/knowledge-detail.html',
+            'modules/knowledge-detail/index.html',
+            'modules/wu-wangyi-fluid-reading.html',
+            'modules/wu-wangyi-fluid-reading/index.html',
+            'modules/wang-hongwei-fluid-reading.html',
+            'modules/wang-hongwei-fluid-reading/index.html',
+            'modules/question-bank.html',
+            'modules/question-bank/index.html',
+            'modules/practice-dynamic.html',
+            'modules/practice-dynamic/index.html',
+            'modules/real-exams-dynamic.html',
+            'modules/real-exams-dynamic/index.html',
+            'modules/simulated-exams-dynamic.html',
+            'modules/simulated-exams-dynamic/index.html',
+            'modules/exam-dynamic.html',
+            'modules/exam-dynamic/index.html',
+            'resources/fluid-181103-html/index.html',
+            'resources/fluid-181103-html/index/index.html',
+            '_edge-login/index.html',
+            '_edge-fast-login/index.html',
+            '_edge-register/index.html',
+            '_edge-forgot-password/index.html',
+            '_edge-reset/index.html',
+            '_edge-logout/index.html',
+            '_edge-status/index.html'
+          ];
+          const routeMap = new Map([
+            ['/knowledge.html', '/modules/knowledge-detail.html'],
+            ['/knowledge', '/modules/knowledge-detail.html'],
+            ['/modules/knowledge-detail', '/modules/knowledge-detail.html'],
+            ['/modules/knowledge-detail.html', '/modules/knowledge-detail.html'],
+            ['/question-bank.html', '/modules/question-bank.html'],
+            ['/question-bank', '/modules/question-bank.html'],
+            ['/modules/question-bank', '/modules/question-bank.html'],
+            ['/modules/question-bank.html', '/modules/question-bank.html'],
+            ['/real-exams.html', '/modules/real-exams-dynamic.html'],
+            ['/real-exams', '/modules/real-exams-dynamic.html'],
+            ['/modules/real-exams-dynamic', '/modules/real-exams-dynamic.html'],
+            ['/modules/real-exams-dynamic.html', '/modules/real-exams-dynamic.html'],
+            ['/simulated-exams.html', '/modules/simulated-exams-dynamic.html'],
+            ['/simulated-exams', '/modules/simulated-exams-dynamic.html'],
+            ['/modules/simulated-exams-dynamic', '/modules/simulated-exams-dynamic.html'],
+            ['/modules/simulated-exams-dynamic.html', '/modules/simulated-exams-dynamic.html'],
+            ['/modules/exam-dynamic', '/modules/exam-dynamic.html'],
+            ['/modules/exam-dynamic.html', '/modules/exam-dynamic.html'],
+            ['/practice-dynamic.html', '/modules/practice-dynamic.html'],
+            ['/practice-dynamic', '/modules/practice-dynamic.html'],
+            ['/modules/practice-dynamic', '/modules/practice-dynamic.html'],
+            ['/modules/practice-dynamic.html', '/modules/practice-dynamic.html'],
+            ['/resources.html', '/resources.html'],
+            ['/resources', '/resources.html'],
+            ['/_edge-login', '/_edge-login'],
+            ['/_edge-fast-login', '/_edge-fast-login'],
+            ['/_edge-register', '/_edge-register'],
+            ['/_edge-forgot-password', '/_edge-forgot-password'],
+            ['/_edge-reset', '/_edge-reset'],
+            ['/_edge-logout', '/_edge-logout'],
+            ['/_edge-status', '/_edge-status']
+          ]);
+          function publicPathForRoute(route) {
+            let publicPath = `/${route}`;
+            if (publicPath.endsWith('/index.html')) {
+              publicPath = publicPath.slice(0, -'/index.html'.length) || '/';
+            }
+            return publicPath.length > 1 ? publicPath.replace(/\/+$/, '') : publicPath;
+          }
+          function sourcePathFor(publicPath) {
+            if (routeMap.has(publicPath)) return routeMap.get(publicPath);
+            if (publicPath === '/' || publicPath === '/index.html' || publicPath === '/index-complete.html' || publicPath === '/index-complete') {
+              return '/_edge-fast-login';
+            }
+            if (publicPath.startsWith('/modules/') || publicPath.startsWith('/resources/')) return publicPath;
+            return '/_edge-fast-login';
+          }
+          function escapedHref(publicPath) {
+            const sourcePath = sourcePathFor(publicPath);
+            const target = new URL(sourcePath, sourceOrigin);
+            target.searchParams.set('edge_refresh', sourceRefresh);
+            if ((sourcePath === '/_edge-fast-login' || sourcePath === '/_edge-login') && !target.searchParams.has('next')) {
+              target.searchParams.set('next', '/index-complete?full=1');
+            }
+            return target.href.replace(/&/g, '&amp;');
+          }
+          for (const route of routes) {
+            const file = path.join('_pages_public', route);
+            const html = fs.readFileSync(file, 'utf8');
+            const href = escapedHref(publicPathForRoute(route));
+            fs.writeFileSync(
+              file,
+              html.replace(/href="https:\/\/lghui-fluid-learning\.pages\.dev\/_edge-fast-login\?edge_refresh=[^"]+"/, `href="${href}"`)
+            );
+          }
+          NODE
+
           if find _pages_public -type f -size +95M | grep -q .; then
             find _pages_public -type f -size +95M -print
             exit 1
