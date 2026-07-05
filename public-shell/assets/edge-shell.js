@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round750-assist-compact-current-20260703';
+  const EDGE_REFRESH = 'round755-progressive-shell-current-20260705';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
