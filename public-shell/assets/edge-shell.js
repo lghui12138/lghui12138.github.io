@@ -1,6 +1,7 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
   const SOURCE_REFRESH = 'round755-progressive-home-current-20260705';
+  const CACHE_CLEAN_KEY = 'lghui-public-shell-cache-clean-round756-desktop-shell-current-20260705';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
@@ -72,6 +73,34 @@
     } catch (_) {}
   }
 
+  function schedulePublicShellCacheCleanup() {
+    try {
+      if (window.localStorage.getItem(CACHE_CLEAN_KEY) === '1') return;
+    } catch (_) {}
+
+    const run = () => {
+      clearPublicShellCaches().finally(() => {
+        try {
+          window.localStorage.setItem(CACHE_CLEAN_KEY, '1');
+        } catch (_) {}
+      });
+    };
+
+    const schedule = () => {
+      if ('requestIdleCallback' in window) {
+        window.requestIdleCallback(run, { timeout: 1800 });
+      } else {
+        window.setTimeout(run, 1800);
+      }
+    };
+
+    if (document.readyState === 'complete') {
+      schedule();
+    } else {
+      window.addEventListener('load', schedule, { once: true });
+    }
+  }
+
   function updateGatewayLink(target) {
     const link = document.querySelector('[data-source-link]');
     if (link) link.href = target.href;
@@ -87,7 +116,7 @@
   }
 
   const target = currentTarget();
-  clearPublicShellCaches();
+  schedulePublicShellCacheCleanup();
   updateGatewayLink(target);
   wireHomeLinks();
 
