@@ -1,7 +1,6 @@
 /*
  * lghui.top public shell kill switch.
  * Removes old offline caches and then unregisters itself.
- * It never navigates clients; visible reloads look like a stuck page.
  */
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting());
@@ -14,7 +13,10 @@ self.addEventListener('activate', (event) => {
       await Promise.allSettled(keys.map((key) => caches.delete(key)));
     } catch (_) {}
     try {
-      await self.clients.claim();
+      const clients = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      for (const client of clients) {
+        try { client.navigate(client.url); } catch (_) {}
+      }
     } catch (_) {}
     try {
       await self.registration.unregister();

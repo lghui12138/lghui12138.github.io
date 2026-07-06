@@ -1,33 +1,20 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const SOURCE_REFRESH = 'round755-progressive-home-current-20260705';
-  const CACHE_CLEAN_KEY = 'lghui-public-shell-cache-clean-round767-potential-cylinder-current-20260706';
+  const EDGE_REFRESH = 'round756-cylinder-potential-current-20260706';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
-    ['/knowledge', '/modules/knowledge-detail.html'],
-    ['/modules/knowledge-detail', '/modules/knowledge-detail.html'],
-    ['/modules/knowledge-detail.html', '/modules/knowledge-detail.html'],
+    ['/knowledge', '/modules/knowledge-detail'],
     ['/question-bank.html', '/modules/question-bank.html'],
-    ['/question-bank', '/modules/question-bank.html'],
-    ['/modules/question-bank', '/modules/question-bank.html'],
-    ['/modules/question-bank.html', '/modules/question-bank.html'],
+    ['/question-bank', '/modules/question-bank'],
     ['/real-exams.html', '/modules/real-exams-dynamic.html'],
-    ['/real-exams', '/modules/real-exams-dynamic.html'],
-    ['/modules/real-exams-dynamic', '/modules/real-exams-dynamic.html'],
-    ['/modules/real-exams-dynamic.html', '/modules/real-exams-dynamic.html'],
+    ['/real-exams', '/modules/real-exams-dynamic'],
     ['/simulated-exams.html', '/modules/simulated-exams-dynamic.html'],
-    ['/simulated-exams', '/modules/simulated-exams-dynamic.html'],
-    ['/modules/simulated-exams-dynamic', '/modules/simulated-exams-dynamic.html'],
-    ['/modules/simulated-exams-dynamic.html', '/modules/simulated-exams-dynamic.html'],
-    ['/modules/exam-dynamic', '/modules/exam-dynamic.html'],
-    ['/modules/exam-dynamic.html', '/modules/exam-dynamic.html'],
+    ['/simulated-exams', '/modules/simulated-exams-dynamic'],
     ['/practice-dynamic.html', '/modules/practice-dynamic.html'],
     ['/practice-dynamic', '/modules/practice-dynamic.html'],
-    ['/modules/practice-dynamic', '/modules/practice-dynamic.html'],
-    ['/modules/practice-dynamic.html', '/modules/practice-dynamic.html'],
     ['/resources.html', '/resources.html'],
-    ['/resources', '/resources.html'],
+    ['/resources', '/resources'],
     ['/_edge-login', '/_edge-login'],
     ['/_edge-fast-login', '/_edge-fast-login'],
     ['/_edge-register', '/_edge-register'],
@@ -61,7 +48,7 @@
     for (const [key, value] of current.searchParams.entries()) {
       if (key !== 'edge_refresh') target.searchParams.append(key, value);
     }
-    target.searchParams.set('edge_refresh', SOURCE_REFRESH);
+    target.searchParams.set('edge_refresh', EDGE_REFRESH);
     if ((sourcePath === '/_edge-fast-login' || sourcePath === '/_edge-login') && !target.searchParams.has('next')) {
       target.searchParams.set('next', '/index-complete?full=1');
     }
@@ -85,30 +72,6 @@
     } catch (_) {}
   }
 
-  function schedulePublicShellCacheCleanup() {
-    try {
-      if (window.localStorage.getItem(CACHE_CLEAN_KEY) === '1') return;
-    } catch (_) {}
-
-    const run = () => {
-      clearPublicShellCaches().finally(() => {
-        try {
-          window.localStorage.setItem(CACHE_CLEAN_KEY, '1');
-        } catch (_) {}
-      });
-    };
-
-    const schedule = () => {
-      if ('requestIdleCallback' in window) {
-        window.requestIdleCallback(run, { timeout: 1800 });
-      } else {
-        window.setTimeout(run, 1800);
-      }
-    };
-
-    window.setTimeout(schedule, 700);
-  }
-
   function updateGatewayLink(target) {
     const link = document.querySelector('[data-source-link]');
     if (link) link.href = target.href;
@@ -118,13 +81,13 @@
     document.querySelectorAll('[data-source-path]').forEach((link) => {
       const path = link.getAttribute('data-source-path') || '/_edge-fast-login';
       const target = new URL(path, SOURCE_ORIGIN);
-      target.searchParams.set('edge_refresh', SOURCE_REFRESH);
+      target.searchParams.set('edge_refresh', EDGE_REFRESH);
       link.href = target.href;
     });
   }
 
   const target = currentTarget();
-  schedulePublicShellCacheCleanup();
+  clearPublicShellCaches();
   updateGatewayLink(target);
   wireHomeLinks();
 
