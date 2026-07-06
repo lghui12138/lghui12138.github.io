@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round758-cylinder-streamfunction-perf-current-20260706';
+  const EDGE_REFRESH = 'round759-animation-login-next-current-20260706';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
