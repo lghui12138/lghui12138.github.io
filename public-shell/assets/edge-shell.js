@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round761-cylinder-answer-current-20260706';
+  const EDGE_REFRESH = 'round762-cylinder-uniform-flow-current-20260706';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
