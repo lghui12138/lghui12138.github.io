@@ -30,6 +30,9 @@ jobs:
           mkdir -p _pages_public
 
           rsync -a --delete public-shell/ _pages_public/
+          node tools/inline-public-shell-assets.mjs \
+            _pages_public/index-complete.html \
+            _pages_public/gateway.html
           cp _pages_public/index-complete.html _pages_public/index.html
           cp _pages_public/gateway.html _pages_public/404.html
 
@@ -122,7 +125,10 @@ jobs:
           const fs = require('fs');
           const path = require('path');
           const sourceOrigin = 'https://lghui-fluid-learning.pages.dev';
-          const sourceRefresh = 'round762-cylinder-uniform-flow-current-20260706';
+          const edgeShell = fs.readFileSync('_pages_public/assets/edge-shell.js', 'utf8');
+          const sourceRefreshMatch = edgeShell.match(/const EDGE_REFRESH = '([^']+)'/);
+          if (!sourceRefreshMatch) throw new Error('EDGE_REFRESH is missing from edge-shell.js');
+          const sourceRefresh = sourceRefreshMatch[1];
           const routes = [
             'knowledge.html',
             'knowledge/index.html',
