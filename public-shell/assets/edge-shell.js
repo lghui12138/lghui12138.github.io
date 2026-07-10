@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round767-chapter-answer-disclosure-current-20260710';
+  const EDGE_REFRESH = 'round768-cylinder-streamfunction-current-20260711';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
