@@ -1,12 +1,14 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round768-cylinder-streamfunction-current-20260711';
+  const EDGE_REFRESH = 'round769-question-bank-daily-current-20260711';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
     ['/knowledge', '/modules/knowledge-detail'],
     ['/question-bank.html', '/modules/question-bank.html'],
     ['/question-bank', '/modules/question-bank'],
+    ['/daily-question.html', '/modules/daily-question.html'],
+    ['/daily-question', '/modules/daily-question.html'],
     ['/real-exams.html', '/modules/real-exams-dynamic.html'],
     ['/real-exams', '/modules/real-exams-dynamic'],
     ['/simulated-exams.html', '/modules/simulated-exams-dynamic.html'],
