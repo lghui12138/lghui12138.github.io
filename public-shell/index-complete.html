@@ -57,7 +57,7 @@
           </filter>
         </defs>
         <rect width="900" height="760" fill="transparent"/>
-        <g id="edgeCylinderField" filter="url(#lineGlow)" data-stream-function="psi=U*(r-a^2/r)*sin(theta)=U*y*(1-a^2/(x^2+y^2))">
+        <g id="edgeCylinderField" data-stream-function="psi=U*(r-a^2/r)*sin(theta)=U*y*(1-a^2/(x^2+y^2))" data-stream-renderer="complex-potential-inverse">
           <g id="edgeCylinderStreams"></g>
           <g class="cylinder-body">
             <circle cx="450" cy="380" r="82" fill="url(#cyl)" stroke="#0f766e" stroke-opacity=".34" stroke-width="3.5"/>
@@ -72,21 +72,23 @@
           group.dataset.ready = '1';
           const ns = 'http://www.w3.org/2000/svg';
           const cx = 450, cy = 380, scale = 82;
-          const xMin = -6.0, xMax = 6.0;
+          const phiMin = -6.0, phiMax = 6.0;
           const psiValues = [0.42, 0.72, 1.08, 1.54, 2.10, 2.78, 3.50];
           const palette = ['url(#flowA)', '#2563eb', '#0f766e', 'url(#flowB)', '#0891b2', '#3b82f6', 'url(#flowA)'];
-          const solveY = (psi, x) => {
-            const target = Math.abs(psi);
-            const f = (y) => y * (1 - 1 / (x * x + y * y)) - target;
-            let lo = Math.sqrt(Math.max(0, 1 - x * x)) + 0.001;
-            let hi = Math.max(target + 1.35, 1.45);
-            while (f(hi) < 0) hi *= 1.55;
-            for (let i = 0; i < 44; i += 1) {
-              const mid = (lo + hi) / 2;
-              if (f(mid) < 0) lo = mid;
-              else hi = mid;
-            }
-            return Math.sign(psi) * ((lo + hi) / 2);
+          const complexSqrt = (re, im) => {
+            const modulus = Math.hypot(re, im);
+            const rootRe = Math.sqrt(Math.max(0, (modulus + re) / 2));
+            const rootIm = (im < 0 ? -1 : 1) * Math.sqrt(Math.max(0, (modulus - re) / 2));
+            return [rootRe, rootIm];
+          };
+          const exteriorPoint = (phi, psi) => {
+            // W/U = z + a^2/z with a = 1. Select the root outside the cylinder.
+            const [sqrtRe, sqrtIm] = complexSqrt(phi * phi - psi * psi - 4, 2 * phi * psi);
+            const roots = [
+              [(phi + sqrtRe) / 2, (psi + sqrtIm) / 2],
+              [(phi - sqrtRe) / 2, (psi - sqrtIm) / 2]
+            ];
+            return Math.hypot(...roots[0]) >= Math.hypot(...roots[1]) ? roots[0] : roots[1];
           };
           const sampledPath = (points) => {
             if (!points.length) return '';
@@ -94,10 +96,10 @@
           };
           const pathFor = (psi) => {
             const points = [];
-            const steps = 440;
+            const steps = 360;
             for (let i = 0; i <= steps; i += 1) {
-              const x = xMin + (xMax - xMin) * (i / steps);
-              const y = solveY(psi, x);
+              const phi = phiMin + (phiMax - phiMin) * (i / steps);
+              const [x, y] = exteriorPoint(phi, psi);
               const px = cx + x * scale;
               const py = cy - y * scale;
               if (px >= -90 && px <= 990 && py >= -90 && py <= 850) points.push([px, py]);
@@ -113,8 +115,8 @@
             path.setAttribute('fill', 'none');
             path.setAttribute('stroke-linecap', 'round');
             path.setAttribute('stroke-linejoin', 'round');
-            path.setAttribute('stroke-width', magnitude < 1 ? '5.8' : magnitude > 2.6 ? '3.6' : '4.6');
-            path.setAttribute('opacity', magnitude > 2.6 ? '.66' : '.9');
+            path.setAttribute('stroke-width', magnitude < 1 ? '3.4' : magnitude > 2.6 ? '2.2' : '2.8');
+            path.setAttribute('opacity', magnitude > 2.6 ? '.58' : '.84');
             path.setAttribute('vector-effect', 'non-scaling-stroke');
             path.setAttribute('shape-rendering', 'geometricPrecision');
             path.setAttribute('d', pathFor(psi));
