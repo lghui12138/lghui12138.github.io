@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round774-external-animation-current-20260711';
+  const EDGE_REFRESH = 'round775-video-play-on-demand-current-20260711';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
@@ -11,6 +11,20 @@
     ['/daily-question', '/modules/daily-question.html'],
     ['/modules/videos.html', '/modules/videos'],
     ['/modules/videos', '/modules/videos'],
+    ['/video.html', '/modules/videos'],
+    ['/video', '/modules/videos'],
+    ['/videos.html', '/modules/videos'],
+    ['/videos', '/modules/videos'],
+    ['/course-videos.html', '/modules/videos'],
+    ['/course-videos', '/modules/videos'],
+    ['/modules/video-dynamic.html', '/modules/videos'],
+    ['/modules/video-dynamic', '/modules/videos'],
+    ['/modules/video-enhanced-module.html', '/modules/videos'],
+    ['/modules/video-enhanced-module', '/modules/videos'],
+    ['/modules/video-module.html', '/modules/videos'],
+    ['/modules/video-module', '/modules/videos'],
+    ['/modules/course-videos.html', '/modules/videos'],
+    ['/modules/course-videos', '/modules/videos'],
     ['/real-exams.html', '/modules/real-exams-dynamic.html'],
     ['/real-exams', '/modules/real-exams-dynamic'],
     ['/simulated-exams.html', '/modules/simulated-exams-dynamic.html'],
@@ -62,22 +76,6 @@
     return target;
   }
 
-  async function clearPublicShellCaches() {
-    try {
-      if ('serviceWorker' in navigator) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.allSettled(registrations.map((registration) => registration.unregister()));
-      }
-    } catch (_) {}
-
-    try {
-      if (window.caches && caches.keys) {
-        const keys = await caches.keys();
-        await Promise.allSettled(keys.map((key) => caches.delete(key)));
-      }
-    } catch (_) {}
-  }
-
   function updateGatewayLink(target) {
     const link = document.querySelector('[data-source-link]');
     if (link) link.href = target.href;
@@ -93,7 +91,6 @@
   }
 
   const target = currentTarget();
-  clearPublicShellCaches();
   updateGatewayLink(target);
   wireHomeLinks();
 
