@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round780-semantic-chapter-answer-alignment-current-20260712';
+  const EDGE_REFRESH = 'round781-daily-sharded-instant-current-20260712';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
