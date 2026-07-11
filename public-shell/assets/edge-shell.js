@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round777-daily-five-canonical-math-current-20260711';
+  const EDGE_REFRESH = 'round778-meaningful-once-by-chapter-current-20260712';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
