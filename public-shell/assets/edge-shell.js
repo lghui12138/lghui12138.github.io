@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round775-video-play-on-demand-current-20260711';
+  const EDGE_REFRESH = 'round776-canonical-fluid-only-home-current-20260711';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
