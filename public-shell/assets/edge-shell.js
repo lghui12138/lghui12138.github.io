@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round771-video-animation-fast-current-20260711';
+  const EDGE_REFRESH = 'round772-direct-first-paint-current-20260711';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
