@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round770-progressive-three-current-20260711';
+  const EDGE_REFRESH = 'round771-video-animation-fast-current-20260711';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
@@ -9,6 +9,8 @@
     ['/question-bank', '/modules/question-bank'],
     ['/daily-question.html', '/modules/daily-question.html'],
     ['/daily-question', '/modules/daily-question.html'],
+    ['/modules/videos.html', '/modules/videos'],
+    ['/modules/videos', '/modules/videos'],
     ['/real-exams.html', '/modules/real-exams-dynamic.html'],
     ['/real-exams', '/modules/real-exams-dynamic'],
     ['/simulated-exams.html', '/modules/simulated-exams-dynamic.html'],
@@ -17,6 +19,8 @@
     ['/practice-dynamic', '/modules/practice-dynamic.html'],
     ['/resources.html', '/resources.html'],
     ['/resources', '/resources'],
+    ['/resources/fluid-original-animations.html', '/resources/fluid-original-animations.html'],
+    ['/resources/fluid-original-animations', '/resources/fluid-original-animations.html'],
     ['/_edge-login', '/_edge-login'],
     ['/_edge-fast-login', '/_edge-fast-login'],
     ['/_edge-register', '/_edge-register'],
