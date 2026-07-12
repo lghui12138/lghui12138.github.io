@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round782-daily-shard-gzip-current-20260712';
+  const EDGE_REFRESH = 'round783-private-video-monitor-current-20260713';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
