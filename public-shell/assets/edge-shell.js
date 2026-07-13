@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round783-private-video-monitor-current-20260713';
+  const EDGE_REFRESH = 'round784-daily-device-transfer-current-20260713';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
