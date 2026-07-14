@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round787-density-definition-audit-current-20260715';
+  const EDGE_REFRESH = 'round788-gzip-sidecar-fallback-current-20260715';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
