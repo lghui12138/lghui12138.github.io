@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round788-gzip-sidecar-fallback-current-20260715';
+  const EDGE_REFRESH = 'round789-authenticated-home-admin-current-20260715';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
