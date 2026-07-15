@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round797-private-video-catalog-fast-current-20260716';
+  const EDGE_REFRESH = 'round799-private-video-r2-live-inventory-current-20260716';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
