@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round793-private-video-mingcheng-r2-current-20260715';
+  const EDGE_REFRESH = 'round796-unicode-student-session-current-20260716';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
