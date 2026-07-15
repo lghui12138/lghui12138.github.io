@@ -90,6 +90,18 @@
     });
   }
 
+  function warmAuthenticatedSource() {
+    const status = new URL('/_edge-status', SOURCE_ORIGIN);
+    status.searchParams.set('edge_refresh', EDGE_REFRESH);
+    fetch(status.href, {
+      mode: 'no-cors',
+      credentials: 'omit',
+      cache: 'no-store',
+      priority: 'high'
+    }).catch(() => {});
+  }
+
+  warmAuthenticatedSource();
   const target = currentTarget();
   updateGatewayLink(target);
   wireHomeLinks();
