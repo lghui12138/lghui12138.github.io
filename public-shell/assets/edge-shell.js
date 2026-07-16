@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round805-daily-all-figures-current-20260716';
+  const EDGE_REFRESH = 'round806-prompt-answer-diagrams-current-20260716';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
