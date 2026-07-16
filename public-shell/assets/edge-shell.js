@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round801-private-video-account-watermark-current-20260716';
+  const EDGE_REFRESH = 'round802-private-video-precise-seek-ownership-current-20260716';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
