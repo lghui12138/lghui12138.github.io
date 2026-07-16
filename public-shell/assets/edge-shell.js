@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round806-prompt-answer-diagrams-current-20260716';
+  const EDGE_REFRESH = 'round807-precise-diagram-layering-current-20260717';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
