@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round807-precise-diagram-layering-current-20260717';
+  const EDGE_REFRESH = 'round808-resilient-app-domain-current-20260717';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
@@ -54,9 +54,7 @@
     if (pathname === '/' || pathname === '/index.html' || pathname === '/index-complete.html' || pathname === '/index-complete') {
       return '/_edge-fast-login';
     }
-    if (pathname.startsWith('/modules/') || pathname.startsWith('/resources/')) {
-      return pathname;
-    }
+    if (pathname.startsWith('/modules/') || pathname.startsWith('/resources/')) return pathname;
     return '/_edge-fast-login';
   }
 
@@ -90,25 +88,12 @@
     });
   }
 
-  function warmAuthenticatedSource() {
-    const status = new URL('/_edge-status', SOURCE_ORIGIN);
-    status.searchParams.set('edge_refresh', EDGE_REFRESH);
-    fetch(status.href, {
-      mode: 'no-cors',
-      credentials: 'omit',
-      cache: 'no-store',
-      priority: 'high'
-    }).catch(() => {});
+  function start() {
+    const target = currentTarget();
+    updateGatewayLink(target);
+    wireHomeLinks();
+    if (document.documentElement.dataset.edgeGateway === '1') window.location.replace(target.href);
   }
 
-  warmAuthenticatedSource();
-  const target = currentTarget();
-  updateGatewayLink(target);
-  wireHomeLinks();
-
-  if (document.documentElement.dataset.edgeGateway === '1') {
-    window.setTimeout(() => {
-      window.location.replace(target.href);
-    }, 120);
-  }
+  start();
 })();

@@ -144,10 +144,12 @@ jobs:
           node <<'NODE'
           const fs = require('fs');
           const path = require('path');
-          const sourceOrigin = 'https://lghui-fluid-learning.pages.dev';
           const edgeShell = fs.readFileSync('_pages_public/assets/edge-shell.js', 'utf8');
+          const sourceOriginMatch = edgeShell.match(/const SOURCE_ORIGIN = '([^']+)'/);
           const sourceRefreshMatch = edgeShell.match(/const EDGE_REFRESH = '([^']+)'/);
+          if (!sourceOriginMatch || sourceOriginMatch[1] !== 'https://lghui-fluid-learning.pages.dev') throw new Error('SOURCE_ORIGIN must be the Pages fallback origin');
           if (!sourceRefreshMatch) throw new Error('EDGE_REFRESH is missing from edge-shell.js');
+          const sourceOrigin = sourceOriginMatch[1];
           const sourceRefresh = sourceRefreshMatch[1];
           const routes = [
             'knowledge.html',
@@ -331,7 +333,7 @@ jobs:
             const href = escapedHref(publicPathForRoute(route));
             fs.writeFileSync(
               file,
-              html.replace(/href="https:\/\/lghui-fluid-learning\.pages\.dev\/_edge-fast-login\?edge_refresh=[^"]+"/, `href="${href}"`)
+              html.replace(/href="https:\/\/(?:lghui\.online|lghui-fluid-learning\.pages\.dev)\/_edge-fast-login\?edge_refresh=[^"]+"/, `href="${href}"`)
             );
           }
           NODE
