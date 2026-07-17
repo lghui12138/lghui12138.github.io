@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round809-daily-related-knowledge-default-open-current-20260717';
+  const EDGE_REFRESH = 'round810-physically-faithful-related-diagrams-current-20260717';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
