@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round810-physically-faithful-related-diagrams-current-20260717';
+  const EDGE_REFRESH = 'round812-complete-max-width-daily-question-images-current-20260718';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
