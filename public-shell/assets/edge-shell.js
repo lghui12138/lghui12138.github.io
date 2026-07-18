@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round813-fluid-formula-physics-audit-current-20260718';
+  const EDGE_REFRESH = 'round814-stimulus-world-game-current-20260719';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
@@ -9,6 +9,10 @@
     ['/question-bank', '/modules/question-bank'],
     ['/daily-question.html', '/modules/daily-question.html'],
     ['/daily-question', '/modules/daily-question.html'],
+    ['/stimulus-world.html', '/modules/stimulus-world.html'],
+    ['/stimulus-world', '/modules/stimulus-world.html'],
+    ['/game.html', '/modules/stimulus-world.html'],
+    ['/game', '/modules/stimulus-world.html'],
     ['/modules/videos.html', '/modules/videos'],
     ['/modules/videos', '/modules/videos'],
     ['/video.html', '/modules/videos'],
