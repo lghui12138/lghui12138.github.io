@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round814-stimulus-world-game-current-20260719';
+  const EDGE_REFRESH = 'round815-graphical-learning-world-current-20260719';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
