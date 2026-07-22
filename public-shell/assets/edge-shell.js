@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round826-private-engineering-lab-runtime-current-20260723';
+  const EDGE_REFRESH = 'round827-private-client-runtime-current-20260723';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
