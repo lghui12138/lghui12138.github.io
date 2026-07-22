@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round824-deferred-book-math-current-20260722';
+  const EDGE_REFRESH = 'round825-complete-engineering-labs-current-20260723';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
