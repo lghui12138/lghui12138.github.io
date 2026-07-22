@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round818-knowledge-core-ocean-world-current-20260719';
+  const EDGE_REFRESH = 'round819-engineering-fluid-labs-current-20260722';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail.html'],
@@ -33,6 +33,12 @@
     ['/real-exams', '/modules/real-exams-dynamic'],
     ['/simulated-exams.html', '/modules/simulated-exams-dynamic.html'],
     ['/simulated-exams', '/modules/simulated-exams-dynamic'],
+    ['/engineering-fluid-labs.html', '/modules/engineering-fluid-labs'],
+    ['/engineering-fluid-labs', '/modules/engineering-fluid-labs'],
+    ['/modules/engineering-fluid-labs.html', '/modules/engineering-fluid-labs'],
+    ['/modules/engineering-fluid-labs', '/modules/engineering-fluid-labs'],
+    ['/modules/nikuradse-experiment.html', '/modules/engineering-fluid-labs'],
+    ['/modules/nikuradse-experiment', '/modules/engineering-fluid-labs'],
     ['/practice-dynamic.html', '/modules/practice-dynamic.html'],
     ['/practice-dynamic', '/modules/practice-dynamic.html'],
     ['/resources.html', '/resources.html'],
