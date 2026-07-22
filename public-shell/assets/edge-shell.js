@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round828-fast-private-runtime-grant-current-20260723';
+  const EDGE_REFRESH = 'round829-engineering-fluid-mechanics-ouc832-current-20260723';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
@@ -37,6 +37,10 @@
     ['/real-exams', '/modules/real-exams-dynamic'],
     ['/simulated-exams.html', '/modules/simulated-exams-dynamic.html'],
     ['/simulated-exams', '/modules/simulated-exams-dynamic'],
+    ['/engineering-fluid-mechanics.html', '/modules/engineering-fluid-mechanics'],
+    ['/engineering-fluid-mechanics', '/modules/engineering-fluid-mechanics'],
+    ['/modules/engineering-fluid-mechanics.html', '/modules/engineering-fluid-mechanics'],
+    ['/modules/engineering-fluid-mechanics', '/modules/engineering-fluid-mechanics'],
     ['/engineering-fluid-labs.html', '/modules/engineering-fluid-labs'],
     ['/engineering-fluid-labs', '/modules/engineering-fluid-labs'],
     ['/modules/engineering-fluid-labs.html', '/modules/engineering-fluid-labs'],
