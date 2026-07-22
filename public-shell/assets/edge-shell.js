@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round820-progressive-practice-surface-current-20260722';
+  const EDGE_REFRESH = 'round821-reader-first-paint-current-20260722';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
