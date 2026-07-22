@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round822-resilient-visible-first-paint-current-20260722';
+  const EDGE_REFRESH = 'round823-priority-book-image-current-20260722';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
