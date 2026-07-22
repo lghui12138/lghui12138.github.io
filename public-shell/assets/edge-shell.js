@@ -3,8 +3,12 @@
   const EDGE_REFRESH = 'round819-engineering-fluid-labs-current-20260722';
 
   const routeMap = new Map([
-    ['/knowledge.html', '/modules/knowledge-detail.html'],
+    ['/knowledge.html', '/modules/knowledge-detail'],
     ['/knowledge', '/modules/knowledge-detail'],
+    ['/modules/knowledge-detail.html', '/modules/knowledge-detail'],
+    ['/modules/knowledge-detail', '/modules/knowledge-detail'],
+    ['/question-bank-home.html', '/question-bank-home.html'],
+    ['/question-bank-home', '/question-bank-home.html'],
     ['/question-bank.html', '/modules/question-bank.html'],
     ['/question-bank', '/modules/question-bank'],
     ['/daily-question.html', '/modules/daily-question.html'],
@@ -43,6 +47,12 @@
     ['/practice-dynamic', '/modules/practice-dynamic.html'],
     ['/practice.html', '/modules/practice-dynamic.html'],
     ['/practice', '/modules/practice-dynamic.html'],
+    ['/modules/knowledge-upgrade-2026.html', '/modules/knowledge-upgrade-2026'],
+    ['/modules/knowledge-upgrade-2026', '/modules/knowledge-upgrade-2026'],
+    ['/teacher-panel.html', '/teacher-panel'],
+    ['/teacher-panel', '/teacher-panel'],
+    ['/modules/teacher-panel.html', '/teacher-panel'],
+    ['/modules/teacher-panel', '/teacher-panel'],
     ['/resources.html', '/resources.html'],
     ['/resources', '/resources'],
     ['/resources/fluid-original-animations.html', '/resources/fluid-original-animations.html'],
