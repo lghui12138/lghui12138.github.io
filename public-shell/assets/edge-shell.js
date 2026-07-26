@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round832-nikuradse-five-regions-current-20260723';
+  const EDGE_REFRESH = 'round833-venturi-pressure-chain-current-20260726';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
