@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round840-public-shell-cache-align-current-20260727';
+  const EDGE_REFRESH = 'round844-gateway-edge-refresh-align-current-20260727';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
