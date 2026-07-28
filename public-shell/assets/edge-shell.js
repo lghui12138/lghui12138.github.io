@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round855-gateway-align-current-index-shell-20260727';
+  const EDGE_REFRESH = 'round832-nikuradse-five-regions-current-20260723';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
