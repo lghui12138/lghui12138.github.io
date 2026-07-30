@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round834-final-word-core-authority-current-20260730';
+  const EDGE_REFRESH = 'round835-final-word-advanced-derivations-current-20260730';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
