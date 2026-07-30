@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round836-final-word-potential-wave-current-20260730';
+  const EDGE_REFRESH = 'round837-final-word-exam-derivations-current-20260730';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
