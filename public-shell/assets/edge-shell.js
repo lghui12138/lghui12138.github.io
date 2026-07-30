@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round839-final-word-turbulence-core-current-20260730';
+  const EDGE_REFRESH = 'round840-final-word-foundations-current-20260730';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
@@ -49,10 +49,8 @@
     ['/modules/nikuradse-experiment', '/modules/engineering-fluid-labs'],
     ['/practice-dynamic.html', '/modules/practice-dynamic.html'],
     ['/practice-dynamic', '/modules/practice-dynamic.html'],
-    ['/practice-dynamic/index.html', '/modules/practice-dynamic.html'],
     ['/practice.html', '/modules/practice-dynamic.html'],
     ['/practice', '/modules/practice-dynamic.html'],
-    ['/practice/index.html', '/modules/practice-dynamic.html'],
     ['/modules/knowledge-upgrade-2026.html', '/modules/knowledge-upgrade-2026'],
     ['/modules/knowledge-upgrade-2026', '/modules/knowledge-upgrade-2026'],
     ['/teacher-panel.html', '/teacher-panel'],
@@ -100,7 +98,7 @@
     }
     target.searchParams.set('edge_refresh', EDGE_REFRESH);
     if ((sourcePath === '/_edge-fast-login' || sourcePath === '/_edge-login') && !target.searchParams.has('next')) {
-      target.searchParams.set('next', '/index-complete.html?full=1');
+      target.searchParams.set('next', '/index-complete?full=1');
     }
     target.hash = current.hash;
     return target;
