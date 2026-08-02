@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round844-final-word-point-source-current-20260802';
+  const EDGE_REFRESH = 'round845-final-word-remaining-gaps-current-20260803';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
