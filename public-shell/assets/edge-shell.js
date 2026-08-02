@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round846-final-word-clean-derivations-current-20260803';
+  const EDGE_REFRESH = 'round847-engineering-fluid-core-current-20260803';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
