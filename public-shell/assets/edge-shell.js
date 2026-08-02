@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round841-final-word-exam-solutions-current-20260730';
+  const EDGE_REFRESH = 'round843-knowledge-scroll-answer-audit-current-20260802';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
