@@ -4,6 +4,39 @@ import { resolve } from 'node:path';
 const root = resolve(import.meta.dirname, '..');
 const css = readFileSync(resolve(root, 'public-shell/assets/edge-shell.css'), 'utf8').trim();
 const script = readFileSync(resolve(root, 'public-shell/assets/edge-shell.js'), 'utf8').trim();
+const updatesSource = readFileSync(resolve(root, 'public-shell/site-updates.json'), 'utf8');
+
+const refreshMatch = script.match(/const EDGE_REFRESH = '([^']+)'/);
+if (!refreshMatch) throw new Error('Public-shell EDGE_REFRESH is missing');
+
+if (Buffer.byteLength(updatesSource) > 64 * 1024) {
+  throw new Error('Public site-updates.json exceeds the 64 KiB release-ledger limit');
+}
+
+const updates = JSON.parse(updatesSource);
+const allowedUpdateKeys = new Set([
+  'version',
+  'previousVersion',
+  'date',
+  'title',
+  'summary',
+  'links'
+]);
+if (!Array.isArray(updates) || updates.length === 0 || updates.length > 16) {
+  throw new Error('Public site-updates.json must contain 1-16 compact release records');
+}
+if (updates[0]?.version !== refreshMatch[1]) {
+  throw new Error('Public site-updates.json and EDGE_REFRESH are not on the same release');
+}
+for (const [index, update] of updates.entries()) {
+  const unexpectedKeys = Object.keys(update || {}).filter((key) => !allowedUpdateKeys.has(key));
+  if (unexpectedKeys.length > 0) {
+    throw new Error(`Public release record ${index} exposes unsupported keys: ${unexpectedKeys.join(', ')}`);
+  }
+}
+if (/\/Users\/|\/Volumes\/|source-materials\/|(?:^|\s)qa\/|tools\/|\.github\//m.test(updatesSource)) {
+  throw new Error('Public site-updates.json exposes internal paths or QA metadata');
+}
 
 if (css.includes('</style>') || script.includes('</script>')) {
   throw new Error('Public-shell assets contain an unsafe inline closing tag');
