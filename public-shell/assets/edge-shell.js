@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round858-engineering-jet-compressible-current-20260803';
+  const EDGE_REFRESH = 'round859-final-word-atomic-answers-current-20260803';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
