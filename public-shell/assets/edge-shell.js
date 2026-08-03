@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round863-ordinary-cylinder-flow-current-20260804';
+  const EDGE_REFRESH = 'round864-engineering-similarity-current-20260804';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
