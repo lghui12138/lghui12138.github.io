@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round860-engineering-properties-statics-current-20260803';
+  const EDGE_REFRESH = 'round861-ordinary-cauchy-lagrange-current-20260803';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
