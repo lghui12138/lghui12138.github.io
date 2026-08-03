@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round865-ordinary-vorticity-transport-current-20260804';
+  const EDGE_REFRESH = 'round866-engineering-pipe-loss-current-20260804';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
