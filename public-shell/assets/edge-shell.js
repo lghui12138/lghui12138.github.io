@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round850-engineering-open-channel-current-20260803';
+  const EDGE_REFRESH = 'round851-final-word-recent-answers-current-20260803';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
