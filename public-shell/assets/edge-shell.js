@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round879-siphon-unsteady-current-20260805';
+  const EDGE_REFRESH = 'round880-culvert-roughness-current-20260805';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
