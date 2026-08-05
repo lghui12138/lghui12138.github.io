@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex,nofollow,noarchive">
+  <meta name="theme-color" content="#f7fbfc">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://lghui-fluid-learning.pages.dev; object-src 'none'; base-uri 'self'; form-action 'self' https://lghui-fluid-learning.pages.dev; upgrade-insecure-requests">
+  <link rel="icon" href="data:,">
+  <title>流体力学课程</title>
+  <link rel="preconnect" href="https://lghui-fluid-learning.pages.dev" crossorigin>
+  <link rel="dns-prefetch" href="//lghui-fluid-learning.pages.dev">
+  <style data-edge-shell-critical>
+:root {
+  color-scheme: light;
+  --ink: #102033;
+  --muted: #405066;
+  --paper: #f4f9ff;
+  --panel: rgba(255, 255, 255, .88);
+  --line: rgba(16, 32, 51, .14);
+  --teal: #0b6fa4;
+  --cyan: #159bb9;
+  --blue: #155eef;
+  --orange: #f97316;
+  --shadow: 0 26px 70px rgba(16, 32, 51, .16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  overflow-x: hidden;
+  background: linear-gradient(145deg, #f8fbff 0%, #edf6fc 52%, #eef8f8 100%);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans SC", "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+.shell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+  gap: clamp(20px, 3vw, 52px);
+  align-items: stretch;
+  padding: clamp(22px, 3vw, 42px);
+}
+
+.stage,
+.panel {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+}
+
+.panel {
+  display: grid;
+  align-content: center;
+  padding: clamp(26px, 3vw, 42px);
+}
+
+.brand {
+  display: inline-grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  margin: 0 0 18px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--cyan), var(--orange));
+  color: #fff;
+  font-size: 34px;
+  font-weight: 900;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .42), 0 18px 40px rgba(21, 94, 239, .20);
+}
+
+h1 {
+  max-width: 760px;
+  margin: 0;
+  font-size: clamp(50px, 4.7vw, 72px);
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: clamp(20px, 2.2vw, 30px);
+}
+
+.action {
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 1fr 28px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(16, 32, 51, .12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, .78);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: clamp(18px, 1.35vw, 22px);
+  font-weight: 900;
+  line-height: 1.05;
+  box-shadow: 0 10px 30px rgba(16, 32, 51, .09);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease, background .18s ease;
+}
+
+.action svg {
+  width: 28px;
+  height: 28px;
+  justify-self: end;
+}
+
+.action:hover,
+.action:focus-visible {
+  transform: translateY(-3px);
+  border-color: rgba(21, 94, 239, .34);
+  background: #fff;
+  box-shadow: 0 18px 42px rgba(16, 32, 51, .14);
+}
+
+.action.primary {
+  grid-column: 1 / -1;
+  min-height: 76px;
+  font-size: clamp(22px, 1.8vw, 29px);
+  color: #fff;
+  background: linear-gradient(135deg, #087ea4, #155eef);
+  box-shadow: 0 22px 54px rgba(21, 94, 239, .22);
+}
+
+.quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(16px, 2vw, 22px);
+}
+
+.quick a {
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 22px;
+  border-radius: 8px;
+  border: 1px solid rgba(21, 94, 239, .20);
+  background: rgba(21, 94, 239, .07);
+  color: #0b5acb;
+  text-decoration: none;
+  font-size: clamp(17px, 1.3vw, 21px);
+  font-weight: 900;
+}
+
+.stage {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  align-items: stretch;
+  min-height: calc(100vh - clamp(44px, 6vw, 84px));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .70), rgba(255, 255, 255, .36)),
+    linear-gradient(135deg, rgba(8, 126, 164, .12), rgba(21, 94, 239, .12) 52%, rgba(21, 155, 185, .10));
+}
+
+.stage svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.cylinder-stream {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.8px;
+  stroke-dasharray: none;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: geometricPrecision;
+  opacity: .86;
+  animation: streamGlow 5.5s ease-in-out infinite alternate;
+}
+
+.cylinder-stream.near {
+  stroke-width: 3.4px;
+  opacity: .9;
+}
+
+.cylinder-stream.far {
+  stroke-width: 2.2px;
+  opacity: .58;
+}
+
+.cylinder-body {
+  filter: drop-shadow(0 18px 32px rgba(15, 23, 42, .18));
+}
+
+.gateway {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.gateway-card {
+  width: min(760px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  padding: clamp(28px, 6vw, 64px);
+  text-align: center;
+}
+
+.gateway-card .brand {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.gateway-card h1 {
+  font-size: clamp(42px, 7vw, 78px);
+}
+
+.gateway-card a {
+  min-height: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 32px;
+  padding: 0 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--teal), var(--blue));
+  color: #fff;
+  text-decoration: none;
+  font-size: clamp(20px, 2.6vw, 28px);
+  font-weight: 950;
+}
+
+@keyframes streamGlow {
+  from { filter: saturate(1); }
+  to { filter: saturate(1.18); }
+}
+
+@media (max-width: 780px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .stage {
+    min-height: 420px;
+  }
+
+  .stage svg {
+    min-height: 420px;
+  }
+
+  .actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .shell {
+    padding: 14px;
+  }
+
+  .panel {
+    padding: 24px;
+  }
+
+  .actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .action.primary {
+    grid-column: 1 / -1;
+  }
+
+  .action {
+    min-height: 78px;
+    grid-template-columns: 1fr 32px;
+  }
+
+  .action svg {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cylinder-stream {
+    animation: none !important;
+  }
+}
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="panel" aria-label="学习入口">
+      <div class="brand" aria-hidden="true">流</div>
+      <h1>流体力学课程</h1>
+      <nav class="actions" aria-label="主要入口">
+        <a class="action primary" data-source-path="/modules/stimulus-world.html" href="/modules/stimulus-world.html?edge_refresh=round848-engineering-depth-current-20260803">流核海洋世界<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 20 7v10l-8 5-8-5V7z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></a>
+        <a class="action" data-source-path="/modules/engineering-fluid-mechanics" href="/modules/engineering-fluid-mechanics?edge_refresh=round848-engineering-depth-current-20260803">工程流体力学<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h16"/><path d="M6 16V8l6-4 6 4v8"/><path d="M9 12h6"/></svg></a>
+        <a class="action" data-source-path="/modules/engineering-fluid-labs" href="/modules/engineering-fluid-labs?edge_refresh=round848-engineering-depth-current-20260803">工程流体力学实验<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7.5 15h9"/></svg></a>
+        <a class="action" data-source-path="/modules/knowledge-detail.html" href="/modules/knowledge-detail.html?edge_refresh=round848-engineering-depth-current-20260803">知识全库<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg></a>
+        <a class="action" data-source-path="/modules/daily-question.html" href="/modules/daily-question.html?edge_refresh=round848-engineering-depth-current-20260803">每日五题<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/><path d="m9 16 2 2 4-4"/></svg></a>
+        <a class="action" data-source-path="/modules/practice-dynamic.html?type=real&amp;chapter=1&amp;mode=normal" href="/modules/practice-dynamic.html?type=real&amp;chapter=1&amp;mode=normal&amp;edge_refresh=round848-engineering-depth-current-20260803">章节练习<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="m8 12 2 2 5-5"/></svg></a>
+        <a class="action" data-source-path="/modules/simulated-exams-dynamic.html" href="/modules/simulated-exams-dynamic.html?edge_refresh=round848-engineering-depth-current-20260803">章节模拟<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg></a>
+        <a class="action" data-source-path="/modules/videos" href="/modules/videos?edge_refresh=round848-engineering-depth-current-20260803">课程视频<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></a>
+        <a class="action" data-source-path="/resources/fluid-original-animations.html" href="/resources/fluid-original-animations.html?edge_refresh=round848-engineering-depth-current-20260803">流动动画<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h3l2-6 4 12 2-6h5"/><circle cx="12" cy="12" r="9"/></svg></a>
+        <a class="action" data-source-path="/modules/wu-wangyi-fluid-reading" href="/modules/wu-wangyi-fluid-reading?edge_refresh=round848-engineering-depth-current-20260803">吴望一教材<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h13a2 2 0 0 1 2 2v15H7a2 2 0 0 1-2-2z"/><path d="M5 4v15"/></svg></a>
+        <a class="action" data-source-path="/modules/wang-hongwei-fluid-reading" href="/modules/wang-hongwei-fluid-reading?edge_refresh=round848-engineering-depth-current-20260803">王洪伟教材<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h12a4 4 0 0 1 4 4v10H8a4 4 0 0 1-4-4z"/><path d="M8 9h8"/><path d="M8 13h7"/></svg></a>
+        <a class="action" data-source-path="/modules/question-bank.html" href="/modules/question-bank.html?edge_refresh=round848-engineering-depth-current-20260803">题库练习<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg></a>
+        <a class="action" data-source-path="/modules/real-exams-dynamic.html" href="/modules/real-exams-dynamic.html?edge_refresh=round848-engineering-depth-current-20260803">历年真题<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></a>
+        <a class="action" data-source-path="/modules/exam-dynamic.html" href="/modules/exam-dynamic.html?edge_refresh=round848-engineering-depth-current-20260803">模拟考试<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v5"/><path d="M9 2h6"/></svg></a>
+        <a class="action" data-source-path="/modules/question-bank.html?focus=181103-material-extracted&amp;answer_status=current#questionBanksList" href="/modules/question-bank.html?focus=181103-material-extracted&amp;answer_status=current&amp;edge_refresh=round848-engineering-depth-current-20260803#questionBanksList">181103 题库<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8"/><path d="M8 14h8"/></svg></a>
+        <a class="action" data-source-path="/resources/fluid-181103-html/index.html" href="/resources/fluid-181103-html/index.html?edge_refresh=round848-engineering-depth-current-20260803">181103 资料库<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></a>
+      </nav>
+      <div class="quick" aria-label="账号入口">
+        <a data-source-path="/_edge-login?next=%2Findex-complete%3Ffull%3D1" href="https://lghui-fluid-learning.pages.dev/_edge-login?next=%2Findex-complete%3Ffull%3D1&amp;edge_refresh=round848-engineering-depth-current-20260803">登录</a>
+        <a data-source-path="/_edge-reset?next=%2Findex-complete%3Ffull%3D1" href="https://lghui-fluid-learning.pages.dev/_edge-reset?next=%2Findex-complete%3Ffull%3D1&amp;edge_refresh=round848-engineering-depth-current-20260803">修复入口</a>
+        <a data-source-path="/_edge-status" href="https://lghui-fluid-learning.pages.dev/_edge-status?edge_refresh=round848-engineering-depth-current-20260803">状态</a>
+      </div>
+    </section>
+    <section class="stage" aria-label="圆柱绕流流线">
+      <svg viewBox="0 0 900 760" preserveAspectRatio="xMidYMid slice" role="img" aria-label="均匀来流绕圆柱的流线图">
+        <defs>
+          <linearGradient id="flowA" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#0b6fa4"/>
+            <stop offset=".52" stop-color="#155eef"/>
+            <stop offset="1" stop-color="#0b6fa4"/>
+          </linearGradient>
+          <linearGradient id="flowB" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#0891b2" stop-opacity=".24"/>
+            <stop offset=".5" stop-color="#2563eb" stop-opacity=".66"/>
+            <stop offset="1" stop-color="#0b6fa4" stop-opacity=".22"/>
+          </linearGradient>
+          <radialGradient id="cyl" cx=".36" cy=".28" r=".72">
+            <stop offset="0" stop-color="#ffffff"/>
+            <stop offset=".58" stop-color="#e7fbf7"/>
+            <stop offset="1" stop-color="#b7d8ff"/>
+          </radialGradient>
+          <filter id="lineGlow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="2.6" result="blur"/>
+            <feMerge>
+              <feMergeNode in="blur"/>
+              <feMergeNode in="SourceGraphic"/>
+            </feMerge>
+          </filter>
+          <marker id="edgeFlowArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse" markerUnits="strokeWidth">
+            <path d="M 0 1 L 8 5 L 0 9 Z" fill="#155eef"/>
+          </marker>
+        </defs>
+        <rect width="900" height="760" fill="transparent"/>
+        <g id="edgeCylinderField" data-stream-function="psi=U*(r-a^2/r)*sin(theta)=U*y*(1-a^2/(x^2+y^2))" data-flow-components="uniform-stream+doublet" data-stream-renderer="implicit-streamfunction-bisection">
+          <g id="edgeCylinderStreams"></g>
+          <g class="cylinder-body">
+            <circle cx="450" cy="380" r="82" fill="url(#cyl)" stroke="#0b6fa4" stroke-opacity=".34" stroke-width="3.5"/>
+            <circle cx="450" cy="380" r="82" fill="none" stroke="#0b6fa4" stroke-opacity=".18" stroke-width="11"/>
+          </g>
+        </g>
+      </svg>
+      <script>
+        (() => {
+          const group = document.getElementById('edgeCylinderStreams');
+          if (!group || group.dataset.ready === '1') return;
+          group.dataset.ready = '1';
+          const ns = 'http://www.w3.org/2000/svg';
+          const cx = 450, cy = 380, scale = 82;
+          const xMin = -6.0, xMax = 6.0;
+          const psiValues = [0.18, 0.48, 0.88, 1.38, 2.00, 2.80, 3.65];
+          const palette = ['url(#flowA)', '#2563eb', '#0b6fa4', 'url(#flowB)', '#0891b2', '#3b82f6', 'url(#flowA)'];
+          const solvePositiveY = (x, psiMagnitude) => {
+            const residual = (y) => y * (1 - 1 / (x * x + y * y)) - psiMagnitude;
+            let lower = Math.abs(x) < 1 ? Math.sqrt(1 - x * x) : 0;
+            let upper = Math.max(1.5, psiMagnitude + 1.25);
+            while (residual(upper) < 0) upper *= 1.5;
+            for (let iteration = 0; iteration < 54; iteration += 1) {
+              const middle = (lower + upper) / 2;
+              if (residual(middle) < 0) lower = middle;
+              else upper = middle;
+            }
+            return (lower + upper) / 2;
+          };
+          const sampledPath = (points) => {
+            if (!points.length) return '';
+            return points.map(([x, y], i) => `${i ? 'L' : 'M'} ${x.toFixed(1)} ${y.toFixed(1)}`).join(' ');
+          };
+          const pathFor = (psi, start = xMin, end = xMax, steps = 420) => {
+            const points = [];
+            for (let i = 0; i <= steps; i += 1) {
+              const x = start + (end - start) * (i / steps);
+              const y = Math.sign(psi) * solvePositiveY(x, Math.abs(psi));
+              const px = cx + x * scale;
+              const py = cy - y * scale;
+              points.push([px, py]);
+            }
+            return sampledPath(points);
+          };
+          const makePath = (psi, index) => {
+            const path = document.createElementNS(ns, 'path');
+            const magnitude = Math.abs(psi);
+            path.setAttribute('class', `cylinder-stream${magnitude < 1 ? ' near' : magnitude > 2.6 ? ' far' : ''}`);
+            path.setAttribute('data-psi', String(psi));
+            path.setAttribute('stroke', palette[index % palette.length]);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke-linecap', 'round');
+            path.setAttribute('stroke-linejoin', 'round');
+            path.setAttribute('stroke-width', magnitude < 1 ? '3.4' : magnitude > 2.6 ? '2.2' : '2.8');
+            path.setAttribute('opacity', magnitude > 2.6 ? '.58' : '.84');
+            path.setAttribute('vector-effect', 'non-scaling-stroke');
+            path.setAttribute('shape-rendering', 'geometricPrecision');
+            path.setAttribute('d', pathFor(psi));
+            return path;
+          };
+          const makeStagnationSegment = (start, end) => {
+            const path = document.createElementNS(ns, 'path');
+            path.setAttribute('class', 'cylinder-stream near');
+            path.setAttribute('data-psi', '0');
+            path.setAttribute('stroke', '#155eef');
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke-width', '3.4');
+            path.setAttribute('opacity', '.88');
+            path.setAttribute('vector-effect', 'non-scaling-stroke');
+            path.setAttribute('d', `M ${(cx + start * scale).toFixed(1)} ${cy} L ${(cx + end * scale).toFixed(1)} ${cy}`);
+            return path;
+          };
+          const makeDirectionCue = (psi) => {
+            const path = document.createElementNS(ns, 'path');
+            path.setAttribute('d', psi === 0
+              ? `M ${(cx - 3.35 * scale).toFixed(1)} ${cy} L ${(cx - 2.72 * scale).toFixed(1)} ${cy}`
+              : pathFor(psi, -3.35, -2.72, 18));
+            path.setAttribute('stroke', '#155eef');
+            path.setAttribute('stroke-width', '2.4');
+            path.setAttribute('fill', 'none');
+            path.setAttribute('opacity', '.82');
+            path.setAttribute('marker-end', 'url(#edgeFlowArrow)');
+            path.setAttribute('vector-effect', 'non-scaling-stroke');
+            return path;
+          };
+          psiValues.forEach((psi, index) => group.appendChild(makePath(psi, index)));
+          psiValues.slice().reverse().forEach((psi, index) => group.appendChild(makePath(-psi, index + 2)));
+          group.appendChild(makeStagnationSegment(xMin, -1));
+          group.appendChild(makeStagnationSegment(1, xMax));
+          [1.38, 0.48, 0, -0.48, -1.38].forEach((psi) => group.appendChild(makeDirectionCue(psi)));
+        })();
+      </script>
+    </section>
+  </main>
+  <script data-edge-shell-inline>
+(function () {
+  const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
+  const EDGE_REFRESH = 'round848-engineering-depth-current-20260803';
+
+  const routeMap = new Map([
+    ['/knowledge.html', '/modules/knowledge-detail'],
+    ['/knowledge', '/modules/knowledge-detail'],
+    ['/modules/knowledge-detail.html', '/modules/knowledge-detail'],
+    ['/modules/knowledge-detail', '/modules/knowledge-detail'],
+    ['/question-bank-home.html', '/question-bank-home.html'],
+    ['/question-bank-home', '/question-bank-home.html'],
+    ['/question-bank.html', '/modules/question-bank.html'],
+    ['/question-bank', '/modules/question-bank'],
+    ['/daily-question.html', '/modules/daily-question.html'],
+    ['/daily-question', '/modules/daily-question.html'],
+    ['/stimulus-world.html', '/modules/stimulus-world.html'],
+    ['/stimulus-world', '/modules/stimulus-world.html'],
+    ['/game.html', '/modules/stimulus-world.html'],
+    ['/game', '/modules/stimulus-world.html'],
+    ['/modules/videos.html', '/modules/videos'],
+    ['/modules/videos', '/modules/videos'],
+    ['/video.html', '/modules/videos'],
+    ['/video', '/modules/videos'],
+    ['/videos.html', '/modules/videos'],
+    ['/videos', '/modules/videos'],
+    ['/course-videos.html', '/modules/videos'],
+    ['/course-videos', '/modules/videos'],
+    ['/modules/video-dynamic.html', '/modules/videos'],
+    ['/modules/video-dynamic', '/modules/videos'],
+    ['/modules/video-enhanced-module.html', '/modules/videos'],
+    ['/modules/video-enhanced-module', '/modules/videos'],
+    ['/modules/video-module.html', '/modules/videos'],
+    ['/modules/video-module', '/modules/videos'],
+    ['/modules/course-videos.html', '/modules/videos'],
+    ['/modules/course-videos', '/modules/videos'],
+    ['/real-exams.html', '/modules/real-exams-dynamic.html'],
+    ['/real-exams', '/modules/real-exams-dynamic'],
+    ['/simulated-exams.html', '/modules/simulated-exams-dynamic.html'],
+    ['/simulated-exams', '/modules/simulated-exams-dynamic'],
+    ['/engineering-fluid-mechanics.html', '/modules/engineering-fluid-mechanics'],
+    ['/engineering-fluid-mechanics', '/modules/engineering-fluid-mechanics'],
+    ['/modules/engineering-fluid-mechanics.html', '/modules/engineering-fluid-mechanics'],
+    ['/modules/engineering-fluid-mechanics', '/modules/engineering-fluid-mechanics'],
+    ['/engineering-fluid-labs.html', '/modules/engineering-fluid-labs'],
+    ['/engineering-fluid-labs', '/modules/engineering-fluid-labs'],
+    ['/modules/engineering-fluid-labs.html', '/modules/engineering-fluid-labs'],
+    ['/modules/engineering-fluid-labs', '/modules/engineering-fluid-labs'],
+    ['/modules/nikuradse-experiment.html', '/modules/engineering-fluid-labs'],
+    ['/modules/nikuradse-experiment', '/modules/engineering-fluid-labs'],
+    ['/practice-dynamic.html', '/modules/practice-dynamic.html'],
+    ['/practice-dynamic', '/modules/practice-dynamic.html'],
+    ['/practice.html', '/modules/practice-dynamic.html'],
+    ['/practice', '/modules/practice-dynamic.html'],
+    ['/modules/knowledge-upgrade-2026.html', '/modules/knowledge-upgrade-2026'],
+    ['/modules/knowledge-upgrade-2026', '/modules/knowledge-upgrade-2026'],
+    ['/teacher-panel.html', '/teacher-panel'],
+    ['/teacher-panel', '/teacher-panel'],
+    ['/modules/teacher-panel.html', '/teacher-panel'],
+    ['/modules/teacher-panel', '/teacher-panel'],
+    ['/resources.html', '/resources.html'],
+    ['/resources', '/resources'],
+    ['/resources/fluid-original-animations.html', '/resources/fluid-original-animations.html'],
+    ['/resources/fluid-original-animations', '/resources/fluid-original-animations.html'],
+    ['/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt'],
+    ['/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt'],
+    ['/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html', '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt'],
+    ['/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt', '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt'],
+    ['/_edge-login', '/_edge-login'],
+    ['/_edge-fast-login', '/_edge-fast-login'],
+    ['/_edge-register', '/_edge-register'],
+    ['/_edge-forgot-password', '/_edge-forgot-password'],
+    ['/_edge-reset', '/_edge-reset'],
+    ['/_edge-logout', '/_edge-logout'],
+    ['/_edge-status', '/_edge-status']
+  ]);
+
+  function normalizedPath() {
+    const path = window.location.pathname || '/';
+    return path.length > 1 ? path.replace(/\/+$/, '') : path;
+  }
+
+  function sourcePathFor(pathname) {
+    if (routeMap.has(pathname)) return routeMap.get(pathname);
+    if (pathname === '/' || pathname === '/index.html' || pathname === '/index-complete.html' || pathname === '/index-complete') {
+      return '/_edge-fast-login';
+    }
+    if (pathname.startsWith('/modules/') || pathname.startsWith('/resources/')) return pathname;
+    return '/_edge-fast-login';
+  }
+
+  function currentTarget() {
+    const sourcePath = sourcePathFor(normalizedPath());
+    const target = new URL(sourcePath, SOURCE_ORIGIN);
+    const current = new URL(window.location.href);
+
+    for (const [key, value] of current.searchParams.entries()) {
+      if (key !== 'edge_refresh') target.searchParams.append(key, value);
+    }
+    target.searchParams.set('edge_refresh', EDGE_REFRESH);
+    if ((sourcePath === '/_edge-fast-login' || sourcePath === '/_edge-login') && !target.searchParams.has('next')) {
+      target.searchParams.set('next', '/index-complete?full=1');
+    }
+    target.hash = current.hash;
+    return target;
+  }
+
+  function updateGatewayLink(target) {
+    const link = document.querySelector('[data-source-link]');
+    if (link) link.href = target.href;
+  }
+
+  function wireHomeLinks() {
+    document.querySelectorAll('[data-source-path]').forEach((link) => {
+      const path = link.getAttribute('data-source-path') || '/_edge-fast-login';
+      const target = new URL(path, SOURCE_ORIGIN);
+      target.searchParams.set('edge_refresh', EDGE_REFRESH);
+      link.href = target.href;
+    });
+  }
+
+  function start() {
+    const target = currentTarget();
+    updateGatewayLink(target);
+    wireHomeLinks();
+    if (document.documentElement.dataset.edgeGateway === '1') window.location.replace(target.href);
+  }
+
+  start();
+})();
+  </script>
+</body>
+</html>
