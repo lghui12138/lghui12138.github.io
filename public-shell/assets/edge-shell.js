@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round882-weir-hydraulic-jump-current-20260805';
+  const EDGE_REFRESH = 'round883-figure-redraw-current-20260805';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
