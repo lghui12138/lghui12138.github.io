@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round887-caizengji-famous-exams-current-20260805';
+  const EDGE_REFRESH = 'round888-figure-qa-batch3-current-20260805';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
