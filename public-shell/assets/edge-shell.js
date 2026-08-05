@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round892-full-derivations-current-20260805';
+  const EDGE_REFRESH = 'round893-physical-meanings-current-20260805';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
