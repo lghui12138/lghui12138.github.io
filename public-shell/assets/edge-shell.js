@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round901-ocean-world-name-current-20260805';
+  const EDGE_REFRESH = 'round902-game-robustness-current-20260805';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
