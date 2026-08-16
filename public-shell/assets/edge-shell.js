@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round904-daily-qa-fix-current-20260805';
+  const EDGE_REFRESH = 'round905-json-escape-repair-current-20260816';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
