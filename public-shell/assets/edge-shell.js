@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round913-condition-bridge-current-20260821';
+  const EDGE_REFRESH = 'round914-experiment-bridge-current-20260821';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
