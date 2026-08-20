@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round930-local-record-nav-a11y-current-20260821';
+  const EDGE_REFRESH = 'round931-local-record-nav-focus-current-20260821';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
