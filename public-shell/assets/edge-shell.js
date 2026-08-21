@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round998-textbook-reader-mathjax-current-20260821';
+  const EDGE_REFRESH = 'round999-textbook-reader-progress-deeplink-current-20260821';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
