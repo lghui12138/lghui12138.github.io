@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round1000-textbook-library-progress-dashboard-current-20260821';
+  const EDGE_REFRESH = 'round1001-public-textbook-entry-current-20260821';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
@@ -65,6 +65,9 @@
     ['/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt'],
     ['/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html', '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt'],
     ['/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt', '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt'],
+    ['/resources/fluid-textbooks/converted/index.html', '/resources/fluid-textbooks/converted/index'],
+    ['/resources/fluid-textbooks/converted/index', '/resources/fluid-textbooks/converted/index'],
+    ['/resources/fluid-textbooks/converted', '/resources/fluid-textbooks/converted/index'],
     ['/_edge-login', '/_edge-login'],
     ['/_edge-fast-login', '/_edge-fast-login'],
     ['/_edge-register', '/_edge-register'],
