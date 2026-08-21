@@ -10,9 +10,414 @@
   <title>流体力学课程</title>
   <link rel="preconnect" href="https://lghui-fluid-learning.pages.dev" crossorigin>
   <link rel="dns-prefetch" href="//lghui-fluid-learning.pages.dev">
-  <link rel="stylesheet" href="/assets/edge-shell.css?v=round942-local-record-noscript-resource-heading-current-20260821">
-  <script defer src="/assets/edge-shell.js?v=round942-local-record-noscript-resource-heading-current-20260821"></script>
-  <script defer src="/assets/apple-fluid-motion.js?v=round942-local-record-noscript-resource-heading-current-20260821"></script>
+  <style data-edge-shell-critical>
+:root {
+  color-scheme: light;
+  --ink: #102033;
+  --muted: #405066;
+  --paper: #f4f9ff;
+  --panel: rgba(255, 255, 255, .88);
+  --line: rgba(16, 32, 51, .14);
+  --teal: #0b6fa4;
+  --cyan: #159bb9;
+  --blue: #155eef;
+  --orange: #f97316;
+  --shadow: 0 26px 70px rgba(16, 32, 51, .16);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0;
+  overflow-x: hidden;
+  background: linear-gradient(145deg, #f8fbff 0%, #edf6fc 52%, #eef8f8 100%);
+  color: var(--ink);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Noto Sans SC", "Segoe UI", sans-serif;
+  letter-spacing: 0;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.skip-link {
+  position: fixed;
+  left: 16px;
+  top: 10px;
+  z-index: 20;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border-radius: 8px;
+  background: #102033;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 800;
+  text-decoration: none;
+  transform: translateY(-180%);
+  transition: transform .16s ease;
+}
+
+.skip-link:focus-visible {
+  transform: none;
+  outline: 3px solid #f59e0b;
+  outline-offset: 3px;
+}
+
+.shell {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+  gap: clamp(20px, 3vw, 52px);
+  align-items: stretch;
+  padding: clamp(22px, 3vw, 42px);
+}
+
+.stage,
+.panel {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(22px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(150%);
+}
+
+.panel {
+  display: grid;
+  align-content: center;
+  padding: clamp(26px, 3vw, 42px);
+}
+
+.brand {
+  display: inline-grid;
+  place-items: center;
+  width: 62px;
+  height: 62px;
+  margin: 0 0 18px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--cyan), var(--orange));
+  color: #fff;
+  font-size: 34px;
+  font-weight: 900;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .42), 0 18px 40px rgba(21, 94, 239, .20);
+}
+
+h1 {
+  max-width: 760px;
+  margin: 0;
+  font-size: clamp(50px, 4.7vw, 72px);
+  line-height: 1;
+  font-weight: 950;
+  letter-spacing: 0;
+}
+
+.panel-intro {
+  max-width: 720px;
+  margin: 16px 0 0;
+  color: var(--muted);
+  font-size: clamp(17px, 1.3vw, 20px);
+  line-height: 1.65;
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: clamp(20px, 2.2vw, 30px);
+}
+
+.action {
+  position: relative;
+  overflow: hidden;
+  min-height: 64px;
+  display: grid;
+  grid-template-columns: 1fr 28px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid rgba(16, 32, 51, .10);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, .82);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: clamp(18px, 1.35vw, 22px);
+  font-weight: 850;
+  line-height: 1.05;
+  box-shadow: inset 0 1px 0.5px rgba(255, 255, 255, .9), 0 8px 24px rgba(16, 32, 51, .06);
+  transition: transform .24s cubic-bezier(0.16, 1, 0.3, 1), box-shadow .24s cubic-bezier(0.16, 1, 0.3, 1), border-color .24s ease, background .24s ease;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+}
+
+.action::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(300px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(21, 94, 239, .16), transparent 75%);
+  opacity: var(--spotlight-opacity, 0);
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+
+.action svg {
+  width: 28px;
+  height: 28px;
+  justify-self: end;
+  transition: transform .24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.action:hover svg {
+  transform: translateX(3px) scale(1.08);
+}
+
+.action:hover,
+.action:focus-visible {
+  transform: translateY(-3px) scale(1.008);
+  border-color: rgba(21, 94, 239, .38);
+  background: rgba(255, 255, 255, .95);
+  box-shadow: inset 0 1px 0 #fff, 0 18px 46px -10px rgba(21, 94, 239, .18);
+}
+
+.action:active {
+  transform: scale(0.975);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, .08);
+}
+
+.action.primary {
+  grid-column: 1 / -1;
+  min-height: 76px;
+  font-size: clamp(22px, 1.8vw, 29px);
+  color: #fff;
+  background: linear-gradient(135deg, #087ea4 0%, #155eef 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4), 0 20px 50px rgba(21, 94, 239, .28);
+}
+
+.action.primary::before {
+  background: radial-gradient(360px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255, 255, 255, .25), transparent 75%);
+}
+
+.action.primary:hover {
+  background: linear-gradient(135deg, #098db8 0%, #1c68fc 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55), 0 24px 60px rgba(21, 94, 239, .36);
+}
+
+.quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: clamp(16px, 2vw, 22px);
+}
+
+.quick a {
+  position: relative;
+  overflow: hidden;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(21, 94, 239, .18);
+  background: rgba(21, 94, 239, .06);
+  color: #0b5acb;
+  text-decoration: none;
+  font-size: clamp(17px, 1.3vw, 21px);
+  font-weight: 850;
+  transition: transform .2s cubic-bezier(0.16, 1, 0.3, 1), background .2s ease, box-shadow .2s ease;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.quick a:hover {
+  transform: translateY(-2px);
+  background: rgba(21, 94, 239, .12);
+  box-shadow: 0 8px 22px rgba(21, 94, 239, .14);
+}
+
+.quick a:active {
+  transform: scale(0.96);
+}
+
+.stage {
+  position: relative;
+  overflow: hidden;
+  display: grid;
+  align-items: stretch;
+  min-height: calc(100vh - clamp(44px, 6vw, 84px));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .70), rgba(255, 255, 255, .36)),
+    linear-gradient(135deg, rgba(8, 126, 164, .12), rgba(21, 94, 239, .12) 52%, rgba(21, 155, 185, .10));
+}
+
+.stage svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.cylinder-stream {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2.8px;
+  stroke-dasharray: none;
+  vector-effect: non-scaling-stroke;
+  shape-rendering: geometricPrecision;
+  opacity: .86;
+  animation: streamGlow 5.5s ease-in-out infinite alternate;
+}
+
+.cylinder-stream.near {
+  stroke-width: 3.4px;
+  opacity: .9;
+}
+
+.cylinder-stream.far {
+  stroke-width: 2.2px;
+  opacity: .58;
+}
+
+.cylinder-body {
+  filter: drop-shadow(0 18px 32px rgba(15, 23, 42, .18));
+}
+
+.gateway {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.gateway-card {
+  width: min(760px, 100%);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  padding: clamp(28px, 6vw, 64px);
+  text-align: center;
+}
+
+.gateway-card .brand {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.gateway-card h1 {
+  font-size: clamp(42px, 7vw, 78px);
+}
+
+.gateway-card a {
+  min-height: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 32px;
+  padding: 0 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--teal), var(--blue));
+  color: #fff;
+  text-decoration: none;
+  font-size: clamp(20px, 2.6vw, 28px);
+  font-weight: 950;
+}
+
+@keyframes streamGlow {
+  from { filter: saturate(1); }
+  to { filter: saturate(1.18); }
+}
+
+@media (max-width: 780px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .stage {
+    min-height: 420px;
+  }
+
+  .stage svg {
+    min-height: 420px;
+  }
+
+  .actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .shell {
+    padding: 14px;
+  }
+
+  .panel {
+    padding: 24px;
+  }
+
+  .actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .action.primary {
+    grid-column: 1 / -1;
+  }
+
+  .action {
+    min-height: 78px;
+    grid-template-columns: 1fr 32px;
+  }
+
+  .action svg {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cylinder-stream,
+  .action,
+  .action svg,
+  .quick a,
+  .skip-link {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+  </style>
+  <script defer src="/assets/apple-fluid-motion.js?v=round943-local-record-noscript-save-guide-current-20260821"></script>
 </head>
 <body>
   <a class="skip-link" href="#learningEntries">跳到学习入口</a>
@@ -23,27 +428,27 @@
       <p class="panel-intro">先读知识与推导，再做章节练习，最后用实验检验模型。</p>
       <h2 id="learningEntries" class="sr-only">学习入口</h2>
       <nav class="actions" aria-label="主要入口">
-        <a class="action primary" data-source-path="/modules/stimulus-world.html" href="/modules/stimulus-world.html?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">海洋<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 20 7v10l-8 5-8-5V7z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></a>
-        <a class="action" data-source-path="/modules/engineering-fluid-mechanics" href="/modules/engineering-fluid-mechanics?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">工程流体力学<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h16"/><path d="M6 16V8l6-4 6 4v8"/><path d="M9 12h6"/></svg></a>
-        <a class="action" data-source-path="/modules/engineering-fluid-labs" href="/modules/engineering-fluid-labs?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">工程流体力学实验<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7.5 15h9"/></svg></a>
-        <a class="action" data-source-path="/modules/knowledge-detail.html" href="/modules/knowledge-detail.html?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">知识全库<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg></a>
-        <a class="action" data-source-path="/modules/daily-question.html" href="/modules/daily-question.html?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">每日五题<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/><path d="m9 16 2 2 4-4"/></svg></a>
-        <a class="action" data-source-path="/modules/practice-dynamic.html?type=real&amp;chapter=1&amp;mode=normal" href="/modules/practice-dynamic.html?type=real&amp;chapter=1&amp;mode=normal&amp;edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">章节练习<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="m8 12 2 2 5-5"/></svg></a>
-        <a class="action" data-source-path="/modules/simulated-exams-dynamic.html" href="/modules/simulated-exams-dynamic.html?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">章节模拟<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg></a>
-        <a class="action" data-source-path="/modules/videos" href="/modules/videos?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">课程视频<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></a>
-        <a class="action" data-source-path="/resources/fluid-original-animations.html" href="/resources/fluid-original-animations.html?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">流动动画<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h3l2-6 4 12 2-6h5"/><circle cx="12" cy="12" r="9"/></svg></a>
-        <a class="action" data-source-path="/modules/wu-wangyi-fluid-reading" href="/modules/wu-wangyi-fluid-reading?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">吴望一教材<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h13a2 2 0 0 1 2 2v15H7a2 2 0 0 1-2-2z"/><path d="M5 4v15"/></svg></a>
-        <a class="action" data-source-path="/modules/wang-hongwei-fluid-reading" href="/modules/wang-hongwei-fluid-reading?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">王洪伟教材<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h12a4 4 0 0 1 4 4v10H8a4 4 0 0 1-4-4z"/><path d="M8 9h8"/><path d="M8 13h7"/></svg></a>
-        <a class="action" data-source-path="/modules/question-bank.html" href="/modules/question-bank.html?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">题库练习<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg></a>
-        <a class="action" data-source-path="/modules/real-exams-dynamic.html" href="/modules/real-exams-dynamic.html?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">历年真题<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></a>
-        <a class="action" data-source-path="/modules/exam-dynamic.html" href="/modules/exam-dynamic.html?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">模拟考试<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v5"/><path d="M9 2h6"/></svg></a>
-        <a class="action" data-source-path="/modules/question-bank.html?focus=181103-material-extracted&amp;answer_status=current#questionBanksList" href="/modules/question-bank.html?focus=181103-material-extracted&amp;answer_status=current&amp;edge_refresh=round942-local-record-noscript-resource-heading-current-20260821#questionBanksList">181103 题库<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8"/><path d="M8 14h8"/></svg></a>
-        <a class="action" data-source-path="/resources/fluid-181103-html/index.html" href="/resources/fluid-181103-html/index.html?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">181103 资料库<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></a>
+        <a class="action primary" data-source-path="/modules/stimulus-world.html" href="/modules/stimulus-world.html?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">海洋<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2 20 7v10l-8 5-8-5V7z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg></a>
+        <a class="action" data-source-path="/modules/engineering-fluid-mechanics" href="/modules/engineering-fluid-mechanics?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">工程流体力学<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h16"/><path d="M6 16V8l6-4 6 4v8"/><path d="M9 12h6"/></svg></a>
+        <a class="action" data-source-path="/modules/engineering-fluid-labs" href="/modules/engineering-fluid-labs?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">工程流体力学实验<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 3h6"/><path d="M10 3v6l-5 9a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3l-5-9V3"/><path d="M7.5 15h9"/></svg></a>
+        <a class="action" data-source-path="/modules/knowledge-detail.html" href="/modules/knowledge-detail.html?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">知识全库<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg></a>
+        <a class="action" data-source-path="/modules/daily-question.html" href="/modules/daily-question.html?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">每日五题<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 11h18"/><path d="m9 16 2 2 4-4"/></svg></a>
+        <a class="action" data-source-path="/modules/practice-dynamic.html?type=real&amp;chapter=1&amp;mode=normal" href="/modules/practice-dynamic.html?type=real&amp;chapter=1&amp;mode=normal&amp;edge_refresh=round943-local-record-noscript-save-guide-current-20260821">章节练习<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="m8 12 2 2 5-5"/></svg></a>
+        <a class="action" data-source-path="/modules/simulated-exams-dynamic.html" href="/modules/simulated-exams-dynamic.html?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">章节模拟<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h5"/></svg></a>
+        <a class="action" data-source-path="/modules/videos" href="/modules/videos?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">课程视频<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m10 9 5 3-5 3z"/></svg></a>
+        <a class="action" data-source-path="/resources/fluid-original-animations.html" href="/resources/fluid-original-animations.html?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">流动动画<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h3l2-6 4 12 2-6h5"/><circle cx="12" cy="12" r="9"/></svg></a>
+        <a class="action" data-source-path="/modules/wu-wangyi-fluid-reading" href="/modules/wu-wangyi-fluid-reading?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">吴望一教材<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h13a2 2 0 0 1 2 2v15H7a2 2 0 0 1-2-2z"/><path d="M5 4v15"/></svg></a>
+        <a class="action" data-source-path="/modules/wang-hongwei-fluid-reading" href="/modules/wang-hongwei-fluid-reading?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">王洪伟教材<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h12a4 4 0 0 1 4 4v10H8a4 4 0 0 1-4-4z"/><path d="M8 9h8"/><path d="M8 13h7"/></svg></a>
+        <a class="action" data-source-path="/modules/question-bank.html" href="/modules/question-bank.html?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">题库练习<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h13"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M3 6h.01"/><path d="M3 12h.01"/><path d="M3 18h.01"/></svg></a>
+        <a class="action" data-source-path="/modules/real-exams-dynamic.html" href="/modules/real-exams-dynamic.html?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">历年真题<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18H6z"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></a>
+        <a class="action" data-source-path="/modules/exam-dynamic.html" href="/modules/exam-dynamic.html?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">模拟考试<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v5"/><path d="M9 2h6"/></svg></a>
+        <a class="action" data-source-path="/modules/question-bank.html?focus=181103-material-extracted&amp;answer_status=current#questionBanksList" href="/modules/question-bank.html?focus=181103-material-extracted&amp;answer_status=current&amp;edge_refresh=round943-local-record-noscript-save-guide-current-20260821#questionBanksList">181103 题库<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 9h8"/><path d="M8 14h8"/></svg></a>
+        <a class="action" data-source-path="/resources/fluid-181103-html/index.html" href="/resources/fluid-181103-html/index.html?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">181103 资料库<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></a>
       </nav>
       <div class="quick" aria-label="账号入口">
-        <a data-source-path="/_edge-login?next=%2Findex-complete%3Ffull%3D1" href="https://lghui-fluid-learning.pages.dev/_edge-login?next=%2Findex-complete%3Ffull%3D1&amp;edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">登录</a>
-        <a data-source-path="/_edge-reset?next=%2Findex-complete%3Ffull%3D1" href="https://lghui-fluid-learning.pages.dev/_edge-reset?next=%2Findex-complete%3Ffull%3D1&amp;edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">修复入口</a>
-        <a data-source-path="/_edge-status" href="https://lghui-fluid-learning.pages.dev/_edge-status?edge_refresh=round942-local-record-noscript-resource-heading-current-20260821">状态</a>
+        <a data-source-path="/_edge-login?next=%2Findex-complete%3Ffull%3D1" href="https://lghui-fluid-learning.pages.dev/_edge-login?next=%2Findex-complete%3Ffull%3D1&amp;edge_refresh=round943-local-record-noscript-save-guide-current-20260821">登录</a>
+        <a data-source-path="/_edge-reset?next=%2Findex-complete%3Ffull%3D1" href="https://lghui-fluid-learning.pages.dev/_edge-reset?next=%2Findex-complete%3Ffull%3D1&amp;edge_refresh=round943-local-record-noscript-save-guide-current-20260821">修复入口</a>
+        <a data-source-path="/_edge-status" href="https://lghui-fluid-learning.pages.dev/_edge-status?edge_refresh=round943-local-record-noscript-save-guide-current-20260821">状态</a>
       </div>
     </section>
     <section class="stage" aria-label="圆柱绕流流线">
@@ -171,5 +576,136 @@
       </script>
     </section>
   </main>
+  <script data-edge-shell-inline>
+(function () {
+  const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
+  const EDGE_REFRESH = 'round943-local-record-noscript-save-guide-current-20260821';
+
+  const routeMap = new Map([
+    ['/knowledge.html', '/modules/knowledge-detail'],
+    ['/knowledge', '/modules/knowledge-detail'],
+    ['/modules/knowledge-detail.html', '/modules/knowledge-detail'],
+    ['/modules/knowledge-detail', '/modules/knowledge-detail'],
+    ['/question-bank-home.html', '/question-bank-home.html'],
+    ['/question-bank-home', '/question-bank-home.html'],
+    ['/question-bank.html', '/modules/question-bank.html'],
+    ['/question-bank', '/modules/question-bank'],
+    ['/daily-question.html', '/modules/daily-question.html'],
+    ['/daily-question', '/modules/daily-question.html'],
+    ['/stimulus-world.html', '/modules/stimulus-world.html'],
+    ['/stimulus-world', '/modules/stimulus-world.html'],
+    ['/game.html', '/modules/stimulus-world.html'],
+    ['/game', '/modules/stimulus-world.html'],
+    ['/modules/videos.html', '/modules/videos'],
+    ['/modules/videos', '/modules/videos'],
+    ['/video.html', '/modules/videos'],
+    ['/video', '/modules/videos'],
+    ['/videos.html', '/modules/videos'],
+    ['/videos', '/modules/videos'],
+    ['/course-videos.html', '/modules/videos'],
+    ['/course-videos', '/modules/videos'],
+    ['/modules/video-dynamic.html', '/modules/videos'],
+    ['/modules/video-dynamic', '/modules/videos'],
+    ['/modules/video-enhanced-module.html', '/modules/videos'],
+    ['/modules/video-enhanced-module', '/modules/videos'],
+    ['/modules/video-module.html', '/modules/videos'],
+    ['/modules/video-module', '/modules/videos'],
+    ['/modules/course-videos.html', '/modules/videos'],
+    ['/modules/course-videos', '/modules/videos'],
+    ['/real-exams.html', '/modules/real-exams-dynamic.html'],
+    ['/real-exams', '/modules/real-exams-dynamic'],
+    ['/simulated-exams.html', '/modules/simulated-exams-dynamic.html'],
+    ['/simulated-exams', '/modules/simulated-exams-dynamic'],
+    ['/engineering-fluid-mechanics.html', '/modules/engineering-fluid-mechanics'],
+    ['/engineering-fluid-mechanics', '/modules/engineering-fluid-mechanics'],
+    ['/modules/engineering-fluid-mechanics.html', '/modules/engineering-fluid-mechanics'],
+    ['/modules/engineering-fluid-mechanics', '/modules/engineering-fluid-mechanics'],
+    ['/engineering-fluid-labs.html', '/modules/engineering-fluid-labs'],
+    ['/engineering-fluid-labs', '/modules/engineering-fluid-labs'],
+    ['/modules/engineering-fluid-labs.html', '/modules/engineering-fluid-labs'],
+    ['/modules/engineering-fluid-labs', '/modules/engineering-fluid-labs'],
+    ['/modules/nikuradse-experiment.html', '/modules/engineering-fluid-labs'],
+    ['/modules/nikuradse-experiment', '/modules/engineering-fluid-labs'],
+    ['/practice-dynamic.html', '/modules/practice-dynamic.html'],
+    ['/practice-dynamic', '/modules/practice-dynamic.html'],
+    ['/practice.html', '/modules/practice-dynamic.html'],
+    ['/practice', '/modules/practice-dynamic.html'],
+    ['/modules/knowledge-upgrade-2026.html', '/modules/knowledge-upgrade-2026'],
+    ['/modules/knowledge-upgrade-2026', '/modules/knowledge-upgrade-2026'],
+    ['/teacher-panel.html', '/teacher-panel'],
+    ['/teacher-panel', '/teacher-panel'],
+    ['/modules/teacher-panel.html', '/teacher-panel'],
+    ['/modules/teacher-panel', '/teacher-panel'],
+    ['/resources.html', '/resources.html'],
+    ['/resources', '/resources'],
+    ['/resources/fluid-original-animations.html', '/resources/fluid-original-animations.html'],
+    ['/resources/fluid-original-animations', '/resources/fluid-original-animations.html'],
+    ['/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt.html', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt'],
+    ['/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt', '/resources/fluid-textbooks/authored/wu-wangyi-second-rebuilt'],
+    ['/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt.html', '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt'],
+    ['/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt', '/resources/fluid-textbooks/authored/wang-hongwei-understanding-rebuilt'],
+    ['/_edge-login', '/_edge-login'],
+    ['/_edge-fast-login', '/_edge-fast-login'],
+    ['/_edge-register', '/_edge-register'],
+    ['/_edge-forgot-password', '/_edge-forgot-password'],
+    ['/_edge-reset', '/_edge-reset'],
+    ['/_edge-logout', '/_edge-logout'],
+    ['/_edge-status', '/_edge-status']
+  ]);
+
+  function normalizedPath() {
+    const path = window.location.pathname || '/';
+    return path.length > 1 ? path.replace(/\/+$/, '') : path;
+  }
+
+  function sourcePathFor(pathname) {
+    if (routeMap.has(pathname)) return routeMap.get(pathname);
+    if (pathname === '/' || pathname === '/index.html' || pathname === '/index-complete.html' || pathname === '/index-complete') {
+      return '/_edge-fast-login';
+    }
+    if (pathname.startsWith('/modules/') || pathname.startsWith('/resources/')) return pathname;
+    return '/_edge-fast-login';
+  }
+
+  function currentTarget() {
+    const sourcePath = sourcePathFor(normalizedPath());
+    const target = new URL(sourcePath, SOURCE_ORIGIN);
+    const current = new URL(window.location.href);
+
+    for (const [key, value] of current.searchParams.entries()) {
+      if (key !== 'edge_refresh') target.searchParams.append(key, value);
+    }
+    target.searchParams.set('edge_refresh', EDGE_REFRESH);
+    if ((sourcePath === '/_edge-fast-login' || sourcePath === '/_edge-login') && !target.searchParams.has('next')) {
+      target.searchParams.set('next', '/index-complete?full=1');
+    }
+    target.hash = current.hash;
+    return target;
+  }
+
+  function updateGatewayLink(target) {
+    const link = document.querySelector('[data-source-link]');
+    if (link) link.href = target.href;
+  }
+
+  function wireHomeLinks() {
+    document.querySelectorAll('[data-source-path]').forEach((link) => {
+      const path = link.getAttribute('data-source-path') || '/_edge-fast-login';
+      const target = new URL(path, SOURCE_ORIGIN);
+      target.searchParams.set('edge_refresh', EDGE_REFRESH);
+      link.href = target.href;
+    });
+  }
+
+  function start() {
+    const target = currentTarget();
+    updateGatewayLink(target);
+    wireHomeLinks();
+    if (document.documentElement.dataset.edgeGateway === '1') window.location.replace(target.href);
+  }
+
+  start();
+})();
+  </script>
 </body>
 </html>
