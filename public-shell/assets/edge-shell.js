@@ -1,6 +1,6 @@
 (function () {
   const SOURCE_ORIGIN = 'https://lghui-fluid-learning.pages.dev';
-  const EDGE_REFRESH = 'round946-local-record-import-review-current-20260821';
+  const EDGE_REFRESH = 'round947-lab-category-filter-current-20260821';
 
   const routeMap = new Map([
     ['/knowledge.html', '/modules/knowledge-detail'],
